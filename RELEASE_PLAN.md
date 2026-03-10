@@ -199,7 +199,7 @@ Dependencies: None
 US-0014 (EPIC-0004): As a developer, I want ESLint to run on every push and PR, so that code quality issues are caught before merge.
 Priority: High (P0)
 Estimate: S
-Status: In Progress
+Status: To Do
 Branch: feature/US-0014-eslint-ci
 Acceptance Criteria:
   - [ ] AC-0032: eslint.config.js uses eslint:recommended with no-eval and eqeqeq as errors
@@ -210,7 +210,7 @@ Dependencies: None
 US-0015 (EPIC-0004): As a developer, I want the CI pipeline to gate on 80% coverage, so that test coverage cannot silently regress.
 Priority: High (P0)
 Estimate: S
-Status: In Progress
+Status: To Do
 Branch: feature/US-0015-coverage-gate
 Acceptance Criteria:
   - [ ] AC-0035: jest.config.js defines coverageThreshold with 80% for lines, branches, functions, and statements
@@ -221,7 +221,7 @@ Dependencies: None
 US-0016 (EPIC-0004): As a developer, I want npm audit to run on every push and PR, so that known vulnerabilities in dependencies are caught automatically.
 Priority: High (P0)
 Estimate: S
-Status: In Progress
+Status: To Do
 Branch: feature/US-0016-npm-audit-ci
 Acceptance Criteria:
   - [ ] AC-0038: The audit job runs npm audit --audit-level=moderate
@@ -231,7 +231,7 @@ Dependencies: None
 US-0017 (EPIC-0004): As a developer, I want CodeQL to analyse the codebase on every PR and push to main, so that security vulnerabilities are caught before they reach production.
 Priority: High (P0)
 Estimate: M
-Status: In Progress
+Status: To Do
 Branch: feature/US-0017-codeql
 Acceptance Criteria:
   - [ ] AC-0040: codeql.yml runs on pull_request, push to main, and a weekly Monday schedule
@@ -242,7 +242,7 @@ Dependencies: None
 US-0018 (EPIC-0004): As a developer, I want Dependabot to open automated PRs for outdated dependencies, so that the project stays secure without manual monitoring.
 Priority: Medium (P1)
 Estimate: S
-Status: In Progress
+Status: To Do
 Branch: feature/US-0018-dependabot
 Acceptance Criteria:
   - [ ] AC-0043: dependabot.yml configures weekly npm updates with a 5-PR limit

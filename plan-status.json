@@ -381,7 +381,7 @@
       "title": "As a developer, I want ESLint to run on every push and PR, so that code quality issues are caught before merge.",
       "priority": "P0",
       "estimate": "S",
-      "status": "In Progress",
+      "status": "To Do",
       "branch": "feature/US-0014-eslint-ci",
       "acs": [
         {
@@ -408,7 +408,7 @@
       "title": "As a developer, I want the CI pipeline to gate on 80% coverage, so that test coverage cannot silently regress.",
       "priority": "P0",
       "estimate": "S",
-      "status": "In Progress",
+      "status": "To Do",
       "branch": "feature/US-0015-coverage-gate",
       "acs": [
         {
@@ -435,7 +435,7 @@
       "title": "As a developer, I want npm audit to run on every push and PR, so that known vulnerabilities in dependencies are caught automatically.",
       "priority": "P0",
       "estimate": "S",
-      "status": "In Progress",
+      "status": "To Do",
       "branch": "feature/US-0016-npm-audit-ci",
       "acs": [
         {
@@ -457,7 +457,7 @@
       "title": "As a developer, I want CodeQL to analyse the codebase on every PR and push to main, so that security vulnerabilities are caught before they reach production.",
       "priority": "P0",
       "estimate": "M",
-      "status": "In Progress",
+      "status": "To Do",
       "branch": "feature/US-0017-codeql",
       "acs": [
         {
@@ -484,7 +484,7 @@
       "title": "As a developer, I want Dependabot to open automated PRs for outdated dependencies, so that the project stays secure without manual monitoring.",
       "priority": "P1",
       "estimate": "S",
-      "status": "In Progress",
+      "status": "To Do",
       "branch": "feature/US-0018-dependabot",
       "acs": [
         {
@@ -1337,8 +1337,8 @@
       "summary": "Initial project scaffolding by original author; Implemented all 9 parser modules (tools/lib/*.js); Implemented render-html.js with 6-tab dashboard"
     }
   ],
-  "generatedAt": "2026-03-10T13:04:05.974Z",
-  "commitSha": "1a62941",
+  "generatedAt": "2026-03-10T13:22:02.435Z",
+  "commitSha": "37e79ad",
   "sessionTimeline": [
     {
       "date": "2026-03-09",
