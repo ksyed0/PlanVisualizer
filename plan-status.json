@@ -1,0 +1,1414 @@
+{
+  "epics": [
+    {
+      "id": "EPIC-0001",
+      "title": "Core Parsing Engine",
+      "description": "Regex-based parsers for all AGENTS.md markdown file formats — release plan, test cases, bugs, cost log, coverage JSON, and progress log.",
+      "releaseTarget": "MVP (v1.0)",
+      "status": "Done",
+      "dependencies": []
+    },
+    {
+      "id": "EPIC-0002",
+      "title": "HTML Dashboard Renderer",
+      "description": "Static HTML generation with six tabs (Hierarchy, Kanban, Traceability, Charts, Costs, Bugs), top bar stats, filters, and recent activity panel.",
+      "releaseTarget": "MVP (v1.0)",
+      "status": "Done",
+      "dependencies": [
+        "EPIC-0001"
+      ]
+    },
+    {
+      "id": "EPIC-0003",
+      "title": "Installation and Distribution",
+      "description": "One-command bash installer, JSON config system, and Claude Code stop hook for automated cost capture.",
+      "releaseTarget": "MVP (v1.0)",
+      "status": "Done",
+      "dependencies": [
+        "EPIC-0001",
+        "EPIC-0002"
+      ]
+    },
+    {
+      "id": "EPIC-0004",
+      "title": "CI/CD Pipeline",
+      "description": "Consolidated GitHub Actions pipeline with ESLint, Jest coverage gate, npm audit, CodeQL analysis, GitHub Pages deployment, and Dependabot.",
+      "releaseTarget": "Release 1.1",
+      "status": "In Progress",
+      "dependencies": [
+        "EPIC-0001"
+      ]
+    },
+    {
+      "id": "EPIC-0005",
+      "title": "Project Self-Documentation",
+      "description": "Full AGENTS.md-compliant documentation including design doc, architecture, release plan, test cases, ID registry, and all supporting project files.",
+      "releaseTarget": "Release 1.1",
+      "status": "In Progress",
+      "dependencies": []
+    }
+  ],
+  "stories": [
+    {
+      "id": "US-0001",
+      "epicId": "EPIC-0001",
+      "title": "As a developer, I want to parse RELEASE_PLAN.md into structured epics, stories, and tasks, so that the dashboard can visualise project hierarchy.",
+      "priority": "P0",
+      "estimate": "L",
+      "status": "Done",
+      "branch": "feature/US-0001-parse-release-plan",
+      "acs": [
+        {
+          "id": "AC-0001",
+          "text": "Epics are extracted from fenced code blocks with id, title, status, and releaseTarget fields",
+          "done": true
+        },
+        {
+          "id": "AC-0002",
+          "text": "Stories are associated with their parent epic via epicId",
+          "done": true
+        },
+        {
+          "id": "AC-0003",
+          "text": "Acceptance criteria items are parsed with done/undone state",
+          "done": true
+        }
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "US-0002",
+      "epicId": "EPIC-0001",
+      "title": "As a developer, I want to parse TEST_CASES.md, so that test cases can be linked to stories in the traceability matrix.",
+      "priority": "P0",
+      "estimate": "M",
+      "status": "Done",
+      "branch": "feature/US-0002-parse-test-cases",
+      "acs": [
+        {
+          "id": "AC-0004",
+          "text": "Test cases are extracted with id, title, relatedStory, relatedAC, type, and status fields",
+          "done": true
+        },
+        {
+          "id": "AC-0005",
+          "text": "Status is normalised to Pass, Fail, or Not Run from checkbox syntax",
+          "done": true
+        }
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "US-0003",
+      "epicId": "EPIC-0001",
+      "title": "As a developer, I want to parse BUGS.md, so that bugs are displayed in the Bugs tab and linked to stories.",
+      "priority": "P0",
+      "estimate": "S",
+      "status": "Done",
+      "branch": "feature/US-0003-parse-bugs",
+      "acs": [
+        {
+          "id": "AC-0006",
+          "text": "Bugs are extracted with id, title, severity, status, relatedStory, fixBranch, and lessonEncoded fields",
+          "done": true
+        },
+        {
+          "id": "AC-0007",
+          "text": "Multiple bugs are correctly separated using sliding-window slicing",
+          "done": true
+        }
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "US-0004",
+      "epicId": "EPIC-0001",
+      "title": "As a developer, I want to parse AI_COST_LOG.md and aggregate costs by branch, so that AI spend can be attributed to user stories.",
+      "priority": "P0",
+      "estimate": "M",
+      "status": "Done",
+      "branch": "feature/US-0004-parse-cost-log",
+      "acs": [
+        {
+          "id": "AC-0008",
+          "text": "All pipe-delimited table rows are parsed into typed cost objects",
+          "done": true
+        },
+        {
+          "id": "AC-0009",
+          "text": "Token counts and costs are summed correctly per branch",
+          "done": true
+        },
+        {
+          "id": "AC-0010",
+          "text": "Sessions on the same branch are accumulated, not overwritten",
+          "done": true
+        }
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "US-0005",
+      "epicId": "EPIC-0001",
+      "title": "As a developer, I want to parse Jest coverage-summary.json, so that coverage metrics appear in the dashboard top bar.",
+      "priority": "P1",
+      "estimate": "S",
+      "status": "Done",
+      "branch": "feature/US-0005-parse-coverage",
+      "acs": [
+        {
+          "id": "AC-0011",
+          "text": "Lines, statements, functions, and branches percentages are extracted",
+          "done": true
+        },
+        {
+          "id": "AC-0012",
+          "text": "overall is computed as the minimum of all four metrics; meetsTarget is true when overall >= 80",
+          "done": true
+        }
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "US-0006",
+      "epicId": "EPIC-0001",
+      "title": "As a developer, I want to parse progress.md for recent session summaries, so that the dashboard shows recent activity.",
+      "priority": "P2",
+      "estimate": "S",
+      "status": "Done",
+      "branch": "feature/US-0006-parse-progress",
+      "acs": [
+        {
+          "id": "AC-0013",
+          "text": "Sessions are extracted in reverse-chronological order",
+          "done": true
+        },
+        {
+          "id": "AC-0014",
+          "text": "The What Was Done section is summarised to 3 lines maximum",
+          "done": true
+        }
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "US-0007",
+      "epicId": "EPIC-0001",
+      "title": "As a developer, I want to compute projected and actual AI costs per story, so that the Costs tab shows budget vs. spend.",
+      "priority": "P1",
+      "estimate": "S",
+      "status": "Done",
+      "branch": "feature/US-0007-compute-costs",
+      "acs": [
+        {
+          "id": "AC-0015",
+          "text": "Projected cost is computed from t-shirt size × hourly rate",
+          "done": true
+        },
+        {
+          "id": "AC-0016",
+          "text": "AI cost is attributed to stories by exact branch name match",
+          "done": true
+        }
+      ],
+      "dependencies": [
+        "US-0004"
+      ]
+    },
+    {
+      "id": "US-0008",
+      "epicId": "EPIC-0001",
+      "title": "As a developer, I want at-risk stories to be automatically detected, so that I can see which stories need attention without reading every file.",
+      "priority": "P0",
+      "estimate": "S",
+      "status": "Done",
+      "branch": "feature/US-0008-detect-at-risk",
+      "acs": [
+        {
+          "id": "AC-0017",
+          "text": "Stories with ACs but no linked TCs are flagged missingTCs",
+          "done": true
+        },
+        {
+          "id": "AC-0018",
+          "text": "In-Progress stories with no branch are flagged noBranch",
+          "done": true
+        },
+        {
+          "id": "AC-0019",
+          "text": "Stories with a Fail TC and no defect raised are flagged failedTCNoBug",
+          "done": true
+        }
+      ],
+      "dependencies": [
+        "US-0002"
+      ]
+    },
+    {
+      "id": "US-0009",
+      "epicId": "EPIC-0002",
+      "title": "As a developer, I want a static HTML dashboard with six tabs, so that I can view all project dimensions in one file.",
+      "priority": "P0",
+      "estimate": "XL",
+      "status": "Done",
+      "branch": "feature/US-0009-render-html",
+      "acs": [
+        {
+          "id": "AC-0020",
+          "text": "All six tabs (Hierarchy, Kanban, Traceability, Charts, Costs, Bugs) render without error",
+          "done": true
+        },
+        {
+          "id": "AC-0021",
+          "text": "The top bar shows project name, progress bar, and all six stat tiles",
+          "done": true
+        },
+        {
+          "id": "AC-0022",
+          "text": "The generated HTML is self-contained and opens in any browser without a server",
+          "done": true
+        }
+      ],
+      "dependencies": [
+        "US-0001",
+        "US-0002",
+        "US-0003",
+        "US-0004",
+        "US-0005",
+        "US-0006",
+        "US-0007",
+        "US-0008"
+      ]
+    },
+    {
+      "id": "US-0010",
+      "epicId": "EPIC-0002",
+      "title": "As a developer, I want real-time filters for epic, status, priority, and search, so that I can focus on the subset of stories I care about.",
+      "priority": "P1",
+      "estimate": "M",
+      "status": "Done",
+      "branch": "feature/US-0009-render-html",
+      "acs": [
+        {
+          "id": "AC-0023",
+          "text": "Selecting an epic hides stories from other epics in both Hierarchy and Kanban tabs",
+          "done": true
+        },
+        {
+          "id": "AC-0024",
+          "text": "Free-text search filters by story ID and title",
+          "done": true
+        }
+      ],
+      "dependencies": [
+        "US-0009"
+      ]
+    },
+    {
+      "id": "US-0011",
+      "epicId": "EPIC-0003",
+      "title": "As a developer, I want to install PlanVisualizer into my project with a single bash command, so that setup takes under 5 minutes.",
+      "priority": "P0",
+      "estimate": "M",
+      "status": "Done",
+      "branch": "feature/US-0011-install-script",
+      "acs": [
+        {
+          "id": "AC-0025",
+          "text": "The install script copies tools/, tests/, and jest.config.js to the target project",
+          "done": true
+        },
+        {
+          "id": "AC-0026",
+          "text": "The script merges plan:test, plan:test:coverage, and plan:generate scripts into package.json without overwriting existing scripts",
+          "done": true
+        },
+        {
+          "id": "AC-0027",
+          "text": "The script is idempotent — safe to re-run for updates",
+          "done": true
+        }
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "US-0012",
+      "epicId": "EPIC-0003",
+      "title": "As a developer, I want Claude Code session costs to be captured automatically, so that AI_COST_LOG.md is always up to date without manual entry.",
+      "priority": "P0",
+      "estimate": "S",
+      "status": "Done",
+      "branch": "feature/US-0012-capture-cost",
+      "acs": [
+        {
+          "id": "AC-0028",
+          "text": "The stop hook appends one row per session to AI_COST_LOG.md using append-safe file open",
+          "done": true
+        },
+        {
+          "id": "AC-0029",
+          "text": "The header row is written only when the file is empty",
+          "done": true
+        }
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "US-0013",
+      "epicId": "EPIC-0003",
+      "title": "As a developer, I want to configure all file paths and project metadata in a single JSON file, so that PlanVisualizer works with any project structure.",
+      "priority": "P1",
+      "estimate": "S",
+      "status": "Done",
+      "branch": "feature/US-0013-config-system",
+      "acs": [
+        {
+          "id": "AC-0030",
+          "text": "All config keys have sensible defaults — the tool runs with zero config",
+          "done": true
+        },
+        {
+          "id": "AC-0031",
+          "text": "User-supplied values deep-merge over defaults without clobbering unspecified keys",
+          "done": true
+        }
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "US-0014",
+      "epicId": "EPIC-0004",
+      "title": "As a developer, I want ESLint to run on every push and PR, so that code quality issues are caught before merge.",
+      "priority": "P0",
+      "estimate": "S",
+      "status": "In Progress",
+      "branch": "feature/US-0014-eslint-ci",
+      "acs": [
+        {
+          "id": "AC-0032",
+          "text": "eslint.config.js uses eslint:recommended with no-eval and eqeqeq as errors",
+          "done": false
+        },
+        {
+          "id": "AC-0033",
+          "text": "npm run lint exits 0 on all current source files",
+          "done": false
+        },
+        {
+          "id": "AC-0034",
+          "text": "The lint job in ci.yml fails the workflow if ESLint reports any error",
+          "done": false
+        }
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "US-0015",
+      "epicId": "EPIC-0004",
+      "title": "As a developer, I want the CI pipeline to gate on 80% coverage, so that test coverage cannot silently regress.",
+      "priority": "P0",
+      "estimate": "S",
+      "status": "In Progress",
+      "branch": "feature/US-0015-coverage-gate",
+      "acs": [
+        {
+          "id": "AC-0035",
+          "text": "jest.config.js defines coverageThreshold with 80% for lines, branches, functions, and statements",
+          "done": false
+        },
+        {
+          "id": "AC-0036",
+          "text": "npm run test:coverage fails with a descriptive message when any metric falls below 80%",
+          "done": false
+        },
+        {
+          "id": "AC-0037",
+          "text": "The test job in ci.yml fails the workflow when the threshold is not met",
+          "done": false
+        }
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "US-0016",
+      "epicId": "EPIC-0004",
+      "title": "As a developer, I want npm audit to run on every push and PR, so that known vulnerabilities in dependencies are caught automatically.",
+      "priority": "P0",
+      "estimate": "S",
+      "status": "In Progress",
+      "branch": "feature/US-0016-npm-audit-ci",
+      "acs": [
+        {
+          "id": "AC-0038",
+          "text": "The audit job runs npm audit --audit-level=moderate",
+          "done": false
+        },
+        {
+          "id": "AC-0039",
+          "text": "The workflow fails if any moderate, high, or critical vulnerability is found",
+          "done": false
+        }
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "US-0017",
+      "epicId": "EPIC-0004",
+      "title": "As a developer, I want CodeQL to analyse the codebase on every PR and push to main, so that security vulnerabilities are caught before they reach production.",
+      "priority": "P0",
+      "estimate": "M",
+      "status": "In Progress",
+      "branch": "feature/US-0017-codeql",
+      "acs": [
+        {
+          "id": "AC-0040",
+          "text": "codeql.yml runs on pull_request, push to main, and a weekly Monday schedule",
+          "done": false
+        },
+        {
+          "id": "AC-0041",
+          "text": "The security-extended query pack is used for JavaScript analysis",
+          "done": false
+        },
+        {
+          "id": "AC-0042",
+          "text": "Results are uploaded to the GitHub Security tab as SARIF",
+          "done": false
+        }
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "US-0018",
+      "epicId": "EPIC-0004",
+      "title": "As a developer, I want Dependabot to open automated PRs for outdated dependencies, so that the project stays secure without manual monitoring.",
+      "priority": "P1",
+      "estimate": "S",
+      "status": "In Progress",
+      "branch": "feature/US-0018-dependabot",
+      "acs": [
+        {
+          "id": "AC-0043",
+          "text": "dependabot.yml configures weekly npm updates with a 5-PR limit",
+          "done": false
+        },
+        {
+          "id": "AC-0044",
+          "text": "GitHub Actions dependencies are also monitored weekly",
+          "done": false
+        }
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "US-0019",
+      "epicId": "EPIC-0005",
+      "title": "As a contributor, I want a design document and technical architecture reference, so that I can understand the project's goals and implementation without reading all the source code.",
+      "priority": "P0",
+      "estimate": "M",
+      "status": "In Progress",
+      "branch": "feature/US-0019-design-docs",
+      "acs": [
+        {
+          "id": "AC-0045",
+          "text": "Docs/DESIGN.md covers product vision, user profile, core concepts, feature set, and design system",
+          "done": false
+        },
+        {
+          "id": "AC-0046",
+          "text": "Docs/ARCHITECTURE.md covers module structure, data flow, parser contract, renderer design, and CI architecture",
+          "done": false
+        },
+        {
+          "id": "AC-0047",
+          "text": "Both documents are committed to main",
+          "done": false
+        }
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "US-0020",
+      "epicId": "EPIC-0005",
+      "title": "As a contributor, I want a complete release plan with epics, stories, tasks, and ID registry, so that project scope and progress can be tracked in the dashboard.",
+      "priority": "P0",
+      "estimate": "M",
+      "status": "In Progress",
+      "branch": "feature/US-0020-release-plan",
+      "acs": [
+        {
+          "id": "AC-0048",
+          "text": "Docs/RELEASE_PLAN.md contains all 5 epics with correct AGENTS.md format",
+          "done": false
+        },
+        {
+          "id": "AC-0049",
+          "text": "All user stories include priority, estimate, status, branch, and acceptance criteria",
+          "done": false
+        },
+        {
+          "id": "AC-0050",
+          "text": "Docs/ID_REGISTRY.md is populated with correct next-available IDs",
+          "done": false
+        }
+      ],
+      "dependencies": []
+    },
+    {
+      "id": "US-0021",
+      "epicId": "EPIC-0005",
+      "title": "As a contributor, I want a human-readable test plan and test cases document, so that QA verification is reproducible and stories cannot close without test evidence.",
+      "priority": "P0",
+      "estimate": "M",
+      "status": "In Progress",
+      "branch": "feature/US-0021-test-cases",
+      "acs": [
+        {
+          "id": "AC-0051",
+          "text": "Docs/TEST_CASES.md contains at least one TC per user story",
+          "done": false
+        },
+        {
+          "id": "AC-0052",
+          "text": "Every acceptance criterion (AC) has a corresponding TC",
+          "done": false
+        },
+        {
+          "id": "AC-0053",
+          "text": "TC format is parseable by parse-test-cases.js and renders in the Traceability tab",
+          "done": false
+        }
+      ],
+      "dependencies": [
+        "US-0020"
+      ]
+    },
+    {
+      "id": "US-0022",
+      "epicId": "EPIC-0005",
+      "title": "As a contributor, I want all AGENTS.md-required project files to exist and be populated, so that any AI agent can pick up this project without missing context.",
+      "priority": "P0",
+      "estimate": "M",
+      "status": "In Progress",
+      "branch": "feature/US-0022-project-files",
+      "acs": [
+        {
+          "id": "AC-0054",
+          "text": "MEMORY.md, PROMPT_LOG.md, MIGRATION_LOG.md, findings.md, progress.md, task_plan.md exist and are populated",
+          "done": false
+        },
+        {
+          "id": "AC-0055",
+          "text": "Docs/LESSONS.md and architecture/ERROR_TAXONOMY.md exist",
+          "done": false
+        },
+        {
+          "id": "AC-0056",
+          "text": "node tools/generate-plan.js runs successfully and produces a valid plan-status.html",
+          "done": false
+        }
+      ],
+      "dependencies": []
+    }
+  ],
+  "tasks": [
+    {
+      "id": "TASK-0001",
+      "storyId": "US-0014",
+      "title": "Install eslint@9 and @eslint/js as devDependencies",
+      "type": "Dev",
+      "assignee": "Agent",
+      "status": "To Do",
+      "branch": "feature/US-0014-eslint-ci",
+      "notes": "npm install --save-dev eslint@9 @eslint/js"
+    },
+    {
+      "id": "TASK-0002",
+      "storyId": "US-0014",
+      "title": "Create eslint.config.js with recommended + security rules",
+      "type": "Dev",
+      "assignee": "Agent",
+      "status": "To Do",
+      "branch": "feature/US-0014-eslint-ci",
+      "notes": "Use flat config format; scope to tools/**/*.js"
+    },
+    {
+      "id": "TASK-0003",
+      "storyId": "US-0014",
+      "title": "Add lint script to package.json and verify clean run",
+      "type": "Dev",
+      "assignee": "Agent",
+      "status": "To Do",
+      "branch": "feature/US-0014-eslint-ci",
+      "notes": "npm run lint must exit 0 on current codebase"
+    },
+    {
+      "id": "TASK-0004",
+      "storyId": "US-0014",
+      "title": "Add lint job to ci.yml",
+      "type": "Infra",
+      "assignee": "Agent",
+      "status": "To Do",
+      "branch": "feature/US-0014-eslint-ci",
+      "notes": "Runs on all branches and PRs"
+    },
+    {
+      "id": "TASK-0005",
+      "storyId": "US-0015",
+      "title": "Add coverageThreshold block to jest.config.js",
+      "type": "Dev",
+      "assignee": "Agent",
+      "status": "To Do",
+      "branch": "feature/US-0015-coverage-gate",
+      "notes": "80% for lines, branches, functions, statements globally"
+    },
+    {
+      "id": "TASK-0006",
+      "storyId": "US-0015",
+      "title": "Verify npm run test:coverage passes threshold",
+      "type": "Test",
+      "assignee": "Agent",
+      "status": "To Do",
+      "branch": "feature/US-0015-coverage-gate",
+      "notes": "Current coverage is well above 80% — should pass immediately"
+    },
+    {
+      "id": "TASK-0007",
+      "storyId": "US-0015",
+      "title": "Add test job to ci.yml replacing existing test job",
+      "type": "Infra",
+      "assignee": "Agent",
+      "status": "To Do",
+      "branch": "feature/US-0015-coverage-gate",
+      "notes": "Keep --ci flag for GitHub Actions"
+    },
+    {
+      "id": "TASK-0008",
+      "storyId": "US-0016",
+      "title": "Add audit job to ci.yml",
+      "type": "Infra",
+      "assignee": "Agent",
+      "status": "To Do",
+      "branch": "feature/US-0016-npm-audit-ci",
+      "notes": "npm audit --audit-level=moderate"
+    },
+    {
+      "id": "TASK-0009",
+      "storyId": "US-0017",
+      "title": "Create .github/workflows/codeql.yml",
+      "type": "Infra",
+      "assignee": "Agent",
+      "status": "To Do",
+      "branch": "feature/US-0017-codeql",
+      "notes": "Triggers: pull_request, push to main, schedule (Monday 08:00 UTC)"
+    },
+    {
+      "id": "TASK-0010",
+      "storyId": "US-0018",
+      "title": "Create .github/dependabot.yml",
+      "type": "Infra",
+      "assignee": "Agent",
+      "status": "To Do",
+      "branch": "feature/US-0018-dependabot",
+      "notes": "npm + github-actions ecosystems; weekly; 5-PR limit"
+    },
+    {
+      "id": "TASK-0011",
+      "storyId": "US-0019",
+      "title": "Write Docs/DESIGN.md",
+      "type": "Docs",
+      "assignee": "Agent",
+      "status": "To Do",
+      "branch": "feature/US-0019-design-docs",
+      "notes": "Cover vision, user profile, core concepts, features, design system, data flow"
+    },
+    {
+      "id": "TASK-0012",
+      "storyId": "US-0019",
+      "title": "Write Docs/ARCHITECTURE.md",
+      "type": "Docs",
+      "assignee": "Agent",
+      "status": "To Do",
+      "branch": "feature/US-0019-design-docs",
+      "notes": "Cover module structure, data flow, parser contract, renderer, CI/CD"
+    },
+    {
+      "id": "TASK-0013",
+      "storyId": "US-0020",
+      "title": "Write Docs/RELEASE_PLAN.md with all 5 epics and 22 stories",
+      "type": "Docs",
+      "assignee": "Agent",
+      "status": "To Do",
+      "branch": "feature/US-0020-release-plan",
+      "notes": "Must use AGENTS.md format inside fenced code blocks"
+    },
+    {
+      "id": "TASK-0014",
+      "storyId": "US-0020",
+      "title": "Write Docs/ID_REGISTRY.md",
+      "type": "Docs",
+      "assignee": "Agent",
+      "status": "To Do",
+      "branch": "feature/US-0020-release-plan",
+      "notes": "Track next available ID per sequence"
+    },
+    {
+      "id": "TASK-0015",
+      "storyId": "US-0021",
+      "title": "Write Docs/TEST_CASES.md with one TC per story AC",
+      "type": "Docs",
+      "assignee": "Agent",
+      "status": "To Do",
+      "branch": "feature/US-0021-test-cases",
+      "notes": "Use TC format parseable by parse-test-cases.js"
+    },
+    {
+      "id": "TASK-0016",
+      "storyId": "US-0022",
+      "title": "Create MEMORY.md with project knowledge base",
+      "type": "Docs",
+      "assignee": "Agent",
+      "status": "To Do",
+      "branch": "feature/US-0022-project-files",
+      "notes": "Organised by topic, not chronologically"
+    },
+    {
+      "id": "TASK-0017",
+      "storyId": "US-0022",
+      "title": "Create progress.md, PROMPT_LOG.md, MIGRATION_LOG.md, findings.md, task_plan.md",
+      "type": "Docs",
+      "assignee": "Agent",
+      "status": "To Do",
+      "branch": "feature/US-0022-project-files",
+      "notes": "Bootstrap initial entries for each file"
+    },
+    {
+      "id": "TASK-0018",
+      "storyId": "US-0022",
+      "title": "Create Docs/LESSONS.md and architecture/ERROR_TAXONOMY.md",
+      "type": "Docs",
+      "assignee": "Agent",
+      "status": "To Do",
+      "branch": "feature/US-0022-project-files",
+      "notes": "Encode Jest upgrade lesson; define error taxonomy"
+    },
+    {
+      "id": "TASK-0019",
+      "storyId": "US-0022",
+      "title": "Create plan-visualizer.config.json for this project",
+      "type": "Infra",
+      "assignee": "Agent",
+      "status": "To Do",
+      "branch": "feature/US-0022-project-files",
+      "notes": "project.name = PlanVisualizer; commit this file (remove from .gitignore for this repo)"
+    },
+    {
+      "id": "TASK-0020",
+      "storyId": "US-0022",
+      "title": "Run node tools/generate-plan.js and verify output",
+      "type": "Test",
+      "assignee": "Agent",
+      "status": "To Do",
+      "branch": "feature/US-0022-project-files",
+      "notes": "Output should render all tabs with real project data"
+    }
+  ],
+  "testCases": [
+    {
+      "id": "TC-0001",
+      "title": "Parse release plan with two epics and three stories",
+      "relatedStory": "US-0001",
+      "relatedTask": "TASK-0001",
+      "relatedAC": "AC-0001",
+      "type": "Functional",
+      "status": "Not Run",
+      "defect": "None"
+    },
+    {
+      "id": "TC-0002",
+      "title": "Parse release plan with empty markdown",
+      "relatedStory": "US-0001",
+      "relatedTask": "TASK-0001",
+      "relatedAC": "AC-0001",
+      "type": "Edge Case",
+      "status": "Not Run",
+      "defect": "None"
+    },
+    {
+      "id": "TC-0003",
+      "title": "Parse release plan acceptance criteria done/undone state",
+      "relatedStory": "US-0001",
+      "relatedTask": "TASK-0001",
+      "relatedAC": "AC-0003",
+      "type": "Functional",
+      "status": "Not Run",
+      "defect": "None"
+    },
+    {
+      "id": "TC-0004",
+      "title": "Parse test cases with multiple TCs",
+      "relatedStory": "US-0002",
+      "relatedTask": "TASK-0015",
+      "relatedAC": "AC-0004",
+      "type": "Functional",
+      "status": "Not Run",
+      "defect": "None"
+    },
+    {
+      "id": "TC-0005",
+      "title": "Parse test case status normalisation",
+      "relatedStory": "US-0002",
+      "relatedTask": "TASK-0015",
+      "relatedAC": "AC-0005",
+      "type": "Functional",
+      "status": "Not Run",
+      "defect": "None"
+    },
+    {
+      "id": "TC-0006",
+      "title": "Parse bugs with multiple entries",
+      "relatedStory": "US-0003",
+      "relatedTask": "TASK-0001",
+      "relatedAC": "AC-0006",
+      "type": "Functional",
+      "status": "Not Run",
+      "defect": "None"
+    },
+    {
+      "id": "TC-0007",
+      "title": "Parse AI cost log and aggregate by branch",
+      "relatedStory": "US-0004",
+      "relatedTask": "TASK-0001",
+      "relatedAC": "AC-0008",
+      "type": "Functional",
+      "status": "Not Run",
+      "defect": "None"
+    },
+    {
+      "id": "TC-0008",
+      "title": "Attribute AI costs to stories by branch",
+      "relatedStory": "US-0007",
+      "relatedTask": "TASK-0001",
+      "relatedAC": "AC-0016",
+      "type": "Functional",
+      "status": "Not Run",
+      "defect": "None"
+    },
+    {
+      "id": "TC-0009",
+      "title": "Parse coverage JSON and compute overall",
+      "relatedStory": "US-0005",
+      "relatedTask": "TASK-0001",
+      "relatedAC": "AC-0011",
+      "type": "Functional",
+      "status": "Not Run",
+      "defect": "None"
+    },
+    {
+      "id": "TC-0010",
+      "title": "Detect at-risk story with no linked test cases",
+      "relatedStory": "US-0008",
+      "relatedTask": "TASK-0001",
+      "relatedAC": "AC-0017",
+      "type": "Functional",
+      "status": "Not Run",
+      "defect": "None"
+    },
+    {
+      "id": "TC-0011",
+      "title": "Detect at-risk story — In Progress with no branch",
+      "relatedStory": "US-0008",
+      "relatedTask": "TASK-0001",
+      "relatedAC": "AC-0018",
+      "type": "Functional",
+      "status": "Not Run",
+      "defect": "None"
+    },
+    {
+      "id": "TC-0012",
+      "title": "Detect at-risk story — failed TC with no bug",
+      "relatedStory": "US-0008",
+      "relatedTask": "TASK-0001",
+      "relatedAC": "AC-0019",
+      "type": "Functional",
+      "status": "Not Run",
+      "defect": "None"
+    },
+    {
+      "id": "TC-0013",
+      "title": "Generate full HTML with all data populated",
+      "relatedStory": "US-0009",
+      "relatedTask": "TASK-0001",
+      "relatedAC": "AC-0020",
+      "type": "Functional",
+      "status": "Not Run",
+      "defect": "None"
+    },
+    {
+      "id": "TC-0014",
+      "title": "Generate HTML with all source files missing or empty",
+      "relatedStory": "US-0009",
+      "relatedTask": "TASK-0001",
+      "relatedAC": "AC-0022",
+      "type": "Edge Case",
+      "status": "Not Run",
+      "defect": "None"
+    },
+    {
+      "id": "TC-0015",
+      "title": "Filter by epic hides stories from other epics",
+      "relatedStory": "US-0010",
+      "relatedTask": "TASK-0001",
+      "relatedAC": "AC-0023",
+      "type": "Functional",
+      "status": "Not Run",
+      "defect": "None"
+    },
+    {
+      "id": "TC-0016",
+      "title": "Free-text search filters by story ID",
+      "relatedStory": "US-0010",
+      "relatedTask": "TASK-0001",
+      "relatedAC": "AC-0024",
+      "type": "Functional",
+      "status": "Not Run",
+      "defect": "None"
+    },
+    {
+      "id": "TC-0017",
+      "title": "Install script creates all required files in a fresh target directory",
+      "relatedStory": "US-0011",
+      "relatedTask": "TASK-0001",
+      "relatedAC": "AC-0025",
+      "type": "Functional",
+      "status": "Not Run",
+      "defect": "None"
+    },
+    {
+      "id": "TC-0018",
+      "title": "Install script is idempotent",
+      "relatedStory": "US-0011",
+      "relatedTask": "TASK-0001",
+      "relatedAC": "AC-0027",
+      "type": "Regression",
+      "status": "Not Run",
+      "defect": "None"
+    },
+    {
+      "id": "TC-0019",
+      "title": "Cost capture hook appends row without overwriting existing rows",
+      "relatedStory": "US-0012",
+      "relatedTask": "TASK-0001",
+      "relatedAC": "AC-0028",
+      "type": "Functional",
+      "status": "Not Run",
+      "defect": "None"
+    },
+    {
+      "id": "TC-0020",
+      "title": "Config overrides defaults without clobbering unspecified keys",
+      "relatedStory": "US-0013",
+      "relatedTask": "TASK-0001",
+      "relatedAC": "AC-0031",
+      "type": "Functional",
+      "status": "Not Run",
+      "defect": "None"
+    },
+    {
+      "id": "TC-0021",
+      "title": "ESLint passes on all tools/**/*.js files",
+      "relatedStory": "US-0014",
+      "relatedTask": "TASK-0003",
+      "relatedAC": "AC-0033",
+      "type": "Functional",
+      "status": "Not Run",
+      "defect": "None"
+    },
+    {
+      "id": "TC-0022",
+      "title": "Jest coverage threshold gate blocks at sub-80% coverage",
+      "relatedStory": "US-0015",
+      "relatedTask": "TASK-0005",
+      "relatedAC": "AC-0035",
+      "type": "Negative",
+      "status": "Not Run",
+      "defect": "None"
+    },
+    {
+      "id": "TC-0023",
+      "title": "npm audit passes with zero moderate vulnerabilities",
+      "relatedStory": "US-0016",
+      "relatedTask": "TASK-0008",
+      "relatedAC": "AC-0038",
+      "type": "Functional",
+      "status": "Not Run",
+      "defect": "None"
+    }
+  ],
+  "bugs": [],
+  "costs": {
+    "US-0001": {
+      "projectedUsd": 1600,
+      "aiCostUsd": 0.6135,
+      "inputTokens": 90000,
+      "outputTokens": 22000
+    },
+    "US-0002": {
+      "projectedUsd": 800,
+      "aiCostUsd": 0.4455,
+      "inputTokens": 65000,
+      "outputTokens": 16000
+    },
+    "US-0003": {
+      "projectedUsd": 400,
+      "aiCostUsd": 0.369,
+      "inputTokens": 55000,
+      "outputTokens": 13000
+    },
+    "US-0004": {
+      "projectedUsd": 800,
+      "aiCostUsd": 0.4005,
+      "inputTokens": 60000,
+      "outputTokens": 14000
+    },
+    "US-0005": {
+      "projectedUsd": 400,
+      "aiCostUsd": 0.2925,
+      "inputTokens": 45000,
+      "outputTokens": 10000
+    },
+    "US-0006": {
+      "projectedUsd": 400,
+      "aiCostUsd": 0.369,
+      "inputTokens": 55000,
+      "outputTokens": 13000
+    },
+    "US-0007": {
+      "projectedUsd": 400,
+      "aiCostUsd": 0.3525,
+      "inputTokens": 55000,
+      "outputTokens": 12000
+    },
+    "US-0008": {
+      "projectedUsd": 400,
+      "aiCostUsd": 0.3525,
+      "inputTokens": 55000,
+      "outputTokens": 12000
+    },
+    "US-0009": {
+      "projectedUsd": 3200,
+      "aiCostUsd": 3.099,
+      "inputTokens": 440000,
+      "outputTokens": 111000
+    },
+    "US-0010": {
+      "projectedUsd": 800,
+      "aiCostUsd": 3.099,
+      "inputTokens": 440000,
+      "outputTokens": 111000
+    },
+    "US-0011": {
+      "projectedUsd": 800,
+      "aiCostUsd": 0.447,
+      "inputTokens": 65000,
+      "outputTokens": 16000
+    },
+    "US-0012": {
+      "projectedUsd": 400,
+      "aiCostUsd": 0.369,
+      "inputTokens": 55000,
+      "outputTokens": 13000
+    },
+    "US-0013": {
+      "projectedUsd": 400,
+      "aiCostUsd": 0.3375,
+      "inputTokens": 50000,
+      "outputTokens": 12000
+    },
+    "US-0014": {
+      "projectedUsd": 400,
+      "aiCostUsd": 0,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0015": {
+      "projectedUsd": 400,
+      "aiCostUsd": 0,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0016": {
+      "projectedUsd": 400,
+      "aiCostUsd": 0,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0017": {
+      "projectedUsd": 800,
+      "aiCostUsd": 0,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0018": {
+      "projectedUsd": 400,
+      "aiCostUsd": 0,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0019": {
+      "projectedUsd": 800,
+      "aiCostUsd": 0,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0020": {
+      "projectedUsd": 800,
+      "aiCostUsd": 0,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0021": {
+      "projectedUsd": 800,
+      "aiCostUsd": 0,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0022": {
+      "projectedUsd": 800,
+      "aiCostUsd": 0,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "_totals": {
+      "costUsd": 9.9105,
+      "inputTokens": 1430000,
+      "outputTokens": 357000
+    }
+  },
+  "atRisk": {
+    "US-0001": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "isAtRisk": false
+    },
+    "US-0002": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "isAtRisk": false
+    },
+    "US-0003": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "isAtRisk": false
+    },
+    "US-0004": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "isAtRisk": false
+    },
+    "US-0005": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "isAtRisk": false
+    },
+    "US-0006": {
+      "missingTCs": true,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "isAtRisk": true
+    },
+    "US-0007": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "isAtRisk": false
+    },
+    "US-0008": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "isAtRisk": false
+    },
+    "US-0009": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "isAtRisk": false
+    },
+    "US-0010": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "isAtRisk": false
+    },
+    "US-0011": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "isAtRisk": false
+    },
+    "US-0012": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "isAtRisk": false
+    },
+    "US-0013": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "isAtRisk": false
+    },
+    "US-0014": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "isAtRisk": false
+    },
+    "US-0015": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "isAtRisk": false
+    },
+    "US-0016": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "isAtRisk": false
+    },
+    "US-0017": {
+      "missingTCs": true,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "isAtRisk": true
+    },
+    "US-0018": {
+      "missingTCs": true,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "isAtRisk": true
+    },
+    "US-0019": {
+      "missingTCs": true,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "isAtRisk": true
+    },
+    "US-0020": {
+      "missingTCs": true,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "isAtRisk": true
+    },
+    "US-0021": {
+      "missingTCs": true,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "isAtRisk": true
+    },
+    "US-0022": {
+      "missingTCs": true,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "isAtRisk": true
+    }
+  },
+  "coverage": {
+    "lines": 0,
+    "statements": 0,
+    "functions": 0,
+    "branches": 0,
+    "overall": 0,
+    "meetsTarget": false
+  },
+  "recentActivity": [
+    {
+      "date": "2026-03-10",
+      "summary": ""
+    },
+    {
+      "date": "2026-03-09",
+      "summary": "Initial project scaffolding by original author; Implemented all 9 parser modules (tools/lib/*.js); Implemented render-html.js with 6-tab dashboard"
+    }
+  ],
+  "generatedAt": "2026-03-10T13:01:25.203Z",
+  "commitSha": "ef8c584",
+  "sessionTimeline": [
+    {
+      "date": "2026-03-09",
+      "cumCost": 0.6135
+    },
+    {
+      "date": "2026-03-09",
+      "cumCost": 1.059
+    },
+    {
+      "date": "2026-03-09",
+      "cumCost": 1.428
+    },
+    {
+      "date": "2026-03-09",
+      "cumCost": 1.8285
+    },
+    {
+      "date": "2026-03-09",
+      "cumCost": 2.121
+    },
+    {
+      "date": "2026-03-09",
+      "cumCost": 2.49
+    },
+    {
+      "date": "2026-03-09",
+      "cumCost": 2.8425
+    },
+    {
+      "date": "2026-03-09",
+      "cumCost": 3.195
+    },
+    {
+      "date": "2026-03-09",
+      "cumCost": 4.161
+    },
+    {
+      "date": "2026-03-09",
+      "cumCost": 5.001
+    },
+    {
+      "date": "2026-03-09",
+      "cumCost": 5.754
+    },
+    {
+      "date": "2026-03-09",
+      "cumCost": 6.294
+    },
+    {
+      "date": "2026-03-09",
+      "cumCost": 6.741
+    },
+    {
+      "date": "2026-03-09",
+      "cumCost": 7.11
+    },
+    {
+      "date": "2026-03-09",
+      "cumCost": 7.4475
+    },
+    {
+      "date": "2026-03-10",
+      "cumCost": 8.2455
+    },
+    {
+      "date": "2026-03-10",
+      "cumCost": 9.9105
+    }
+  ],
+  "projectName": "PlanVisualizer",
+  "tagline": "Self-documenting project dashboards for Claude Code."
+}

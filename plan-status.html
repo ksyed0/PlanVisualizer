@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PlanVisualizer — Plan Status</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>body { font-family: 'Inter', sans-serif; } code, .font-mono { font-family: 'JetBrains Mono', monospace; }</style>
+  
+  <style>
+  @media print {
+    #filter-bar, #tab-bar, .fixed { display: none !important; }
+    #tab-hierarchy, #tab-costs { display: block !important; }
+    #tab-kanban, #tab-traceability, #tab-charts, #tab-bugs { display: none !important; }
+    body { font-size: 11pt; }
+    .bg-slate-900 { background: white !important; color: black !important; }
+    .text-white, .text-blue-400, .text-slate-400 { color: black !important; }
+  }
+  </style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+  
+  <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white px-6 py-5 shadow-lg">
+    <div class="flex flex-wrap gap-4 items-start justify-between">
+      <div class="min-w-0">
+        <h1 class="text-3xl font-bold text-blue-400 tracking-tight">PlanVisualizer</h1>
+        <p class="text-slate-400 text-sm mt-0.5">Self-documenting project dashboards for Claude Code.&nbsp;·&nbsp;Updated 2026-03-10&nbsp;·&nbsp;<code class="text-slate-500 text-xs">ef8c584</code></p>
+        <div class="mt-2.5 flex items-center gap-2">
+          <div class="bg-slate-700 rounded-full h-2 w-40 overflow-hidden">
+            <div class="bg-blue-500 h-2 rounded-full" style="width:59%"></div>
+          </div>
+          <span class="text-xs text-slate-400">13/22 stories done</span>
+        </div>
+      </div>
+      <div class="flex gap-3 flex-wrap">
+        <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-center min-w-[70px]">
+          <div class="text-2xl font-bold text-blue-300">22</div>
+          <div class="text-xs text-slate-400 mt-0.5">Stories</div>
+        </div>
+        <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-center min-w-[90px]">
+          <div class="text-2xl font-bold text-green-400">59%</div>
+          <div class="text-xs text-slate-400 mt-0.5">13 done · 9 active</div>
+        </div>
+        <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-center min-w-[80px]">
+          <div class="text-xl font-bold text-yellow-400">$16,400</div>
+          <div class="text-xs text-slate-400 mt-0.5">Projected</div>
+        </div>
+        <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-center min-w-[80px]">
+          <div class="text-xl font-bold text-teal-400">$10</div>
+          <div class="text-xs text-slate-400 mt-0.5">AI Actual</div>
+        </div>
+        <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-center min-w-[70px]">
+          <div class="text-2xl font-bold text-slate-500">N/A</div>
+          <div class="text-xs text-slate-400 mt-0.5">Lines Cov</div>
+        </div>
+        <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-center min-w-[70px]">
+          <div class="text-2xl font-bold text-slate-500">N/A</div>
+          <div class="text-xs text-slate-400 mt-0.5">Branch Cov</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="bg-white border-b border-slate-200 px-6 py-3 flex flex-wrap gap-3 items-center" id="filter-bar">
+    <select id="f-epic" onchange="applyFilters()" class="border border-slate-300 rounded px-2 py-1 text-sm">
+      <option value="">All Epics</option><option value="EPIC-0001">EPIC-0001: Core Parsing Engine</option><option value="EPIC-0002">EPIC-0002: HTML Dashboard Renderer</option><option value="EPIC-0003">EPIC-0003: Installation and Distribution</option><option value="EPIC-0004">EPIC-0004: CI/CD Pipeline</option><option value="EPIC-0005">EPIC-0005: Project Self-Documentation</option>
+    </select>
+    <select id="f-status" onchange="applyFilters()" class="border border-slate-300 rounded px-2 py-1 text-sm">
+      <option value="">All Statuses</option>
+      <option>In Progress</option><option>Planned</option><option>Done</option><option>Blocked</option>
+    </select>
+    <select id="f-priority" onchange="applyFilters()" class="border border-slate-300 rounded px-2 py-1 text-sm">
+      <option value="">All Priorities</option>
+      <option>P0</option><option>P1</option><option>P2</option>
+    </select>
+    <select id="f-type" onchange="applyFilters()" class="border border-slate-300 rounded px-2 py-1 text-sm">
+      <option value="">Stories + Bugs</option><option value="story">Stories only</option><option value="bug">Bugs only</option>
+    </select>
+    <input id="f-search" oninput="applyFilters()" type="text" placeholder="Search IDs, titles…"
+      class="border border-slate-300 rounded px-2 py-1 text-sm w-48" />
+    <button onclick="clearFilters()" class="text-sm text-slate-500 hover:text-slate-800 underline">Clear</button>
+  </div>
+  
+  <div class="border-b border-slate-200 bg-white px-6 flex gap-1" id="tab-bar">
+    
+    <button onclick="showTab('hierarchy')" id="tab-btn-hierarchy"
+      class="px-4 py-2 text-sm font-medium border-b-2 border-blue-500 text-blue-600">
+      Hierarchy
+    </button>
+    <button onclick="showTab('kanban')" id="tab-btn-kanban"
+      class="px-4 py-2 text-sm font-medium border-b-2 border-transparent text-slate-600 hover:text-slate-900">
+      Kanban
+    </button>
+    <button onclick="showTab('traceability')" id="tab-btn-traceability"
+      class="px-4 py-2 text-sm font-medium border-b-2 border-transparent text-slate-600 hover:text-slate-900">
+      Traceability
+    </button>
+    <button onclick="showTab('charts')" id="tab-btn-charts"
+      class="px-4 py-2 text-sm font-medium border-b-2 border-transparent text-slate-600 hover:text-slate-900">
+      Charts
+    </button>
+    <button onclick="showTab('costs')" id="tab-btn-costs"
+      class="px-4 py-2 text-sm font-medium border-b-2 border-transparent text-slate-600 hover:text-slate-900">
+      Costs
+    </button>
+    <button onclick="showTab('bugs')" id="tab-btn-bugs"
+      class="px-4 py-2 text-sm font-medium border-b-2 border-transparent text-slate-600 hover:text-slate-900">
+      Bugs
+    </button>
+  </div>
+  <div id="tab-content">
+    <div id="tab-hierarchy" class="p-6">
+    <div class="epic-block mb-4 border border-slate-200 rounded-lg overflow-hidden">
+      <div class="bg-slate-50 px-4 py-3 flex flex-wrap items-center gap-3 cursor-pointer" onclick="toggleEpic('EPIC-0001')">
+        <span class="font-mono text-sm font-bold text-blue-600">EPIC-0001</span>
+        <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Done</span>
+        <span class="font-semibold">Core Parsing Engine</span>
+        <span class="text-xs text-slate-400">MVP (v1.0)</span>
+        <span class="ml-auto text-sm text-slate-500">$5,200 projected</span>
+      </div>
+      <div id="epic-stories-EPIC-0001">
+      <div class="story-row ml-6 border-l-2 border-slate-200 pl-4 py-2"
+           data-epic="EPIC-0001" data-status="Done" data-priority="P0">
+        <div class="flex flex-wrap items-center gap-2 cursor-pointer" onclick="toggleACs('US-0001')">
+          <span class="font-mono text-xs text-slate-500">US-0001</span>
+          <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Done</span> <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">P0</span>
+          <span class="text-sm font-medium">As a developer, I want to parse RELEASE_PLAN.md into structured epics, stories, and tasks, so that the dashboard can visualise project hierarchy.</span>
+          
+          <span class="ml-auto text-xs text-slate-400">L · $1,600</span>
+        </div>
+        <ul id="acs-US-0001" class="mt-2 hidden"><li class="flex items-start gap-2 py-0.5">
+          <span class="text-green-500">✓</span>
+          <span class="text-xs text-slate-500">AC-0001</span>
+          <span class="text-xs">Epics are extracted from fenced code blocks with id, title, status, and releaseTarget fields</span>
+          <span class="ml-2 text-xs text-slate-400">→ TC-0001 <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">Not Run</span></span>
+        </li><li class="flex items-start gap-2 py-0.5">
+          <span class="text-green-500">✓</span>
+          <span class="text-xs text-slate-500">AC-0002</span>
+          <span class="text-xs">Stories are associated with their parent epic via epicId</span>
+          
+        </li><li class="flex items-start gap-2 py-0.5">
+          <span class="text-green-500">✓</span>
+          <span class="text-xs text-slate-500">AC-0003</span>
+          <span class="text-xs">Acceptance criteria items are parsed with done/undone state</span>
+          <span class="ml-2 text-xs text-slate-400">→ TC-0003 <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">Not Run</span></span>
+        </li></ul>
+      </div>
+      <div class="story-row ml-6 border-l-2 border-slate-200 pl-4 py-2"
+           data-epic="EPIC-0001" data-status="Done" data-priority="P0">
+        <div class="flex flex-wrap items-center gap-2 cursor-pointer" onclick="toggleACs('US-0002')">
+          <span class="font-mono text-xs text-slate-500">US-0002</span>
+          <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Done</span> <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">P0</span>
+          <span class="text-sm font-medium">As a developer, I want to parse TEST_CASES.md, so that test cases can be linked to stories in the traceability matrix.</span>
+          
+          <span class="ml-auto text-xs text-slate-400">M · $800</span>
+        </div>
+        <ul id="acs-US-0002" class="mt-2 hidden"><li class="flex items-start gap-2 py-0.5">
+          <span class="text-green-500">✓</span>
+          <span class="text-xs text-slate-500">AC-0004</span>
+          <span class="text-xs">Test cases are extracted with id, title, relatedStory, relatedAC, type, and status fields</span>
+          <span class="ml-2 text-xs text-slate-400">→ TC-0004 <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">Not Run</span></span>
+        </li><li class="flex items-start gap-2 py-0.5">
+          <span class="text-green-500">✓</span>
+          <span class="text-xs text-slate-500">AC-0005</span>
+          <span class="text-xs">Status is normalised to Pass, Fail, or Not Run from checkbox syntax</span>
+          <span class="ml-2 text-xs text-slate-400">→ TC-0005 <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">Not Run</span></span>
+        </li></ul>
+      </div>
+      <div class="story-row ml-6 border-l-2 border-slate-200 pl-4 py-2"
+           data-epic="EPIC-0001" data-status="Done" data-priority="P0">
+        <div class="flex flex-wrap items-center gap-2 cursor-pointer" onclick="toggleACs('US-0003')">
+          <span class="font-mono text-xs text-slate-500">US-0003</span>
+          <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Done</span> <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">P0</span>
+          <span class="text-sm font-medium">As a developer, I want to parse BUGS.md, so that bugs are displayed in the Bugs tab and linked to stories.</span>
+          
+          <span class="ml-auto text-xs text-slate-400">S · $400</span>
+        </div>
+        <ul id="acs-US-0003" class="mt-2 hidden"><li class="flex items-start gap-2 py-0.5">
+          <span class="text-green-500">✓</span>
+          <span class="text-xs text-slate-500">AC-0006</span>
+          <span class="text-xs">Bugs are extracted with id, title, severity, status, relatedStory, fixBranch, and lessonEncoded fields</span>
+          <span class="ml-2 text-xs text-slate-400">→ TC-0006 <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">Not Run</span></span>
+        </li><li class="flex items-start gap-2 py-0.5">
+          <span class="text-green-500">✓</span>
+          <span class="text-xs text-slate-500">AC-0007</span>
+          <span class="text-xs">Multiple bugs are correctly separated using sliding-window slicing</span>
+          
+        </li></ul>
+      </div>
+      <div class="story-row ml-6 border-l-2 border-slate-200 pl-4 py-2"
+           data-epic="EPIC-0001" data-status="Done" data-priority="P0">
+        <div class="flex flex-wrap items-center gap-2 cursor-pointer" onclick="toggleACs('US-0004')">
+          <span class="font-mono text-xs text-slate-500">US-0004</span>
+          <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Done</span> <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">P0</span>
+          <span class="text-sm font-medium">As a developer, I want to parse AI_COST_LOG.md and aggregate costs by branch, so that AI spend can be attributed to user stories.</span>
+          
+          <span class="ml-auto text-xs text-slate-400">M · $800</span>
+        </div>
+        <ul id="acs-US-0004" class="mt-2 hidden"><li class="flex items-start gap-2 py-0.5">
+          <span class="text-green-500">✓</span>
+          <span class="text-xs text-slate-500">AC-0008</span>
+          <span class="text-xs">All pipe-delimited table rows are parsed into typed cost objects</span>
+          <span class="ml-2 text-xs text-slate-400">→ TC-0007 <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">Not Run</span></span>
+        </li><li class="flex items-start gap-2 py-0.5">
+          <span class="text-green-500">✓</span>
+          <span class="text-xs text-slate-500">AC-0009</span>
+          <span class="text-xs">Token counts and costs are summed correctly per branch</span>
+          
+        </li><li class="flex items-start gap-2 py-0.5">
+          <span class="text-green-500">✓</span>
+          <span class="text-xs text-slate-500">AC-0010</span>
+          <span class="text-xs">Sessions on the same branch are accumulated, not overwritten</span>
+          
+        </li></ul>
+      </div>
+      <div class="story-row ml-6 border-l-2 border-slate-200 pl-4 py-2"
+           data-epic="EPIC-0001" data-status="Done" data-priority="P1">
+        <div class="flex flex-wrap items-center gap-2 cursor-pointer" onclick="toggleACs('US-0005')">
+          <span class="font-mono text-xs text-slate-500">US-0005</span>
+          <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Done</span> <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-700">P1</span>
+          <span class="text-sm font-medium">As a developer, I want to parse Jest coverage-summary.json, so that coverage metrics appear in the dashboard top bar.</span>
+          
+          <span class="ml-auto text-xs text-slate-400">S · $400</span>
+        </div>
+        <ul id="acs-US-0005" class="mt-2 hidden"><li class="flex items-start gap-2 py-0.5">
+          <span class="text-green-500">✓</span>
+          <span class="text-xs text-slate-500">AC-0011</span>
+          <span class="text-xs">Lines, statements, functions, and branches percentages are extracted</span>
+          <span class="ml-2 text-xs text-slate-400">→ TC-0009 <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">Not Run</span></span>
+        </li><li class="flex items-start gap-2 py-0.5">
+          <span class="text-green-500">✓</span>
+          <span class="text-xs text-slate-500">AC-0012</span>
+          <span class="text-xs">overall is computed as the minimum of all four metrics; meetsTarget is true when overall >= 80</span>
+          
+        </li></ul>
+      </div>
+      <div class="story-row ml-6 border-l-2 border-slate-200 pl-4 py-2"
+           data-epic="EPIC-0001" data-status="Done" data-priority="P2">
+        <div class="flex flex-wrap items-center gap-2 cursor-pointer" onclick="toggleACs('US-0006')">
+          <span class="font-mono text-xs text-slate-500">US-0006</span>
+          <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Done</span> <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">P2</span>
+          <span class="text-sm font-medium">As a developer, I want to parse progress.md for recent session summaries, so that the dashboard shows recent activity.</span>
+          <span class="at-risk text-orange-500 text-xs ml-1" title="Missing TCs">⚠ At Risk</span>
+          <span class="ml-auto text-xs text-slate-400">S · $400</span>
+        </div>
+        <ul id="acs-US-0006" class="mt-2 hidden"><li class="flex items-start gap-2 py-0.5">
+          <span class="text-green-500">✓</span>
+          <span class="text-xs text-slate-500">AC-0013</span>
+          <span class="text-xs">Sessions are extracted in reverse-chronological order</span>
+          
+        </li><li class="flex items-start gap-2 py-0.5">
+          <span class="text-green-500">✓</span>
+          <span class="text-xs text-slate-500">AC-0014</span>
+          <span class="text-xs">The What Was Done section is summarised to 3 lines maximum</span>
+          
+        </li></ul>
+      </div>
+      <div class="story-row ml-6 border-l-2 border-slate-200 pl-4 py-2"
+           data-epic="EPIC-0001" data-status="Done" data-priority="P1">
+        <div class="flex flex-wrap items-center gap-2 cursor-pointer" onclick="toggleACs('US-0007')">
+          <span class="font-mono text-xs text-slate-500">US-0007</span>
+          <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Done</span> <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-700">P1</span>
+          <span class="text-sm font-medium">As a developer, I want to compute projected and actual AI costs per story, so that the Costs tab shows budget vs. spend.</span>
+          
+          <span class="ml-auto text-xs text-slate-400">S · $400</span>
+        </div>
+        <ul id="acs-US-0007" class="mt-2 hidden"><li class="flex items-start gap-2 py-0.5">
+          <span class="text-green-500">✓</span>
+          <span class="text-xs text-slate-500">AC-0015</span>
+          <span class="text-xs">Projected cost is computed from t-shirt size × hourly rate</span>
+          
+        </li><li class="flex items-start gap-2 py-0.5">
+          <span class="text-green-500">✓</span>
+          <span class="text-xs text-slate-500">AC-0016</span>
+          <span class="text-xs">AI cost is attributed to stories by exact branch name match</span>
+          <span class="ml-2 text-xs text-slate-400">→ TC-0008 <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">Not Run</span></span>
+        </li></ul>
+      </div>
+      <div class="story-row ml-6 border-l-2 border-slate-200 pl-4 py-2"
+           data-epic="EPIC-0001" data-status="Done" data-priority="P0">
+        <div class="flex flex-wrap items-center gap-2 cursor-pointer" onclick="toggleACs('US-0008')">
+          <span class="font-mono text-xs text-slate-500">US-0008</span>
+          <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Done</span> <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">P0</span>
+          <span class="text-sm font-medium">As a developer, I want at-risk stories to be automatically detected, so that I can see which stories need attention without reading every file.</span>
+          
+          <span class="ml-auto text-xs text-slate-400">S · $400</span>
+        </div>
+        <ul id="acs-US-0008" class="mt-2 hidden"><li class="flex items-start gap-2 py-0.5">
+          <span class="text-green-500">✓</span>
+          <span class="text-xs text-slate-500">AC-0017</span>
+          <span class="text-xs">Stories with ACs but no linked TCs are flagged missingTCs</span>
+          <span class="ml-2 text-xs text-slate-400">→ TC-0010 <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">Not Run</span></span>
+        </li><li class="flex items-start gap-2 py-0.5">
+          <span class="text-green-500">✓</span>
+          <span class="text-xs text-slate-500">AC-0018</span>
+          <span class="text-xs">In-Progress stories with no branch are flagged noBranch</span>
+          <span class="ml-2 text-xs text-slate-400">→ TC-0011 <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">Not Run</span></span>
+        </li><li class="flex items-start gap-2 py-0.5">
+          <span class="text-green-500">✓</span>
+          <span class="text-xs text-slate-500">AC-0019</span>
+          <span class="text-xs">Stories with a Fail TC and no defect raised are flagged failedTCNoBug</span>
+          <span class="ml-2 text-xs text-slate-400">→ TC-0012 <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">Not Run</span></span>
+        </li></ul>
+      </div></div>
+    </div>
+    <div class="epic-block mb-4 border border-slate-200 rounded-lg overflow-hidden">
+      <div class="bg-slate-50 px-4 py-3 flex flex-wrap items-center gap-3 cursor-pointer" onclick="toggleEpic('EPIC-0002')">
+        <span class="font-mono text-sm font-bold text-blue-600">EPIC-0002</span>
+        <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Done</span>
+        <span class="font-semibold">HTML Dashboard Renderer</span>
+        <span class="text-xs text-slate-400">MVP (v1.0)</span>
+        <span class="ml-auto text-sm text-slate-500">$4,000 projected</span>
+      </div>
+      <div id="epic-stories-EPIC-0002">
+      <div class="story-row ml-6 border-l-2 border-slate-200 pl-4 py-2"
+           data-epic="EPIC-0002" data-status="Done" data-priority="P0">
+        <div class="flex flex-wrap items-center gap-2 cursor-pointer" onclick="toggleACs('US-0009')">
+          <span class="font-mono text-xs text-slate-500">US-0009</span>
+          <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Done</span> <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">P0</span>
+          <span class="text-sm font-medium">As a developer, I want a static HTML dashboard with six tabs, so that I can view all project dimensions in one file.</span>
+          
+          <span class="ml-auto text-xs text-slate-400">XL · $3,200</span>
+        </div>
+        <ul id="acs-US-0009" class="mt-2 hidden"><li class="flex items-start gap-2 py-0.5">
+          <span class="text-green-500">✓</span>
+          <span class="text-xs text-slate-500">AC-0020</span>
+          <span class="text-xs">All six tabs (Hierarchy, Kanban, Traceability, Charts, Costs, Bugs) render without error</span>
+          <span class="ml-2 text-xs text-slate-400">→ TC-0013 <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">Not Run</span></span>
+        </li><li class="flex items-start gap-2 py-0.5">
+          <span class="text-green-500">✓</span>
+          <span class="text-xs text-slate-500">AC-0021</span>
+          <span class="text-xs">The top bar shows project name, progress bar, and all six stat tiles</span>
+          
+        </li><li class="flex items-start gap-2 py-0.5">
+          <span class="text-green-500">✓</span>
+          <span class="text-xs text-slate-500">AC-0022</span>
+          <span class="text-xs">The generated HTML is self-contained and opens in any browser without a server</span>
+          <span class="ml-2 text-xs text-slate-400">→ TC-0014 <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">Not Run</span></span>
+        </li></ul>
+      </div>
+      <div class="story-row ml-6 border-l-2 border-slate-200 pl-4 py-2"
+           data-epic="EPIC-0002" data-status="Done" data-priority="P1">
+        <div class="flex flex-wrap items-center gap-2 cursor-pointer" onclick="toggleACs('US-0010')">
+          <span class="font-mono text-xs text-slate-500">US-0010</span>
+          <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Done</span> <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-700">P1</span>
+          <span class="text-sm font-medium">As a developer, I want real-time filters for epic, status, priority, and search, so that I can focus on the subset of stories I care about.</span>
+          
+          <span class="ml-auto text-xs text-slate-400">M · $800</span>
+        </div>
+        <ul id="acs-US-0010" class="mt-2 hidden"><li class="flex items-start gap-2 py-0.5">
+          <span class="text-green-500">✓</span>
+          <span class="text-xs text-slate-500">AC-0023</span>
+          <span class="text-xs">Selecting an epic hides stories from other epics in both Hierarchy and Kanban tabs</span>
+          <span class="ml-2 text-xs text-slate-400">→ TC-0015 <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">Not Run</span></span>
+        </li><li class="flex items-start gap-2 py-0.5">
+          <span class="text-green-500">✓</span>
+          <span class="text-xs text-slate-500">AC-0024</span>
+          <span class="text-xs">Free-text search filters by story ID and title</span>
+          <span class="ml-2 text-xs text-slate-400">→ TC-0016 <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">Not Run</span></span>
+        </li></ul>
+      </div></div>
+    </div>
+    <div class="epic-block mb-4 border border-slate-200 rounded-lg overflow-hidden">
+      <div class="bg-slate-50 px-4 py-3 flex flex-wrap items-center gap-3 cursor-pointer" onclick="toggleEpic('EPIC-0003')">
+        <span class="font-mono text-sm font-bold text-blue-600">EPIC-0003</span>
+        <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Done</span>
+        <span class="font-semibold">Installation and Distribution</span>
+        <span class="text-xs text-slate-400">MVP (v1.0)</span>
+        <span class="ml-auto text-sm text-slate-500">$1,600 projected</span>
+      </div>
+      <div id="epic-stories-EPIC-0003">
+      <div class="story-row ml-6 border-l-2 border-slate-200 pl-4 py-2"
+           data-epic="EPIC-0003" data-status="Done" data-priority="P0">
+        <div class="flex flex-wrap items-center gap-2 cursor-pointer" onclick="toggleACs('US-0011')">
+          <span class="font-mono text-xs text-slate-500">US-0011</span>
+          <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Done</span> <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">P0</span>
+          <span class="text-sm font-medium">As a developer, I want to install PlanVisualizer into my project with a single bash command, so that setup takes under 5 minutes.</span>
+          
+          <span class="ml-auto text-xs text-slate-400">M · $800</span>
+        </div>
+        <ul id="acs-US-0011" class="mt-2 hidden"><li class="flex items-start gap-2 py-0.5">
+          <span class="text-green-500">✓</span>
+          <span class="text-xs text-slate-500">AC-0025</span>
+          <span class="text-xs">The install script copies tools/, tests/, and jest.config.js to the target project</span>
+          <span class="ml-2 text-xs text-slate-400">→ TC-0017 <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">Not Run</span></span>
+        </li><li class="flex items-start gap-2 py-0.5">
+          <span class="text-green-500">✓</span>
+          <span class="text-xs text-slate-500">AC-0026</span>
+          <span class="text-xs">The script merges plan:test, plan:test:coverage, and plan:generate scripts into package.json without overwriting existing scripts</span>
+          
+        </li><li class="flex items-start gap-2 py-0.5">
+          <span class="text-green-500">✓</span>
+          <span class="text-xs text-slate-500">AC-0027</span>
+          <span class="text-xs">The script is idempotent — safe to re-run for updates</span>
+          <span class="ml-2 text-xs text-slate-400">→ TC-0018 <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">Not Run</span></span>
+        </li></ul>
+      </div>
+      <div class="story-row ml-6 border-l-2 border-slate-200 pl-4 py-2"
+           data-epic="EPIC-0003" data-status="Done" data-priority="P0">
+        <div class="flex flex-wrap items-center gap-2 cursor-pointer" onclick="toggleACs('US-0012')">
+          <span class="font-mono text-xs text-slate-500">US-0012</span>
+          <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Done</span> <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">P0</span>
+          <span class="text-sm font-medium">As a developer, I want Claude Code session costs to be captured automatically, so that AI_COST_LOG.md is always up to date without manual entry.</span>
+          
+          <span class="ml-auto text-xs text-slate-400">S · $400</span>
+        </div>
+        <ul id="acs-US-0012" class="mt-2 hidden"><li class="flex items-start gap-2 py-0.5">
+          <span class="text-green-500">✓</span>
+          <span class="text-xs text-slate-500">AC-0028</span>
+          <span class="text-xs">The stop hook appends one row per session to AI_COST_LOG.md using append-safe file open</span>
+          <span class="ml-2 text-xs text-slate-400">→ TC-0019 <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">Not Run</span></span>
+        </li><li class="flex items-start gap-2 py-0.5">
+          <span class="text-green-500">✓</span>
+          <span class="text-xs text-slate-500">AC-0029</span>
+          <span class="text-xs">The header row is written only when the file is empty</span>
+          
+        </li></ul>
+      </div>
+      <div class="story-row ml-6 border-l-2 border-slate-200 pl-4 py-2"
+           data-epic="EPIC-0003" data-status="Done" data-priority="P1">
+        <div class="flex flex-wrap items-center gap-2 cursor-pointer" onclick="toggleACs('US-0013')">
+          <span class="font-mono text-xs text-slate-500">US-0013</span>
+          <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Done</span> <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-700">P1</span>
+          <span class="text-sm font-medium">As a developer, I want to configure all file paths and project metadata in a single JSON file, so that PlanVisualizer works with any project structure.</span>
+          
+          <span class="ml-auto text-xs text-slate-400">S · $400</span>
+        </div>
+        <ul id="acs-US-0013" class="mt-2 hidden"><li class="flex items-start gap-2 py-0.5">
+          <span class="text-green-500">✓</span>
+          <span class="text-xs text-slate-500">AC-0030</span>
+          <span class="text-xs">All config keys have sensible defaults — the tool runs with zero config</span>
+          
+        </li><li class="flex items-start gap-2 py-0.5">
+          <span class="text-green-500">✓</span>
+          <span class="text-xs text-slate-500">AC-0031</span>
+          <span class="text-xs">User-supplied values deep-merge over defaults without clobbering unspecified keys</span>
+          <span class="ml-2 text-xs text-slate-400">→ TC-0020 <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">Not Run</span></span>
+        </li></ul>
+      </div></div>
+    </div>
+    <div class="epic-block mb-4 border border-slate-200 rounded-lg overflow-hidden">
+      <div class="bg-slate-50 px-4 py-3 flex flex-wrap items-center gap-3 cursor-pointer" onclick="toggleEpic('EPIC-0004')">
+        <span class="font-mono text-sm font-bold text-blue-600">EPIC-0004</span>
+        <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">In Progress</span>
+        <span class="font-semibold">CI/CD Pipeline</span>
+        <span class="text-xs text-slate-400">Release 1.1</span>
+        <span class="ml-auto text-sm text-slate-500">$2,400 projected</span>
+      </div>
+      <div id="epic-stories-EPIC-0004">
+      <div class="story-row ml-6 border-l-2 border-slate-200 pl-4 py-2"
+           data-epic="EPIC-0004" data-status="In Progress" data-priority="P0">
+        <div class="flex flex-wrap items-center gap-2 cursor-pointer" onclick="toggleACs('US-0014')">
+          <span class="font-mono text-xs text-slate-500">US-0014</span>
+          <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">In Progress</span> <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">P0</span>
+          <span class="text-sm font-medium">As a developer, I want ESLint to run on every push and PR, so that code quality issues are caught before merge.</span>
+          
+          <span class="ml-auto text-xs text-slate-400">S · $400</span>
+        </div>
+        <ul id="acs-US-0014" class="mt-2 hidden"><li class="flex items-start gap-2 py-0.5">
+          <span class="text-slate-400">○</span>
+          <span class="text-xs text-slate-500">AC-0032</span>
+          <span class="text-xs">eslint.config.js uses eslint:recommended with no-eval and eqeqeq as errors</span>
+          
+        </li><li class="flex items-start gap-2 py-0.5">
+          <span class="text-slate-400">○</span>
+          <span class="text-xs text-slate-500">AC-0033</span>
+          <span class="text-xs">npm run lint exits 0 on all current source files</span>
+          <span class="ml-2 text-xs text-slate-400">→ TC-0021 <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">Not Run</span></span>
+        </li><li class="flex items-start gap-2 py-0.5">
+          <span class="text-slate-400">○</span>
+          <span class="text-xs text-slate-500">AC-0034</span>
+          <span class="text-xs">The lint job in ci.yml fails the workflow if ESLint reports any error</span>
+          
+        </li></ul>
+      </div>
+      <div class="story-row ml-6 border-l-2 border-slate-200 pl-4 py-2"
+           data-epic="EPIC-0004" data-status="In Progress" data-priority="P0">
+        <div class="flex flex-wrap items-center gap-2 cursor-pointer" onclick="toggleACs('US-0015')">
+          <span class="font-mono text-xs text-slate-500">US-0015</span>
+          <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">In Progress</span> <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">P0</span>
+          <span class="text-sm font-medium">As a developer, I want the CI pipeline to gate on 80% coverage, so that test coverage cannot silently regress.</span>
+          
+          <span class="ml-auto text-xs text-slate-400">S · $400</span>
+        </div>
+        <ul id="acs-US-0015" class="mt-2 hidden"><li class="flex items-start gap-2 py-0.5">
+          <span class="text-slate-400">○</span>
+          <span class="text-xs text-slate-500">AC-0035</span>
+          <span class="text-xs">jest.config.js defines coverageThreshold with 80% for lines, branches, functions, and statements</span>
+          <span class="ml-2 text-xs text-slate-400">→ TC-0022 <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">Not Run</span></span>
+        </li><li class="flex items-start gap-2 py-0.5">
+          <span class="text-slate-400">○</span>
+          <span class="text-xs text-slate-500">AC-0036</span>
+          <span class="text-xs">npm run test:coverage fails with a descriptive message when any metric falls below 80%</span>
+          
+        </li><li class="flex items-start gap-2 py-0.5">
+          <span class="text-slate-400">○</span>
+          <span class="text-xs text-slate-500">AC-0037</span>
+          <span class="text-xs">The test job in ci.yml fails the workflow when the threshold is not met</span>
+          
+        </li></ul>
+      </div>
+      <div class="story-row ml-6 border-l-2 border-slate-200 pl-4 py-2"
+           data-epic="EPIC-0004" data-status="In Progress" data-priority="P0">
+        <div class="flex flex-wrap items-center gap-2 cursor-pointer" onclick="toggleACs('US-0016')">
+          <span class="font-mono text-xs text-slate-500">US-0016</span>
+          <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">In Progress</span> <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">P0</span>
+          <span class="text-sm font-medium">As a developer, I want npm audit to run on every push and PR, so that known vulnerabilities in dependencies are caught automatically.</span>
+          
+          <span class="ml-auto text-xs text-slate-400">S · $400</span>
+        </div>
+        <ul id="acs-US-0016" class="mt-2 hidden"><li class="flex items-start gap-2 py-0.5">
+          <span class="text-slate-400">○</span>
+          <span class="text-xs text-slate-500">AC-0038</span>
+          <span class="text-xs">The audit job runs npm audit --audit-level=moderate</span>
+          <span class="ml-2 text-xs text-slate-400">→ TC-0023 <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">Not Run</span></span>
+        </li><li class="flex items-start gap-2 py-0.5">
+          <span class="text-slate-400">○</span>
+          <span class="text-xs text-slate-500">AC-0039</span>
+          <span class="text-xs">The workflow fails if any moderate, high, or critical vulnerability is found</span>
+          
+        </li></ul>
+      </div>
+      <div class="story-row ml-6 border-l-2 border-slate-200 pl-4 py-2"
+           data-epic="EPIC-0004" data-status="In Progress" data-priority="P0">
+        <div class="flex flex-wrap items-center gap-2 cursor-pointer" onclick="toggleACs('US-0017')">
+          <span class="font-mono text-xs text-slate-500">US-0017</span>
+          <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">In Progress</span> <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">P0</span>
+          <span class="text-sm font-medium">As a developer, I want CodeQL to analyse the codebase on every PR and push to main, so that security vulnerabilities are caught before they reach production.</span>
+          <span class="at-risk text-orange-500 text-xs ml-1" title="Missing TCs">⚠ At Risk</span>
+          <span class="ml-auto text-xs text-slate-400">M · $800</span>
+        </div>
+        <ul id="acs-US-0017" class="mt-2 hidden"><li class="flex items-start gap-2 py-0.5">
+          <span class="text-slate-400">○</span>
+          <span class="text-xs text-slate-500">AC-0040</span>
+          <span class="text-xs">codeql.yml runs on pull_request, push to main, and a weekly Monday schedule</span>
+          
+        </li><li class="flex items-start gap-2 py-0.5">
+          <span class="text-slate-400">○</span>
+          <span class="text-xs text-slate-500">AC-0041</span>
+          <span class="text-xs">The security-extended query pack is used for JavaScript analysis</span>
+          
+        </li><li class="flex items-start gap-2 py-0.5">
+          <span class="text-slate-400">○</span>
+          <span class="text-xs text-slate-500">AC-0042</span>
+          <span class="text-xs">Results are uploaded to the GitHub Security tab as SARIF</span>
+          
+        </li></ul>
+      </div>
+      <div class="story-row ml-6 border-l-2 border-slate-200 pl-4 py-2"
+           data-epic="EPIC-0004" data-status="In Progress" data-priority="P1">
+        <div class="flex flex-wrap items-center gap-2 cursor-pointer" onclick="toggleACs('US-0018')">
+          <span class="font-mono text-xs text-slate-500">US-0018</span>
+          <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">In Progress</span> <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-700">P1</span>
+          <span class="text-sm font-medium">As a developer, I want Dependabot to open automated PRs for outdated dependencies, so that the project stays secure without manual monitoring.</span>
+          <span class="at-risk text-orange-500 text-xs ml-1" title="Missing TCs">⚠ At Risk</span>
+          <span class="ml-auto text-xs text-slate-400">S · $400</span>
+        </div>
+        <ul id="acs-US-0018" class="mt-2 hidden"><li class="flex items-start gap-2 py-0.5">
+          <span class="text-slate-400">○</span>
+          <span class="text-xs text-slate-500">AC-0043</span>
+          <span class="text-xs">dependabot.yml configures weekly npm updates with a 5-PR limit</span>
+          
+        </li><li class="flex items-start gap-2 py-0.5">
+          <span class="text-slate-400">○</span>
+          <span class="text-xs text-slate-500">AC-0044</span>
+          <span class="text-xs">GitHub Actions dependencies are also monitored weekly</span>
+          
+        </li></ul>
+      </div></div>
+    </div>
+    <div class="epic-block mb-4 border border-slate-200 rounded-lg overflow-hidden">
+      <div class="bg-slate-50 px-4 py-3 flex flex-wrap items-center gap-3 cursor-pointer" onclick="toggleEpic('EPIC-0005')">
+        <span class="font-mono text-sm font-bold text-blue-600">EPIC-0005</span>
+        <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">In Progress</span>
+        <span class="font-semibold">Project Self-Documentation</span>
+        <span class="text-xs text-slate-400">Release 1.1</span>
+        <span class="ml-auto text-sm text-slate-500">$3,200 projected</span>
+      </div>
+      <div id="epic-stories-EPIC-0005">
+      <div class="story-row ml-6 border-l-2 border-slate-200 pl-4 py-2"
+           data-epic="EPIC-0005" data-status="In Progress" data-priority="P0">
+        <div class="flex flex-wrap items-center gap-2 cursor-pointer" onclick="toggleACs('US-0019')">
+          <span class="font-mono text-xs text-slate-500">US-0019</span>
+          <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">In Progress</span> <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">P0</span>
+          <span class="text-sm font-medium">As a contributor, I want a design document and technical architecture reference, so that I can understand the project's goals and implementation without reading all the source code.</span>
+          <span class="at-risk text-orange-500 text-xs ml-1" title="Missing TCs">⚠ At Risk</span>
+          <span class="ml-auto text-xs text-slate-400">M · $800</span>
+        </div>
+        <ul id="acs-US-0019" class="mt-2 hidden"><li class="flex items-start gap-2 py-0.5">
+          <span class="text-slate-400">○</span>
+          <span class="text-xs text-slate-500">AC-0045</span>
+          <span class="text-xs">Docs/DESIGN.md covers product vision, user profile, core concepts, feature set, and design system</span>
+          
+        </li><li class="flex items-start gap-2 py-0.5">
+          <span class="text-slate-400">○</span>
+          <span class="text-xs text-slate-500">AC-0046</span>
+          <span class="text-xs">Docs/ARCHITECTURE.md covers module structure, data flow, parser contract, renderer design, and CI architecture</span>
+          
+        </li><li class="flex items-start gap-2 py-0.5">
+          <span class="text-slate-400">○</span>
+          <span class="text-xs text-slate-500">AC-0047</span>
+          <span class="text-xs">Both documents are committed to main</span>
+          
+        </li></ul>
+      </div>
+      <div class="story-row ml-6 border-l-2 border-slate-200 pl-4 py-2"
+           data-epic="EPIC-0005" data-status="In Progress" data-priority="P0">
+        <div class="flex flex-wrap items-center gap-2 cursor-pointer" onclick="toggleACs('US-0020')">
+          <span class="font-mono text-xs text-slate-500">US-0020</span>
+          <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">In Progress</span> <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">P0</span>
+          <span class="text-sm font-medium">As a contributor, I want a complete release plan with epics, stories, tasks, and ID registry, so that project scope and progress can be tracked in the dashboard.</span>
+          <span class="at-risk text-orange-500 text-xs ml-1" title="Missing TCs">⚠ At Risk</span>
+          <span class="ml-auto text-xs text-slate-400">M · $800</span>
+        </div>
+        <ul id="acs-US-0020" class="mt-2 hidden"><li class="flex items-start gap-2 py-0.5">
+          <span class="text-slate-400">○</span>
+          <span class="text-xs text-slate-500">AC-0048</span>
+          <span class="text-xs">Docs/RELEASE_PLAN.md contains all 5 epics with correct AGENTS.md format</span>
+          
+        </li><li class="flex items-start gap-2 py-0.5">
+          <span class="text-slate-400">○</span>
+          <span class="text-xs text-slate-500">AC-0049</span>
+          <span class="text-xs">All user stories include priority, estimate, status, branch, and acceptance criteria</span>
+          
+        </li><li class="flex items-start gap-2 py-0.5">
+          <span class="text-slate-400">○</span>
+          <span class="text-xs text-slate-500">AC-0050</span>
+          <span class="text-xs">Docs/ID_REGISTRY.md is populated with correct next-available IDs</span>
+          
+        </li></ul>
+      </div>
+      <div class="story-row ml-6 border-l-2 border-slate-200 pl-4 py-2"
+           data-epic="EPIC-0005" data-status="In Progress" data-priority="P0">
+        <div class="flex flex-wrap items-center gap-2 cursor-pointer" onclick="toggleACs('US-0021')">
+          <span class="font-mono text-xs text-slate-500">US-0021</span>
+          <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">In Progress</span> <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">P0</span>
+          <span class="text-sm font-medium">As a contributor, I want a human-readable test plan and test cases document, so that QA verification is reproducible and stories cannot close without test evidence.</span>
+          <span class="at-risk text-orange-500 text-xs ml-1" title="Missing TCs">⚠ At Risk</span>
+          <span class="ml-auto text-xs text-slate-400">M · $800</span>
+        </div>
+        <ul id="acs-US-0021" class="mt-2 hidden"><li class="flex items-start gap-2 py-0.5">
+          <span class="text-slate-400">○</span>
+          <span class="text-xs text-slate-500">AC-0051</span>
+          <span class="text-xs">Docs/TEST_CASES.md contains at least one TC per user story</span>
+          
+        </li><li class="flex items-start gap-2 py-0.5">
+          <span class="text-slate-400">○</span>
+          <span class="text-xs text-slate-500">AC-0052</span>
+          <span class="text-xs">Every acceptance criterion (AC) has a corresponding TC</span>
+          
+        </li><li class="flex items-start gap-2 py-0.5">
+          <span class="text-slate-400">○</span>
+          <span class="text-xs text-slate-500">AC-0053</span>
+          <span class="text-xs">TC format is parseable by parse-test-cases.js and renders in the Traceability tab</span>
+          
+        </li></ul>
+      </div>
+      <div class="story-row ml-6 border-l-2 border-slate-200 pl-4 py-2"
+           data-epic="EPIC-0005" data-status="In Progress" data-priority="P0">
+        <div class="flex flex-wrap items-center gap-2 cursor-pointer" onclick="toggleACs('US-0022')">
+          <span class="font-mono text-xs text-slate-500">US-0022</span>
+          <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">In Progress</span> <span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">P0</span>
+          <span class="text-sm font-medium">As a contributor, I want all AGENTS.md-required project files to exist and be populated, so that any AI agent can pick up this project without missing context.</span>
+          <span class="at-risk text-orange-500 text-xs ml-1" title="Missing TCs">⚠ At Risk</span>
+          <span class="ml-auto text-xs text-slate-400">M · $800</span>
+        </div>
+        <ul id="acs-US-0022" class="mt-2 hidden"><li class="flex items-start gap-2 py-0.5">
+          <span class="text-slate-400">○</span>
+          <span class="text-xs text-slate-500">AC-0054</span>
+          <span class="text-xs">MEMORY.md, PROMPT_LOG.md, MIGRATION_LOG.md, findings.md, progress.md, task_plan.md exist and are populated</span>
+          
+        </li><li class="flex items-start gap-2 py-0.5">
+          <span class="text-slate-400">○</span>
+          <span class="text-xs text-slate-500">AC-0055</span>
+          <span class="text-xs">Docs/LESSONS.md and architecture/ERROR_TAXONOMY.md exist</span>
+          
+        </li><li class="flex items-start gap-2 py-0.5">
+          <span class="text-slate-400">○</span>
+          <span class="text-xs text-slate-500">AC-0056</span>
+          <span class="text-xs">node tools/generate-plan.js runs successfully and produces a valid plan-status.html</span>
+          
+        </li></ul>
+      </div></div>
+    </div></div>
+    <div id="tab-kanban" class="p-6 hidden"><div class="flex gap-4 overflow-x-auto">
+    <div class="flex-1 min-w-48">
+      <h3 class="text-sm font-semibold text-slate-600 mb-3 pb-1 border-b border-slate-200">To Do <span class="text-slate-400 font-normal">(0)</span></h3>
+      
+    </div>
+    <div class="flex-1 min-w-48">
+      <h3 class="text-sm font-semibold text-slate-600 mb-3 pb-1 border-b border-slate-200">Planned <span class="text-slate-400 font-normal">(0)</span></h3>
+      
+    </div>
+    <div class="flex-1 min-w-48">
+      <h3 class="text-sm font-semibold text-slate-600 mb-3 pb-1 border-b border-slate-200">In Progress <span class="text-slate-400 font-normal">(9)</span></h3>
+      
+      <div class="story-row bg-white border border-slate-200 rounded p-3 mb-2 shadow-sm"
+           data-epic="EPIC-0004" data-status="In Progress" data-priority="P0">
+        <div class="flex gap-1 mb-1"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">P0</span> <span class="text-xs text-slate-400">US-0014</span></div>
+        <p class="text-sm">As a developer, I want ESLint to run on every push and PR, so that code quality issues are caught before merge.</p>
+        <p class="text-xs text-slate-400 mt-1">EPIC-0004 · S</p>
+      </div>
+      <div class="story-row bg-white border border-slate-200 rounded p-3 mb-2 shadow-sm"
+           data-epic="EPIC-0004" data-status="In Progress" data-priority="P0">
+        <div class="flex gap-1 mb-1"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">P0</span> <span class="text-xs text-slate-400">US-0015</span></div>
+        <p class="text-sm">As a developer, I want the CI pipeline to gate on 80% coverage, so that test coverage cannot silently regress.</p>
+        <p class="text-xs text-slate-400 mt-1">EPIC-0004 · S</p>
+      </div>
+      <div class="story-row bg-white border border-slate-200 rounded p-3 mb-2 shadow-sm"
+           data-epic="EPIC-0004" data-status="In Progress" data-priority="P0">
+        <div class="flex gap-1 mb-1"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">P0</span> <span class="text-xs text-slate-400">US-0016</span></div>
+        <p class="text-sm">As a developer, I want npm audit to run on every push and PR, so that known vulnerabilities in dependencies are caught automatically.</p>
+        <p class="text-xs text-slate-400 mt-1">EPIC-0004 · S</p>
+      </div>
+      <div class="story-row bg-white border border-slate-200 rounded p-3 mb-2 shadow-sm"
+           data-epic="EPIC-0004" data-status="In Progress" data-priority="P0">
+        <div class="flex gap-1 mb-1"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">P0</span> <span class="text-xs text-slate-400">US-0017</span></div>
+        <p class="text-sm">As a developer, I want CodeQL to analyse the codebase on every PR and push to main, so that security vulnerabilities are caught before they reach production.</p>
+        <p class="text-xs text-slate-400 mt-1">EPIC-0004 · M</p>
+      </div>
+      <div class="story-row bg-white border border-slate-200 rounded p-3 mb-2 shadow-sm"
+           data-epic="EPIC-0004" data-status="In Progress" data-priority="P1">
+        <div class="flex gap-1 mb-1"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-700">P1</span> <span class="text-xs text-slate-400">US-0018</span></div>
+        <p class="text-sm">As a developer, I want Dependabot to open automated PRs for outdated dependencies, so that the project stays secure without manual monitoring.</p>
+        <p class="text-xs text-slate-400 mt-1">EPIC-0004 · S</p>
+      </div>
+      <div class="story-row bg-white border border-slate-200 rounded p-3 mb-2 shadow-sm"
+           data-epic="EPIC-0005" data-status="In Progress" data-priority="P0">
+        <div class="flex gap-1 mb-1"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">P0</span> <span class="text-xs text-slate-400">US-0019</span></div>
+        <p class="text-sm">As a contributor, I want a design document and technical architecture reference, so that I can understand the project's goals and implementation without reading all the source code.</p>
+        <p class="text-xs text-slate-400 mt-1">EPIC-0005 · M</p>
+      </div>
+      <div class="story-row bg-white border border-slate-200 rounded p-3 mb-2 shadow-sm"
+           data-epic="EPIC-0005" data-status="In Progress" data-priority="P0">
+        <div class="flex gap-1 mb-1"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">P0</span> <span class="text-xs text-slate-400">US-0020</span></div>
+        <p class="text-sm">As a contributor, I want a complete release plan with epics, stories, tasks, and ID registry, so that project scope and progress can be tracked in the dashboard.</p>
+        <p class="text-xs text-slate-400 mt-1">EPIC-0005 · M</p>
+      </div>
+      <div class="story-row bg-white border border-slate-200 rounded p-3 mb-2 shadow-sm"
+           data-epic="EPIC-0005" data-status="In Progress" data-priority="P0">
+        <div class="flex gap-1 mb-1"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">P0</span> <span class="text-xs text-slate-400">US-0021</span></div>
+        <p class="text-sm">As a contributor, I want a human-readable test plan and test cases document, so that QA verification is reproducible and stories cannot close without test evidence.</p>
+        <p class="text-xs text-slate-400 mt-1">EPIC-0005 · M</p>
+      </div>
+      <div class="story-row bg-white border border-slate-200 rounded p-3 mb-2 shadow-sm"
+           data-epic="EPIC-0005" data-status="In Progress" data-priority="P0">
+        <div class="flex gap-1 mb-1"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">P0</span> <span class="text-xs text-slate-400">US-0022</span></div>
+        <p class="text-sm">As a contributor, I want all AGENTS.md-required project files to exist and be populated, so that any AI agent can pick up this project without missing context.</p>
+        <p class="text-xs text-slate-400 mt-1">EPIC-0005 · M</p>
+      </div>
+    </div>
+    <div class="flex-1 min-w-48">
+      <h3 class="text-sm font-semibold text-slate-600 mb-3 pb-1 border-b border-slate-200">Blocked <span class="text-slate-400 font-normal">(0)</span></h3>
+      
+    </div>
+    <div class="flex-1 min-w-48">
+      <h3 class="text-sm font-semibold text-slate-600 mb-3 pb-1 border-b border-slate-200">Done <span class="text-slate-400 font-normal">(13)</span></h3>
+      
+      <div class="story-row bg-white border border-slate-200 rounded p-3 mb-2 shadow-sm"
+           data-epic="EPIC-0001" data-status="Done" data-priority="P0">
+        <div class="flex gap-1 mb-1"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">P0</span> <span class="text-xs text-slate-400">US-0001</span></div>
+        <p class="text-sm">As a developer, I want to parse RELEASE_PLAN.md into structured epics, stories, and tasks, so that the dashboard can visualise project hierarchy.</p>
+        <p class="text-xs text-slate-400 mt-1">EPIC-0001 · L</p>
+      </div>
+      <div class="story-row bg-white border border-slate-200 rounded p-3 mb-2 shadow-sm"
+           data-epic="EPIC-0001" data-status="Done" data-priority="P0">
+        <div class="flex gap-1 mb-1"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">P0</span> <span class="text-xs text-slate-400">US-0002</span></div>
+        <p class="text-sm">As a developer, I want to parse TEST_CASES.md, so that test cases can be linked to stories in the traceability matrix.</p>
+        <p class="text-xs text-slate-400 mt-1">EPIC-0001 · M</p>
+      </div>
+      <div class="story-row bg-white border border-slate-200 rounded p-3 mb-2 shadow-sm"
+           data-epic="EPIC-0001" data-status="Done" data-priority="P0">
+        <div class="flex gap-1 mb-1"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">P0</span> <span class="text-xs text-slate-400">US-0003</span></div>
+        <p class="text-sm">As a developer, I want to parse BUGS.md, so that bugs are displayed in the Bugs tab and linked to stories.</p>
+        <p class="text-xs text-slate-400 mt-1">EPIC-0001 · S</p>
+      </div>
+      <div class="story-row bg-white border border-slate-200 rounded p-3 mb-2 shadow-sm"
+           data-epic="EPIC-0001" data-status="Done" data-priority="P0">
+        <div class="flex gap-1 mb-1"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">P0</span> <span class="text-xs text-slate-400">US-0004</span></div>
+        <p class="text-sm">As a developer, I want to parse AI_COST_LOG.md and aggregate costs by branch, so that AI spend can be attributed to user stories.</p>
+        <p class="text-xs text-slate-400 mt-1">EPIC-0001 · M</p>
+      </div>
+      <div class="story-row bg-white border border-slate-200 rounded p-3 mb-2 shadow-sm"
+           data-epic="EPIC-0001" data-status="Done" data-priority="P1">
+        <div class="flex gap-1 mb-1"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-700">P1</span> <span class="text-xs text-slate-400">US-0005</span></div>
+        <p class="text-sm">As a developer, I want to parse Jest coverage-summary.json, so that coverage metrics appear in the dashboard top bar.</p>
+        <p class="text-xs text-slate-400 mt-1">EPIC-0001 · S</p>
+      </div>
+      <div class="story-row bg-white border border-slate-200 rounded p-3 mb-2 shadow-sm"
+           data-epic="EPIC-0001" data-status="Done" data-priority="P2">
+        <div class="flex gap-1 mb-1"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">P2</span> <span class="text-xs text-slate-400">US-0006</span></div>
+        <p class="text-sm">As a developer, I want to parse progress.md for recent session summaries, so that the dashboard shows recent activity.</p>
+        <p class="text-xs text-slate-400 mt-1">EPIC-0001 · S</p>
+      </div>
+      <div class="story-row bg-white border border-slate-200 rounded p-3 mb-2 shadow-sm"
+           data-epic="EPIC-0001" data-status="Done" data-priority="P1">
+        <div class="flex gap-1 mb-1"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-700">P1</span> <span class="text-xs text-slate-400">US-0007</span></div>
+        <p class="text-sm">As a developer, I want to compute projected and actual AI costs per story, so that the Costs tab shows budget vs. spend.</p>
+        <p class="text-xs text-slate-400 mt-1">EPIC-0001 · S</p>
+      </div>
+      <div class="story-row bg-white border border-slate-200 rounded p-3 mb-2 shadow-sm"
+           data-epic="EPIC-0001" data-status="Done" data-priority="P0">
+        <div class="flex gap-1 mb-1"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">P0</span> <span class="text-xs text-slate-400">US-0008</span></div>
+        <p class="text-sm">As a developer, I want at-risk stories to be automatically detected, so that I can see which stories need attention without reading every file.</p>
+        <p class="text-xs text-slate-400 mt-1">EPIC-0001 · S</p>
+      </div>
+      <div class="story-row bg-white border border-slate-200 rounded p-3 mb-2 shadow-sm"
+           data-epic="EPIC-0002" data-status="Done" data-priority="P0">
+        <div class="flex gap-1 mb-1"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">P0</span> <span class="text-xs text-slate-400">US-0009</span></div>
+        <p class="text-sm">As a developer, I want a static HTML dashboard with six tabs, so that I can view all project dimensions in one file.</p>
+        <p class="text-xs text-slate-400 mt-1">EPIC-0002 · XL</p>
+      </div>
+      <div class="story-row bg-white border border-slate-200 rounded p-3 mb-2 shadow-sm"
+           data-epic="EPIC-0002" data-status="Done" data-priority="P1">
+        <div class="flex gap-1 mb-1"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-700">P1</span> <span class="text-xs text-slate-400">US-0010</span></div>
+        <p class="text-sm">As a developer, I want real-time filters for epic, status, priority, and search, so that I can focus on the subset of stories I care about.</p>
+        <p class="text-xs text-slate-400 mt-1">EPIC-0002 · M</p>
+      </div>
+      <div class="story-row bg-white border border-slate-200 rounded p-3 mb-2 shadow-sm"
+           data-epic="EPIC-0003" data-status="Done" data-priority="P0">
+        <div class="flex gap-1 mb-1"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">P0</span> <span class="text-xs text-slate-400">US-0011</span></div>
+        <p class="text-sm">As a developer, I want to install PlanVisualizer into my project with a single bash command, so that setup takes under 5 minutes.</p>
+        <p class="text-xs text-slate-400 mt-1">EPIC-0003 · M</p>
+      </div>
+      <div class="story-row bg-white border border-slate-200 rounded p-3 mb-2 shadow-sm"
+           data-epic="EPIC-0003" data-status="Done" data-priority="P0">
+        <div class="flex gap-1 mb-1"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">P0</span> <span class="text-xs text-slate-400">US-0012</span></div>
+        <p class="text-sm">As a developer, I want Claude Code session costs to be captured automatically, so that AI_COST_LOG.md is always up to date without manual entry.</p>
+        <p class="text-xs text-slate-400 mt-1">EPIC-0003 · S</p>
+      </div>
+      <div class="story-row bg-white border border-slate-200 rounded p-3 mb-2 shadow-sm"
+           data-epic="EPIC-0003" data-status="Done" data-priority="P1">
+        <div class="flex gap-1 mb-1"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-700">P1</span> <span class="text-xs text-slate-400">US-0013</span></div>
+        <p class="text-sm">As a developer, I want to configure all file paths and project metadata in a single JSON file, so that PlanVisualizer works with any project structure.</p>
+        <p class="text-xs text-slate-400 mt-1">EPIC-0003 · S</p>
+      </div>
+    </div></div></div>
+    
+  <div id="tab-traceability" class="p-6 hidden overflow-x-auto">
+    <p class="text-xs text-slate-400 mb-3">P=Pass · F=Fail · N=Not Run · blank=not linked</p>
+    <table class="border-collapse text-sm">
+      <thead><tr><th class="p-2 border border-slate-200">Story</th><th class="text-xs font-mono p-2 border border-slate-200">TC-0001</th><th class="text-xs font-mono p-2 border border-slate-200">TC-0002</th><th class="text-xs font-mono p-2 border border-slate-200">TC-0003</th><th class="text-xs font-mono p-2 border border-slate-200">TC-0004</th><th class="text-xs font-mono p-2 border border-slate-200">TC-0005</th><th class="text-xs font-mono p-2 border border-slate-200">TC-0006</th><th class="text-xs font-mono p-2 border border-slate-200">TC-0007</th><th class="text-xs font-mono p-2 border border-slate-200">TC-0008</th><th class="text-xs font-mono p-2 border border-slate-200">TC-0009</th><th class="text-xs font-mono p-2 border border-slate-200">TC-0010</th><th class="text-xs font-mono p-2 border border-slate-200">TC-0011</th><th class="text-xs font-mono p-2 border border-slate-200">TC-0012</th><th class="text-xs font-mono p-2 border border-slate-200">TC-0013</th><th class="text-xs font-mono p-2 border border-slate-200">TC-0014</th><th class="text-xs font-mono p-2 border border-slate-200">TC-0015</th><th class="text-xs font-mono p-2 border border-slate-200">TC-0016</th><th class="text-xs font-mono p-2 border border-slate-200">TC-0017</th><th class="text-xs font-mono p-2 border border-slate-200">TC-0018</th><th class="text-xs font-mono p-2 border border-slate-200">TC-0019</th><th class="text-xs font-mono p-2 border border-slate-200">TC-0020</th><th class="text-xs font-mono p-2 border border-slate-200">TC-0021</th><th class="text-xs font-mono p-2 border border-slate-200">TC-0022</th><th class="text-xs font-mono p-2 border border-slate-200">TC-0023</th></tr></thead>
+      <tbody><tr><td class="text-xs font-mono px-2 py-1 border border-slate-200 whitespace-nowrap">US-0001</td><td class="p-2 border border-slate-200 text-center bg-gray-100 text-gray-500">N</td><td class="p-2 border border-slate-200 text-center bg-gray-100 text-gray-500">N</td><td class="p-2 border border-slate-200 text-center bg-gray-100 text-gray-500">N</td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td></tr><tr><td class="text-xs font-mono px-2 py-1 border border-slate-200 whitespace-nowrap">US-0002</td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-gray-100 text-gray-500">N</td><td class="p-2 border border-slate-200 text-center bg-gray-100 text-gray-500">N</td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td></tr><tr><td class="text-xs font-mono px-2 py-1 border border-slate-200 whitespace-nowrap">US-0003</td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-gray-100 text-gray-500">N</td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td></tr><tr><td class="text-xs font-mono px-2 py-1 border border-slate-200 whitespace-nowrap">US-0004</td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-gray-100 text-gray-500">N</td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td></tr><tr><td class="text-xs font-mono px-2 py-1 border border-slate-200 whitespace-nowrap">US-0005</td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-gray-100 text-gray-500">N</td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td></tr><tr><td class="text-xs font-mono px-2 py-1 border border-slate-200 whitespace-nowrap">US-0006</td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td></tr><tr><td class="text-xs font-mono px-2 py-1 border border-slate-200 whitespace-nowrap">US-0007</td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-gray-100 text-gray-500">N</td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td></tr><tr><td class="text-xs font-mono px-2 py-1 border border-slate-200 whitespace-nowrap">US-0008</td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-gray-100 text-gray-500">N</td><td class="p-2 border border-slate-200 text-center bg-gray-100 text-gray-500">N</td><td class="p-2 border border-slate-200 text-center bg-gray-100 text-gray-500">N</td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td></tr><tr><td class="text-xs font-mono px-2 py-1 border border-slate-200 whitespace-nowrap">US-0009</td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-gray-100 text-gray-500">N</td><td class="p-2 border border-slate-200 text-center bg-gray-100 text-gray-500">N</td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td></tr><tr><td class="text-xs font-mono px-2 py-1 border border-slate-200 whitespace-nowrap">US-0010</td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-gray-100 text-gray-500">N</td><td class="p-2 border border-slate-200 text-center bg-gray-100 text-gray-500">N</td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td></tr><tr><td class="text-xs font-mono px-2 py-1 border border-slate-200 whitespace-nowrap">US-0011</td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-gray-100 text-gray-500">N</td><td class="p-2 border border-slate-200 text-center bg-gray-100 text-gray-500">N</td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td></tr><tr><td class="text-xs font-mono px-2 py-1 border border-slate-200 whitespace-nowrap">US-0012</td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-gray-100 text-gray-500">N</td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td></tr><tr><td class="text-xs font-mono px-2 py-1 border border-slate-200 whitespace-nowrap">US-0013</td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-gray-100 text-gray-500">N</td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td></tr><tr><td class="text-xs font-mono px-2 py-1 border border-slate-200 whitespace-nowrap">US-0014</td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-gray-100 text-gray-500">N</td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td></tr><tr><td class="text-xs font-mono px-2 py-1 border border-slate-200 whitespace-nowrap">US-0015</td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-gray-100 text-gray-500">N</td><td class="p-2 border border-slate-200 text-center bg-white"></td></tr><tr><td class="text-xs font-mono px-2 py-1 border border-slate-200 whitespace-nowrap">US-0016</td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-gray-100 text-gray-500">N</td></tr><tr><td class="text-xs font-mono px-2 py-1 border border-slate-200 whitespace-nowrap">US-0017</td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td></tr><tr><td class="text-xs font-mono px-2 py-1 border border-slate-200 whitespace-nowrap">US-0018</td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td></tr><tr><td class="text-xs font-mono px-2 py-1 border border-slate-200 whitespace-nowrap">US-0019</td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td></tr><tr><td class="text-xs font-mono px-2 py-1 border border-slate-200 whitespace-nowrap">US-0020</td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td></tr><tr><td class="text-xs font-mono px-2 py-1 border border-slate-200 whitespace-nowrap">US-0021</td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td></tr><tr><td class="text-xs font-mono px-2 py-1 border border-slate-200 whitespace-nowrap">US-0022</td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td><td class="p-2 border border-slate-200 text-center bg-white"></td></tr></tbody>
+    </table>
+  </div>
+    
+  <div id="tab-charts" class="p-6 hidden">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <div class="bg-white border border-slate-200 rounded-lg p-4">
+        <h3 class="text-sm font-semibold text-slate-600 mb-3">Epic Progress</h3>
+        <canvas id="chart-epic-progress" height="200"></canvas>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-lg p-4">
+        <h3 class="text-sm font-semibold text-slate-600 mb-3">Cost Breakdown (Projected vs AI)</h3>
+        <canvas id="chart-cost-breakdown" height="200"></canvas>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-lg p-4">
+        <h3 class="text-sm font-semibold text-slate-600 mb-3">Test Coverage</h3>
+        <canvas id="chart-coverage" height="200"></canvas>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-lg p-4">
+        <h3 class="text-sm font-semibold text-slate-600 mb-3">AI Cost Timeline</h3>
+        <canvas id="chart-ai-timeline" height="200"></canvas>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-lg p-4">
+        <h3 class="text-sm font-semibold text-slate-600 mb-3">Burndown (Stories Remaining)</h3>
+        <canvas id="chart-burndown" height="200"></canvas>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-lg p-4">
+        <h3 class="text-sm font-semibold text-slate-600 mb-3">Budget Burn Rate</h3>
+        <canvas id="chart-burn-rate" height="200"></canvas>
+      </div>
+
+    </div>
+  </div>
+  <script>
+  function initCharts() {
+    new Chart(document.getElementById('chart-epic-progress'), {
+      type: 'bar',
+      data: { labels: ["EPIC-0001","EPIC-0002","EPIC-0003","EPIC-0004","EPIC-0005"], datasets: [
+        { label: 'Done', data: [8,2,3,0,0], backgroundColor: '#22c55e' },
+        { label: 'In Progress', data: [0,0,0,5,4], backgroundColor: '#3b82f6' },
+        { label: 'Planned/To Do', data: [0,0,0,0,0], backgroundColor: '#e2e8f0' },
+      ]},
+      options: { indexAxis: 'y', responsive: true, scales: { x: { stacked: true }, y: { stacked: true } } }
+    });
+    new Chart(document.getElementById('chart-cost-breakdown'), {
+      type: 'bar',
+      data: { labels: ["EPIC-0001","EPIC-0002","EPIC-0003","EPIC-0004","EPIC-0005"], datasets: [
+        { label: 'Projected ($)', data: [5200,4000,1600,2400,3200], backgroundColor: '#f59e0b' },
+        { label: 'AI Cost ($)', data: [3.1950000000000003,6.198,1.1535000000000002,0,0], backgroundColor: '#0d9488' },
+      ]},
+      options: { responsive: true }
+    });
+    new Chart(document.getElementById('chart-coverage'), {
+      type: 'doughnut',
+      data: { labels: ['Coverage', 'Gap'], datasets: [{ data: [0.0, 100], backgroundColor: ['#22c55e','#e2e8f0'], borderWidth: 0 }] },
+      options: { cutout: '70%', plugins: { legend: { display: false } } }
+    });
+    new Chart(document.getElementById('chart-ai-timeline'), {
+      type: 'line',
+      data: { labels: ["2026-03-09","2026-03-09","2026-03-09","2026-03-09","2026-03-09","2026-03-09","2026-03-09","2026-03-09","2026-03-09","2026-03-09","2026-03-09","2026-03-09","2026-03-09","2026-03-09","2026-03-09","2026-03-10","2026-03-10"], datasets: [{ label: 'Cumulative AI Cost ($)', data: ["0.61","1.06","1.43","1.83","2.12","2.49","2.84","3.19","4.16","5.00","5.75","6.29","6.74","7.11","7.45","8.25","9.91"], borderColor: '#0d9488', tension: 0.3, fill: true, backgroundColor: 'rgba(13,148,136,0.1)' }] },
+      options: { responsive: true }
+    });
+    new Chart(document.getElementById('chart-burndown'), {
+      type: 'line',
+      data: { labels: [], datasets: [{ label: 'Stories Remaining', data: [], borderColor: '#3b82f6', tension: 0.3 }] },
+      options: { responsive: true }
+    });
+    new Chart(document.getElementById('chart-burn-rate'), {
+      type: 'bar',
+      data: { labels: ["2026-03-09","2026-03-09","2026-03-09","2026-03-09","2026-03-09","2026-03-09","2026-03-09","2026-03-09","2026-03-09","2026-03-09","2026-03-09","2026-03-09","2026-03-09","2026-03-09","2026-03-09","2026-03-10","2026-03-10"], datasets: [{ label: 'Session AI Spend ($)', data: ["0.61","0.45","0.37","0.40","0.29","0.37","0.35","0.35","0.97","0.84","0.75","0.54","0.45","0.37","0.34","0.80","1.67"], backgroundColor: '#6366f1' }] },
+      options: { responsive: true }
+    });
+  }
+  </script>
+    
+  <div id="tab-costs" class="p-6 hidden overflow-x-auto">
+    <table class="w-full text-left text-sm border-collapse">
+      <thead class="bg-slate-50 text-slate-600 text-xs uppercase">
+        <tr>
+          <th class="px-3 py-2">Story</th><th class="px-3 py-2">Title</th><th class="px-3 py-2 text-center">Status</th>
+          <th class="px-3 py-2 text-center">Size</th><th class="px-3 py-2 text-right">Projected</th>
+          <th class="px-3 py-2 text-right">AI Cost</th><th class="px-3 py-2 text-right">Tokens (in/out)</th>
+        </tr>
+      </thead>
+      <tbody><tr class="border-t border-slate-100">
+      <td class="px-3 py-2 font-mono text-xs">US-0001</td>
+      <td class="px-3 py-2 text-sm">As a developer, I want to parse RELEASE_PLAN.md into structured epics, stories, and tasks, so that the dashboard can visualise project hierarchy.</td>
+      <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Done</span></td>
+      <td class="px-3 py-2 text-center text-sm">L</td>
+      <td class="px-3 py-2 text-right text-sm">$1,600</td>
+      <td class="px-3 py-2 text-right text-sm text-teal-600">$0.61</td>
+      <td class="px-3 py-2 text-right text-xs text-slate-400">90,000 / 22,000</td>
+    </tr><tr class="border-t border-slate-100">
+      <td class="px-3 py-2 font-mono text-xs">US-0002</td>
+      <td class="px-3 py-2 text-sm">As a developer, I want to parse TEST_CASES.md, so that test cases can be linked to stories in the traceability matrix.</td>
+      <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Done</span></td>
+      <td class="px-3 py-2 text-center text-sm">M</td>
+      <td class="px-3 py-2 text-right text-sm">$800</td>
+      <td class="px-3 py-2 text-right text-sm text-teal-600">$0.45</td>
+      <td class="px-3 py-2 text-right text-xs text-slate-400">65,000 / 16,000</td>
+    </tr><tr class="border-t border-slate-100">
+      <td class="px-3 py-2 font-mono text-xs">US-0003</td>
+      <td class="px-3 py-2 text-sm">As a developer, I want to parse BUGS.md, so that bugs are displayed in the Bugs tab and linked to stories.</td>
+      <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Done</span></td>
+      <td class="px-3 py-2 text-center text-sm">S</td>
+      <td class="px-3 py-2 text-right text-sm">$400</td>
+      <td class="px-3 py-2 text-right text-sm text-teal-600">$0.37</td>
+      <td class="px-3 py-2 text-right text-xs text-slate-400">55,000 / 13,000</td>
+    </tr><tr class="border-t border-slate-100">
+      <td class="px-3 py-2 font-mono text-xs">US-0004</td>
+      <td class="px-3 py-2 text-sm">As a developer, I want to parse AI_COST_LOG.md and aggregate costs by branch, so that AI spend can be attributed to user stories.</td>
+      <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Done</span></td>
+      <td class="px-3 py-2 text-center text-sm">M</td>
+      <td class="px-3 py-2 text-right text-sm">$800</td>
+      <td class="px-3 py-2 text-right text-sm text-teal-600">$0.40</td>
+      <td class="px-3 py-2 text-right text-xs text-slate-400">60,000 / 14,000</td>
+    </tr><tr class="border-t border-slate-100">
+      <td class="px-3 py-2 font-mono text-xs">US-0005</td>
+      <td class="px-3 py-2 text-sm">As a developer, I want to parse Jest coverage-summary.json, so that coverage metrics appear in the dashboard top bar.</td>
+      <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Done</span></td>
+      <td class="px-3 py-2 text-center text-sm">S</td>
+      <td class="px-3 py-2 text-right text-sm">$400</td>
+      <td class="px-3 py-2 text-right text-sm text-teal-600">$0.29</td>
+      <td class="px-3 py-2 text-right text-xs text-slate-400">45,000 / 10,000</td>
+    </tr><tr class="border-t border-slate-100">
+      <td class="px-3 py-2 font-mono text-xs">US-0006</td>
+      <td class="px-3 py-2 text-sm">As a developer, I want to parse progress.md for recent session summaries, so that the dashboard shows recent activity.</td>
+      <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Done</span></td>
+      <td class="px-3 py-2 text-center text-sm">S</td>
+      <td class="px-3 py-2 text-right text-sm">$400</td>
+      <td class="px-3 py-2 text-right text-sm text-teal-600">$0.37</td>
+      <td class="px-3 py-2 text-right text-xs text-slate-400">55,000 / 13,000</td>
+    </tr><tr class="border-t border-slate-100">
+      <td class="px-3 py-2 font-mono text-xs">US-0007</td>
+      <td class="px-3 py-2 text-sm">As a developer, I want to compute projected and actual AI costs per story, so that the Costs tab shows budget vs. spend.</td>
+      <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Done</span></td>
+      <td class="px-3 py-2 text-center text-sm">S</td>
+      <td class="px-3 py-2 text-right text-sm">$400</td>
+      <td class="px-3 py-2 text-right text-sm text-teal-600">$0.35</td>
+      <td class="px-3 py-2 text-right text-xs text-slate-400">55,000 / 12,000</td>
+    </tr><tr class="border-t border-slate-100">
+      <td class="px-3 py-2 font-mono text-xs">US-0008</td>
+      <td class="px-3 py-2 text-sm">As a developer, I want at-risk stories to be automatically detected, so that I can see which stories need attention without reading every file.</td>
+      <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Done</span></td>
+      <td class="px-3 py-2 text-center text-sm">S</td>
+      <td class="px-3 py-2 text-right text-sm">$400</td>
+      <td class="px-3 py-2 text-right text-sm text-teal-600">$0.35</td>
+      <td class="px-3 py-2 text-right text-xs text-slate-400">55,000 / 12,000</td>
+    </tr><tr class="border-t border-slate-100">
+      <td class="px-3 py-2 font-mono text-xs">US-0009</td>
+      <td class="px-3 py-2 text-sm">As a developer, I want a static HTML dashboard with six tabs, so that I can view all project dimensions in one file.</td>
+      <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Done</span></td>
+      <td class="px-3 py-2 text-center text-sm">XL</td>
+      <td class="px-3 py-2 text-right text-sm">$3,200</td>
+      <td class="px-3 py-2 text-right text-sm text-teal-600">$3</td>
+      <td class="px-3 py-2 text-right text-xs text-slate-400">440,000 / 111,000</td>
+    </tr><tr class="border-t border-slate-100">
+      <td class="px-3 py-2 font-mono text-xs">US-0010</td>
+      <td class="px-3 py-2 text-sm">As a developer, I want real-time filters for epic, status, priority, and search, so that I can focus on the subset of stories I care about.</td>
+      <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Done</span></td>
+      <td class="px-3 py-2 text-center text-sm">M</td>
+      <td class="px-3 py-2 text-right text-sm">$800</td>
+      <td class="px-3 py-2 text-right text-sm text-teal-600">$3</td>
+      <td class="px-3 py-2 text-right text-xs text-slate-400">440,000 / 111,000</td>
+    </tr><tr class="border-t border-slate-100">
+      <td class="px-3 py-2 font-mono text-xs">US-0011</td>
+      <td class="px-3 py-2 text-sm">As a developer, I want to install PlanVisualizer into my project with a single bash command, so that setup takes under 5 minutes.</td>
+      <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Done</span></td>
+      <td class="px-3 py-2 text-center text-sm">M</td>
+      <td class="px-3 py-2 text-right text-sm">$800</td>
+      <td class="px-3 py-2 text-right text-sm text-teal-600">$0.45</td>
+      <td class="px-3 py-2 text-right text-xs text-slate-400">65,000 / 16,000</td>
+    </tr><tr class="border-t border-slate-100">
+      <td class="px-3 py-2 font-mono text-xs">US-0012</td>
+      <td class="px-3 py-2 text-sm">As a developer, I want Claude Code session costs to be captured automatically, so that AI_COST_LOG.md is always up to date without manual entry.</td>
+      <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Done</span></td>
+      <td class="px-3 py-2 text-center text-sm">S</td>
+      <td class="px-3 py-2 text-right text-sm">$400</td>
+      <td class="px-3 py-2 text-right text-sm text-teal-600">$0.37</td>
+      <td class="px-3 py-2 text-right text-xs text-slate-400">55,000 / 13,000</td>
+    </tr><tr class="border-t border-slate-100">
+      <td class="px-3 py-2 font-mono text-xs">US-0013</td>
+      <td class="px-3 py-2 text-sm">As a developer, I want to configure all file paths and project metadata in a single JSON file, so that PlanVisualizer works with any project structure.</td>
+      <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Done</span></td>
+      <td class="px-3 py-2 text-center text-sm">S</td>
+      <td class="px-3 py-2 text-right text-sm">$400</td>
+      <td class="px-3 py-2 text-right text-sm text-teal-600">$0.34</td>
+      <td class="px-3 py-2 text-right text-xs text-slate-400">50,000 / 12,000</td>
+    </tr><tr class="border-t border-slate-100">
+      <td class="px-3 py-2 font-mono text-xs">US-0014</td>
+      <td class="px-3 py-2 text-sm">As a developer, I want ESLint to run on every push and PR, so that code quality issues are caught before merge.</td>
+      <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">In Progress</span></td>
+      <td class="px-3 py-2 text-center text-sm">S</td>
+      <td class="px-3 py-2 text-right text-sm">$400</td>
+      <td class="px-3 py-2 text-right text-sm text-teal-600">$0</td>
+      <td class="px-3 py-2 text-right text-xs text-slate-400">0 / 0</td>
+    </tr><tr class="border-t border-slate-100">
+      <td class="px-3 py-2 font-mono text-xs">US-0015</td>
+      <td class="px-3 py-2 text-sm">As a developer, I want the CI pipeline to gate on 80% coverage, so that test coverage cannot silently regress.</td>
+      <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">In Progress</span></td>
+      <td class="px-3 py-2 text-center text-sm">S</td>
+      <td class="px-3 py-2 text-right text-sm">$400</td>
+      <td class="px-3 py-2 text-right text-sm text-teal-600">$0</td>
+      <td class="px-3 py-2 text-right text-xs text-slate-400">0 / 0</td>
+    </tr><tr class="border-t border-slate-100">
+      <td class="px-3 py-2 font-mono text-xs">US-0016</td>
+      <td class="px-3 py-2 text-sm">As a developer, I want npm audit to run on every push and PR, so that known vulnerabilities in dependencies are caught automatically.</td>
+      <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">In Progress</span></td>
+      <td class="px-3 py-2 text-center text-sm">S</td>
+      <td class="px-3 py-2 text-right text-sm">$400</td>
+      <td class="px-3 py-2 text-right text-sm text-teal-600">$0</td>
+      <td class="px-3 py-2 text-right text-xs text-slate-400">0 / 0</td>
+    </tr><tr class="border-t border-slate-100">
+      <td class="px-3 py-2 font-mono text-xs">US-0017</td>
+      <td class="px-3 py-2 text-sm">As a developer, I want CodeQL to analyse the codebase on every PR and push to main, so that security vulnerabilities are caught before they reach production.</td>
+      <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">In Progress</span></td>
+      <td class="px-3 py-2 text-center text-sm">M</td>
+      <td class="px-3 py-2 text-right text-sm">$800</td>
+      <td class="px-3 py-2 text-right text-sm text-teal-600">$0</td>
+      <td class="px-3 py-2 text-right text-xs text-slate-400">0 / 0</td>
+    </tr><tr class="border-t border-slate-100">
+      <td class="px-3 py-2 font-mono text-xs">US-0018</td>
+      <td class="px-3 py-2 text-sm">As a developer, I want Dependabot to open automated PRs for outdated dependencies, so that the project stays secure without manual monitoring.</td>
+      <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">In Progress</span></td>
+      <td class="px-3 py-2 text-center text-sm">S</td>
+      <td class="px-3 py-2 text-right text-sm">$400</td>
+      <td class="px-3 py-2 text-right text-sm text-teal-600">$0</td>
+      <td class="px-3 py-2 text-right text-xs text-slate-400">0 / 0</td>
+    </tr><tr class="border-t border-slate-100">
+      <td class="px-3 py-2 font-mono text-xs">US-0019</td>
+      <td class="px-3 py-2 text-sm">As a contributor, I want a design document and technical architecture reference, so that I can understand the project's goals and implementation without reading all the source code.</td>
+      <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">In Progress</span></td>
+      <td class="px-3 py-2 text-center text-sm">M</td>
+      <td class="px-3 py-2 text-right text-sm">$800</td>
+      <td class="px-3 py-2 text-right text-sm text-teal-600">$0</td>
+      <td class="px-3 py-2 text-right text-xs text-slate-400">0 / 0</td>
+    </tr><tr class="border-t border-slate-100">
+      <td class="px-3 py-2 font-mono text-xs">US-0020</td>
+      <td class="px-3 py-2 text-sm">As a contributor, I want a complete release plan with epics, stories, tasks, and ID registry, so that project scope and progress can be tracked in the dashboard.</td>
+      <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">In Progress</span></td>
+      <td class="px-3 py-2 text-center text-sm">M</td>
+      <td class="px-3 py-2 text-right text-sm">$800</td>
+      <td class="px-3 py-2 text-right text-sm text-teal-600">$0</td>
+      <td class="px-3 py-2 text-right text-xs text-slate-400">0 / 0</td>
+    </tr><tr class="border-t border-slate-100">
+      <td class="px-3 py-2 font-mono text-xs">US-0021</td>
+      <td class="px-3 py-2 text-sm">As a contributor, I want a human-readable test plan and test cases document, so that QA verification is reproducible and stories cannot close without test evidence.</td>
+      <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">In Progress</span></td>
+      <td class="px-3 py-2 text-center text-sm">M</td>
+      <td class="px-3 py-2 text-right text-sm">$800</td>
+      <td class="px-3 py-2 text-right text-sm text-teal-600">$0</td>
+      <td class="px-3 py-2 text-right text-xs text-slate-400">0 / 0</td>
+    </tr><tr class="border-t border-slate-100">
+      <td class="px-3 py-2 font-mono text-xs">US-0022</td>
+      <td class="px-3 py-2 text-sm">As a contributor, I want all AGENTS.md-required project files to exist and be populated, so that any AI agent can pick up this project without missing context.</td>
+      <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">In Progress</span></td>
+      <td class="px-3 py-2 text-center text-sm">M</td>
+      <td class="px-3 py-2 text-right text-sm">$800</td>
+      <td class="px-3 py-2 text-right text-sm text-teal-600">$0</td>
+      <td class="px-3 py-2 text-right text-xs text-slate-400">0 / 0</td>
+    </tr></tbody>
+      <tfoot class="bg-slate-50 font-semibold">
+        <tr>
+          <td colspan="4" class="px-3 py-2 text-right text-sm">Totals</td>
+          <td class="px-3 py-2 text-right text-sm">$16,400</td>
+          <td class="px-3 py-2 text-right text-sm text-teal-600">$10</td>
+          <td class="px-3 py-2 text-right text-xs text-slate-400">1,430,000 / 357,000</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+    <div id="tab-bugs" class="p-6 hidden"><p class="text-slate-400">No bugs logged yet.</p></div>
+  </div>
+  
+  <div class="fixed bottom-4 right-4 w-80 bg-white border border-slate-200 rounded-lg shadow-lg p-4 print:hidden">
+    <h4 class="text-xs font-semibold text-slate-500 uppercase mb-2">Recent Activity</h4>
+    <ul class="space-y-1"><li class="text-sm"><span class="text-slate-400 text-xs mr-2">2026-03-10</span></li><li class="text-sm"><span class="text-slate-400 text-xs mr-2">2026-03-09</span>Initial project scaffolding by original author; Implemented all 9 parser modules (tools/lib/*.js); Implemented render-html.js with 6-tab dashboard</li></ul>
+  </div>
+  
+  <script>
+  const ALL_DATA = {"epics":[{"id":"EPIC-0001","title":"Core Parsing Engine","description":"Regex-based parsers for all AGENTS.md markdown file formats — release plan, test cases, bugs, cost log, coverage JSON, and progress log.","releaseTarget":"MVP (v1.0)","status":"Done","dependencies":[]},{"id":"EPIC-0002","title":"HTML Dashboard Renderer","description":"Static HTML generation with six tabs (Hierarchy, Kanban, Traceability, Charts, Costs, Bugs), top bar stats, filters, and recent activity panel.","releaseTarget":"MVP (v1.0)","status":"Done","dependencies":["EPIC-0001"]},{"id":"EPIC-0003","title":"Installation and Distribution","description":"One-command bash installer, JSON config system, and Claude Code stop hook for automated cost capture.","releaseTarget":"MVP (v1.0)","status":"Done","dependencies":["EPIC-0001","EPIC-0002"]},{"id":"EPIC-0004","title":"CI/CD Pipeline","description":"Consolidated GitHub Actions pipeline with ESLint, Jest coverage gate, npm audit, CodeQL analysis, GitHub Pages deployment, and Dependabot.","releaseTarget":"Release 1.1","status":"In Progress","dependencies":["EPIC-0001"]},{"id":"EPIC-0005","title":"Project Self-Documentation","description":"Full AGENTS.md-compliant documentation including design doc, architecture, release plan, test cases, ID registry, and all supporting project files.","releaseTarget":"Release 1.1","status":"In Progress","dependencies":[]}],"stories":[{"id":"US-0001","epicId":"EPIC-0001","title":"As a developer, I want to parse RELEASE_PLAN.md into structured epics, stories, and tasks, so that the dashboard can visualise project hierarchy.","priority":"P0","estimate":"L","status":"Done","branch":"feature/US-0001-parse-release-plan","acs":[{"id":"AC-0001","text":"Epics are extracted from fenced code blocks with id, title, status, and releaseTarget fields","done":true},{"id":"AC-0002","text":"Stories are associated with their parent epic via epicId","done":true},{"id":"AC-0003","text":"Acceptance criteria items are parsed with done/undone state","done":true}],"dependencies":[]},{"id":"US-0002","epicId":"EPIC-0001","title":"As a developer, I want to parse TEST_CASES.md, so that test cases can be linked to stories in the traceability matrix.","priority":"P0","estimate":"M","status":"Done","branch":"feature/US-0002-parse-test-cases","acs":[{"id":"AC-0004","text":"Test cases are extracted with id, title, relatedStory, relatedAC, type, and status fields","done":true},{"id":"AC-0005","text":"Status is normalised to Pass, Fail, or Not Run from checkbox syntax","done":true}],"dependencies":[]},{"id":"US-0003","epicId":"EPIC-0001","title":"As a developer, I want to parse BUGS.md, so that bugs are displayed in the Bugs tab and linked to stories.","priority":"P0","estimate":"S","status":"Done","branch":"feature/US-0003-parse-bugs","acs":[{"id":"AC-0006","text":"Bugs are extracted with id, title, severity, status, relatedStory, fixBranch, and lessonEncoded fields","done":true},{"id":"AC-0007","text":"Multiple bugs are correctly separated using sliding-window slicing","done":true}],"dependencies":[]},{"id":"US-0004","epicId":"EPIC-0001","title":"As a developer, I want to parse AI_COST_LOG.md and aggregate costs by branch, so that AI spend can be attributed to user stories.","priority":"P0","estimate":"M","status":"Done","branch":"feature/US-0004-parse-cost-log","acs":[{"id":"AC-0008","text":"All pipe-delimited table rows are parsed into typed cost objects","done":true},{"id":"AC-0009","text":"Token counts and costs are summed correctly per branch","done":true},{"id":"AC-0010","text":"Sessions on the same branch are accumulated, not overwritten","done":true}],"dependencies":[]},{"id":"US-0005","epicId":"EPIC-0001","title":"As a developer, I want to parse Jest coverage-summary.json, so that coverage metrics appear in the dashboard top bar.","priority":"P1","estimate":"S","status":"Done","branch":"feature/US-0005-parse-coverage","acs":[{"id":"AC-0011","text":"Lines, statements, functions, and branches percentages are extracted","done":true},{"id":"AC-0012","text":"overall is computed as the minimum of all four metrics; meetsTarget is true when overall >= 80","done":true}],"dependencies":[]},{"id":"US-0006","epicId":"EPIC-0001","title":"As a developer, I want to parse progress.md for recent session summaries, so that the dashboard shows recent activity.","priority":"P2","estimate":"S","status":"Done","branch":"feature/US-0006-parse-progress","acs":[{"id":"AC-0013","text":"Sessions are extracted in reverse-chronological order","done":true},{"id":"AC-0014","text":"The What Was Done section is summarised to 3 lines maximum","done":true}],"dependencies":[]},{"id":"US-0007","epicId":"EPIC-0001","title":"As a developer, I want to compute projected and actual AI costs per story, so that the Costs tab shows budget vs. spend.","priority":"P1","estimate":"S","status":"Done","branch":"feature/US-0007-compute-costs","acs":[{"id":"AC-0015","text":"Projected cost is computed from t-shirt size × hourly rate","done":true},{"id":"AC-0016","text":"AI cost is attributed to stories by exact branch name match","done":true}],"dependencies":["US-0004"]},{"id":"US-0008","epicId":"EPIC-0001","title":"As a developer, I want at-risk stories to be automatically detected, so that I can see which stories need attention without reading every file.","priority":"P0","estimate":"S","status":"Done","branch":"feature/US-0008-detect-at-risk","acs":[{"id":"AC-0017","text":"Stories with ACs but no linked TCs are flagged missingTCs","done":true},{"id":"AC-0018","text":"In-Progress stories with no branch are flagged noBranch","done":true},{"id":"AC-0019","text":"Stories with a Fail TC and no defect raised are flagged failedTCNoBug","done":true}],"dependencies":["US-0002"]},{"id":"US-0009","epicId":"EPIC-0002","title":"As a developer, I want a static HTML dashboard with six tabs, so that I can view all project dimensions in one file.","priority":"P0","estimate":"XL","status":"Done","branch":"feature/US-0009-render-html","acs":[{"id":"AC-0020","text":"All six tabs (Hierarchy, Kanban, Traceability, Charts, Costs, Bugs) render without error","done":true},{"id":"AC-0021","text":"The top bar shows project name, progress bar, and all six stat tiles","done":true},{"id":"AC-0022","text":"The generated HTML is self-contained and opens in any browser without a server","done":true}],"dependencies":["US-0001","US-0002","US-0003","US-0004","US-0005","US-0006","US-0007","US-0008"]},{"id":"US-0010","epicId":"EPIC-0002","title":"As a developer, I want real-time filters for epic, status, priority, and search, so that I can focus on the subset of stories I care about.","priority":"P1","estimate":"M","status":"Done","branch":"feature/US-0009-render-html","acs":[{"id":"AC-0023","text":"Selecting an epic hides stories from other epics in both Hierarchy and Kanban tabs","done":true},{"id":"AC-0024","text":"Free-text search filters by story ID and title","done":true}],"dependencies":["US-0009"]},{"id":"US-0011","epicId":"EPIC-0003","title":"As a developer, I want to install PlanVisualizer into my project with a single bash command, so that setup takes under 5 minutes.","priority":"P0","estimate":"M","status":"Done","branch":"feature/US-0011-install-script","acs":[{"id":"AC-0025","text":"The install script copies tools/, tests/, and jest.config.js to the target project","done":true},{"id":"AC-0026","text":"The script merges plan:test, plan:test:coverage, and plan:generate scripts into package.json without overwriting existing scripts","done":true},{"id":"AC-0027","text":"The script is idempotent — safe to re-run for updates","done":true}],"dependencies":[]},{"id":"US-0012","epicId":"EPIC-0003","title":"As a developer, I want Claude Code session costs to be captured automatically, so that AI_COST_LOG.md is always up to date without manual entry.","priority":"P0","estimate":"S","status":"Done","branch":"feature/US-0012-capture-cost","acs":[{"id":"AC-0028","text":"The stop hook appends one row per session to AI_COST_LOG.md using append-safe file open","done":true},{"id":"AC-0029","text":"The header row is written only when the file is empty","done":true}],"dependencies":[]},{"id":"US-0013","epicId":"EPIC-0003","title":"As a developer, I want to configure all file paths and project metadata in a single JSON file, so that PlanVisualizer works with any project structure.","priority":"P1","estimate":"S","status":"Done","branch":"feature/US-0013-config-system","acs":[{"id":"AC-0030","text":"All config keys have sensible defaults — the tool runs with zero config","done":true},{"id":"AC-0031","text":"User-supplied values deep-merge over defaults without clobbering unspecified keys","done":true}],"dependencies":[]},{"id":"US-0014","epicId":"EPIC-0004","title":"As a developer, I want ESLint to run on every push and PR, so that code quality issues are caught before merge.","priority":"P0","estimate":"S","status":"In Progress","branch":"feature/US-0014-eslint-ci","acs":[{"id":"AC-0032","text":"eslint.config.js uses eslint:recommended with no-eval and eqeqeq as errors","done":false},{"id":"AC-0033","text":"npm run lint exits 0 on all current source files","done":false},{"id":"AC-0034","text":"The lint job in ci.yml fails the workflow if ESLint reports any error","done":false}],"dependencies":[]},{"id":"US-0015","epicId":"EPIC-0004","title":"As a developer, I want the CI pipeline to gate on 80% coverage, so that test coverage cannot silently regress.","priority":"P0","estimate":"S","status":"In Progress","branch":"feature/US-0015-coverage-gate","acs":[{"id":"AC-0035","text":"jest.config.js defines coverageThreshold with 80% for lines, branches, functions, and statements","done":false},{"id":"AC-0036","text":"npm run test:coverage fails with a descriptive message when any metric falls below 80%","done":false},{"id":"AC-0037","text":"The test job in ci.yml fails the workflow when the threshold is not met","done":false}],"dependencies":[]},{"id":"US-0016","epicId":"EPIC-0004","title":"As a developer, I want npm audit to run on every push and PR, so that known vulnerabilities in dependencies are caught automatically.","priority":"P0","estimate":"S","status":"In Progress","branch":"feature/US-0016-npm-audit-ci","acs":[{"id":"AC-0038","text":"The audit job runs npm audit --audit-level=moderate","done":false},{"id":"AC-0039","text":"The workflow fails if any moderate, high, or critical vulnerability is found","done":false}],"dependencies":[]},{"id":"US-0017","epicId":"EPIC-0004","title":"As a developer, I want CodeQL to analyse the codebase on every PR and push to main, so that security vulnerabilities are caught before they reach production.","priority":"P0","estimate":"M","status":"In Progress","branch":"feature/US-0017-codeql","acs":[{"id":"AC-0040","text":"codeql.yml runs on pull_request, push to main, and a weekly Monday schedule","done":false},{"id":"AC-0041","text":"The security-extended query pack is used for JavaScript analysis","done":false},{"id":"AC-0042","text":"Results are uploaded to the GitHub Security tab as SARIF","done":false}],"dependencies":[]},{"id":"US-0018","epicId":"EPIC-0004","title":"As a developer, I want Dependabot to open automated PRs for outdated dependencies, so that the project stays secure without manual monitoring.","priority":"P1","estimate":"S","status":"In Progress","branch":"feature/US-0018-dependabot","acs":[{"id":"AC-0043","text":"dependabot.yml configures weekly npm updates with a 5-PR limit","done":false},{"id":"AC-0044","text":"GitHub Actions dependencies are also monitored weekly","done":false}],"dependencies":[]},{"id":"US-0019","epicId":"EPIC-0005","title":"As a contributor, I want a design document and technical architecture reference, so that I can understand the project's goals and implementation without reading all the source code.","priority":"P0","estimate":"M","status":"In Progress","branch":"feature/US-0019-design-docs","acs":[{"id":"AC-0045","text":"Docs/DESIGN.md covers product vision, user profile, core concepts, feature set, and design system","done":false},{"id":"AC-0046","text":"Docs/ARCHITECTURE.md covers module structure, data flow, parser contract, renderer design, and CI architecture","done":false},{"id":"AC-0047","text":"Both documents are committed to main","done":false}],"dependencies":[]},{"id":"US-0020","epicId":"EPIC-0005","title":"As a contributor, I want a complete release plan with epics, stories, tasks, and ID registry, so that project scope and progress can be tracked in the dashboard.","priority":"P0","estimate":"M","status":"In Progress","branch":"feature/US-0020-release-plan","acs":[{"id":"AC-0048","text":"Docs/RELEASE_PLAN.md contains all 5 epics with correct AGENTS.md format","done":false},{"id":"AC-0049","text":"All user stories include priority, estimate, status, branch, and acceptance criteria","done":false},{"id":"AC-0050","text":"Docs/ID_REGISTRY.md is populated with correct next-available IDs","done":false}],"dependencies":[]},{"id":"US-0021","epicId":"EPIC-0005","title":"As a contributor, I want a human-readable test plan and test cases document, so that QA verification is reproducible and stories cannot close without test evidence.","priority":"P0","estimate":"M","status":"In Progress","branch":"feature/US-0021-test-cases","acs":[{"id":"AC-0051","text":"Docs/TEST_CASES.md contains at least one TC per user story","done":false},{"id":"AC-0052","text":"Every acceptance criterion (AC) has a corresponding TC","done":false},{"id":"AC-0053","text":"TC format is parseable by parse-test-cases.js and renders in the Traceability tab","done":false}],"dependencies":["US-0020"]},{"id":"US-0022","epicId":"EPIC-0005","title":"As a contributor, I want all AGENTS.md-required project files to exist and be populated, so that any AI agent can pick up this project without missing context.","priority":"P0","estimate":"M","status":"In Progress","branch":"feature/US-0022-project-files","acs":[{"id":"AC-0054","text":"MEMORY.md, PROMPT_LOG.md, MIGRATION_LOG.md, findings.md, progress.md, task_plan.md exist and are populated","done":false},{"id":"AC-0055","text":"Docs/LESSONS.md and architecture/ERROR_TAXONOMY.md exist","done":false},{"id":"AC-0056","text":"node tools/generate-plan.js runs successfully and produces a valid plan-status.html","done":false}],"dependencies":[]}]};
+
+  function showTab(name) {
+    ['hierarchy','kanban','traceability','charts','costs','bugs'].forEach(t => {
+      const el = document.getElementById('tab-' + t);
+      const btn = document.getElementById('tab-btn-' + t);
+      if (el) el.classList.toggle('hidden', t !== name);
+      if (btn) {
+        btn.classList.toggle('border-blue-500', t === name);
+        btn.classList.toggle('text-blue-600', t === name);
+        btn.classList.toggle('border-transparent', t !== name);
+        btn.classList.toggle('text-slate-600', t !== name);
+      }
+    });
+    if (name === 'charts' && typeof initCharts === 'function') { initCharts(); initCharts = () => {}; }
+  }
+
+  function toggleEpic(id) {
+    const el = document.getElementById('epic-stories-' + id);
+    if (el) el.classList.toggle('hidden');
+  }
+  function toggleACs(id) {
+    const el = document.getElementById('acs-' + id);
+    if (el) el.classList.toggle('hidden');
+  }
+
+  function applyFilters() {
+    const epic = document.getElementById('f-epic').value;
+    const status = document.getElementById('f-status').value;
+    const priority = document.getElementById('f-priority').value;
+    const search = document.getElementById('f-search').value.toLowerCase();
+    document.querySelectorAll('.story-row').forEach(row => {
+      const matchEpic = !epic || row.dataset.epic === epic;
+      const matchStatus = !status || row.dataset.status === status;
+      const matchPriority = !priority || row.dataset.priority === priority;
+      const matchSearch = !search || row.innerText.toLowerCase().includes(search);
+      row.style.display = (matchEpic && matchStatus && matchPriority && matchSearch) ? '' : 'none';
+    });
+  }
+
+  function clearFilters() {
+    ['f-epic','f-status','f-priority','f-type'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('f-search').value = '';
+    applyFilters();
+  }
+  </script>
+</body>
+</html>
