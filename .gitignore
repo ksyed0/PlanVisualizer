@@ -1,3 +1,5 @@
 node_modules/
-Docs/coverage/
-plan-visualizer.config.json
+coverage/
+docs/coverage/
+docs/plan-status.html
+docs/plan-status.json
