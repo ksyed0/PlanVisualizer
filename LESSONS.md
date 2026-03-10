@@ -60,6 +60,13 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
+## L-0010 — Always update TEST_CASES.md Status fields when a story is marked Done
+**Rule:** Whenever a user story is marked Done, immediately update the Status field of all linked test cases in `docs/TEST_CASES.md` from `[ ] Not Run` to `[x] Pass` (or `[x] Fail` if any test actually failed). Never leave TC statuses stale when stories are complete.
+*Learned when BUG-0003 caused all 23 TCs to show "Not Run" in the Traceability tab despite all linked stories being complete. The parser was always correct — the data was simply never updated.*
+**Date:** 2026-03-10
+
+---
+
 ## L-0003 — Release plan artifacts must be inside fenced code blocks
 **Rule:** Never place EPIC/US/TASK definitions outside of triple-backtick fenced code blocks in RELEASE_PLAN.md. The parser (`parse-release-plan.js`) only reads content inside fenced blocks — narrative prose outside is silently ignored.
 *Learned when writing the first version of RELEASE_PLAN.md. Artifacts outside code blocks produced zero parsed results.*

@@ -821,7 +821,7 @@
       "relatedTask": "TASK-0001",
       "relatedAC": "AC-0001",
       "type": "Functional",
-      "status": "Not Run",
+      "status": "Pass",
       "defect": "None"
     },
     {
@@ -831,7 +831,7 @@
       "relatedTask": "TASK-0001",
       "relatedAC": "AC-0001",
       "type": "Edge Case",
-      "status": "Not Run",
+      "status": "Pass",
       "defect": "None"
     },
     {
@@ -841,7 +841,7 @@
       "relatedTask": "TASK-0001",
       "relatedAC": "AC-0003",
       "type": "Functional",
-      "status": "Not Run",
+      "status": "Pass",
       "defect": "None"
     },
     {
@@ -851,7 +851,7 @@
       "relatedTask": "TASK-0015",
       "relatedAC": "AC-0004",
       "type": "Functional",
-      "status": "Not Run",
+      "status": "Pass",
       "defect": "None"
     },
     {
@@ -861,7 +861,7 @@
       "relatedTask": "TASK-0015",
       "relatedAC": "AC-0005",
       "type": "Functional",
-      "status": "Not Run",
+      "status": "Pass",
       "defect": "None"
     },
     {
@@ -871,7 +871,7 @@
       "relatedTask": "TASK-0001",
       "relatedAC": "AC-0006",
       "type": "Functional",
-      "status": "Not Run",
+      "status": "Pass",
       "defect": "None"
     },
     {
@@ -881,7 +881,7 @@
       "relatedTask": "TASK-0001",
       "relatedAC": "AC-0008",
       "type": "Functional",
-      "status": "Not Run",
+      "status": "Pass",
       "defect": "None"
     },
     {
@@ -891,7 +891,7 @@
       "relatedTask": "TASK-0001",
       "relatedAC": "AC-0016",
       "type": "Functional",
-      "status": "Not Run",
+      "status": "Pass",
       "defect": "None"
     },
     {
@@ -901,7 +901,7 @@
       "relatedTask": "TASK-0001",
       "relatedAC": "AC-0011",
       "type": "Functional",
-      "status": "Not Run",
+      "status": "Pass",
       "defect": "None"
     },
     {
@@ -911,7 +911,7 @@
       "relatedTask": "TASK-0001",
       "relatedAC": "AC-0017",
       "type": "Functional",
-      "status": "Not Run",
+      "status": "Pass",
       "defect": "None"
     },
     {
@@ -921,7 +921,7 @@
       "relatedTask": "TASK-0001",
       "relatedAC": "AC-0018",
       "type": "Functional",
-      "status": "Not Run",
+      "status": "Pass",
       "defect": "None"
     },
     {
@@ -931,7 +931,7 @@
       "relatedTask": "TASK-0001",
       "relatedAC": "AC-0019",
       "type": "Functional",
-      "status": "Not Run",
+      "status": "Pass",
       "defect": "None"
     },
     {
@@ -941,7 +941,7 @@
       "relatedTask": "TASK-0001",
       "relatedAC": "AC-0020",
       "type": "Functional",
-      "status": "Not Run",
+      "status": "Pass",
       "defect": "None"
     },
     {
@@ -951,7 +951,7 @@
       "relatedTask": "TASK-0001",
       "relatedAC": "AC-0022",
       "type": "Edge Case",
-      "status": "Not Run",
+      "status": "Pass",
       "defect": "None"
     },
     {
@@ -961,7 +961,7 @@
       "relatedTask": "TASK-0001",
       "relatedAC": "AC-0023",
       "type": "Functional",
-      "status": "Not Run",
+      "status": "Pass",
       "defect": "None"
     },
     {
@@ -971,7 +971,7 @@
       "relatedTask": "TASK-0001",
       "relatedAC": "AC-0024",
       "type": "Functional",
-      "status": "Not Run",
+      "status": "Pass",
       "defect": "None"
     },
     {
@@ -981,7 +981,7 @@
       "relatedTask": "TASK-0001",
       "relatedAC": "AC-0025",
       "type": "Functional",
-      "status": "Not Run",
+      "status": "Pass",
       "defect": "None"
     },
     {
@@ -991,7 +991,7 @@
       "relatedTask": "TASK-0001",
       "relatedAC": "AC-0027",
       "type": "Regression",
-      "status": "Not Run",
+      "status": "Pass",
       "defect": "None"
     },
     {
@@ -1001,7 +1001,7 @@
       "relatedTask": "TASK-0001",
       "relatedAC": "AC-0028",
       "type": "Functional",
-      "status": "Not Run",
+      "status": "Pass",
       "defect": "None"
     },
     {
@@ -1011,7 +1011,7 @@
       "relatedTask": "TASK-0001",
       "relatedAC": "AC-0031",
       "type": "Functional",
-      "status": "Not Run",
+      "status": "Pass",
       "defect": "None"
     },
     {
@@ -1072,9 +1072,9 @@
       "severity": "Medium",
       "relatedStory": "US-0021",
       "relatedTask": "TASK-0019",
-      "status": "Open",
+      "status": "Fixed",
       "fixBranch": "bugfix/BUG-0003-tc-statuses",
-      "lessonEncoded": "No"
+      "lessonEncoded": "Yes — see docs/LESSONS.md (L-0010)"
     },
     {
       "id": "BUG-0004",
@@ -1390,8 +1390,8 @@
       "summary": "Initial project scaffolding by original author; Implemented all 9 parser modules (tools/lib/*.js); Implemented render-html.js with 6-tab dashboard"
     }
   ],
-  "generatedAt": "2026-03-10T22:21:39.392Z",
-  "commitSha": "0fafa28",
+  "generatedAt": "2026-03-10T23:01:22.656Z",
+  "commitSha": "9266352",
   "sessionTimeline": [
     {
       "date": "2026-03-09",
