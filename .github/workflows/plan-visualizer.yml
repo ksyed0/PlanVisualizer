@@ -1,6 +1,7 @@
 name: Plan Visualizer
 
 on:
+  workflow_dispatch:
   push:
     branches: [main, develop]
     paths:
