@@ -1045,7 +1045,48 @@
       "defect": "None"
     }
   ],
-  "bugs": [],
+  "bugs": [
+    {
+      "id": "BUG-0001",
+      "title": "Lines Cov and Branch Cov badges show N/A",
+      "severity": "High",
+      "relatedStory": "US-0016",
+      "relatedTask": "TASK-0006",
+      "status": "Fixed",
+      "fixBranch": "bugfix/BUG-0001-coverage-na",
+      "lessonEncoded": "Yes — see docs/LESSONS.md"
+    },
+    {
+      "id": "BUG-0002",
+      "title": "Test Coverage chart shows 0% on Charts tab",
+      "severity": "High",
+      "relatedStory": "US-0016",
+      "relatedTask": "TASK-0006",
+      "status": "Fixed",
+      "fixBranch": "bugfix/BUG-0001-coverage-na",
+      "lessonEncoded": "Yes — see docs/LESSONS.md"
+    },
+    {
+      "id": "BUG-0003",
+      "title": "All test cases show \"Not Run\" in Traceability tab",
+      "severity": "Medium",
+      "relatedStory": "US-0021",
+      "relatedTask": "TASK-0019",
+      "status": "Open",
+      "fixBranch": "bugfix/BUG-0003-tc-statuses",
+      "lessonEncoded": "No"
+    },
+    {
+      "id": "BUG-0004",
+      "title": "Header area scrolls off-screen when content is long",
+      "severity": "Medium",
+      "relatedStory": "US-0011",
+      "relatedTask": "TASK-0001",
+      "status": "Open",
+      "fixBranch": "bugfix/BUG-0004-sticky-header",
+      "lessonEncoded": "No"
+    }
+  ],
   "costs": {
     "US-0001": {
       "projectedUsd": 1600,
@@ -1320,12 +1361,12 @@
     }
   },
   "coverage": {
-    "lines": 0,
-    "statements": 0,
-    "functions": 0,
-    "branches": 0,
-    "overall": 0,
-    "meetsTarget": false
+    "lines": 99.6,
+    "statements": 97.71,
+    "functions": 96.66,
+    "branches": 84.21,
+    "overall": 84.21,
+    "meetsTarget": true
   },
   "recentActivity": [
     {
@@ -1341,8 +1382,8 @@
       "summary": "Initial project scaffolding by original author; Implemented all 9 parser modules (tools/lib/*.js); Implemented render-html.js with 6-tab dashboard"
     }
   ],
-  "generatedAt": "2026-03-10T14:21:15.587Z",
-  "commitSha": "26872cb",
+  "generatedAt": "2026-03-10T18:00:04.369Z",
+  "commitSha": "9641d63",
   "sessionTimeline": [
     {
       "date": "2026-03-09",
