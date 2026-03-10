@@ -6,7 +6,13 @@ Running log of session activity, errors, test results, and blockers.
 
 ## Session 2 — 2026-03-10
 
-### What Was Done
+### What Was Done (continued)
+- Fixed GitHub Pages deployment: removed broken commit-back step, created docs/index.html redirect, added workflow_dispatch trigger
+- Manually triggered plan-visualizer.yml to deploy dashboard to GitHub Pages
+
+---
+
+### What Was Done (initial)
 - Initialised git repository and connected to ksyed0/PlanVisualizer remote
 - Committed AGENTS.md to repository
 - Upgraded Jest 29 → 30 to eliminate `inflight` and `glob@7` deprecation warnings (all 121 tests pass)

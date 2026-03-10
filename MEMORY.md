@@ -110,18 +110,19 @@ Current coverage (2026-03-10): 97.55% statements, 84.18% branches, 96.2% functio
 | `tools/generate-plan.js` | Main CLI, orchestrates everything |
 | `tools/capture-cost.js` | Claude Code stop hook |
 | `tools/lib/*.js` | Parser and renderer modules |
-| `Docs/RELEASE_PLAN.md` | Epics, stories, tasks |
-| `Docs/TEST_CASES.md` | Human-readable test cases |
-| `Docs/BUGS.md` | Bug register |
-| `Docs/AI_COST_LOG.md` | Append-only cost ledger |
-| `Docs/plan-status.html` | Generated dashboard |
+| `docs/RELEASE_PLAN.md` | Epics, stories, tasks |
+| `docs/TEST_CASES.md` | Human-readable test cases |
+| `docs/BUGS.md` | Bug register |
+| `docs/AI_COST_LOG.md` | Append-only cost ledger |
+| `docs/index.html` | GitHub Pages redirect to plan-status.html |
+| `docs/plan-status.html` | Generated dashboard (gitignored; deployed by CI) |
 | `progress.md` | Session logs |
 | `MEMORY.md` | This file |
 | `PROMPT_LOG.md` | Session prompt audit trail |
 | `MIGRATION_LOG.md` | Cross-platform change log |
 | `findings.md` | Research and discoveries |
-| `Docs/ID_REGISTRY.md` | Next available IDs |
-| `Docs/LESSONS.md` | Encoded hard-won lessons |
+| `docs/ID_REGISTRY.md` | Next available IDs |
+| `docs/LESSONS.md` | Encoded hard-won lessons |
 | `architecture/ERROR_TAXONOMY.md` | Error classification |
 
 ---
@@ -137,3 +138,6 @@ Current coverage (2026-03-10): 97.55% statements, 84.18% branches, 96.2% functio
 
 - **Always upgrade Jest when transitive deps emit deprecation warnings.** Jest 29 → 30 eliminated the `inflight` and `glob@7` deprecation warnings with zero test changes. (2026-03-10)
 - **CodeQL cannot be scoped with per-job `on:` triggers** — it requires its own workflow file (`codeql.yml`) to control trigger conditions independently from the main CI workflow.
+- **GitHub Pages: always include docs/index.html.** Without it Pages falls back to README.md. Use `<meta http-equiv="refresh">` to redirect to the real entry point.
+- **peaceiris/actions-gh-pages deploys the full filesystem.** Never add a `git add / commit` step for the generated artifact — it's gitignored and the deploy action works directly from disk.
+- **Add workflow_dispatch to any workflow with path filters.** This is the only way to trigger the workflow manually when the changed files don't match the path filter (e.g. when editing the workflow file itself).

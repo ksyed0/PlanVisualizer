@@ -15,6 +15,19 @@ Log every change that must propagate to other platforms, modules, or installatio
 
 ---
 
+## 2026-03-10 — GitHub Pages deployment fix
+
+**Files changed:** `.github/workflows/plan-visualizer.yml`, `docs/index.html` (new)
+**Platforms / modules affected:** PlanVisualizer repo GitHub Pages deployment only
+**What changed:**
+1. Removed the "Commit generated files" step from plan-visualizer.yml — `peaceiris/actions-gh-pages` deploys directly from the `./docs` filesystem; a commit-back step was never needed and failed because `plan-status.html` is gitignored.
+2. Created `docs/index.html` with a `<meta http-equiv="refresh">` redirect to `plan-status.html` so GitHub Pages serves the dashboard instead of README.md.
+3. Added `workflow_dispatch:` trigger so the workflow can be manually triggered when changes don't touch the `paths:` filter.
+**Adaptations completed:** Done. Workflow re-triggered manually; dashboard now deploys correctly.
+**Adaptations still needed:** None.
+
+---
+
 ## 2026-03-10 — plan-visualizer.config.json committed to this repo
 
 **Files changed:** `.gitignore` (removal of `plan-visualizer.config.json` entry), new `plan-visualizer.config.json`
