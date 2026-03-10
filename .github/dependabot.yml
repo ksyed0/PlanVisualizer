@@ -9,6 +9,11 @@ updates:
     open-pull-requests-limit: 5
     labels:
       - dependencies
+    groups:
+      eslint:
+        patterns:
+          - 'eslint'
+          - '@eslint/*'
 
   - package-ecosystem: github-actions
     directory: /
