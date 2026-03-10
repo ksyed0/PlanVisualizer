@@ -8,7 +8,7 @@
     "testCases": "docs/TEST_CASES.md",
     "bugs": "docs/BUGS.md",
     "costLog": "docs/AI_COST_LOG.md",
-    "outputDir": "Docs"
+    "outputDir": "docs"
   },
   "coverage": { "summaryPath": "coverage/coverage-summary.json" },
   "progress": { "path": "progress.md" },
