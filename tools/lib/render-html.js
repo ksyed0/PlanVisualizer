@@ -115,10 +115,10 @@ function renderFilterBar(data) {
 function renderTabs() {
   const tabs = ['Hierarchy','Kanban','Traceability','Charts','Costs','Bugs'];
   return `
-  <div class="border-b border-slate-200 bg-white px-6 flex gap-1" id="tab-bar">
+  <div class="border-b border-slate-700 bg-slate-800 px-6 flex gap-1" id="tab-bar">
     ${tabs.map((t, i) => `
     <button onclick="showTab('${t.toLowerCase()}')" id="tab-btn-${t.toLowerCase()}"
-      class="px-4 py-2 text-sm font-medium border-b-2 ${i===0 ? 'border-blue-500 text-blue-600' : 'border-transparent text-slate-600 hover:text-slate-900'}">
+      class="px-4 py-2 text-sm font-medium border-b-2 ${i===0 ? 'border-blue-400 text-blue-300' : 'border-transparent text-slate-400 hover:text-slate-200'}">
       ${t}
     </button>`).join('')}
   </div>`;
@@ -199,23 +199,61 @@ function renderTraceabilityTab(data) {
   if (!data.testCases.length) {
     return `<div id="tab-traceability" class="p-6 hidden"><p class="text-slate-400">No test cases yet.</p></div>`;
   }
-  const tcStatusColor = { 'Pass': 'bg-green-100 text-green-800', 'Fail': 'bg-red-100 text-red-800', 'Not Run': 'bg-gray-100 text-gray-500' };
+  const tcStatusColor = {
+    'Pass': 'bg-green-100 text-green-800',
+    'Fail': 'bg-red-100 text-red-800',
+    'Not Run': 'bg-amber-50 text-amber-700',
+  };
   const headers = data.testCases.map(tc => `<th class="text-xs font-mono p-2 border border-slate-200">${tc.id}</th>`).join('');
   const rows = data.stories.map(story => {
     const cells = data.testCases.map(tc => {
       const linked = tc.relatedStory === story.id;
-      const cls = linked ? (tcStatusColor[tc.status] || 'bg-gray-100') : 'bg-white';
-      return `<td class="p-2 border border-slate-200 text-center ${cls}">${linked ? tc.status.slice(0,1) : ''}</td>`;
+      const cls = linked ? (tcStatusColor[tc.status] || 'bg-amber-50 text-amber-700') : 'bg-white';
+      return `<td class="p-2 border border-slate-200 text-center text-xs font-medium ${cls}">${linked ? tc.status.slice(0,1) : ''}</td>`;
     }).join('');
     return `<tr><td class="text-xs font-mono px-2 py-1 border border-slate-200 whitespace-nowrap">${story.id}</td>${cells}</tr>`;
   }).join('');
+  const passed  = data.testCases.filter(tc => tc.status === 'Pass').length;
+  const failed  = data.testCases.filter(tc => tc.status === 'Fail').length;
+  const notRun  = data.testCases.filter(tc => tc.status === 'Not Run').length;
   return `
-  <div id="tab-traceability" class="p-6 hidden overflow-x-auto">
-    <p class="text-xs text-slate-400 mb-3">P=Pass · F=Fail · N=Not Run · blank=not linked</p>
-    <table class="border-collapse text-sm">
-      <thead><tr><th class="p-2 border border-slate-200">Story</th>${headers}</tr></thead>
-      <tbody>${rows}</tbody>
-    </table>
+  <div id="tab-traceability" class="p-6 hidden">
+    <div class="flex gap-6 items-start">
+      <div class="overflow-x-auto flex-1">
+        <table class="border-collapse text-sm">
+          <thead><tr><th class="p-2 border border-slate-200 text-xs">Story</th>${headers}</tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+      <div class="flex-shrink-0 bg-white border border-slate-200 rounded-lg p-4 w-44">
+        <h4 class="text-xs font-semibold text-slate-600 uppercase mb-3">Legend</h4>
+        <div class="space-y-2">
+          <div class="flex items-center gap-2">
+            <span class="w-8 h-6 rounded text-xs font-medium flex items-center justify-center bg-green-100 text-green-800">P</span>
+            <span class="text-xs text-slate-600">Pass</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-8 h-6 rounded text-xs font-medium flex items-center justify-center bg-red-100 text-red-800">F</span>
+            <span class="text-xs text-slate-600">Fail</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-8 h-6 rounded text-xs font-medium flex items-center justify-center bg-amber-50 text-amber-700">N</span>
+            <span class="text-xs text-slate-600">Not Run</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-8 h-6 rounded border border-slate-200 bg-white"></span>
+            <span class="text-xs text-slate-400">Not linked</span>
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-slate-100 space-y-1">
+          <p class="text-xs font-semibold text-slate-500 mb-1">Summary</p>
+          <p class="text-xs text-green-700">${passed} Pass</p>
+          <p class="text-xs text-red-700">${failed} Fail</p>
+          <p class="text-xs text-amber-700">${notRun} Not Run</p>
+          <p class="text-xs text-slate-500 border-t border-slate-100 pt-1 mt-1">${data.testCases.length} Total TCs</p>
+        </div>
+      </div>
+    </div>
   </div>`;
 }
 
@@ -227,7 +265,7 @@ function renderChartsTab(data) {
   const epicProjected = JSON.stringify(data.epics.map(e => data.stories.filter(s => s.epicId === e.id).reduce((sum, s) => sum + (TSHIRT_HOURS[s.estimate] || 0) * 100, 0)));
   const epicAI = JSON.stringify(data.epics.map(e => {
     const branchStories = data.stories.filter(s => s.epicId === e.id);
-    return branchStories.reduce((sum, s) => sum + (data.costs[s.id] ? data.costs[s.id].aiCostUsd || 0 : 0), 0);
+    return branchStories.reduce((sum, s) => sum + (data.costs[s.id] ? data.costs[s.id].costUsd || 0 : 0), 0);
   }));
   const coveragePct = data.coverage.overall.toFixed(1);
   const timeline = data.sessionTimeline || [];
@@ -236,6 +274,9 @@ function renderChartsTab(data) {
   const sessionPerCosts = JSON.stringify(timeline.map((s, i) =>
     (i === 0 ? s.cumCost : s.cumCost - timeline[i - 1].cumCost).toFixed(2)
   ));
+  const statusCounts = JSON.stringify(
+    ['Done','In Progress','Planned','To Do','Blocked'].map(st => data.stories.filter(s => s.status === st).length)
+  );
 
   return `
   <div id="tab-charts" class="p-6 hidden">
@@ -253,7 +294,15 @@ function renderChartsTab(data) {
 
       <div class="bg-white border border-slate-200 rounded-lg p-4">
         <h3 class="text-sm font-semibold text-slate-600 mb-3">Test Coverage</h3>
-        <canvas id="chart-coverage" height="200"></canvas>
+        <div class="relative">
+          <canvas id="chart-coverage" height="200"></canvas>
+          <div class="absolute inset-0 flex items-center justify-center pointer-events-none" style="padding-bottom:2.5rem">
+            <div class="text-center">
+              <div class="text-2xl font-bold text-slate-700">${coveragePct}%</div>
+              <div class="text-xs text-slate-500">overall</div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="bg-white border border-slate-200 rounded-lg p-4">
@@ -262,7 +311,7 @@ function renderChartsTab(data) {
       </div>
 
       <div class="bg-white border border-slate-200 rounded-lg p-4">
-        <h3 class="text-sm font-semibold text-slate-600 mb-3">Burndown (Stories Remaining)</h3>
+        <h3 class="text-sm font-semibold text-slate-600 mb-3">Story Status Distribution</h3>
         <canvas id="chart-burndown" height="200"></canvas>
       </div>
 
@@ -294,8 +343,8 @@ function renderChartsTab(data) {
     });
     new Chart(document.getElementById('chart-coverage'), {
       type: 'doughnut',
-      data: { labels: ['Coverage', 'Gap'], datasets: [{ data: [${coveragePct}, ${100 - parseFloat(coveragePct)}], backgroundColor: ['#22c55e','#e2e8f0'], borderWidth: 0 }] },
-      options: { cutout: '70%', plugins: { legend: { display: false } } }
+      data: { labels: ['Covered', 'Gap'], datasets: [{ data: [${coveragePct}, ${100 - parseFloat(coveragePct)}], backgroundColor: ['#22c55e','#e2e8f0'], borderWidth: 0 }] },
+      options: { cutout: '70%', plugins: { legend: { display: true, position: 'bottom' } } }
     });
     new Chart(document.getElementById('chart-ai-timeline'), {
       type: 'line',
@@ -303,9 +352,9 @@ function renderChartsTab(data) {
       options: { responsive: true }
     });
     new Chart(document.getElementById('chart-burndown'), {
-      type: 'line',
-      data: { labels: [], datasets: [{ label: 'Stories Remaining', data: [], borderColor: '#3b82f6', tension: 0.3 }] },
-      options: { responsive: true }
+      type: 'doughnut',
+      data: { labels: ['Done','In Progress','Planned','To Do','Blocked'], datasets: [{ data: ${statusCounts}, backgroundColor: ['#22c55e','#3b82f6','#94a3b8','#f59e0b','#ef4444'], borderWidth: 1 }] },
+      options: { plugins: { legend: { display: true, position: 'bottom' } } }
     });
     new Chart(document.getElementById('chart-burn-rate'), {
       type: 'bar',
@@ -317,34 +366,53 @@ function renderChartsTab(data) {
 }
 
 function renderCostsTab(data) {
-  const rows = data.stories.map(story => {
-    const projected = (TSHIRT_HOURS[story.estimate] || 0) * 100;
-    const ai = data.costs[story.id] || { aiCostUsd: 0, inputTokens: 0, outputTokens: 0 };
-    const aiCost = ai.aiCostUsd || ai.costUsd || 0;
-    return `<tr class="border-t border-slate-100">
-      <td class="px-3 py-2 font-mono text-xs">${story.id}</td>
-      <td class="px-3 py-2 text-sm">${story.title}</td>
-      <td class="px-3 py-2 text-center">${badge(story.status)}</td>
-      <td class="px-3 py-2 text-center text-sm">${story.estimate || '?'}</td>
-      <td class="px-3 py-2 text-right text-sm">${usd(projected)}</td>
-      <td class="px-3 py-2 text-right text-sm text-teal-600">${usd(aiCost)}</td>
-      <td class="px-3 py-2 text-right text-xs text-slate-400">${fmtNum(ai.inputTokens || 0)} / ${fmtNum(ai.outputTokens || 0)}</td>
-    </tr>`;
+  const epicBlocks = data.epics.map(epic => {
+    const epicStories = data.stories.filter(s => s.epicId === epic.id);
+    const epicProjected = epicStories.reduce((s, st) => s + (TSHIRT_HOURS[st.estimate] || 0) * 100, 0);
+    const epicAI = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).costUsd || 0), 0);
+    const epicIn = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).inputTokens || 0), 0);
+    const epicOut = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).outputTokens || 0), 0);
+    const storyRows = epicStories.map(story => {
+      const projected = (TSHIRT_HOURS[story.estimate] || 0) * 100;
+      const ai = data.costs[story.id] || {};
+      const aiCost = ai.costUsd || 0;
+      return `<tr class="border-t border-slate-100">
+        <td class="px-3 py-2 pl-8 font-mono text-xs text-slate-500">${story.id}</td>
+        <td class="px-3 py-2 text-sm">${story.title}</td>
+        <td class="px-3 py-2 text-center">${badge(story.status)}</td>
+        <td class="px-3 py-2 text-center text-sm">${story.estimate || '?'}</td>
+        <td class="px-3 py-2 text-right text-sm">${usd(projected)}</td>
+        <td class="px-3 py-2 text-right text-sm text-teal-600">${usd(aiCost)}</td>
+        <td class="px-3 py-2 text-right text-xs text-slate-400">${fmtNum(ai.inputTokens || 0)} / ${fmtNum(ai.outputTokens || 0)}</td>
+      </tr>`;
+    }).join('');
+    return `
+    <tr class="bg-slate-50 border-t-2 border-slate-300">
+      <td colspan="4" class="px-3 py-2">
+        <span class="font-mono text-xs font-bold text-blue-600">${epic.id}</span>
+        <span class="text-sm font-semibold ml-2 text-slate-700">${epic.title}</span>
+        <span class="ml-2">${badge(epic.status)}</span>
+      </td>
+      <td class="px-3 py-2 text-right text-sm font-medium">${usd(epicProjected)}</td>
+      <td class="px-3 py-2 text-right text-sm font-medium text-teal-600">${usd(epicAI)}</td>
+      <td class="px-3 py-2 text-right text-xs text-slate-400">${fmtNum(epicIn)} / ${fmtNum(epicOut)}</td>
+    </tr>
+    ${storyRows}`;
   }).join('');
   const t = data.costs._totals;
   const totalProjected = data.stories.reduce((s, st) => s + (TSHIRT_HOURS[st.estimate] || 0) * 100, 0);
   return `
   <div id="tab-costs" class="p-6 hidden overflow-x-auto">
     <table class="w-full text-left text-sm border-collapse">
-      <thead class="bg-slate-50 text-slate-600 text-xs uppercase">
+      <thead class="bg-slate-800 text-slate-200 text-xs uppercase">
         <tr>
           <th class="px-3 py-2">Story</th><th class="px-3 py-2">Title</th><th class="px-3 py-2 text-center">Status</th>
           <th class="px-3 py-2 text-center">Size</th><th class="px-3 py-2 text-right">Projected</th>
           <th class="px-3 py-2 text-right">AI Cost</th><th class="px-3 py-2 text-right">Tokens (in/out)</th>
         </tr>
       </thead>
-      <tbody>${rows}</tbody>
-      <tfoot class="bg-slate-50 font-semibold">
+      <tbody>${epicBlocks}</tbody>
+      <tfoot class="bg-slate-50 font-semibold border-t-2 border-slate-300">
         <tr>
           <td colspan="4" class="px-3 py-2 text-right text-sm">Totals</td>
           <td class="px-3 py-2 text-right text-sm">${usd(totalProjected)}</td>
@@ -409,10 +477,10 @@ function renderScripts(data) {
       const btn = document.getElementById('tab-btn-' + t);
       if (el) el.classList.toggle('hidden', t !== name);
       if (btn) {
-        btn.classList.toggle('border-blue-500', t === name);
-        btn.classList.toggle('text-blue-600', t === name);
+        btn.classList.toggle('border-blue-400', t === name);
+        btn.classList.toggle('text-blue-300', t === name);
         btn.classList.toggle('border-transparent', t !== name);
-        btn.classList.toggle('text-slate-600', t !== name);
+        btn.classList.toggle('text-slate-400', t !== name);
       }
     });
     if (name === 'charts' && typeof initCharts === 'function') { initCharts(); initCharts = () => {}; }
