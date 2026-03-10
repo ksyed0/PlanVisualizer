@@ -1330,6 +1330,10 @@
   "recentActivity": [
     {
       "date": "2026-03-10",
+      "summary": "Read AGENTS.md at user's prompt — was not being read at session start; now embedded as standard; Disabled §1 Sequential Execution in AGENTS.md (parallel agents permitted); Synced `develop` branch with `main` (fast-forward — develop was ~20 commits behind)"
+    },
+    {
+      "date": "2026-03-10",
       "summary": ""
     },
     {
@@ -1337,8 +1341,8 @@
       "summary": "Initial project scaffolding by original author; Implemented all 9 parser modules (tools/lib/*.js); Implemented render-html.js with 6-tab dashboard"
     }
   ],
-  "generatedAt": "2026-03-10T14:14:34.808Z",
-  "commitSha": "1880fb2",
+  "generatedAt": "2026-03-10T14:21:15.587Z",
+  "commitSha": "26872cb",
   "sessionTimeline": [
     {
       "date": "2026-03-09",
