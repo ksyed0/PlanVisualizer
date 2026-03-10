@@ -1,0 +1,12 @@
+{
+  "name": "plan-visualizer",
+  "version": "1.0.0",
+  "description": "Self-contained project dashboard for Claude Code projects",
+  "scripts": {
+    "test": "jest",
+    "test:coverage": "jest --coverage"
+  },
+  "devDependencies": {
+    "jest": "29.7.0"
+  }
+}
