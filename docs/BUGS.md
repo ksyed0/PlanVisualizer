@@ -54,9 +54,9 @@ Steps to Reproduce:
   2. Scroll down
 Expected: Top bar, filter bar, and tab bar remain fixed at the top of the viewport
 Actual: All three scroll off-screen; user loses navigation and filter access
-Status: Open
+Status: Fixed
 Fix Branch: bugfix/BUG-0004-sticky-header
-Lesson Encoded: No
+Lesson Encoded: Yes — see docs/LESSONS.md (L-0009)
 
 BUG-0005: XSS via unescaped user data interpolated into generated HTML
 Severity: Critical
