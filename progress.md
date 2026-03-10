@@ -4,6 +4,42 @@ Running log of session activity, errors, test results, and blockers.
 
 ---
 
+## Session 5 — 2026-03-10
+
+### What Was Done
+- Fixed BUG-0003: Updated TC-0001–TC-0020 status to `[x] Pass` in `docs/TEST_CASES.md`; TC-0021–TC-0023 remain `[ ] Not Run` (linked to To Do stories). Added L-0010 to `docs/LESSONS.md`.
+- Fixed BUG-0004: Added `<div class="sticky top-0 z-30">` wrapper in `renderHtml()` around renderTopBar/renderFilterBar/renderTabs. Added regression test.
+- Both bugs marked Fixed in `docs/BUGS.md`.
+- Created PR #12 (BUG-0003) and PR #13 (BUG-0004) targeting `develop`.
+
+### Test Results
+- 125 tests pass, 9 suites. Coverage: 97.71% statements, 84.21% branches, 96.66% functions, 99.6% lines. All thresholds met.
+
+### Errors or Blockers
+- None
+
+### What's Next
+- Merge PR #12 and PR #13 into `develop` after CI passes
+
+---
+
+## Session 4 — 2026-03-10
+
+### What Was Done
+- Downloaded `develop` branch
+- Initialized session: read AGENTS.md, MEMORY.md, progress.md
+
+### Test Results
+- Pending — no code changes this session yet
+
+### Errors or Blockers
+- None
+
+### What's Next
+- Feature development on `develop` branch per branching strategy
+
+---
+
 ## Session 3 — 2026-03-10 (continuation)
 
 ### What Was Done
