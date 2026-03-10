@@ -40,6 +40,10 @@ describe('renderHtml', () => {
     expect(html).toMatch(/Bugs/);
   });
   it('marks at-risk story with warning', () => expect(html).toMatch(/at-risk|⚠/));
+  it('includes sticky header wrapper', () => {
+    expect(html).toMatch(/id="sticky-header"/);
+    expect(html).toMatch(/position:sticky/);
+  });
 });
 
 describe('renderHtml — bugs tab', () => {
