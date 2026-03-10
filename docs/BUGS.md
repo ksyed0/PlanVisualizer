@@ -41,7 +41,7 @@ Steps to Reproduce:
   2. Observe all TC cells in the matrix
 Expected: TCs linked to Done stories show Pass status
 Actual: All 23 TCs display amber "Not Run" — Status: [ ] Not Run in TEST_CASES.md was never updated
-Status: Open
+Status: Fixed
 Fix Branch: bugfix/BUG-0003-tc-statuses
 Lesson Encoded: No
 
