@@ -601,9 +601,11 @@ function renderHtml(data) {
   ${renderPrintCSS()}
 </head>
 <body class="bg-slate-50 min-h-screen" style="padding-right:280px">
-  ${renderTopBar(data)}
-  ${renderFilterBar(data)}
-  ${renderTabs()}
+  <div class="sticky top-0 z-30">
+    ${renderTopBar(data)}
+    ${renderFilterBar(data)}
+    ${renderTabs()}
+  </div>
   <div id="tab-content">
     ${renderHierarchyTab(data)}
     ${renderKanbanTab(data)}

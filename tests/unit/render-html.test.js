@@ -253,3 +253,10 @@ describe('renderHtml — traceability with Not Run TC', () => {
     expect(html).toMatch(/TC-0003/);
   });
 });
+
+describe('renderHtml — sticky header (BUG-0004 regression)', () => {
+  it('wraps header in a sticky container', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toContain('sticky top-0 z-30');
+  });
+});
