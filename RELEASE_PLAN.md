@@ -272,23 +272,23 @@ Dependencies: None
 US-0019 (EPIC-0005): As a contributor, I want a design document and technical architecture reference, so that I can understand the project's goals and implementation without reading all the source code.
 Priority: High (P0)
 Estimate: M
-Status: In Progress
+Status: Done
 Branch: feature/US-0019-design-docs
 Acceptance Criteria:
-  - [ ] AC-0045: Docs/DESIGN.md covers product vision, user profile, core concepts, feature set, and design system
-  - [ ] AC-0046: Docs/ARCHITECTURE.md covers module structure, data flow, parser contract, renderer design, and CI architecture
-  - [ ] AC-0047: Both documents are committed to main
+  - [x] AC-0045: Docs/DESIGN.md covers product vision, user profile, core concepts, feature set, and design system
+  - [x] AC-0046: Docs/ARCHITECTURE.md covers module structure, data flow, parser contract, renderer design, and CI architecture
+  - [x] AC-0047: Both documents are committed to main
 Dependencies: None
 
 US-0020 (EPIC-0005): As a contributor, I want a complete release plan with epics, stories, tasks, and ID registry, so that project scope and progress can be tracked in the dashboard.
 Priority: High (P0)
 Estimate: M
-Status: In Progress
+Status: Done
 Branch: feature/US-0020-release-plan
 Acceptance Criteria:
-  - [ ] AC-0048: Docs/RELEASE_PLAN.md contains all 5 epics with correct AGENTS.md format
-  - [ ] AC-0049: All user stories include priority, estimate, status, branch, and acceptance criteria
-  - [ ] AC-0050: Docs/ID_REGISTRY.md is populated with correct next-available IDs
+  - [x] AC-0048: Docs/RELEASE_PLAN.md contains all 5 epics with correct AGENTS.md format
+  - [x] AC-0049: All user stories include priority, estimate, status, branch, and acceptance criteria
+  - [x] AC-0050: Docs/ID_REGISTRY.md is populated with correct next-available IDs
 Dependencies: None
 
 US-0021 (EPIC-0005): As a contributor, I want a human-readable test plan and test cases document, so that QA verification is reproducible and stories cannot close without test evidence.
@@ -297,20 +297,20 @@ Estimate: M
 Status: In Progress
 Branch: feature/US-0021-test-cases
 Acceptance Criteria:
-  - [ ] AC-0051: Docs/TEST_CASES.md contains at least one TC per user story
-  - [ ] AC-0052: Every acceptance criterion (AC) has a corresponding TC
-  - [ ] AC-0053: TC format is parseable by parse-test-cases.js and renders in the Traceability tab
+  - [x] AC-0051: Docs/TEST_CASES.md contains at least one TC per user story
+  - [ ] AC-0052: Every acceptance criterion (AC) has a corresponding TC — NOTE: 23 TCs cover ~56 ACs; partial coverage only; aspirational target not yet met
+  - [x] AC-0053: TC format is parseable by parse-test-cases.js and renders in the Traceability tab
 Dependencies: US-0020
 
 US-0022 (EPIC-0005): As a contributor, I want all AGENTS.md-required project files to exist and be populated, so that any AI agent can pick up this project without missing context.
 Priority: High (P0)
 Estimate: M
-Status: In Progress
+Status: Done
 Branch: feature/US-0022-project-files
 Acceptance Criteria:
-  - [ ] AC-0054: MEMORY.md, PROMPT_LOG.md, MIGRATION_LOG.md, findings.md, progress.md, task_plan.md exist and are populated
-  - [ ] AC-0055: Docs/LESSONS.md and architecture/ERROR_TAXONOMY.md exist
-  - [ ] AC-0056: node tools/generate-plan.js runs successfully and produces a valid plan-status.html
+  - [x] AC-0054: MEMORY.md, PROMPT_LOG.md, MIGRATION_LOG.md, findings.md, progress.md, task_plan.md exist and are populated
+  - [x] AC-0055: Docs/LESSONS.md and architecture/ERROR_TAXONOMY.md exist
+  - [x] AC-0056: node tools/generate-plan.js runs successfully and produces a valid plan-status.html
 Dependencies: None
 ```
 
@@ -398,70 +398,70 @@ Notes: npm + github-actions ecosystems; weekly; 5-PR limit
 TASK-0011 (US-0019): Write Docs/DESIGN.md
 Type: Docs
 Assignee: Agent
-Status: To Do
+Status: Done
 Branch: feature/US-0019-design-docs
 Notes: Cover vision, user profile, core concepts, features, design system, data flow
 
 TASK-0012 (US-0019): Write Docs/ARCHITECTURE.md
 Type: Docs
 Assignee: Agent
-Status: To Do
+Status: Done
 Branch: feature/US-0019-design-docs
 Notes: Cover module structure, data flow, parser contract, renderer, CI/CD
 
 TASK-0013 (US-0020): Write Docs/RELEASE_PLAN.md with all 5 epics and 22 stories
 Type: Docs
 Assignee: Agent
-Status: To Do
+Status: Done
 Branch: feature/US-0020-release-plan
 Notes: Must use AGENTS.md format inside fenced code blocks
 
 TASK-0014 (US-0020): Write Docs/ID_REGISTRY.md
 Type: Docs
 Assignee: Agent
-Status: To Do
+Status: Done
 Branch: feature/US-0020-release-plan
 Notes: Track next available ID per sequence
 
 TASK-0015 (US-0021): Write Docs/TEST_CASES.md with one TC per story AC
 Type: Docs
 Assignee: Agent
-Status: To Do
+Status: Done
 Branch: feature/US-0021-test-cases
 Notes: Use TC format parseable by parse-test-cases.js
 
 TASK-0016 (US-0022): Create MEMORY.md with project knowledge base
 Type: Docs
 Assignee: Agent
-Status: To Do
+Status: Done
 Branch: feature/US-0022-project-files
 Notes: Organised by topic, not chronologically
 
 TASK-0017 (US-0022): Create progress.md, PROMPT_LOG.md, MIGRATION_LOG.md, findings.md, task_plan.md
 Type: Docs
 Assignee: Agent
-Status: To Do
+Status: Done
 Branch: feature/US-0022-project-files
 Notes: Bootstrap initial entries for each file
 
 TASK-0018 (US-0022): Create Docs/LESSONS.md and architecture/ERROR_TAXONOMY.md
 Type: Docs
 Assignee: Agent
-Status: To Do
+Status: Done
 Branch: feature/US-0022-project-files
 Notes: Encode Jest upgrade lesson; define error taxonomy
 
 TASK-0019 (US-0022): Create plan-visualizer.config.json for this project
 Type: Infra
 Assignee: Agent
-Status: To Do
+Status: Done
 Branch: feature/US-0022-project-files
 Notes: project.name = PlanVisualizer; commit this file (remove from .gitignore for this repo)
 
 TASK-0020 (US-0022): Run node tools/generate-plan.js and verify output
 Type: Test
 Assignee: Agent
-Status: To Do
+Status: Done
 Branch: feature/US-0022-project-files
 Notes: Output should render all tabs with real project data
 ```

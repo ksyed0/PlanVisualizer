@@ -506,23 +506,23 @@
       "title": "As a contributor, I want a design document and technical architecture reference, so that I can understand the project's goals and implementation without reading all the source code.",
       "priority": "P0",
       "estimate": "M",
-      "status": "In Progress",
+      "status": "Done",
       "branch": "feature/US-0019-design-docs",
       "acs": [
         {
           "id": "AC-0045",
           "text": "Docs/DESIGN.md covers product vision, user profile, core concepts, feature set, and design system",
-          "done": false
+          "done": true
         },
         {
           "id": "AC-0046",
           "text": "Docs/ARCHITECTURE.md covers module structure, data flow, parser contract, renderer design, and CI architecture",
-          "done": false
+          "done": true
         },
         {
           "id": "AC-0047",
           "text": "Both documents are committed to main",
-          "done": false
+          "done": true
         }
       ],
       "dependencies": []
@@ -533,23 +533,23 @@
       "title": "As a contributor, I want a complete release plan with epics, stories, tasks, and ID registry, so that project scope and progress can be tracked in the dashboard.",
       "priority": "P0",
       "estimate": "M",
-      "status": "In Progress",
+      "status": "Done",
       "branch": "feature/US-0020-release-plan",
       "acs": [
         {
           "id": "AC-0048",
           "text": "Docs/RELEASE_PLAN.md contains all 5 epics with correct AGENTS.md format",
-          "done": false
+          "done": true
         },
         {
           "id": "AC-0049",
           "text": "All user stories include priority, estimate, status, branch, and acceptance criteria",
-          "done": false
+          "done": true
         },
         {
           "id": "AC-0050",
           "text": "Docs/ID_REGISTRY.md is populated with correct next-available IDs",
-          "done": false
+          "done": true
         }
       ],
       "dependencies": []
@@ -566,17 +566,17 @@
         {
           "id": "AC-0051",
           "text": "Docs/TEST_CASES.md contains at least one TC per user story",
-          "done": false
+          "done": true
         },
         {
           "id": "AC-0052",
-          "text": "Every acceptance criterion (AC) has a corresponding TC",
+          "text": "Every acceptance criterion (AC) has a corresponding TC — NOTE: 23 TCs cover ~56 ACs; partial coverage only; aspirational target not yet met",
           "done": false
         },
         {
           "id": "AC-0053",
           "text": "TC format is parseable by parse-test-cases.js and renders in the Traceability tab",
-          "done": false
+          "done": true
         }
       ],
       "dependencies": [
@@ -589,23 +589,23 @@
       "title": "As a contributor, I want all AGENTS.md-required project files to exist and be populated, so that any AI agent can pick up this project without missing context.",
       "priority": "P0",
       "estimate": "M",
-      "status": "In Progress",
+      "status": "Done",
       "branch": "feature/US-0022-project-files",
       "acs": [
         {
           "id": "AC-0054",
           "text": "MEMORY.md, PROMPT_LOG.md, MIGRATION_LOG.md, findings.md, progress.md, task_plan.md exist and are populated",
-          "done": false
+          "done": true
         },
         {
           "id": "AC-0055",
           "text": "Docs/LESSONS.md and architecture/ERROR_TAXONOMY.md exist",
-          "done": false
+          "done": true
         },
         {
           "id": "AC-0056",
           "text": "node tools/generate-plan.js runs successfully and produces a valid plan-status.html",
-          "done": false
+          "done": true
         }
       ],
       "dependencies": []
@@ -718,7 +718,7 @@
       "title": "Write Docs/DESIGN.md",
       "type": "Docs",
       "assignee": "Agent",
-      "status": "To Do",
+      "status": "Done",
       "branch": "feature/US-0019-design-docs",
       "notes": "Cover vision, user profile, core concepts, features, design system, data flow"
     },
@@ -728,7 +728,7 @@
       "title": "Write Docs/ARCHITECTURE.md",
       "type": "Docs",
       "assignee": "Agent",
-      "status": "To Do",
+      "status": "Done",
       "branch": "feature/US-0019-design-docs",
       "notes": "Cover module structure, data flow, parser contract, renderer, CI/CD"
     },
@@ -738,7 +738,7 @@
       "title": "Write Docs/RELEASE_PLAN.md with all 5 epics and 22 stories",
       "type": "Docs",
       "assignee": "Agent",
-      "status": "To Do",
+      "status": "Done",
       "branch": "feature/US-0020-release-plan",
       "notes": "Must use AGENTS.md format inside fenced code blocks"
     },
@@ -748,7 +748,7 @@
       "title": "Write Docs/ID_REGISTRY.md",
       "type": "Docs",
       "assignee": "Agent",
-      "status": "To Do",
+      "status": "Done",
       "branch": "feature/US-0020-release-plan",
       "notes": "Track next available ID per sequence"
     },
@@ -758,7 +758,7 @@
       "title": "Write Docs/TEST_CASES.md with one TC per story AC",
       "type": "Docs",
       "assignee": "Agent",
-      "status": "To Do",
+      "status": "Done",
       "branch": "feature/US-0021-test-cases",
       "notes": "Use TC format parseable by parse-test-cases.js"
     },
@@ -768,7 +768,7 @@
       "title": "Create MEMORY.md with project knowledge base",
       "type": "Docs",
       "assignee": "Agent",
-      "status": "To Do",
+      "status": "Done",
       "branch": "feature/US-0022-project-files",
       "notes": "Organised by topic, not chronologically"
     },
@@ -778,7 +778,7 @@
       "title": "Create progress.md, PROMPT_LOG.md, MIGRATION_LOG.md, findings.md, task_plan.md",
       "type": "Docs",
       "assignee": "Agent",
-      "status": "To Do",
+      "status": "Done",
       "branch": "feature/US-0022-project-files",
       "notes": "Bootstrap initial entries for each file"
     },
@@ -788,7 +788,7 @@
       "title": "Create Docs/LESSONS.md and architecture/ERROR_TAXONOMY.md",
       "type": "Docs",
       "assignee": "Agent",
-      "status": "To Do",
+      "status": "Done",
       "branch": "feature/US-0022-project-files",
       "notes": "Encode Jest upgrade lesson; define error taxonomy"
     },
@@ -798,7 +798,7 @@
       "title": "Create plan-visualizer.config.json for this project",
       "type": "Infra",
       "assignee": "Agent",
-      "status": "To Do",
+      "status": "Done",
       "branch": "feature/US-0022-project-files",
       "notes": "project.name = PlanVisualizer; commit this file (remove from .gitignore for this repo)"
     },
@@ -808,7 +808,7 @@
       "title": "Run node tools/generate-plan.js and verify output",
       "type": "Test",
       "assignee": "Agent",
-      "status": "To Do",
+      "status": "Done",
       "branch": "feature/US-0022-project-files",
       "notes": "Output should render all tabs with real project data"
     }
@@ -1337,8 +1337,8 @@
       "summary": "Initial project scaffolding by original author; Implemented all 9 parser modules (tools/lib/*.js); Implemented render-html.js with 6-tab dashboard"
     }
   ],
-  "generatedAt": "2026-03-10T13:23:23.423Z",
-  "commitSha": "abd0c3f",
+  "generatedAt": "2026-03-10T13:49:53.295Z",
+  "commitSha": "941049f",
   "sessionTimeline": [
     {
       "date": "2026-03-09",
