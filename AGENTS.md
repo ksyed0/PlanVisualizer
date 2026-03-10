@@ -133,9 +133,9 @@ All project artefacts — epics, stories, tasks, bugs, test cases, acceptance cr
 
 ## 🛠️ Operating Principles
 
-### 1. Sequential Execution
+<!-- ### 1. Sequential Execution (disabled — parallel agents permitted)
 
-Do NOT use background agents or background tasks. Do NOT split into multiple agents. Process files ONE AT A TIME, sequentially. Update the user regularly on each step. Manageability takes precedence over speed — choose slower but visible over faster but opaque.
+Do NOT use background agents or background tasks. Do NOT split into multiple agents. Process files ONE AT A TIME, sequentially. Update the user regularly on each step. Manageability takes precedence over speed — choose slower but visible over faster but opaque. -->
 
 ### 2. Migration Tracking
 
