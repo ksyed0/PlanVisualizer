@@ -28,6 +28,17 @@ Log every change that must propagate to other platforms, modules, or installatio
 
 ---
 
+## 2026-03-10 — plan-visualizer.config.json outputDir case fix
+
+**Files changed:** `plan-visualizer.config.json`
+**Platforms / modules affected:** PlanVisualizer repo GitHub Pages deployment only
+**What changed:** `docs.outputDir` changed from `"Docs"` → `"docs"` to match the lowercase `docs/` directory and the workflow's `publish_dir: ./docs`.
+**Why:** On macOS the filesystem is case-insensitive so `Docs/` and `docs/` resolve identically. On Linux (GitHub Actions) they are separate directories — the generator wrote `plan-status.html` to `Docs/` but the deploy action read from `docs/`, so the file was never deployed and the Pages site returned 404.
+**Adaptations completed:** Done. Re-triggered workflow confirmed `plan-status.html` now appears in gh-pages branch.
+**Adaptations still needed:** Any target project using `install.sh` that added `outputDir: "Docs"` to their config should change it to `"docs"`.
+
+---
+
 ## 2026-03-10 — plan-visualizer.config.json committed to this repo
 
 **Files changed:** `.gitignore` (removal of `plan-visualizer.config.json` entry), new `plan-visualizer.config.json`
