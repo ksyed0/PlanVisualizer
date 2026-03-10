@@ -4,9 +4,12 @@
   "description": "Self-contained project dashboard for Claude Code projects",
   "scripts": {
     "test": "jest",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "lint": "eslint tools/**/*.js"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "eslint": "^9.39.4",
     "jest": "^30.3.0"
   }
 }
