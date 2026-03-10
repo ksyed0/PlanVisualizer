@@ -6,6 +6,23 @@ Updated automatically by the Claude Code stop hook (`tools/capture-cost.js`).
 Rows marked `[est]` are manually estimated for sessions that predate the capture-cost hook.
 Pricing basis: Claude Sonnet 4.6 — Input $3/MTok · Output $15/MTok · Cache Read $0.30/MTok
 
+---
+
+## Keeping Costs Accurate
+
+**If the AI Cost column in the dashboard is blank or zero for a story**, it means no cost log row has a `Branch` value matching that story's `Branch:` field exactly. Two common causes:
+
+1. **Sessions predating the capture-cost hook** — add estimated rows manually using the `-est` suffix convention (e.g. `sess_NNNN-est`).
+2. **Branch name mismatch** — the branch in the cost log row must exactly match the `Branch:` field in RELEASE_PLAN.md (case-sensitive).
+
+**To estimate and backfill costs**, ask your AI assistant:
+
+> "Look at `docs/AI_COST_LOG.md` and `docs/RELEASE_PLAN.md`. For any story whose branch has no matching cost log row, estimate the token usage based on the work described and the t-shirt size, then append new `[est]` rows. Use Claude Sonnet 4.6 pricing: Input $3/MTok · Output $15/MTok · Cache Read $0.30/MTok."
+
+**Human cost** is computed automatically from t-shirt size × hourly rate in `plan-visualizer.config.json`. To update the hourly rate, change `costs.hourlyRate` in the config.
+
+---
+
 | Date | Session ID | Branch | Input Tokens | Output Tokens | Cache Read Tokens | Cost USD |
 |---|---|---|---|---|---|---|
 | 2026-03-09 | sess_0001-est | feature/US-0001-parse-release-plan | 90000 | 22000 | 45000 | 0.6135 |
