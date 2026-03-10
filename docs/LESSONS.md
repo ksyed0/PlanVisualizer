@@ -46,6 +46,20 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
+## L-0008 — Always run test:coverage before generate-plan.js in the Pages workflow
+**Rule:** Always run `npm ci` and `npm run test:coverage` as steps before `node tools/generate-plan.js` in any CI workflow that deploys the dashboard. The `coverage/coverage-summary.json` file is gitignored and must be regenerated in CI on every deploy.
+*Learned when coverage badges showed N/A in the deployed dashboard because `coverage-summary.json` was absent at generation time. Without the file, `parseCoverage()` returns the `{ overall: 0 }` fallback, causing both the header badges and the Charts tab doughnut to show zero.*
+**Date:** 2026-03-10
+
+---
+
+## L-0009 — Use position:sticky on a shared wrapper div for multi-section headers
+**Rule:** When a header area is composed of multiple stacked components (top bar, filter bar, tab bar), wrap them all in a single `<div style="position:sticky;top:0;z-index:40">` rather than applying sticky to each element individually. A single sticky wrapper is simpler and avoids z-index conflicts.
+*Learned when the top bar, filter bar, and tab bar all scrolled off-screen on content-heavy tabs. A single sticky wrapper fixed all three in one change. The activity panel at z-index:50 naturally overlays it.*
+**Date:** 2026-03-10
+
+---
+
 ## L-0003 — Release plan artifacts must be inside fenced code blocks
 **Rule:** Never place EPIC/US/TASK definitions outside of triple-backtick fenced code blocks in RELEASE_PLAN.md. The parser (`parse-release-plan.js`) only reads content inside fenced blocks — narrative prose outside is silently ignored.
 *Learned when writing the first version of RELEASE_PLAN.md. Artifacts outside code blocks produced zero parsed results.*
