@@ -243,6 +243,20 @@ describe('renderHtml — bugs with lessonEncoded No', () => {
   });
 });
 
+describe('renderHtml — XSS escaping', () => {
+  it('escapes HTML special chars in user fields', () => {
+    const xssData = {
+      ...sampleData,
+      projectName: '<script>alert(1)</script>',
+      stories: [{ ...sampleData.stories[0], title: 'A & B <test>' }],
+    };
+    const html = renderHtml(xssData);
+    expect(html).not.toContain('<script>alert(1)</script>');
+    expect(html).toContain('&lt;script&gt;');
+    expect(html).toContain('A &amp; B &lt;test&gt;');
+  });
+});
+
 describe('renderHtml — traceability with Not Run TC', () => {
   it('renders Not Run cell in traceability matrix', () => {
     const dataNotRunTC = {
