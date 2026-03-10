@@ -4,6 +4,32 @@ Running log of session activity, errors, test results, and blockers.
 
 ---
 
+## Session 3 — 2026-03-10 (continuation)
+
+### What Was Done
+- Read AGENTS.md at user's prompt — was not being read at session start; now embedded as standard
+- Disabled §1 Sequential Execution in AGENTS.md (parallel agents permitted)
+- Synced `develop` branch with `main` (fast-forward — develop was ~20 commits behind)
+- Enabled branch protection on `main` and `develop`: require PR, CI must pass (Lint + Test & Coverage Gate + Dependency Audit), no force push, no direct deletions
+- Updated Dependabot config to group `eslint` + `@eslint/*` together (prevents version mismatch between @eslint/js@10 and eslint@9)
+- Merged 4 Dependabot PRs: actions/checkout v6, actions/setup-node v6, codeql-action v4, eslint v10
+- Closed failing @eslint/js-only PR (peer dep mismatch fixed by grouping)
+- Logged session prompts to PROMPT_LOG.md
+
+### Test Results
+- 9 suites, 124 tests — all pass (3 added for Recent Activity panel)
+- Coverage: above 80% threshold on all metrics
+- ESLint: 0 errors, 1 warning (no-unused-vars in detect-at-risk.js)
+
+### Errors or Blockers
+- None
+
+### What's Next
+- All new work must go through feature/* → develop (PR) → main (PR) workflow
+- US-0021 AC-0052 still In Progress: needs additional TCs to cover all ACs
+
+---
+
 ## Session 2 — 2026-03-10
 
 ### What Was Done (continued)
