@@ -14,4 +14,20 @@ describe('parseCoverage', () => {
   it('returns branches pct', () => expect(result.branches).toBe(81.0));
   it('returns overall as min of all four', () => expect(result.overall).toBe(81.0));
   it('returns meetsTarget true when all >= 80', () => expect(result.meetsTarget).toBe(true));
+  it('returns available: true on valid input', () => expect(result.available).toBe(true));
+});
+
+describe('parseCoverage — null guard', () => {
+  it('returns fallback with available: false for null input', () => {
+    const r = parseCoverage(null);
+    expect(r.available).toBe(false);
+    expect(r.overall).toBe(0);
+  });
+  it('returns fallback with available: false for missing total', () => {
+    expect(parseCoverage({}).available).toBe(false);
+  });
+  it('returns meetsTarget false when overall < 80', () => {
+    const low = { total: { lines: { pct: 70 }, statements: { pct: 70 }, functions: { pct: 70 }, branches: { pct: 70 } } };
+    expect(parseCoverage(low).meetsTarget).toBe(false);
+  });
 });
