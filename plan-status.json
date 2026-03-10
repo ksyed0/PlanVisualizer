@@ -1085,6 +1085,126 @@
       "status": "Open",
       "fixBranch": "bugfix/BUG-0004-sticky-header",
       "lessonEncoded": "No"
+    },
+    {
+      "id": "BUG-0005",
+      "title": "XSS via unescaped user data interpolated into generated HTML",
+      "severity": "Critical",
+      "relatedStory": "US-0009",
+      "relatedTask": "TASK-0001",
+      "status": "Open",
+      "fixBranch": "bugfix/BUG-0005-xss-escape-html",
+      "lessonEncoded": "No"
+    },
+    {
+      "id": "BUG-0006",
+      "title": "Hardcoded TSHIRT_HOURS and rate in render-html.js ignore config overrides",
+      "severity": "High",
+      "relatedStory": "US-0009",
+      "relatedTask": "TASK-0001",
+      "status": "Open",
+      "fixBranch": "bugfix/BUG-0006-tshirt-hours-config",
+      "lessonEncoded": "No"
+    },
+    {
+      "id": "BUG-0007",
+      "title": "parseCoverage() throws TypeError when coverage JSON has unexpected shape",
+      "severity": "High",
+      "relatedStory": "US-0005",
+      "relatedTask": "TASK-0001",
+      "status": "Open",
+      "fixBranch": "bugfix/BUG-0007-parse-coverage-guard",
+      "lessonEncoded": "No"
+    },
+    {
+      "id": "BUG-0008",
+      "title": "DEFAULTS object in generate-plan.js uses uppercase 'Docs' paths — breaks on Linux",
+      "severity": "High",
+      "relatedStory": "US-0013",
+      "relatedTask": "TASK-0001",
+      "status": "Open",
+      "fixBranch": "bugfix/BUG-0008-defaults-lowercase-paths",
+      "lessonEncoded": "No"
+    },
+    {
+      "id": "BUG-0009",
+      "title": "f-type filter control (Stories + Bugs / Stories only / Bugs only) has no effect",
+      "severity": "Medium",
+      "relatedStory": "US-0010",
+      "relatedTask": "TASK-0001",
+      "status": "Open",
+      "fixBranch": "bugfix/BUG-0009-ftype-filter-not-applied",
+      "lessonEncoded": "No"
+    },
+    {
+      "id": "BUG-0010",
+      "title": "Coverage N/A heuristic misidentifies genuine 0% coverage as N/A",
+      "severity": "Medium",
+      "relatedStory": "US-0009",
+      "relatedTask": "TASK-0001",
+      "status": "Open",
+      "fixBranch": "bugfix/BUG-0010-coverage-na-heuristic",
+      "lessonEncoded": "No"
+    },
+    {
+      "id": "BUG-0011",
+      "title": "parse-progress.js returns sessions in file order — reverse-chronological order not enforced",
+      "severity": "Medium",
+      "relatedStory": "US-0006",
+      "relatedTask": "TASK-0001",
+      "status": "Open",
+      "fixBranch": "bugfix/BUG-0011-progress-sort-order",
+      "lessonEncoded": "No"
+    },
+    {
+      "id": "BUG-0012",
+      "title": "GitHub Actions workflow steps pinned to mutable version tags, not commit digests",
+      "severity": "High",
+      "relatedStory": "US-0016",
+      "relatedTask": "TASK-0009",
+      "status": "Open",
+      "fixBranch": "bugfix/BUG-0012-pin-actions-digests",
+      "lessonEncoded": "No"
+    },
+    {
+      "id": "BUG-0013",
+      "title": "package.json devDependencies use ^ floating ranges in violation of AGENTS.md §19",
+      "severity": "Low",
+      "relatedStory": "US-0016",
+      "relatedTask": "TASK-0008",
+      "status": "Open",
+      "fixBranch": "bugfix/BUG-0013-pin-dep-versions",
+      "lessonEncoded": "No"
+    },
+    {
+      "id": "BUG-0014",
+      "title": "detectAtRisk() accepts an unused `bugs` parameter — misleading API contract",
+      "severity": "Low",
+      "relatedStory": "US-0008",
+      "relatedTask": "TASK-0001",
+      "status": "Open",
+      "fixBranch": "bugfix/BUG-0014-detect-at-risk-unused-bugs",
+      "lessonEncoded": "No"
+    },
+    {
+      "id": "BUG-0015",
+      "title": "generate-plan.js silently swallows config parse errors with no user-facing diagnostic",
+      "severity": "Low",
+      "relatedStory": "US-0013",
+      "relatedTask": "TASK-0001",
+      "status": "Open",
+      "fixBranch": "bugfix/BUG-0015-config-parse-warning",
+      "lessonEncoded": "No"
+    },
+    {
+      "id": "BUG-0016",
+      "title": "generate-plan.js main() has no top-level error handler — unhandled throws expose raw stack traces",
+      "severity": "Low",
+      "relatedStory": "US-0009",
+      "relatedTask": "TASK-0001",
+      "status": "Open",
+      "fixBranch": "bugfix/BUG-0016-main-error-handler",
+      "lessonEncoded": "No"
     }
   ],
   "costs": {
@@ -1390,8 +1510,8 @@
       "summary": "Initial project scaffolding by original author; Implemented all 9 parser modules (tools/lib/*.js); Implemented render-html.js with 6-tab dashboard"
     }
   ],
-  "generatedAt": "2026-03-10T23:01:22.656Z",
-  "commitSha": "9266352",
+  "generatedAt": "2026-03-10T23:02:58.292Z",
+  "commitSha": "6b51dbd",
   "sessionTimeline": [
     {
       "date": "2026-03-09",

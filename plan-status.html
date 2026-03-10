@@ -28,7 +28,7 @@
     <div class="flex flex-wrap gap-4 items-start justify-between">
       <div class="min-w-0">
         <h1 class="text-3xl font-bold text-blue-400 tracking-tight">PlanVisualizer</h1>
-        <p class="text-slate-400 text-sm mt-0.5">Self-documenting project dashboards for Claude Code.&nbsp;·&nbsp;Updated 2026-03-10&nbsp;·&nbsp;<code class="text-slate-500 text-xs">9266352</code></p>
+        <p class="text-slate-400 text-sm mt-0.5">Self-documenting project dashboards for Claude Code.&nbsp;·&nbsp;Updated 2026-03-10&nbsp;·&nbsp;<code class="text-slate-500 text-xs">6b51dbd</code></p>
         <div class="mt-2.5 flex items-center gap-2">
           <div class="bg-slate-700 rounded-full h-2 w-40 overflow-hidden">
             <div class="bg-blue-500 h-2 rounded-full" style="width:73%"></div>
@@ -1260,6 +1260,114 @@
     <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">Open</span></td>
     <td class="px-3 py-2 text-xs text-slate-500">US-0011</td>
     <td class="px-3 py-2 text-xs text-slate-400">bugfix/BUG-0004-sticky-header</td>
+    <td class="px-3 py-2 text-center text-xs">○</td>
+  </tr>
+  <tr class="border-t border-slate-100">
+    <td class="px-3 py-2 font-mono text-xs">BUG-0005</td>
+    <td class="px-3 py-2 text-sm">XSS via unescaped user data interpolated into generated HTML</td>
+    <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-200 text-red-900">Critical</span></td>
+    <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">Open</span></td>
+    <td class="px-3 py-2 text-xs text-slate-500">US-0009</td>
+    <td class="px-3 py-2 text-xs text-slate-400">bugfix/BUG-0005-xss-escape-html</td>
+    <td class="px-3 py-2 text-center text-xs">○</td>
+  </tr>
+  <tr class="border-t border-slate-100">
+    <td class="px-3 py-2 font-mono text-xs">BUG-0006</td>
+    <td class="px-3 py-2 text-sm">Hardcoded TSHIRT_HOURS and rate in render-html.js ignore config overrides</td>
+    <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">High</span></td>
+    <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">Open</span></td>
+    <td class="px-3 py-2 text-xs text-slate-500">US-0009</td>
+    <td class="px-3 py-2 text-xs text-slate-400">bugfix/BUG-0006-tshirt-hours-config</td>
+    <td class="px-3 py-2 text-center text-xs">○</td>
+  </tr>
+  <tr class="border-t border-slate-100">
+    <td class="px-3 py-2 font-mono text-xs">BUG-0007</td>
+    <td class="px-3 py-2 text-sm">parseCoverage() throws TypeError when coverage JSON has unexpected shape</td>
+    <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">High</span></td>
+    <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">Open</span></td>
+    <td class="px-3 py-2 text-xs text-slate-500">US-0005</td>
+    <td class="px-3 py-2 text-xs text-slate-400">bugfix/BUG-0007-parse-coverage-guard</td>
+    <td class="px-3 py-2 text-center text-xs">○</td>
+  </tr>
+  <tr class="border-t border-slate-100">
+    <td class="px-3 py-2 font-mono text-xs">BUG-0008</td>
+    <td class="px-3 py-2 text-sm">DEFAULTS object in generate-plan.js uses uppercase 'Docs' paths — breaks on Linux</td>
+    <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">High</span></td>
+    <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">Open</span></td>
+    <td class="px-3 py-2 text-xs text-slate-500">US-0013</td>
+    <td class="px-3 py-2 text-xs text-slate-400">bugfix/BUG-0008-defaults-lowercase-paths</td>
+    <td class="px-3 py-2 text-center text-xs">○</td>
+  </tr>
+  <tr class="border-t border-slate-100">
+    <td class="px-3 py-2 font-mono text-xs">BUG-0009</td>
+    <td class="px-3 py-2 text-sm">f-type filter control (Stories + Bugs / Stories only / Bugs only) has no effect</td>
+    <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-700">Medium</span></td>
+    <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">Open</span></td>
+    <td class="px-3 py-2 text-xs text-slate-500">US-0010</td>
+    <td class="px-3 py-2 text-xs text-slate-400">bugfix/BUG-0009-ftype-filter-not-applied</td>
+    <td class="px-3 py-2 text-center text-xs">○</td>
+  </tr>
+  <tr class="border-t border-slate-100">
+    <td class="px-3 py-2 font-mono text-xs">BUG-0010</td>
+    <td class="px-3 py-2 text-sm">Coverage N/A heuristic misidentifies genuine 0% coverage as N/A</td>
+    <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-700">Medium</span></td>
+    <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">Open</span></td>
+    <td class="px-3 py-2 text-xs text-slate-500">US-0009</td>
+    <td class="px-3 py-2 text-xs text-slate-400">bugfix/BUG-0010-coverage-na-heuristic</td>
+    <td class="px-3 py-2 text-center text-xs">○</td>
+  </tr>
+  <tr class="border-t border-slate-100">
+    <td class="px-3 py-2 font-mono text-xs">BUG-0011</td>
+    <td class="px-3 py-2 text-sm">parse-progress.js returns sessions in file order — reverse-chronological order not enforced</td>
+    <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-700">Medium</span></td>
+    <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">Open</span></td>
+    <td class="px-3 py-2 text-xs text-slate-500">US-0006</td>
+    <td class="px-3 py-2 text-xs text-slate-400">bugfix/BUG-0011-progress-sort-order</td>
+    <td class="px-3 py-2 text-center text-xs">○</td>
+  </tr>
+  <tr class="border-t border-slate-100">
+    <td class="px-3 py-2 font-mono text-xs">BUG-0012</td>
+    <td class="px-3 py-2 text-sm">GitHub Actions workflow steps pinned to mutable version tags, not commit digests</td>
+    <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">High</span></td>
+    <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">Open</span></td>
+    <td class="px-3 py-2 text-xs text-slate-500">US-0016</td>
+    <td class="px-3 py-2 text-xs text-slate-400">bugfix/BUG-0012-pin-actions-digests</td>
+    <td class="px-3 py-2 text-center text-xs">○</td>
+  </tr>
+  <tr class="border-t border-slate-100">
+    <td class="px-3 py-2 font-mono text-xs">BUG-0013</td>
+    <td class="px-3 py-2 text-sm">package.json devDependencies use ^ floating ranges in violation of AGENTS.md §19</td>
+    <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">Low</span></td>
+    <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">Open</span></td>
+    <td class="px-3 py-2 text-xs text-slate-500">US-0016</td>
+    <td class="px-3 py-2 text-xs text-slate-400">bugfix/BUG-0013-pin-dep-versions</td>
+    <td class="px-3 py-2 text-center text-xs">○</td>
+  </tr>
+  <tr class="border-t border-slate-100">
+    <td class="px-3 py-2 font-mono text-xs">BUG-0014</td>
+    <td class="px-3 py-2 text-sm">detectAtRisk() accepts an unused `bugs` parameter — misleading API contract</td>
+    <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">Low</span></td>
+    <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">Open</span></td>
+    <td class="px-3 py-2 text-xs text-slate-500">US-0008</td>
+    <td class="px-3 py-2 text-xs text-slate-400">bugfix/BUG-0014-detect-at-risk-unused-bugs</td>
+    <td class="px-3 py-2 text-center text-xs">○</td>
+  </tr>
+  <tr class="border-t border-slate-100">
+    <td class="px-3 py-2 font-mono text-xs">BUG-0015</td>
+    <td class="px-3 py-2 text-sm">generate-plan.js silently swallows config parse errors with no user-facing diagnostic</td>
+    <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">Low</span></td>
+    <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">Open</span></td>
+    <td class="px-3 py-2 text-xs text-slate-500">US-0013</td>
+    <td class="px-3 py-2 text-xs text-slate-400">bugfix/BUG-0015-config-parse-warning</td>
+    <td class="px-3 py-2 text-center text-xs">○</td>
+  </tr>
+  <tr class="border-t border-slate-100">
+    <td class="px-3 py-2 font-mono text-xs">BUG-0016</td>
+    <td class="px-3 py-2 text-sm">generate-plan.js main() has no top-level error handler — unhandled throws expose raw stack traces</td>
+    <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">Low</span></td>
+    <td class="px-3 py-2 text-center"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">Open</span></td>
+    <td class="px-3 py-2 text-xs text-slate-500">US-0009</td>
+    <td class="px-3 py-2 text-xs text-slate-400">bugfix/BUG-0016-main-error-handler</td>
     <td class="px-3 py-2 text-center text-xs">○</td>
   </tr></tbody>
     </table>
