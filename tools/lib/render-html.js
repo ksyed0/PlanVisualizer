@@ -456,12 +456,22 @@ function renderBugsTab(data) {
 function renderRecentActivity(data) {
   if (!data.recentActivity.length) return '';
   const items = data.recentActivity.map(a =>
-    `<li class="text-sm"><span class="text-slate-400 text-xs mr-2">${a.date}</span>${a.summary}</li>`
+    `<li class="py-2 border-b border-slate-100 last:border-0">
+      <span class="text-xs text-slate-400 block">${a.date}</span>
+      <span class="text-sm text-slate-700">${a.summary}</span>
+    </li>`
   ).join('');
   return `
-  <div class="fixed bottom-4 right-4 w-80 bg-white border border-slate-200 rounded-lg shadow-lg p-4 print:hidden">
-    <h4 class="text-xs font-semibold text-slate-500 uppercase mb-2">Recent Activity</h4>
-    <ul class="space-y-1">${items}</ul>
+  <div id="activity-panel" class="activity-panel fixed top-0 right-0 h-screen bg-white border-l border-slate-200 shadow-lg flex flex-col" style="width:280px;z-index:50;transition:width 0.25s ease">
+    <div id="activity-expanded" class="flex items-center justify-between px-4 py-3 border-b border-slate-200 flex-shrink-0">
+      <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Recent Activity</h4>
+      <button onclick="toggleActivityPanel()" class="text-slate-400 hover:text-slate-700 leading-none px-1" title="Collapse">&#9664;</button>
+    </div>
+    <ul id="activity-list" class="flex-1 overflow-y-auto px-4 py-2">${items}</ul>
+    <div id="activity-collapsed" class="hidden flex-col items-center pt-3 pb-4 gap-3">
+      <button onclick="toggleActivityPanel()" class="text-slate-400 hover:text-slate-700 leading-none px-1" title="Expand">&#9654;</button>
+      <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide select-none" style="writing-mode:vertical-rl;transform:rotate(180deg);white-space:nowrap">Recent Activity</span>
+    </div>
   </div>`;
 }
 
@@ -514,6 +524,50 @@ function renderScripts(data) {
     document.getElementById('f-search').value = '';
     applyFilters();
   }
+
+  function toggleActivityPanel() {
+    const panel = document.getElementById('activity-panel');
+    if (!panel) return;
+    const isCollapsed = panel.style.width === '40px';
+    const expanded = document.getElementById('activity-expanded');
+    const list = document.getElementById('activity-list');
+    const collapsed = document.getElementById('activity-collapsed');
+    if (isCollapsed) {
+      panel.style.width = '280px';
+      document.body.style.paddingRight = '280px';
+      expanded.classList.remove('hidden');
+      list.classList.remove('hidden');
+      collapsed.classList.add('hidden');
+      collapsed.classList.remove('flex');
+      localStorage.setItem('activityPanelCollapsed', 'false');
+    } else {
+      panel.style.width = '40px';
+      document.body.style.paddingRight = '40px';
+      expanded.classList.add('hidden');
+      list.classList.add('hidden');
+      collapsed.classList.remove('hidden');
+      collapsed.classList.add('flex');
+      localStorage.setItem('activityPanelCollapsed', 'true');
+    }
+  }
+
+  function initActivityPanel() {
+    const panel = document.getElementById('activity-panel');
+    if (!panel) return;
+    document.body.style.transition = 'padding-right 0.25s ease';
+    document.body.style.paddingRight = '280px';
+    if (localStorage.getItem('activityPanelCollapsed') === 'true') {
+      panel.style.width = '40px';
+      document.body.style.paddingRight = '40px';
+      document.getElementById('activity-expanded').classList.add('hidden');
+      document.getElementById('activity-list').classList.add('hidden');
+      const collapsed = document.getElementById('activity-collapsed');
+      collapsed.classList.remove('hidden');
+      collapsed.classList.add('flex');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', initActivityPanel);
   </script>`;
 }
 
@@ -521,7 +575,8 @@ function renderPrintCSS() {
   return `
   <style>
   @media print {
-    #filter-bar, #tab-bar, .fixed { display: none !important; }
+    #filter-bar, #tab-bar, .fixed, .activity-panel { display: none !important; }
+    body { padding-right: 0 !important; }
     #tab-hierarchy, #tab-costs { display: block !important; }
     #tab-kanban, #tab-traceability, #tab-charts, #tab-bugs { display: none !important; }
     body { font-size: 11pt; }
@@ -545,7 +600,7 @@ function renderHtml(data) {
   <style>body { font-family: 'Inter', sans-serif; } code, .font-mono { font-family: 'JetBrains Mono', monospace; }</style>
   ${renderPrintCSS()}
 </head>
-<body class="bg-slate-50 min-h-screen">
+<body class="bg-slate-50 min-h-screen" style="padding-right:280px">
   ${renderTopBar(data)}
   ${renderFilterBar(data)}
   ${renderTabs()}

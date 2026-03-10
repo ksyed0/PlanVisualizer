@@ -68,6 +68,28 @@ describe('renderHtml — no recent activity', () => {
   });
 });
 
+describe('renderHtml — recent activity panel', () => {
+  it('renders full-height panel with activity items', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toMatch(/id="activity-panel"/);
+    expect(html).toMatch(/id="activity-expanded"/);
+    expect(html).toMatch(/id="activity-collapsed"/);
+    expect(html).toMatch(/toggleActivityPanel/);
+  });
+
+  it('panel starts at 280px width by default', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toMatch(/width:280px/);
+    expect(html).toMatch(/padding-right:280px/);
+  });
+
+  it('collapsed strip contains vertical label text', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toMatch(/writing-mode:vertical-rl/);
+    expect(html).toMatch(/initActivityPanel/);
+  });
+});
+
 describe('renderHtml — no stories', () => {
   it('shows 0% complete when no stories', () => {
     const dataEmpty = {
