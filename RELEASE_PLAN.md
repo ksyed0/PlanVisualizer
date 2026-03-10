@@ -4,6 +4,20 @@
 
 ---
 
+## Keeping Story Status Accurate
+
+The dashboard derives all progress bars, Kanban columns, and at-risk signals directly from the `Status:` field on each story. If the dashboard shows incorrect completion percentages or wrong Kanban placement, update the status values here.
+
+**Valid status values:** `To Do` · `Planned` · `In Progress` · `Blocked` · `Done`
+
+**To update statuses**, ask your AI assistant:
+
+> "Review `docs/RELEASE_PLAN.md`. For each story in EPIC-XXXX, check whether the described work has actually been completed. Update `Status:` to reflect reality — use `Done` only when all ACs are checked `[x]`, `In Progress` when work has started but ACs are incomplete, and `To Do` when no work has started."
+
+Also mark acceptance criteria done by changing `[ ]` to `[x]` as each AC is completed. The dashboard Hierarchy tab shows AC completion inline with each story.
+
+---
+
 ## Epics
 
 ```
