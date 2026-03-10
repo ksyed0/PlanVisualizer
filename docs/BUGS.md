@@ -219,6 +219,19 @@ Status: Open
 Fix Branch: bugfix/BUG-0016-main-error-handler
 Lesson Encoded: No
 
+BUG-0017: peaceiris/actions-gh-pages@v4 uses deprecated Node.js 20 runtime
+Severity: Medium
+Related Story: US-0019
+Related Task: TASK-0016
+Steps to Reproduce:
+  1. Push a commit to trigger plan-visualizer.yml
+  2. Observe the GitHub Actions run logs
+Expected: generate-and-deploy job completes without deprecation warnings
+Actual: CI logs warn "peaceiris/actions-gh-pages@v4 is running on Node.js 20 and may not work as expected" — Node.js 20 will be forced off by June 2026
+Status: Fixed
+Fix Branch: bugfix/BUG-0012-0013-0017-ci-config-fixes
+Lesson Encoded: No
+
 <!-- When adding a bug, use this format:
 
 BUG-XXXX: Short description of the defect
