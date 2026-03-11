@@ -243,6 +243,20 @@ describe('renderHtml — bugs with lessonEncoded No', () => {
   });
 });
 
+describe('renderHtml — XSS escaping', () => {
+  it('escapes HTML special chars in user fields', () => {
+    const xssData = {
+      ...sampleData,
+      projectName: '<script>alert(1)</script>',
+      stories: [{ ...sampleData.stories[0], title: 'A & B <test>' }],
+    };
+    const html = renderHtml(xssData);
+    expect(html).not.toContain('<script>alert(1)</script>');
+    expect(html).toContain('&lt;script&gt;');
+    expect(html).toContain('A &amp; B &lt;test&gt;');
+  });
+});
+
 describe('renderHtml — traceability with Not Run TC', () => {
   it('renders Not Run cell in traceability matrix', () => {
     const dataNotRunTC = {
@@ -251,5 +265,37 @@ describe('renderHtml — traceability with Not Run TC', () => {
     };
     const html = renderHtml(dataNotRunTC);
     expect(html).toMatch(/TC-0003/);
+  });
+});
+
+describe('renderHtml — sticky header (BUG-0004 regression)', () => {
+  it('wraps header in a sticky container', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toContain('sticky top-0 z-30');
+  });
+});
+
+describe('renderHtml — projected cost from data.costs (BUG-0006)', () => {
+  it('uses data.costs.projectedUsd not TSHIRT_HOURS', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toMatch(/\$800/);
+  });
+});
+
+describe('renderHtml — f-type filter (BUG-0009)', () => {
+  it('includes f-type select in filter bar', () => {
+    expect(renderHtml(sampleData)).toContain('id="f-type"');
+  });
+  it('assigns bug-row class to bug table rows', () => {
+    const dataWithBug = { ...sampleData, bugs: [{ id: 'BUG-0001', title: 'Crash', severity: 'High', status: 'Open', relatedStory: 'US-0001', fixBranch: 'bugfix/BUG-0001', lessonEncoded: 'No' }] };
+    expect(renderHtml(dataWithBug)).toContain('bug-row');
+  });
+});
+
+describe('renderHtml — coverage available false shows N/A (BUG-0010)', () => {
+  it('shows N/A when coverage not available', () => {
+    const noFile = { ...sampleData, coverage: { lines: 0, overall: 0, branches: 0, meetsTarget: false, available: false } };
+    const html = renderHtml(noFile);
+    expect(html).toMatch(/N\/A/);
   });
 });

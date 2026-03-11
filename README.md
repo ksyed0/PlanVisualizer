@@ -53,17 +53,17 @@ After installation, edit `plan-visualizer.config.json` in your project root:
 |-----|---------|-------------|
 | `project.name` | `"My Project"` | Display name shown in the dashboard title |
 | `project.tagline` | `"A short description."` | Subtitle shown in the dashboard header |
-| `docs.releasePlan` | `"Docs/RELEASE_PLAN.md"` | Path to release plan (EPICs, stories, tasks) |
-| `docs.testCases` | `"Docs/TEST_CASES.md"` | Path to test cases |
-| `docs.bugs` | `"Docs/BUGS.md"` | Path to bug log |
-| `docs.costLog` | `"Docs/AI_COST_LOG.md"` | Path to AI cost ledger |
-| `docs.outputDir` | `"Docs"` | Directory where `plan-status.html` is written |
-| `coverage.summaryPath` | `"Docs/coverage/coverage-summary.json"` | Path to Jest `coverage-summary.json` |
+| `docs.releasePlan` | `"docs/RELEASE_PLAN.md"` | Path to release plan (EPICs, stories, tasks) |
+| `docs.testCases` | `"docs/TEST_CASES.md"` | Path to test cases |
+| `docs.bugs` | `"docs/BUGS.md"` | Path to bug log |
+| `docs.costLog` | `"docs/AI_COST_LOG.md"` | Path to AI cost ledger |
+| `docs.outputDir` | `"docs"` | Directory where `plan-status.html` is written |
+| `coverage.summaryPath` | `"docs/coverage/coverage-summary.json"` | Path to Jest `coverage-summary.json` |
 | `progress.path` | `"progress.md"` | Path to session progress log |
 | `costs.hourlyRate` | `100` | Hourly rate (USD) for projected cost estimates |
 | `costs.tshirtHours` | `{S:4, M:8, L:16, XL:32}` | Hours per t-shirt size estimate |
 
-All paths are relative to the project root. If no config file is present, NomadCode defaults are used.
+All paths are relative to the project root. If no config file is present, built-in defaults are used.
 
 ---
 
@@ -72,7 +72,7 @@ All paths are relative to the project root. If no config file is present, NomadC
 ```bash
 # Generate the dashboard
 node tools/generate-plan.js
-# → writes Docs/plan-status.html and Docs/plan-status.json
+# → writes docs/plan-status.html and docs/plan-status.json
 
 # Run tool unit tests
 npm run plan:test
@@ -82,6 +82,12 @@ npm run plan:test:coverage
 ```
 
 The Claude Code stop hook (`tools/capture-cost.js`) appends session token usage and cost to `AI_COST_LOG.md` automatically after every Claude Code session.
+
+### Continuous Deployment
+
+The included `.github/workflows/plan-visualizer.yml` workflow triggers on pushes to `main` or `develop` when any of the tracked docs files change. It runs tests with coverage, generates `plan-status.html`, and deploys to GitHub Pages automatically.
+
+> **Note:** To allow deploys from `develop`, go to **Settings → Environments → github-pages → Deployment branches** and add `develop` to the allowed list.
 
 ---
 
@@ -105,7 +111,7 @@ If you prefer not to use the install script:
      }
    }
    ```
-5. Add `Docs/coverage/` to your `.gitignore`
+5. Add `docs/coverage/` to your `.gitignore`
 
 ---
 

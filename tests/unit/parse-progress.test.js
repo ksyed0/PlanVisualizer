@@ -17,6 +17,11 @@ describe('parseRecentActivity', () => {
     expect(result[0].date).toBe('2026-03-10'));
   it('parses session date', () => expect(result[0].date).toMatch(/\d{4}-\d{2}-\d{2}/));
   it('parses summary text', () => expect(result[0].summary).toMatch(/FileSystemBridge/));
+  it('returns sessions in strictly descending date order', () => {
+    for (let i = 0; i < result.length - 1; i++) {
+      expect(result[i].date >= result[i + 1].date).toBe(true);
+    }
+  });
 });
 
 describe('parseRecentActivity — edge cases', () => {
