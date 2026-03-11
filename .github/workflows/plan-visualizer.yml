@@ -3,7 +3,7 @@ name: Plan Visualizer
 on:
   workflow_dispatch:
   push:
-    branches: [main, develop]
+    branches: [main]
     paths:
       - 'docs/RELEASE_PLAN.md'
       - 'docs/TEST_CASES.md'

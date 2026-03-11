@@ -232,6 +232,19 @@ Status: Fixed
 Fix Branch: bugfix/BUG-0012-0013-0017-ci-config-fixes
 Lesson Encoded: No
 
+BUG-0018: plan-visualizer.yml triggers on develop — deploy fails due to github-pages environment protection
+Severity: High
+Related Story: US-0019
+Related Task: TASK-0016
+Steps to Reproduce:
+  1. Push any commit to develop that matches the workflow path filter
+  2. Observe the plan-visualizer.yml CI run
+Expected: Workflow only triggers on main; github-pages environment allows the deployment
+Actual: Workflow triggers on develop; GitHub rejects the deploy-pages step with "Branch develop is not allowed to deploy to github-pages"
+Status: Fixed
+Fix Branch: bugfix/BUG-0018-pages-deploy-main-only
+Lesson Encoded: No
+
 <!-- When adding a bug, use this format:
 
 BUG-XXXX: Short description of the defect
