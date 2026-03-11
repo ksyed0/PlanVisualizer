@@ -4,6 +4,26 @@ Running log of session activity, errors, test results, and blockers.
 
 ---
 
+## Session 6 — 2026-03-10
+
+### What Was Done
+- Implemented Branch 3 (`bugfix/BUG-0006-0009-0010-render-html`): removed hardcoded TSHIRT_HOURS (7 sites), implemented f-type filter in applyFilters() + added bug-row class, switched coverage N/A heuristic to `cov.available !== false`. 3 new tests. PR #18 merged.
+- Implemented Branch 4 (`bugfix/BUG-0008-0014-0015-0016-misc`): lowercased DEFAULTS paths (6 occurrences), added console.warn on config parse error, wrapped main() in try/catch, implemented openCriticalBug rule in detectAtRisk(). 3 new tests. PR #19 merged.
+- Updated BUGS.md: marked BUG-0005 through BUG-0016 as Fixed with correct Fix Branch references.
+- Added `available: false` to coverage inline fallback in generate-plan.js for correct BUG-0010 behaviour when coverage file is absent.
+
+### Test Results
+- 138 tests pass (135 + 3 new openCriticalBug). Coverage: 97.46% statements, 84.28% branches, 96.73% functions, 99.61% lines. All thresholds met.
+
+### Errors or Blockers
+- None
+
+### What's Next
+- All 17 logged bugs are now Fixed. No open defects.
+- Consider next feature work from backlog or opening PRs to merge develop → main.
+
+---
+
 ## Session 5 — 2026-03-10
 
 ### What Was Done

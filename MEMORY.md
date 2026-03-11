@@ -66,7 +66,7 @@ All parsers: `(markdown: string) → Array` — never throw, empty string input 
 | `parse-test-cases.js` | TEST_CASES.md | `testCases[{ id, relatedStory, relatedAC, status }]` |
 | `parse-bugs.js` | BUGS.md | `bugs[{ id, severity, relatedStory, status, fixBranch }]` |
 | `parse-cost-log.js` | AI_COST_LOG.md | `rows[{ date, branch, inputTokens, outputTokens, costUsd }]` |
-| `parse-coverage.js` | coverage-summary.json | `{ lines, statements, functions, branches, overall, meetsTarget }` |
+| `parse-coverage.js` | coverage-summary.json | `{ lines, statements, functions, branches, overall, meetsTarget, available }` — `available: false` when file absent or malformed |
 | `parse-progress.js` | progress.md | `activity[{ date, summary }]` |
 
 ---
@@ -113,13 +113,14 @@ Branch name in `AI_COST_LOG.md` row must exactly match `Branch:` field in story 
 1. `missingTCs` — story has ACs but zero linked TCs
 2. `noBranch` — status is "In Progress" but branch is empty
 3. `failedTCNoBug` — a linked TC has status "Fail" but defect is "None"
+4. `openCriticalBug` — story has a linked Open/In Progress bug with severity Critical or High
 
 ---
 
 ## Coverage Thresholds
 
 Jest coverage gate: 80% lines, branches, functions, statements (all global).
-Current coverage (2026-03-10): 97.55% statements, 84.18% branches, 96.2% functions, 99.58% lines.
+Current coverage (2026-03-10): 97.46% statements, 84.28% branches, 96.73% functions, 99.61% lines.
 
 ---
 
@@ -163,3 +164,6 @@ Current coverage (2026-03-10): 97.55% statements, 84.18% branches, 96.2% functio
 - **Add workflow_dispatch to any workflow with path filters.** This is the only way to trigger the workflow manually when the changed files don't match the path filter (e.g. when editing the workflow file itself).
 - **Always update TEST_CASES.md Status fields when a story is marked Done.** The parser is correct; stale Not Run statuses are a data problem. (L-0010, BUG-0003, 2026-03-10)
 - **Sticky header: wrap renderTopBar + renderFilterBar + renderTabs in `<div class="sticky top-0 z-30">` in renderHtml().** Activity panel uses z-index:50, so z-30 keeps header below it. (L-0009, BUG-0004, 2026-03-10)
+- **HTML-escape all user-supplied strings before interpolation into HTML template literals.** Use a single `esc()` helper; apply to every title, summary, AC text, epic description, bug branch. Do NOT escape internally-generated fields (SHA, timestamps). (L-0011, BUG-0005, 2026-03-10)
+- **Use an `available` boolean flag, not `> 0`, to distinguish "file absent" from genuine 0% coverage.** `parseCoverage()` sets `available: true` on valid data and `available: false` in all fallback paths. The inline fallback in `generate-plan.js` must also set `available: false`. (L-0012, BUG-0010, 2026-03-10)
+- **progress.md is written newest-first; do not sort or reverse.** The fixture and real file both place the most recent session at the top. If a test requires reverse-chronological order, add a regression test that asserts descending dates without changing the parser. (L-0013, BUG-0011 false positive, 2026-03-10)

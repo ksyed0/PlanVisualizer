@@ -67,6 +67,27 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
+## L-0011 — HTML-escape all user-supplied strings before DOM injection
+**Rule:** Every field sourced from user-controlled markdown files (story titles, epic titles, AC text, bug titles, branch names, project name, tagline) must be run through an HTML-escape helper before being interpolated into template literals that produce HTML. Add a single `esc()` helper at the top of any renderer. Internally-generated fields (commit SHA, ISO timestamps) do not need escaping.
+*Learned when BUG-0005 showed that unescaped `<script>alert(1)</script>` in a story title was injected verbatim into `plan-status.html`, executing on load.*
+**Date:** 2026-03-10
+
+---
+
+## L-0012 — Use a boolean `available` flag to distinguish "no coverage file" from genuine 0%
+**Rule:** Never use `value > 0` to test whether coverage data is present. Instead, return `available: false` in all FALLBACK/fallback paths and `available: true` on valid data. The heuristic `> 0` conflates "coverage file absent" with "all code paths untested", causing N/A to incorrectly appear when coverage is genuinely 0%. Both `parseCoverage()` and any inline fallback in `main()` must set `available: false`.
+*Learned when BUG-0010 was found: `cov.overall > 0` returned false for both missing file and genuine 0%, making it impossible to tell the difference.*
+**Date:** 2026-03-10
+
+---
+
+## L-0013 — progress.md is written newest-first; do not reverse or sort
+**Rule:** `parseRecentActivity()` should return sessions in document order. The convention for `progress.md` is that the most recent session is always prepended at the top. Adding `.reverse()` before `.slice()` would invert correct output into oldest-first. If AC requires newest-first, add a regression test asserting descending dates — do not change the parser.
+*Learned when BUG-0011 proposed `.reverse()` to fix sort order, but existing tests broke because the fixture (and real file) are already newest-first. BUG-0011 was a false positive.*
+**Date:** 2026-03-10
+
+---
+
 ## L-0003 — Release plan artifacts must be inside fenced code blocks
 **Rule:** Never place EPIC/US/TASK definitions outside of triple-backtick fenced code blocks in RELEASE_PLAN.md. The parser (`parse-release-plan.js`) only reads content inside fenced blocks — narrative prose outside is silently ignored.
 *Learned when writing the first version of RELEASE_PLAN.md. Artifacts outside code blocks produced zero parsed results.*
