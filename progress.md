@@ -18,9 +18,10 @@ Running log of session activity, errors, test results, and blockers.
 ### Errors or Blockers
 - None
 
-### What's Next
+### What's Next (continued in same session)
 - All 17 logged bugs are now Fixed. No open defects.
-- Consider next feature work from backlog or opening PRs to merge develop → main.
+- PR #22 opened: `docs/update-readme-and-architecture` — README, DESIGN.md, ARCHITECTURE.md updated for Session 6 changes (paths, at-risk signals, test count, GitHub Pages section). Ready to merge.
+- Consider merging develop → main once PR #22 is merged.
 
 ---
 
