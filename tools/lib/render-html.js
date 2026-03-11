@@ -2,8 +2,6 @@
 
 const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
-const TSHIRT_HOURS = { S: 4, M: 8, L: 16, XL: 32 };
-
 function badge(text) {
   const colors = {
     'In Progress': 'bg-blue-100 text-blue-800',
@@ -35,17 +33,17 @@ function usd(n) {
 function fmtNum(n) { return Number(n).toLocaleString(); }
 
 function renderTopBar(data) {
-  const totalProjected = data.stories.reduce((s, st) => s + (TSHIRT_HOURS[st.estimate] || 0) * 100, 0);
+  const totalProjected = data.stories.reduce((s, st) => s + (data.costs[st.id] && data.costs[st.id].projectedUsd || 0), 0);
   const totalAI = data.costs._totals.costUsd;
   const done = data.stories.filter(s => s.status === 'Done').length;
   const inProgress = data.stories.filter(s => s.status === 'In Progress').length;
   const pct = data.stories.length ? Math.round((done / data.stories.length) * 100) : 0;
   const cov = data.coverage;
-  const linesCovLabel = (cov.overall > 0) ? `${cov.overall.toFixed(1)}%` : 'N/A';
-  const linesCovClass = cov.overall > 0 ? (cov.meetsTarget ? 'text-green-400' : 'text-red-400') : 'text-slate-500';
+  const linesCovLabel = (cov.available !== false) ? `${cov.overall.toFixed(1)}%` : 'N/A';
+  const linesCovClass = (cov.available !== false) ? (cov.meetsTarget ? 'text-green-400' : 'text-red-400') : 'text-slate-500';
   const branchCov = cov.branches;
-  const branchLabel = (branchCov > 0) ? `${Number(branchCov).toFixed(1)}%` : 'N/A';
-  const branchClass = branchCov > 0 ? (branchCov >= 80 ? 'text-green-400' : 'text-red-400') : 'text-slate-500';
+  const branchLabel = (cov.available !== false) ? `${Number(branchCov).toFixed(1)}%` : 'N/A';
+  const branchClass = (cov.available !== false) ? (branchCov >= 80 ? 'text-green-400' : 'text-red-400') : 'text-slate-500';
   return `
   <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white px-6 py-5 shadow-lg">
     <div class="flex flex-wrap gap-4 items-start justify-between">
@@ -129,7 +127,7 @@ function renderTabs() {
 function renderHierarchyTab(data) {
   const epicBlocks = data.epics.map(epic => {
     const stories = data.stories.filter(s => s.epicId === epic.id);
-    const epicProjected = stories.reduce((s, st) => s + (TSHIRT_HOURS[st.estimate] || 0) * 100, 0);
+    const epicProjected = stories.reduce((s, st) => s + (data.costs[st.id] && data.costs[st.id].projectedUsd || 0), 0);
     const storyBlocks = stories.map(story => {
       const risk = data.atRisk[story.id] || {};
       const riskBadge = risk.isAtRisk ? `<span class="at-risk text-orange-500 text-xs ml-1" title="${[
@@ -155,7 +153,7 @@ function renderHierarchyTab(data) {
           ${badge(story.status)} ${badge(story.priority)}
           <span class="text-sm font-medium">${esc(story.title)}</span>
           ${riskBadge}
-          <span class="ml-auto text-xs text-slate-400">${story.estimate || '?'} · ${usd((TSHIRT_HOURS[story.estimate] || 0) * 100)}</span>
+          <span class="ml-auto text-xs text-slate-400">${story.estimate || '?'} · ${usd(data.costs[story.id] && data.costs[story.id].projectedUsd || 0)}</span>
         </div>
         <ul id="acs-${story.id}" class="mt-2 hidden">${acItems || '<li class="text-xs text-slate-400 pl-4">No ACs yet</li>'}</ul>
       </div>`;
@@ -264,7 +262,7 @@ function renderChartsTab(data) {
   const epicDone = JSON.stringify(data.epics.map(e => data.stories.filter(s => s.epicId === e.id && s.status === 'Done').length));
   const epicInProgress = JSON.stringify(data.epics.map(e => data.stories.filter(s => s.epicId === e.id && s.status === 'In Progress').length));
   const epicPlanned = JSON.stringify(data.epics.map(e => data.stories.filter(s => s.epicId === e.id && ['Planned','To Do'].includes(s.status)).length));
-  const epicProjected = JSON.stringify(data.epics.map(e => data.stories.filter(s => s.epicId === e.id).reduce((sum, s) => sum + (TSHIRT_HOURS[s.estimate] || 0) * 100, 0)));
+  const epicProjected = JSON.stringify(data.epics.map(e => data.stories.filter(s => s.epicId === e.id).reduce((sum, s) => sum + (data.costs[s.id] && data.costs[s.id].projectedUsd || 0), 0)));
   const epicAI = JSON.stringify(data.epics.map(e => {
     const branchStories = data.stories.filter(s => s.epicId === e.id);
     return branchStories.reduce((sum, s) => sum + (data.costs[s.id] ? data.costs[s.id].costUsd || 0 : 0), 0);
@@ -370,12 +368,12 @@ function renderChartsTab(data) {
 function renderCostsTab(data) {
   const epicBlocks = data.epics.map(epic => {
     const epicStories = data.stories.filter(s => s.epicId === epic.id);
-    const epicProjected = epicStories.reduce((s, st) => s + (TSHIRT_HOURS[st.estimate] || 0) * 100, 0);
+    const epicProjected = epicStories.reduce((s, st) => s + (data.costs[st.id] && data.costs[st.id].projectedUsd || 0), 0);
     const epicAI = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).costUsd || 0), 0);
     const epicIn = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).inputTokens || 0), 0);
     const epicOut = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).outputTokens || 0), 0);
     const storyRows = epicStories.map(story => {
-      const projected = (TSHIRT_HOURS[story.estimate] || 0) * 100;
+      const projected = (data.costs[story.id] && data.costs[story.id].projectedUsd || 0);
       const ai = data.costs[story.id] || {};
       const aiCost = ai.costUsd || 0;
       return `<tr class="border-t border-slate-100">
@@ -402,7 +400,7 @@ function renderCostsTab(data) {
     ${storyRows}`;
   }).join('');
   const t = data.costs._totals;
-  const totalProjected = data.stories.reduce((s, st) => s + (TSHIRT_HOURS[st.estimate] || 0) * 100, 0);
+  const totalProjected = data.stories.reduce((s, st) => s + (data.costs[st.id] && data.costs[st.id].projectedUsd || 0), 0);
   return `
   <div id="tab-costs" class="p-6 hidden overflow-x-auto">
     <table class="w-full text-left text-sm border-collapse">
@@ -431,7 +429,7 @@ function renderBugsTab(data) {
     return `<div id="tab-bugs" class="p-6 hidden"><p class="text-slate-400">No bugs logged yet.</p></div>`;
   }
   const rows = data.bugs.map(bug => `
-  <tr class="border-t border-slate-100">
+  <tr class="bug-row border-t border-slate-100">
     <td class="px-3 py-2 font-mono text-xs">${bug.id}</td>
     <td class="px-3 py-2 text-sm">${esc(bug.title)}</td>
     <td class="px-3 py-2 text-center">${badge(bug.severity)}</td>
@@ -511,13 +509,18 @@ function renderScripts(data) {
     const epic = document.getElementById('f-epic').value;
     const status = document.getElementById('f-status').value;
     const priority = document.getElementById('f-priority').value;
+    const type = document.getElementById('f-type').value;
     const search = document.getElementById('f-search').value.toLowerCase();
     document.querySelectorAll('.story-row').forEach(row => {
-      const matchEpic = !epic || row.dataset.epic === epic;
-      const matchStatus = !status || row.dataset.status === status;
-      const matchPriority = !priority || row.dataset.priority === priority;
-      const matchSearch = !search || row.innerText.toLowerCase().includes(search);
-      row.style.display = (matchEpic && matchStatus && matchPriority && matchSearch) ? '' : 'none';
+      const hide = (type === 'bug') ||
+        (epic && row.dataset.epic !== epic) ||
+        (status && row.dataset.status !== status) ||
+        (priority && row.dataset.priority !== priority) ||
+        (search && !row.innerText.toLowerCase().includes(search));
+      row.style.display = hide ? 'none' : '';
+    });
+    document.querySelectorAll('.bug-row').forEach(row => {
+      row.style.display = (type === 'story') ? 'none' : '';
     });
   }
 
