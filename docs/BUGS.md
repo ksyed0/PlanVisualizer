@@ -245,6 +245,19 @@ Status: Fixed
 Fix Branch: n/a — fixed via repo Settings → Environments → github-pages → add develop to allowed branches
 Lesson Encoded: No
 
+BUG-0019: actions/deploy-pages and actions/upload-artifact running on deprecated Node.js 20 runtime
+Severity: Medium
+Related Story: US-0019
+Related Task: TASK-0016
+Steps to Reproduce:
+  1. Trigger plan-visualizer.yml
+  2. Observe CI logs in the generate-and-deploy job
+Expected: No Node.js deprecation warnings in CI logs
+Actual: "actions/deploy-pages and actions/upload-artifact@v4 are running on Node.js 20 and may not work as expected; will be forced off by June 2026"
+Status: Fixed
+Fix Branch: bugfix/BUG-0019-node24-actions
+Lesson Encoded: No
+
 <!-- When adding a bug, use this format:
 
 BUG-XXXX: Short description of the defect
