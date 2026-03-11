@@ -1,8 +1,8 @@
 # PlanVisualizer — Design Document
 
-**Version:** 1.1
+**Version:** 1.2
 **Status:** Active
-**Last Updated:** 2026-03-10
+**Last Updated:** 2026-03-11
 
 ---
 
@@ -47,10 +47,11 @@ The generated `plan-status.html` is fully self-contained except for two CDN reso
 AI session costs are attributed to user stories by matching the git branch name in `AI_COST_LOG.md` to the `Branch:` field in each story. This gives per-story AI spend with no manual tagging.
 
 ### At-risk detection
-Three automated signals flag a story as ⚠ At Risk:
+Four automated signals flag a story as ⚠ At Risk:
 1. **Missing TCs** — story has acceptance criteria but no linked test cases
 2. **No branch** — story is "In Progress" but has no git branch set
 3. **Failed TC, no bug** — a test case for the story has status "Fail" but no defect has been raised
+4. **Open critical/high bug** — an open Critical or High severity bug is linked to this story
 
 ---
 
@@ -71,7 +72,7 @@ Three automated signals flag a story as ⚠ At Risk:
 Displays project name, tagline, last-generated timestamp, commit SHA, overall progress bar, stories done/in-progress count, projected cost, actual AI cost, line coverage %, and branch coverage %.
 
 ### Filters
-Epic, status, priority, and free-text search filters apply across the Hierarchy and Kanban tabs in real-time.
+Epic, status, priority, type (stories/bugs/both), and free-text search filters apply across the Hierarchy and Kanban tabs in real-time.
 
 ### Recent Activity
 A floating panel shows the 5 most recent session summaries parsed from `progress.md`.
@@ -105,12 +106,12 @@ All configuration lives in `plan-visualizer.config.json` (gitignored; created fr
 |-----|---------|---------|
 | `project.name` | `"My Project"` | Dashboard title |
 | `project.tagline` | `"A short description."` | Dashboard subtitle |
-| `docs.releasePlan` | `"Docs/RELEASE_PLAN.md"` | Release plan source |
-| `docs.testCases` | `"Docs/TEST_CASES.md"` | Test cases source |
-| `docs.bugs` | `"Docs/BUGS.md"` | Bug log source |
-| `docs.costLog` | `"Docs/AI_COST_LOG.md"` | AI cost log source |
-| `docs.outputDir` | `"Docs"` | Output directory |
-| `coverage.summaryPath` | `"Docs/coverage/coverage-summary.json"` | Jest coverage output |
+| `docs.releasePlan` | `"docs/RELEASE_PLAN.md"` | Release plan source |
+| `docs.testCases` | `"docs/TEST_CASES.md"` | Test cases source |
+| `docs.bugs` | `"docs/BUGS.md"` | Bug log source |
+| `docs.costLog` | `"docs/AI_COST_LOG.md"` | AI cost log source |
+| `docs.outputDir` | `"docs"` | Output directory |
+| `coverage.summaryPath` | `"docs/coverage/coverage-summary.json"` | Jest coverage output |
 | `progress.path` | `"progress.md"` | Session progress log |
 | `costs.hourlyRate` | `100` | USD/hr for projected cost |
 | `costs.tshirtHours` | `{S:4, M:8, L:16, XL:32}` | Hours per size estimate |
