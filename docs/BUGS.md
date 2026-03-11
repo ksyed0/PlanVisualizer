@@ -68,7 +68,7 @@ Steps to Reproduce:
   3. Open docs/plan-status.html in a browser
 Expected: User-supplied content is HTML-escaped and rendered as plain text
 Actual: Raw HTML/JS from markdown files is injected verbatim into the dashboard — executable scripts run on load
-Status: Open
+Status: Fixed
 Fix Branch: bugfix/BUG-0005-xss-escape-html
 Lesson Encoded: No
 
@@ -82,8 +82,8 @@ Steps to Reproduce:
   3. Observe projected cost values in the dashboard
 Expected: Dashboard shows projected costs calculated from the configured hours and rate
 Actual: Dashboard always uses hardcoded S=4, M=8, L=16, XL=32 hours at $100/hr regardless of config
-Status: Open
-Fix Branch: bugfix/BUG-0006-tshirt-hours-config
+Status: Fixed
+Fix Branch: bugfix/BUG-0006-0009-0010-render-html
 Lesson Encoded: No
 
 BUG-0007: parseCoverage() throws TypeError when coverage JSON has unexpected shape
@@ -95,8 +95,8 @@ Steps to Reproduce:
   2. Observe the error
 Expected: Returns zero-coverage fallback object without throwing
 Actual: Throws TypeError: Cannot read properties of undefined — crashes the generator
-Status: Open
-Fix Branch: bugfix/BUG-0007-parse-coverage-guard
+Status: Fixed
+Fix Branch: bugfix/BUG-0007-0011-parser-fixes
 Lesson Encoded: No
 
 BUG-0008: DEFAULTS object in generate-plan.js uses uppercase 'Docs' paths — breaks on Linux
@@ -108,8 +108,8 @@ Steps to Reproduce:
   2. Run node tools/generate-plan.js on a Linux filesystem
 Expected: Generator reads from docs/ (lowercase) matching the actual directory structure
 Actual: Generator attempts to read from Docs/ (uppercase) — silently produces empty data on Linux
-Status: Open
-Fix Branch: bugfix/BUG-0008-defaults-lowercase-paths
+Status: Fixed
+Fix Branch: bugfix/BUG-0008-0014-0015-0016-misc
 Lesson Encoded: No
 
 BUG-0009: f-type filter control (Stories + Bugs / Stories only / Bugs only) has no effect
@@ -122,8 +122,8 @@ Steps to Reproduce:
   3. Observe the dashboard content
 Expected: Content is filtered to show only the selected type
 Actual: Filter selection is ignored — applyFilters() never reads the f-type value; all content remains visible
-Status: Open
-Fix Branch: bugfix/BUG-0009-ftype-filter-not-applied
+Status: Fixed
+Fix Branch: bugfix/BUG-0006-0009-0010-render-html
 Lesson Encoded: No
 
 BUG-0010: Coverage N/A heuristic misidentifies genuine 0% coverage as N/A
@@ -136,8 +136,8 @@ Steps to Reproduce:
   3. Observe the Lines Cov and Branch Cov badges
 Expected: Badges show 0.0% (correct measured value)
 Actual: Badges show N/A — the > 0 guard cannot distinguish "no coverage file" from "0% coverage measured"
-Status: Open
-Fix Branch: bugfix/BUG-0010-coverage-na-heuristic
+Status: Fixed
+Fix Branch: bugfix/BUG-0006-0009-0010-render-html
 Lesson Encoded: No
 
 BUG-0011: parse-progress.js returns sessions in file order — reverse-chronological order not enforced
@@ -150,8 +150,8 @@ Steps to Reproduce:
   3. Inspect result[0].date
 Expected: Most recent session is always first regardless of file order (AC-0013 requires reverse-chronological)
 Actual: Sessions are returned in the order they appear in the file — if appended at bottom, oldest appears first
-Status: Open
-Fix Branch: bugfix/BUG-0011-progress-sort-order
+Status: Fixed (false positive — progress.md is written newest-first; regression test added)
+Fix Branch: bugfix/BUG-0007-0011-parser-fixes
 Lesson Encoded: No
 
 BUG-0012: GitHub Actions workflow steps pinned to mutable version tags, not commit digests
@@ -163,8 +163,8 @@ Steps to Reproduce:
   2. Observe actions/checkout@v6, actions/setup-node@v6, etc.
 Expected: All actions pinned to immutable full commit SHAs (e.g. actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683)
 Actual: Actions use mutable semver tags — a force-push to @v6 by the upstream maintainer would silently change CI behaviour
-Status: Open
-Fix Branch: bugfix/BUG-0012-pin-actions-digests
+Status: Fixed
+Fix Branch: bugfix/BUG-0012-0013-0017-ci-config-fixes
 Lesson Encoded: No
 
 BUG-0013: package.json devDependencies use ^ floating ranges in violation of AGENTS.md §19
@@ -176,8 +176,8 @@ Steps to Reproduce:
   2. Note: jest: "^30.3.0", eslint: "^10.0.3", @eslint/js: "^9.39.4"
 Expected: All dependency versions are pinned exactly (no ^ or ~ ranges)
 Actual: ^ ranges allow automatic minor/patch upgrades on npm install in fresh environments
-Status: Open
-Fix Branch: bugfix/BUG-0013-pin-dep-versions
+Status: Fixed
+Fix Branch: bugfix/BUG-0012-0013-0017-ci-config-fixes
 Lesson Encoded: No
 
 BUG-0014: detectAtRisk() accepts an unused `bugs` parameter — misleading API contract
@@ -189,8 +189,8 @@ Steps to Reproduce:
   2. Search for any usage of the bugs parameter inside the function body
 Expected: bugs parameter is used to flag stories with open Critical/High bugs as at-risk
 Actual: bugs is declared but never read — function silently ignores bug data; ESLint reports no-unused-vars
-Status: Open
-Fix Branch: bugfix/BUG-0014-detect-at-risk-unused-bugs
+Status: Fixed
+Fix Branch: bugfix/BUG-0008-0014-0015-0016-misc
 Lesson Encoded: No
 
 BUG-0015: generate-plan.js silently swallows config parse errors with no user-facing diagnostic
@@ -202,8 +202,8 @@ Steps to Reproduce:
   2. Run node tools/generate-plan.js
 Expected: Tool prints a warning that the config file failed to parse and is using defaults
 Actual: JSON.parse error is caught silently — tool falls back to DEFAULTS with no message; user is unaware
-Status: Open
-Fix Branch: bugfix/BUG-0015-config-parse-warning
+Status: Fixed
+Fix Branch: bugfix/BUG-0008-0014-0015-0016-misc
 Lesson Encoded: No
 
 BUG-0016: generate-plan.js main() has no top-level error handler — unhandled throws expose raw stack traces
@@ -215,8 +215,8 @@ Steps to Reproduce:
   2. Run node tools/generate-plan.js
 Expected: Human-readable error message per AGENTS.md §13; no raw stack trace exposed to user
 Actual: Node.js prints an unformatted stack trace and exits with code 1 — violates §13 error handling standard
-Status: Open
-Fix Branch: bugfix/BUG-0016-main-error-handler
+Status: Fixed
+Fix Branch: bugfix/BUG-0008-0014-0015-0016-misc
 Lesson Encoded: No
 
 BUG-0017: peaceiris/actions-gh-pages@v4 uses deprecated Node.js 20 runtime
