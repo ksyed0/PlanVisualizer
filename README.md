@@ -40,7 +40,11 @@ project root, create plan-visualizer.config.json with the correct project name a
 file paths for this project, add the .claude/settings.json Stop hook for
 capture-cost.js, copy the .github/workflows/plan-visualizer.yml workflow, run
 npm test from the repo root to confirm all 9 suites pass, then commit all added
-files to the current branch.
+files to the current branch. Also copy AGENTS.md from the repo root into this
+project root — if an AGENTS.md already exists, ask before overwriting; if
+declined, save it as AGENTS-new.md and tell the user to manually copy the key
+sections (especially the BLAST phases and §19 Dependency Management) into their
+existing AGENTS.md, then delete AGENTS-new.md.
 ```
 
 ---
@@ -95,15 +99,16 @@ The included `.github/workflows/plan-visualizer.yml` workflow triggers on pushes
 
 If you prefer not to use the install script:
 
-1. Copy `tools/`, `tests/`, `jest.config.js` into your project root
-2. Add to your `package.json` scripts:
+1. Copy `AGENTS.md` from the PlanVisualizer repo into your project root. If an `AGENTS.md` already exists and you choose not to overwrite it, save the PlanVisualizer version as `AGENTS-new.md` and manually merge the key sections (especially the BLAST phases and §19 Dependency Management) into your own `AGENTS.md`, then delete `AGENTS-new.md`.
+2. Copy `tools/`, `tests/`, `jest.config.js` into your project root
+3. Add to your `package.json` scripts:
    ```json
    "plan:test": "jest --watchAll=false",
    "plan:test:coverage": "jest --watchAll=false --coverage",
    "plan:generate": "node tools/generate-plan.js"
    ```
-3. Copy `plan-visualizer.config.example.json` to `plan-visualizer.config.json` and edit it
-4. Add to `.claude/settings.json`:
+4. Copy `plan-visualizer.config.example.json` to `plan-visualizer.config.json` and edit it
+5. Add to `.claude/settings.json`:
    ```json
    {
      "hooks": {
@@ -111,7 +116,7 @@ If you prefer not to use the install script:
      }
    }
    ```
-5. Add `docs/coverage/` to your `.gitignore`
+6. Add `docs/coverage/` to your `.gitignore`
 
 ---
 
@@ -126,6 +131,12 @@ rm -rf /tmp/PlanVisualizer
 ```
 
 Your `plan-visualizer.config.json` is never overwritten.
+
+---
+
+## Credits
+
+The `AGENTS.md` operating framework included with this tool is based on the **BLAST framework** originally developed by **Jack Roberts** ([Jack@JackRoberts.ai](mailto:Jack@JackRoberts.ai)).
 
 ---
 

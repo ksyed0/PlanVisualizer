@@ -107,7 +107,7 @@ function renderFilterBar(data) {
       <option value="">Stories + Bugs</option><option value="story">Stories only</option><option value="bug">Bugs only</option>
     </select>
     <input id="f-search" oninput="applyFilters()" type="text" placeholder="Search IDs, titles…"
-      class="border border-slate-300 rounded px-2 py-1 text-sm w-48" />
+      class="border border-slate-300 rounded px-2 py-1 text-sm w-full sm:w-48" />
     <button onclick="clearFilters()" class="text-sm text-slate-500 hover:text-slate-800 underline">Clear</button>
   </div>`;
 }
@@ -115,10 +115,10 @@ function renderFilterBar(data) {
 function renderTabs() {
   const tabs = ['Hierarchy','Kanban','Traceability','Charts','Costs','Bugs'];
   return `
-  <div class="border-b border-slate-700 bg-slate-800 px-6 flex gap-1" id="tab-bar">
+  <div class="border-b border-slate-700 bg-slate-800 px-6 flex gap-1 overflow-x-auto" id="tab-bar">
     ${tabs.map((t, i) => `
     <button onclick="showTab('${t.toLowerCase()}')" id="tab-btn-${t.toLowerCase()}"
-      class="px-4 py-2 text-sm font-medium border-b-2 ${i===0 ? 'border-blue-400 text-blue-300' : 'border-transparent text-slate-400 hover:text-slate-200'}">
+      class="px-4 py-2 text-sm font-medium border-b-2 flex-shrink-0 ${i===0 ? 'border-blue-400 text-blue-300' : 'border-transparent text-slate-400 hover:text-slate-200'}">
       ${t}
     </button>`).join('')}
   </div>`;
@@ -462,7 +462,8 @@ function renderRecentActivity(data) {
     </li>`
   ).join('');
   return `
-  <div id="activity-panel" class="activity-panel fixed top-0 right-0 h-screen bg-white border-l border-slate-200 shadow-lg flex flex-col" style="width:280px;z-index:50;transition:width 0.25s ease">
+  <button id="activity-toggle" class="fixed top-4 right-4 z-50 block md:hidden bg-white shadow rounded px-3 py-2 text-sm font-medium text-slate-700" onclick="var p=document.getElementById('activity-panel'); p.classList.toggle('hidden');">&#8801; Activity</button>
+  <div id="activity-panel" class="activity-panel fixed top-0 right-0 h-screen bg-white border-l border-slate-200 shadow-lg flex flex-col hidden md:flex" style="width:280px;z-index:50;transition:width 0.25s ease">
     <div id="activity-expanded" class="flex items-center justify-between px-4 py-3 border-b border-slate-200 flex-shrink-0">
       <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Recent Activity</h4>
       <button onclick="toggleActivityPanel()" class="text-slate-400 hover:text-slate-700 leading-none px-1" title="Collapse">&#9664;</button>
@@ -532,14 +533,14 @@ function renderScripts(data) {
 
   function toggleActivityPanel() {
     const panel = document.getElementById('activity-panel');
-    if (!panel) return;
+    if (!panel || window.innerWidth < 768) return;
     const isCollapsed = panel.style.width === '40px';
     const expanded = document.getElementById('activity-expanded');
     const list = document.getElementById('activity-list');
     const collapsed = document.getElementById('activity-collapsed');
     if (isCollapsed) {
       panel.style.width = '280px';
-      document.body.style.paddingRight = '280px';
+      document.body.style.paddingRight = '';
       expanded.classList.remove('hidden');
       list.classList.remove('hidden');
       collapsed.classList.add('hidden');
@@ -560,8 +561,7 @@ function renderScripts(data) {
     const panel = document.getElementById('activity-panel');
     if (!panel) return;
     document.body.style.transition = 'padding-right 0.25s ease';
-    document.body.style.paddingRight = '280px';
-    if (localStorage.getItem('activityPanelCollapsed') === 'true') {
+    if (window.innerWidth >= 768 && localStorage.getItem('activityPanelCollapsed') === 'true') {
       panel.style.width = '40px';
       document.body.style.paddingRight = '40px';
       document.getElementById('activity-expanded').classList.add('hidden');
@@ -602,10 +602,10 @@ function renderHtml(data) {
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-  <style>body { font-family: 'Inter', sans-serif; } code, .font-mono { font-family: 'JetBrains Mono', monospace; }</style>
+  <style>body { font-family: 'Inter', sans-serif; } code, .font-mono { font-family: 'JetBrains Mono', monospace; } @media (min-width: 768px) { body { padding-right: 280px; } }</style>
   ${renderPrintCSS()}
 </head>
-<body class="bg-slate-50 min-h-screen" style="padding-right:280px">
+<body class="bg-slate-50 min-h-screen">
   <div class="sticky top-0 z-30">
     ${renderTopBar(data)}
     ${renderFilterBar(data)}
