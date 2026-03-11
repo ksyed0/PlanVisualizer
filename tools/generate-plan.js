@@ -26,13 +26,13 @@ const ROOT = path.join(__dirname, '..');
 const DEFAULTS = {
   project: { name: 'NomadCode', tagline: 'Code from anywhere.' },
   docs: {
-    releasePlan: 'Docs/RELEASE_PLAN.md',
-    testCases: 'Docs/TEST_CASES.md',
-    bugs: 'Docs/BUGS.md',
-    costLog: 'Docs/AI_COST_LOG.md',
-    outputDir: 'Docs',
+    releasePlan: 'docs/RELEASE_PLAN.md',
+    testCases: 'docs/TEST_CASES.md',
+    bugs: 'docs/BUGS.md',
+    costLog: 'docs/AI_COST_LOG.md',
+    outputDir: 'docs',
   },
-  coverage: { summaryPath: 'Docs/coverage/coverage-summary.json' },
+  coverage: { summaryPath: 'docs/coverage/coverage-summary.json' },
   progress: { path: 'progress.md' },
   costs: { hourlyRate: 100, tshirtHours: { S: 4, M: 8, L: 16, XL: 32 } },
 };
@@ -52,7 +52,10 @@ function loadConfig() {
         tshirtHours: { ...DEFAULTS.costs.tshirtHours, ...raw.costs?.tshirtHours },
       },
     };
-  } catch { return DEFAULTS; }
+  } catch (e) {
+    console.warn('[generate-plan] Failed to parse plan-visualizer.config.json; using defaults.', e.message);
+    return DEFAULTS;
+  }
 }
 
 function readFile(relPath) {
@@ -85,7 +88,7 @@ function main() {
   const coverageJson = readJson(config.coverage.summaryPath);
   const coverage = coverageJson
     ? parseCoverage(coverageJson)
-    : { lines: 0, statements: 0, functions: 0, branches: 0, overall: 0, meetsTarget: false };
+    : { lines: 0, statements: 0, functions: 0, branches: 0, overall: 0, meetsTarget: false, available: false };
   const recentActivity = parseRecentActivity(readFile(config.progress.path), 5);
 
   const aiAttribution = attributeAICosts(stories, costByBranch);
@@ -133,4 +136,4 @@ function main() {
   console.log(`[generate-plan] Done. ${epics.length} epics, ${stories.length} stories, ${testCases.length} TCs, ${bugs.length} bugs.`);
 }
 
-main();
+try { main(); } catch (e) { console.error('[generate-plan] Fatal:', e.message); process.exit(1); }
