@@ -48,7 +48,7 @@ Dependencies: EPIC-0001
 EPIC-0005: Project Self-Documentation
 Description: Full AGENTS.md-compliant documentation including design doc, architecture, release plan, test cases, ID registry, and all supporting project files.
 Release Target: Release 1.1
-Status: In Progress
+Status: Done
 Dependencies: None
 ```
 
@@ -294,11 +294,11 @@ Dependencies: None
 US-0021 (EPIC-0005): As a contributor, I want a human-readable test plan and test cases document, so that QA verification is reproducible and stories cannot close without test evidence.
 Priority: High (P0)
 Estimate: M
-Status: In Progress
+Status: Done
 Branch: feature/US-0021-test-cases
 Acceptance Criteria:
   - [x] AC-0051: Docs/TEST_CASES.md contains at least one TC per user story
-  - [ ] AC-0052: Every acceptance criterion (AC) has a corresponding TC — NOTE: 23 TCs cover ~56 ACs; partial coverage only; aspirational target not yet met
+  - [x] AC-0052: Every acceptance criterion (AC) has a corresponding TC — TC-0001 through TC-0057 cover all 56 ACs
   - [x] AC-0053: TC format is parseable by parse-test-cases.js and renders in the Traceability tab
 Dependencies: US-0020
 
