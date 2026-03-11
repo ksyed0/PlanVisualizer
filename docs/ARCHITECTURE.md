@@ -1,7 +1,7 @@
 # PlanVisualizer — Technical Architecture
 
-**Version:** 1.1
-**Last Updated:** 2026-03-10
+**Version:** 1.2
+**Last Updated:** 2026-03-11
 
 ---
 
@@ -44,7 +44,7 @@ tools/
     render-html.js         Assembles complete HTML from a data object
 
 tests/
-  unit/                   One test file per lib module (9 suites, 121+ tests)
+  unit/                   One test file per lib module (9 suites, 138 tests)
   fixtures/               Deterministic markdown/JSON samples shared across suites
 
 scripts/
@@ -54,7 +54,7 @@ scripts/
   workflows/
     ci.yml                Lint + test + audit (all branches + PRs)
     codeql.yml            CodeQL analysis (PRs + main + weekly schedule)
-    plan-visualizer.yml   Generate + commit plan-status.html + deploy to GitHub Pages
+    plan-visualizer.yml   Run tests, generate plan-status.html, and deploy to GitHub Pages
   dependabot.yml          Weekly npm and Actions updates
 ```
 
@@ -158,13 +158,14 @@ The `plan-visualizer.config.json` is gitignored by default so target projects ke
 
 ## 9. At-Risk Detection
 
-`detectAtRisk(stories, testCases, bugs)` evaluates three signals per story:
+`detectAtRisk(stories, testCases, bugs)` evaluates four signals per story:
 
 | Signal | Condition | Meaning |
 |--------|-----------|---------|
 | `missingTCs` | Story has ≥1 AC but zero linked TCs | Story lacks test coverage |
 | `noBranch` | `status === 'In Progress'` AND `branch === ''` | Active story has no git branch |
 | `failedTCNoBug` | A linked TC has `status === 'Fail'` AND `defect === 'None'` | Known failure not tracked as a bug |
+| `openCriticalBug` | A linked bug has `severity === 'Critical' \| 'High'` AND `status === 'Open' \| 'In Progress'` | Unresolved defect blocking the story |
 
 A story is `isAtRisk` if any signal is true. The ⚠ badge and tooltip are rendered in the Hierarchy tab.
 
@@ -196,7 +197,11 @@ Three parallel jobs, all required:
 
 ## 11. GitHub Pages Deployment
 
-The `plan-visualizer.yml` workflow deploys `Docs/` to the `gh-pages` branch using `peaceiris/actions-gh-pages@v4`. The `plan-status.html` file is the dashboard entry point. `keep_files: true` preserves any other files in the `gh-pages` branch.
+The `plan-visualizer.yml` workflow uses the official `actions/upload-pages-artifact` and `actions/deploy-pages` actions to deploy `docs/` to GitHub Pages. The workflow runs on pushes to `main` or `develop`.
+
+`docs/index.html` contains a `<meta http-equiv="refresh">` redirect to `plan-status.html`, ensuring GitHub Pages serves the dashboard instead of README.md.
+
+> **Requirement:** The `github-pages` environment must list both `main` and `develop` as allowed deployment branches (Settings → Environments → github-pages → Deployment branches).
 
 **Access:** `https://ksyed0.github.io/PlanVisualizer/plan-status.html`
 
@@ -207,8 +212,8 @@ The `plan-visualizer.yml` workflow deploys `Docs/` to the `gh-pages` branch usin
 | Operation | Typical time | Notes |
 |-----------|-------------|-------|
 | `generate-plan.js` full run | < 200ms | Pure Node.js I/O + regex |
-| Jest test suite (121 tests) | < 1s | No I/O mocking needed |
+| Jest test suite (138 tests) | < 1s | No I/O mocking needed |
 | ESLint on `tools/**/*.js` | < 2s | ~11 source files |
 | `npm audit` | < 10s | Network call to npm registry |
 | CodeQL analysis | 3–5 min | Depends on codebase size |
-| GitHub Pages deploy | 1–2 min | Commit + peaceiris action |
+| GitHub Pages deploy | 1–2 min | upload-pages-artifact + deploy-pages |
