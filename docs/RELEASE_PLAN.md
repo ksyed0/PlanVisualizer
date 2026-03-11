@@ -42,7 +42,7 @@ Dependencies: EPIC-0001, EPIC-0002
 EPIC-0004: CI/CD Pipeline
 Description: Consolidated GitHub Actions pipeline with ESLint, Jest coverage gate, npm audit, CodeQL analysis, GitHub Pages deployment, and Dependabot.
 Release Target: Release 1.1
-Status: In Progress
+Status: Done
 Dependencies: EPIC-0001
 
 EPIC-0005: Project Self-Documentation
@@ -213,54 +213,54 @@ Dependencies: None
 US-0014 (EPIC-0004): As a developer, I want ESLint to run on every push and PR, so that code quality issues are caught before merge.
 Priority: High (P0)
 Estimate: S
-Status: To Do
-Branch: feature/US-0014-eslint-ci
+Status: Done
+Branch: develop
 Acceptance Criteria:
-  - [ ] AC-0032: eslint.config.js uses eslint:recommended with no-eval and eqeqeq as errors
-  - [ ] AC-0033: npm run lint exits 0 on all current source files
-  - [ ] AC-0034: The lint job in ci.yml fails the workflow if ESLint reports any error
+  - [x] AC-0032: eslint.config.js uses eslint:recommended with no-eval and eqeqeq as errors
+  - [x] AC-0033: npm run lint exits 0 on all current source files
+  - [x] AC-0034: The lint job in ci.yml fails the workflow if ESLint reports any error
 Dependencies: None
 
 US-0015 (EPIC-0004): As a developer, I want the CI pipeline to gate on 80% coverage, so that test coverage cannot silently regress.
 Priority: High (P0)
 Estimate: S
-Status: To Do
-Branch: feature/US-0015-coverage-gate
+Status: Done
+Branch: develop
 Acceptance Criteria:
-  - [ ] AC-0035: jest.config.js defines coverageThreshold with 80% for lines, branches, functions, and statements
-  - [ ] AC-0036: npm run test:coverage fails with a descriptive message when any metric falls below 80%
-  - [ ] AC-0037: The test job in ci.yml fails the workflow when the threshold is not met
+  - [x] AC-0035: jest.config.js defines coverageThreshold with 80% for lines, branches, functions, and statements
+  - [x] AC-0036: npm run test:coverage fails with a descriptive message when any metric falls below 80%
+  - [x] AC-0037: The test job in ci.yml fails the workflow when the threshold is not met
 Dependencies: None
 
 US-0016 (EPIC-0004): As a developer, I want npm audit to run on every push and PR, so that known vulnerabilities in dependencies are caught automatically.
 Priority: High (P0)
 Estimate: S
-Status: To Do
-Branch: feature/US-0016-npm-audit-ci
+Status: Done
+Branch: develop
 Acceptance Criteria:
-  - [ ] AC-0038: The audit job runs npm audit --audit-level=moderate
-  - [ ] AC-0039: The workflow fails if any moderate, high, or critical vulnerability is found
+  - [x] AC-0038: The audit job runs npm audit --audit-level=moderate
+  - [x] AC-0039: The workflow fails if any moderate, high, or critical vulnerability is found
 Dependencies: None
 
 US-0017 (EPIC-0004): As a developer, I want CodeQL to analyse the codebase on every PR and push to main, so that security vulnerabilities are caught before they reach production.
 Priority: High (P0)
 Estimate: M
-Status: To Do
-Branch: feature/US-0017-codeql
+Status: Done
+Branch: develop
 Acceptance Criteria:
-  - [ ] AC-0040: codeql.yml runs on pull_request, push to main, and a weekly Monday schedule
-  - [ ] AC-0041: The security-extended query pack is used for JavaScript analysis
-  - [ ] AC-0042: Results are uploaded to the GitHub Security tab as SARIF
+  - [x] AC-0040: codeql.yml runs on pull_request, push to main, and a weekly Monday schedule
+  - [x] AC-0041: The security-extended query pack is used for JavaScript analysis
+  - [x] AC-0042: Results are uploaded to the GitHub Security tab as SARIF
 Dependencies: None
 
 US-0018 (EPIC-0004): As a developer, I want Dependabot to open automated PRs for outdated dependencies, so that the project stays secure without manual monitoring.
 Priority: Medium (P1)
 Estimate: S
-Status: To Do
-Branch: feature/US-0018-dependabot
+Status: Done
+Branch: develop
 Acceptance Criteria:
-  - [ ] AC-0043: dependabot.yml configures weekly npm updates with a 5-PR limit
-  - [ ] AC-0044: GitHub Actions dependencies are also monitored weekly
+  - [x] AC-0043: dependabot.yml configures weekly npm updates with a 5-PR limit
+  - [x] AC-0044: GitHub Actions dependencies are also monitored weekly
 Dependencies: None
 ```
 
@@ -322,71 +322,71 @@ Dependencies: None
 TASK-0001 (US-0014): Install eslint@9 and @eslint/js as devDependencies
 Type: Dev
 Assignee: Agent
-Status: To Do
-Branch: feature/US-0014-eslint-ci
+Status: Done
+Branch: develop
 Notes: npm install --save-dev eslint@9 @eslint/js
 
 TASK-0002 (US-0014): Create eslint.config.js with recommended + security rules
 Type: Dev
 Assignee: Agent
-Status: To Do
-Branch: feature/US-0014-eslint-ci
+Status: Done
+Branch: develop
 Notes: Use flat config format; scope to tools/**/*.js
 
 TASK-0003 (US-0014): Add lint script to package.json and verify clean run
 Type: Dev
 Assignee: Agent
-Status: To Do
-Branch: feature/US-0014-eslint-ci
+Status: Done
+Branch: develop
 Notes: npm run lint must exit 0 on current codebase
 
 TASK-0004 (US-0014): Add lint job to ci.yml
 Type: Infra
 Assignee: Agent
-Status: To Do
-Branch: feature/US-0014-eslint-ci
+Status: Done
+Branch: develop
 Notes: Runs on all branches and PRs
 
 TASK-0005 (US-0015): Add coverageThreshold block to jest.config.js
 Type: Dev
 Assignee: Agent
-Status: To Do
-Branch: feature/US-0015-coverage-gate
+Status: Done
+Branch: develop
 Notes: 80% for lines, branches, functions, statements globally
 
 TASK-0006 (US-0015): Verify npm run test:coverage passes threshold
 Type: Test
 Assignee: Agent
-Status: To Do
-Branch: feature/US-0015-coverage-gate
+Status: Done
+Branch: develop
 Notes: Current coverage is well above 80% — should pass immediately
 
 TASK-0007 (US-0015): Add test job to ci.yml replacing existing test job
 Type: Infra
 Assignee: Agent
-Status: To Do
-Branch: feature/US-0015-coverage-gate
+Status: Done
+Branch: develop
 Notes: Keep --ci flag for GitHub Actions
 
 TASK-0008 (US-0016): Add audit job to ci.yml
 Type: Infra
 Assignee: Agent
-Status: To Do
-Branch: feature/US-0016-npm-audit-ci
+Status: Done
+Branch: develop
 Notes: npm audit --audit-level=moderate
 
 TASK-0009 (US-0017): Create .github/workflows/codeql.yml
 Type: Infra
 Assignee: Agent
-Status: To Do
-Branch: feature/US-0017-codeql
+Status: Done
+Branch: develop
 Notes: Triggers: pull_request, push to main, schedule (Monday 08:00 UTC)
 
 TASK-0010 (US-0018): Create .github/dependabot.yml
 Type: Infra
 Assignee: Agent
-Status: To Do
-Branch: feature/US-0018-dependabot
+Status: Done
+Branch: develop
 Notes: npm + github-actions ecosystems; weekly; 5-PR limit
 ```
 
