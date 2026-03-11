@@ -39,4 +39,23 @@ describe('detectAtRisk', () => {
     const result = detectAtRisk(stories, tcs, []);
     expect(result['US-0001'].failedTCNoBug).toBe(true);
   });
+
+  it('flags story with open critical bug linked to it', () => {
+    const bugs = [{ id: 'BUG-0001', relatedStory: 'US-0001', severity: 'Critical', status: 'Open' }];
+    const result = detectAtRisk([makeStory()], [], bugs);
+    expect(result['US-0001'].openCriticalBug).toBe(true);
+    expect(result['US-0001'].isAtRisk).toBe(true);
+  });
+
+  it('does not flag story when linked bug is Fixed', () => {
+    const bugs = [{ id: 'BUG-0001', relatedStory: 'US-0001', severity: 'Critical', status: 'Fixed' }];
+    const result = detectAtRisk([makeStory()], [], bugs);
+    expect(result['US-0001'].openCriticalBug).toBe(false);
+  });
+
+  it('does not flag story when bug is for different story', () => {
+    const bugs = [{ id: 'BUG-0001', relatedStory: 'US-0099', severity: 'Critical', status: 'Open' }];
+    const result = detectAtRisk([makeStory()], [], bugs);
+    expect(result['US-0001'].openCriticalBug).toBe(false);
+  });
 });
