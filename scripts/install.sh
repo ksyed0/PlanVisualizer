@@ -32,6 +32,29 @@ if [ -f "${REPO_ROOT}/.github/workflows/plan-visualizer.yml" ]; then
   cp "${REPO_ROOT}/.github/workflows/plan-visualizer.yml" "${TARGET}/.github/workflows/plan-visualizer.yml"
 fi
 
+# ── 2.5. Copy AGENTS.md ─────────────────────────────────────────────────────
+AGENTS_DEST="${TARGET}/AGENTS.md"
+AGENTS_NEW="${TARGET}/AGENTS-new.md"
+if [ -f "$AGENTS_DEST" ]; then
+  echo ""
+  echo "[install] Warning: AGENTS.md already exists at ${TARGET}/AGENTS.md."
+  echo "[install] It may contain your own agent operating standards."
+  read -r -p "[install] Overwrite with PlanVisualizer AGENTS.md? (y/N): " OVERWRITE
+  if [[ "$OVERWRITE" =~ ^[Yy]$ ]]; then
+    cp "${REPO_ROOT}/AGENTS.md" "$AGENTS_DEST"
+    echo "[install] AGENTS.md overwritten."
+  else
+    cp "${REPO_ROOT}/AGENTS.md" "$AGENTS_NEW"
+    echo "[install] Skipping overwrite — PlanVisualizer AGENTS.md saved as AGENTS-new.md."
+    echo "[install] ACTION REQUIRED: Open AGENTS-new.md and copy the key sections"
+    echo "[install]   (especially the BLAST phases and §19 Dependency Management)"
+    echo "[install]   into your existing AGENTS.md, then delete AGENTS-new.md."
+  fi
+else
+  cp "${REPO_ROOT}/AGENTS.md" "$AGENTS_DEST"
+  echo "[install] AGENTS.md copied."
+fi
+
 # ── 3. Merge npm scripts into target package.json ────────────────────────────
 TARGET_PKG="${TARGET}/package.json"
 if [ -f "$TARGET_PKG" ]; then
@@ -90,7 +113,8 @@ fi
 
 echo ""
 echo "[install] Done. Next steps:"
-echo "  1. Edit plan-visualizer.config.json with your project name and file paths."
-echo "  2. Run: npm install   (to install jest dev dependency)"
-echo "  3. Run: npm run plan:test   (confirm all 9 suites pass)"
-echo "  4. Run: node tools/generate-plan.js   (generates Docs/plan-status.html)"
+echo "  1. Review AGENTS.md (or AGENTS-new.md if you kept your existing one) and merge any key sections."
+echo "  2. Edit plan-visualizer.config.json with your project name and file paths."
+echo "  3. Run: npm install   (to install jest dev dependency)"
+echo "  4. Run: npm run plan:test   (confirm all 9 suites pass)"
+echo "  5. Run: node tools/generate-plan.js   (generates docs/plan-status.html)"
