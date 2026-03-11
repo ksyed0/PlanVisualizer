@@ -59,19 +59,19 @@ function renderTopBar(data) {
       </div>
       <div class="flex gap-3 flex-wrap">
         <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-center min-w-[70px]">
-          <div class="text-2xl font-bold text-blue-300">${data.stories.length}</div>
+          <div class="text-2xl font-bold text-white">${data.stories.length}</div>
           <div class="text-xs text-slate-400 mt-0.5">Stories</div>
         </div>
         <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-center min-w-[90px]">
-          <div class="text-2xl font-bold text-green-400">${pct}%</div>
+          <div class="text-2xl font-bold text-white">${pct}%</div>
           <div class="text-xs text-slate-400 mt-0.5">${done} done · ${inProgress} active</div>
         </div>
         <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-center min-w-[80px]">
-          <div class="text-xl font-bold text-yellow-400">${usd(totalProjected)}</div>
+          <div class="text-xl font-bold text-white">${usd(totalProjected)}</div>
           <div class="text-xs text-slate-400 mt-0.5">Projected</div>
         </div>
         <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-center min-w-[80px]">
-          <div class="text-xl font-bold text-teal-400">${usd(totalAI)}</div>
+          <div class="text-xl font-bold text-white">${usd(totalAI)}</div>
           <div class="text-xs text-slate-400 mt-0.5">AI Actual</div>
         </div>
         <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-center min-w-[70px]">
