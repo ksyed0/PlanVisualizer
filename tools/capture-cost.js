@@ -14,7 +14,7 @@ const { execSync } = require('child_process');
 const ROOT = path.join(__dirname, '..');
 
 const DEFAULTS = {
-  docs: { costLog: 'Docs/AI_COST_LOG.md' },
+  docs: { costLog: 'docs/AI_COST_LOG.md' },
 };
 
 function loadConfig() {

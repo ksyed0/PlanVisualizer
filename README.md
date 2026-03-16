@@ -69,7 +69,7 @@ After installation, edit `plan-visualizer.config.json` in your project root:
 
 All paths are relative to the project root. If no config file is present, built-in defaults are used.
 
-> **Case sensitivity:** File and directory paths are case-sensitive on Linux (including GitHub Actions). Make sure the case in your config exactly matches the actual file and directory names on disk — e.g. `docs/BUGS.md` and `Docs/bugs.md` are different paths. Mismatches that work locally on macOS will fail in CI.
+> **Case sensitivity:** File and directory paths are case-sensitive on Linux (including GitHub Actions). Make sure the case in your config exactly matches the actual file and directory names on disk — e.g. `docs/BUGS.md` and `docs/bugs.md` are different paths. Mismatches that work locally on macOS will fail in CI.
 
 ---
 

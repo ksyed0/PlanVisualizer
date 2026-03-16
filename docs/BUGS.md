@@ -99,7 +99,7 @@ Status: Fixed
 Fix Branch: bugfix/BUG-0007-0011-parser-fixes
 Lesson Encoded: No
 
-BUG-0008: DEFAULTS object in generate-plan.js uses uppercase 'Docs' paths — breaks on Linux
+BUG-0008: DEFAULTS object in generate-plan.js uses uppercase 'docs' paths — breaks on Linux
 Severity: High
 Related Story: US-0013
 Related Task: TASK-0001
@@ -107,7 +107,7 @@ Steps to Reproduce:
   1. Remove or rename plan-visualizer.config.json so the tool falls back to DEFAULTS
   2. Run node tools/generate-plan.js on a Linux filesystem
 Expected: Generator reads from docs/ (lowercase) matching the actual directory structure
-Actual: Generator attempts to read from Docs/ (uppercase) — silently produces empty data on Linux
+Actual: Generator attempts to read from docs/ (uppercase) — silently produces empty data on Linux
 Status: Fixed
 Fix Branch: bugfix/BUG-0008-0014-0015-0016-misc
 Lesson Encoded: No
@@ -271,6 +271,6 @@ Expected: What should happen
 Actual: What actually happened
 Status: Open | In Progress | Fixed | Verified | Closed
 Fix Branch: bugfix/BUG-XXXX-short-description
-Lesson Encoded: Yes — see Docs/LESSONS.md | No
+Lesson Encoded: Yes — see docs/LESSONS.md | No
 
 -->
