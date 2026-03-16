@@ -431,7 +431,7 @@ git commit -m "chore: add Dependabot for weekly npm and Actions updates"
 Current `.gitignore`:
 ```
 node_modules/
-Docs/coverage/
+docs/coverage/
 plan-visualizer.config.json
 ```
 

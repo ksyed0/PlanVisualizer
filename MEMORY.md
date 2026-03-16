@@ -93,7 +93,7 @@ Acceptance Criteria:
 Dependencies: None | US-XXXX
 
 TASK-XXXX (US-XXXX): Imperative description
-Type: Dev | Test | Design | Docs | Infra | Bug
+Type: Dev | Test | Design | docs | Infra | Bug
 Assignee: Agent | Human
 Status: To Do | In Progress | Done | Blocked
 Branch: feature/...

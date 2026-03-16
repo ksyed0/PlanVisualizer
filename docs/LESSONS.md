@@ -19,8 +19,8 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 ---
 
 ## L-0007 — All config paths must use lowercase to match Linux filesystem
-**Rule:** Every path in `plan-visualizer.config.json` must match the actual directory casing on Linux (lowercase `docs/`). macOS is case-insensitive so `Docs/` and `docs/` silently resolve to the same place; Linux treats them as separate directories. Always verify all config paths are lowercase-consistent with the workflow's `publish_dir`.
-*Learned when the workflow deployed `./docs` but the generator wrote to `Docs/` (from `outputDir: "Docs"` in config), so `plan-status.html` never appeared in the deployed gh-pages branch.*
+**Rule:** Every path in `plan-visualizer.config.json` must match the actual directory casing on Linux (lowercase `docs/`). macOS is case-insensitive so `docs/` and `docs/` silently resolve to the same place; Linux treats them as separate directories. Always verify all config paths are lowercase-consistent with the workflow's `publish_dir`.
+*Learned when the workflow deployed `./docs` but the generator wrote to `docs/` (from `outputDir: "docs"` in config), so `plan-status.html` never appeared in the deployed gh-pages branch.*
 **Date:** 2026-03-10
 
 ---

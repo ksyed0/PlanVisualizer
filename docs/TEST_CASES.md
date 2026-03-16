@@ -193,7 +193,7 @@ Type: Functional
 Preconditions: RELEASE_PLAN.md, TEST_CASES.md, BUGS.md, AI_COST_LOG.md, progress.md, and coverage JSON all populated
 Steps:
   1. Run node tools/generate-plan.js
-  2. Open Docs/plan-status.html in a browser
+  2. Open docs/plan-status.html in a browser
 Expected Result: Dashboard loads; all 6 tabs visible; top bar shows correct project name and stats
 Actual Result: Unit tests pass; functionality verified.
 Status: [x] Pass
@@ -205,10 +205,10 @@ Related Story: US-0009
 Related Task: TASK-0001
 Related AC: AC-0022
 Type: Edge Case
-Preconditions: No Docs/ markdown files exist; config points to missing paths
+Preconditions: No docs/ markdown files exist; config points to missing paths
 Steps:
   1. Run node tools/generate-plan.js
-  2. Open Docs/plan-status.html in a browser
+  2. Open docs/plan-status.html in a browser
 Expected Result: Tool does not crash; HTML renders with "No stories yet" and "No bugs logged" empty states
 Actual Result: Unit tests pass; functionality verified.
 Status: [x] Pass
@@ -222,7 +222,7 @@ Related AC: AC-0023
 Type: Functional
 Preconditions: Dashboard loaded with stories from at least 2 epics
 Steps:
-  1. Open Docs/plan-status.html in a browser
+  1. Open docs/plan-status.html in a browser
   2. Select a specific epic in the Epic filter dropdown
   3. Observe the story list
 Expected Result: Only stories belonging to the selected epic are visible; other stories are hidden
@@ -238,7 +238,7 @@ Related AC: AC-0024
 Type: Functional
 Preconditions: Dashboard loaded with multiple stories
 Steps:
-  1. Open Docs/plan-status.html in a browser
+  1. Open docs/plan-status.html in a browser
   2. Type "US-0001" in the search field
   3. Observe the story list
 Expected Result: Only stories containing "US-0001" in ID or title are visible
