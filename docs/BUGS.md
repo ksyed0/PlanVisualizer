@@ -258,6 +258,87 @@ Status: Fixed
 Fix Branch: bugfix/BUG-0019-node24-actions
 Lesson Encoded: No
 
+BUG-0020: Mobile top non-scrollable area too large on iPhone Pro Max
+Severity: Medium
+Related Story: US-0001
+Related Task: n/a
+Steps to Reproduce:
+  1. Open plan-status.html on iPhone Pro Max (or any viewport ≤ 767px)
+  2. Observe the sticky header area (top bar + filter bar + tab bar)
+Expected: Header fits within the top ⅓ of the screen, leaving scrollable content visible below
+Actual: Header occupies more than ⅓ of the screen height due to large fonts, padding, and stat tiles
+Status: Fixed
+Fix Branch: claude/fix-mobile-top-area-C7evU
+Lesson Encoded: No
+
+BUG-0021: Traceability legend not collapsible on mobile, takes valuable screen space
+Severity: Low
+Related Story: US-0021
+Related Task: n/a
+Steps to Reproduce:
+  1. Open plan-status.html on a mobile device (viewport ≤ 767px)
+  2. Navigate to the Traceability tab
+  3. Observe the legend panel on the right
+Expected: Legend is collapsed by default on mobile with a toggle button to expand
+Actual: Legend is always expanded, pushing the table content left and wasting screen space
+Status: Fixed
+Fix Branch: claude/fix-mobile-top-area-C7evU
+Lesson Encoded: No
+
+BUG-0022: Activity panel cannot be closed on mobile after opening
+Severity: Medium
+Related Story: n/a
+Related Task: n/a
+Steps to Reproduce:
+  1. Open plan-status.html on a mobile viewport (≤ 767px)
+  2. Tap the "≡ Activity" toggle button (fixed top-4 right-4, z-50)
+  3. Try tapping the button again to close the panel
+Expected: Tapping the toggle button again closes the activity panel
+Actual: The panel (z-index:50, fixed top-0 right-0 width:280px) covers the toggle button at the same z-level once opened; the button is unreachable so the panel cannot be dismissed
+Status: Fixed
+Fix Branch: claude/fix-mobile-top-area-C7evU
+Lesson Encoded: No
+
+BUG-0023: AI Cost column shows $0 for all individual stories on Costs tab
+Severity: High
+Related Story: US-0007
+Related Task: n/a
+Steps to Reproduce:
+  1. Open plan-status.html → Costs tab
+  2. Observe the AI Cost column for any individual story row
+Expected: Each story row shows the AI spend attributed to its branch
+Actual: Every story shows $0; only the Totals footer row is correct
+Root Cause: generate-plan.js stored the field as `aiCostUsd` but render-html.js read `costUsd` — the key mismatch caused undefined → 0 for every story. The totals row was unaffected because it reads directly from costs._totals.costUsd
+Status: Fixed
+Fix Branch: claude/fix-mobile-top-area-C7evU
+Lesson Encoded: No
+
+BUG-0024: Cost Breakdown chart AI Cost bars appear as zero/invisible
+Severity: Medium
+Related Story: US-0007
+Related Task: n/a
+Steps to Reproduce:
+  1. Open plan-status.html → Charts tab → Cost Breakdown chart
+  2. Observe the AI Cost (teal) bars
+Expected: AI Cost bars are visibly proportional to the AI spend per epic
+Actual: AI Cost bars are sub-pixel tall and invisible — projected costs ($1,600–$4,000/epic) and AI costs ($1–$7/epic) differ by ~3 orders of magnitude; sharing one y-axis makes the AI bars render with no visible height
+Status: Fixed
+Fix Branch: claude/fix-mobile-top-area-C7evU
+Lesson Encoded: No
+
+BUG-0025: Traceability legend renders beside table on mobile instead of above it
+Severity: Low
+Related Story: US-0021
+Related Task: n/a
+Steps to Reproduce:
+  1. Open plan-status.html on a mobile viewport (≤ 767px) → Traceability tab
+  2. Observe the layout of the legend panel relative to the matrix table
+Expected: Legend panel appears above the scrollable table on mobile
+Actual: Legend panel renders to the right of the table (flex-row layout), compressing the table and making both hard to read on a narrow screen
+Status: Fixed
+Fix Branch: claude/fix-mobile-top-area-C7evU
+Lesson Encoded: No
+
 <!-- When adding a bug, use this format:
 
 BUG-XXXX: Short description of the defect

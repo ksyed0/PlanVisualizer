@@ -42,3 +42,11 @@ Pricing basis: Claude Sonnet 4.6 — Input $3/MTok · Output $15/MTok · Cache R
 | 2026-03-09 | sess_0015-est | feature/US-0013-config-system | 50000 | 12000 | 25000 | 0.3375 |
 | 2026-03-10 | sess_0016-est | main | 120000 | 28000 | 60000 | 0.7980 |
 | 2026-03-10 | sess_0017-est | main | 220000 | 65000 | 100000 | 1.6650 |
+| 2026-03-10 | sess_0018-est | develop | 60000 | 14000 | 30000 | 0.3990 |
+| 2026-03-10 | sess_0019-est | develop | 65000 | 15000 | 35000 | 0.4305 |
+| 2026-03-10 | sess_0020-est | develop | 70000 | 18000 | 40000 | 0.4920 |
+| 2026-03-10 | sess_0021-est | feature/US-0019-design-docs | 75000 | 20000 | 40000 | 0.5370 |
+| 2026-03-10 | sess_0022-est | feature/US-0020-release-plan | 80000 | 22000 | 45000 | 0.5835 |
+| 2026-03-11 | sess_0023-est | feature/US-0021-test-cases | 70000 | 25000 | 40000 | 0.5970 |
+| 2026-03-11 | sess_0024-est | feature/US-0022-project-files | 75000 | 20000 | 40000 | 0.5370 |
+| 2026-03-11 | sess_0025-est | feature/US-0022-project-files | 65000 | 15000 | 35000 | 0.4305 |
