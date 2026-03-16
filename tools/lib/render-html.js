@@ -339,10 +339,16 @@ function renderChartsTab(data) {
     new Chart(document.getElementById('chart-cost-breakdown'), {
       type: 'bar',
       data: { labels: ${epicLabels}, datasets: [
-        { label: 'Projected ($)', data: ${epicProjected}, backgroundColor: '#f59e0b' },
-        { label: 'AI Cost ($)', data: ${epicAI}, backgroundColor: '#0d9488' },
+        { label: 'Projected ($)', data: ${epicProjected}, backgroundColor: '#f59e0b', yAxisID: 'yProjected' },
+        { label: 'AI Cost ($)', data: ${epicAI}, backgroundColor: '#0d9488', yAxisID: 'yAI' },
       ]},
-      options: { responsive: true }
+      options: {
+        responsive: true,
+        scales: {
+          yProjected: { type: 'linear', position: 'left', title: { display: true, text: 'Projected ($)' } },
+          yAI: { type: 'linear', position: 'right', title: { display: true, text: 'AI Cost ($)' }, grid: { drawOnChartArea: false } }
+        }
+      }
     });
     new Chart(document.getElementById('chart-coverage'), {
       type: 'doughnut',
