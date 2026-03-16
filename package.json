@@ -5,7 +5,8 @@
   "scripts": {
     "test": "jest",
     "test:coverage": "jest --coverage",
-    "lint": "eslint tools/**/*.js"
+    "lint": "eslint tools/**/*.js",
+    "generate": "node tools/generate-plan.js"
   },
   "devDependencies": {
     "@eslint/js": "9.39.4",

@@ -28,7 +28,9 @@ function badge(text) {
 
 function usd(n) {
   const num = Number(n);
-  return (num > 0 && num < 1) ? '$' + num.toFixed(2) : '$' + Math.round(num).toLocaleString('en-US');
+  if (num >= 1000) return '$' + Math.round(num).toLocaleString('en-US');
+  if (num > 0) return '$' + num.toFixed(2);
+  return '$0.00';
 }
 function fmtNum(n) { return Number(n).toLocaleString(); }
 
@@ -39,11 +41,9 @@ function renderTopBar(data) {
   const inProgress = data.stories.filter(s => s.status === 'In Progress').length;
   const pct = data.stories.length ? Math.round((done / data.stories.length) * 100) : 0;
   const cov = data.coverage;
-  const linesCovLabel = (cov.available !== false) ? `${cov.overall.toFixed(1)}%` : 'N/A';
-  const linesCovClass = (cov.available !== false) ? (cov.meetsTarget ? 'text-green-400' : 'text-red-400') : 'text-slate-500';
-  const branchCov = cov.branches;
-  const branchLabel = (cov.available !== false) ? `${Number(branchCov).toFixed(1)}%` : 'N/A';
-  const branchClass = (cov.available !== false) ? (branchCov >= 80 ? 'text-green-400' : 'text-red-400') : 'text-slate-500';
+  const covLabel = (cov.available !== false) ? `${cov.overall.toFixed(1)}%` : 'N/A';
+  const covClass = (cov.available !== false) ? (cov.meetsTarget ? 'text-green-400' : 'text-red-400') : 'text-slate-500';
+  const branchSubtitle = (cov.available !== false) ? `Branches: ${Number(cov.branches).toFixed(1)}%` : 'N/A';
   return `
   <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white px-6 py-5 shadow-lg" id="top-bar">
     <div class="flex flex-wrap gap-4 items-start justify-between">
@@ -54,18 +54,10 @@ function renderTopBar(data) {
           <div class="bg-slate-700 rounded-full h-2 w-40 overflow-hidden">
             <div class="bg-blue-500 h-2 rounded-full" style="width:${pct}%"></div>
           </div>
-          <span class="text-xs text-slate-400">${done}/${data.stories.length} stories done</span>
+          <span class="text-xs text-slate-400">${done}/${data.stories.length} &middot; ${pct}%${inProgress ? ` &middot; ${inProgress} active` : ''}</span>
         </div>
       </div>
       <div class="flex gap-3 flex-wrap topbar-stats">
-        <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-center min-w-[70px] topbar-tile">
-          <div class="text-2xl font-bold text-white topbar-tile-num">${data.stories.length}</div>
-          <div class="text-xs text-slate-400 mt-0.5">Stories</div>
-        </div>
-        <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-center min-w-[90px] topbar-tile">
-          <div class="text-2xl font-bold text-white topbar-tile-num">${pct}%</div>
-          <div class="text-xs text-slate-400 mt-0.5">${done} done · ${inProgress} active</div>
-        </div>
         <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-center min-w-[80px] topbar-tile">
           <div class="text-xl font-bold text-white topbar-tile-num">${usd(totalProjected)}</div>
           <div class="text-xs text-slate-400 mt-0.5">Projected</div>
@@ -74,13 +66,9 @@ function renderTopBar(data) {
           <div class="text-xl font-bold text-white topbar-tile-num">${usd(totalAI)}</div>
           <div class="text-xs text-slate-400 mt-0.5">AI Actual</div>
         </div>
-        <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-center min-w-[70px] topbar-tile">
-          <div class="text-2xl font-bold ${linesCovClass} topbar-tile-num">${linesCovLabel}</div>
-          <div class="text-xs text-slate-400 mt-0.5">Lines Cov</div>
-        </div>
-        <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-center min-w-[70px] topbar-tile">
-          <div class="text-2xl font-bold ${branchClass} topbar-tile-num">${branchLabel}</div>
-          <div class="text-xs text-slate-400 mt-0.5">Branch Cov</div>
+        <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-center min-w-[80px] topbar-tile" aria-label="Coverage: ${covLabel} overall, ${branchSubtitle}">
+          <div class="text-2xl font-bold ${covClass} topbar-tile-num">${covLabel}</div>
+          <div class="text-xs text-slate-400 mt-0.5">${branchSubtitle}</div>
         </div>
       </div>
     </div>
@@ -392,7 +380,7 @@ function renderCostsTab(data) {
         <td class="px-3 py-2 text-center text-sm">${story.estimate || '?'}</td>
         <td class="px-3 py-2 text-right text-sm">${usd(projected)}</td>
         <td class="px-3 py-2 text-right text-sm text-teal-600">${usd(aiCost)}</td>
-        <td class="px-3 py-2 text-right text-xs text-slate-400">${fmtNum(ai.inputTokens || 0)} / ${fmtNum(ai.outputTokens || 0)}</td>
+        <td class="px-3 py-2 text-right text-xs text-slate-400 tokens-col">${fmtNum(ai.inputTokens || 0)} / ${fmtNum(ai.outputTokens || 0)}</td>
       </tr>`;
     }).join('');
     return `
@@ -404,7 +392,7 @@ function renderCostsTab(data) {
       </td>
       <td class="px-3 py-2 text-right text-sm font-medium">${usd(epicProjected)}</td>
       <td class="px-3 py-2 text-right text-sm font-medium text-teal-600">${usd(epicAI)}</td>
-      <td class="px-3 py-2 text-right text-xs text-slate-400">${fmtNum(epicIn)} / ${fmtNum(epicOut)}</td>
+      <td class="px-3 py-2 text-right text-xs text-slate-400 tokens-col">${fmtNum(epicIn)} / ${fmtNum(epicOut)}</td>
     </tr>
     ${storyRows}`;
   }).join('');
@@ -417,7 +405,7 @@ function renderCostsTab(data) {
         <tr>
           <th class="px-3 py-2">Story</th><th class="px-3 py-2">Title</th><th class="px-3 py-2 text-center">Status</th>
           <th class="px-3 py-2 text-center">Size</th><th class="px-3 py-2 text-right">Projected</th>
-          <th class="px-3 py-2 text-right">AI Cost</th><th class="px-3 py-2 text-right">Tokens (in/out)</th>
+          <th class="px-3 py-2 text-right">AI Cost</th><th class="px-3 py-2 text-right tokens-col">Tokens (in/out)</th>
         </tr>
       </thead>
       <tbody>${epicBlocks}</tbody>
@@ -426,7 +414,7 @@ function renderCostsTab(data) {
           <td colspan="4" class="px-3 py-2 text-right text-sm">Totals</td>
           <td class="px-3 py-2 text-right text-sm">${usd(totalProjected)}</td>
           <td class="px-3 py-2 text-right text-sm text-teal-600">${usd(t.costUsd)}</td>
-          <td class="px-3 py-2 text-right text-xs text-slate-400">${fmtNum(t.inputTokens)} / ${fmtNum(t.outputTokens)}</td>
+          <td class="px-3 py-2 text-right text-xs text-slate-400 tokens-col">${fmtNum(t.inputTokens)} / ${fmtNum(t.outputTokens)}</td>
         </tr>
       </tfoot>
     </table>
@@ -476,13 +464,13 @@ function renderRecentActivity(data) {
     <div id="activity-expanded" class="flex items-center justify-between px-4 py-3 border-b border-slate-200 flex-shrink-0">
       <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Recent Activity</h4>
       <div class="flex items-center gap-2">
-        <button onclick="document.getElementById('activity-panel').classList.add('hidden')" class="md:hidden text-slate-400 hover:text-slate-700 leading-none px-1 text-base" title="Close">&times;</button>
-        <button onclick="toggleActivityPanel()" class="hidden md:block text-slate-400 hover:text-slate-700 leading-none px-1" title="Collapse">&#9664;</button>
+        <button onclick="document.getElementById('activity-panel').classList.add('hidden')" class="md:hidden text-slate-400 hover:text-slate-700 leading-none px-1 text-base" title="Close" aria-label="Close activity panel">&times;</button>
+        <button onclick="toggleActivityPanel()" class="hidden md:block text-slate-400 hover:text-slate-700 leading-none px-1" title="Collapse" aria-label="Collapse activity panel">&#9664;</button>
       </div>
     </div>
     <ul id="activity-list" class="flex-1 overflow-y-auto px-4 py-2">${items}</ul>
     <div id="activity-collapsed" class="hidden flex-col items-center pt-3 pb-4 gap-3">
-      <button onclick="toggleActivityPanel()" class="text-slate-400 hover:text-slate-700 leading-none px-1" title="Expand">&#9654;</button>
+      <button onclick="toggleActivityPanel()" class="text-slate-400 hover:text-slate-700 leading-none px-1" title="Expand" aria-label="Expand activity panel">&#9654;</button>
       <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide select-none" style="writing-mode:vertical-rl;transform:rotate(180deg);white-space:nowrap">Recent Activity</span>
     </div>
   </div>`;
@@ -494,8 +482,10 @@ function renderScripts(data) {
   <script>
   const ALL_DATA = ${allData};
 
+  const VALID_TABS = ['hierarchy','kanban','traceability','charts','costs','bugs'];
+
   function showTab(name) {
-    ['hierarchy','kanban','traceability','charts','costs','bugs'].forEach(t => {
+    VALID_TABS.forEach(t => {
       const el = document.getElementById('tab-' + t);
       const btn = document.getElementById('tab-btn-' + t);
       if (el) el.classList.toggle('hidden', t !== name);
@@ -507,6 +497,8 @@ function renderScripts(data) {
       }
     });
     if (name === 'charts' && typeof initCharts === 'function') { initCharts(); initCharts = () => {}; }
+    localStorage.setItem('activeTab', name);
+    history.replaceState(null, '', '#' + name);
   }
 
   function toggleEpic(id) {
@@ -535,11 +527,17 @@ function renderScripts(data) {
     document.querySelectorAll('.bug-row').forEach(row => {
       row.style.display = (type === 'story') ? 'none' : '';
     });
+    localStorage.setItem('f-epic', epic);
+    localStorage.setItem('f-status', status);
+    localStorage.setItem('f-priority', priority);
+    localStorage.setItem('f-type', type);
+    localStorage.setItem('f-search', document.getElementById('f-search').value);
   }
 
   function clearFilters() {
     ['f-epic','f-status','f-priority','f-type'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('f-search').value = '';
+    ['f-epic','f-status','f-priority','f-type','f-search'].forEach(k => localStorage.removeItem(k));
     applyFilters();
   }
 
@@ -584,10 +582,24 @@ function renderScripts(data) {
     }
   }
 
-  document.addEventListener('DOMContentLoaded', initActivityPanel);
-
-  // Collapse traceability legend by default on mobile
   document.addEventListener('DOMContentLoaded', function() {
+    initActivityPanel();
+
+    // Restore active tab from URL hash or localStorage
+    const hash = window.location.hash.replace('#', '');
+    const savedTab = VALID_TABS.includes(hash) ? hash : (VALID_TABS.includes(localStorage.getItem('activeTab')) ? localStorage.getItem('activeTab') : 'hierarchy');
+    showTab(savedTab);
+
+    // Restore filter state
+    ['f-epic','f-status','f-priority','f-type'].forEach(id => {
+      const val = localStorage.getItem(id);
+      if (val) document.getElementById(id).value = val;
+    });
+    const savedSearch = localStorage.getItem('f-search');
+    if (savedSearch) document.getElementById('f-search').value = savedSearch;
+    applyFilters();
+
+    // Collapse traceability legend by default on mobile
     if (window.innerWidth < 768) {
       var body = document.getElementById('trace-legend-body');
       var arrow = document.getElementById('trace-legend-arrow');
@@ -643,6 +655,7 @@ function renderHtml(data) {
       #tab-bar button { padding: 5px 10px !important; font-size: 0.72rem !important; }
       #trace-layout { flex-direction: column !important; }
       #trace-legend-panel { order: -1; width: 100% !important; }
+      .tokens-col { display: none !important; }
     }
   </style>
   ${renderPrintCSS()}
