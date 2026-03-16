@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -21,11 +22,21 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Bump patch version
+      - name: Bump patch version and open auto-merge PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          BUMP_BRANCH="chore/version-bump-$(git rev-parse --short HEAD)"
+          git checkout -b "$BUMP_BRANCH"
           npm version patch --no-git-tag-version
           git add package.json package-lock.json
           git commit -m "chore: bump patch version [skip ci]"
-          git push
+          git push origin "$BUMP_BRANCH"
+          gh pr create \
+            --title "chore: bump patch version [skip ci]" \
+            --body "Automated patch version bump triggered by merged PR." \
+            --base develop \
+            --head "$BUMP_BRANCH"
+          gh pr merge "$BUMP_BRANCH" --squash --auto
