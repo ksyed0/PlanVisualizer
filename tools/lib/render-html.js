@@ -48,7 +48,10 @@ function renderTopBar(data) {
   <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white px-6 py-5 shadow-lg" id="top-bar">
     <div class="flex flex-wrap gap-4 items-start justify-between">
       <div class="min-w-0">
-        <h1 class="text-3xl font-bold text-blue-400 tracking-tight topbar-title">${esc(data.projectName)}</h1>
+        <div class="flex items-center gap-3 flex-wrap">
+          <h1 class="text-3xl font-bold text-blue-400 tracking-tight topbar-title">${esc(data.projectName)}</h1>
+          <button onclick="openAbout()" class="text-xs text-slate-400 border border-slate-600 rounded px-2 py-0.5 hover:border-blue-400 hover:text-blue-400 transition-colors flex-shrink-0">About</button>
+        </div>
         <p class="text-slate-400 text-sm mt-0.5 topbar-tagline">${esc(data.tagline)}&nbsp;·&nbsp;Updated ${data.generatedAt.slice(0,10)}&nbsp;·&nbsp;<code class="text-slate-500 text-xs">${data.commitSha}</code></p>
         <div class="mt-2.5 flex items-center gap-2 topbar-progress">
           <div class="bg-slate-700 rounded-full h-2 w-40 overflow-hidden">
@@ -607,6 +610,16 @@ function renderScripts(data) {
       if (arrow) arrow.textContent = '▶';
     }
   });
+
+  function openAbout() {
+    document.getElementById('aboutModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeAbout() {
+    document.getElementById('aboutModal').classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeAbout(); });
   </script>`;
 }
 
@@ -676,6 +689,24 @@ function renderHtml(data) {
   </div>
   ${renderRecentActivity(data)}
   ${renderScripts(data)}
+  <div id="aboutModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <div onclick="closeAbout()" class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+    <div class="relative z-10 bg-slate-800 border border-slate-600 rounded-xl shadow-2xl w-full max-w-sm p-6 text-center">
+      <button onclick="closeAbout()" class="absolute top-3 right-4 text-slate-400 hover:text-white text-xl leading-none" aria-label="Close">&#x2715;</button>
+      <h2 class="text-2xl font-bold text-blue-400 mb-1">${esc(data.projectName)}</h2>
+      <p class="text-slate-400 text-sm mb-4">${esc(data.tagline)}</p>
+      <a href="${esc(data.githubUrl)}" target="_blank" rel="noopener noreferrer"
+         class="inline-flex items-center gap-1.5 text-blue-400 hover:text-blue-300 text-sm underline underline-offset-2 mb-5">
+        GitHub Repository
+      </a>
+      <div class="border-t border-slate-700 pt-4 text-slate-500 text-xs space-y-1.5">
+        <p>Version <span class="text-slate-300 font-mono">v${esc(data.version)}</span></p>
+        <p>Build <span class="text-slate-300 font-mono">#${esc(data.buildNumber)}</span>&nbsp;<code class="text-slate-600">${esc(data.commitSha)}</code></p>
+        <p>Updated <span class="text-slate-300">${data.generatedAt.slice(0,10)}</span></p>
+      </div>
+      <p class="mt-5 text-slate-500 text-xs">Implemented by Kamal Syed, 2026</p>
+    </div>
+  </div>
 </body>
 </html>`;
 }

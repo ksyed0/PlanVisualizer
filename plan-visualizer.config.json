@@ -1,7 +1,8 @@
 {
   "project": {
     "name": "PlanVisualizer",
-    "tagline": "Self-documenting project dashboards for Claude Code."
+    "tagline": "Self-documenting project dashboards for Claude Code.",
+    "githubUrl": "https://github.com/ksyed0/PlanVisualizer"
   },
   "docs": {
     "releasePlan": "docs/RELEASE_PLAN.md",

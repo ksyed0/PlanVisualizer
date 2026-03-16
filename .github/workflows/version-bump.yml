@@ -1,0 +1,31 @@
+name: Patch Version Bump
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [develop]
+
+jobs:
+  bump:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: develop
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        with:
+          node-version: '20'
+
+      - name: Bump patch version
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          npm version patch --no-git-tag-version
+          git add package.json package-lock.json
+          git commit -m "chore: bump patch version [skip ci]"
+          git push
