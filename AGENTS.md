@@ -75,9 +75,9 @@ Operate within a 3-layer architecture that separates concerns to maximize reliab
 
 ## 🛰️ Phase 5: T — Trigger (Deployment)
 
-1. **Rollback Plan First** — Complete `Docs/ROLLBACK.md` before any deployment begins. See §20 for the full Pre-Deployment Checklist and template. Do not deploy without it.
+1. **Rollback Plan First** — Complete `docs/ROLLBACK.md` before any deployment begins. See §20 for the full Pre-Deployment Checklist and template. Do not deploy without it.
 2. **Cloud Transfer** — Move finalized logic from local testing to the production environment.
-3. **Smoke Test** — Execute the smoke test plan defined in `Docs/ROLLBACK.md` to verify the deployment succeeded.
+3. **Smoke Test** — Execute the smoke test plan defined in `docs/ROLLBACK.md` to verify the deployment succeeded.
 4. **Automation** — Set up execution triggers (Cron jobs, Webhooks, or Listeners).
 5. **Documentation** — Finalize the Maintenance Log in `PROJECT.md`. Tag the release in Git with a semantic version.
 
@@ -91,16 +91,16 @@ All project artefacts — epics, stories, tasks, bugs, test cases, acceptance cr
 
 | **Artefact**         | **Format**    | **Example** | **Where Tracked**               |
 | -------------------- | ------------- | ----------- | ------------------------------- |
-| Epic                 | `EPIC-[0001]` | `EPIC-0001` | `Docs/RELEASE_PLAN.md`          |
-| User Story           | `US-[0001]`   | `US-0042`   | `Docs/RELEASE_PLAN.md`          |
-| Task                 | `TASK-[0001]` | `TASK-0007` | `Docs/RELEASE_PLAN.md`          |
+| Epic                 | `EPIC-[0001]` | `EPIC-0001` | `docs/RELEASE_PLAN.md`          |
+| User Story           | `US-[0001]`   | `US-0042`   | `docs/RELEASE_PLAN.md`          |
+| Task                 | `TASK-[0001]` | `TASK-0007` | `docs/RELEASE_PLAN.md`          |
 | Acceptance Criterion | `AC-[0001]`   | `AC-0003`   | Inline within the US definition |
-| Test Case            | `TC-[0001]`   | `TC-0015`   | `Docs/TEST_CASES.md`            |
-| Bug / Defect         | `BUG-[0001]`  | `BUG-0002`  | `Docs/BUGS.md`                  |
+| Test Case            | `TC-[0001]`   | `TC-0015`   | `docs/TEST_CASES.md`            |
+| Bug / Defect         | `BUG-[0001]`  | `BUG-0002`  | `docs/BUGS.md`                  |
 
-**ID Registry file:** Maintain `Docs/ID_REGISTRY.md` as the single source of truth for the next available ID in each sequence. Update it immediately whenever a new artefact is created.
+**ID Registry file:** Maintain `docs/ID_REGISTRY.md` as the single source of truth for the next available ID in each sequence. Update it immediately whenever a new artefact is created.
 
-**`Docs/ID_REGISTRY.md` format:**
+**`docs/ID_REGISTRY.md` format:**
 
 ```other
 # ID Registry
@@ -121,8 +121,8 @@ All project artefacts — epics, stories, tasks, bugs, test cases, acceptance cr
 
 **Rules:**
 
-- Always consult `Docs/ID_REGISTRY.md` before creating any new artefact to get the next available ID.
-- Update `Docs/ID_REGISTRY.md` immediately after assigning a new ID — before writing the artefact content.
+- Always consult `docs/ID_REGISTRY.md` before creating any new artefact to get the next available ID.
+- Update `docs/ID_REGISTRY.md` immediately after assigning a new ID — before writing the artefact content.
 - IDs are permanent. Retired or deleted artefacts retain their ID and are marked `Status: Retired` or `Status: Cancelled` — never deleted from the record.
 - All cross-references between artefacts must use their full ID (e.g., `US-0003` not just “the login story”).
 - Git branch names, commit messages, PR titles, and log entries must all reference the relevant artefact ID.
@@ -185,7 +185,7 @@ Every new view must match existing ones automatically. Use the design system as 
 
 ### 7. Hard-Won Lessons as Permanent Rules
 
-When a bug is resolved after significant debugging, encode the fix as a permanent rule here or in `Docs/LESSONS.md`. Format:
+When a bug is resolved after significant debugging, encode the fix as a permanent rule here or in `docs/LESSONS.md`. Format:
 
 > **”[Never/Always] [specific behaviour].** *Learned when [brief description of failure].*”
 
@@ -209,7 +209,7 @@ Every piece of code generated or updated must have corresponding unit tests writ
 
 ### 9. Release Planning & Backlog Management
 
-A detailed release plan must be created at project inception and maintained throughout the project lifecycle. This plan lives in `Docs/RELEASE_PLAN.md` and must be updated whenever scope, priorities, or architecture change.
+A detailed release plan must be created at project inception and maintained throughout the project lifecycle. This plan lives in `docs/RELEASE_PLAN.md` and must be updated whenever scope, priorities, or architecture change.
 
 **Structure of the Release Plan:**
 
@@ -266,7 +266,7 @@ Definition of Done (DOD):
 
 ```other
 TASK-[0001] (US-[0001]): [Short imperative description of the work]
-Type: [Dev | Test | Design | Docs | Infra | Bug]
+Type: [Dev | Test | Design | docs | Infra | Bug]
 Assignee: [Agent / Human]
 Status: [To Do | In Progress | Done | Blocked]
 Branch: [feature/EPIC-0001-US-0001-short-description]
@@ -287,14 +287,14 @@ Expected: [What should happen]
 Actual: [What actually happened]
 Status: [Open | In Progress | Fixed | Verified | Closed]
 Fix Branch: [bugfix/BUG-0001-short-description]
-Lesson Encoded: [Yes — see Docs/LESSONS.md | No]
+Lesson Encoded: [Yes — see docs/LESSONS.md | No]
 ```
 
 > **Rule:** No story may be worked on unless it meets the DOR. No story may be closed unless it meets the DOD. The release plan is a living document — keep it current.
 
 ### 10. Test Case Management
 
-Whenever code is generated or updated, corresponding test cases must be created or updated in `Docs/TEST_CASES.md`. Test cases are distinct from unit tests — they are human-readable descriptions of expected system behaviour used for verification and QA.
+Whenever code is generated or updated, corresponding test cases must be created or updated in `docs/TEST_CASES.md`. Test cases are distinct from unit tests — they are human-readable descriptions of expected system behaviour used for verification and QA.
 
 **Test Case format:**
 
@@ -446,7 +446,7 @@ At the end of every working session — whether the task is complete or mid-flig
 3. **Update `MEMORY.md`** — Add or update any new learnings from the session.
 4. **Update `PROMPT_LOG.md`** — Confirm all prompts from the session have been logged with timestamps.
 5. **Update `MIGRATION_LOG.md`** — Log any cross-platform changes that still need to be applied.
-6. **Update `Docs/LESSONS.md`** — Encode any bugs fixed or hard-won lessons from the session.
+6. **Update `docs/LESSONS.md`** — Encode any bugs fixed or hard-won lessons from the session.
 7. **Coverage check** — Run the test suite and log the coverage summary to `progress.md`. Flag any regressions.
 8. **Report to user** — Provide a brief end-of-session summary: what was done, current branch, test status, and what to pick up next session.
 
@@ -571,11 +571,11 @@ Every deployment to a production or staging environment must have a documented, 
 
 - [ ] Current production version is tagged in Git (e.g., `v1.0.0`) so it can be restored instantly.
 - [ ] Database migrations are reversible — every `up` migration must have a corresponding `down` migration.
-- [ ] Rollback procedure is documented in `Docs/ROLLBACK.md` for this release.
+- [ ] Rollback procedure is documented in `docs/ROLLBACK.md` for this release.
 - [ ] A smoke test plan is defined — the minimum set of checks to verify the deployment succeeded.
 - [ ] Monitoring and alerting are active and verified before traffic is switched.
 
-**Rollback Procedure Template (`Docs/ROLLBACK.md`):**
+**Rollback Procedure Template (`docs/ROLLBACK.md`):**
 
 ```other
 Release: [version]
@@ -603,7 +603,7 @@ Post-rollback:
 **Rules:**
 
 - If a rollback plan cannot be written before deployment, the deployment must not proceed.
-- Every deployment that requires a rollback must be followed by a post-mortem entry in `Docs/LESSONS.md`.
+- Every deployment that requires a rollback must be followed by a post-mortem entry in `docs/LESSONS.md`.
 - Database rollbacks must be tested in a non-production environment before being relied upon in production.
 
 > **Rule:** Hope is not a recovery strategy. If you haven’t tested the rollback, you don’t have one.
@@ -618,13 +618,13 @@ Post-rollback:
 | `tools/`               | Deterministic scripts in the selected coding languages. Atomic and testable.                              |
 | `tests/`               | Unit tests mirroring the source structure. Must maintain ≥80% coverage.                                   |
 | `architecture/`        | Technical SOPs in Markdown, including `ERROR_TAXONOMY.md`.                                                |
-| `Docs/`                | All project documentation.                                                                                |
-| `Docs/RELEASE_PLAN.md` | Epics, user stories, tasks, MVP definition, release milestones.                                           |
-| `Docs/TEST_CASES.md`   | Human-readable test cases (TC-XXXX) linked to user stories and ACs.                                       |
-| `Docs/BUGS.md`         | Bug and defect register with BUG-XXXX identifiers and status.                                             |
-| `Docs/ID_REGISTRY.md`  | Single source of truth for next available ID in every sequence.                                           |
-| `Docs/LESSONS.md`      | Encoded hard-won lessons and permanent guardrail rules.                                                   |
-| `Docs/ROLLBACK.md`     | Rollback procedure for each release. Created before every deployment.                                     |
+| `docs/`                | All project documentation.                                                                                |
+| `docs/RELEASE_PLAN.md` | Epics, user stories, tasks, MVP definition, release milestones.                                           |
+| `docs/TEST_CASES.md`   | Human-readable test cases (TC-XXXX) linked to user stories and ACs.                                       |
+| `docs/BUGS.md`         | Bug and defect register with BUG-XXXX identifiers and status.                                             |
+| `docs/ID_REGISTRY.md`  | Single source of truth for next available ID in every sequence.                                           |
+| `docs/LESSONS.md`      | Encoded hard-won lessons and permanent guardrail rules.                                                   |
+| `docs/ROLLBACK.md`     | Rollback procedure for each release. Created before every deployment.                                     |
 | `MEMORY.md`            | Persistent semantic knowledge base, organized by topic.                                                   |
 | `PROMPT_LOG.md`        | Timestamped log of every user prompt across all sessions.                                                 |
 | `MIGRATION_LOG.md`     | Cross-platform and cross-module change tracking.                                                          |

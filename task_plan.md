@@ -35,15 +35,15 @@ Active implementation plan for the current development phase.
 
 | # | Task | US | Status |
 |---|------|----|--------|
-| 1 | Write Docs/DESIGN.md | US-0019 | Done |
-| 2 | Write Docs/ARCHITECTURE.md | US-0019 | Done |
-| 3 | Write Docs/RELEASE_PLAN.md | US-0020 | Done |
-| 4 | Write Docs/ID_REGISTRY.md | US-0020 | Done |
-| 5 | Write Docs/TEST_CASES.md | US-0021 | Done |
-| 6 | Write Docs/BUGS.md | US-0022 | Done |
-| 7 | Write Docs/AI_COST_LOG.md | US-0022 | Done |
+| 1 | Write docs/DESIGN.md | US-0019 | Done |
+| 2 | Write docs/ARCHITECTURE.md | US-0019 | Done |
+| 3 | Write docs/RELEASE_PLAN.md | US-0020 | Done |
+| 4 | Write docs/ID_REGISTRY.md | US-0020 | Done |
+| 5 | Write docs/TEST_CASES.md | US-0021 | Done |
+| 6 | Write docs/BUGS.md | US-0022 | Done |
+| 7 | Write docs/AI_COST_LOG.md | US-0022 | Done |
 | 8 | Write MEMORY.md, findings.md, progress.md, PROMPT_LOG.md, MIGRATION_LOG.md | US-0022 | Done |
-| 9 | Write Docs/LESSONS.md + architecture/ERROR_TAXONOMY.md | US-0022 | Done |
+| 9 | Write docs/LESSONS.md + architecture/ERROR_TAXONOMY.md | US-0022 | Done |
 | 10 | Create plan-visualizer.config.json | US-0022 | Done |
 | 11 | Run node tools/generate-plan.js and verify dashboard output | US-0022 | To Do |
 | 12 | Commit all documentation files to main | US-0022 | To Do |
@@ -56,7 +56,7 @@ Active implementation plan for the current development phase.
 - [ ] npm run lint exits 0 with zero errors
 - [ ] npm run test:coverage: all 9 suites pass, all metrics ≥ 80%
 - [ ] npm audit: 0 vulnerabilities
-- [ ] Docs/RELEASE_PLAN.md parses correctly (all 5 epics, 22 stories rendered in dashboard)
-- [ ] Docs/TEST_CASES.md parses correctly (all 23 TCs visible in Traceability tab)
+- [ ] docs/RELEASE_PLAN.md parses correctly (all 5 epics, 22 stories rendered in dashboard)
+- [ ] docs/TEST_CASES.md parses correctly (all 23 TCs visible in Traceability tab)
 - [ ] plan-status.html deployed to GitHub Pages and accessible
 - [ ] All AGENTS.md-required files present and populated

@@ -111,7 +111,7 @@ Running log of session activity, errors, test results, and blockers.
 
 ### What Was Done (continued)
 - Fixed GitHub Pages deployment: removed broken commit-back step, created docs/index.html redirect, added workflow_dispatch trigger
-- Fixed 404 on Pages site: corrected `outputDir: "Docs"` → `"docs"` in plan-visualizer.config.json (Linux case-sensitivity — generator was writing to Docs/ but workflow deployed docs/)
+- Fixed 404 on Pages site: corrected `outputDir: "docs"` → `"docs"` in plan-visualizer.config.json (Linux case-sensitivity — generator was writing to docs/ but workflow deployed docs/)
 - Manually triggered plan-visualizer.yml; confirmed plan-status.html deployed to gh-pages branch
 - Dashboard is live at https://ksyed0.github.io/PlanVisualizer/
 

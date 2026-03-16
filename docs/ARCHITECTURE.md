@@ -184,7 +184,7 @@ Three parallel jobs, all required:
 - Results uploaded to GitHub Security tab as SARIF
 - Runs on a Monday schedule to avoid burning minutes on every feature branch
 
-### plan-visualizer.yml (Docs file changes on main/develop)
+### plan-visualizer.yml (docs file changes on main/develop)
 - Triggers when `RELEASE_PLAN.md`, `TEST_CASES.md`, `BUGS.md`, `AI_COST_LOG.md`, or `progress.md` change
 - Runs `node tools/generate-plan.js`, commits the output, and deploys to GitHub Pages
 

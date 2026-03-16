@@ -64,7 +64,7 @@ All errors must be logged to `process.stderr` with:
 
 Example:
 ```
-[generate-plan] IntegrationError: Could not read Docs/RELEASE_PLAN.md — using empty data
+[generate-plan] IntegrationError: Could not read docs/RELEASE_PLAN.md — using empty data
 [capture-cost] IntegrationError: git rev-parse failed — using branch 'unknown'
 ```
 
