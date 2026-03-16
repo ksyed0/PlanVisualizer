@@ -127,7 +127,7 @@ The release plan (Release 1.1) is fully complete.
 ## Coverage Thresholds
 
 Jest coverage gate: 80% lines, branches, functions, statements (all global).
-Current coverage (2026-03-11): 97.46% statements, 84.28% branches, 96.73% functions, 99.61% lines. 138 tests.
+Current coverage (2026-03-16): 97.46% statements, 84.28% branches, 96.73% functions, 99.61% lines. 138 tests.
 
 ---
 
@@ -174,3 +174,8 @@ Current coverage (2026-03-11): 97.46% statements, 84.28% branches, 96.73% functi
 - **HTML-escape all user-supplied strings before interpolation into HTML template literals.** Use a single `esc()` helper; apply to every title, summary, AC text, epic description, bug branch. Do NOT escape internally-generated fields (SHA, timestamps). (L-0011, BUG-0005, 2026-03-10)
 - **Use an `available` boolean flag, not `> 0`, to distinguish "file absent" from genuine 0% coverage.** `parseCoverage()` sets `available: true` on valid data and `available: false` in all fallback paths. The inline fallback in `generate-plan.js` must also set `available: false`. (L-0012, BUG-0010, 2026-03-10)
 - **progress.md is written newest-first; do not sort or reverse.** The fixture and real file both place the most recent session at the top. If a test requires reverse-chronological order, add a regression test that asserts descending dates without changing the parser. (L-0013, BUG-0011 false positive, 2026-03-10)
+- **AI cost attribution uses exact branch name matching.** `attributeAICosts()` matches `story.branch` against cost log `Branch` values — case-sensitive exact match. Backfill missing cost rows with `[est]` entries when a branch has no matching rows. (BUG-0023, 2026-03-16)
+- **Generate-plan.js and render-html.js must use identical key names for cost data.** Any field passed through the JSON data object must use the same key in both files. The `aiCostUsd` vs `costUsd` mismatch caused all per-story AI costs to show $0 while the totals row (which reads `costs._totals.costUsd` directly) was unaffected. (L-0014, BUG-0023, 2026-03-16)
+- **Dual y-axes are required when Chart.js datasets differ by 3+ orders of magnitude.** Sharing one y-axis makes the smaller dataset sub-pixel. Use `yAxisID` on each dataset and define two separate `scales` entries (position: left / right). (L-0015, BUG-0024, 2026-03-16)
+- **Mobile layout: use `@media (max-width: 767px)` with `!important` to override Tailwind CDN utilities.** Tailwind CDN emits utility classes at runtime — inline `!important` overrides in a `<style>` block are needed to beat specificity. (L-0016, BUG-0020, 2026-03-16)
+- **Activity panel z-order: give the close button a higher z-index than the panel, or place it inside the panel.** The toggle button was at `z-50` but the panel covered it once opened. Fixed by adding a `×` button inside the panel header with `md:hidden`. (L-0017, BUG-0022, 2026-03-16)
