@@ -258,6 +258,47 @@ Status: Fixed
 Fix Branch: bugfix/BUG-0019-node24-actions
 Lesson Encoded: No
 
+BUG-0020: Mobile top non-scrollable area too large on iPhone Pro Max
+Severity: Medium
+Related Story: US-0001
+Related Task: n/a
+Steps to Reproduce:
+  1. Open plan-status.html on iPhone Pro Max (or any viewport ≤ 767px)
+  2. Observe the sticky header area (top bar + filter bar + tab bar)
+Expected: Header fits within the top ⅓ of the screen, leaving scrollable content visible below
+Actual: Header occupies more than ⅓ of the screen height due to large fonts, padding, and stat tiles
+Status: Fixed
+Fix Branch: claude/fix-mobile-top-area-C7evU
+Lesson Encoded: No
+
+BUG-0021: Traceability legend not collapsible on mobile, takes valuable screen space
+Severity: Low
+Related Story: US-0021
+Related Task: n/a
+Steps to Reproduce:
+  1. Open plan-status.html on a mobile device (viewport ≤ 767px)
+  2. Navigate to the Traceability tab
+  3. Observe the legend panel on the right
+Expected: Legend is collapsed by default on mobile with a toggle button to expand
+Actual: Legend is always expanded, pushing the table content left and wasting screen space
+Status: Fixed
+Fix Branch: claude/fix-mobile-top-area-C7evU
+Lesson Encoded: No
+
+BUG-0022: Activity panel z-order conflict with sticky header on mobile
+Severity: Medium
+Related Story: n/a
+Related Task: n/a
+Steps to Reproduce:
+  1. Open plan-status.html on a mobile viewport (≤ 767px)
+  2. Tap the "≡ Activity" toggle button (fixed top-4 right-4, z-50)
+  3. Observe the activity panel and sticky header overlap behaviour
+Expected: Activity panel (z-50) renders fully on top of sticky header (z-30) without any clipping or visual conflict; toggle button is not obscured by header content
+Actual: The activity toggle button is positioned inside the visible area of the sticky header (top-4 right-4), creating a visual z-order conflict — the button competes with header elements and the opened panel can clip behind the sticky header depending on scroll state
+Status: Open
+Fix Branch: n/a
+Lesson Encoded: No
+
 <!-- When adding a bug, use this format:
 
 BUG-XXXX: Short description of the defect

@@ -45,41 +45,41 @@ function renderTopBar(data) {
   const branchLabel = (cov.available !== false) ? `${Number(branchCov).toFixed(1)}%` : 'N/A';
   const branchClass = (cov.available !== false) ? (branchCov >= 80 ? 'text-green-400' : 'text-red-400') : 'text-slate-500';
   return `
-  <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white px-6 py-5 shadow-lg">
+  <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white px-6 py-5 shadow-lg" id="top-bar">
     <div class="flex flex-wrap gap-4 items-start justify-between">
       <div class="min-w-0">
-        <h1 class="text-3xl font-bold text-blue-400 tracking-tight">${esc(data.projectName)}</h1>
-        <p class="text-slate-400 text-sm mt-0.5">${esc(data.tagline)}&nbsp;·&nbsp;Updated ${data.generatedAt.slice(0,10)}&nbsp;·&nbsp;<code class="text-slate-500 text-xs">${data.commitSha}</code></p>
-        <div class="mt-2.5 flex items-center gap-2">
+        <h1 class="text-3xl font-bold text-blue-400 tracking-tight topbar-title">${esc(data.projectName)}</h1>
+        <p class="text-slate-400 text-sm mt-0.5 topbar-tagline">${esc(data.tagline)}&nbsp;·&nbsp;Updated ${data.generatedAt.slice(0,10)}&nbsp;·&nbsp;<code class="text-slate-500 text-xs">${data.commitSha}</code></p>
+        <div class="mt-2.5 flex items-center gap-2 topbar-progress">
           <div class="bg-slate-700 rounded-full h-2 w-40 overflow-hidden">
             <div class="bg-blue-500 h-2 rounded-full" style="width:${pct}%"></div>
           </div>
           <span class="text-xs text-slate-400">${done}/${data.stories.length} stories done</span>
         </div>
       </div>
-      <div class="flex gap-3 flex-wrap">
-        <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-center min-w-[70px]">
-          <div class="text-2xl font-bold text-white">${data.stories.length}</div>
+      <div class="flex gap-3 flex-wrap topbar-stats">
+        <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-center min-w-[70px] topbar-tile">
+          <div class="text-2xl font-bold text-white topbar-tile-num">${data.stories.length}</div>
           <div class="text-xs text-slate-400 mt-0.5">Stories</div>
         </div>
-        <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-center min-w-[90px]">
-          <div class="text-2xl font-bold text-white">${pct}%</div>
+        <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-center min-w-[90px] topbar-tile">
+          <div class="text-2xl font-bold text-white topbar-tile-num">${pct}%</div>
           <div class="text-xs text-slate-400 mt-0.5">${done} done · ${inProgress} active</div>
         </div>
-        <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-center min-w-[80px]">
-          <div class="text-xl font-bold text-white">${usd(totalProjected)}</div>
+        <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-center min-w-[80px] topbar-tile">
+          <div class="text-xl font-bold text-white topbar-tile-num">${usd(totalProjected)}</div>
           <div class="text-xs text-slate-400 mt-0.5">Projected</div>
         </div>
-        <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-center min-w-[80px]">
-          <div class="text-xl font-bold text-white">${usd(totalAI)}</div>
+        <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-center min-w-[80px] topbar-tile">
+          <div class="text-xl font-bold text-white topbar-tile-num">${usd(totalAI)}</div>
           <div class="text-xs text-slate-400 mt-0.5">AI Actual</div>
         </div>
-        <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-center min-w-[70px]">
-          <div class="text-2xl font-bold ${linesCovClass}">${linesCovLabel}</div>
+        <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-center min-w-[70px] topbar-tile">
+          <div class="text-2xl font-bold ${linesCovClass} topbar-tile-num">${linesCovLabel}</div>
           <div class="text-xs text-slate-400 mt-0.5">Lines Cov</div>
         </div>
-        <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-center min-w-[70px]">
-          <div class="text-2xl font-bold ${branchClass}">${branchLabel}</div>
+        <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-center min-w-[70px] topbar-tile">
+          <div class="text-2xl font-bold ${branchClass} topbar-tile-num">${branchLabel}</div>
           <div class="text-xs text-slate-400 mt-0.5">Branch Cov</div>
         </div>
       </div>
@@ -225,9 +225,12 @@ function renderTraceabilityTab(data) {
           <tbody>${rows}</tbody>
         </table>
       </div>
-      <div class="flex-shrink-0 bg-white border border-slate-200 rounded-lg p-4 w-44">
-        <h4 class="text-xs font-semibold text-slate-600 uppercase mb-3">Legend</h4>
-        <div class="space-y-2">
+      <div class="flex-shrink-0 bg-white border border-slate-200 rounded-lg p-4 w-44" id="trace-legend-panel">
+        <button onclick="(function(){var b=document.getElementById('trace-legend-body');var a=document.getElementById('trace-legend-arrow');var hidden=b.classList.toggle('hidden');a.textContent=hidden?'▶':'▼';})()" class="flex items-center justify-between w-full text-left">
+          <h4 class="text-xs font-semibold text-slate-600 uppercase">Legend</h4>
+          <span id="trace-legend-arrow" class="text-xs text-slate-400 ml-2">▼</span>
+        </button>
+        <div id="trace-legend-body" class="space-y-2 mt-3">
           <div class="flex items-center gap-2">
             <span class="w-8 h-6 rounded text-xs font-medium flex items-center justify-center bg-green-100 text-green-800">P</span>
             <span class="text-xs text-slate-600">Pass</span>
@@ -244,13 +247,13 @@ function renderTraceabilityTab(data) {
             <span class="w-8 h-6 rounded border border-slate-200 bg-white"></span>
             <span class="text-xs text-slate-400">Not linked</span>
           </div>
-        </div>
-        <div class="mt-4 pt-3 border-t border-slate-100 space-y-1">
-          <p class="text-xs font-semibold text-slate-500 mb-1">Summary</p>
-          <p class="text-xs text-green-700">${passed} Pass</p>
-          <p class="text-xs text-red-700">${failed} Fail</p>
-          <p class="text-xs text-amber-700">${notRun} Not Run</p>
-          <p class="text-xs text-slate-500 border-t border-slate-100 pt-1 mt-1">${data.testCases.length} Total TCs</p>
+          <div class="mt-4 pt-3 border-t border-slate-100 space-y-1">
+            <p class="text-xs font-semibold text-slate-500 mb-1">Summary</p>
+            <p class="text-xs text-green-700">${passed} Pass</p>
+            <p class="text-xs text-red-700">${failed} Fail</p>
+            <p class="text-xs text-amber-700">${notRun} Not Run</p>
+            <p class="text-xs text-slate-500 border-t border-slate-100 pt-1 mt-1">${data.testCases.length} Total TCs</p>
+          </div>
         </div>
       </div>
     </div>
@@ -573,6 +576,16 @@ function renderScripts(data) {
   }
 
   document.addEventListener('DOMContentLoaded', initActivityPanel);
+
+  // Collapse traceability legend by default on mobile
+  document.addEventListener('DOMContentLoaded', function() {
+    if (window.innerWidth < 768) {
+      var body = document.getElementById('trace-legend-body');
+      var arrow = document.getElementById('trace-legend-arrow');
+      if (body) body.classList.add('hidden');
+      if (arrow) arrow.textContent = '▶';
+    }
+  });
   </script>`;
 }
 
@@ -602,7 +615,25 @@ function renderHtml(data) {
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-  <style>body { font-family: 'Inter', sans-serif; } code, .font-mono { font-family: 'JetBrains Mono', monospace; } @media (min-width: 768px) { body { padding-right: 280px; } }</style>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    code, .font-mono { font-family: 'JetBrains Mono', monospace; }
+    @media (min-width: 768px) { body { padding-right: 280px; } }
+    @media (max-width: 767px) {
+      #top-bar { padding: 8px 12px !important; }
+      .topbar-title { font-size: 1.1rem !important; line-height: 1.4 !important; }
+      .topbar-tagline { font-size: 0.65rem !important; margin-top: 1px !important; line-height: 1.3 !important; }
+      .topbar-progress { margin-top: 4px !important; }
+      .topbar-stats { gap: 4px !important; flex-wrap: nowrap !important; overflow-x: auto !important; padding-bottom: 2px; }
+      .topbar-tile { padding: 3px 6px !important; min-width: 50px !important; border-radius: 8px !important; }
+      .topbar-tile-num { font-size: 0.8rem !important; line-height: 1.2 !important; }
+      .topbar-tile .text-xs { font-size: 0.6rem !important; margin-top: 1px !important; }
+      #filter-bar { padding: 4px 12px !important; gap: 4px !important; }
+      #filter-bar select, #filter-bar input[type="text"] { padding: 2px 4px !important; font-size: 0.7rem !important; }
+      #filter-bar button { font-size: 0.7rem !important; }
+      #tab-bar button { padding: 5px 10px !important; font-size: 0.72rem !important; }
+    }
+  </style>
   ${renderPrintCSS()}
 </head>
 <body class="bg-slate-50 min-h-screen">
