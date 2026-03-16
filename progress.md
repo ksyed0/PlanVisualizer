@@ -4,6 +4,48 @@ Running log of session activity, errors, test results, and blockers.
 
 ---
 
+## Session 8 — 2026-03-16
+
+### What Was Done
+- Fixed BUG-0020: mobile sticky header too large — added `@media (max-width: 767px)` block with compact padding, smaller fonts, and scrollable stat tiles (branch `claude/fix-mobile-top-area-C7evU`)
+- Fixed BUG-0021: traceability legend not collapsible on mobile — added toggle button and DOMContentLoaded collapse for `window.innerWidth < 768`
+- Fixed BUG-0022: activity panel uncloseable on mobile — added `×` close button with `md:hidden` inside panel header
+- Fixed BUG-0023: AI Cost column showing $0 — key mismatch (`aiCostUsd` vs `costUsd`) in `generate-plan.js`; renamed to `costUsd`
+- Fixed BUG-0024: Cost Breakdown chart AI bars invisible — added dual y-axes (`yProjected` left, `yAI` right) with `yAxisID` per dataset
+- Fixed BUG-0025: traceability legend beside table on mobile — added `flex-direction:column` + `order:-1` to legend panel in mobile CSS
+- Logged BUG-0020 through BUG-0025 in BUGS.md with status Fixed
+- Backfilled AI_COST_LOG.md with 8 estimated sessions (sess_0018–sess_0025) for branches that had no cost data; all 22 stories now show non-zero AI cost (total $13.92)
+- Applied all plan improvements on branch `claude/improvements-C7evU`:
+  - `usd()` fix: 2 dp for values < $1,000
+  - Coverage tiles: merged Lines Cov + Branch Cov into single Coverage tile (overall % + Branches subtitle)
+  - Story count: removed separate Stories and % tiles; progress bar label shows "X/Y · Z% · N active"
+  - Mobile Tokens column: hidden via `.tokens-col` + `display:none !important` in mobile CSS
+  - URL hash deep-linking: `history.replaceState` in `showTab()`; `window.location.hash` read on DOMContentLoaded
+  - Filter + tab persistence: `applyFilters()` writes to localStorage; `clearFilters()` removes keys; DOMContentLoaded restores state
+  - `npm run generate` script added to `package.json`
+  - Config key validation: unknown top-level keys in `plan-visualizer.config.json` trigger `console.warn`
+  - Lazy chart initialisation: `initCharts` guard prevents re-init on repeated tab switches
+  - aria-labels on Close, Collapse, Expand activity panel buttons
+- Added EPIC-0006 (Dashboard UX & Quality Improvements) with US-0023–US-0027, AC-0057–AC-0072, TASK-0021–TASK-0025
+- Added TC-0058–TC-0073 (one per AC) to TEST_CASES.md; all marked Pass
+- Backfilled AI_COST_LOG.md with 5 sessions (sess_0026–sess_0030) for the two feature branches
+- Updated ID_REGISTRY.md: EPIC-0007 / US-0028 / TASK-0026 / AC-0073 / TC-0074 / BUG-0026 next
+- Both branches pushed; PRs ready for review into develop
+
+### Test Results
+- 138 tests pass. Coverage: 97.46% statements, 84.28% branches, 96.73% functions, 99.61% lines. All thresholds met.
+
+### Errors or Blockers
+- Git stash conflict when switching branches mid-session: `render-html.js` had a merge conflict. Resolved by resetting to `origin/develop` and re-applying all changes manually.
+- Gitea REST API not available at `/api/v1/` — PRs must be created manually on GitHub.
+
+### What's Next
+- Merge `claude/fix-mobile-top-area-C7evU` → develop → main
+- Merge `claude/improvements-C7evU` → develop → main
+- EPIC-0006 will be Done once both branches are merged
+
+---
+
 ## Session 7 — 2026-03-11
 
 ### What Was Done
