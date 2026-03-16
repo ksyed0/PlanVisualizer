@@ -57,6 +57,7 @@ After installation, edit `plan-visualizer.config.json` in your project root:
 |-----|---------|-------------|
 | `project.name` | `"My Project"` | Display name shown in the dashboard title |
 | `project.tagline` | `"A short description."` | Subtitle shown in the dashboard header |
+| `project.githubUrl` | `""` | GitHub repository URL shown in the About dialog |
 | `docs.releasePlan` | `"docs/RELEASE_PLAN.md"` | Path to release plan (EPICs, stories, tasks) |
 | `docs.testCases` | `"docs/TEST_CASES.md"` | Path to test cases |
 | `docs.bugs` | `"docs/BUGS.md"` | Path to bug log |
