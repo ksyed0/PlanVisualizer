@@ -50,6 +50,12 @@ Description: Full AGENTS.md-compliant documentation including design doc, archit
 Release Target: Release 1.1
 Status: Done
 Dependencies: None
+
+EPIC-0006: Dashboard UX & Quality Improvements
+Description: Mobile-responsive layout fixes, display accuracy improvements, navigation state persistence, and developer-experience enhancements for the generated dashboard.
+Release Target: Release 1.2
+Status: In Progress
+Dependencies: EPIC-0002
 ```
 
 ---
@@ -464,4 +470,107 @@ Assignee: Agent
 Status: Done
 Branch: feature/US-0022-project-files
 Notes: Output should render all tabs with real project data
+```
+
+---
+
+## User Stories — EPIC-0006: Dashboard UX & Quality Improvements
+
+```
+US-0023 (EPIC-0006): As a user, I want the dashboard to be usable on a mobile device, so that I can check project status on the go.
+Priority: Medium (P1)
+Estimate: M
+Status: Done
+Branch: claude/fix-mobile-top-area-C7evU
+Acceptance Criteria:
+  - [x] AC-0057: Sticky header fits within the top ⅓ of the screen on viewports ≤ 767px via compact padding and reduced font sizes
+  - [x] AC-0058: Traceability legend is collapsed by default on mobile and has a toggle button to expand
+  - [x] AC-0059: Activity panel has a × close button visible only on mobile (md:hidden) that hides the panel on tap
+  - [x] AC-0060: Traceability legend panel renders above the matrix table on mobile (flex-direction: column; order: -1)
+  - [x] AC-0061: Tokens column is hidden in the Costs table on mobile viewports
+Dependencies: US-0009
+
+US-0024 (EPIC-0006): As a project manager, I want accurate AI cost data in the dashboard, so that per-story spend is correctly attributed and charted.
+Priority: High (P0)
+Estimate: S
+Status: Done
+Branch: claude/fix-mobile-top-area-C7evU
+Acceptance Criteria:
+  - [x] AC-0062: AI Cost column on the Costs tab shows the correct per-story AI spend (non-zero) for stories with matching cost log entries
+  - [x] AC-0063: Cost Breakdown chart uses dual y-axes so AI cost bars are visible at their true scale alongside projected cost bars
+Dependencies: US-0007, US-0009
+
+US-0025 (EPIC-0006): As a user, I want accurate and uncluttered top-bar statistics, so that key project metrics are clear at a glance.
+Priority: Medium (P1)
+Estimate: S
+Status: Done
+Branch: claude/improvements-C7evU
+Acceptance Criteria:
+  - [x] AC-0064: usd() displays exactly 2 decimal places for values between $0.01 and $999.99 (e.g. $13.92 not $14)
+  - [x] AC-0065: The top bar shows one Coverage tile with overall percentage and a Branches subtitle, replacing the separate Lines Cov and Branch Cov tiles
+  - [x] AC-0066: Story count appears once in the progress bar label as "X/Y · Z% · N active"; the separate Stories and % tiles are removed
+Dependencies: US-0009
+
+US-0026 (EPIC-0006): As a user, I want the dashboard to remember my last active tab and filter selections, so that I do not have to reconfigure the view on every page load.
+Priority: Low (P2)
+Estimate: S
+Status: Done
+Branch: claude/improvements-C7evU
+Acceptance Criteria:
+  - [x] AC-0067: Opening plan-status.html#<tab-name> (e.g. #costs) activates that tab directly on load
+  - [x] AC-0068: Filter selections (epic, status, priority, type, search) are persisted to localStorage and restored on next page load
+Dependencies: US-0009, US-0010
+
+US-0027 (EPIC-0006): As a developer, I want code quality and accessibility improvements to the generator, so that it is more robust and the dashboard is more accessible.
+Priority: Low (P2)
+Estimate: S
+Status: Done
+Branch: claude/improvements-C7evU
+Acceptance Criteria:
+  - [x] AC-0069: npm run generate in package.json runs node tools/generate-plan.js
+  - [x] AC-0070: Unknown top-level keys in plan-visualizer.config.json trigger a console warning and are ignored without crashing
+  - [x] AC-0071: Chart.js charts are initialised only when the Charts tab is first activated (lazy initialisation)
+  - [x] AC-0072: Activity panel Close, Collapse, and Expand buttons have descriptive aria-label attributes
+Dependencies: US-0009, US-0013
+```
+
+---
+
+## Tasks — EPIC-0006: Dashboard UX & Quality Improvements
+
+```
+TASK-0021 (US-0023): Implement mobile-responsive CSS overrides and traceability legend collapse
+Type: Dev
+Assignee: Agent
+Status: Done
+Branch: claude/fix-mobile-top-area-C7evU
+Notes: @media (max-width: 767px) block compacts top bar; legend toggle via DOMContentLoaded; × close button added; flex-direction:column + order:-1 for trace layout; tokens-col hidden
+
+TASK-0022 (US-0024): Fix AI cost key mismatch and add dual y-axis to Cost Breakdown chart
+Type: Dev
+Assignee: Agent
+Status: Done
+Branch: claude/fix-mobile-top-area-C7evU
+Notes: Renamed aiCostUsd → costUsd in generate-plan.js costs object; added yAxisID per dataset + yProjected (left) / yAI (right) scale definitions in renderChartsTab
+
+TASK-0023 (US-0025): Fix usd() rounding and consolidate top-bar stat tiles
+Type: Dev
+Assignee: Agent
+Status: Done
+Branch: claude/improvements-C7evU
+Notes: usd() uses toFixed(2) for 0 < n < 1000; merged Lines Cov + Branch Cov into one Coverage tile; removed Stories and % tiles; progress bar label format "X/Y · Z% · N active"
+
+TASK-0024 (US-0026): Add URL hash deep-linking and localStorage filter/tab persistence
+Type: Dev
+Assignee: Agent
+Status: Done
+Branch: claude/improvements-C7evU
+Notes: history.replaceState in showTab(); applyFilters() saves all five filter values; clearFilters() removes them; DOMContentLoaded reads hash then localStorage to restore tab and filters
+
+TASK-0025 (US-0027): Add npm generate script, config key validation, lazy chart init, and aria-labels
+Type: Dev
+Assignee: Agent
+Status: Done
+Branch: claude/improvements-C7evU
+Notes: "generate" script added to package.json; KNOWN_KEYS check in loadConfig() logs warning for unknowns; initCharts guard via function reassignment; aria-label on Close/Collapse/Expand buttons
 ```
