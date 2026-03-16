@@ -96,7 +96,7 @@ function main() {
   for (const story of stories) {
     costs[story.id] = {
       projectedUsd: computeProjectedCost(story.estimate, HOURS, RATE),
-      aiCostUsd: aiAttribution[story.id] ? aiAttribution[story.id].costUsd : 0,
+      costUsd: aiAttribution[story.id] ? aiAttribution[story.id].costUsd : 0,
       inputTokens: aiAttribution[story.id] ? aiAttribution[story.id].inputTokens : 0,
       outputTokens: aiAttribution[story.id] ? aiAttribution[story.id].outputTokens : 0,
     };
