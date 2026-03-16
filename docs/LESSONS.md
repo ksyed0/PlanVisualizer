@@ -116,6 +116,13 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
+## L-0018 — GitHub Actions cannot push directly to a protected branch; use an auto-merge PR instead
+**Rule:** If a branch requires PRs and status checks, a GitHub Actions workflow using `GITHUB_TOKEN` cannot push commits directly to it — the push is rejected with `GH006: Protected branch update failed`. The correct pattern is: create a short-lived branch, push the commit there, open a PR to the protected branch, and call `gh pr merge --auto` so it merges as soon as CI passes. Also add `pull-requests: write` to the job's `permissions` block, and ensure the repo has "Allow auto-merge" enabled (Settings → General).
+*Learned when version-bump.yml failed with GH006 trying to push `chore: bump patch version` directly to `develop`.*
+**Date:** 2026-03-16
+
+---
+
 ## L-0017 — Place a panel's close button inside the panel, not outside it
 **Rule:** When a panel overlays part of the screen (e.g. `position:fixed; top:0; right:0; width:280px`), any close button positioned at the same coordinates outside the panel will be covered by the panel once it opens. Always place the close button as a child element inside the panel header so it is never obscured. For desktop-only toggle buttons outside the panel, verify the panel dimensions do not reach that coordinate.
 *Learned when BUG-0022 showed the `≡ Activity` toggle at `fixed top-4 right-4` was covered by the panel (`fixed top-0 right-0 width:280px`) after opening, making it impossible to close. Fixed by adding a `×` button inside the panel with `md:hidden`.*
