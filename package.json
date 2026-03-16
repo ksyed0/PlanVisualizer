@@ -9,7 +9,7 @@
     "generate": "node tools/generate-plan.js"
   },
   "devDependencies": {
-    "@eslint/js": "9.39.4",
+    "@eslint/js": "10.0.1",
     "eslint": "10.0.3",
     "jest": "^30.3.0"
   }
