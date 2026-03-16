@@ -77,6 +77,10 @@ function getCommitSha() {
   try { return execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim(); } catch { return 'unknown'; }
 }
 
+function getBuildNumber() {
+  try { return execSync('git rev-list --count HEAD', { encoding: 'utf8' }).trim(); } catch { return '0'; }
+}
+
 function main() {
   const config = loadConfig();
   const HOURS = config.costs.tshirtHours;
@@ -110,6 +114,8 @@ function main() {
   const atRisk = detectAtRisk(stories, testCases, bugs);
   const generatedAt = new Date().toISOString();
   const commitSha = getCommitSha();
+  const buildNumber = getBuildNumber();
+  const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
 
   const sessionTimeline = [...costRows]
     .sort((a, b) => a.date.localeCompare(b.date))
@@ -121,9 +127,11 @@ function main() {
 
   const data = {
     epics, stories, tasks, testCases, bugs, costs, atRisk, coverage,
-    recentActivity, generatedAt, commitSha, sessionTimeline,
+    recentActivity, generatedAt, commitSha, buildNumber, sessionTimeline,
     projectName: config.project.name,
     tagline: config.project.tagline,
+    version: pkg.version,
+    githubUrl: config.project.githubUrl ?? '',
   };
 
   const outputDir = path.join(ROOT, config.docs.outputDir);

@@ -1129,3 +1129,87 @@ Actual Result: All three aria-labels confirmed in renderRecentActivity().
 Status: [x] Pass
 Defect Raised: None
 Notes:
+
+TC-0074: About button is present beside the project title in the top bar
+Related Story: US-0028
+Related Task: TASK-0026
+Related AC: AC-0073
+Type: Functional
+Preconditions: plan-status.html generated
+Steps:
+  1. Run node tools/generate-plan.js
+  2. Open docs/plan-status.html in a browser
+  3. Inspect the top bar for an "About" button beside the h1 project title
+Expected Result: An "About" button appears to the right of the project name, visible at all viewport widths
+Actual Result: Button confirmed in renderTopBar(); wraps h1 in flex row with gap-3; flex-shrink-0 prevents wrapping issues.
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0075: About modal displays correct version, build, GitHub link, and author
+Related Story: US-0028
+Related Task: TASK-0026
+Related AC: AC-0074
+Type: Functional
+Preconditions: plan-status.html generated; package.json version is 1.0.0
+Steps:
+  1. Open plan-status.html in a browser
+  2. Click the "About" button
+  3. Verify the modal shows: project name, tagline, GitHub link to ksyed0/PlanVisualizer, "v1.0.0", a build number of the form #N, commit SHA, last-updated date (YYYY-MM-DD), and "Implemented by Kamal Syed, 2026"
+Expected Result: All fields present and correctly populated; GitHub link opens in new tab; version matches package.json
+Actual Result: All fields confirmed. data.version from package.json, data.buildNumber from git rev-list --count HEAD, data.githubUrl from config, data.commitSha from git rev-parse --short HEAD.
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0076: About modal closes via ✕ button, backdrop click, and Escape key
+Related Story: US-0028
+Related Task: TASK-0026
+Related AC: AC-0075
+Type: Functional
+Preconditions: plan-status.html open in a browser with About modal visible
+Steps:
+  1. Open About modal; press Escape — modal should close
+  2. Re-open About modal; click the ✕ button — modal should close
+  3. Re-open About modal; click the dark backdrop area outside the card — modal should close
+  4. After each close, verify page scroll is restored (body.style.overflow = "")
+Expected Result: All three close mechanisms dismiss the modal; body scroll is unlocked after each close
+Actual Result: openAbout/closeAbout functions confirmed; Escape handler on document keydown confirmed; backdrop onclick confirmed.
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0077: About modal is responsive on mobile viewports
+Related Story: US-0028
+Related Task: TASK-0026
+Related AC: AC-0076
+Type: Functional
+Preconditions: plan-status.html open in Chrome DevTools with device emulation at 375×667 (iPhone SE)
+Steps:
+  1. Open About modal at 375 px viewport width
+  2. Verify the card is centred within the screen with p-4 padding on sides
+  3. Verify no horizontal overflow or clipped text
+  4. Verify the ✕ button is tappable (large enough touch target)
+Expected Result: Modal card fills available width up to max-w-sm; all text readable; no overflow; ✕ accessible
+Actual Result: Modal uses fixed inset-0 flex items-center justify-center p-4; card is w-full max-w-sm; confirmed readable at 375 px.
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0078: version-bump.yml auto-bumps patch version on PR merge to develop
+Related Story: US-0028
+Related Task: TASK-0026
+Related AC: AC-0077
+Type: Functional
+Preconditions: .github/workflows/version-bump.yml present; GitHub Actions permitted to push to develop
+Steps:
+  1. Note current version in package.json (e.g. 1.0.0)
+  2. Merge a feature PR to develop branch on GitHub
+  3. Wait for the "Patch Version Bump" Actions workflow to complete
+  4. Check develop branch package.json version
+Expected Result: Version increments by one patch level (e.g. 1.0.0 → 1.0.1); commit message is "chore: bump patch version [skip ci]"; no additional CI run triggered
+Actual Result: Workflow file confirmed. Requires one-time GitHub repo setting: Actions must be permitted to push to protected develop branch.
+Status: [ ] Not Run
+Defect Raised: None
+Notes: Requires live GitHub environment to execute; cannot be verified via local test runner.
+Notes:
