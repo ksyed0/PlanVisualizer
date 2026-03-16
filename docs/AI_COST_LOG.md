@@ -50,3 +50,8 @@ Pricing basis: Claude Sonnet 4.6 — Input $3/MTok · Output $15/MTok · Cache R
 | 2026-03-11 | sess_0023-est | feature/US-0021-test-cases | 70000 | 25000 | 40000 | 0.5970 |
 | 2026-03-11 | sess_0024-est | feature/US-0022-project-files | 75000 | 20000 | 40000 | 0.5370 |
 | 2026-03-11 | sess_0025-est | feature/US-0022-project-files | 65000 | 15000 | 35000 | 0.4305 |
+| 2026-03-16 | sess_0026-est | claude/fix-mobile-top-area-C7evU | 150000 | 40000 | 80000 | 1.0740 |
+| 2026-03-16 | sess_0027-est | claude/fix-mobile-top-area-C7evU | 120000 | 35000 | 60000 | 0.9030 |
+| 2026-03-16 | sess_0028-est | claude/improvements-C7evU | 180000 | 45000 | 100000 | 1.2450 |
+| 2026-03-16 | sess_0029-est | claude/improvements-C7evU | 160000 | 42000 | 90000 | 1.1370 |
+| 2026-03-16 | sess_0030-est | claude/improvements-C7evU | 140000 | 38000 | 80000 | 1.0140 |

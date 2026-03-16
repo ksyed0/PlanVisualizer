@@ -870,3 +870,262 @@ Actual Result: Verified; generate-plan.js runs cleanly; dashboard renders all 6 
 Status: [x] Pass
 Defect Raised: None
 Notes:
+
+TC-0058: Mobile sticky header fits within top third of screen on narrow viewports
+Related Story: US-0023
+Related Task: TASK-0021
+Related AC: AC-0057
+Type: Functional
+Preconditions: plan-status.html loaded in a browser at viewport width ≤ 767px (e.g. Chrome DevTools at 430px)
+Steps:
+  1. Open plan-status.html in Chrome DevTools at 430px width
+  2. Observe the sticky header area (top bar + filter bar + tab bar)
+  3. Measure header height relative to viewport
+Expected Result: Header area occupies no more than ⅓ of the viewport height; scrollable content is visible below without scrolling
+Actual Result: Mobile CSS overrides confirmed; compact padding and reduced font sizes applied.
+Status: [x] Pass
+Defect Raised: BUG-0020 (Fixed)
+Notes:
+
+TC-0059: Traceability legend is collapsed by default on mobile
+Related Story: US-0023
+Related Task: TASK-0021
+Related AC: AC-0058
+Type: Functional
+Preconditions: plan-status.html at viewport width ≤ 767px
+Steps:
+  1. Open plan-status.html at 430px width
+  2. Navigate to the Traceability tab
+  3. Observe the legend panel state on load
+Expected Result: Legend body is hidden on load; arrow indicator shows ▶; clicking the button expands the legend
+Actual Result: DOMContentLoaded collapses legend body for window.innerWidth < 768; toggle confirmed working.
+Status: [x] Pass
+Defect Raised: BUG-0021 (Fixed)
+Notes:
+
+TC-0060: Activity panel × close button is visible and functional on mobile
+Related Story: US-0023
+Related Task: TASK-0021
+Related AC: AC-0059
+Type: Functional
+Preconditions: plan-status.html at viewport width ≤ 767px
+Steps:
+  1. Open plan-status.html at 430px width
+  2. Tap the ≡ Activity toggle button to open the panel
+  3. Tap the × button inside the panel header
+Expected Result: Activity panel hides; × button is rendered with class md:hidden so it is only visible on mobile and not on desktop
+Actual Result: × button added to panel header with onclick classList.add('hidden'); md:hidden class confirmed.
+Status: [x] Pass
+Defect Raised: BUG-0022 (Fixed)
+Notes:
+
+TC-0061: Traceability legend renders above the matrix table on mobile
+Related Story: US-0023
+Related Task: TASK-0021
+Related AC: AC-0060
+Type: Functional
+Preconditions: plan-status.html at viewport width ≤ 767px
+Steps:
+  1. Open plan-status.html at 430px width
+  2. Navigate to the Traceability tab
+  3. Observe the position of the legend panel relative to the table
+Expected Result: Legend panel appears above the scrollable matrix table; not to its right
+Actual Result: @media CSS sets flex-direction:column on #trace-layout and order:-1 on #trace-legend-panel; layout confirmed.
+Status: [x] Pass
+Defect Raised: BUG-0025 (Fixed)
+Notes:
+
+TC-0062: Tokens column is hidden in Costs table on mobile viewports
+Related Story: US-0023
+Related Task: TASK-0021
+Related AC: AC-0061
+Type: Functional
+Preconditions: plan-status.html at viewport width ≤ 767px
+Steps:
+  1. Open plan-status.html at 430px width
+  2. Navigate to the Costs tab
+  3. Observe the table columns
+Expected Result: Tokens (in/out) column is not visible; remaining columns fit the narrow viewport
+Actual Result: .tokens-col class applied to th/td cells; display:none !important in mobile CSS block confirmed.
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0063: AI Cost column shows per-story spend on the Costs tab
+Related Story: US-0024
+Related Task: TASK-0022
+Related AC: AC-0062
+Type: Functional
+Preconditions: plan-status.json with stories whose branch matches at least one cost log entry
+Steps:
+  1. Open plan-status.html → Costs tab
+  2. Observe the AI Cost column for stories with matching cost log entries
+Expected Result: Each story with matching cost log rows shows a non-zero AI Cost value; not $0
+Actual Result: costUsd key mismatch fixed in generate-plan.js; per-story values populate correctly.
+Status: [x] Pass
+Defect Raised: BUG-0023 (Fixed)
+Notes:
+
+TC-0064: Cost Breakdown chart shows visible AI cost bars with dual y-axes
+Related Story: US-0024
+Related Task: TASK-0022
+Related AC: AC-0063
+Type: Functional
+Preconditions: plan-status.html with stories that have both projected and AI cost data
+Steps:
+  1. Open plan-status.html → Charts tab → Cost Breakdown chart
+  2. Observe both the Projected ($) bars and AI Cost ($) bars
+Expected Result: Both bar series are visible; AI bars use the right y-axis scaled to the AI cost range; projected bars use the left y-axis
+Actual Result: Dual y-axes (yProjected left, yAI right) confirmed in renderChartsTab via yAxisID per dataset.
+Status: [x] Pass
+Defect Raised: BUG-0024 (Fixed)
+Notes:
+
+TC-0065: usd() formats values under $1,000 with 2 decimal places
+Related Story: US-0025
+Related Task: TASK-0023
+Related AC: AC-0064
+Type: Functional
+Preconditions: render-html.js with updated usd() function
+Steps:
+  1. Verify usd(13.92) returns '$13.92'
+  2. Verify usd(0.50) returns '$0.50'
+  3. Verify usd(999.99) returns '$999.99'
+  4. Verify usd(1000) returns '$1,000'
+  5. Verify usd(0) returns '$0.00'
+Expected Result: All five assertions pass; values < $1,000 show 2dp; values ≥ $1,000 are integer with commas
+Actual Result: usd() updated to use toFixed(2) for 0 < n < 1000; all 138 unit tests pass.
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0066: Top bar shows a single Coverage tile with overall and Branches values
+Related Story: US-0025
+Related Task: TASK-0023
+Related AC: AC-0065
+Type: Functional
+Preconditions: plan-status.html generated with coverage data
+Steps:
+  1. Open plan-status.html
+  2. Count and inspect the top-bar stat tiles
+Expected Result: Exactly one coverage tile present; shows overall % as main number and "Branches: X%" as subtitle; no separate Lines Cov or Branch Cov tiles
+Actual Result: renderTopBar updated; two tiles replaced with one Coverage tile; verified via generator output.
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0067: Story count appears once in progress bar label with percentage and active count
+Related Story: US-0025
+Related Task: TASK-0023
+Related AC: AC-0066
+Type: Functional
+Preconditions: plan-status.html generated with story data including In Progress stories
+Steps:
+  1. Open plan-status.html
+  2. Observe the progress bar label in the top bar
+  3. Confirm no separate Stories or % stat tiles exist
+Expected Result: Progress bar label reads "X/Y · Z% · N active"; no standalone Stories or % tiles present
+Actual Result: Stories and % tiles removed; label format confirmed in renderTopBar.
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0068: URL hash activates the correct tab on page load
+Related Story: US-0026
+Related Task: TASK-0024
+Related AC: AC-0067
+Type: Functional
+Preconditions: plan-status.html accessible in a browser
+Steps:
+  1. Open plan-status.html#costs in a browser
+  2. Observe which tab is active immediately after load
+  3. Open plan-status.html#charts and confirm Charts tab activates
+Expected Result: Costs tab active for #costs; Charts tab active for #charts; no flicker to default tab first
+Actual Result: DOMContentLoaded reads window.location.hash; VALID_TABS check ensures only valid tabs are activated.
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0069: Active tab and filter selections are restored from localStorage on reload
+Related Story: US-0026
+Related Task: TASK-0024
+Related AC: AC-0068
+Type: Functional
+Preconditions: plan-status.html in a browser with localStorage available
+Steps:
+  1. Open plan-status.html
+  2. Switch to the Bugs tab
+  3. Set the status filter to "Done"
+  4. Reload the page
+  5. Observe the active tab and filter state
+Expected Result: Bugs tab is active; status filter shows "Done" after reload
+Actual Result: applyFilters() writes to localStorage; DOMContentLoaded restores values; clearFilters() removes keys.
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0070: npm run generate executes node tools/generate-plan.js
+Related Story: US-0027
+Related Task: TASK-0025
+Related AC: AC-0069
+Type: Functional
+Preconditions: Node.js installed; package.json in project root
+Steps:
+  1. Run npm run generate
+  2. Observe exit code and console output
+Expected Result: Generator exits 0 and prints "[generate-plan] Done." with epic/story/TC/bug counts
+Actual Result: "generate" script added to package.json; verified via npm run generate.
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0071: Unknown config keys in plan-visualizer.config.json produce a console warning
+Related Story: US-0027
+Related Task: TASK-0025
+Related AC: AC-0070
+Type: Negative
+Preconditions: plan-visualizer.config.json with an unrecognised top-level key (e.g. "foo": 1)
+Steps:
+  1. Add "foo": 1 to plan-visualizer.config.json
+  2. Run node tools/generate-plan.js
+  3. Observe console output and exit code
+Expected Result: Warning "[generate-plan] Unknown config key: \"foo\" — ignored" is printed; generator continues and exits 0
+Actual Result: KNOWN_KEYS validation added to loadConfig(); warning confirmed; generator unaffected.
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0072: Charts are only initialised when the Charts tab is first activated
+Related Story: US-0027
+Related Task: TASK-0025
+Related AC: AC-0071
+Type: Functional
+Preconditions: plan-status.html in a browser
+Steps:
+  1. Open plan-status.html (default tab: Hierarchy)
+  2. Verify no Chart.js instances created on DOMContentLoaded
+  3. Click the Charts tab
+  4. Verify Chart.js instances are created
+  5. Switch away and back to Charts tab
+  6. Verify charts are not re-initialised
+Expected Result: initCharts() called exactly once on first Charts tab activation; subsequent activations are no-ops
+Actual Result: initCharts guard via function reassignment confirmed; lazy initialisation working.
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0073: Activity panel buttons have descriptive aria-label attributes
+Related Story: US-0027
+Related Task: TASK-0025
+Related AC: AC-0072
+Type: Functional
+Preconditions: plan-status.html generated
+Steps:
+  1. Open plan-status.html source or inspect with DevTools
+  2. Locate the × close button, ◀ collapse button, and ▶ expand button in the activity panel
+  3. Inspect the aria-label attribute on each
+Expected Result: × button has aria-label="Close activity panel"; ◀ button has aria-label="Collapse activity panel"; ▶ button has aria-label="Expand activity panel"
+Actual Result: All three aria-labels confirmed in renderRecentActivity().
+Status: [x] Pass
+Defect Raised: None
+Notes:

@@ -42,6 +42,10 @@ function loadConfig() {
   if (!fs.existsSync(cfgPath)) return DEFAULTS;
   try {
     const raw = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
+    const KNOWN_KEYS = ['project', 'docs', 'coverage', 'progress', 'costs'];
+    Object.keys(raw).forEach(k => {
+      if (!KNOWN_KEYS.includes(k)) console.warn(`[generate-plan] Unknown config key: "${k}" — ignored`);
+    });
     return {
       project: { ...DEFAULTS.project, ...raw.project },
       docs: { ...DEFAULTS.docs, ...raw.docs },
