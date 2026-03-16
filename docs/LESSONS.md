@@ -92,3 +92,31 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 **Rule:** Never place EPIC/US/TASK definitions outside of triple-backtick fenced code blocks in RELEASE_PLAN.md. The parser (`parse-release-plan.js`) only reads content inside fenced blocks — narrative prose outside is silently ignored.
 *Learned when writing the first version of RELEASE_PLAN.md. Artifacts outside code blocks produced zero parsed results.*
 **Date:** 2026-03-10
+
+---
+
+## L-0014 — generate-plan.js and render-html.js must use identical key names for cost data
+**Rule:** Any field written into the `costs[storyId]` object in `generate-plan.js` must be read using the same key name in `render-html.js`. The data passes through a JSON file with no runtime type checking, so a key mismatch silently evaluates to `undefined → 0` with no error. The totals row reads `costs._totals.costUsd` directly and so is unaffected — making the bug appear as "stories show $0 but total is correct."
+*Learned when BUG-0023 was found: generate-plan.js stored `aiCostUsd` but render-html.js read `costUsd`. Renamed to `costUsd` throughout.*
+**Date:** 2026-03-16
+
+---
+
+## L-0015 — Use dual y-axes when Chart.js datasets differ by 3+ orders of magnitude
+**Rule:** When two datasets on the same bar chart differ by roughly 1,000× or more, sharing a single y-axis makes the smaller series render at sub-pixel height and become invisible. Use `yAxisID` on each dataset and define two `scales` entries (`position: 'left'` and `position: 'right'`). Set `grid.drawOnChartArea: false` on the secondary axis to avoid double grid lines.
+*Learned when BUG-0024 showed projected costs ($1,600–$4,000/epic) and AI costs ($1–$7/epic) on the same axis, making AI bars invisible.*
+**Date:** 2026-03-16
+
+---
+
+## L-0016 — Override Tailwind CDN utilities with !important in a <style> block for mobile
+**Rule:** Tailwind CSS loaded via CDN generates utility classes at runtime with standard specificity. To override them in a `@media` block inside a `<style>` tag, append `!important` to each property. Without `!important`, the CDN-generated utilities (which are injected after the static `<style>` tag) will win the specificity race.
+*Learned when BUG-0020 mobile CSS fixes had no effect until `!important` was added to every property in the `@media (max-width: 767px)` block.*
+**Date:** 2026-03-16
+
+---
+
+## L-0017 — Place a panel's close button inside the panel, not outside it
+**Rule:** When a panel overlays part of the screen (e.g. `position:fixed; top:0; right:0; width:280px`), any close button positioned at the same coordinates outside the panel will be covered by the panel once it opens. Always place the close button as a child element inside the panel header so it is never obscured. For desktop-only toggle buttons outside the panel, verify the panel dimensions do not reach that coordinate.
+*Learned when BUG-0022 showed the `≡ Activity` toggle at `fixed top-4 right-4` was covered by the panel (`fixed top-0 right-0 width:280px`) after opening, making it impossible to close. Fixed by adding a `×` button inside the panel with `md:hidden`.*
+**Date:** 2026-03-16
