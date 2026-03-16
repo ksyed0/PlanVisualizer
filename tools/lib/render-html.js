@@ -218,7 +218,7 @@ function renderTraceabilityTab(data) {
   const notRun  = data.testCases.filter(tc => tc.status === 'Not Run').length;
   return `
   <div id="tab-traceability" class="p-6 hidden">
-    <div class="flex gap-6 items-start">
+    <div class="flex gap-6 items-start" id="trace-layout">
       <div class="overflow-x-auto flex-1">
         <table class="border-collapse text-sm">
           <thead><tr><th class="p-2 border border-slate-200 text-xs">Story</th>${headers}</tr></thead>
@@ -469,7 +469,10 @@ function renderRecentActivity(data) {
   <div id="activity-panel" class="activity-panel fixed top-0 right-0 h-screen bg-white border-l border-slate-200 shadow-lg flex flex-col hidden md:flex" style="width:280px;z-index:50;transition:width 0.25s ease">
     <div id="activity-expanded" class="flex items-center justify-between px-4 py-3 border-b border-slate-200 flex-shrink-0">
       <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Recent Activity</h4>
-      <button onclick="toggleActivityPanel()" class="text-slate-400 hover:text-slate-700 leading-none px-1" title="Collapse">&#9664;</button>
+      <div class="flex items-center gap-2">
+        <button onclick="document.getElementById('activity-panel').classList.add('hidden')" class="md:hidden text-slate-400 hover:text-slate-700 leading-none px-1 text-base" title="Close">&times;</button>
+        <button onclick="toggleActivityPanel()" class="hidden md:block text-slate-400 hover:text-slate-700 leading-none px-1" title="Collapse">&#9664;</button>
+      </div>
     </div>
     <ul id="activity-list" class="flex-1 overflow-y-auto px-4 py-2">${items}</ul>
     <div id="activity-collapsed" class="hidden flex-col items-center pt-3 pb-4 gap-3">
@@ -632,6 +635,8 @@ function renderHtml(data) {
       #filter-bar select, #filter-bar input[type="text"] { padding: 2px 4px !important; font-size: 0.7rem !important; }
       #filter-bar button { font-size: 0.7rem !important; }
       #tab-bar button { padding: 5px 10px !important; font-size: 0.72rem !important; }
+      #trace-layout { flex-direction: column !important; }
+      #trace-legend-panel { order: -1; width: 100% !important; }
     }
   </style>
   ${renderPrintCSS()}
