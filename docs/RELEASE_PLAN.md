@@ -531,7 +531,7 @@ Acceptance Criteria:
   - [x] AC-0074: Clicking About opens a modal showing project name, tagline, GitHub repository link, version (vX.Y.Z from package.json), build number (#N from git commit count), commit SHA, last-updated date, and "Implemented by Kamal Syed, 2026"
   - [x] AC-0075: The modal closes via the ✕ button, clicking the backdrop overlay, or pressing Escape; body scroll is locked while the modal is open
   - [x] AC-0076: The modal is responsive — a centred max-w-sm card with no overflow on viewports ≤ 375 px
-  - [x] AC-0077: .github/workflows/version-bump.yml auto-bumps the patch version in package.json and package-lock.json when a PR is merged to develop, committing with [skip ci]
+  - [x] AC-0077: .github/workflows/version-bump.yml auto-bumps the patch version in package.json and package-lock.json when a PR is merged to develop; creates a short-lived chore/version-bump-* PR with auto-merge enabled so the bump lands on develop once CI passes (requires repo setting: Settings → General → Allow auto-merge)
 Dependencies: US-0009
 
 US-0027 (EPIC-0006): As a developer, I want code quality and accessibility improvements to the generator, so that it is more robust and the dashboard is more accessible.
@@ -557,7 +557,7 @@ Type: Dev
 Assignee: Agent
 Status: Done
 Branch: feature/US-0023-about-dialog
-Notes: About button in renderTopBar() wraps h1 in flex row; modal HTML injected before </body> in renderHtml(); openAbout/closeAbout/Escape JS in renderScripts(); data.version from package.json, data.buildNumber from git rev-list --count HEAD, data.githubUrl from config; version-bump.yml triggers on PR merge to develop and bumps patch via npm version patch --no-git-tag-version
+Notes: About button in renderTopBar() wraps h1 in flex row; modal HTML injected before </body> in renderHtml(); openAbout/closeAbout/Escape JS in renderScripts(); data.version from package.json, data.buildNumber from git rev-list --count HEAD, data.githubUrl from config; version-bump.yml creates a chore/version-bump-* branch + auto-merge PR to develop on each PR merge; direct push to protected develop rejected by GH006 (fixed via auto-merge PR pattern)
 
 TASK-0021 (US-0023): Implement mobile-responsive CSS overrides and traceability legend collapse
 Type: Dev

@@ -1196,20 +1196,20 @@ Status: [x] Pass
 Defect Raised: None
 Notes:
 
-TC-0078: version-bump.yml auto-bumps patch version on PR merge to develop
+TC-0078: version-bump.yml auto-bumps patch version on PR merge to develop via auto-merge PR
 Related Story: US-0028
 Related Task: TASK-0026
 Related AC: AC-0077
 Type: Functional
-Preconditions: .github/workflows/version-bump.yml present; GitHub Actions permitted to push to develop
+Preconditions: .github/workflows/version-bump.yml present; repo setting "Allow auto-merge" enabled (Settings → General)
 Steps:
-  1. Note current version in package.json (e.g. 1.0.0)
-  2. Merge a feature PR to develop branch on GitHub
+  1. Note current version in package.json on develop (e.g. 1.0.1)
+  2. Merge a feature PR to develop on GitHub
   3. Wait for the "Patch Version Bump" Actions workflow to complete
-  4. Check develop branch package.json version
-Expected Result: Version increments by one patch level (e.g. 1.0.0 → 1.0.1); commit message is "chore: bump patch version [skip ci]"; no additional CI run triggered
-Actual Result: Workflow file confirmed. Requires one-time GitHub repo setting: Actions must be permitted to push to protected develop branch.
+  4. Verify a chore/version-bump-* PR was opened against develop and auto-merged once CI passed
+  5. Check develop branch package.json version
+Expected Result: Version increments by one patch level (e.g. 1.0.1 → 1.0.2); bump arrives via a squash-merged auto-merge PR; no additional CI loop triggered
+Actual Result: Initial implementation used direct push (rejected by GH006 protected branch rule). Fixed: workflow now creates a chore/version-bump-* branch, opens a squash PR, and calls gh pr merge --auto. Requires "Allow auto-merge" enabled in repo settings.
 Status: [ ] Not Run
 Defect Raised: None
 Notes: Requires live GitHub environment to execute; cannot be verified via local test runner.
-Notes:
