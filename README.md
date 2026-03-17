@@ -133,6 +133,18 @@ bash /tmp/PlanVisualizer/scripts/install.sh
 rm -rf /tmp/PlanVisualizer
 ```
 
+### Update via Claude Code
+
+Paste this prompt directly into Claude Code in your target repo:
+
+```
+Update the PlanVisualizer tool in this project from the ksyed0/PlanVisualizer
+GitHub repo. Clone it to a temp directory, run scripts/install.sh targeting this
+project root (your plan-visualizer.config.json will not be overwritten), run
+npm test from the repo root to confirm all suites pass, then commit all changed
+files to the current branch.
+```
+
 Your `plan-visualizer.config.json` is never overwritten.
 
 ---
