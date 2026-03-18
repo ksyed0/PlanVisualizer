@@ -582,6 +582,20 @@ Acceptance Criteria:
   - [x] AC-0089: The "Updated" timestamp in the top bar shows both the date and the time in UTC (e.g. "2026-03-18 21:00 UTC")
   - [x] AC-0090: Traceability epic rows are coloured red when any child story has a Fail TC, amber when any has a Not Run TC, and grey otherwise; a badge label is shown in the row
 Dependencies: US-0009
+
+US-0032 (EPIC-0006): As a team member, I want to browse and cross-reference hard-won lessons in the dashboard, so that institutional knowledge is immediately accessible without navigating raw markdown files.
+Priority: Medium (P2)
+Estimate: S
+Status: In Progress
+Branch: feature/US-0032-lessons-tab
+Acceptance Criteria:
+  - [ ] AC-0091: A Lessons tab appears in the tab bar after the Bugs tab
+  - [ ] AC-0092: Column view renders all lessons with ID, Rule, Context, Date, and Bug Ref columns
+  - [ ] AC-0093: Card view renders the same data in a card-per-lesson grid layout
+  - [ ] AC-0094: A toggle switches between column and card view; preference persists in localStorage
+  - [ ] AC-0095: Bug Ref cells in the Lessons tab link to the referencing bug row on the Bugs tab
+  - [ ] AC-0096: Lesson column on Bugs tab shows ✓ L-XXXX ↗ as a clickable link when a lesson ID is present
+Dependencies: US-0009
 ```
 
 ---
@@ -658,4 +672,28 @@ Assignee: Agent
 Status: Done
 Branch: feature/dark-mode-readability
 Notes: tailwind.config={darkMode:'class'} + IIFE flash-prevention script in <head>; toggleTheme() in renderScripts(); dark: variants added to all tabs, filter bar, kanban, hierarchy, traceability, charts, costs, bugs, activity panel; text-slate-400 raised to text-slate-500 on light backgrounds; traceability epic rows compute hasFail/hasNotRun from child TCs; generatedAt.slice(11,16) appended to header date string
+
+TASK-0031 (US-0032): Implement parse-lessons.js
+Type: Dev
+Assignee: Agent
+Status: Done
+Branch: feature/US-0032-lessons-tab
+
+TASK-0032 (US-0032): Wire parseLessons into generate-plan.js
+Type: Dev
+Assignee: Agent
+Status: Done
+Branch: feature/US-0032-lessons-tab
+
+TASK-0033 (US-0032): renderLessonsTab() with column/card views and Bugs tab lesson hyperlink
+Type: Dev
+Assignee: Agent
+Status: Done
+Branch: feature/US-0032-lessons-tab
+
+TASK-0034 (US-0032): Unit tests for parseLessons and renderLessonsTab
+Type: Dev
+Assignee: Agent
+Status: Done
+Branch: feature/US-0032-lessons-tab
 ```

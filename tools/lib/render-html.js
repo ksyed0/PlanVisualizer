@@ -108,7 +108,7 @@ function renderFilterBar(data) {
 }
 
 function renderTabs() {
-  const tabs = ['Hierarchy','Kanban','Traceability','Charts','Costs','Bugs'];
+  const tabs = ['Hierarchy','Kanban','Traceability','Charts','Costs','Bugs','Lessons'];
   return `
   <div class="border-b border-slate-700 bg-slate-800 px-6 flex gap-1 overflow-x-auto" id="tab-bar">
     ${tabs.map((t, i) => `
@@ -494,14 +494,19 @@ function renderBugsTab(data) {
     return `<div id="tab-bugs" class="p-6 hidden"><p class="text-slate-500">No bugs logged yet.</p></div>`;
   }
   const rows = data.bugs.map(bug => `
-  <tr class="bug-row border-t border-slate-100 dark:border-slate-700">
+  <tr id="bug-row-${bug.id}" class="bug-row border-t border-slate-100 dark:border-slate-700">
     <td class="px-3 py-2 font-mono text-xs whitespace-nowrap dark:text-slate-200">${bug.id}</td>
     <td class="px-3 py-2 text-sm dark:text-slate-200">${esc(bug.title)}</td>
     <td class="px-3 py-2 text-center">${badge(bug.severity)}</td>
     <td class="px-3 py-2 text-center">${badge(bug.status)}</td>
     <td class="px-3 py-2 text-xs text-slate-500 whitespace-nowrap">${esc(bug.relatedStory)}</td>
     <td class="px-3 py-2 text-xs text-slate-500">${esc(bug.fixBranch || '—')}</td>
-    <td class="px-3 py-2 text-center text-xs dark:text-slate-200">${bug.lessonEncoded && bug.lessonEncoded.startsWith('Yes') ? '✓' : '○'}</td>
+    <td class="px-3 py-2 text-center text-xs dark:text-slate-200">${(() => {
+      if (!bug.lessonEncoded || !bug.lessonEncoded.startsWith('Yes')) return '○';
+      const lm = bug.lessonEncoded.match(/L-\d{4}/);
+      if (!lm) return '✓';
+      return `<a href="#" onclick="showTab('lessons');setTimeout(function(){var el=document.getElementById('lesson-${lm[0]}');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});},50);return false;" class="text-blue-600 dark:text-blue-400 hover:underline font-mono text-xs" title="View lesson ${lm[0]}">✓ ${lm[0]} ↗</a>`;
+    })()}</td>
   </tr>`).join('');
   return `
   <div id="tab-bugs" class="p-6 hidden overflow-x-auto">
@@ -516,6 +521,112 @@ function renderBugsTab(data) {
       <tbody>${rows}</tbody>
     </table>
   </div>`;
+}
+
+function renderLessonsTab(data) {
+  const lessons = data.lessons || [];
+  if (!lessons.length) {
+    return `<div id="tab-lessons" class="p-6 hidden"><p class="text-slate-500">No lessons logged yet.</p></div>`;
+  }
+
+  // Build reverse map: lessonId → first bugId that references it
+  const lessonBugMap = {};
+  for (const bug of data.bugs) {
+    const m = bug.lessonEncoded && bug.lessonEncoded.match(/L-\d{4}/);
+    if (m && !lessonBugMap[m[0]]) lessonBugMap[m[0]] = bug.id;
+  }
+
+  const bugRefLink = (lessonId) => {
+    const bugId = lessonBugMap[lessonId];
+    if (!bugId) return '—';
+    return `<a href="#" onclick="showTab('bugs');setTimeout(function(){var el=document.getElementById('bug-row-${bugId}');if(el)el.scrollIntoView({behavior:'smooth',block:'center'});},50);return false;" class="text-blue-600 dark:text-blue-400 hover:underline font-mono text-xs">${bugId} ↗</a>`;
+  };
+
+  const colRows = lessons.map(l => `
+  <tr id="lesson-${l.id}" class="border-t border-slate-100 dark:border-slate-700 align-top">
+    <td class="px-3 py-3 font-mono text-xs text-blue-600 dark:text-blue-400 whitespace-nowrap">${l.id}</td>
+    <td class="px-3 py-3 text-sm text-slate-700 dark:text-slate-200">${esc(l.rule)}</td>
+    <td class="px-3 py-3 text-sm text-slate-500 dark:text-slate-400 italic">${esc(l.context)}</td>
+    <td class="px-3 py-3 text-xs text-slate-400 whitespace-nowrap">${l.date ? l.date.slice(0, 7) : '—'}</td>
+    <td class="px-3 py-3 text-xs whitespace-nowrap">${bugRefLink(l.id)}</td>
+  </tr>`).join('');
+
+  const cards = lessons.map(l => `
+  <div id="lesson-${l.id}" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 flex flex-col gap-2">
+    <div class="flex items-center gap-2">
+      <span class="font-mono text-xs font-bold text-blue-600 dark:text-blue-400">${l.id}</span>
+      <span class="text-sm font-semibold text-slate-700 dark:text-slate-200">${esc(l.title)}</span>
+    </div>
+    <hr class="border-slate-100 dark:border-slate-700">
+    <div>
+      <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Rule</span>
+      <p class="text-sm text-slate-700 dark:text-slate-200 mt-0.5">${esc(l.rule)}</p>
+    </div>
+    <div>
+      <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Context</span>
+      <p class="text-sm text-slate-500 dark:text-slate-400 italic mt-0.5">${esc(l.context)}</p>
+    </div>
+    <div class="flex items-center justify-between mt-1">
+      <span class="text-xs text-slate-400">${l.date ? l.date.slice(0, 7) : '—'}</span>
+      <span class="text-xs text-slate-500">Bug ref: ${bugRefLink(l.id)}</span>
+    </div>
+  </div>`).join('');
+
+  return `
+  <div id="tab-lessons" class="p-6 hidden">
+    <div class="flex items-center justify-between mb-4">
+      <span class="text-sm text-slate-500 dark:text-slate-400">${lessons.length} lesson${lessons.length !== 1 ? 's' : ''}</span>
+      <div class="flex gap-1">
+        <button id="lessons-col-btn" onclick="setLessonsView('column')"
+          class="px-3 py-1 text-xs rounded border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+          ≡ Column
+        </button>
+        <button id="lessons-card-btn" onclick="setLessonsView('card')"
+          class="px-3 py-1 text-xs rounded border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+          ⊞ Card
+        </button>
+      </div>
+    </div>
+
+    <div id="lessons-column-view" class="overflow-x-auto">
+      <table class="w-full text-left text-sm border-collapse">
+        <thead class="bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs uppercase">
+          <tr>
+            <th class="px-3 py-2 whitespace-nowrap">ID</th>
+            <th class="px-3 py-2">Rule</th>
+            <th class="px-3 py-2">Context</th>
+            <th class="px-3 py-2 whitespace-nowrap">Date</th>
+            <th class="px-3 py-2 whitespace-nowrap">Bug Ref</th>
+          </tr>
+        </thead>
+        <tbody>${colRows}</tbody>
+      </table>
+    </div>
+
+    <div id="lessons-card-view" class="hidden grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      ${cards}
+    </div>
+  </div>
+  <script>
+  function setLessonsView(v) {
+    var col = document.getElementById('lessons-column-view');
+    var card = document.getElementById('lessons-card-view');
+    var colBtn = document.getElementById('lessons-col-btn');
+    var cardBtn = document.getElementById('lessons-card-btn');
+    if (!col) return;
+    col.classList.toggle('hidden', v !== 'column');
+    card.classList.toggle('hidden', v !== 'card');
+    colBtn.style.fontWeight = v === 'column' ? '700' : '';
+    colBtn.style.background = v === 'column' ? 'rgba(59,130,246,0.1)' : '';
+    cardBtn.style.fontWeight = v === 'card' ? '700' : '';
+    cardBtn.style.background = v === 'card' ? 'rgba(59,130,246,0.1)' : '';
+    localStorage.setItem('lessonsView', v);
+  }
+  (function() {
+    var saved = localStorage.getItem('lessonsView') || 'column';
+    setLessonsView(saved);
+  })();
+  </script>`;
 }
 
 function renderRecentActivity(data) {
@@ -724,7 +835,7 @@ function renderPrintCSS() {
     #filter-bar, #tab-bar, .fixed, .activity-panel { display: none !important; }
     body { padding-right: 0 !important; }
     #tab-hierarchy, #tab-costs { display: block !important; }
-    #tab-kanban, #tab-traceability, #tab-charts, #tab-bugs { display: none !important; }
+    #tab-kanban, #tab-traceability, #tab-charts, #tab-bugs, #tab-lessons { display: none !important; }
     body { font-size: 11pt; }
     .bg-slate-900 { background: white !important; color: black !important; }
     .text-white, .text-blue-400, .text-slate-400 { color: black !important; }
@@ -781,6 +892,7 @@ function renderHtml(data) {
     ${renderChartsTab(data)}
     ${renderCostsTab(data)}
     ${renderBugsTab(data)}
+    ${renderLessonsTab(data)}
   </div>
   ${renderRecentActivity(data)}
   ${renderScripts(data)}
