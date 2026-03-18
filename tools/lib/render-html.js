@@ -177,7 +177,7 @@ function renderKanbanTab(data) {
     );
     return `
     <div class="flex-1 min-w-48">
-      <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3 pb-1 border-b border-slate-200 dark:border-slate-600">${col} <span class="text-slate-500 font-normal">(${items.length})</span></h3>
+      <h3 class="kanban-col-header text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3 pb-1 border-b border-slate-200 dark:border-slate-600">${col} <span class="text-slate-500 font-normal">(${items.length})</span></h3>
       ${items.map(s => `
       <div class="story-row bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded p-3 mb-2 shadow-sm"
            data-epic="${s.epicId}" data-status="${s.status}" data-priority="${s.priority}">
@@ -187,7 +187,7 @@ function renderKanbanTab(data) {
       </div>`).join('')}
     </div>`;
   }).join('');
-  return `<div id="tab-kanban" class="p-6 hidden"><div class="flex gap-4 overflow-x-auto">${colHtml}</div></div>`;
+  return `<div id="tab-kanban" class="p-6 hidden"><div class="scroll-kanban flex gap-4">${colHtml}</div></div>`;
 }
 
 function renderTraceabilityTab(data) {
@@ -253,9 +253,9 @@ function renderTraceabilityTab(data) {
       </span>
       <span class="text-slate-500 ml-2">${passed} Pass &middot; ${failed} Fail &middot; ${notRun} Not Run &middot; ${data.testCases.length} Total</span>
     </div>
-    <div class="overflow-x-auto">
+    <div class="scroll-table">
       <table class="border-collapse text-sm">
-        <thead><tr><th class="p-2 border border-slate-200 dark:border-slate-600 text-xs dark:text-slate-300">Story</th>${headers}</tr></thead>
+        <thead><tr><th class="p-2 border border-slate-200 dark:border-slate-600 text-xs dark:text-slate-300 bg-slate-50 dark:bg-slate-800">Story</th>${headers}</tr></thead>
         <tbody>${rows}</tbody>
       </table>
     </div>
@@ -453,6 +453,7 @@ function renderCostsTab(data) {
     }).join('');
     return `
     <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mt-6 mb-2">Bug Fix Costs</h3>
+    <div class="scroll-table">
     <table class="w-full text-left text-sm border-collapse">
       <thead class="bg-slate-800 text-slate-200 text-xs uppercase">
         <tr>
@@ -463,10 +464,12 @@ function renderCostsTab(data) {
         </tr>
       </thead>
       <tbody>${bugRows}</tbody>
-    </table>`;
+    </table>
+    </div>`;
   })() : '';
   return `
-  <div id="tab-costs" class="p-6 hidden overflow-x-auto">
+  <div id="tab-costs" class="p-6 hidden">
+    <div class="scroll-table">
     <table class="w-full text-left text-sm border-collapse">
       <thead class="bg-slate-800 text-slate-200 text-xs uppercase">
         <tr>
@@ -485,6 +488,7 @@ function renderCostsTab(data) {
         </tr>
       </tfoot>
     </table>
+    </div>
     ${bugCostsSection}
   </div>`;
 }
@@ -509,7 +513,8 @@ function renderBugsTab(data) {
     })()}</td>
   </tr>`).join('');
   return `
-  <div id="tab-bugs" class="p-6 hidden overflow-x-auto">
+  <div id="tab-bugs" class="p-6 hidden">
+    <div class="scroll-table">
     <table class="w-full text-left text-sm border-collapse">
       <thead class="bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs uppercase">
         <tr>
@@ -520,6 +525,7 @@ function renderBugsTab(data) {
       </thead>
       <tbody>${rows}</tbody>
     </table>
+    </div>
   </div>`;
 }
 
@@ -588,7 +594,7 @@ function renderLessonsTab(data) {
       </div>
     </div>
 
-    <div id="lessons-column-view" class="overflow-x-auto">
+    <div id="lessons-column-view" class="scroll-table">
       <table class="w-full text-left text-sm border-collapse">
         <thead class="bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs uppercase">
           <tr>
@@ -783,6 +789,13 @@ function renderScripts(data) {
 
   });
 
+  function setStickyTop() {
+    var nav = document.getElementById('sticky-nav');
+    if (nav) document.documentElement.style.setProperty('--sticky-top', nav.offsetHeight + 'px');
+  }
+  document.addEventListener('DOMContentLoaded', setStickyTop);
+  window.addEventListener('resize', setStickyTop);
+
   function toggleTheme() {
     var html = document.documentElement;
     var isDark = html.classList.toggle('dark');
@@ -823,6 +836,11 @@ function renderPrintCSS() {
   html.dark .story-row p { color: #cbd5e1 !important; }
   html.dark #activity-panel { background-color: #1e293b !important; border-color: #334155 !important; color: #cbd5e1 !important; }
   html.dark #activity-panel li { border-color: #334155 !important; }
+  .scroll-table { overflow: auto; max-height: calc(100vh - var(--sticky-top, 120px) - 3rem); }
+  .scroll-table thead th { position: sticky; top: 0; z-index: 10; }
+  .scroll-kanban { overflow: auto; max-height: calc(100vh - var(--sticky-top, 120px) - 3rem); }
+  .scroll-kanban .kanban-col-header { position: sticky; top: 0; z-index: 5; background: #f8fafc; padding-bottom: 6px; }
+  html.dark .scroll-kanban .kanban-col-header { background: #0f172a; }
   html.dark table thead { background-color: #1e293b !important; color: #cbd5e1 !important; }
   html.dark table tbody tr { border-color: #334155 !important; }
   html.dark table tbody td { color: #cbd5e1; }
@@ -880,7 +898,7 @@ function renderHtml(data) {
   ${renderPrintCSS()}
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 min-h-screen">
-  <div class="sticky top-0 z-30">
+  <div id="sticky-nav" class="sticky top-0 z-30">
     ${renderTopBar(data)}
     ${renderFilterBar(data)}
     ${renderTabs()}
