@@ -255,7 +255,7 @@ function renderTraceabilityTab(data) {
     </div>
     <div class="scroll-table">
       <table class="border-collapse text-sm">
-        <thead><tr><th class="p-2 border border-slate-200 dark:border-slate-600 text-xs dark:text-slate-300 bg-slate-50 dark:bg-slate-800">Story</th>${headers}</tr></thead>
+        <thead><tr><th class="p-2 border border-slate-200 dark:border-slate-600 text-xs">Story</th>${headers}</tr></thead>
         <tbody>${rows}</tbody>
       </table>
     </div>
@@ -455,7 +455,7 @@ function renderCostsTab(data) {
     <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mt-6 mb-2">Bug Fix Costs</h3>
     <div class="scroll-table">
     <table class="w-full text-left text-sm border-collapse">
-      <thead class="bg-slate-800 text-slate-200 text-xs uppercase">
+      <thead class="text-xs uppercase">
         <tr>
           <th class="px-3 py-2">Bug</th><th class="px-3 py-2">Title</th><th class="px-3 py-2 text-center">Severity</th>
           <th class="px-3 py-2 text-center">Status</th><th class="px-3 py-2">Story</th>
@@ -471,7 +471,7 @@ function renderCostsTab(data) {
   <div id="tab-costs" class="p-6 hidden">
     <div class="scroll-table">
     <table class="w-full text-left text-sm border-collapse">
-      <thead class="bg-slate-800 text-slate-200 text-xs uppercase">
+      <thead class="text-xs uppercase">
         <tr>
           <th class="px-3 py-2">Story</th><th class="px-3 py-2">Title</th><th class="px-3 py-2 text-center">Status</th>
           <th class="px-3 py-2 text-center">Size</th><th class="px-3 py-2 text-right">Projected</th>
@@ -516,7 +516,7 @@ function renderBugsTab(data) {
   <div id="tab-bugs" class="p-6 hidden">
     <div class="scroll-table">
     <table class="w-full text-left text-sm border-collapse">
-      <thead class="bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs uppercase">
+      <thead class="text-xs uppercase">
         <tr>
           <th class="px-3 py-2">ID</th><th class="px-3 py-2">Title</th><th class="px-3 py-2 text-center">Severity</th>
           <th class="px-3 py-2 text-center">Status</th><th class="px-3 py-2">Story</th>
@@ -596,7 +596,7 @@ function renderLessonsTab(data) {
 
     <div id="lessons-column-view" class="scroll-table">
       <table class="w-full text-left text-sm border-collapse">
-        <thead class="bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs uppercase">
+        <thead class="text-xs uppercase">
           <tr>
             <th class="px-3 py-2 whitespace-nowrap">ID</th>
             <th class="px-3 py-2">Rule</th>
@@ -837,12 +837,12 @@ function renderPrintCSS() {
   html.dark #activity-panel { background-color: #1e293b !important; border-color: #334155 !important; color: #cbd5e1 !important; }
   html.dark #activity-panel li { border-color: #334155 !important; }
   .scroll-table { overflow: auto; max-height: calc(100vh - var(--sticky-top, 120px) - 3rem); }
-  .scroll-table thead tr { background-color: inherit; }
-  .scroll-table thead th { position: sticky; top: 0; z-index: 10; background-color: inherit; }
+  .scroll-table thead th { position: sticky; top: 0; z-index: 10; background-color: #e2e8f0; color: #374151; }
+  html.dark .scroll-table thead th { background-color: #334155; color: #e2e8f0; }
   .scroll-kanban { overflow: auto; max-height: calc(100vh - var(--sticky-top, 120px) - 3rem); }
-  .scroll-kanban .kanban-col-header { position: sticky; top: 0; z-index: 5; background: #f8fafc; padding-bottom: 6px; }
-  html.dark .scroll-kanban .kanban-col-header { background: #0f172a; }
-  html.dark table thead { background-color: #1e293b !important; color: #cbd5e1 !important; }
+  .scroll-kanban .kanban-col-header { position: sticky; top: 0; z-index: 5; background: #e2e8f0; padding-bottom: 6px; }
+  html.dark .scroll-kanban .kanban-col-header { background: #334155; color: #e2e8f0; }
+  html.dark .scroll-table table thead { background-color: transparent; }
   html.dark table tbody tr { border-color: #334155 !important; }
   html.dark table tbody td { color: #cbd5e1; }
   html.dark .bg-white { background-color: #1e293b !important; }
