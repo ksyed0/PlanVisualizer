@@ -4,6 +4,29 @@ Log every change that must propagate to other platforms, modules, or installatio
 
 ---
 
+## 2026-03-18 — Install script: AGENTS.md overwrite replaced by plan_visualizer.md
+
+**Files changed:** `scripts/install.sh`, `README.md`, `plan_visualizer.md` (new)
+**Platforms / modules affected:** All target projects that install or update PlanVisualizer via `scripts/install.sh`
+**What changed:**
+- `plan_visualizer.md` is now the canonical format reference for PlanVisualizer source files. It replaces the previous approach of copying the full PlanVisualizer `AGENTS.md` into the target project.
+- `install.sh` no longer offers to overwrite `AGENTS.md`. It instead copies `plan_visualizer.md` and appends a mandatory reference section to the target's `AGENTS.md` (append-only, idempotent, creates a minimal `AGENTS.md` if none exists).
+- README manual setup, install prompt, and update sections updated accordingly.
+
+**Adaptations completed:** Done in PlanVisualizer repo.
+**Adaptations still needed for existing installs:**
+1. Copy `plan_visualizer.md` from the PlanVisualizer repo into the project root.
+2. Append the following to `AGENTS.md` (if not already present):
+   ```
+   ## PlanVisualizer Format Requirements
+   Read plan_visualizer.md for the exact document formats required for RELEASE_PLAN.md,
+   TEST_CASES.md, BUGS.md, AI_COST_LOG.md, and progress.md.
+   ```
+3. The old `AGENTS-new.md` file (if it exists from a previous install) can be deleted.
+4. Optionally remove the PlanVisualizer BLAST framework sections from `AGENTS.md` if they were previously merged in and you have your own operating standards.
+
+---
+
 ## 2026-03-10 — Jest 29 → 30
 
 **Files changed:** `package.json`, `package-lock.json`
