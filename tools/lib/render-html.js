@@ -328,17 +328,24 @@ function renderChartsTab(data) {
     </div>
   </div>
   <script>
+  var _charts = {};
+  function chartTextColor() {
+    return document.documentElement.classList.contains('dark') ? '#94a3b8' : '#475569';
+  }
   function initCharts() {
-    new Chart(document.getElementById('chart-epic-progress'), {
+    var tc = chartTextColor();
+    _charts.epicProgress = new Chart(document.getElementById('chart-epic-progress'), {
       type: 'bar',
       data: { labels: ${epicLabels}, datasets: [
         { label: 'Done', data: ${epicDone}, backgroundColor: '#22c55e' },
         { label: 'In Progress', data: ${epicInProgress}, backgroundColor: '#3b82f6' },
         { label: 'Planned/To Do', data: ${epicPlanned}, backgroundColor: '#cbd5e1' },
       ]},
-      options: { indexAxis: 'y', responsive: true, scales: { x: { stacked: true }, y: { stacked: true } } }
+      options: { indexAxis: 'y', responsive: true,
+        plugins: { legend: { labels: { color: tc } } },
+        scales: { x: { stacked: true, ticks: { color: tc } }, y: { stacked: true, ticks: { color: tc } } } }
     });
-    new Chart(document.getElementById('chart-cost-breakdown'), {
+    _charts.costBreakdown = new Chart(document.getElementById('chart-cost-breakdown'), {
       type: 'bar',
       data: { labels: ${epicLabels}, datasets: [
         { label: 'Projected ($)', data: ${epicProjected}, backgroundColor: '#f59e0b', yAxisID: 'yProjected' },
@@ -346,31 +353,49 @@ function renderChartsTab(data) {
       ]},
       options: {
         responsive: true,
+        plugins: { legend: { labels: { color: tc } } },
         scales: {
-          yProjected: { type: 'linear', position: 'left', title: { display: true, text: 'Projected ($)' } },
-          yAI: { type: 'linear', position: 'right', title: { display: true, text: 'AI Cost ($)' }, grid: { drawOnChartArea: false } }
+          x: { ticks: { color: tc } },
+          yProjected: { type: 'linear', position: 'left', ticks: { color: tc }, title: { display: true, text: 'Projected ($)', color: tc } },
+          yAI: { type: 'linear', position: 'right', ticks: { color: tc }, title: { display: true, text: 'AI Cost ($)', color: tc }, grid: { drawOnChartArea: false } }
         }
       }
     });
-    new Chart(document.getElementById('chart-coverage'), {
+    _charts.coverage = new Chart(document.getElementById('chart-coverage'), {
       type: 'doughnut',
       data: { labels: ['Covered', 'Gap'], datasets: [{ data: [${coveragePct}, ${100 - parseFloat(coveragePct)}], backgroundColor: ['#22c55e','#cbd5e1'], borderWidth: 0 }] },
-      options: { cutout: '70%', plugins: { legend: { display: true, position: 'bottom' } } }
+      options: { cutout: '70%', plugins: { legend: { display: true, position: 'bottom', labels: { color: tc } } } }
     });
-    new Chart(document.getElementById('chart-ai-timeline'), {
+    _charts.aiTimeline = new Chart(document.getElementById('chart-ai-timeline'), {
       type: 'line',
       data: { labels: ${sessionDates}, datasets: [{ label: 'Cumulative AI Cost ($)', data: ${sessionCosts}, borderColor: '#0d9488', tension: 0.3, fill: true, backgroundColor: 'rgba(13,148,136,0.1)' }] },
-      options: { responsive: true }
+      options: { responsive: true, plugins: { legend: { labels: { color: tc } } }, scales: { x: { ticks: { color: tc } }, y: { ticks: { color: tc } } } }
     });
-    new Chart(document.getElementById('chart-burndown'), {
+    _charts.burndown = new Chart(document.getElementById('chart-burndown'), {
       type: 'doughnut',
       data: { labels: ['Done','In Progress','Planned','To Do','Blocked'], datasets: [{ data: ${statusCounts}, backgroundColor: ['#22c55e','#3b82f6','#94a3b8','#f59e0b','#ef4444'], borderWidth: 1 }] },
-      options: { plugins: { legend: { display: true, position: 'bottom' } } }
+      options: { plugins: { legend: { display: true, position: 'bottom', labels: { color: tc } } } }
     });
-    new Chart(document.getElementById('chart-burn-rate'), {
+    _charts.burnRate = new Chart(document.getElementById('chart-burn-rate'), {
       type: 'bar',
       data: { labels: ${sessionDates}, datasets: [{ label: 'Session AI Spend ($)', data: ${sessionPerCosts}, backgroundColor: '#6366f1' }] },
-      options: { responsive: true }
+      options: { responsive: true, plugins: { legend: { labels: { color: tc } } }, scales: { x: { ticks: { color: tc } }, y: { ticks: { color: tc } } } }
+    });
+  }
+  function updateChartTheme() {
+    var tc = chartTextColor();
+    Object.values(_charts).forEach(function(c) {
+      if (!c) return;
+      if (c.options.plugins && c.options.plugins.legend && c.options.plugins.legend.labels) {
+        c.options.plugins.legend.labels.color = tc;
+      }
+      if (c.options.scales) {
+        Object.values(c.options.scales).forEach(function(s) {
+          if (s.ticks) s.ticks.color = tc;
+          if (s.title) s.title.color = tc;
+        });
+      }
+      c.update();
     });
   }
   </script>`;
@@ -653,6 +678,7 @@ function renderScripts(data) {
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
     var icon = document.getElementById('theme-icon');
     if (icon) icon.textContent = isDark ? '\u2600' : '\u263e';
+    updateChartTheme();
   }
 
   function openAbout() {
