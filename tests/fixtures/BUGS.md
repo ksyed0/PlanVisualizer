@@ -11,3 +11,4 @@ Actual: App crashes
 Status: Open
 Fix Branch: bugfix/BUG-0001-empty-file-crash
 Lesson Encoded: No
+Estimated Cost USD: 0.35

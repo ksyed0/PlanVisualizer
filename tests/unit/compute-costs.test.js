@@ -56,6 +56,7 @@ describe('attributeBugCosts', () => {
     expect(result['BUG-0001'].inputTokens).toBe(30000);
     expect(result['BUG-0001'].outputTokens).toBe(8000);
     expect(result['BUG-0001'].sessions).toBe(3);
+    expect(result['BUG-0001'].isEstimated).toBe(false);
   });
 
   it('returns zero cost for bug with no fixBranch', () => {
@@ -64,6 +65,7 @@ describe('attributeBugCosts', () => {
     expect(result['BUG-0002'].inputTokens).toBe(0);
     expect(result['BUG-0002'].outputTokens).toBe(0);
     expect(result['BUG-0002'].sessions).toBe(0);
+    expect(result['BUG-0002'].isEstimated).toBe(false);
   });
 
   it('returns zero cost for bug whose fixBranch is not in costByBranch', () => {
@@ -82,5 +84,20 @@ describe('attributeBugCosts', () => {
   it('handles empty bugs array', () => {
     const result = attributeBugCosts([], costByBranch);
     expect(result._totals).toEqual({ costUsd: 0, inputTokens: 0, outputTokens: 0 });
+  });
+
+  it('uses estimatedCostUsd fallback when branch has no cost log entry', () => {
+    const bugsWithEstimate = [{ id: 'BUG-0003', fixBranch: 'bugfix/BUG-0003-no-match', estimatedCostUsd: 0.30 }];
+    const result = attributeBugCosts(bugsWithEstimate, costByBranch);
+    expect(result['BUG-0003'].costUsd).toBeCloseTo(0.30);
+    expect(result['BUG-0003'].isEstimated).toBe(true);
+    expect(result._totals.costUsd).toBeCloseTo(0.30);
+  });
+
+  it('does not set isEstimated when estimatedCostUsd is 0', () => {
+    const bugsNoEstimate = [{ id: 'BUG-0004', fixBranch: 'bugfix/BUG-0004-no-match' }];
+    const result = attributeBugCosts(bugsNoEstimate, costByBranch);
+    expect(result['BUG-0004'].isEstimated).toBe(false);
+    expect(result['BUG-0004'].costUsd).toBe(0);
   });
 });

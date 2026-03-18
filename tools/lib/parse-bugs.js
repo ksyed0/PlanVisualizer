@@ -27,6 +27,7 @@ function parseBugs(markdown) {
       status: get('Status'),
       fixBranch: get('Fix Branch'),
       lessonEncoded: get('Lesson Encoded'),
+      estimatedCostUsd: parseFloat(get('Estimated Cost USD')) || 0,
     });
   }
   return results;
