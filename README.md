@@ -39,7 +39,7 @@ GitHub repo. Clone it to a temp directory, run scripts/install.sh targeting this
 project root, create plan-visualizer.config.json with the correct project name and
 file paths for this project, add the .claude/settings.json Stop hook for
 capture-cost.js, copy the .github/workflows/plan-visualizer.yml workflow, run
-npm test from the repo root to confirm all suites pass, then commit all added
+npm run plan:test from the repo root to confirm all suites pass, then commit all added
 files to the current branch. The install script will copy plan_visualizer.md into
 this project root and automatically update AGENTS.md with a reference to it.
 ```
@@ -148,7 +148,7 @@ Paste this prompt directly into Claude Code in your target repo:
 ```
 Update the PlanVisualizer tool in this project from the ksyed0/PlanVisualizer
 GitHub repo. Clone it to a temp directory, run scripts/install.sh targeting this
-project root, run npm test from the repo root to confirm all suites pass, then
+project root, run npm run plan:test from the repo root to confirm all suites pass, then
 commit all changed files to the current branch.
 ```
 

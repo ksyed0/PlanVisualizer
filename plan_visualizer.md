@@ -197,7 +197,7 @@ Override default file paths in `plan-visualizer.config.json` at the project root
     "costLog":     "docs/AI_COST_LOG.md",
     "outputDir":   "docs"
   },
-  "coverage": { "summaryPath": "coverage/coverage-summary.json" },
+  "coverage": { "summaryPath": "docs/coverage/coverage-summary.json" },
   "progress": { "path": "progress.md" },
   "costs": { "hourlyRate": 100, "tshirtHours": { "S": 4, "M": 8, "L": 16, "XL": 32 } }
 }

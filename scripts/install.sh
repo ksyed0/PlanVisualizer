@@ -5,7 +5,8 @@
 #   bash /path/to/PlanVisualizer/scripts/install.sh [TARGET_DIR]
 #
 # If TARGET_DIR is omitted the current directory is used.
-# Idempotent — safe to re-run for updates.
+# Idempotent for steps 1–4. Step 5 (.claude/settings.json) only creates the file
+# on first run; if it already exists, the Stop hook must be added manually.
 
 set -euo pipefail
 
@@ -33,13 +34,17 @@ if [ -f "${REPO_ROOT}/.github/workflows/plan-visualizer.yml" ]; then
 fi
 
 # ── 2.5. Copy plan_visualizer.md ────────────────────────────────────────────
-echo "[install] Copying plan_visualizer.md ..."
-cp "${REPO_ROOT}/plan_visualizer.md" "${TARGET}/plan_visualizer.md"
-echo "[install] plan_visualizer.md copied."
+if [ -f "${REPO_ROOT}/plan_visualizer.md" ]; then
+  echo "[install] Copying plan_visualizer.md ..."
+  cp "${REPO_ROOT}/plan_visualizer.md" "${TARGET}/plan_visualizer.md"
+  echo "[install] plan_visualizer.md copied."
+else
+  echo "[install] Warning: plan_visualizer.md not found in repo root — skipping."
+fi
 
 # ── 2.6. Inject PlanVisualizer reference into AGENTS.md ─────────────────────
 AGENTS_DEST="${TARGET}/AGENTS.md"
-PV_MARKER="plan_visualizer.md"
+PV_MARKER="## PlanVisualizer Format Requirements"
 if [ -f "$AGENTS_DEST" ]; then
   if grep -q "$PV_MARKER" "$AGENTS_DEST"; then
     echo "[install] AGENTS.md already references plan_visualizer.md — skipping."
