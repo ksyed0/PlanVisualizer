@@ -73,3 +73,7 @@ Pricing basis: Claude Sonnet 4.6 — Input $3/MTok · Output $15/MTok · Cache R
 | 2026-03-18 | sess_bug0008-est | bugfix/BUG-0008-0014-0015-0016-misc | 122500 | 42000 | 175000 | 1.0500 |
 | 2026-03-18 | sess_bug0012-est | bugfix/BUG-0012-0013-0017-ci-config-fixes | 105000 | 36000 | 150000 | 0.9000 |
 | 2026-03-18 | sess_bug0019-est | bugfix/BUG-0019-node24-actions | 29167 | 10000 | 41667 | 0.2500 |
+| 2026-03-18 | sess_0040-est | feature/dark-mode-readability | 180000 | 45000 | 90000 | 1.2420 |
+| 2026-03-18 | sess_0041-est | feature/dark-mode-readability | 150000 | 38000 | 75000 | 1.0425 |
+| 2026-03-18 | sess_0042-est | feature/dark-mode-readability | 140000 | 35000 | 70000 | 0.9660 |
+| 2026-03-18 | sess_0043-est | feature/dark-mode-readability | 100000 | 25000 | 50000 | 0.6900 |
