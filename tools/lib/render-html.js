@@ -47,34 +47,35 @@ function renderTopBar(data) {
   const genAt = data.generatedAt;
   const genDateStr = genAt.slice(0,10) + ' ' + genAt.slice(11,16) + ' UTC';
   return `
-  <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white px-6 py-5 shadow-lg" id="top-bar">
+  <div class="text-white px-6 py-5 shadow-xl" id="top-bar"
+       style="background:linear-gradient(135deg,#003087 0%,#005EB8 55%,#0078C8 100%);backdrop-filter:blur(0px)">
     <div class="flex flex-wrap gap-4 items-start justify-between">
       <div class="min-w-0">
         <div class="flex items-center gap-3 flex-wrap">
-          <h1 class="text-3xl font-bold text-blue-400 tracking-tight topbar-title">${esc(data.projectName)}</h1>
-          <button onclick="openAbout()" class="text-xs text-slate-400 border border-slate-600 rounded px-2 py-0.5 hover:border-blue-400 hover:text-blue-400 transition-colors flex-shrink-0">About</button>
-          <button onclick="toggleTheme()" id="theme-toggle" class="text-xs text-slate-400 border border-slate-600 rounded px-2 py-0.5 hover:border-blue-400 hover:text-blue-400 transition-colors flex-shrink-0" aria-label="Toggle dark/light mode"><span id="theme-icon">☀</span></button>
+          <h1 class="text-3xl font-bold text-white tracking-tight topbar-title" style="text-shadow:0 1px 3px rgba(0,0,0,.3)">${esc(data.projectName)}</h1>
+          <button onclick="openAbout()" class="text-xs text-blue-100 border border-white/30 rounded px-2 py-0.5 hover:bg-white/15 hover:text-white transition-colors flex-shrink-0 backdrop-blur-sm">About</button>
+          <button onclick="toggleTheme()" id="theme-toggle" class="text-xs text-blue-100 border border-white/30 rounded px-2 py-0.5 hover:bg-white/15 hover:text-white transition-colors flex-shrink-0 backdrop-blur-sm" aria-label="Toggle dark/light mode"><span id="theme-icon">☀</span></button>
         </div>
-        <p class="text-slate-400 text-sm mt-0.5 topbar-tagline">${esc(data.tagline)}&nbsp;·&nbsp;Updated ${genDateStr}&nbsp;·&nbsp;<code class="text-slate-500 text-xs">${data.commitSha}</code></p>
+        <p class="text-blue-100/80 text-sm mt-0.5 topbar-tagline">${esc(data.tagline)}&nbsp;·&nbsp;Updated ${genDateStr}&nbsp;·&nbsp;<code class="text-blue-200/60 text-xs">${data.commitSha}</code></p>
         <div class="mt-2.5 flex items-center gap-2 topbar-progress">
-          <div class="bg-slate-700 rounded-full h-2 w-40 overflow-hidden">
-            <div class="bg-blue-500 h-2 rounded-full" style="width:${pct}%"></div>
+          <div class="rounded-full h-2 w-40 overflow-hidden" style="background:rgba(255,255,255,0.2)">
+            <div class="h-2 rounded-full" style="width:${pct}%;background:rgba(255,255,255,0.85)"></div>
           </div>
-          <span class="text-xs text-slate-400">${done}/${data.stories.length} &middot; ${pct}%${inProgress ? ` &middot; ${inProgress} active` : ''}</span>
+          <span class="text-xs text-blue-100/80">${done}/${data.stories.length} &middot; ${pct}%${inProgress ? ` &middot; ${inProgress} active` : ''}</span>
         </div>
       </div>
       <div class="flex gap-3 flex-wrap topbar-stats">
-        <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-center min-w-[80px] topbar-tile">
+        <div class="rounded-xl px-4 py-3 text-center min-w-[80px] topbar-tile" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.22);backdrop-filter:blur(8px)">
           <div class="text-xl font-bold text-white topbar-tile-num">${usd(totalProjected)}</div>
-          <div class="text-xs text-slate-400 mt-0.5">Projected</div>
+          <div class="text-xs mt-0.5" style="color:rgba(255,255,255,0.65)">Projected</div>
         </div>
-        <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-center min-w-[80px] topbar-tile">
+        <div class="rounded-xl px-4 py-3 text-center min-w-[80px] topbar-tile" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.22);backdrop-filter:blur(8px)">
           <div class="text-xl font-bold text-white topbar-tile-num">${usd(totalAI)}</div>
-          <div class="text-xs text-slate-400 mt-0.5">AI Actual</div>
+          <div class="text-xs mt-0.5" style="color:rgba(255,255,255,0.65)">AI Actual</div>
         </div>
-        <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-center min-w-[80px] topbar-tile" aria-label="Coverage: ${covLabel} overall, ${branchSubtitle}">
-          <div class="text-2xl font-bold ${covClass} topbar-tile-num">${covLabel}</div>
-          <div class="text-xs text-slate-400 mt-0.5">${branchSubtitle}</div>
+        <div class="rounded-xl px-4 py-3 text-center min-w-[80px] topbar-tile" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.22);backdrop-filter:blur(8px)" aria-label="Coverage: ${covLabel} overall, ${branchSubtitle}">
+          <div class="text-2xl font-bold topbar-tile-num" style="color:${(cov.available !== false) ? (cov.meetsTarget ? '#6EE7B7' : '#FCA5A5') : 'rgba(255,255,255,0.5)'}">${covLabel}</div>
+          <div class="text-xs mt-0.5" style="color:rgba(255,255,255,0.65)">${branchSubtitle}</div>
         </div>
       </div>
     </div>

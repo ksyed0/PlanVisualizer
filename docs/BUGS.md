@@ -578,3 +578,45 @@ Status: Fixed
 Fix Branch: feature/dark-mode-readability
 Lesson Encoded: Yes — see docs/LESSONS.md
 Estimated Cost USD: 0.00
+
+BUG-0039: Bugs tab Story column wraps on narrow viewports
+Severity: Low
+Related Story: US-0031
+Related Task: n/a
+Steps to Reproduce:
+  1. Open plan-status.html → Bugs tab
+  2. Narrow the browser window or view on mobile
+Expected: Story ID (e.g. US-0031) stays on one line in the Story column
+Actual: Story cell wraps mid-string due to missing whitespace-nowrap on the td element
+Status: Fixed
+Fix Branch: feature/dark-mode-readability
+Lesson Encoded: No
+Estimated Cost USD: 0.00
+
+BUG-0040: Dark mode toggle changes About modal but not the rest of the page
+Severity: High
+Related Story: US-0031
+Related Task: TASK-0030
+Steps to Reproduce:
+  1. Open plan-status.html
+  2. Click the sun/moon toggle in the header
+Expected: Entire page switches between light and dark themes
+Actual: Only the About modal responds; rest of page unchanged — tailwind.config={darkMode:'class'} was set before the CDN loaded so tailwind was undefined, config never applied, CDN defaulted to prefers-color-scheme strategy
+Status: Fixed
+Fix Branch: feature/dark-mode-readability
+Lesson Encoded: Yes — see docs/LESSONS.md
+Estimated Cost USD: 0.00
+
+BUG-0041: New bugs BUG-0034–0038 show $0.00 AI cost and 0/0 tokens in Costs tab
+Severity: Low
+Related Story: US-0031
+Related Task: n/a
+Steps to Reproduce:
+  1. Open plan-status.html → Costs tab → Bug Fix Costs section
+  2. Observe AI Cost and Tokens columns for BUG-0034 through BUG-0038
+Expected: AI cost and token columns show values from the feature/dark-mode-readability branch sessions
+Actual: $0.00 / 0/0 because no cost log entries existed for the fix branch and Estimated Cost USD was 0.00 so isEstimated stayed false (no — dash shown either)
+Status: Fixed
+Fix Branch: feature/dark-mode-readability
+Lesson Encoded: Yes — see docs/LESSONS.md
+Estimated Cost USD: 0.00
