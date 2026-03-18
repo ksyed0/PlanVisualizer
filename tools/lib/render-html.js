@@ -409,7 +409,7 @@ function renderCostsTab(data) {
         <td class="px-3 py-2 text-center">${badge(bug.status)}</td>
         <td class="px-3 py-2 text-xs text-slate-500">${esc(bug.relatedStory || '—')}</td>
         <td class="px-3 py-2 text-xs text-slate-400">${esc(bug.fixBranch || '—')}</td>
-        <td class="px-3 py-2 text-right text-sm text-teal-600">${bc.isEstimated ? `<span class="text-slate-400" title="Estimated — predates cost logging">~${usd(bc.costUsd)}</span>` : usd(bc.costUsd)}</td>
+        <td class="px-3 py-2 text-right text-sm text-teal-600">${bc.isEstimated ? `<span class="text-slate-400 italic" title="Estimated — predates cost logging">${usd(bc.costUsd)} est.</span>` : usd(bc.costUsd)}</td>
         <td class="px-3 py-2 text-right text-xs text-slate-400 tokens-col">${fmtNum(bc.inputTokens)} / ${fmtNum(bc.outputTokens)}</td>
       </tr>`;
     }).join('');

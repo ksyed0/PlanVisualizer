@@ -55,3 +55,12 @@ Pricing basis: Claude Sonnet 4.6 — Input $3/MTok · Output $15/MTok · Cache R
 | 2026-03-16 | sess_0028-est | claude/improvements-C7evU | 180000 | 45000 | 100000 | 1.2450 |
 | 2026-03-16 | sess_0029-est | claude/improvements-C7evU | 160000 | 42000 | 90000 | 1.1370 |
 | 2026-03-16 | sess_0030-est | claude/improvements-C7evU | 140000 | 38000 | 80000 | 1.0140 |
+| 2026-03-17 | sess_0031-est | feature/US-0023-about-dialog | 130000 | 32000 | 65000 | 0.8880 |
+| 2026-03-17 | sess_0032-est | feature/US-0023-about-dialog | 110000 | 28000 | 55000 | 0.7560 |
+| 2026-03-17 | sess_0033-est | feature/US-0023-about-dialog | 90000 | 22000 | 45000 | 0.6135 |
+| 2026-03-18 | sess_0034-est | feature/docs-update-readme-update-prompt | 120000 | 30000 | 60000 | 0.8280 |
+| 2026-03-18 | sess_0035-est | feature/docs-update-readme-update-prompt | 100000 | 25000 | 50000 | 0.6900 |
+| 2026-03-18 | sess_0036-est | feature/US-0030-bug-fix-costs-tab | 115000 | 28000 | 55000 | 0.7815 |
+| 2026-03-18 | sess_0037-est | feature/US-0030-bug-fix-costs-tab | 95000 | 24000 | 48000 | 0.6555 |
+| 2026-03-18 | sess_0038-est | feature/US-0031-dashboard-ux-fixes | 160000 | 40000 | 80000 | 1.1040 |
+| 2026-03-18 | sess_0039-est | feature/US-0031-dashboard-ux-fixes | 130000 | 33000 | 65000 | 0.8985 |
