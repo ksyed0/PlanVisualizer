@@ -17,6 +17,7 @@ Actual: Both badges display "N/A" in grey text
 Status: Fixed
 Fix Branch: bugfix/BUG-0001-coverage-na
 Lesson Encoded: Yes — see docs/LESSONS.md
+Estimated Cost USD: 0.50
 
 BUG-0002: Test Coverage chart shows 0% on Charts tab
 Severity: High
@@ -31,6 +32,7 @@ Actual: Chart is entirely grey — rendered as [0, 100] due to coverage.overall 
 Status: Fixed
 Fix Branch: bugfix/BUG-0001-coverage-na
 Lesson Encoded: Yes — see docs/LESSONS.md
+Estimated Cost USD: 0.50
 
 BUG-0003: All test cases show "Not Run" in Traceability tab
 Severity: Medium
@@ -44,6 +46,7 @@ Actual: All 23 TCs display amber "Not Run" — Status: [ ] Not Run in TEST_CASES
 Status: Fixed
 Fix Branch: bugfix/BUG-0003-tc-statuses
 Lesson Encoded: Yes — see docs/LESSONS.md (L-0010)
+Estimated Cost USD: 0.25
 
 BUG-0004: Header area scrolls off-screen when content is long
 Severity: Medium
@@ -57,6 +60,7 @@ Actual: All three scroll off-screen; user loses navigation and filter access
 Status: Fixed
 Fix Branch: bugfix/BUG-0004-sticky-header
 Lesson Encoded: Yes — see docs/LESSONS.md (L-0009)
+Estimated Cost USD: 0.25
 
 BUG-0005: XSS via unescaped user data interpolated into generated HTML
 Severity: Critical
@@ -71,6 +75,7 @@ Actual: Raw HTML/JS from markdown files is injected verbatim into the dashboard 
 Status: Fixed
 Fix Branch: bugfix/BUG-0005-xss-escape-html
 Lesson Encoded: No
+Estimated Cost USD: 0.50
 
 BUG-0006: Hardcoded TSHIRT_HOURS and rate in render-html.js ignore config overrides
 Severity: High
@@ -85,6 +90,7 @@ Actual: Dashboard always uses hardcoded S=4, M=8, L=16, XL=32 hours at $100/hr r
 Status: Fixed
 Fix Branch: bugfix/BUG-0006-0009-0010-render-html
 Lesson Encoded: No
+Estimated Cost USD: 0.45
 
 BUG-0007: parseCoverage() throws TypeError when coverage JSON has unexpected shape
 Severity: High
@@ -98,6 +104,7 @@ Actual: Throws TypeError: Cannot read properties of undefined — crashes the ge
 Status: Fixed
 Fix Branch: bugfix/BUG-0007-0011-parser-fixes
 Lesson Encoded: No
+Estimated Cost USD: 0.45
 
 BUG-0008: DEFAULTS object in generate-plan.js uses uppercase 'docs' paths — breaks on Linux
 Severity: High
@@ -111,6 +118,7 @@ Actual: Generator attempts to read from docs/ (uppercase) — silently produces 
 Status: Fixed
 Fix Branch: bugfix/BUG-0008-0014-0015-0016-misc
 Lesson Encoded: No
+Estimated Cost USD: 0.45
 
 BUG-0009: f-type filter control (Stories + Bugs / Stories only / Bugs only) has no effect
 Severity: Medium
@@ -125,6 +133,7 @@ Actual: Filter selection is ignored — applyFilters() never reads the f-type va
 Status: Fixed
 Fix Branch: bugfix/BUG-0006-0009-0010-render-html
 Lesson Encoded: No
+Estimated Cost USD: 0.25
 
 BUG-0010: Coverage N/A heuristic misidentifies genuine 0% coverage as N/A
 Severity: Medium
@@ -139,6 +148,7 @@ Actual: Badges show N/A — the > 0 guard cannot distinguish "no coverage file" 
 Status: Fixed
 Fix Branch: bugfix/BUG-0006-0009-0010-render-html
 Lesson Encoded: No
+Estimated Cost USD: 0.25
 
 BUG-0011: parse-progress.js returns sessions in file order — reverse-chronological order not enforced
 Severity: Medium
@@ -153,6 +163,7 @@ Actual: Sessions are returned in the order they appear in the file — if append
 Status: Fixed (false positive — progress.md is written newest-first; regression test added)
 Fix Branch: bugfix/BUG-0007-0011-parser-fixes
 Lesson Encoded: No
+Estimated Cost USD: 0.25
 
 BUG-0012: GitHub Actions workflow steps pinned to mutable version tags, not commit digests
 Severity: High
@@ -166,6 +177,7 @@ Actual: Actions use mutable semver tags — a force-push to @v6 by the upstream 
 Status: Fixed
 Fix Branch: bugfix/BUG-0012-0013-0017-ci-config-fixes
 Lesson Encoded: No
+Estimated Cost USD: 0.45
 
 BUG-0013: package.json devDependencies use ^ floating ranges in violation of AGENTS.md §19
 Severity: Low
@@ -179,6 +191,7 @@ Actual: ^ ranges allow automatic minor/patch upgrades on npm install in fresh en
 Status: Fixed
 Fix Branch: bugfix/BUG-0012-0013-0017-ci-config-fixes
 Lesson Encoded: No
+Estimated Cost USD: 0.20
 
 BUG-0014: detectAtRisk() accepts an unused `bugs` parameter — misleading API contract
 Severity: Low
@@ -192,6 +205,7 @@ Actual: bugs is declared but never read — function silently ignores bug data; 
 Status: Fixed
 Fix Branch: bugfix/BUG-0008-0014-0015-0016-misc
 Lesson Encoded: No
+Estimated Cost USD: 0.20
 
 BUG-0015: generate-plan.js silently swallows config parse errors with no user-facing diagnostic
 Severity: Low
@@ -205,6 +219,7 @@ Actual: JSON.parse error is caught silently — tool falls back to DEFAULTS with
 Status: Fixed
 Fix Branch: bugfix/BUG-0008-0014-0015-0016-misc
 Lesson Encoded: No
+Estimated Cost USD: 0.20
 
 BUG-0016: generate-plan.js main() has no top-level error handler — unhandled throws expose raw stack traces
 Severity: Low
@@ -218,6 +233,7 @@ Actual: Node.js prints an unformatted stack trace and exits with code 1 — viol
 Status: Fixed
 Fix Branch: bugfix/BUG-0008-0014-0015-0016-misc
 Lesson Encoded: No
+Estimated Cost USD: 0.20
 
 BUG-0017: peaceiris/actions-gh-pages@v4 uses deprecated Node.js 20 runtime
 Severity: Medium
@@ -231,6 +247,7 @@ Actual: CI logs warn "peaceiris/actions-gh-pages@v4 is running on Node.js 20 and
 Status: Fixed
 Fix Branch: bugfix/BUG-0012-0013-0017-ci-config-fixes
 Lesson Encoded: No
+Estimated Cost USD: 0.25
 
 BUG-0018: plan-visualizer.yml deploy fails on develop — github-pages environment does not allow develop branch
 Severity: High
@@ -244,6 +261,7 @@ Actual: GitHub rejects the deploy-pages step: "Branch develop is not allowed to 
 Status: Fixed
 Fix Branch: n/a — fixed via repo Settings → Environments → github-pages → add develop to allowed branches
 Lesson Encoded: No
+Estimated Cost USD: 0.20
 
 BUG-0019: actions/deploy-pages and actions/upload-artifact running on deprecated Node.js 20 runtime
 Severity: Medium
@@ -257,6 +275,7 @@ Actual: "actions/deploy-pages and actions/upload-artifact@v4 are running on Node
 Status: Fixed
 Fix Branch: bugfix/BUG-0019-node24-actions
 Lesson Encoded: No
+Estimated Cost USD: 0.25
 
 BUG-0020: Mobile top non-scrollable area too large on iPhone Pro Max
 Severity: Medium
@@ -270,6 +289,7 @@ Actual: Header occupies more than ⅓ of the screen height due to large fonts, p
 Status: Fixed
 Fix Branch: claude/fix-mobile-top-area-C7evU
 Lesson Encoded: No
+Estimated Cost USD: 0.25
 
 BUG-0021: Traceability legend not collapsible on mobile, takes valuable screen space
 Severity: Low
@@ -284,6 +304,7 @@ Actual: Legend is always expanded, pushing the table content left and wasting sc
 Status: Fixed
 Fix Branch: claude/fix-mobile-top-area-C7evU
 Lesson Encoded: No
+Estimated Cost USD: 0.20
 
 BUG-0022: Activity panel cannot be closed on mobile after opening
 Severity: Medium
@@ -298,6 +319,7 @@ Actual: The panel (z-index:50, fixed top-0 right-0 width:280px) covers the toggl
 Status: Fixed
 Fix Branch: claude/fix-mobile-top-area-C7evU
 Lesson Encoded: No
+Estimated Cost USD: 0.25
 
 BUG-0023: AI Cost column shows $0 for all individual stories on Costs tab
 Severity: High
@@ -312,6 +334,7 @@ Root Cause: generate-plan.js stored the field as `aiCostUsd` but render-html.js 
 Status: Fixed
 Fix Branch: claude/fix-mobile-top-area-C7evU
 Lesson Encoded: No
+Estimated Cost USD: 0.45
 
 BUG-0024: Cost Breakdown chart AI Cost bars appear as zero/invisible
 Severity: Medium
@@ -325,6 +348,7 @@ Actual: AI Cost bars are sub-pixel tall and invisible — projected costs ($1,60
 Status: Fixed
 Fix Branch: claude/fix-mobile-top-area-C7evU
 Lesson Encoded: No
+Estimated Cost USD: 0.25
 
 BUG-0025: Traceability legend renders beside table on mobile instead of above it
 Severity: Low
@@ -338,6 +362,7 @@ Actual: Legend panel renders to the right of the table (flex-row layout), compre
 Status: Fixed
 Fix Branch: claude/fix-mobile-top-area-C7evU
 Lesson Encoded: No
+Estimated Cost USD: 0.20
 
 ---
 
@@ -354,6 +379,7 @@ Actual: No coverage data rendered — generate-plan.js default is docs/coverage/
 Status: Fixed
 Fix Branch: feature/docs-update-readme-update-prompt
 Lesson Encoded: No
+Estimated Cost USD: 0.35
 
 ---
 
@@ -369,6 +395,7 @@ Actual: grep -q "plan_visualizer.md" matches the prose; script prints "already r
 Status: Fixed
 Fix Branch: feature/docs-update-readme-update-prompt
 Lesson Encoded: No
+Estimated Cost USD: 0.25
 
 ---
 
@@ -384,6 +411,7 @@ Actual: Target project's own test suite runs instead (or "Missing script: test" 
 Status: Fixed
 Fix Branch: feature/docs-update-readme-update-prompt
 Lesson Encoded: No
+Estimated Cost USD: 0.20
 
 ---
 
@@ -399,6 +427,7 @@ Actual: cp fails with raw "No such file or directory"; set -euo pipefail aborts 
 Status: Fixed
 Fix Branch: feature/docs-update-readme-update-prompt
 Lesson Encoded: No
+Estimated Cost USD: 0.25
 
 ---
 
@@ -415,6 +444,7 @@ Actual: Script sees .claude/settings.json exists, prints manual advisory, exits 
 Status: Fixed
 Fix Branch: feature/docs-update-readme-update-prompt
 Lesson Encoded: No
+Estimated Cost USD: 0.20
 
 BUG-0031: attributeBugCosts() omits sessions field — inconsistent with attributeAICosts() contract
 Severity: Low
@@ -428,6 +458,7 @@ Actual: Return object omits sessions field; shape is { costUsd, inputTokens, out
 Status: Fixed
 Fix Branch: feature/US-0030-bug-fix-costs-tab
 Lesson Encoded: No
+Estimated Cost USD: 0.20
 
 ---
 
@@ -443,6 +474,7 @@ Actual: result._totals is undefined — function only returns per-bug keyed entr
 Status: Fixed
 Fix Branch: feature/US-0030-bug-fix-costs-tab
 Lesson Encoded: No
+Estimated Cost USD: 0.20
 
 ---
 
@@ -462,3 +494,16 @@ Fix Branch: bugfix/BUG-XXXX-short-description
 Lesson Encoded: Yes — see docs/LESSONS.md | No
 
 -->
+
+BUG-0033: BUG/US IDs wrap mid-string in Bugs and Costs tabs
+Severity: Low
+Related Story: US-0031
+Related Task: n/a
+Steps to Reproduce:
+  1. Open plan-status.html → Bugs tab
+  2. Observe BUG-0001 ID cell in a narrow browser window or on mobile
+Expected: BUG/US IDs display on a single line without mid-string line breaks
+Actual: Font-mono IDs like "BUG-0001" and "US-0001" wrap between characters — e.g. "BUG-\n0001" — due to missing whitespace-nowrap constraint on the TD element
+Status: Fixed
+Fix Branch: feature/US-0031-dashboard-ux-fixes
+Lesson Encoded: No

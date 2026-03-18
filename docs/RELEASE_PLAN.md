@@ -54,7 +54,7 @@ Dependencies: None
 EPIC-0006: Dashboard UX & Quality Improvements
 Description: Mobile-responsive layout fixes, display accuracy improvements, navigation state persistence, and developer-experience enhancements for the generated dashboard.
 Release Target: Release 1.2
-Status: In Progress
+Status: Done
 Dependencies: EPIC-0002
 ```
 
@@ -225,7 +225,7 @@ Dependencies: US-0011
 US-0030 (EPIC-0003): As a project manager, I want to see AI costs attributed to bug fixes on the Costs tab, so that I can understand total spend including defect resolution.
 Priority: Medium (P1)
 Estimate: S
-Status: In Progress
+Status: Done
 Branch: feature/US-0030-bug-fix-costs-tab
 Acceptance Criteria:
   - [x] AC-0082: Bug Fix Costs section appears below the story costs table when bugs exist
