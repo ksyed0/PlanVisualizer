@@ -29,12 +29,21 @@ function attributeAICosts(stories, costByBranch) {
 
 function attributeBugCosts(bugs, costByBranch) {
   const result = {};
+  let totalCost = 0, totalInput = 0, totalOutput = 0;
+
   for (const bug of bugs) {
     const match = bug.fixBranch ? costByBranch[bug.fixBranch] : null;
     result[bug.id] = match
-      ? { costUsd: match.costUsd, inputTokens: match.inputTokens, outputTokens: match.outputTokens }
-      : { costUsd: 0, inputTokens: 0, outputTokens: 0 };
+      ? { costUsd: match.costUsd, inputTokens: match.inputTokens, outputTokens: match.outputTokens, sessions: match.sessions }
+      : { costUsd: 0, inputTokens: 0, outputTokens: 0, sessions: 0 };
+    if (match) {
+      totalCost += match.costUsd;
+      totalInput += match.inputTokens;
+      totalOutput += match.outputTokens;
+    }
   }
+
+  result._totals = { costUsd: totalCost, inputTokens: totalInput, outputTokens: totalOutput };
   return result;
 }
 

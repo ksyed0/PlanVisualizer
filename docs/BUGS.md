@@ -416,6 +416,36 @@ Status: Fixed
 Fix Branch: feature/docs-update-readme-update-prompt
 Lesson Encoded: No
 
+BUG-0031: attributeBugCosts() omits sessions field — inconsistent with attributeAICosts() contract
+Severity: Low
+Related Story: US-0030
+Related Task: TASK-0027
+Steps to Reproduce:
+  1. Log AI costs on a bugfix branch in docs/AI_COST_LOG.md
+  2. Call attributeBugCosts() and inspect the returned object for a matched bug
+Expected: Return object includes sessions field (matching attributeAICosts() shape: { costUsd, inputTokens, outputTokens, sessions })
+Actual: Return object omits sessions field; shape is { costUsd, inputTokens, outputTokens } only — inconsistent with attributeAICosts() and the zero-cost fallback also lacks sessions: 0
+Status: Fixed
+Fix Branch: feature/US-0030-bug-fix-costs-tab
+Lesson Encoded: No
+
+---
+
+BUG-0032: attributeBugCosts() returns no _totals key — asymmetric with attributeAICosts() which returns result._totals
+Severity: Low
+Related Story: US-0030
+Related Task: TASK-0027
+Steps to Reproduce:
+  1. Call attributeBugCosts(bugs, costByBranch) with any non-empty bugs array
+  2. Access result._totals
+Expected: result._totals exists with { costUsd, inputTokens, outputTokens } summed across all matched bug branches
+Actual: result._totals is undefined — function only returns per-bug keyed entries
+Status: Fixed
+Fix Branch: feature/US-0030-bug-fix-costs-tab
+Lesson Encoded: No
+
+---
+
 <!-- When adding a bug, use this format:
 
 BUG-XXXX: Short description of the defect

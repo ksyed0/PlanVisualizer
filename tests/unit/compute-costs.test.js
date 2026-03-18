@@ -46,8 +46,8 @@ describe('attributeBugCosts', () => {
     { id: 'BUG-0003', fixBranch: 'bugfix/BUG-0003-no-match' },
   ];
   const costByBranch = {
-    'bugfix/BUG-0001-crash': { costUsd: 0.25, inputTokens: 30000, outputTokens: 8000 },
-    'main': { costUsd: 0.10, inputTokens: 10000, outputTokens: 3000 },
+    'bugfix/BUG-0001-crash': { costUsd: 0.25, inputTokens: 30000, outputTokens: 8000, sessions: 3 },
+    'main': { costUsd: 0.10, inputTokens: 10000, outputTokens: 3000, sessions: 1 },
   };
 
   it('attributes cost to bug by fixBranch', () => {
@@ -55,6 +55,7 @@ describe('attributeBugCosts', () => {
     expect(result['BUG-0001'].costUsd).toBeCloseTo(0.25);
     expect(result['BUG-0001'].inputTokens).toBe(30000);
     expect(result['BUG-0001'].outputTokens).toBe(8000);
+    expect(result['BUG-0001'].sessions).toBe(3);
   });
 
   it('returns zero cost for bug with no fixBranch', () => {
@@ -62,15 +63,24 @@ describe('attributeBugCosts', () => {
     expect(result['BUG-0002'].costUsd).toBe(0);
     expect(result['BUG-0002'].inputTokens).toBe(0);
     expect(result['BUG-0002'].outputTokens).toBe(0);
+    expect(result['BUG-0002'].sessions).toBe(0);
   });
 
   it('returns zero cost for bug whose fixBranch is not in costByBranch', () => {
     const result = attributeBugCosts(bugs, costByBranch);
     expect(result['BUG-0003'].costUsd).toBe(0);
+    expect(result['BUG-0003'].sessions).toBe(0);
+  });
+
+  it('returns _totals summing only matched bug branches', () => {
+    const result = attributeBugCosts(bugs, costByBranch);
+    expect(result._totals.costUsd).toBeCloseTo(0.25);
+    expect(result._totals.inputTokens).toBe(30000);
+    expect(result._totals.outputTokens).toBe(8000);
   });
 
   it('handles empty bugs array', () => {
     const result = attributeBugCosts([], costByBranch);
-    expect(result).toEqual({});
+    expect(result._totals).toEqual({ costUsd: 0, inputTokens: 0, outputTokens: 0 });
   });
 });
