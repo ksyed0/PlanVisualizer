@@ -17,7 +17,7 @@ const { parseBugs } = require('./lib/parse-bugs');
 const { parseCostLog, aggregateCostByBranch } = require('./lib/parse-cost-log');
 const { parseCoverage } = require('./lib/parse-coverage');
 const { parseRecentActivity } = require('./lib/parse-progress');
-const { computeProjectedCost, attributeAICosts } = require('./lib/compute-costs');
+const { computeProjectedCost, attributeAICosts, attributeBugCosts } = require('./lib/compute-costs');
 const { detectAtRisk } = require('./lib/detect-at-risk');
 const { renderHtml } = require('./lib/render-html');
 
@@ -110,6 +110,7 @@ function main() {
     };
   }
   costs._totals = aiAttribution._totals || { costUsd: 0, inputTokens: 0, outputTokens: 0 };
+  costs._bugs = attributeBugCosts(bugs, costByBranch);
 
   const atRisk = detectAtRisk(stories, testCases, bugs);
   const generatedAt = new Date().toISOString();

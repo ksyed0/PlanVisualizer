@@ -54,7 +54,7 @@ Dependencies: None
 EPIC-0006: Dashboard UX & Quality Improvements
 Description: Mobile-responsive layout fixes, display accuracy improvements, navigation state persistence, and developer-experience enhancements for the generated dashboard.
 Release Target: Release 1.2
-Status: In Progress
+Status: Done
 Dependencies: EPIC-0002
 ```
 
@@ -221,6 +221,18 @@ Acceptance Criteria:
   - [x] AC-0080: If AGENTS.md does not exist, a minimal one is created with the reference section
   - [x] AC-0081: Re-running the install script does not duplicate the reference section (idempotent)
 Dependencies: US-0011
+
+US-0030 (EPIC-0003): As a project manager, I want to see AI costs attributed to bug fixes on the Costs tab, so that I can understand total spend including defect resolution.
+Priority: Medium (P1)
+Estimate: S
+Status: Done
+Branch: feature/US-0030-bug-fix-costs-tab
+Acceptance Criteria:
+  - [x] AC-0082: Bug Fix Costs section appears below the story costs table when bugs exist
+  - [x] AC-0083: Each bug row shows BUG-ID, title, severity, status, related story, fix branch, AI cost, and token counts
+  - [x] AC-0084: Bugs with no fix branch or no logged cost show $0.00 (not hidden)
+  - [x] AC-0085: Bug Fix Costs section is absent when bugs array is empty
+Dependencies: US-0029
 ```
 
 ---
@@ -570,6 +582,27 @@ Assignee: Agent
 Status: Done
 Branch: feature/US-0023-about-dialog
 Notes: About button in renderTopBar() wraps h1 in flex row; modal HTML injected before </body> in renderHtml(); openAbout/closeAbout/Escape JS in renderScripts(); data.version from package.json, data.buildNumber from git rev-list --count HEAD, data.githubUrl from config; version-bump.yml creates a chore/version-bump-* branch + auto-merge PR to develop on each PR merge; direct push to protected develop rejected by GH006 (fixed via auto-merge PR pattern)
+
+TASK-0027 (US-0030): Implement attributeBugCosts() and wire into generate-plan.js
+Type: Dev
+Assignee: Agent
+Status: Done
+Branch: feature/US-0030-bug-fix-costs-tab
+Notes: New function in compute-costs.js mirrors attributeAICosts() pattern; matches bug.fixBranch to costByBranch; result stored as costs._bugs in generate-plan.js
+
+TASK-0028 (US-0030): Render Bug Fix Costs section in renderCostsTab()
+Type: Dev
+Assignee: Agent
+Status: Done
+Branch: feature/US-0030-bug-fix-costs-tab
+Notes: Second table appended after closing </table> of story costs; only renders when data.bugs.length > 0; columns: Bug ID, Title, Severity, Status, Related Story, Fix Branch, AI Cost, Tokens
+
+TASK-0029 (US-0030): Add unit tests for attributeBugCosts()
+Type: Test
+Assignee: Agent
+Status: Done
+Branch: feature/US-0030-bug-fix-costs-tab
+Notes: 4 tests added to compute-costs.test.js; covers branch match, no branch, unmatched branch, empty array
 
 TASK-0021 (US-0023): Implement mobile-responsive CSS overrides and traceability legend collapse
 Type: Dev

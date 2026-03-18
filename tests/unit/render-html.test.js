@@ -56,7 +56,7 @@ describe('renderHtml — traceability tab', () => {
     const dataWithTCs = { ...sampleData, testCases: [{ id: 'TC-0001', relatedStory: 'US-0001', relatedAC: 'AC-0001', status: 'Pass', defect: 'None', title: 'Test', type: 'Functional' }] };
     const html = renderHtml(dataWithTCs);
     expect(html).toMatch(/TC-0001/);
-    expect(html).toMatch(/Legend/);
+    expect(html).toMatch(/Not linked/);
   });
 });
 

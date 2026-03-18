@@ -19,6 +19,11 @@ describe('parseBugs', () => {
   it('parses status', () => expect(result[0].status).toBe('Open'));
   it('parses fixBranch', () => expect(result[0].fixBranch).toBe('bugfix/BUG-0001-empty-file-crash'));
   it('parses lessonEncoded', () => expect(result[0].lessonEncoded).toBe('No'));
+  it('parses estimatedCostUsd', () => expect(result[0].estimatedCostUsd).toBeCloseTo(0.35));
+  it('returns 0 for estimatedCostUsd when field absent', () => {
+    const md = `BUG-0099: A bug\nSeverity: Low\nStatus: Open\nFix Branch:\nLesson Encoded: No\n`;
+    expect(parseBugs(md)[0].estimatedCostUsd).toBe(0);
+  });
 });
 
 describe('parseBugs — multiple bugs', () => {

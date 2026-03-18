@@ -140,7 +140,7 @@ function renderHierarchyTab(data) {
       <div class="story-row ml-6 border-l-2 border-slate-200 pl-4 py-2"
            data-epic="${story.epicId}" data-status="${story.status}" data-priority="${story.priority}">
         <div class="flex flex-wrap items-center gap-2 cursor-pointer" onclick="toggleACs('${story.id}')">
-          <span class="font-mono text-xs text-slate-500">${story.id}</span>
+          <span class="font-mono text-xs text-slate-500 whitespace-nowrap">${story.id}</span>
           ${badge(story.status)} ${badge(story.priority)}
           <span class="text-sm font-medium">${esc(story.title)}</span>
           ${riskBadge}
@@ -195,58 +195,56 @@ function renderTraceabilityTab(data) {
     'Fail': 'bg-red-100 text-red-800',
     'Not Run': 'bg-amber-50 text-amber-700',
   };
+  const passed = data.testCases.filter(tc => tc.status === 'Pass').length;
+  const failed = data.testCases.filter(tc => tc.status === 'Fail').length;
+  const notRun = data.testCases.filter(tc => tc.status === 'Not Run').length;
   const headers = data.testCases.map(tc => `<th class="text-xs font-mono p-2 border border-slate-200">${tc.id}</th>`).join('');
-  const rows = data.stories.map(story => {
-    const cells = data.testCases.map(tc => {
-      const linked = tc.relatedStory === story.id;
-      const cls = linked ? (tcStatusColor[tc.status] || 'bg-amber-50 text-amber-700') : 'bg-white';
-      return `<td class="p-2 border border-slate-200 text-center text-xs font-medium ${cls}">${linked ? tc.status.slice(0,1) : ''}</td>`;
+  const rows = data.epics.map(epic => {
+    const epicStories = data.stories.filter(s => s.epicId === epic.id);
+    if (!epicStories.length) return '';
+    const epicRowId = `trace-epic-${epic.id}`;
+    const epicHeader = `<tr class="bg-slate-100 cursor-pointer select-none"
+      onclick="(function(){var rows=document.querySelectorAll('[data-trace-epic=\\'${epic.id}\\']');var arr=document.getElementById('${epicRowId}-arrow');var collapsed=arr.textContent==='\\u25b6';rows.forEach(function(r){r.classList.toggle('hidden',!collapsed);});arr.textContent=collapsed?'\\u25bc':'\\u25b6';})()" >
+      <td colspan="${data.testCases.length + 1}" class="px-2 py-1 text-xs font-semibold text-blue-700">
+        <span id="${epicRowId}-arrow" class="mr-1 text-slate-400">&#9654;</span>
+        ${epic.id} \u2014 ${esc(epic.title)}
+      </td>
+    </tr>`;
+    const storyRows = epicStories.map(story => {
+      const cells = data.testCases.map(tc => {
+        const linked = tc.relatedStory === story.id;
+        const cls = linked ? (tcStatusColor[tc.status] || 'bg-amber-50 text-amber-700') : 'bg-white';
+        return `<td class="p-2 border border-slate-200 text-center text-xs font-medium ${cls}">${linked ? tc.status.slice(0,1) : ''}</td>`;
+      }).join('');
+      return `<tr class="hidden" data-trace-epic="${epic.id}">
+        <td class="text-xs font-mono px-2 py-1 border border-slate-200 whitespace-nowrap pl-6">${story.id}</td>
+        ${cells}
+      </tr>`;
     }).join('');
-    return `<tr><td class="text-xs font-mono px-2 py-1 border border-slate-200 whitespace-nowrap">${story.id}</td>${cells}</tr>`;
+    return epicHeader + storyRows;
   }).join('');
-  const passed  = data.testCases.filter(tc => tc.status === 'Pass').length;
-  const failed  = data.testCases.filter(tc => tc.status === 'Fail').length;
-  const notRun  = data.testCases.filter(tc => tc.status === 'Not Run').length;
   return `
   <div id="tab-traceability" class="p-6 hidden">
-    <div class="flex gap-6 items-start" id="trace-layout">
-      <div class="overflow-x-auto flex-1">
-        <table class="border-collapse text-sm">
-          <thead><tr><th class="p-2 border border-slate-200 text-xs">Story</th>${headers}</tr></thead>
-          <tbody>${rows}</tbody>
-        </table>
-      </div>
-      <div class="flex-shrink-0 bg-white border border-slate-200 rounded-lg p-4 w-44" id="trace-legend-panel">
-        <button onclick="(function(){var b=document.getElementById('trace-legend-body');var a=document.getElementById('trace-legend-arrow');var hidden=b.classList.toggle('hidden');a.textContent=hidden?'▶':'▼';})()" class="flex items-center justify-between w-full text-left">
-          <h4 class="text-xs font-semibold text-slate-600 uppercase">Legend</h4>
-          <span id="trace-legend-arrow" class="text-xs text-slate-400 ml-2">▼</span>
-        </button>
-        <div id="trace-legend-body" class="space-y-2 mt-3">
-          <div class="flex items-center gap-2">
-            <span class="w-8 h-6 rounded text-xs font-medium flex items-center justify-center bg-green-100 text-green-800">P</span>
-            <span class="text-xs text-slate-600">Pass</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <span class="w-8 h-6 rounded text-xs font-medium flex items-center justify-center bg-red-100 text-red-800">F</span>
-            <span class="text-xs text-slate-600">Fail</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <span class="w-8 h-6 rounded text-xs font-medium flex items-center justify-center bg-amber-50 text-amber-700">N</span>
-            <span class="text-xs text-slate-600">Not Run</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <span class="w-8 h-6 rounded border border-slate-200 bg-white"></span>
-            <span class="text-xs text-slate-400">Not linked</span>
-          </div>
-          <div class="mt-4 pt-3 border-t border-slate-100 space-y-1">
-            <p class="text-xs font-semibold text-slate-500 mb-1">Summary</p>
-            <p class="text-xs text-green-700">${passed} Pass</p>
-            <p class="text-xs text-red-700">${failed} Fail</p>
-            <p class="text-xs text-amber-700">${notRun} Not Run</p>
-            <p class="text-xs text-slate-500 border-t border-slate-100 pt-1 mt-1">${data.testCases.length} Total TCs</p>
-          </div>
-        </div>
-      </div>
+    <div class="flex flex-wrap items-center gap-4 mb-3 text-xs">
+      <span class="flex items-center gap-1">
+        <span class="w-7 h-5 rounded bg-green-100 text-green-800 flex items-center justify-center font-medium">P</span> Pass
+      </span>
+      <span class="flex items-center gap-1">
+        <span class="w-7 h-5 rounded bg-red-100 text-red-800 flex items-center justify-center font-medium">F</span> Fail
+      </span>
+      <span class="flex items-center gap-1">
+        <span class="w-7 h-5 rounded bg-amber-50 text-amber-700 flex items-center justify-center font-medium">N</span> Not Run
+      </span>
+      <span class="flex items-center gap-1">
+        <span class="w-7 h-5 rounded border border-slate-200 bg-white inline-block"></span> Not linked
+      </span>
+      <span class="text-slate-400 ml-2">${passed} Pass &middot; ${failed} Fail &middot; ${notRun} Not Run &middot; ${data.testCases.length} Total</span>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="border-collapse text-sm">
+        <thead><tr><th class="p-2 border border-slate-200 text-xs">Story</th>${headers}</tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
     </div>
   </div>`;
 }
@@ -377,7 +375,7 @@ function renderCostsTab(data) {
       const ai = data.costs[story.id] || {};
       const aiCost = ai.costUsd || 0;
       return `<tr class="border-t border-slate-100">
-        <td class="px-3 py-2 pl-8 font-mono text-xs text-slate-500">${story.id}</td>
+        <td class="px-3 py-2 pl-8 font-mono text-xs text-slate-500 whitespace-nowrap">${story.id}</td>
         <td class="px-3 py-2 text-sm">${esc(story.title)}</td>
         <td class="px-3 py-2 text-center">${badge(story.status)}</td>
         <td class="px-3 py-2 text-center text-sm">${story.estimate || '?'}</td>
@@ -401,6 +399,34 @@ function renderCostsTab(data) {
   }).join('');
   const t = data.costs._totals;
   const totalProjected = data.stories.reduce((s, st) => s + (data.costs[st.id] && data.costs[st.id].projectedUsd || 0), 0);
+  const bugCostsSection = data.bugs.length ? (() => {
+    const bugRows = data.bugs.map(bug => {
+      const bc = (data.costs._bugs && data.costs._bugs[bug.id]) || { costUsd: 0, inputTokens: 0, outputTokens: 0 };
+      return `<tr class="border-t border-slate-100">
+        <td class="px-3 py-2 font-mono text-xs text-slate-500 whitespace-nowrap">${esc(bug.id)}</td>
+        <td class="px-3 py-2 text-sm">${esc(bug.title)}</td>
+        <td class="px-3 py-2 text-center">${badge(bug.severity)}</td>
+        <td class="px-3 py-2 text-center">${badge(bug.status)}</td>
+        <td class="px-3 py-2 text-xs text-slate-500">${esc(bug.relatedStory || '—')}</td>
+        <td class="px-3 py-2 text-xs text-slate-400">${esc(bug.fixBranch || '—')}</td>
+        <td class="px-3 py-2 text-right text-sm text-teal-600">${bc.isEstimated ? `<span class="text-slate-400" title="Estimated — predates cost logging">~${usd(bc.costUsd)}</span>` : usd(bc.costUsd)}</td>
+        <td class="px-3 py-2 text-right text-xs text-slate-400 tokens-col">${fmtNum(bc.inputTokens)} / ${fmtNum(bc.outputTokens)}</td>
+      </tr>`;
+    }).join('');
+    return `
+    <h3 class="text-sm font-semibold text-slate-700 mt-6 mb-2">Bug Fix Costs</h3>
+    <table class="w-full text-left text-sm border-collapse">
+      <thead class="bg-slate-800 text-slate-200 text-xs uppercase">
+        <tr>
+          <th class="px-3 py-2">Bug</th><th class="px-3 py-2">Title</th><th class="px-3 py-2 text-center">Severity</th>
+          <th class="px-3 py-2 text-center">Status</th><th class="px-3 py-2">Story</th>
+          <th class="px-3 py-2">Fix Branch</th><th class="px-3 py-2 text-right">AI Cost</th>
+          <th class="px-3 py-2 text-right tokens-col">Tokens (in/out)</th>
+        </tr>
+      </thead>
+      <tbody>${bugRows}</tbody>
+    </table>`;
+  })() : '';
   return `
   <div id="tab-costs" class="p-6 hidden overflow-x-auto">
     <table class="w-full text-left text-sm border-collapse">
@@ -421,6 +447,7 @@ function renderCostsTab(data) {
         </tr>
       </tfoot>
     </table>
+    ${bugCostsSection}
   </div>`;
 }
 
@@ -430,7 +457,7 @@ function renderBugsTab(data) {
   }
   const rows = data.bugs.map(bug => `
   <tr class="bug-row border-t border-slate-100">
-    <td class="px-3 py-2 font-mono text-xs">${bug.id}</td>
+    <td class="px-3 py-2 font-mono text-xs whitespace-nowrap">${bug.id}</td>
     <td class="px-3 py-2 text-sm">${esc(bug.title)}</td>
     <td class="px-3 py-2 text-center">${badge(bug.severity)}</td>
     <td class="px-3 py-2 text-center">${badge(bug.status)}</td>
@@ -602,13 +629,6 @@ function renderScripts(data) {
     if (savedSearch) document.getElementById('f-search').value = savedSearch;
     applyFilters();
 
-    // Collapse traceability legend by default on mobile
-    if (window.innerWidth < 768) {
-      var body = document.getElementById('trace-legend-body');
-      var arrow = document.getElementById('trace-legend-arrow');
-      if (body) body.classList.add('hidden');
-      if (arrow) arrow.textContent = '▶';
-    }
   });
 
   function openAbout() {
@@ -666,8 +686,6 @@ function renderHtml(data) {
       #filter-bar select, #filter-bar input[type="text"] { padding: 2px 4px !important; font-size: 0.7rem !important; }
       #filter-bar button { font-size: 0.7rem !important; }
       #tab-bar button { padding: 5px 10px !important; font-size: 0.72rem !important; }
-      #trace-layout { flex-direction: column !important; }
-      #trace-legend-panel { order: -1; width: 100% !important; }
       .tokens-col { display: none !important; }
     }
   </style>
