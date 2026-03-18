@@ -334,7 +334,7 @@ function renderChartsTab(data) {
       data: { labels: ${epicLabels}, datasets: [
         { label: 'Done', data: ${epicDone}, backgroundColor: '#22c55e' },
         { label: 'In Progress', data: ${epicInProgress}, backgroundColor: '#3b82f6' },
-        { label: 'Planned/To Do', data: ${epicPlanned}, backgroundColor: '#e2e8f0' },
+        { label: 'Planned/To Do', data: ${epicPlanned}, backgroundColor: '#cbd5e1' },
       ]},
       options: { indexAxis: 'y', responsive: true, scales: { x: { stacked: true }, y: { stacked: true } } }
     });
@@ -354,7 +354,7 @@ function renderChartsTab(data) {
     });
     new Chart(document.getElementById('chart-coverage'), {
       type: 'doughnut',
-      data: { labels: ['Covered', 'Gap'], datasets: [{ data: [${coveragePct}, ${100 - parseFloat(coveragePct)}], backgroundColor: ['#22c55e','#e2e8f0'], borderWidth: 0 }] },
+      data: { labels: ['Covered', 'Gap'], datasets: [{ data: [${coveragePct}, ${100 - parseFloat(coveragePct)}], backgroundColor: ['#22c55e','#cbd5e1'], borderWidth: 0 }] },
       options: { cutout: '70%', plugins: { legend: { display: true, position: 'bottom' } } }
     });
     new Chart(document.getElementById('chart-ai-timeline'), {
@@ -671,29 +671,29 @@ function renderPrintCSS() {
   return `
   <style>
   /* === Dark mode fallbacks (guaranteed via .dark class regardless of Tailwind CDN recompile) === */
-  html.dark body { background-color: #0f172a; color: #f1f5f9; }
+  html.dark body { background-color: #0f172a; color: #cbd5e1; }
   html.dark #top-bar { background: linear-gradient(135deg, #001a4d 0%, #002d6e 55%, #003d8c 100%) !important; }
   html.dark #filter-bar { background-color: #1e293b !important; border-color: #334155 !important; }
-  html.dark #filter-bar select, html.dark #filter-bar input { background-color: #334155 !important; border-color: #475569 !important; color: #f1f5f9 !important; }
+  html.dark #filter-bar select, html.dark #filter-bar input { background-color: #334155 !important; border-color: #475569 !important; color: #cbd5e1 !important; }
   html.dark #filter-bar button { color: #94a3b8 !important; }
   html.dark #tab-bar { background-color: #1e293b !important; border-color: #334155 !important; }
   html.dark #tab-bar button { color: #94a3b8 !important; }
-  html.dark #tab-bar button.active { color: #f1f5f9 !important; border-color: #3b82f6 !important; }
+  html.dark #tab-bar button.active { color: #cbd5e1 !important; border-color: #3b82f6 !important; }
   html.dark .epic-block { border-color: #334155 !important; }
   html.dark .epic-block > div:first-child { background-color: #1e293b !important; }
-  html.dark .epic-block > div:first-child span { color: #f1f5f9 !important; }
-  html.dark .story-row { color: #e2e8f0; }
-  html.dark .story-row p { color: #f1f5f9 !important; }
-  html.dark #activity-panel { background-color: #1e293b !important; border-color: #334155 !important; color: #f1f5f9 !important; }
+  html.dark .epic-block > div:first-child span { color: #cbd5e1 !important; }
+  html.dark .story-row { color: #cbd5e1; }
+  html.dark .story-row p { color: #cbd5e1 !important; }
+  html.dark #activity-panel { background-color: #1e293b !important; border-color: #334155 !important; color: #cbd5e1 !important; }
   html.dark #activity-panel li { border-color: #334155 !important; }
   html.dark table thead { background-color: #1e293b !important; color: #cbd5e1 !important; }
   html.dark table tbody tr { border-color: #334155 !important; }
-  html.dark table tbody td { color: #e2e8f0; }
+  html.dark table tbody td { color: #cbd5e1; }
   html.dark .bg-white { background-color: #1e293b !important; }
   html.dark .border-slate-200 { border-color: #334155 !important; }
   html.dark .text-slate-700, html.dark .text-slate-600 { color: #cbd5e1 !important; }
   html.dark .text-slate-500 { color: #94a3b8 !important; }
-  html.dark h3 { color: #e2e8f0 !important; }
+  html.dark h3 { color: #cbd5e1 !important; }
   @media print {
     #filter-bar, #tab-bar, .fixed, .activity-panel { display: none !important; }
     body { padding-right: 0 !important; }
