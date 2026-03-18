@@ -54,7 +54,7 @@ Dependencies: None
 EPIC-0006: Dashboard UX & Quality Improvements
 Description: Mobile-responsive layout fixes, display accuracy improvements, navigation state persistence, and developer-experience enhancements for the generated dashboard.
 Release Target: Release 1.2
-Status: In Progress
+Status: Done
 Dependencies: EPIC-0002
 ```
 
@@ -573,14 +573,14 @@ Dependencies: US-0009, US-0013
 US-0031 (EPIC-0006): As a user, I want a dark/light mode toggle and improved visual readability, so that the dashboard is comfortable to use in any lighting condition and secondary text is clearly legible.
 Priority: Medium (P1)
 Estimate: S
-Status: In Progress
+Status: Done
 Branch: feature/dark-mode-readability
 Acceptance Criteria:
-  - [ ] AC-0086: A sun/moon toggle button appears in the top-bar header; clicking it switches between dark and light themes
-  - [ ] AC-0087: The chosen theme persists across page loads via localStorage; the system prefers-color-scheme is used as the default if no preference has been saved
-  - [ ] AC-0088: All secondary text on white/light backgrounds uses at minimum text-slate-500 (no near-invisible text-slate-400 on light backgrounds)
-  - [ ] AC-0089: The "Updated" timestamp in the top bar shows both the date and the time in UTC (e.g. "2026-03-18 21:00 UTC")
-  - [ ] AC-0090: Traceability epic rows are coloured red when any child story has a Fail TC, amber when any has a Not Run TC, and grey otherwise; a badge label is shown in the row
+  - [x] AC-0086: A sun/moon toggle button appears in the top-bar header; clicking it switches between dark and light themes
+  - [x] AC-0087: The chosen theme persists across page loads via localStorage; the system prefers-color-scheme is used as the default if no preference has been saved
+  - [x] AC-0088: All secondary text on white/light backgrounds uses at minimum text-slate-500 (no near-invisible text-slate-400 on light backgrounds)
+  - [x] AC-0089: The "Updated" timestamp in the top bar shows both the date and the time in UTC (e.g. "2026-03-18 21:00 UTC")
+  - [x] AC-0090: Traceability epic rows are coloured red when any child story has a Fail TC, amber when any has a Not Run TC, and grey otherwise; a badge label is shown in the row
 Dependencies: US-0009
 ```
 
@@ -655,7 +655,7 @@ Notes: "generate" script added to package.json; KNOWN_KEYS check in loadConfig()
 TASK-0030 (US-0031): Implement dark/light mode toggle, readability improvements, traceability epic row coloring, and header timestamp
 Type: Dev
 Assignee: Agent
-Status: In Progress
+Status: Done
 Branch: feature/dark-mode-readability
 Notes: tailwind.config={darkMode:'class'} + IIFE flash-prevention script in <head>; toggleTheme() in renderScripts(); dark: variants added to all tabs, filter bar, kanban, hierarchy, traceability, charts, costs, bugs, activity panel; text-slate-400 raised to text-slate-500 on light backgrounds; traceability epic rows compute hasFail/hasNotRun from child TCs; generatedAt.slice(11,16) appended to header date string
 ```
