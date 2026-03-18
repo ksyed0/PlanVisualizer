@@ -209,6 +209,18 @@ Acceptance Criteria:
   - [x] AC-0030: All config keys have sensible defaults — the tool runs with zero config
   - [x] AC-0031: User-supplied values deep-merge over defaults without clobbering unspecified keys
 Dependencies: None
+
+US-0029 (EPIC-0003): As a developer installing PlanVisualizer, I want the install script to update my AGENTS.md non-destructively, so that my existing agent operating standards are never overwritten or require manual merging.
+Priority: High (P0)
+Estimate: S
+Status: Done
+Branch: feature/docs-update-readme-update-prompt
+Acceptance Criteria:
+  - [x] AC-0078: plan_visualizer.md is copied to the target project root, containing exact format specs for all 5 source files
+  - [x] AC-0079: The install script appends a PlanVisualizer reference section to AGENTS.md rather than overwriting it
+  - [x] AC-0080: If AGENTS.md does not exist, a minimal one is created with the reference section
+  - [x] AC-0081: Re-running the install script does not duplicate the reference section (idempotent)
+Dependencies: US-0011
 ```
 
 ---

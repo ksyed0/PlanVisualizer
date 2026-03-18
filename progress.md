@@ -4,6 +4,22 @@ Running log of session activity, errors, test results, and blockers.
 
 ---
 
+## Session 9 — 2026-03-18
+
+### What Was Done
+- Created `plan_visualizer.md` at repo root — standalone format reference for all 5 source files (RELEASE_PLAN.md, TEST_CASES.md, BUGS.md, AI_COST_LOG.md, progress.md) with exact parser-derived format specs, ID_REGISTRY format, and config reference
+- Updated `scripts/install.sh`: removed interactive AGENTS.md overwrite/prompt block; replaced with step 2.5 (copy plan_visualizer.md) + step 2.6 (append mandatory reference to AGENTS.md — idempotent, non-destructive, creates minimal AGENTS.md if none exists)
+- Updated `README.md`: simplified prerequisites, updated Claude Code install prompt, rewrote Manual Setup step 1, expanded Updating section to clarify what is/isn't overwritten on re-install
+- Updated documentation files: PROMPT_LOG.md, progress.md, MIGRATION_LOG.md, LESSONS.md
+
+### Test Results
+- 138 tests pass. Coverage unchanged. No code logic was modified.
+
+### Errors or Blockers
+- None.
+
+---
+
 ## Session 8 — 2026-03-16
 
 ### What Was Done

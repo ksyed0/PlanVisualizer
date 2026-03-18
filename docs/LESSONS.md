@@ -123,6 +123,13 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
+## L-0019 — Separate format specifications from operating protocols in AGENTS.md
+**Rule:** Never bundle tool-specific document format requirements into the project's general `AGENTS.md`. Operating protocols (session startup, git workflow, testing standards) belong in `AGENTS.md`. Parser-level format requirements (what fields a specific tool expects, what regex a parser uses) belong in a dedicated format spec file (e.g., `plan_visualizer.md`). Reference the spec file from `AGENTS.md` with a single line. This makes installs non-destructive, keeps AGENTS.md portable, and ensures AI agents consult the correct source for format decisions.
+*Learned when the install script's AGENTS.md overwrite/prompt caused friction for users with existing agent standards. The solution — a standalone `plan_visualizer.md` auto-referenced from AGENTS.md — eliminated the conflict entirely.*
+**Date:** 2026-03-18
+
+---
+
 ## L-0017 — Place a panel's close button inside the panel, not outside it
 **Rule:** When a panel overlays part of the screen (e.g. `position:fixed; top:0; right:0; width:280px`), any close button positioned at the same coordinates outside the panel will be covered by the panel once it opens. Always place the close button as a child element inside the panel header so it is never obscured. For desktop-only toggle buttons outside the panel, verify the panel dimensions do not reach that coordinate.
 *Learned when BUG-0022 showed the `≡ Activity` toggle at `fixed top-4 right-4` was covered by the panel (`fixed top-0 right-0 width:280px`) after opening, making it impossible to close. Fixed by adding a `×` button inside the panel with `md:hidden`.*

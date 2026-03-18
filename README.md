@@ -12,7 +12,7 @@ No runtime dependencies — Node.js and git only.
 
 - Node.js 18+
 - git
-- A project with `RELEASE_PLAN.md`, `TEST_CASES.md`, and `AI_COST_LOG.md` (files can be empty to start)
+- A project with `package.json` (files can be empty to start — see `plan_visualizer.md` for required formats)
 
 ---
 
@@ -39,12 +39,9 @@ GitHub repo. Clone it to a temp directory, run scripts/install.sh targeting this
 project root, create plan-visualizer.config.json with the correct project name and
 file paths for this project, add the .claude/settings.json Stop hook for
 capture-cost.js, copy the .github/workflows/plan-visualizer.yml workflow, run
-npm test from the repo root to confirm all 9 suites pass, then commit all added
-files to the current branch. Also copy AGENTS.md from the repo root into this
-project root — if an AGENTS.md already exists, ask before overwriting; if
-declined, save it as AGENTS-new.md and tell the user to manually copy the key
-sections (especially the BLAST phases and §19 Dependency Management) into their
-existing AGENTS.md, then delete AGENTS-new.md.
+npm test from the repo root to confirm all suites pass, then commit all added
+files to the current branch. The install script will copy plan_visualizer.md into
+this project root and automatically update AGENTS.md with a reference to it.
 ```
 
 ---
@@ -102,7 +99,12 @@ The included `.github/workflows/plan-visualizer.yml` workflow triggers on pushes
 
 If you prefer not to use the install script:
 
-1. Copy `AGENTS.md` from the PlanVisualizer repo into your project root. If an `AGENTS.md` already exists and you choose not to overwrite it, save the PlanVisualizer version as `AGENTS-new.md` and manually merge the key sections (especially the BLAST phases and §19 Dependency Management) into your own `AGENTS.md`, then delete `AGENTS-new.md`.
+1. Copy `plan_visualizer.md` from the PlanVisualizer repo into your project root. Append the following to your `AGENTS.md` (or create one if absent):
+   ```
+   ## PlanVisualizer Format Requirements
+   Read plan_visualizer.md for the exact document formats required for RELEASE_PLAN.md,
+   TEST_CASES.md, BUGS.md, AI_COST_LOG.md, and progress.md.
+   ```
 2. Copy `tools/`, `tests/`, `jest.config.js` into your project root
 3. Add to your `package.json` scripts:
    ```json
@@ -133,6 +135,12 @@ bash /tmp/PlanVisualizer/scripts/install.sh
 rm -rf /tmp/PlanVisualizer
 ```
 
+The script is idempotent — it is safe to re-run at any time.
+
+**What gets overwritten on update:** `tools/`, `tests/`, `jest.config.js`, `plan_visualizer.md`, `.github/workflows/plan-visualizer.yml` — these are tool files managed by PlanVisualizer.
+
+**What is never overwritten:** `plan-visualizer.config.json` (your project config), `AGENTS.md` content (the script only appends; it will skip if the reference already exists).
+
 ### Update via Claude Code
 
 Paste this prompt directly into Claude Code in your target repo:
@@ -140,12 +148,9 @@ Paste this prompt directly into Claude Code in your target repo:
 ```
 Update the PlanVisualizer tool in this project from the ksyed0/PlanVisualizer
 GitHub repo. Clone it to a temp directory, run scripts/install.sh targeting this
-project root (your plan-visualizer.config.json will not be overwritten), run
-npm test from the repo root to confirm all suites pass, then commit all changed
-files to the current branch.
+project root, run npm test from the repo root to confirm all suites pass, then
+commit all changed files to the current branch.
 ```
-
-Your `plan-visualizer.config.json` is never overwritten.
 
 ---
 
