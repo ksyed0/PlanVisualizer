@@ -671,29 +671,29 @@ function renderPrintCSS() {
   return `
   <style>
   /* === Dark mode fallbacks (guaranteed via .dark class regardless of Tailwind CDN recompile) === */
-  html.dark body { background-color: #0f172a; color: #cbd5e1; }
+  html.dark body { background-color: #0f172a; color: #f1f5f9; }
   html.dark #top-bar { background: linear-gradient(135deg, #001a4d 0%, #002d6e 55%, #003d8c 100%) !important; }
   html.dark #filter-bar { background-color: #1e293b !important; border-color: #334155 !important; }
-  html.dark #filter-bar select, html.dark #filter-bar input { background-color: #334155 !important; border-color: #475569 !important; color: #cbd5e1 !important; }
+  html.dark #filter-bar select, html.dark #filter-bar input { background-color: #334155 !important; border-color: #475569 !important; color: #f1f5f9 !important; }
   html.dark #filter-bar button { color: #94a3b8 !important; }
   html.dark #tab-bar { background-color: #1e293b !important; border-color: #334155 !important; }
   html.dark #tab-bar button { color: #94a3b8 !important; }
-  html.dark #tab-bar button.active { color: #cbd5e1 !important; border-color: #3b82f6 !important; }
+  html.dark #tab-bar button.active { color: #f1f5f9 !important; border-color: #3b82f6 !important; }
   html.dark .epic-block { border-color: #334155 !important; }
   html.dark .epic-block > div:first-child { background-color: #1e293b !important; }
-  html.dark .epic-block > div:first-child span { color: #cbd5e1 !important; }
-  html.dark .story-row { color: #cbd5e1; }
-  html.dark .story-row p { color: #cbd5e1 !important; }
-  html.dark #activity-panel { background-color: #1e293b !important; border-color: #334155 !important; color: #cbd5e1 !important; }
+  html.dark .epic-block > div:first-child span { color: #f1f5f9 !important; }
+  html.dark .story-row { color: #e2e8f0; }
+  html.dark .story-row p { color: #f1f5f9 !important; }
+  html.dark #activity-panel { background-color: #1e293b !important; border-color: #334155 !important; color: #f1f5f9 !important; }
   html.dark #activity-panel li { border-color: #334155 !important; }
   html.dark table thead { background-color: #1e293b !important; color: #cbd5e1 !important; }
   html.dark table tbody tr { border-color: #334155 !important; }
-  html.dark table tbody td { color: #cbd5e1; }
+  html.dark table tbody td { color: #e2e8f0; }
   html.dark .bg-white { background-color: #1e293b !important; }
   html.dark .border-slate-200 { border-color: #334155 !important; }
   html.dark .text-slate-700, html.dark .text-slate-600 { color: #cbd5e1 !important; }
   html.dark .text-slate-500 { color: #94a3b8 !important; }
-  html.dark h3 { color: #cbd5e1 !important; }
+  html.dark h3 { color: #e2e8f0 !important; }
   @media print {
     #filter-bar, #tab-bar, .fixed, .activity-panel { display: none !important; }
     body { padding-right: 0 !important; }
@@ -716,6 +716,7 @@ function renderHtml(data) {
   <script>window.tailwind={config:{darkMode:'class'}}</script>
   <script>(function(){var t=localStorage.getItem('theme');if(t==='dark'||(t==null&&window.matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');}})()</script>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={darkMode:'class'}</script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
