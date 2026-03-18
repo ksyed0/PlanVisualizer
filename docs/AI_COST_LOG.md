@@ -64,3 +64,12 @@ Pricing basis: Claude Sonnet 4.6 — Input $3/MTok · Output $15/MTok · Cache R
 | 2026-03-18 | sess_0037-est | feature/US-0030-bug-fix-costs-tab | 95000 | 24000 | 48000 | 0.6555 |
 | 2026-03-18 | sess_0038-est | feature/US-0031-dashboard-ux-fixes | 160000 | 40000 | 80000 | 1.1040 |
 | 2026-03-18 | sess_0039-est | feature/US-0031-dashboard-ux-fixes | 130000 | 33000 | 65000 | 0.8985 |
+| 2026-03-18 | sess_bug0001-est | bugfix/BUG-0001-coverage-na | 116667 | 40000 | 166667 | 1.0000 |
+| 2026-03-18 | sess_bug0003-est | bugfix/BUG-0003-tc-statuses | 29167 | 10000 | 41667 | 0.2500 |
+| 2026-03-18 | sess_bug0004-est | bugfix/BUG-0004-sticky-header | 29167 | 10000 | 41667 | 0.2500 |
+| 2026-03-18 | sess_bug0005-est | bugfix/BUG-0005-xss-escape-html | 58333 | 20000 | 83333 | 0.5000 |
+| 2026-03-18 | sess_bug0006-est | bugfix/BUG-0006-0009-0010-render-html | 110833 | 38000 | 158333 | 0.9500 |
+| 2026-03-18 | sess_bug0007-est | bugfix/BUG-0007-0011-parser-fixes | 81667 | 28000 | 116667 | 0.7000 |
+| 2026-03-18 | sess_bug0008-est | bugfix/BUG-0008-0014-0015-0016-misc | 122500 | 42000 | 175000 | 1.0500 |
+| 2026-03-18 | sess_bug0012-est | bugfix/BUG-0012-0013-0017-ci-config-fixes | 105000 | 36000 | 150000 | 0.9000 |
+| 2026-03-18 | sess_bug0019-est | bugfix/BUG-0019-node24-actions | 29167 | 10000 | 41667 | 0.2500 |

@@ -392,7 +392,7 @@ function renderCostsTab(data) {
         <td class="px-3 py-2 text-center">${badge(story.status)}</td>
         <td class="px-3 py-2 text-center text-sm dark:text-slate-200">${story.estimate || '?'}</td>
         <td class="px-3 py-2 text-right text-sm dark:text-slate-200">${usd(projected)}</td>
-        <td class="px-3 py-2 text-right text-sm text-teal-600">${usd(aiCost)}</td>
+        <td class="px-3 py-2 text-right text-sm text-teal-700 dark:text-teal-400">${usd(aiCost)}</td>
         <td class="px-3 py-2 text-right text-xs text-slate-500 tokens-col">${fmtNum(ai.inputTokens || 0)} / ${fmtNum(ai.outputTokens || 0)}</td>
       </tr>`;
     }).join('');
@@ -404,7 +404,7 @@ function renderCostsTab(data) {
         <span class="ml-2">${badge(epic.status)}</span>
       </td>
       <td class="px-3 py-2 text-right text-sm font-medium dark:text-slate-200">${usd(epicProjected)}</td>
-      <td class="px-3 py-2 text-right text-sm font-medium text-teal-600">${usd(epicAI)}</td>
+      <td class="px-3 py-2 text-right text-sm font-medium text-teal-700 dark:text-teal-400">${usd(epicAI)}</td>
       <td class="px-3 py-2 text-right text-xs text-slate-500 tokens-col">${fmtNum(epicIn)} / ${fmtNum(epicOut)}</td>
     </tr>
     ${storyRows}`;
@@ -421,8 +421,8 @@ function renderCostsTab(data) {
         <td class="px-3 py-2 text-center">${badge(bug.status)}</td>
         <td class="px-3 py-2 text-xs text-slate-500">${esc(bug.relatedStory || '—')}</td>
         <td class="px-3 py-2 text-xs text-slate-500">${esc(bug.fixBranch || '—')}</td>
-        <td class="px-3 py-2 text-right text-sm text-teal-600">${bc.isEstimated ? `<span class="text-slate-400 italic" title="Estimated — predates cost logging">${usd(bc.costUsd)} est.</span>` : usd(bc.costUsd)}</td>
-        <td class="px-3 py-2 text-right text-xs text-slate-500 tokens-col">${fmtNum(bc.inputTokens)} / ${fmtNum(bc.outputTokens)}</td>
+        <td class="px-3 py-2 text-right text-sm text-teal-700 dark:text-teal-400">${bc.isEstimated ? `<span class="text-slate-400 italic" title="Estimated — predates cost logging">${usd(bc.costUsd)} est.</span>` : usd(bc.costUsd)}</td>
+        <td class="px-3 py-2 text-right text-xs text-slate-500 tokens-col">${bc.isEstimated ? '—' : `${fmtNum(bc.inputTokens)} / ${fmtNum(bc.outputTokens)}`}</td>
       </tr>`;
     }).join('');
     return `
@@ -454,7 +454,7 @@ function renderCostsTab(data) {
         <tr>
           <td colspan="4" class="px-3 py-2 text-right text-sm dark:text-slate-200">Totals</td>
           <td class="px-3 py-2 text-right text-sm dark:text-slate-200">${usd(totalProjected)}</td>
-          <td class="px-3 py-2 text-right text-sm text-teal-600">${usd(t.costUsd)}</td>
+          <td class="px-3 py-2 text-right text-sm text-teal-700 dark:text-teal-400">${usd(t.costUsd)}</td>
           <td class="px-3 py-2 text-right text-xs text-slate-500 tokens-col">${fmtNum(t.inputTokens)} / ${fmtNum(t.outputTokens)}</td>
         </tr>
       </tfoot>
@@ -475,7 +475,7 @@ function renderBugsTab(data) {
     <td class="px-3 py-2 text-center">${badge(bug.status)}</td>
     <td class="px-3 py-2 text-xs text-slate-500">${esc(bug.relatedStory)}</td>
     <td class="px-3 py-2 text-xs text-slate-500">${esc(bug.fixBranch || '—')}</td>
-    <td class="px-3 py-2 text-center text-xs dark:text-slate-200">${bug.lessonEncoded === 'Yes' ? '✓' : '○'}</td>
+    <td class="px-3 py-2 text-center text-xs dark:text-slate-200">${bug.lessonEncoded && bug.lessonEncoded.startsWith('Yes') ? '✓' : '○'}</td>
   </tr>`).join('');
   return `
   <div id="tab-bugs" class="p-6 hidden overflow-x-auto">
@@ -734,18 +734,18 @@ function renderHtml(data) {
   ${renderScripts(data)}
   <div id="aboutModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
     <div onclick="closeAbout()" class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
-    <div class="relative z-10 bg-slate-800 border border-slate-600 rounded-xl shadow-2xl w-full max-w-sm p-6 text-center">
-      <button onclick="closeAbout()" class="absolute top-3 right-4 text-slate-400 hover:text-white text-xl leading-none" aria-label="Close">&#x2715;</button>
-      <h2 class="text-2xl font-bold text-blue-400 mb-1">${esc(data.projectName)}</h2>
-      <p class="text-slate-400 text-sm mb-4">${esc(data.tagline)}</p>
+    <div class="relative z-10 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl shadow-2xl w-full max-w-sm p-6 text-center">
+      <button onclick="closeAbout()" class="absolute top-3 right-4 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white text-xl leading-none" aria-label="Close">&#x2715;</button>
+      <h2 class="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-1">${esc(data.projectName)}</h2>
+      <p class="text-slate-500 dark:text-slate-400 text-sm mb-4">${esc(data.tagline)}</p>
       <a href="${esc(data.githubUrl)}" target="_blank" rel="noopener noreferrer"
-         class="inline-flex items-center gap-1.5 text-blue-400 hover:text-blue-300 text-sm underline underline-offset-2 mb-5">
+         class="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-sm underline underline-offset-2 mb-5">
         GitHub Repository
       </a>
-      <div class="border-t border-slate-700 pt-4 text-slate-500 text-xs space-y-1.5">
-        <p>Version <span class="text-slate-300 font-mono">v${esc(data.version)}</span></p>
-        <p>Build <span class="text-slate-300 font-mono">#${esc(data.buildNumber)}</span>&nbsp;<code class="text-slate-600">${esc(data.commitSha)}</code></p>
-        <p>Updated <span class="text-slate-300">${data.generatedAt.slice(0,10)}</span></p>
+      <div class="border-t border-slate-200 dark:border-slate-700 pt-4 text-slate-500 text-xs space-y-1.5">
+        <p>Version <span class="text-slate-700 dark:text-slate-300 font-mono">v${esc(data.version)}</span></p>
+        <p>Build <span class="text-slate-700 dark:text-slate-300 font-mono">#${esc(data.buildNumber)}</span>&nbsp;<code class="text-slate-500 dark:text-slate-600">${esc(data.commitSha)}</code></p>
+        <p>Updated <span class="text-slate-700 dark:text-slate-300">${data.generatedAt.slice(0,10)}</span></p>
       </div>
       <p class="mt-5 text-slate-500 text-xs">Implemented by Kamal Syed, 2026</p>
     </div>

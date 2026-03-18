@@ -299,3 +299,31 @@ describe('renderHtml — coverage available false shows N/A (BUG-0010)', () => {
     expect(html).toMatch(/N\/A/);
   });
 });
+
+describe('renderHtml — lessonEncoded startsWith fix (BUG-0038)', () => {
+  it('renders ✓ for lessonEncoded starting with Yes', () => {
+    const d = { ...sampleData, bugs: [{ id: 'BUG-0001', title: 'Crash', severity: 'High', status: 'Fixed', relatedStory: 'US-0001', fixBranch: 'bugfix/BUG-0001', lessonEncoded: 'Yes — see docs/LESSONS.md' }] };
+    expect(renderHtml(d)).toContain('✓');
+  });
+  it('renders ○ for lessonEncoded No', () => {
+    const d = { ...sampleData, bugs: [{ id: 'BUG-0002', title: 'Other', severity: 'Low', status: 'Fixed', relatedStory: 'US-0001', fixBranch: '', lessonEncoded: 'No' }] };
+    expect(renderHtml(d)).toContain('○');
+  });
+});
+
+describe('renderHtml — bug token dash for estimated costs (BUG-0037)', () => {
+  it('shows — for token count when bug cost is estimated', () => {
+    const d = {
+      ...sampleData,
+      bugs: [{ id: 'BUG-0001', title: 'Crash', severity: 'High', status: 'Fixed', relatedStory: 'US-0001', fixBranch: '', lessonEncoded: 'No' }],
+      costs: { ...sampleData.costs, _bugs: { 'BUG-0001': { costUsd: 0.50, inputTokens: 0, outputTokens: 0, isEstimated: true } } },
+    };
+    expect(renderHtml(d)).toContain('—');
+  });
+});
+
+describe('renderHtml — AI cost column colour (BUG-0036)', () => {
+  it('uses text-teal-700 for AI cost cells', () => {
+    expect(renderHtml(sampleData)).toContain('text-teal-700');
+  });
+});
