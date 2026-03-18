@@ -1,7 +1,7 @@
 # PlanVisualizer — Technical Architecture
 
-**Version:** 1.2
-**Last Updated:** 2026-03-11
+**Version:** 1.3
+**Last Updated:** 2026-03-18
 
 ---
 
@@ -50,6 +50,11 @@ tests/
 scripts/
   install.sh              Idempotent bash installer for target projects
 
+plan_visualizer.md        Distributed format reference — exact parser-level format specs for all
+                          source files (RELEASE_PLAN.md, TEST_CASES.md, BUGS.md, AI_COST_LOG.md,
+                          progress.md). Copied to target projects by install.sh. Referenced from
+                          AGENTS.md so AI agents read it at session startup.
+
 .github/
   workflows/
     ci.yml                Lint + test + audit (all branches + PRs)
@@ -94,7 +99,7 @@ function parseXxx(markdown) { ... }
 ```
 
 **Key design decisions:**
-- **Regex, not a markdown parser.** No dependencies. Parsers target the specific format defined in AGENTS.md.
+- **Regex, not a markdown parser.** No dependencies. Parsers target the specific format defined in `plan_visualizer.md` (the canonical format reference distributed to target projects).
 - **Never throw.** Missing fields default to empty string or zero. The renderer handles absent data gracefully.
 - **Fenced code block extraction** (`parse-release-plan.js` only). Epic/story/task definitions must live inside triple-backtick fences to support narrative commentary outside the parseable content.
 - **Sliding window slicing** (`parse-bugs.js`, `parse-test-cases.js`). Each artefact block is extracted by finding the next artefact's start index and slicing the markdown between them.

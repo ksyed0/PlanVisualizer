@@ -5,7 +5,8 @@
 #   bash /path/to/PlanVisualizer/scripts/install.sh [TARGET_DIR]
 #
 # If TARGET_DIR is omitted the current directory is used.
-# Idempotent — safe to re-run for updates.
+# Idempotent for steps 1–4. Step 5 (.claude/settings.json) only creates the file
+# on first run; if it already exists, the Stop hook must be added manually.
 
 set -euo pipefail
 
@@ -32,27 +33,46 @@ if [ -f "${REPO_ROOT}/.github/workflows/plan-visualizer.yml" ]; then
   cp "${REPO_ROOT}/.github/workflows/plan-visualizer.yml" "${TARGET}/.github/workflows/plan-visualizer.yml"
 fi
 
-# ── 2.5. Copy AGENTS.md ─────────────────────────────────────────────────────
+# ── 2.5. Copy plan_visualizer.md ────────────────────────────────────────────
+if [ -f "${REPO_ROOT}/plan_visualizer.md" ]; then
+  echo "[install] Copying plan_visualizer.md ..."
+  cp "${REPO_ROOT}/plan_visualizer.md" "${TARGET}/plan_visualizer.md"
+  echo "[install] plan_visualizer.md copied."
+else
+  echo "[install] Warning: plan_visualizer.md not found in repo root — skipping."
+fi
+
+# ── 2.6. Inject PlanVisualizer reference into AGENTS.md ─────────────────────
 AGENTS_DEST="${TARGET}/AGENTS.md"
-AGENTS_NEW="${TARGET}/AGENTS-new.md"
+PV_MARKER="## PlanVisualizer Format Requirements"
 if [ -f "$AGENTS_DEST" ]; then
-  echo ""
-  echo "[install] Warning: AGENTS.md already exists at ${TARGET}/AGENTS.md."
-  echo "[install] It may contain your own agent operating standards."
-  read -r -p "[install] Overwrite with PlanVisualizer AGENTS.md? (y/N): " OVERWRITE
-  if [[ "$OVERWRITE" =~ ^[Yy]$ ]]; then
-    cp "${REPO_ROOT}/AGENTS.md" "$AGENTS_DEST"
-    echo "[install] AGENTS.md overwritten."
+  if grep -q "$PV_MARKER" "$AGENTS_DEST"; then
+    echo "[install] AGENTS.md already references plan_visualizer.md — skipping."
   else
-    cp "${REPO_ROOT}/AGENTS.md" "$AGENTS_NEW"
-    echo "[install] Skipping overwrite — PlanVisualizer AGENTS.md saved as AGENTS-new.md."
-    echo "[install] ACTION REQUIRED: Open AGENTS-new.md and copy the key sections"
-    echo "[install]   (especially the BLAST phases and §19 Dependency Management)"
-    echo "[install]   into your existing AGENTS.md, then delete AGENTS-new.md."
+    cat >> "$AGENTS_DEST" <<'MD'
+
+---
+
+## PlanVisualizer Format Requirements
+
+This project uses PlanVisualizer. Read **plan_visualizer.md** (in this project root) for the
+exact document formats required for RELEASE_PLAN.md, TEST_CASES.md, BUGS.md, AI_COST_LOG.md,
+and progress.md. Consult it whenever creating or updating any of these files.
+MD
+    echo "[install] Appended PlanVisualizer reference to AGENTS.md."
   fi
 else
-  cp "${REPO_ROOT}/AGENTS.md" "$AGENTS_DEST"
-  echo "[install] AGENTS.md copied."
+  echo "[install] No AGENTS.md found — creating one referencing plan_visualizer.md ..."
+  cat > "$AGENTS_DEST" <<'MD'
+# AGENTS.md
+
+## PlanVisualizer Format Requirements
+
+This project uses PlanVisualizer. Read **plan_visualizer.md** (in this project root) for the
+exact document formats required for RELEASE_PLAN.md, TEST_CASES.md, BUGS.md, AI_COST_LOG.md,
+and progress.md. Consult it whenever creating or updating any of these files.
+MD
+  echo "[install] Created AGENTS.md with PlanVisualizer reference."
 fi
 
 # ── 3. Merge npm scripts into target package.json ────────────────────────────
@@ -113,8 +133,7 @@ fi
 
 echo ""
 echo "[install] Done. Next steps:"
-echo "  1. Review AGENTS.md (or AGENTS-new.md if you kept your existing one) and merge any key sections."
-echo "  2. Edit plan-visualizer.config.json with your project name and file paths."
-echo "  3. Run: npm install   (to install jest dev dependency)"
-echo "  4. Run: npm run plan:test   (confirm all 9 suites pass)"
-echo "  5. Run: node tools/generate-plan.js   (generates docs/plan-status.html)"
+echo "  1. Edit plan-visualizer.config.json with your project name and file paths."
+echo "  2. Run: npm install   (to install jest dev dependency)"
+echo "  3. Run: npm run plan:test   (confirm all suites pass)"
+echo "  4. Run: node tools/generate-plan.js   (generates docs/plan-status.html)"

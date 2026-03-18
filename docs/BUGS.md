@@ -339,6 +339,83 @@ Status: Fixed
 Fix Branch: claude/fix-mobile-top-area-C7evU
 Lesson Encoded: No
 
+---
+
+BUG-0026: plan_visualizer.md config example shows wrong default coverage path
+Severity: High
+Related Story: US-0029
+Related Task: TASK-TBD
+Steps to Reproduce:
+  1. Install PlanVisualizer into a new project using install.sh
+  2. Copy the config example from plan_visualizer.md verbatim into plan-visualizer.config.json
+  3. Run node tools/generate-plan.js
+Expected: Coverage data appears in dashboard (summaryPath: "coverage/coverage-summary.json" as shown in spec)
+Actual: No coverage data rendered — generate-plan.js default is docs/coverage/coverage-summary.json; the spec example points to the wrong path
+Status: Fixed
+Fix Branch: feature/docs-update-readme-update-prompt
+Lesson Encoded: No
+
+---
+
+BUG-0027: install.sh idempotency guard matches any mention of "plan_visualizer.md" in AGENTS.md
+Severity: Medium
+Related Story: US-0029
+Related Task: TASK-TBD
+Steps to Reproduce:
+  1. Create an AGENTS.md that mentions "plan_visualizer.md" in prose (e.g. "do not edit plan_visualizer.md directly")
+  2. Run install.sh targeting that project
+Expected: PlanVisualizer reference section is appended to AGENTS.md
+Actual: grep -q "plan_visualizer.md" matches the prose; script prints "already references — skipping" and never injects the required section
+Status: Fixed
+Fix Branch: feature/docs-update-readme-update-prompt
+Lesson Encoded: No
+
+---
+
+BUG-0028: README Claude Code prompts instruct "npm test" instead of "npm run plan:test"
+Severity: Medium
+Related Story: US-0029
+Related Task: TASK-TBD
+Steps to Reproduce:
+  1. Use the Claude Code install or update prompt from README.md in a target project that has its own npm test script
+  2. Claude runs "npm test" as instructed
+Expected: PlanVisualizer's namespaced plan:test suite runs, confirming correct installation
+Actual: Target project's own test suite runs instead (or "Missing script: test" error) — does not confirm PlanVisualizer installed correctly
+Status: Fixed
+Fix Branch: feature/docs-update-readme-update-prompt
+Lesson Encoded: No
+
+---
+
+BUG-0029: install.sh step 2.5 has no existence guard on plan_visualizer.md source file
+Severity: Medium
+Related Story: US-0029
+Related Task: TASK-TBD
+Steps to Reproduce:
+  1. Clone PlanVisualizer at a commit before plan_visualizer.md was added (or use a shallow/partial checkout)
+  2. Run install.sh targeting any project
+Expected: Script gracefully skips or prints an actionable [install]-prefixed error message
+Actual: cp fails with raw "No such file or directory"; set -euo pipefail aborts the script at step 2.5 — npm scripts, config, and stop hook steps never run
+Status: Fixed
+Fix Branch: feature/docs-update-readme-update-prompt
+Lesson Encoded: No
+
+---
+
+BUG-0030: install.sh claims full idempotency but step 5 does not re-add stop hook on re-run
+Severity: Low
+Related Story: US-0029
+Related Task: TASK-TBD
+Steps to Reproduce:
+  1. Run install.sh — .claude/settings.json created with Stop hook
+  2. Manually remove the Stop hook from .claude/settings.json
+  3. Re-run install.sh to update
+Expected: Stop hook verified and restored (idempotent as stated in script header: "Idempotent — safe to re-run")
+Actual: Script sees .claude/settings.json exists, prints manual advisory, exits step 5 without verifying or restoring the hook
+Status: Fixed
+Fix Branch: feature/docs-update-readme-update-prompt
+Lesson Encoded: No
+
 <!-- When adding a bug, use this format:
 
 BUG-XXXX: Short description of the defect
