@@ -54,7 +54,7 @@ Dependencies: None
 EPIC-0006: Dashboard UX & Quality Improvements
 Description: Mobile-responsive layout fixes, display accuracy improvements, navigation state persistence, and developer-experience enhancements for the generated dashboard.
 Release Target: Release 1.2
-Status: Done
+Status: In Progress
 Dependencies: EPIC-0002
 ```
 
