@@ -44,6 +44,8 @@ function renderTopBar(data) {
   const covLabel = (cov.available !== false) ? `${cov.overall.toFixed(1)}%` : 'N/A';
   const covClass = (cov.available !== false) ? (cov.meetsTarget ? 'text-green-400' : 'text-red-400') : 'text-slate-500';
   const branchSubtitle = (cov.available !== false) ? `Branches: ${Number(cov.branches).toFixed(1)}%` : 'N/A';
+  const genAt = data.generatedAt;
+  const genDateStr = genAt.slice(0,10) + ' ' + genAt.slice(11,16) + ' UTC';
   return `
   <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white px-6 py-5 shadow-lg" id="top-bar">
     <div class="flex flex-wrap gap-4 items-start justify-between">
@@ -51,8 +53,9 @@ function renderTopBar(data) {
         <div class="flex items-center gap-3 flex-wrap">
           <h1 class="text-3xl font-bold text-blue-400 tracking-tight topbar-title">${esc(data.projectName)}</h1>
           <button onclick="openAbout()" class="text-xs text-slate-400 border border-slate-600 rounded px-2 py-0.5 hover:border-blue-400 hover:text-blue-400 transition-colors flex-shrink-0">About</button>
+          <button onclick="toggleTheme()" id="theme-toggle" class="text-xs text-slate-400 border border-slate-600 rounded px-2 py-0.5 hover:border-blue-400 hover:text-blue-400 transition-colors flex-shrink-0" aria-label="Toggle dark/light mode"><span id="theme-icon">☀</span></button>
         </div>
-        <p class="text-slate-400 text-sm mt-0.5 topbar-tagline">${esc(data.tagline)}&nbsp;·&nbsp;Updated ${data.generatedAt.slice(0,10)}&nbsp;·&nbsp;<code class="text-slate-500 text-xs">${data.commitSha}</code></p>
+        <p class="text-slate-400 text-sm mt-0.5 topbar-tagline">${esc(data.tagline)}&nbsp;·&nbsp;Updated ${genDateStr}&nbsp;·&nbsp;<code class="text-slate-500 text-xs">${data.commitSha}</code></p>
         <div class="mt-2.5 flex items-center gap-2 topbar-progress">
           <div class="bg-slate-700 rounded-full h-2 w-40 overflow-hidden">
             <div class="bg-blue-500 h-2 rounded-full" style="width:${pct}%"></div>
@@ -82,24 +85,24 @@ function renderFilterBar(data) {
   const epicOptions = data.epics.map(e =>
     `<option value="${esc(e.id)}">${esc(e.id)}: ${esc(e.title)}</option>`).join('');
   return `
-  <div class="bg-white border-b border-slate-200 px-6 py-3 flex flex-wrap gap-3 items-center" id="filter-bar">
-    <select id="f-epic" onchange="applyFilters()" class="border border-slate-300 rounded px-2 py-1 text-sm">
+  <div class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-3 flex flex-wrap gap-3 items-center" id="filter-bar">
+    <select id="f-epic" onchange="applyFilters()" class="border border-slate-300 dark:border-slate-600 rounded px-2 py-1 text-sm dark:bg-slate-700 dark:text-slate-100">
       <option value="">All Epics</option>${epicOptions}
     </select>
-    <select id="f-status" onchange="applyFilters()" class="border border-slate-300 rounded px-2 py-1 text-sm">
+    <select id="f-status" onchange="applyFilters()" class="border border-slate-300 dark:border-slate-600 rounded px-2 py-1 text-sm dark:bg-slate-700 dark:text-slate-100">
       <option value="">All Statuses</option>
       <option>In Progress</option><option>Planned</option><option>Done</option><option>Blocked</option>
     </select>
-    <select id="f-priority" onchange="applyFilters()" class="border border-slate-300 rounded px-2 py-1 text-sm">
+    <select id="f-priority" onchange="applyFilters()" class="border border-slate-300 dark:border-slate-600 rounded px-2 py-1 text-sm dark:bg-slate-700 dark:text-slate-100">
       <option value="">All Priorities</option>
       <option>P0</option><option>P1</option><option>P2</option>
     </select>
-    <select id="f-type" onchange="applyFilters()" class="border border-slate-300 rounded px-2 py-1 text-sm">
+    <select id="f-type" onchange="applyFilters()" class="border border-slate-300 dark:border-slate-600 rounded px-2 py-1 text-sm dark:bg-slate-700 dark:text-slate-100">
       <option value="">Stories + Bugs</option><option value="story">Stories only</option><option value="bug">Bugs only</option>
     </select>
     <input id="f-search" oninput="applyFilters()" type="text" placeholder="Search IDs, titles…"
-      class="border border-slate-300 rounded px-2 py-1 text-sm w-full sm:w-48" />
-    <button onclick="clearFilters()" class="text-sm text-slate-500 hover:text-slate-800 underline">Clear</button>
+      class="border border-slate-300 dark:border-slate-600 rounded px-2 py-1 text-sm w-full sm:w-48 dark:bg-slate-700 dark:text-slate-100 dark:placeholder-slate-400" />
+    <button onclick="clearFilters()" class="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 underline">Clear</button>
   </div>`;
 }
 
@@ -130,35 +133,35 @@ function renderHierarchyTab(data) {
       const acItems = story.acs.map(ac => {
         const linkedTC = tcs.find(tc => tc.relatedAC === ac.id);
         return `<li class="flex items-start gap-2 py-0.5">
-          <span class="${ac.done ? 'text-green-500' : 'text-slate-400'}">${ac.done ? '✓' : '○'}</span>
+          <span class="${ac.done ? 'text-green-500' : 'text-slate-500'}">${ac.done ? '✓' : '○'}</span>
           <span class="text-xs text-slate-500">${esc(ac.id)}</span>
           <span class="text-xs">${esc(ac.text)}</span>
-          ${linkedTC ? `<span class="ml-2 text-xs text-slate-400">→ ${linkedTC.id} ${badge(linkedTC.status)}</span>` : ''}
+          ${linkedTC ? `<span class="ml-2 text-xs text-slate-500">→ ${linkedTC.id} ${badge(linkedTC.status)}</span>` : ''}
         </li>`;
       }).join('');
       return `
-      <div class="story-row ml-6 border-l-2 border-slate-200 pl-4 py-2"
+      <div class="story-row ml-6 border-l-2 border-slate-200 dark:border-slate-600 pl-4 py-2"
            data-epic="${story.epicId}" data-status="${story.status}" data-priority="${story.priority}">
         <div class="flex flex-wrap items-center gap-2 cursor-pointer" onclick="toggleACs('${story.id}')">
           <span class="font-mono text-xs text-slate-500 whitespace-nowrap">${story.id}</span>
           ${badge(story.status)} ${badge(story.priority)}
           <span class="text-sm font-medium">${esc(story.title)}</span>
           ${riskBadge}
-          <span class="ml-auto text-xs text-slate-400">${story.estimate || '?'} · ${usd(data.costs[story.id] && data.costs[story.id].projectedUsd || 0)}</span>
+          <span class="ml-auto text-xs text-slate-500">${story.estimate || '?'} · ${usd(data.costs[story.id] && data.costs[story.id].projectedUsd || 0)}</span>
         </div>
-        <ul id="acs-${story.id}" class="mt-2 hidden">${acItems || '<li class="text-xs text-slate-400 pl-4">No ACs yet</li>'}</ul>
+        <ul id="acs-${story.id}" class="mt-2 hidden">${acItems || '<li class="text-xs text-slate-500 pl-4">No ACs yet</li>'}</ul>
       </div>`;
     }).join('');
     return `
-    <div class="epic-block mb-4 border border-slate-200 rounded-lg overflow-hidden">
-      <div class="bg-slate-50 px-4 py-3 flex flex-wrap items-center gap-3 cursor-pointer" onclick="toggleEpic('${epic.id}')">
+    <div class="epic-block mb-4 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+      <div class="bg-slate-50 dark:bg-slate-800 px-4 py-3 flex flex-wrap items-center gap-3 cursor-pointer" onclick="toggleEpic('${epic.id}')">
         <span class="font-mono text-sm font-bold text-blue-600">${epic.id}</span>
         ${badge(epic.status)}
-        <span class="font-semibold">${esc(epic.title)}</span>
-        <span class="text-xs text-slate-400">${esc(epic.releaseTarget)}</span>
+        <span class="font-semibold dark:text-slate-100">${esc(epic.title)}</span>
+        <span class="text-xs text-slate-500">${esc(epic.releaseTarget)}</span>
         <span class="ml-auto text-sm text-slate-500">${usd(epicProjected)} projected</span>
       </div>
-      <div id="epic-stories-${epic.id}">${storyBlocks || '<p class="text-slate-400 text-sm px-4 py-2">No stories yet.</p>'}</div>
+      <div id="epic-stories-${epic.id}">${storyBlocks || '<p class="text-slate-500 dark:text-slate-400 text-sm px-4 py-2">No stories yet.</p>'}</div>
     </div>`;
   }).join('');
   return `<div id="tab-hierarchy" class="p-6">${epicBlocks}</div>`;
@@ -173,13 +176,13 @@ function renderKanbanTab(data) {
     );
     return `
     <div class="flex-1 min-w-48">
-      <h3 class="text-sm font-semibold text-slate-600 mb-3 pb-1 border-b border-slate-200">${col} <span class="text-slate-400 font-normal">(${items.length})</span></h3>
+      <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3 pb-1 border-b border-slate-200 dark:border-slate-600">${col} <span class="text-slate-500 font-normal">(${items.length})</span></h3>
       ${items.map(s => `
-      <div class="story-row bg-white border border-slate-200 rounded p-3 mb-2 shadow-sm"
+      <div class="story-row bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded p-3 mb-2 shadow-sm"
            data-epic="${s.epicId}" data-status="${s.status}" data-priority="${s.priority}">
-        <div class="flex gap-1 mb-1">${badge(s.priority)} <span class="text-xs text-slate-400">${s.id}</span></div>
-        <p class="text-sm">${esc(s.title)}</p>
-        <p class="text-xs text-slate-400 mt-1">${s.epicId} · ${s.estimate || '?'}</p>
+        <div class="flex gap-1 mb-1">${badge(s.priority)} <span class="text-xs text-slate-500">${s.id}</span></div>
+        <p class="text-sm dark:text-slate-100">${esc(s.title)}</p>
+        <p class="text-xs text-slate-500 mt-1">${s.epicId} · ${s.estimate || '?'}</p>
       </div>`).join('')}
     </div>`;
   }).join('');
@@ -188,7 +191,7 @@ function renderKanbanTab(data) {
 
 function renderTraceabilityTab(data) {
   if (!data.testCases.length) {
-    return `<div id="tab-traceability" class="p-6 hidden"><p class="text-slate-400">No test cases yet.</p></div>`;
+    return `<div id="tab-traceability" class="p-6 hidden"><p class="text-slate-500">No test cases yet.</p></div>`;
   }
   const tcStatusColor = {
     'Pass': 'bg-green-100 text-green-800',
@@ -198,26 +201,35 @@ function renderTraceabilityTab(data) {
   const passed = data.testCases.filter(tc => tc.status === 'Pass').length;
   const failed = data.testCases.filter(tc => tc.status === 'Fail').length;
   const notRun = data.testCases.filter(tc => tc.status === 'Not Run').length;
-  const headers = data.testCases.map(tc => `<th class="text-xs font-mono p-2 border border-slate-200">${tc.id}</th>`).join('');
+  const headers = data.testCases.map(tc => `<th class="text-xs font-mono p-2 border border-slate-200 dark:border-slate-600">${tc.id}</th>`).join('');
   const rows = data.epics.map(epic => {
     const epicStories = data.stories.filter(s => s.epicId === epic.id);
     if (!epicStories.length) return '';
     const epicRowId = `trace-epic-${epic.id}`;
-    const epicHeader = `<tr class="bg-slate-100 cursor-pointer select-none"
+    const epicTCs = epicStories.flatMap(s => data.testCases.filter(tc => tc.relatedStory === s.id));
+    const hasFail = epicTCs.some(tc => tc.status === 'Fail');
+    const hasNotRun = !hasFail && epicTCs.some(tc => tc.status === 'Not Run');
+    const epicRowBg = hasFail ? 'bg-red-50 dark:bg-red-900/20' : hasNotRun ? 'bg-amber-50 dark:bg-amber-900/20' : 'bg-slate-100 dark:bg-slate-700';
+    const epicStatusBadge = hasFail
+      ? ' <span class="ml-2 inline-block px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">Fail</span>'
+      : hasNotRun
+      ? ' <span class="ml-2 inline-block px-1.5 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-700">Not Run</span>'
+      : '';
+    const epicHeader = `<tr class="${epicRowBg} cursor-pointer select-none"
       onclick="(function(){var rows=document.querySelectorAll('[data-trace-epic=\\'${epic.id}\\']');var arr=document.getElementById('${epicRowId}-arrow');var collapsed=arr.textContent==='\\u25b6';rows.forEach(function(r){r.classList.toggle('hidden',!collapsed);});arr.textContent=collapsed?'\\u25bc':'\\u25b6';})()" >
       <td colspan="${data.testCases.length + 1}" class="px-2 py-1 text-xs font-semibold text-blue-700">
         <span id="${epicRowId}-arrow" class="mr-1 text-slate-400">&#9654;</span>
-        ${epic.id} \u2014 ${esc(epic.title)}
+        ${epic.id} \u2014 ${esc(epic.title)}${epicStatusBadge}
       </td>
     </tr>`;
     const storyRows = epicStories.map(story => {
       const cells = data.testCases.map(tc => {
         const linked = tc.relatedStory === story.id;
-        const cls = linked ? (tcStatusColor[tc.status] || 'bg-amber-50 text-amber-700') : 'bg-white';
-        return `<td class="p-2 border border-slate-200 text-center text-xs font-medium ${cls}">${linked ? tc.status.slice(0,1) : ''}</td>`;
+        const cls = linked ? (tcStatusColor[tc.status] || 'bg-amber-50 text-amber-700') : 'bg-white dark:bg-slate-800';
+        return `<td class="p-2 border border-slate-200 dark:border-slate-600 text-center text-xs font-medium ${cls}">${linked ? tc.status.slice(0,1) : ''}</td>`;
       }).join('');
       return `<tr class="hidden" data-trace-epic="${epic.id}">
-        <td class="text-xs font-mono px-2 py-1 border border-slate-200 whitespace-nowrap pl-6">${story.id}</td>
+        <td class="text-xs font-mono px-2 py-1 border border-slate-200 dark:border-slate-600 whitespace-nowrap pl-6 dark:text-slate-200">${story.id}</td>
         ${cells}
       </tr>`;
     }).join('');
@@ -236,13 +248,13 @@ function renderTraceabilityTab(data) {
         <span class="w-7 h-5 rounded bg-amber-50 text-amber-700 flex items-center justify-center font-medium">N</span> Not Run
       </span>
       <span class="flex items-center gap-1">
-        <span class="w-7 h-5 rounded border border-slate-200 bg-white inline-block"></span> Not linked
+        <span class="w-7 h-5 rounded border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 inline-block"></span> Not linked
       </span>
-      <span class="text-slate-400 ml-2">${passed} Pass &middot; ${failed} Fail &middot; ${notRun} Not Run &middot; ${data.testCases.length} Total</span>
+      <span class="text-slate-500 ml-2">${passed} Pass &middot; ${failed} Fail &middot; ${notRun} Not Run &middot; ${data.testCases.length} Total</span>
     </div>
     <div class="overflow-x-auto">
       <table class="border-collapse text-sm">
-        <thead><tr><th class="p-2 border border-slate-200 text-xs">Story</th>${headers}</tr></thead>
+        <thead><tr><th class="p-2 border border-slate-200 dark:border-slate-600 text-xs dark:text-slate-300">Story</th>${headers}</tr></thead>
         <tbody>${rows}</tbody>
       </table>
     </div>
@@ -274,18 +286,18 @@ function renderChartsTab(data) {
   <div id="tab-charts" class="p-6 hidden">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-      <div class="bg-white border border-slate-200 rounded-lg p-4">
-        <h3 class="text-sm font-semibold text-slate-600 mb-3">Epic Progress</h3>
+      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+        <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Epic Progress</h3>
         <canvas id="chart-epic-progress" height="200"></canvas>
       </div>
 
-      <div class="bg-white border border-slate-200 rounded-lg p-4">
-        <h3 class="text-sm font-semibold text-slate-600 mb-3">Cost Breakdown (Projected vs AI)</h3>
+      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+        <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Cost Breakdown (Projected vs AI)</h3>
         <canvas id="chart-cost-breakdown" height="200"></canvas>
       </div>
 
-      <div class="bg-white border border-slate-200 rounded-lg p-4">
-        <h3 class="text-sm font-semibold text-slate-600 mb-3">Test Coverage</h3>
+      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+        <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Test Coverage</h3>
         <div class="relative">
           <canvas id="chart-coverage" height="200"></canvas>
           <div class="absolute inset-0 flex items-center justify-center pointer-events-none" style="padding-bottom:2.5rem">
@@ -297,18 +309,18 @@ function renderChartsTab(data) {
         </div>
       </div>
 
-      <div class="bg-white border border-slate-200 rounded-lg p-4">
-        <h3 class="text-sm font-semibold text-slate-600 mb-3">AI Cost Timeline</h3>
+      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+        <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">AI Cost Timeline</h3>
         <canvas id="chart-ai-timeline" height="200"></canvas>
       </div>
 
-      <div class="bg-white border border-slate-200 rounded-lg p-4">
-        <h3 class="text-sm font-semibold text-slate-600 mb-3">Story Status Distribution</h3>
+      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+        <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Story Status Distribution</h3>
         <canvas id="chart-burndown" height="200"></canvas>
       </div>
 
-      <div class="bg-white border border-slate-200 rounded-lg p-4">
-        <h3 class="text-sm font-semibold text-slate-600 mb-3">Budget Burn Rate</h3>
+      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+        <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Budget Burn Rate</h3>
         <canvas id="chart-burn-rate" height="200"></canvas>
       </div>
 
@@ -374,26 +386,26 @@ function renderCostsTab(data) {
       const projected = (data.costs[story.id] && data.costs[story.id].projectedUsd || 0);
       const ai = data.costs[story.id] || {};
       const aiCost = ai.costUsd || 0;
-      return `<tr class="border-t border-slate-100">
+      return `<tr class="border-t border-slate-100 dark:border-slate-700">
         <td class="px-3 py-2 pl-8 font-mono text-xs text-slate-500 whitespace-nowrap">${story.id}</td>
-        <td class="px-3 py-2 text-sm">${esc(story.title)}</td>
+        <td class="px-3 py-2 text-sm dark:text-slate-200">${esc(story.title)}</td>
         <td class="px-3 py-2 text-center">${badge(story.status)}</td>
-        <td class="px-3 py-2 text-center text-sm">${story.estimate || '?'}</td>
-        <td class="px-3 py-2 text-right text-sm">${usd(projected)}</td>
+        <td class="px-3 py-2 text-center text-sm dark:text-slate-200">${story.estimate || '?'}</td>
+        <td class="px-3 py-2 text-right text-sm dark:text-slate-200">${usd(projected)}</td>
         <td class="px-3 py-2 text-right text-sm text-teal-600">${usd(aiCost)}</td>
-        <td class="px-3 py-2 text-right text-xs text-slate-400 tokens-col">${fmtNum(ai.inputTokens || 0)} / ${fmtNum(ai.outputTokens || 0)}</td>
+        <td class="px-3 py-2 text-right text-xs text-slate-500 tokens-col">${fmtNum(ai.inputTokens || 0)} / ${fmtNum(ai.outputTokens || 0)}</td>
       </tr>`;
     }).join('');
     return `
-    <tr class="bg-slate-50 border-t-2 border-slate-300">
+    <tr class="bg-slate-50 dark:bg-slate-700 border-t-2 border-slate-300 dark:border-slate-600">
       <td colspan="4" class="px-3 py-2">
         <span class="font-mono text-xs font-bold text-blue-600">${epic.id}</span>
-        <span class="text-sm font-semibold ml-2 text-slate-700">${esc(epic.title)}</span>
+        <span class="text-sm font-semibold ml-2 text-slate-700 dark:text-slate-200">${esc(epic.title)}</span>
         <span class="ml-2">${badge(epic.status)}</span>
       </td>
-      <td class="px-3 py-2 text-right text-sm font-medium">${usd(epicProjected)}</td>
+      <td class="px-3 py-2 text-right text-sm font-medium dark:text-slate-200">${usd(epicProjected)}</td>
       <td class="px-3 py-2 text-right text-sm font-medium text-teal-600">${usd(epicAI)}</td>
-      <td class="px-3 py-2 text-right text-xs text-slate-400 tokens-col">${fmtNum(epicIn)} / ${fmtNum(epicOut)}</td>
+      <td class="px-3 py-2 text-right text-xs text-slate-500 tokens-col">${fmtNum(epicIn)} / ${fmtNum(epicOut)}</td>
     </tr>
     ${storyRows}`;
   }).join('');
@@ -402,19 +414,19 @@ function renderCostsTab(data) {
   const bugCostsSection = data.bugs.length ? (() => {
     const bugRows = data.bugs.map(bug => {
       const bc = (data.costs._bugs && data.costs._bugs[bug.id]) || { costUsd: 0, inputTokens: 0, outputTokens: 0 };
-      return `<tr class="border-t border-slate-100">
+      return `<tr class="border-t border-slate-100 dark:border-slate-700">
         <td class="px-3 py-2 font-mono text-xs text-slate-500 whitespace-nowrap">${esc(bug.id)}</td>
-        <td class="px-3 py-2 text-sm">${esc(bug.title)}</td>
+        <td class="px-3 py-2 text-sm dark:text-slate-200">${esc(bug.title)}</td>
         <td class="px-3 py-2 text-center">${badge(bug.severity)}</td>
         <td class="px-3 py-2 text-center">${badge(bug.status)}</td>
         <td class="px-3 py-2 text-xs text-slate-500">${esc(bug.relatedStory || '—')}</td>
-        <td class="px-3 py-2 text-xs text-slate-400">${esc(bug.fixBranch || '—')}</td>
+        <td class="px-3 py-2 text-xs text-slate-500">${esc(bug.fixBranch || '—')}</td>
         <td class="px-3 py-2 text-right text-sm text-teal-600">${bc.isEstimated ? `<span class="text-slate-400 italic" title="Estimated — predates cost logging">${usd(bc.costUsd)} est.</span>` : usd(bc.costUsd)}</td>
-        <td class="px-3 py-2 text-right text-xs text-slate-400 tokens-col">${fmtNum(bc.inputTokens)} / ${fmtNum(bc.outputTokens)}</td>
+        <td class="px-3 py-2 text-right text-xs text-slate-500 tokens-col">${fmtNum(bc.inputTokens)} / ${fmtNum(bc.outputTokens)}</td>
       </tr>`;
     }).join('');
     return `
-    <h3 class="text-sm font-semibold text-slate-700 mt-6 mb-2">Bug Fix Costs</h3>
+    <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mt-6 mb-2">Bug Fix Costs</h3>
     <table class="w-full text-left text-sm border-collapse">
       <thead class="bg-slate-800 text-slate-200 text-xs uppercase">
         <tr>
@@ -438,12 +450,12 @@ function renderCostsTab(data) {
         </tr>
       </thead>
       <tbody>${epicBlocks}</tbody>
-      <tfoot class="bg-slate-50 font-semibold border-t-2 border-slate-300">
+      <tfoot class="bg-slate-50 dark:bg-slate-700 font-semibold border-t-2 border-slate-300 dark:border-slate-600">
         <tr>
-          <td colspan="4" class="px-3 py-2 text-right text-sm">Totals</td>
-          <td class="px-3 py-2 text-right text-sm">${usd(totalProjected)}</td>
+          <td colspan="4" class="px-3 py-2 text-right text-sm dark:text-slate-200">Totals</td>
+          <td class="px-3 py-2 text-right text-sm dark:text-slate-200">${usd(totalProjected)}</td>
           <td class="px-3 py-2 text-right text-sm text-teal-600">${usd(t.costUsd)}</td>
-          <td class="px-3 py-2 text-right text-xs text-slate-400 tokens-col">${fmtNum(t.inputTokens)} / ${fmtNum(t.outputTokens)}</td>
+          <td class="px-3 py-2 text-right text-xs text-slate-500 tokens-col">${fmtNum(t.inputTokens)} / ${fmtNum(t.outputTokens)}</td>
         </tr>
       </tfoot>
     </table>
@@ -453,22 +465,22 @@ function renderCostsTab(data) {
 
 function renderBugsTab(data) {
   if (!data.bugs.length) {
-    return `<div id="tab-bugs" class="p-6 hidden"><p class="text-slate-400">No bugs logged yet.</p></div>`;
+    return `<div id="tab-bugs" class="p-6 hidden"><p class="text-slate-500">No bugs logged yet.</p></div>`;
   }
   const rows = data.bugs.map(bug => `
-  <tr class="bug-row border-t border-slate-100">
-    <td class="px-3 py-2 font-mono text-xs whitespace-nowrap">${bug.id}</td>
-    <td class="px-3 py-2 text-sm">${esc(bug.title)}</td>
+  <tr class="bug-row border-t border-slate-100 dark:border-slate-700">
+    <td class="px-3 py-2 font-mono text-xs whitespace-nowrap dark:text-slate-200">${bug.id}</td>
+    <td class="px-3 py-2 text-sm dark:text-slate-200">${esc(bug.title)}</td>
     <td class="px-3 py-2 text-center">${badge(bug.severity)}</td>
     <td class="px-3 py-2 text-center">${badge(bug.status)}</td>
     <td class="px-3 py-2 text-xs text-slate-500">${esc(bug.relatedStory)}</td>
-    <td class="px-3 py-2 text-xs text-slate-400">${esc(bug.fixBranch || '—')}</td>
-    <td class="px-3 py-2 text-center text-xs">${bug.lessonEncoded === 'Yes' ? '✓' : '○'}</td>
+    <td class="px-3 py-2 text-xs text-slate-500">${esc(bug.fixBranch || '—')}</td>
+    <td class="px-3 py-2 text-center text-xs dark:text-slate-200">${bug.lessonEncoded === 'Yes' ? '✓' : '○'}</td>
   </tr>`).join('');
   return `
   <div id="tab-bugs" class="p-6 hidden overflow-x-auto">
     <table class="w-full text-left text-sm border-collapse">
-      <thead class="bg-slate-50 text-slate-600 text-xs uppercase">
+      <thead class="bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs uppercase">
         <tr>
           <th class="px-3 py-2">ID</th><th class="px-3 py-2">Title</th><th class="px-3 py-2 text-center">Severity</th>
           <th class="px-3 py-2 text-center">Status</th><th class="px-3 py-2">Story</th>
@@ -483,16 +495,16 @@ function renderBugsTab(data) {
 function renderRecentActivity(data) {
   if (!data.recentActivity.length) return '';
   const items = data.recentActivity.map(a =>
-    `<li class="py-2 border-b border-slate-100 last:border-0">
-      <span class="text-xs text-slate-400 block">${a.date}</span>
-      <span class="text-sm text-slate-700">${esc(a.summary)}</span>
+    `<li class="py-2 border-b border-slate-100 dark:border-slate-700 last:border-0">
+      <span class="text-xs text-slate-500 block">${a.date}</span>
+      <span class="text-sm text-slate-700 dark:text-slate-200">${esc(a.summary)}</span>
     </li>`
   ).join('');
   return `
-  <button id="activity-toggle" class="fixed top-4 right-4 z-50 block md:hidden bg-white shadow rounded px-3 py-2 text-sm font-medium text-slate-700" onclick="var p=document.getElementById('activity-panel'); p.classList.toggle('hidden');">&#8801; Activity</button>
-  <div id="activity-panel" class="activity-panel fixed top-0 right-0 h-screen bg-white border-l border-slate-200 shadow-lg flex flex-col hidden md:flex" style="width:280px;z-index:50;transition:width 0.25s ease">
-    <div id="activity-expanded" class="flex items-center justify-between px-4 py-3 border-b border-slate-200 flex-shrink-0">
-      <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Recent Activity</h4>
+  <button id="activity-toggle" class="fixed top-4 right-4 z-50 block md:hidden bg-white dark:bg-slate-800 shadow rounded px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-200" onclick="var p=document.getElementById('activity-panel'); p.classList.toggle('hidden');">&#8801; Activity</button>
+  <div id="activity-panel" class="activity-panel fixed top-0 right-0 h-screen bg-white dark:bg-slate-800 border-l border-slate-200 dark:border-slate-700 shadow-lg flex flex-col hidden md:flex" style="width:280px;z-index:50;transition:width 0.25s ease">
+    <div id="activity-expanded" class="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
+      <h4 class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Recent Activity</h4>
       <div class="flex items-center gap-2">
         <button onclick="document.getElementById('activity-panel').classList.add('hidden')" class="md:hidden text-slate-400 hover:text-slate-700 leading-none px-1 text-base" title="Close" aria-label="Close activity panel">&times;</button>
         <button onclick="toggleActivityPanel()" class="hidden md:block text-slate-400 hover:text-slate-700 leading-none px-1" title="Collapse" aria-label="Collapse activity panel">&#9664;</button>
@@ -613,6 +625,9 @@ function renderScripts(data) {
   }
 
   document.addEventListener('DOMContentLoaded', function() {
+    var icon = document.getElementById('theme-icon');
+    if (icon) icon.textContent = document.documentElement.classList.contains('dark') ? '\u2600' : '\u263e';
+
     initActivityPanel();
 
     // Restore active tab from URL hash or localStorage
@@ -630,6 +645,14 @@ function renderScripts(data) {
     applyFilters();
 
   });
+
+  function toggleTheme() {
+    var html = document.documentElement;
+    var isDark = html.classList.toggle('dark');
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    var icon = document.getElementById('theme-icon');
+    if (icon) icon.textContent = isDark ? '\u2600' : '\u263e';
+  }
 
   function openAbout() {
     document.getElementById('aboutModal').classList.remove('hidden');
@@ -665,6 +688,8 @@ function renderHtml(data) {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${esc(data.projectName)} — Plan Status</title>
+  <script>tailwind.config={darkMode:'class'}</script>
+  <script>(function(){var t=localStorage.getItem('theme');if(t==='dark'||(t==null&&window.matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');}})()</script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -691,7 +716,7 @@ function renderHtml(data) {
   </style>
   ${renderPrintCSS()}
 </head>
-<body class="bg-slate-50 min-h-screen">
+<body class="bg-slate-50 dark:bg-slate-900 min-h-screen">
   <div class="sticky top-0 z-30">
     ${renderTopBar(data)}
     ${renderFilterBar(data)}
