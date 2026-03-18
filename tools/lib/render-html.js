@@ -401,6 +401,34 @@ function renderCostsTab(data) {
   }).join('');
   const t = data.costs._totals;
   const totalProjected = data.stories.reduce((s, st) => s + (data.costs[st.id] && data.costs[st.id].projectedUsd || 0), 0);
+  const bugCostsSection = data.bugs.length ? (() => {
+    const bugRows = data.bugs.map(bug => {
+      const bc = (data.costs._bugs && data.costs._bugs[bug.id]) || { costUsd: 0, inputTokens: 0, outputTokens: 0 };
+      return `<tr class="border-t border-slate-100">
+        <td class="px-3 py-2 font-mono text-xs text-slate-500">${esc(bug.id)}</td>
+        <td class="px-3 py-2 text-sm">${esc(bug.title)}</td>
+        <td class="px-3 py-2 text-center">${badge(bug.severity)}</td>
+        <td class="px-3 py-2 text-center">${badge(bug.status)}</td>
+        <td class="px-3 py-2 text-xs text-slate-500">${esc(bug.relatedStory || '—')}</td>
+        <td class="px-3 py-2 text-xs text-slate-400">${esc(bug.fixBranch || '—')}</td>
+        <td class="px-3 py-2 text-right text-sm text-teal-600">${usd(bc.costUsd)}</td>
+        <td class="px-3 py-2 text-right text-xs text-slate-400 tokens-col">${fmtNum(bc.inputTokens)} / ${fmtNum(bc.outputTokens)}</td>
+      </tr>`;
+    }).join('');
+    return `
+    <h3 class="text-sm font-semibold text-slate-700 mt-6 mb-2">Bug Fix Costs</h3>
+    <table class="w-full text-left text-sm border-collapse">
+      <thead class="bg-slate-800 text-slate-200 text-xs uppercase">
+        <tr>
+          <th class="px-3 py-2">Bug</th><th class="px-3 py-2">Title</th><th class="px-3 py-2 text-center">Severity</th>
+          <th class="px-3 py-2 text-center">Status</th><th class="px-3 py-2">Story</th>
+          <th class="px-3 py-2">Fix Branch</th><th class="px-3 py-2 text-right">AI Cost</th>
+          <th class="px-3 py-2 text-right tokens-col">Tokens (in/out)</th>
+        </tr>
+      </thead>
+      <tbody>${bugRows}</tbody>
+    </table>`;
+  })() : '';
   return `
   <div id="tab-costs" class="p-6 hidden overflow-x-auto">
     <table class="w-full text-left text-sm border-collapse">
@@ -421,6 +449,7 @@ function renderCostsTab(data) {
         </tr>
       </tfoot>
     </table>
+    ${bugCostsSection}
   </div>`;
 }
 

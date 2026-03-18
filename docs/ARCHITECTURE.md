@@ -1,6 +1,6 @@
 # PlanVisualizer — Technical Architecture
 
-**Version:** 1.3
+**Version:** 1.4
 **Last Updated:** 2026-03-18
 
 ---
@@ -119,7 +119,7 @@ function parseXxx(markdown) { ... }
 | `renderKanbanTab(data)` | 5-column kanban board |
 | `renderTraceabilityTab(data)` | Story × TC matrix |
 | `renderChartsTab(data)` | 6 Chart.js canvases + inline `<script>` |
-| `renderCostsTab(data)` | Per-story cost table with totals |
+| `renderCostsTab(data)` | Per-story cost table with totals + Bug Fix Costs sub-table |
 | `renderBugsTab(data)` | Bug register table |
 | `renderRecentActivity(data)` | Floating activity panel |
 | `renderScripts(data)` | Tab switching + filter logic |
@@ -158,6 +158,7 @@ The `plan-visualizer.config.json` is gitignored by default so target projects ke
 1. `parseCostLog()` parses all rows from the log.
 2. `aggregateCostByBranch()` sums tokens and cost per branch name.
 3. `attributeAICosts()` matches `story.branch` to the aggregated branch map — returning `{ costUsd, inputTokens, outputTokens, sessions }` per story, and `_totals` across all branches.
+4. `attributeBugCosts()` matches `bug.fixBranch` to the same branch map — returning `{ costUsd, inputTokens, outputTokens }` per bug; stored as `costs._bugs` in `generate-plan.js`. The `_totals` row already includes bug fix branch costs since it sums all branches.
 
 ---
 

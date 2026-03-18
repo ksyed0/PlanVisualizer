@@ -27,4 +27,15 @@ function attributeAICosts(stories, costByBranch) {
   return result;
 }
 
-module.exports = { computeProjectedCost, attributeAICosts };
+function attributeBugCosts(bugs, costByBranch) {
+  const result = {};
+  for (const bug of bugs) {
+    const match = bug.fixBranch ? costByBranch[bug.fixBranch] : null;
+    result[bug.id] = match
+      ? { costUsd: match.costUsd, inputTokens: match.inputTokens, outputTokens: match.outputTokens }
+      : { costUsd: 0, inputTokens: 0, outputTokens: 0 };
+  }
+  return result;
+}
+
+module.exports = { computeProjectedCost, attributeAICosts, attributeBugCosts };
