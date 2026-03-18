@@ -586,15 +586,15 @@ Dependencies: US-0009
 US-0032 (EPIC-0006): As a team member, I want to browse and cross-reference hard-won lessons in the dashboard, so that institutional knowledge is immediately accessible without navigating raw markdown files.
 Priority: Medium (P2)
 Estimate: S
-Status: In Progress
+Status: Done
 Branch: feature/US-0032-lessons-tab
 Acceptance Criteria:
-  - [ ] AC-0091: A Lessons tab appears in the tab bar after the Bugs tab
-  - [ ] AC-0092: Column view renders all lessons with ID, Rule, Context, Date, and Bug Ref columns
-  - [ ] AC-0093: Card view renders the same data in a card-per-lesson grid layout
-  - [ ] AC-0094: A toggle switches between column and card view; preference persists in localStorage
-  - [ ] AC-0095: Bug Ref cells in the Lessons tab link to the referencing bug row on the Bugs tab
-  - [ ] AC-0096: Lesson column on Bugs tab shows ✓ L-XXXX ↗ as a clickable link when a lesson ID is present
+  - [x] AC-0091: A Lessons tab appears in the tab bar after the Bugs tab
+  - [x] AC-0092: Column view renders all lessons with ID, Rule, Context, Date, and Bug Ref columns
+  - [x] AC-0093: Card view renders the same data in a card-per-lesson grid layout
+  - [x] AC-0094: A toggle switches between column and card view; preference persists in localStorage
+  - [x] AC-0095: Bug Ref cells in the Lessons tab link to the referencing bug row on the Bugs tab
+  - [x] AC-0096: Lesson column on Bugs tab shows ✓ L-XXXX ↗ as a clickable link when a lesson ID is present
 Dependencies: US-0009
 ```
 
