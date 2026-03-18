@@ -661,7 +661,7 @@ function renderScripts(data) {
   <script>
   const ALL_DATA = ${allData};
 
-  const VALID_TABS = ['hierarchy','kanban','traceability','charts','costs','bugs'];
+  const VALID_TABS = ['hierarchy','kanban','traceability','charts','costs','bugs','lessons'];
 
   function showTab(name) {
     VALID_TABS.forEach(t => {
