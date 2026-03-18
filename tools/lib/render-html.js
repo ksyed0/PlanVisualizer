@@ -195,9 +195,9 @@ function renderTraceabilityTab(data) {
     return `<div id="tab-traceability" class="p-6 hidden"><p class="text-slate-500">No test cases yet.</p></div>`;
   }
   const tcStatusColor = {
-    'Pass': 'bg-green-100 text-green-800',
-    'Fail': 'bg-red-100 text-red-800',
-    'Not Run': 'bg-amber-50 text-amber-700',
+    'Pass':    'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300',
+    'Fail':    'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300',
+    'Not Run': 'bg-amber-50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
   };
   const passed = data.testCases.filter(tc => tc.status === 'Pass').length;
   const failed = data.testCases.filter(tc => tc.status === 'Fail').length;
@@ -218,7 +218,7 @@ function renderTraceabilityTab(data) {
       : '';
     const epicHeader = `<tr class="${epicRowBg} cursor-pointer select-none"
       onclick="(function(){var rows=document.querySelectorAll('[data-trace-epic=\\'${epic.id}\\']');var arr=document.getElementById('${epicRowId}-arrow');var collapsed=arr.textContent==='\\u25b6';rows.forEach(function(r){r.classList.toggle('hidden',!collapsed);});arr.textContent=collapsed?'\\u25bc':'\\u25b6';})()" >
-      <td colspan="${data.testCases.length + 1}" class="px-2 py-1 text-xs font-semibold text-blue-700">
+      <td colspan="${data.testCases.length + 1}" class="px-2 py-1 text-xs font-semibold text-blue-700 dark:text-blue-400">
         <span id="${epicRowId}-arrow" class="mr-1 text-slate-400">&#9654;</span>
         ${epic.id} \u2014 ${esc(epic.title)}${epicStatusBadge}
       </td>
@@ -299,12 +299,12 @@ function renderChartsTab(data) {
 
       <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Test Coverage</h3>
-        <div class="relative">
-          <canvas id="chart-coverage" height="200"></canvas>
+        <div class="relative" style="height:220px">
+          <canvas id="chart-coverage"></canvas>
           <div class="absolute inset-0 flex items-center justify-center pointer-events-none" style="padding-bottom:2.5rem">
             <div class="text-center">
-              <div class="text-2xl font-bold text-slate-700">${coveragePct}%</div>
-              <div class="text-xs text-slate-500">overall</div>
+              <div class="text-2xl font-bold text-slate-700 dark:text-slate-200">${coveragePct}%</div>
+              <div class="text-xs text-slate-500 dark:text-slate-400">overall</div>
             </div>
           </div>
         </div>
@@ -317,7 +317,9 @@ function renderChartsTab(data) {
 
       <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Story Status Distribution</h3>
-        <canvas id="chart-burndown" height="200"></canvas>
+        <div style="height:220px">
+          <canvas id="chart-burndown"></canvas>
+        </div>
       </div>
 
       <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
@@ -330,7 +332,7 @@ function renderChartsTab(data) {
   <script>
   var _charts = {};
   function chartTextColor() {
-    return document.documentElement.classList.contains('dark') ? '#94a3b8' : '#475569';
+    return getComputedStyle(document.documentElement).getPropertyValue('--clr-chart-text').trim() || '#475569';
   }
   function initCharts() {
     var tc = chartTextColor();
@@ -364,7 +366,7 @@ function renderChartsTab(data) {
     _charts.coverage = new Chart(document.getElementById('chart-coverage'), {
       type: 'doughnut',
       data: { labels: ['Covered', 'Gap'], datasets: [{ data: [${coveragePct}, ${100 - parseFloat(coveragePct)}], backgroundColor: ['#22c55e','#cbd5e1'], borderWidth: 0 }] },
-      options: { cutout: '70%', plugins: { legend: { display: true, position: 'bottom', labels: { color: tc } } } }
+      options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: true, position: 'bottom', labels: { color: tc } } } }
     });
     _charts.aiTimeline = new Chart(document.getElementById('chart-ai-timeline'), {
       type: 'line',
@@ -374,7 +376,7 @@ function renderChartsTab(data) {
     _charts.burndown = new Chart(document.getElementById('chart-burndown'), {
       type: 'doughnut',
       data: { labels: ['Done','In Progress','Planned','To Do','Blocked'], datasets: [{ data: ${statusCounts}, backgroundColor: ['#22c55e','#3b82f6','#94a3b8','#f59e0b','#ef4444'], borderWidth: 1 }] },
-      options: { plugins: { legend: { display: true, position: 'bottom', labels: { color: tc } } } }
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { color: tc } } } }
     });
     _charts.burnRate = new Chart(document.getElementById('chart-burn-rate'), {
       type: 'bar',
@@ -820,36 +822,68 @@ function renderScripts(data) {
 function renderPrintCSS() {
   return `
   <style>
+  /* === Theme tokens — all colours flow from here === */
+  :root {
+    --clr-body-bg:       #ffffff;
+    --clr-panel-bg:      #ffffff;
+    --clr-surface-raised:#e2e8f0;   /* slate-200 */
+    --clr-border:        #e2e8f0;
+    --clr-border-mid:    #cbd5e1;   /* slate-300 */
+    --clr-text-primary:  #1e293b;   /* slate-800 */
+    --clr-text-secondary:#475569;   /* slate-600 */
+    --clr-text-muted:    #64748b;   /* slate-500 */
+    --clr-header-bg:     #e2e8f0;
+    --clr-header-text:   #374151;   /* gray-700 */
+    --clr-input-bg:      #ffffff;
+    --clr-input-border:  #d1d5db;   /* gray-300 */
+    --clr-input-text:    #1e293b;
+    --clr-chart-text:    #475569;
+    --clr-accent:        #3b82f6;   /* blue-500 */
+  }
+  html.dark {
+    --clr-body-bg:       #0f172a;   /* slate-900 */
+    --clr-panel-bg:      #1e293b;   /* slate-800 */
+    --clr-surface-raised:#334155;   /* slate-700 */
+    --clr-border:        #334155;
+    --clr-border-mid:    #475569;   /* slate-600 */
+    --clr-text-primary:  #cbd5e1;   /* slate-300 */
+    --clr-text-secondary:#cbd5e1;
+    --clr-text-muted:    #94a3b8;   /* slate-400 */
+    --clr-header-bg:     #334155;
+    --clr-header-text:   #e2e8f0;   /* slate-200 */
+    --clr-input-bg:      #334155;
+    --clr-input-border:  #475569;
+    --clr-input-text:    #cbd5e1;
+    --clr-chart-text:    #94a3b8;
+    --clr-accent:        #3b82f6;
+  }
   /* === Dark mode fallbacks (guaranteed via .dark class regardless of Tailwind CDN recompile) === */
-  html.dark body { background-color: #0f172a; color: #cbd5e1; }
+  html.dark body { background-color: var(--clr-body-bg); color: var(--clr-text-primary); }
   html.dark #top-bar { background: linear-gradient(135deg, #001a4d 0%, #002d6e 55%, #003d8c 100%) !important; }
-  html.dark #filter-bar { background-color: #1e293b !important; border-color: #334155 !important; }
-  html.dark #filter-bar select, html.dark #filter-bar input { background-color: #334155 !important; border-color: #475569 !important; color: #cbd5e1 !important; }
-  html.dark #filter-bar button { color: #94a3b8 !important; }
-  html.dark #tab-bar { background-color: #1e293b !important; border-color: #334155 !important; }
-  html.dark #tab-bar button { color: #94a3b8 !important; }
-  html.dark #tab-bar button.active { color: #cbd5e1 !important; border-color: #3b82f6 !important; }
-  html.dark .epic-block { border-color: #334155 !important; }
-  html.dark .epic-block > div:first-child { background-color: #1e293b !important; }
-  html.dark .epic-block > div:first-child span { color: #cbd5e1 !important; }
-  html.dark .story-row { color: #cbd5e1; }
-  html.dark .story-row p { color: #cbd5e1 !important; }
-  html.dark #activity-panel { background-color: #1e293b !important; border-color: #334155 !important; color: #cbd5e1 !important; }
-  html.dark #activity-panel li { border-color: #334155 !important; }
+  html.dark #filter-bar { background-color: var(--clr-panel-bg) !important; border-color: var(--clr-border) !important; }
+  html.dark #filter-bar select, html.dark #filter-bar input { background-color: var(--clr-input-bg) !important; border-color: var(--clr-input-border) !important; color: var(--clr-input-text) !important; }
+  html.dark #filter-bar button { color: var(--clr-text-muted) !important; }
+  html.dark #tab-bar { background-color: var(--clr-panel-bg) !important; border-color: var(--clr-border) !important; }
+  html.dark #tab-bar button { color: var(--clr-text-muted) !important; }
+  html.dark #tab-bar button.active { color: var(--clr-text-primary) !important; border-color: var(--clr-accent) !important; }
+  html.dark .epic-block { border-color: var(--clr-border) !important; }
+  html.dark .epic-block > div:first-child { background-color: var(--clr-panel-bg) !important; }
+  html.dark .epic-block > div:first-child span { color: var(--clr-text-primary) !important; }
+  html.dark .story-row { color: var(--clr-text-primary); }
+  html.dark .story-row p { color: var(--clr-text-primary) !important; }
+  html.dark #activity-panel { background-color: var(--clr-panel-bg) !important; border-color: var(--clr-border) !important; color: var(--clr-text-primary) !important; }
+  html.dark #activity-panel li { border-color: var(--clr-border) !important; }
   .scroll-table { overflow: auto; max-height: calc(100vh - var(--sticky-top, 120px) - 3rem); }
-  .scroll-table thead th { position: sticky; top: 0; z-index: 10; background-color: #e2e8f0; color: #374151; }
-  html.dark .scroll-table thead th { background-color: #334155; color: #e2e8f0; }
+  .scroll-table thead th { position: sticky; top: 0; z-index: 10; background-color: var(--clr-header-bg); color: var(--clr-header-text); }
   .scroll-kanban { overflow: auto; max-height: calc(100vh - var(--sticky-top, 120px) - 3rem); }
-  .scroll-kanban .kanban-col-header { position: sticky; top: 0; z-index: 5; background: #e2e8f0; padding-bottom: 6px; }
-  html.dark .scroll-kanban .kanban-col-header { background: #334155; color: #e2e8f0; }
+  .scroll-kanban .kanban-col-header { position: sticky; top: 0; z-index: 5; background: var(--clr-header-bg); color: var(--clr-header-text); padding-bottom: 6px; }
   html.dark .scroll-table table thead { background-color: transparent; }
-  html.dark table tbody tr { border-color: #334155 !important; }
-  html.dark table tbody td { color: #cbd5e1; }
-  html.dark .bg-white { background-color: #1e293b !important; }
-  html.dark .border-slate-200 { border-color: #334155 !important; }
-  html.dark .text-slate-700, html.dark .text-slate-600 { color: #cbd5e1 !important; }
-  html.dark .text-slate-500 { color: #94a3b8 !important; }
-  html.dark h3 { color: #cbd5e1 !important; }
+  html.dark table tbody tr { border-color: var(--clr-border) !important; }
+  html.dark .bg-white { background-color: var(--clr-panel-bg) !important; }
+  html.dark .border-slate-200 { border-color: var(--clr-border) !important; }
+  html.dark .text-slate-700, html.dark .text-slate-600 { color: var(--clr-text-primary) !important; }
+  html.dark .text-slate-500 { color: var(--clr-text-muted) !important; }
+  html.dark h3 { color: var(--clr-text-primary) !important; }
   @media print {
     #filter-bar, #tab-bar, .fixed, .activity-panel { display: none !important; }
     body { padding-right: 0 !important; }
