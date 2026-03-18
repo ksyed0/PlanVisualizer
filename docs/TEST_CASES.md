@@ -1196,6 +1196,53 @@ Status: [x] Pass
 Defect Raised: None
 Notes:
 
+TC-0079: Bug Fix Costs section renders correctly with a cost-attributed bug
+Related Story: US-0030
+Related Task: TASK-0028
+Related AC: AC-0082
+Type: Functional
+Preconditions: docs/BUGS.md contains at least one bug with a fixBranch; docs/AI_COST_LOG.md contains a row for that branch
+Steps:
+  1. Run node tools/generate-plan.js
+  2. Open docs/plan-status.html → Costs tab
+  3. Scroll below the story costs table
+Expected Result: "Bug Fix Costs" section appears with a table row for the bug showing its ID, title, severity, status, related story, fix branch, and a non-zero AI Cost
+Actual Result: Pass — attributeBugCosts() matches fixBranch to costByBranch; row renders with badge() severity and status
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0080: Bug Fix Costs section shows $0.00 for bugs with no matching branch cost
+Related Story: US-0030
+Related Task: TASK-0028
+Related AC: AC-0083
+Type: Functional
+Preconditions: docs/BUGS.md contains a bug with no fixBranch or a fixBranch not in AI_COST_LOG.md
+Steps:
+  1. Run node tools/generate-plan.js
+  2. Open docs/plan-status.html → Costs tab → Bug Fix Costs section
+  3. Locate the bug row for a bug with no logged branch cost
+Expected Result: AI Cost column shows $0.00; Tokens shows 0 / 0; row is still visible (not hidden)
+Actual Result: Pass — attributeBugCosts() returns { costUsd: 0, inputTokens: 0, outputTokens: 0 } for unmatched bugs
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0081: Bug Fix Costs section is absent when bugs array is empty
+Related Story: US-0030
+Related Task: TASK-0028
+Related AC: AC-0085
+Type: Functional
+Preconditions: docs/BUGS.md is empty or does not exist
+Steps:
+  1. Run node tools/generate-plan.js with an empty bugs source
+  2. Open docs/plan-status.html → Costs tab
+Expected Result: No "Bug Fix Costs" heading or table appears; only the story costs table and totals row are visible
+Actual Result: Pass — renderCostsTab() guards with data.bugs.length > 0 before rendering the section
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
 TC-0078: version-bump.yml auto-bumps patch version on PR merge to develop via auto-merge PR
 Related Story: US-0028
 Related Task: TASK-0026
