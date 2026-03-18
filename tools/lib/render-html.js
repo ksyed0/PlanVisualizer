@@ -670,6 +670,9 @@ function renderScripts(data) {
 function renderPrintCSS() {
   return `
   <style>
+  html.dark #top-bar {
+    background: linear-gradient(135deg, #001a4d 0%, #002d6e 55%, #003d8c 100%) !important;
+  }
   @media print {
     #filter-bar, #tab-bar, .fixed, .activity-panel { display: none !important; }
     body { padding-right: 0 !important; }
@@ -689,9 +692,9 @@ function renderHtml(data) {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${esc(data.projectName)} — Plan Status</title>
+  <script>window.tailwind={config:{darkMode:'class'}}</script>
   <script>(function(){var t=localStorage.getItem('theme');if(t==='dark'||(t==null&&window.matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');}})()</script>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>tailwind.config={darkMode:'class'}</script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
