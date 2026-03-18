@@ -507,3 +507,74 @@ Actual: Font-mono IDs like "BUG-0001" and "US-0001" wrap between characters — 
 Status: Fixed
 Fix Branch: feature/US-0031-dashboard-ux-fixes
 Lesson Encoded: No
+
+BUG-0034: TC-0078 shows Not Run despite version-bump workflow being verified
+Severity: Low
+Related Story: US-0028
+Related Task: TASK-0026
+Steps to Reproduce:
+  1. Open plan-status.html → Traceability tab
+  2. Locate TC-0078
+Expected: TC-0078 shows Pass — the version-bump workflow was verified via PRs #52 and #54
+Actual: TC-0078 displays "Not Run" because TEST_CASES.md status was never updated to [x] Pass
+Status: Fixed
+Fix Branch: feature/dark-mode-readability
+Lesson Encoded: No
+Estimated Cost USD: 0.00
+
+BUG-0035: About modal hardcoded dark — does not respond to light/dark toggle
+Severity: Medium
+Related Story: US-0031
+Related Task: TASK-0030
+Steps to Reproduce:
+  1. Open plan-status.html in light mode
+  2. Click the "About" button in the header
+Expected: About modal adapts to light mode (white card, dark text)
+Actual: Modal always shows dark slate background and light text regardless of theme
+Status: Fixed
+Fix Branch: feature/dark-mode-readability
+Lesson Encoded: Yes — see docs/LESSONS.md
+Estimated Cost USD: 0.00
+
+BUG-0036: AI Cost column uses text-teal-600, unreadable on white backgrounds
+Severity: Medium
+Related Story: US-0031
+Related Task: TASK-0030
+Steps to Reproduce:
+  1. Open plan-status.html in light mode
+  2. Navigate to Costs tab
+  3. Observe AI Cost column
+Expected: AI Cost values are clearly readable in both light and dark modes
+Actual: text-teal-600 (#0d9488) has insufficient contrast on white — WCAG AA fails
+Status: Fixed
+Fix Branch: feature/dark-mode-readability
+Lesson Encoded: Yes — see docs/LESSONS.md
+Estimated Cost USD: 0.00
+
+BUG-0037: Bug token counts display 0/0 for estimated-cost bugs
+Severity: Low
+Related Story: US-0031
+Related Task: TASK-0030
+Steps to Reproduce:
+  1. Open plan-status.html → Costs tab → Bug Fix Costs section
+  2. Observe Tokens column for bugs with estimated costs
+Expected: Dash (—) for bugs whose token counts are unknown; real counts for bugs with cost log entries
+Actual: 0 / 0 displayed for all estimated-cost bugs — misleading, implies tokens were measured
+Status: Fixed
+Fix Branch: feature/dark-mode-readability
+Lesson Encoded: Yes — see docs/LESSONS.md
+Estimated Cost USD: 0.00
+
+BUG-0038: Lesson column always shows ○ due to lessonEncoded partial-string mismatch
+Severity: Low
+Related Story: US-0031
+Related Task: TASK-0030
+Steps to Reproduce:
+  1. Open plan-status.html → Bugs tab
+  2. Observe Lesson column for any bug with Lesson Encoded: Yes — see docs/LESSONS.md
+Expected: ✓ shown for bugs with encoded lessons
+Actual: ○ always shown because renderer checks lessonEncoded === 'Yes' but parser returns full string "Yes — see docs/LESSONS.md"
+Status: Fixed
+Fix Branch: feature/dark-mode-readability
+Lesson Encoded: Yes — see docs/LESSONS.md
+Estimated Cost USD: 0.00

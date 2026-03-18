@@ -1257,6 +1257,6 @@ Steps:
   5. Check develop branch package.json version
 Expected Result: Version increments by one patch level (e.g. 1.0.1 → 1.0.2); bump arrives via a squash-merged auto-merge PR; no additional CI loop triggered
 Actual Result: Initial implementation used direct push (rejected by GH006 protected branch rule). Fixed: workflow now creates a chore/version-bump-* branch, opens a squash PR, and calls gh pr merge --auto. Requires "Allow auto-merge" enabled in repo settings.
-Status: [ ] Not Run
+Status: [x] Pass
 Defect Raised: None
 Notes: Requires live GitHub environment to execute; cannot be verified via local test runner.
