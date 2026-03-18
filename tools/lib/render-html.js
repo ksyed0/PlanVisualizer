@@ -837,7 +837,8 @@ function renderPrintCSS() {
   html.dark #activity-panel { background-color: #1e293b !important; border-color: #334155 !important; color: #cbd5e1 !important; }
   html.dark #activity-panel li { border-color: #334155 !important; }
   .scroll-table { overflow: auto; max-height: calc(100vh - var(--sticky-top, 120px) - 3rem); }
-  .scroll-table thead th { position: sticky; top: 0; z-index: 10; }
+  .scroll-table thead tr { background-color: inherit; }
+  .scroll-table thead th { position: sticky; top: 0; z-index: 10; background-color: inherit; }
   .scroll-kanban { overflow: auto; max-height: calc(100vh - var(--sticky-top, 120px) - 3rem); }
   .scroll-kanban .kanban-col-header { position: sticky; top: 0; z-index: 5; background: #f8fafc; padding-bottom: 6px; }
   html.dark .scroll-kanban .kanban-col-header { background: #0f172a; }
