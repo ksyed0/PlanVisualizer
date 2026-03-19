@@ -494,6 +494,10 @@ function renderChartsTab(data) {
 }
 
 function renderCostsTab(data) {
+  const t = data.costs._totals;
+  const totalProjected = data.stories.reduce((s, st) => s + (data.costs[st.id] && data.costs[st.id].projectedUsd || 0), 0);
+
+  // ── Column view: stories table ──────────────────────────────────────────
   const epicBlocks = data.epics.map(epic => {
     const epicStories = data.stories.filter(s => s.epicId === epic.id);
     const epicProjected = epicStories.reduce((s, st) => s + (data.costs[st.id] && data.costs[st.id].projectedUsd || 0), 0);
@@ -503,14 +507,13 @@ function renderCostsTab(data) {
     const storyRows = epicStories.map(story => {
       const projected = (data.costs[story.id] && data.costs[story.id].projectedUsd || 0);
       const ai = data.costs[story.id] || {};
-      const aiCost = ai.costUsd || 0;
       return `<tr class="border-t border-slate-100 dark:border-slate-700">
         <td class="px-3 py-2 pl-8 font-mono text-xs text-slate-500 whitespace-nowrap">${story.id}</td>
         <td class="px-3 py-2 text-sm dark:text-slate-200">${esc(story.title)}</td>
         <td class="px-3 py-2 text-center">${badge(story.status)}</td>
         <td class="px-3 py-2 text-center text-sm dark:text-slate-200">${story.estimate || '?'}</td>
         <td class="px-3 py-2 text-right text-sm dark:text-slate-200">${usd(projected)}</td>
-        <td class="px-3 py-2 text-right text-sm text-teal-700 dark:text-teal-400">${usd(aiCost)}</td>
+        <td class="px-3 py-2 text-right text-sm text-teal-700 dark:text-teal-400">${usd(ai.costUsd || 0)}</td>
         <td class="px-3 py-2 text-right text-xs text-slate-500 tokens-col">${fmtNum(ai.inputTokens || 0)} / ${fmtNum(ai.outputTokens || 0)}</td>
       </tr>`;
     }).join('');
@@ -527,32 +530,100 @@ function renderCostsTab(data) {
     </tr>
     ${storyRows}`;
   }).join('');
-  const t = data.costs._totals;
-  const totalProjected = data.stories.reduce((s, st) => s + (data.costs[st.id] && data.costs[st.id].projectedUsd || 0), 0);
-  const bugCostsSection = data.bugs.length ? (() => {
-    const allBugCosts = data.bugs.map(b => (data.costs._bugs && data.costs._bugs[b.id]) || { costUsd: 0, inputTokens: 0, outputTokens: 0 });
-    const bugTotalAI         = allBugCosts.reduce((s, bc) => s + (bc.isEstimated ? 0 : (bc.costUsd || 0)), 0);
-    const bugTotalProjected  = allBugCosts.reduce((s, bc) => s + (bc.projectedUsd || 0), 0);
-    const bugTotalIn   = allBugCosts.reduce((s, bc) => s + (bc.isEstimated ? 0 : (bc.inputTokens || 0)), 0);
-    const bugTotalOut  = allBugCosts.reduce((s, bc) => s + (bc.isEstimated ? 0 : (bc.outputTokens || 0)), 0);
-    const bugRows = data.bugs.map(bug => {
-      const bc = (data.costs._bugs && data.costs._bugs[bug.id]) || { costUsd: 0, inputTokens: 0, outputTokens: 0 };
-      const aiCost = bc.isEstimated ? '—' : usd(bc.costUsd);
-      const projCost = bc.projectedUsd > 0 ? usd(bc.projectedUsd) : '—';
-      return `<tr class="border-t border-slate-100 dark:border-slate-700">
-        <td class="px-3 py-2 font-mono text-xs text-slate-500 whitespace-nowrap">${esc(bug.id)}</td>
-        <td class="px-3 py-2 text-sm dark:text-slate-200">${esc(bug.title)}</td>
-        <td class="px-3 py-2 text-center">${badge(bug.severity)}</td>
-        <td class="px-3 py-2 text-center">${badge(bug.status)}</td>
-        <td class="px-3 py-2 text-xs text-slate-500">${esc(bug.relatedStory || '—')}</td>
-        <td class="px-3 py-2 text-xs text-slate-500">${esc(bug.fixBranch || '—')}</td>
-        <td class="px-3 py-2 text-right text-sm dark:text-slate-200">${projCost}</td>
-        <td class="px-3 py-2 text-right text-sm text-teal-700 dark:text-teal-400">${aiCost}</td>
-        <td class="px-3 py-2 text-right text-xs text-slate-500 tokens-col">${bc.isEstimated ? '—' : `${fmtNum(bc.inputTokens)} / ${fmtNum(bc.outputTokens)}`}</td>
-      </tr>`;
+
+  // ── Bug cost helpers (shared by column + card) ──────────────────────────
+  const allBugCosts = data.bugs.map(b => (data.costs._bugs && data.costs._bugs[b.id]) || { costUsd: 0, inputTokens: 0, outputTokens: 0 });
+  const bugTotalAI        = allBugCosts.reduce((s, bc) => s + (bc.isEstimated ? 0 : (bc.costUsd || 0)), 0);
+  const bugTotalProjected = allBugCosts.reduce((s, bc) => s + (bc.projectedUsd || 0), 0);
+  const bugTotalIn        = allBugCosts.reduce((s, bc) => s + (bc.isEstimated ? 0 : (bc.inputTokens || 0)), 0);
+  const bugTotalOut       = allBugCosts.reduce((s, bc) => s + (bc.isEstimated ? 0 : (bc.outputTokens || 0)), 0);
+
+  // ── Column view: bug rows ────────────────────────────────────────────────
+  const bugColRows = data.bugs.map(bug => {
+    const bc = (data.costs._bugs && data.costs._bugs[bug.id]) || { costUsd: 0, inputTokens: 0, outputTokens: 0 };
+    return `<tr class="border-t border-slate-100 dark:border-slate-700">
+      <td class="px-3 py-2 font-mono text-xs text-slate-500 whitespace-nowrap">${esc(bug.id)}</td>
+      <td class="px-3 py-2 text-sm dark:text-slate-200">${esc(bug.title)}</td>
+      <td class="px-3 py-2 text-center">${badge(bug.severity)}</td>
+      <td class="px-3 py-2 text-center">${badge(bug.status)}</td>
+      <td class="px-3 py-2 text-xs text-slate-500">${esc(bug.relatedStory || '—')}</td>
+      <td class="px-3 py-2 text-xs text-slate-500">${esc(bug.fixBranch || '—')}</td>
+      <td class="px-3 py-2 text-right text-sm dark:text-slate-200">${bc.projectedUsd > 0 ? usd(bc.projectedUsd) : '—'}</td>
+      <td class="px-3 py-2 text-right text-sm text-teal-700 dark:text-teal-400">${bc.isEstimated ? '—' : usd(bc.costUsd)}</td>
+      <td class="px-3 py-2 text-right text-xs text-slate-500 tokens-col">${bc.isEstimated ? '—' : `${fmtNum(bc.inputTokens)} / ${fmtNum(bc.outputTokens)}`}</td>
+    </tr>`;
+  }).join('');
+
+  // ── Card view: story cards grouped by epic ──────────────────────────────
+  const epicCardBlocks = data.epics.map(epic => {
+    const epicStories = data.stories.filter(s => s.epicId === epic.id);
+    if (!epicStories.length) return '';
+    const storyCards = epicStories.map(story => {
+      const ai = data.costs[story.id] || {};
+      const projected = ai.projectedUsd || 0;
+      return `<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 flex flex-col gap-2">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="font-mono text-xs text-slate-500 whitespace-nowrap">${story.id}</span>
+          ${badge(story.status)}
+          <span class="ml-auto text-xs text-slate-400">${story.estimate || '?'}</span>
+        </div>
+        <p class="text-sm font-medium dark:text-slate-200">${esc(story.title)}</p>
+        <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs mt-1">
+          <div>
+            <span class="text-slate-500 block">Projected</span>
+            <span class="font-mono dark:text-slate-200">${usd(projected)}</span>
+          </div>
+          <div>
+            <span class="text-slate-500 block">AI Actual</span>
+            <span class="font-mono text-teal-700 dark:text-teal-400">${usd(ai.costUsd || 0)}</span>
+          </div>
+          <div class="tokens-col col-span-2">
+            <span class="text-slate-500 block">Tokens (in / out)</span>
+            <span class="font-mono text-slate-500">${fmtNum(ai.inputTokens || 0)} / ${fmtNum(ai.outputTokens || 0)}</span>
+          </div>
+        </div>
+      </div>`;
     }).join('');
-    return `
-    <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mt-6 mb-2">Bug Fix Costs</h3>
+    const epicProjTotal = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).projectedUsd || 0), 0);
+    const epicAITotal   = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).costUsd || 0), 0);
+    return `<div class="mb-6">
+      <div class="flex items-center gap-2 mb-3 flex-wrap">
+        <span class="font-mono text-xs font-bold text-blue-600">${epic.id}</span>
+        <span class="text-sm font-semibold text-slate-700 dark:text-slate-200">${esc(epic.title)}</span>
+        ${badge(epic.status)}
+        <span class="ml-auto text-xs text-slate-500">Proj ${usd(epicProjTotal)} · AI ${usd(epicAITotal)}</span>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">${storyCards}</div>
+    </div>`;
+  }).join('');
+
+  // ── Card view: bug cards ─────────────────────────────────────────────────
+  const bugCards = data.bugs.map(bug => {
+    const bc = (data.costs._bugs && data.costs._bugs[bug.id]) || {};
+    return `<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 flex flex-col gap-2">
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="font-mono text-xs text-slate-500 whitespace-nowrap">${esc(bug.id)}</span>
+        ${badge(bug.severity)} ${badge(bug.status)}
+      </div>
+      <p class="text-sm font-medium dark:text-slate-200">${esc(bug.title)}</p>
+      <div class="text-xs text-slate-500">
+        Story: <span class="font-mono">${esc(bug.relatedStory || '—')}</span>
+      </div>
+      <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs mt-1">
+        <div>
+          <span class="text-slate-500 block">Projected</span>
+          <span class="font-mono dark:text-slate-200">${bc.projectedUsd > 0 ? usd(bc.projectedUsd) : '—'}</span>
+        </div>
+        <div>
+          <span class="text-slate-500 block">AI Actual</span>
+          <span class="font-mono text-teal-700 dark:text-teal-400">${bc.isEstimated ? '—' : usd(bc.costUsd || 0)}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const bugFixColumnSection = data.bugs.length ? `
+    <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mt-4 mb-2 flex-shrink-0">Bug Fix Costs</h3>
     <div class="scroll-table">
     <table class="w-full text-left text-sm border-collapse">
       <thead class="text-xs uppercase">
@@ -564,7 +635,7 @@ function renderCostsTab(data) {
           <th class="px-3 py-2 text-right tokens-col">Tokens (in/out)</th>
         </tr>
       </thead>
-      <tbody>${bugRows}</tbody>
+      <tbody>${bugColRows}</tbody>
       <tfoot class="bg-slate-50 dark:bg-slate-700 font-semibold border-t-2 border-slate-300 dark:border-slate-600">
         <tr>
           <td colspan="6" class="px-3 py-2 text-right text-sm dark:text-slate-200">Totals</td>
@@ -574,38 +645,88 @@ function renderCostsTab(data) {
         </tr>
       </tfoot>
     </table>
-    </div>`;
-  })() : '';
+    </div>` : '';
+
+  const bugFixCardSection = data.bugs.length ? `
+    <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mt-6 mb-3">Bug Fix Costs</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">${bugCards}</div>` : '';
+
   return `
-  <div id="tab-costs" class="p-6 hidden">
-    <div class="scroll-table">
-    <table class="w-full text-left text-sm border-collapse">
-      <thead class="text-xs uppercase">
-        <tr>
-          <th class="px-3 py-2">Story</th><th class="px-3 py-2">Title</th><th class="px-3 py-2 text-center">Status</th>
-          <th class="px-3 py-2 text-center">Size</th><th class="px-3 py-2 text-right">Projected</th>
-          <th class="px-3 py-2 text-right">AI Cost</th><th class="px-3 py-2 text-right tokens-col">Tokens (in/out)</th>
-        </tr>
-      </thead>
-      <tbody>${epicBlocks}</tbody>
-      <tfoot class="bg-slate-50 dark:bg-slate-700 font-semibold border-t-2 border-slate-300 dark:border-slate-600">
-        <tr>
-          <td colspan="4" class="px-3 py-2 text-right text-sm dark:text-slate-200">Totals</td>
-          <td class="px-3 py-2 text-right text-sm dark:text-slate-200">${usd(totalProjected)}</td>
-          <td class="px-3 py-2 text-right text-sm text-teal-700 dark:text-teal-400">${usd(t.costUsd)}</td>
-          <td class="px-3 py-2 text-right text-xs text-slate-500 tokens-col">${fmtNum(t.inputTokens)} / ${fmtNum(t.outputTokens)}</td>
-        </tr>
-      </tfoot>
-    </table>
+  <div id="tab-costs" class="p-6 hidden tab-fill">
+    <div class="flex items-center justify-between mb-4 flex-shrink-0">
+      <span class="text-sm text-slate-500 dark:text-slate-400">${data.stories.length} stories · ${data.bugs.length} bugs</span>
+      <div class="flex gap-1">
+        <button id="costs-col-btn" onclick="setCostsView('column')"
+          class="px-3 py-1 text-xs rounded border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+          ≡ Column
+        </button>
+        <button id="costs-card-btn" onclick="setCostsView('card')"
+          class="px-3 py-1 text-xs rounded border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+          ⊞ Card
+        </button>
+      </div>
     </div>
-    ${bugCostsSection}
-  </div>`;
+
+    <div id="costs-column-view" class="flex flex-col" style="flex:1;min-height:0;overflow-y:auto">
+      <div class="scroll-table">
+      <table class="w-full text-left text-sm border-collapse">
+        <thead class="text-xs uppercase">
+          <tr>
+            <th class="px-3 py-2">Story</th><th class="px-3 py-2">Title</th><th class="px-3 py-2 text-center">Status</th>
+            <th class="px-3 py-2 text-center">Size</th><th class="px-3 py-2 text-right">Projected</th>
+            <th class="px-3 py-2 text-right">AI Cost</th><th class="px-3 py-2 text-right tokens-col">Tokens (in/out)</th>
+          </tr>
+        </thead>
+        <tbody>${epicBlocks}</tbody>
+        <tfoot class="bg-slate-50 dark:bg-slate-700 font-semibold border-t-2 border-slate-300 dark:border-slate-600">
+          <tr>
+            <td colspan="4" class="px-3 py-2 text-right text-sm dark:text-slate-200">Totals</td>
+            <td class="px-3 py-2 text-right text-sm dark:text-slate-200">${usd(totalProjected)}</td>
+            <td class="px-3 py-2 text-right text-sm text-teal-700 dark:text-teal-400">${usd(t.costUsd)}</td>
+            <td class="px-3 py-2 text-right text-xs text-slate-500 tokens-col">${fmtNum(t.inputTokens)} / ${fmtNum(t.outputTokens)}</td>
+          </tr>
+        </tfoot>
+      </table>
+      </div>
+      ${bugFixColumnSection}
+    </div>
+
+    <div id="costs-card-view" class="hidden" style="flex:1;min-height:0;overflow-y:auto">
+      ${epicCardBlocks}
+      ${bugFixCardSection}
+    </div>
+  </div>
+  <script>
+  function setCostsView(v) {
+    var col = document.getElementById('costs-column-view');
+    var card = document.getElementById('costs-card-view');
+    var colBtn = document.getElementById('costs-col-btn');
+    var cardBtn = document.getElementById('costs-card-btn');
+    if (!col) return;
+    col.classList.toggle('hidden', v !== 'column');
+    card.classList.toggle('hidden', v !== 'card');
+    colBtn.style.fontWeight = v === 'column' ? '700' : '';
+    colBtn.style.background = v === 'column' ? 'rgba(59,130,246,0.1)' : '';
+    cardBtn.style.fontWeight = v === 'card' ? '700' : '';
+    cardBtn.style.background = v === 'card' ? 'rgba(59,130,246,0.1)' : '';
+    localStorage.setItem('costsView', v);
+  }
+  (function() { setCostsView(localStorage.getItem('costsView') || 'column'); })();
+  </script>`;
 }
 
 function renderBugsTab(data) {
   if (!data.bugs.length) {
     return `<div id="tab-bugs" class="p-6 hidden"><p class="text-slate-500">No bugs logged yet.</p></div>`;
   }
+
+  const lessonCell = (bug) => {
+    if (!bug.lessonEncoded || !bug.lessonEncoded.startsWith('Yes')) return '○';
+    const lm = bug.lessonEncoded.match(/L-\d{4}/);
+    if (!lm) return '✓';
+    return `<a href="#" onclick="showTab('lessons');setTimeout(function(){var el=document.getElementById('lesson-${lm[0]}');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});},50);return false;" class="text-blue-600 dark:text-blue-400 hover:underline font-mono text-xs whitespace-nowrap" title="View lesson ${lm[0]}">✓ ${lm[0]} ↗</a>`;
+  };
+
   const rows = data.bugs.map(bug => `
   <tr id="bug-row-${bug.id}" class="bug-row border-t border-slate-100 dark:border-slate-700" data-status="${bug.status}">
     <td class="px-3 py-2 font-mono text-xs whitespace-nowrap dark:text-slate-200">${bug.id}</td>
@@ -614,28 +735,75 @@ function renderBugsTab(data) {
     <td class="px-3 py-2 text-center">${badge(bug.status)}</td>
     <td class="px-3 py-2 text-xs text-slate-500 whitespace-nowrap">${esc(bug.relatedStory)}</td>
     <td class="px-3 py-2 text-xs text-slate-500">${esc(bug.fixBranch || '—')}</td>
-    <td class="px-3 py-2 text-center text-xs dark:text-slate-200">${(() => {
-      if (!bug.lessonEncoded || !bug.lessonEncoded.startsWith('Yes')) return '○';
-      const lm = bug.lessonEncoded.match(/L-\d{4}/);
-      if (!lm) return '✓';
-      return `<a href="#" onclick="showTab('lessons');setTimeout(function(){var el=document.getElementById('lesson-${lm[0]}');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});},50);return false;" class="text-blue-600 dark:text-blue-400 hover:underline font-mono text-xs whitespace-nowrap" title="View lesson ${lm[0]}">✓ ${lm[0]} ↗</a>`;
-    })()}</td>
+    <td class="px-3 py-2 text-center text-xs dark:text-slate-200">${lessonCell(bug)}</td>
   </tr>`).join('');
+
+  const cards = data.bugs.map(bug => `
+  <div id="bug-card-${bug.id}" class="bug-row bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 flex flex-col gap-2" data-status="${bug.status}">
+    <div class="flex items-center gap-2 flex-wrap">
+      <span class="font-mono text-xs text-slate-500 whitespace-nowrap">${bug.id}</span>
+      ${badge(bug.severity)} ${badge(bug.status)}
+    </div>
+    <p class="text-sm font-medium dark:text-slate-200">${esc(bug.title)}</p>
+    <div class="text-xs text-slate-500 flex flex-col gap-0.5">
+      <span>Story: <span class="font-mono">${esc(bug.relatedStory || '—')}</span></span>
+      <span class="truncate" title="${esc(bug.fixBranch || '')}">Branch: <span class="font-mono">${esc(bug.fixBranch || '—')}</span></span>
+    </div>
+    <div class="flex items-center justify-between mt-1">
+      <span class="text-xs text-slate-500">Lesson: <span class="dark:text-slate-200">${lessonCell(bug)}</span></span>
+    </div>
+  </div>`).join('');
+
   return `
   <div id="tab-bugs" class="p-6 hidden tab-fill">
-    <div class="scroll-table">
-    <table class="w-full text-left text-sm border-collapse">
-      <thead class="text-xs uppercase">
-        <tr>
-          <th class="px-3 py-2">ID</th><th class="px-3 py-2">Title</th><th class="px-3 py-2 text-center">Severity</th>
-          <th class="px-3 py-2 text-center">Status</th><th class="px-3 py-2">Story</th>
-          <th class="px-3 py-2">Branch</th><th class="px-3 py-2 text-center whitespace-nowrap" style="min-width:8rem">Lesson</th>
-        </tr>
-      </thead>
-      <tbody>${rows}</tbody>
-    </table>
+    <div class="flex items-center justify-between mb-4 flex-shrink-0">
+      <span class="text-sm text-slate-500 dark:text-slate-400">${data.bugs.length} bug${data.bugs.length !== 1 ? 's' : ''}</span>
+      <div class="flex gap-1">
+        <button id="bugs-col-btn" onclick="setBugsView('column')"
+          class="px-3 py-1 text-xs rounded border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+          ≡ Column
+        </button>
+        <button id="bugs-card-btn" onclick="setBugsView('card')"
+          class="px-3 py-1 text-xs rounded border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+          ⊞ Card
+        </button>
+      </div>
     </div>
-  </div>`;
+
+    <div id="bugs-column-view" class="scroll-table">
+      <table class="w-full text-left text-sm border-collapse">
+        <thead class="text-xs uppercase">
+          <tr>
+            <th class="px-3 py-2">ID</th><th class="px-3 py-2">Title</th><th class="px-3 py-2 text-center">Severity</th>
+            <th class="px-3 py-2 text-center">Status</th><th class="px-3 py-2">Story</th>
+            <th class="px-3 py-2">Branch</th><th class="px-3 py-2 text-center whitespace-nowrap" style="min-width:8rem">Lesson</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+
+    <div id="bugs-card-view" class="hidden grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4" style="overflow-y:auto">
+      ${cards}
+    </div>
+  </div>
+  <script>
+  function setBugsView(v) {
+    var col = document.getElementById('bugs-column-view');
+    var card = document.getElementById('bugs-card-view');
+    var colBtn = document.getElementById('bugs-col-btn');
+    var cardBtn = document.getElementById('bugs-card-btn');
+    if (!col) return;
+    col.classList.toggle('hidden', v !== 'column');
+    card.classList.toggle('hidden', v !== 'card');
+    colBtn.style.fontWeight = v === 'column' ? '700' : '';
+    colBtn.style.background = v === 'column' ? 'rgba(59,130,246,0.1)' : '';
+    cardBtn.style.fontWeight = v === 'card' ? '700' : '';
+    cardBtn.style.background = v === 'card' ? 'rgba(59,130,246,0.1)' : '';
+    localStorage.setItem('bugsView', v);
+  }
+  (function() { setBugsView(localStorage.getItem('bugsView') || 'column'); })();
+  </script>`;
 }
 
 function renderLessonsTab(data) {

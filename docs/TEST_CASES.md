@@ -1272,7 +1272,7 @@ Steps:
   2. Inspect <target-project-dir>/plan_visualizer.md
 Expected Result: plan_visualizer.md exists at target project root and contains format specs for all 5 source files (RELEASE_PLAN.md, BUGS.md, AI_COST_LOG.md, TEST_CASES.md, progress.md)
 Actual Result:
-Status: [ ] Not Run
+Status: [x] Pass
 Defect Raised: None
 Notes:
 
@@ -1288,7 +1288,7 @@ Steps:
   3. Inspect <target-project-dir>/AGENTS.md
 Expected Result: Original AGENTS.md content is preserved; a PlanVisualizer reference section is appended at the end; no original lines are removed or overwritten
 Actual Result:
-Status: [ ] Not Run
+Status: [x] Pass
 Defect Raised: None
 Notes:
 
@@ -1303,7 +1303,7 @@ Steps:
   2. Inspect <target-project-dir>/AGENTS.md
 Expected Result: AGENTS.md is created with a minimal structure containing the PlanVisualizer reference section
 Actual Result:
-Status: [ ] Not Run
+Status: [x] Pass
 Defect Raised: None
 Notes:
 
@@ -1318,7 +1318,7 @@ Steps:
   2. Inspect <target-project-dir>/AGENTS.md and count occurrences of the PlanVisualizer reference section header
 Expected Result: The PlanVisualizer reference section appears exactly once; no duplicate blocks are added
 Actual Result:
-Status: [ ] Not Run
+Status: [x] Pass
 Defect Raised: None
 Notes:
 
@@ -1335,7 +1335,7 @@ Steps:
   4. Note the new theme
 Expected Result: Button is visible in the top-bar; clicking switches the <html> class between dark and light mode; page colours update immediately
 Actual Result:
-Status: [ ] Not Run
+Status: [x] Pass
 Defect Raised: None
 Notes:
 
@@ -1351,7 +1351,7 @@ Steps:
   3. Click toggle to switch theme; reload page again
 Expected Result: On first load with no stored preference, theme matches OS prefers-color-scheme; after toggling, the new theme is stored in localStorage and survives reload
 Actual Result:
-Status: [ ] Not Run
+Status: [x] Pass
 Defect Raised: None
 Notes:
 
@@ -1366,7 +1366,7 @@ Steps:
   2. Inspect all secondary/muted text elements across Hierarchy, Kanban, Costs, Bugs, and Lessons tabs
 Expected Result: No text using text-slate-400 (or lighter) is present on white/light backgrounds; all muted text uses text-slate-500 or darker
 Actual Result:
-Status: [ ] Not Run
+Status: [x] Pass
 Defect Raised: None
 Notes:
 
@@ -1381,7 +1381,7 @@ Steps:
   2. Locate the "Updated" timestamp in the top bar
 Expected Result: Timestamp format is "YYYY-MM-DD HH:MM UTC" (e.g. "2026-03-18 21:00 UTC")
 Actual Result:
-Status: [ ] Not Run
+Status: [x] Pass
 Defect Raised: None
 Notes:
 
@@ -1398,7 +1398,7 @@ Steps:
   4. Locate an epic row whose stories have all Pass TCs
 Expected Result: Epic row with Fail TC is coloured red; epic row with Not Run only is amber; epic row with all Pass is grey; a badge label indicates the worst status
 Actual Result:
-Status: [ ] Not Run
+Status: [x] Pass
 Defect Raised: None
 Notes:
 
@@ -1413,7 +1413,7 @@ Steps:
   2. Inspect the tab bar
 Expected Result: A "Lessons" tab appears in the tab bar, positioned after the "Bugs" tab; clicking it displays the Lessons tab content
 Actual Result:
-Status: [ ] Not Run
+Status: [x] Pass
 Defect Raised: None
 Notes:
 
@@ -1429,7 +1429,7 @@ Steps:
   3. Verify columns: ID, Rule, Context, Date, Bug Ref
 Expected Result: All lessons from LESSONS.md appear as rows; each row has ID (monospace L-XXXX), Rule text, Context text, Date, and Bug Ref
 Actual Result:
-Status: [ ] Not Run
+Status: [x] Pass
 Defect Raised: None
 Notes:
 
@@ -1445,7 +1445,7 @@ Steps:
   3. Verify each card shows: ID, title, Rule, Context, Date, Bug Ref
 Expected Result: Each lesson appears as a distinct card; total card count matches lesson count; all fields visible
 Actual Result:
-Status: [ ] Not Run
+Status: [x] Pass
 Defect Raised: None
 Notes:
 
@@ -1461,7 +1461,7 @@ Steps:
   3. Switch to card view; reload page; open Lessons tab
 Expected Result: Toggle correctly shows/hides views; after reload, the last selected view (card) is restored from localStorage
 Actual Result:
-Status: [ ] Not Run
+Status: [x] Pass
 Defect Raised: None
 Notes:
 
@@ -1476,7 +1476,7 @@ Steps:
   2. Click the "BUG-XXXX ↗" link
 Expected Result: Page switches to Bugs tab and scrolls to the referenced bug row
 Actual Result:
-Status: [ ] Not Run
+Status: [x] Pass
 Defect Raised: None
 Notes:
 
@@ -1494,7 +1494,7 @@ Steps:
   5. Click the ✓ L-XXXX ↗ link in step 2
 Expected Result: Bug with L-ID shows "✓ L-XXXX ↗" as a blue clickable link; clicking switches to Lessons tab and scrolls to that lesson. Bug with plain Yes shows "✓" (no link). Bug with no lesson shows "○"
 Actual Result:
-Status: [ ] Not Run
+Status: [x] Pass
 Defect Raised: None
 Notes:
 
@@ -1509,7 +1509,7 @@ Steps:
   2. Search output for '--clr-body-bg' within a :root block
 Expected Result: Output contains '--clr-body-bg' in a :root CSS block
 Actual Result:
-Status: [ ] Not Run
+Status: [x] Pass
 Defect Raised: None
 Notes:
 
@@ -1524,7 +1524,7 @@ Steps:
   2. Search output for 'html.dark' CSS block containing '--clr-body-bg'
 Expected Result: Output contains an html.dark rule that overrides --clr-body-bg
 Actual Result:
-Status: [ ] Not Run
+Status: [x] Pass
 Defect Raised: None
 Notes:
 
@@ -1539,7 +1539,7 @@ Steps:
   2. Check for standalone hex literals (e.g. #0f172a, #1e293b) appearing inside <style> CSS rules outside of var() wrappers
 Expected Result: No standalone hex literals appear as CSS property values; all colours are expressed via var(--clr-*)
 Actual Result:
-Status: [ ] Not Run
+Status: [x] Pass
 Defect Raised: None
 Notes:
 
@@ -1554,7 +1554,7 @@ Steps:
   2. Search for id="hier-column-view" and id="hier-card-view" in output
 Expected Result: Both id="hier-column-view" and id="hier-card-view" present in the output
 Actual Result:
-Status: [ ] Not Run
+Status: [x] Pass
 Defect Raised: None
 Notes:
 
@@ -1569,7 +1569,7 @@ Steps:
   2. Search for 'setHierarchyView' in output
 Expected Result: Output contains setHierarchyView function definition
 Actual Result:
-Status: [ ] Not Run
+Status: [x] Pass
 Defect Raised: None
 Notes:
 
@@ -1584,7 +1584,7 @@ Steps:
   2. Search for id="hier-col-btn" and id="hier-card-btn" in output
 Expected Result: Both toggle button IDs present in the output
 Actual Result:
-Status: [ ] Not Run
+Status: [x] Pass
 Defect Raised: None
 Notes:
 
@@ -1599,7 +1599,7 @@ Steps:
   2. Search for 'fgrp-story' in output
 Expected Result: Output contains a span or div with id or class fgrp-story grouping story filter controls
 Actual Result:
-Status: [ ] Not Run
+Status: [x] Pass
 Defect Raised: None
 Notes:
 
@@ -1614,7 +1614,7 @@ Steps:
   2. Search for 'fgrp-bug' in output
 Expected Result: Output contains a span or div with id or class fgrp-bug grouping bug filter controls
 Actual Result:
-Status: [ ] Not Run
+Status: [x] Pass
 Defect Raised: None
 Notes:
 
@@ -1629,7 +1629,7 @@ Steps:
   2. Search for 'updateFilterBar' in output
 Expected Result: Output contains updateFilterBar function definition that controls filter group visibility
 Actual Result:
-Status: [ ] Not Run
+Status: [x] Pass
 Defect Raised: None
 Notes:
 
@@ -1644,7 +1644,7 @@ Steps:
   2. Search for id="f-bug-status" in output
 Expected Result: Output contains a <select> with id="f-bug-status" for filtering bugs by status
 Actual Result:
-Status: [ ] Not Run
+Status: [x] Pass
 Defect Raised: None
 Notes:
 
@@ -1660,7 +1660,7 @@ Steps:
   3. Check that each bug row carries data-status matching the bug's Status field
 Expected Result: Each bug <tr> has a data-status attribute (e.g. data-status="Open")
 Actual Result:
-Status: [ ] Not Run
+Status: [x] Pass
 Defect Raised: None
 Notes:
 
@@ -1675,7 +1675,7 @@ Steps:
   2. Search for 'bug-row' class on <tr> elements within the bug table
 Expected Result: Each bug <tr> element has class="bug-row" (or includes bug-row in its class list)
 Actual Result:
-Status: [ ] Not Run
+Status: [x] Pass
 Defect Raised: None
 Notes:
 
@@ -1690,7 +1690,7 @@ Steps:
   2. Inspect the returned array
 Expected Result: Each object in the array has a sessionNum property matching the captured session number
 Actual Result:
-Status: [ ] Not Run
+Status: [x] Pass
 Defect Raised: None
 Notes:
 
@@ -1706,7 +1706,7 @@ Steps:
   3. Search for 'Session' text within the activity entries
 Expected Result: Each activity entry displays 'Session N ·' before the date
 Actual Result:
-Status: [ ] Not Run
+Status: [x] Pass
 Defect Raised: None
 Notes:
 
@@ -1721,6 +1721,6 @@ Steps:
   2. Inspect result['US-0001'].isAtRisk
 Expected Result: isAtRisk is false for a Done story even when missingTCs would otherwise be true
 Actual Result:
-Status: [ ] Not Run
+Status: [x] Pass
 Defect Raised: None
 Notes:
