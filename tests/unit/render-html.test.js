@@ -283,9 +283,9 @@ describe('renderHtml — projected cost from data.costs (BUG-0006)', () => {
   });
 });
 
-describe('renderHtml — f-type filter (BUG-0009)', () => {
-  it('includes f-type select in filter bar', () => {
-    expect(renderHtml(sampleData)).toContain('id="f-type"');
+describe('renderHtml — filter bar (BUG-0009)', () => {
+  it('includes f-bug-status select for bugs tab filtering', () => {
+    expect(renderHtml(sampleData)).toContain('id="f-bug-status"');
   });
   it('assigns bug-row class to bug table rows', () => {
     const dataWithBug = { ...sampleData, bugs: [{ id: 'BUG-0001', title: 'Crash', severity: 'High', status: 'Open', relatedStory: 'US-0001', fixBranch: 'bugfix/BUG-0001', lessonEncoded: 'No' }] };

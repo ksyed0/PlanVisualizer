@@ -85,24 +85,30 @@ function renderTopBar(data) {
 function renderFilterBar(data) {
   const epicOptions = data.epics.map(e =>
     `<option value="${esc(e.id)}">${esc(e.id)}: ${esc(e.title)}</option>`).join('');
+  const sel = 'border border-slate-300 dark:border-slate-600 rounded px-2 py-1 text-sm dark:bg-slate-700 dark:text-slate-100';
   return `
-  <div class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-3 flex flex-wrap gap-3 items-center" id="filter-bar">
-    <select id="f-epic" onchange="applyFilters()" class="border border-slate-300 dark:border-slate-600 rounded px-2 py-1 text-sm dark:bg-slate-700 dark:text-slate-100">
-      <option value="">All Epics</option>${epicOptions}
-    </select>
-    <select id="f-status" onchange="applyFilters()" class="border border-slate-300 dark:border-slate-600 rounded px-2 py-1 text-sm dark:bg-slate-700 dark:text-slate-100">
-      <option value="">All Statuses</option>
-      <option>In Progress</option><option>Planned</option><option>Done</option><option>Blocked</option>
-    </select>
-    <select id="f-priority" onchange="applyFilters()" class="border border-slate-300 dark:border-slate-600 rounded px-2 py-1 text-sm dark:bg-slate-700 dark:text-slate-100">
-      <option value="">All Priorities</option>
-      <option>P0</option><option>P1</option><option>P2</option>
-    </select>
-    <select id="f-type" onchange="applyFilters()" class="border border-slate-300 dark:border-slate-600 rounded px-2 py-1 text-sm dark:bg-slate-700 dark:text-slate-100">
-      <option value="">Stories + Bugs</option><option value="story">Stories only</option><option value="bug">Bugs only</option>
-    </select>
+  <div class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-2 flex flex-wrap gap-2 items-center hidden" id="filter-bar">
+    <span id="fgrp-story" class="hidden flex-wrap gap-2 flex">
+      <select id="f-epic" onchange="applyFilters()" class="${sel}">
+        <option value="">All Epics</option>${epicOptions}
+      </select>
+      <select id="f-status" onchange="applyFilters()" class="${sel}">
+        <option value="">All Statuses</option>
+        <option>In Progress</option><option>Planned</option><option>Done</option><option>Blocked</option>
+      </select>
+      <select id="f-priority" onchange="applyFilters()" class="${sel}">
+        <option value="">All Priorities</option>
+        <option>P0</option><option>P1</option><option>P2</option>
+      </select>
+    </span>
+    <span id="fgrp-bug" class="hidden flex-wrap gap-2 flex">
+      <select id="f-bug-status" onchange="applyFilters()" class="${sel}">
+        <option value="">All Statuses</option>
+        <option>Open</option><option>In Progress</option><option>Fixed</option>
+      </select>
+    </span>
     <input id="f-search" oninput="applyFilters()" type="text" placeholder="Search IDs, titles…"
-      class="border border-slate-300 dark:border-slate-600 rounded px-2 py-1 text-sm w-full sm:w-48 dark:bg-slate-700 dark:text-slate-100 dark:placeholder-slate-400" />
+      class="${sel} w-full sm:w-48 dark:placeholder-slate-400" />
     <button onclick="clearFilters()" class="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 underline">Clear</button>
   </div>`;
 }
@@ -123,7 +129,9 @@ function renderHierarchyTab(data) {
   const epicBlocks = data.epics.map(epic => {
     const stories = data.stories.filter(s => s.epicId === epic.id);
     const epicProjected = stories.reduce((s, st) => s + (data.costs[st.id] && data.costs[st.id].projectedUsd || 0), 0);
-    const storyBlocks = stories.map(story => {
+
+    // ── column view: expandable story rows ──────────────────────────────────
+    const storyRows = stories.map(story => {
       const risk = data.atRisk[story.id] || {};
       const riskBadge = risk.isAtRisk ? `<span class="at-risk text-orange-500 text-xs ml-1" title="${[
         risk.missingTCs && 'Missing TCs',
@@ -153,7 +161,44 @@ function renderHierarchyTab(data) {
         <ul id="acs-${story.id}" class="mt-2 hidden">${acItems || '<li class="text-xs text-slate-500 pl-4">No ACs yet</li>'}</ul>
       </div>`;
     }).join('');
-    return `
+
+    // ── card view: story cards in a grid ────────────────────────────────────
+    const storyCards = stories.map(story => {
+      const risk = data.atRisk[story.id] || {};
+      const riskBadge = risk.isAtRisk ? `<span class="text-orange-500 text-xs">⚠ At Risk</span>` : '';
+      const acDone = story.acs.filter(a => a.done).length;
+      const acTotal = story.acs.length;
+      const cost = usd(data.costs[story.id] && data.costs[story.id].projectedUsd || 0);
+      return `
+      <div class="story-row bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg p-3 flex flex-col gap-1 shadow-sm"
+           data-epic="${story.epicId}" data-status="${story.status}" data-priority="${story.priority}">
+        <div class="flex flex-wrap items-center gap-1">
+          ${badge(story.status)} ${badge(story.priority)}
+          <span class="font-mono text-xs text-slate-500 ml-1">${story.id}</span>
+        </div>
+        <p class="text-sm font-medium dark:text-slate-100 leading-snug">${esc(story.title)}</p>
+        <div class="flex items-center gap-2 mt-auto pt-1 text-xs text-slate-500 border-t border-slate-100 dark:border-slate-600">
+          <span>${story.estimate || '?'}</span>
+          <span>${cost}</span>
+          ${acTotal ? `<span>${acDone}/${acTotal} ACs</span>` : ''}
+          <span class="ml-auto">${riskBadge}</span>
+        </div>
+      </div>`;
+    }).join('');
+
+    const epicHeader = `
+      <div class="flex flex-wrap items-center gap-3 mb-3">
+        <span class="font-mono text-sm font-bold text-blue-600">${epic.id}</span>
+        ${badge(epic.status)}
+        <span class="font-semibold dark:text-slate-100">${esc(epic.title)}</span>
+        <span class="text-xs text-slate-500">${esc(epic.releaseTarget)}</span>
+        <span class="ml-auto text-sm text-slate-500">${usd(epicProjected)} projected</span>
+      </div>`;
+
+    return { epic, epicProjected, storyRows, storyCards, epicHeader };
+  });
+
+  const columnView = epicBlocks.map(({ epic, epicProjected, storyRows }) => `
     <div class="epic-block mb-4 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
       <div class="bg-slate-50 dark:bg-slate-800 px-4 py-3 flex flex-wrap items-center gap-3 cursor-pointer" onclick="toggleEpic('${epic.id}')">
         <span class="font-mono text-sm font-bold text-blue-600">${epic.id}</span>
@@ -162,10 +207,38 @@ function renderHierarchyTab(data) {
         <span class="text-xs text-slate-500">${esc(epic.releaseTarget)}</span>
         <span class="ml-auto text-sm text-slate-500">${usd(epicProjected)} projected</span>
       </div>
-      <div id="epic-stories-${epic.id}">${storyBlocks || '<p class="text-slate-500 dark:text-slate-400 text-sm px-4 py-2">No stories yet.</p>'}</div>
-    </div>`;
-  }).join('');
-  return `<div id="tab-hierarchy" class="p-6">${epicBlocks}</div>`;
+      <div id="epic-stories-${epic.id}">${storyRows || '<p class="text-slate-500 dark:text-slate-400 text-sm px-4 py-2">No stories yet.</p>'}</div>
+    </div>`).join('');
+
+  const cardView = epicBlocks.map(({ epic, storyCards, epicHeader }) => `
+    <div class="mb-8">
+      <div class="epic-block border border-slate-200 dark:border-slate-700 rounded-t-lg bg-slate-50 dark:bg-slate-800 px-4 py-3 mb-0">
+        ${epicHeader}
+      </div>
+      <div class="border border-t-0 border-slate-200 dark:border-slate-700 rounded-b-lg p-3">
+        ${storyCards
+          ? `<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">${storyCards}</div>`
+          : '<p class="text-slate-500 dark:text-slate-400 text-sm">No stories yet.</p>'}
+      </div>
+    </div>`).join('');
+
+  return `
+  <div id="tab-hierarchy" class="p-6">
+    <div class="flex items-center justify-end mb-4 flex-shrink-0">
+      <div class="flex gap-1">
+        <button id="hier-col-btn" onclick="setHierarchyView('column')"
+          class="px-3 py-1 text-xs rounded border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+          ≡ Column
+        </button>
+        <button id="hier-card-btn" onclick="setHierarchyView('card')"
+          class="px-3 py-1 text-xs rounded border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+          ⊞ Card
+        </button>
+      </div>
+    </div>
+    <div id="hier-column-view">${columnView}</div>
+    <div id="hier-card-view" class="hidden">${cardView}</div>
+  </div>`;
 }
 
 function renderKanbanTab(data) {
@@ -511,7 +584,7 @@ function renderBugsTab(data) {
     return `<div id="tab-bugs" class="p-6 hidden"><p class="text-slate-500">No bugs logged yet.</p></div>`;
   }
   const rows = data.bugs.map(bug => `
-  <tr id="bug-row-${bug.id}" class="bug-row border-t border-slate-100 dark:border-slate-700">
+  <tr id="bug-row-${bug.id}" class="bug-row border-t border-slate-100 dark:border-slate-700" data-status="${bug.status}">
     <td class="px-3 py-2 font-mono text-xs whitespace-nowrap dark:text-slate-200">${bug.id}</td>
     <td class="px-3 py-2 text-sm dark:text-slate-200">${esc(bug.title)}</td>
     <td class="px-3 py-2 text-center">${badge(bug.severity)}</td>
@@ -522,7 +595,7 @@ function renderBugsTab(data) {
       if (!bug.lessonEncoded || !bug.lessonEncoded.startsWith('Yes')) return '○';
       const lm = bug.lessonEncoded.match(/L-\d{4}/);
       if (!lm) return '✓';
-      return `<a href="#" onclick="showTab('lessons');setTimeout(function(){var el=document.getElementById('lesson-${lm[0]}');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});},50);return false;" class="text-blue-600 dark:text-blue-400 hover:underline font-mono text-xs" title="View lesson ${lm[0]}">✓ ${lm[0]} ↗</a>`;
+      return `<a href="#" onclick="showTab('lessons');setTimeout(function(){var el=document.getElementById('lesson-${lm[0]}');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});},50);return false;" class="text-blue-600 dark:text-blue-400 hover:underline font-mono text-xs whitespace-nowrap" title="View lesson ${lm[0]}">✓ ${lm[0]} ↗</a>`;
     })()}</td>
   </tr>`).join('');
   return `
@@ -533,7 +606,7 @@ function renderBugsTab(data) {
         <tr>
           <th class="px-3 py-2">ID</th><th class="px-3 py-2">Title</th><th class="px-3 py-2 text-center">Severity</th>
           <th class="px-3 py-2 text-center">Status</th><th class="px-3 py-2">Story</th>
-          <th class="px-3 py-2">Branch</th><th class="px-3 py-2 text-center">Lesson</th>
+          <th class="px-3 py-2">Branch</th><th class="px-3 py-2 text-center whitespace-nowrap" style="min-width:8rem">Lesson</th>
         </tr>
       </thead>
       <tbody>${rows}</tbody>
@@ -573,7 +646,7 @@ function renderLessonsTab(data) {
   const cards = lessons.map(l => `
   <div id="lesson-${l.id}" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 flex flex-col gap-2">
     <div class="flex items-center gap-2">
-      <span class="font-mono text-xs font-bold text-blue-600 dark:text-blue-400">${l.id}</span>
+      <span class="font-mono text-xs font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap flex-shrink-0">${l.id}</span>
       <span class="text-sm font-semibold text-slate-700 dark:text-slate-200">${esc(l.title)}</span>
     </div>
     <hr class="border-slate-100 dark:border-slate-700">
@@ -652,7 +725,7 @@ function renderRecentActivity(data) {
   if (!data.recentActivity.length) return '';
   const items = data.recentActivity.map(a =>
     `<li class="py-2 border-b border-slate-100 dark:border-slate-700 last:border-0">
-      <span class="text-xs text-slate-500 block">${a.date}</span>
+      <span class="text-xs text-slate-500 block">Session ${a.sessionNum} &middot; ${a.date}</span>
       <span class="text-sm text-slate-700 dark:text-slate-200">${esc(a.summary)}</span>
     </li>`
   ).join('');
@@ -682,6 +755,19 @@ function renderScripts(data) {
 
   const VALID_TABS = ['hierarchy','kanban','traceability','charts','costs','bugs','lessons'];
 
+  function updateFilterBar(name) {
+    const bar = document.getElementById('filter-bar');
+    const storyGrp = document.getElementById('fgrp-story');
+    const bugGrp = document.getElementById('fgrp-bug');
+    const typeGrp = document.getElementById('fgrp-type');
+    const showStory = name === 'hierarchy' || name === 'kanban';
+    const showBug = name === 'bugs';
+    bar.classList.toggle('hidden', !showStory && !showBug);
+    storyGrp.classList.toggle('hidden', !showStory);
+    bugGrp.classList.toggle('hidden', !showBug);
+    if (typeGrp) typeGrp.classList.toggle('hidden', name !== 'hierarchy');
+  }
+
   function showTab(name) {
     VALID_TABS.forEach(t => {
       const el = document.getElementById('tab-' + t);
@@ -694,9 +780,18 @@ function renderScripts(data) {
         btn.classList.toggle('text-slate-400', t !== name);
       }
     });
+    updateFilterBar(name);
     if (name === 'charts' && typeof initCharts === 'function') { initCharts(); initCharts = () => {}; }
     localStorage.setItem('activeTab', name);
     history.replaceState(null, '', '#' + name);
+  }
+
+  function setHierarchyView(v) {
+    document.getElementById('hier-column-view').classList.toggle('hidden', v !== 'column');
+    document.getElementById('hier-card-view').classList.toggle('hidden', v !== 'card');
+    document.getElementById('hier-col-btn').classList.toggle('active-view', v === 'column');
+    document.getElementById('hier-card-btn').classList.toggle('active-view', v === 'card');
+    localStorage.setItem('hierarchyView', v);
   }
 
   function toggleEpic(id) {
@@ -712,10 +807,10 @@ function renderScripts(data) {
     const epic = document.getElementById('f-epic').value;
     const status = document.getElementById('f-status').value;
     const priority = document.getElementById('f-priority').value;
-    const type = document.getElementById('f-type').value;
+    const bugStatus = document.getElementById('f-bug-status').value;
     const search = document.getElementById('f-search').value.toLowerCase();
     document.querySelectorAll('.story-row').forEach(row => {
-      const hide = (type === 'bug') ||
+      const hide =
         (epic && row.dataset.epic !== epic) ||
         (status && row.dataset.status !== status) ||
         (priority && row.dataset.priority !== priority) ||
@@ -723,19 +818,22 @@ function renderScripts(data) {
       row.style.display = hide ? 'none' : '';
     });
     document.querySelectorAll('.bug-row').forEach(row => {
-      row.style.display = (type === 'story') ? 'none' : '';
+      const hide =
+        (bugStatus && row.dataset.status !== bugStatus) ||
+        (search && !row.innerText.toLowerCase().includes(search));
+      row.style.display = hide ? 'none' : '';
     });
     localStorage.setItem('f-epic', epic);
     localStorage.setItem('f-status', status);
     localStorage.setItem('f-priority', priority);
-    localStorage.setItem('f-type', type);
+    localStorage.setItem('f-bug-status', bugStatus);
     localStorage.setItem('f-search', document.getElementById('f-search').value);
   }
 
   function clearFilters() {
-    ['f-epic','f-status','f-priority','f-type'].forEach(id => document.getElementById(id).value = '');
+    ['f-epic','f-status','f-priority','f-bug-status'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('f-search').value = '';
-    ['f-epic','f-status','f-priority','f-type','f-search'].forEach(k => localStorage.removeItem(k));
+    ['f-epic','f-status','f-priority','f-bug-status','f-search'].forEach(k => localStorage.removeItem(k));
     applyFilters();
   }
 
@@ -791,10 +889,14 @@ function renderScripts(data) {
     const savedTab = VALID_TABS.includes(hash) ? hash : (VALID_TABS.includes(localStorage.getItem('activeTab')) ? localStorage.getItem('activeTab') : 'hierarchy');
     showTab(savedTab);
 
+    // Restore hierarchy view preference
+    setHierarchyView(localStorage.getItem('hierarchyView') || 'column');
+
     // Restore filter state
-    ['f-epic','f-status','f-priority','f-type'].forEach(id => {
+    ['f-epic','f-status','f-priority','f-bug-status'].forEach(id => {
+      const el = document.getElementById(id);
       const val = localStorage.getItem(id);
-      if (val) document.getElementById(id).value = val;
+      if (el && val) el.value = val;
     });
     const savedSearch = localStorage.getItem('f-search');
     if (savedSearch) document.getElementById('f-search').value = savedSearch;
@@ -949,8 +1051,8 @@ function renderHtml(data) {
 <body class="bg-slate-50 dark:bg-slate-900 min-h-screen">
   <div id="sticky-nav" class="sticky top-0 z-30">
     ${renderTopBar(data)}
-    ${renderFilterBar(data)}
     ${renderTabs()}
+    ${renderFilterBar(data)}
   </div>
   <div id="tab-content">
     ${renderHierarchyTab(data)}
