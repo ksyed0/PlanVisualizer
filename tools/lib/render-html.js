@@ -47,34 +47,35 @@ function renderTopBar(data) {
   const genAt = data.generatedAt;
   const genDateStr = genAt.slice(0,10) + ' ' + genAt.slice(11,16) + ' UTC';
   return `
-  <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white px-6 py-5 shadow-lg" id="top-bar">
+  <div class="text-white px-6 py-5 shadow-xl" id="top-bar"
+       style="background:linear-gradient(135deg,#003087 0%,#005EB8 55%,#0078C8 100%);backdrop-filter:blur(0px)">
     <div class="flex flex-wrap gap-4 items-start justify-between">
       <div class="min-w-0">
         <div class="flex items-center gap-3 flex-wrap">
-          <h1 class="text-3xl font-bold text-blue-400 tracking-tight topbar-title">${esc(data.projectName)}</h1>
-          <button onclick="openAbout()" class="text-xs text-slate-400 border border-slate-600 rounded px-2 py-0.5 hover:border-blue-400 hover:text-blue-400 transition-colors flex-shrink-0">About</button>
-          <button onclick="toggleTheme()" id="theme-toggle" class="text-xs text-slate-400 border border-slate-600 rounded px-2 py-0.5 hover:border-blue-400 hover:text-blue-400 transition-colors flex-shrink-0" aria-label="Toggle dark/light mode"><span id="theme-icon">☀</span></button>
+          <h1 class="text-3xl font-bold text-white tracking-tight topbar-title" style="text-shadow:0 1px 3px rgba(0,0,0,.3)">${esc(data.projectName)}</h1>
+          <button onclick="openAbout()" class="text-xs text-blue-100 border border-white/30 rounded px-2 py-0.5 hover:bg-white/15 hover:text-white transition-colors flex-shrink-0 backdrop-blur-sm">About</button>
+          <button onclick="toggleTheme()" id="theme-toggle" class="text-xs text-blue-100 border border-white/30 rounded px-2 py-0.5 hover:bg-white/15 hover:text-white transition-colors flex-shrink-0 backdrop-blur-sm" aria-label="Toggle dark/light mode"><span id="theme-icon">☀</span></button>
         </div>
-        <p class="text-slate-400 text-sm mt-0.5 topbar-tagline">${esc(data.tagline)}&nbsp;·&nbsp;Updated ${genDateStr}&nbsp;·&nbsp;<code class="text-slate-500 text-xs">${data.commitSha}</code></p>
+        <p class="text-blue-100/80 text-sm mt-0.5 topbar-tagline">${esc(data.tagline)}&nbsp;·&nbsp;Updated ${genDateStr}&nbsp;·&nbsp;<code class="text-blue-200/60 text-xs">${data.commitSha}</code></p>
         <div class="mt-2.5 flex items-center gap-2 topbar-progress">
-          <div class="bg-slate-700 rounded-full h-2 w-40 overflow-hidden">
-            <div class="bg-blue-500 h-2 rounded-full" style="width:${pct}%"></div>
+          <div class="rounded-full h-2 w-40 overflow-hidden" style="background:rgba(255,255,255,0.2)">
+            <div class="h-2 rounded-full" style="width:${pct}%;background:rgba(255,255,255,0.85)"></div>
           </div>
-          <span class="text-xs text-slate-400">${done}/${data.stories.length} &middot; ${pct}%${inProgress ? ` &middot; ${inProgress} active` : ''}</span>
+          <span class="text-xs text-blue-100/80">${done}/${data.stories.length} &middot; ${pct}%${inProgress ? ` &middot; ${inProgress} active` : ''}</span>
         </div>
       </div>
       <div class="flex gap-3 flex-wrap topbar-stats">
-        <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-center min-w-[80px] topbar-tile">
+        <div class="rounded-xl px-4 py-3 text-center min-w-[80px] topbar-tile" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.22);backdrop-filter:blur(8px)">
           <div class="text-xl font-bold text-white topbar-tile-num">${usd(totalProjected)}</div>
-          <div class="text-xs text-slate-400 mt-0.5">Projected</div>
+          <div class="text-xs mt-0.5" style="color:rgba(255,255,255,0.65)">Projected</div>
         </div>
-        <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-center min-w-[80px] topbar-tile">
+        <div class="rounded-xl px-4 py-3 text-center min-w-[80px] topbar-tile" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.22);backdrop-filter:blur(8px)">
           <div class="text-xl font-bold text-white topbar-tile-num">${usd(totalAI)}</div>
-          <div class="text-xs text-slate-400 mt-0.5">AI Actual</div>
+          <div class="text-xs mt-0.5" style="color:rgba(255,255,255,0.65)">AI Actual</div>
         </div>
-        <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-center min-w-[80px] topbar-tile" aria-label="Coverage: ${covLabel} overall, ${branchSubtitle}">
-          <div class="text-2xl font-bold ${covClass} topbar-tile-num">${covLabel}</div>
-          <div class="text-xs text-slate-400 mt-0.5">${branchSubtitle}</div>
+        <div class="rounded-xl px-4 py-3 text-center min-w-[80px] topbar-tile" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.22);backdrop-filter:blur(8px)" aria-label="Coverage: ${covLabel} overall, ${branchSubtitle}">
+          <div class="text-2xl font-bold topbar-tile-num" style="color:${(cov.available !== false) ? (cov.meetsTarget ? '#6EE7B7' : '#FCA5A5') : 'rgba(255,255,255,0.5)'}">${covLabel}</div>
+          <div class="text-xs mt-0.5" style="color:rgba(255,255,255,0.65)">${branchSubtitle}</div>
         </div>
       </div>
     </div>
@@ -333,7 +334,7 @@ function renderChartsTab(data) {
       data: { labels: ${epicLabels}, datasets: [
         { label: 'Done', data: ${epicDone}, backgroundColor: '#22c55e' },
         { label: 'In Progress', data: ${epicInProgress}, backgroundColor: '#3b82f6' },
-        { label: 'Planned/To Do', data: ${epicPlanned}, backgroundColor: '#e2e8f0' },
+        { label: 'Planned/To Do', data: ${epicPlanned}, backgroundColor: '#cbd5e1' },
       ]},
       options: { indexAxis: 'y', responsive: true, scales: { x: { stacked: true }, y: { stacked: true } } }
     });
@@ -353,7 +354,7 @@ function renderChartsTab(data) {
     });
     new Chart(document.getElementById('chart-coverage'), {
       type: 'doughnut',
-      data: { labels: ['Covered', 'Gap'], datasets: [{ data: [${coveragePct}, ${100 - parseFloat(coveragePct)}], backgroundColor: ['#22c55e','#e2e8f0'], borderWidth: 0 }] },
+      data: { labels: ['Covered', 'Gap'], datasets: [{ data: [${coveragePct}, ${100 - parseFloat(coveragePct)}], backgroundColor: ['#22c55e','#cbd5e1'], borderWidth: 0 }] },
       options: { cutout: '70%', plugins: { legend: { display: true, position: 'bottom' } } }
     });
     new Chart(document.getElementById('chart-ai-timeline'), {
@@ -473,7 +474,7 @@ function renderBugsTab(data) {
     <td class="px-3 py-2 text-sm dark:text-slate-200">${esc(bug.title)}</td>
     <td class="px-3 py-2 text-center">${badge(bug.severity)}</td>
     <td class="px-3 py-2 text-center">${badge(bug.status)}</td>
-    <td class="px-3 py-2 text-xs text-slate-500">${esc(bug.relatedStory)}</td>
+    <td class="px-3 py-2 text-xs text-slate-500 whitespace-nowrap">${esc(bug.relatedStory)}</td>
     <td class="px-3 py-2 text-xs text-slate-500">${esc(bug.fixBranch || '—')}</td>
     <td class="px-3 py-2 text-center text-xs dark:text-slate-200">${bug.lessonEncoded && bug.lessonEncoded.startsWith('Yes') ? '✓' : '○'}</td>
   </tr>`).join('');
@@ -669,6 +670,30 @@ function renderScripts(data) {
 function renderPrintCSS() {
   return `
   <style>
+  /* === Dark mode fallbacks (guaranteed via .dark class regardless of Tailwind CDN recompile) === */
+  html.dark body { background-color: #0f172a; color: #cbd5e1; }
+  html.dark #top-bar { background: linear-gradient(135deg, #001a4d 0%, #002d6e 55%, #003d8c 100%) !important; }
+  html.dark #filter-bar { background-color: #1e293b !important; border-color: #334155 !important; }
+  html.dark #filter-bar select, html.dark #filter-bar input { background-color: #334155 !important; border-color: #475569 !important; color: #cbd5e1 !important; }
+  html.dark #filter-bar button { color: #94a3b8 !important; }
+  html.dark #tab-bar { background-color: #1e293b !important; border-color: #334155 !important; }
+  html.dark #tab-bar button { color: #94a3b8 !important; }
+  html.dark #tab-bar button.active { color: #cbd5e1 !important; border-color: #3b82f6 !important; }
+  html.dark .epic-block { border-color: #334155 !important; }
+  html.dark .epic-block > div:first-child { background-color: #1e293b !important; }
+  html.dark .epic-block > div:first-child span { color: #cbd5e1 !important; }
+  html.dark .story-row { color: #cbd5e1; }
+  html.dark .story-row p { color: #cbd5e1 !important; }
+  html.dark #activity-panel { background-color: #1e293b !important; border-color: #334155 !important; color: #cbd5e1 !important; }
+  html.dark #activity-panel li { border-color: #334155 !important; }
+  html.dark table thead { background-color: #1e293b !important; color: #cbd5e1 !important; }
+  html.dark table tbody tr { border-color: #334155 !important; }
+  html.dark table tbody td { color: #cbd5e1; }
+  html.dark .bg-white { background-color: #1e293b !important; }
+  html.dark .border-slate-200 { border-color: #334155 !important; }
+  html.dark .text-slate-700, html.dark .text-slate-600 { color: #cbd5e1 !important; }
+  html.dark .text-slate-500 { color: #94a3b8 !important; }
+  html.dark h3 { color: #cbd5e1 !important; }
   @media print {
     #filter-bar, #tab-bar, .fixed, .activity-panel { display: none !important; }
     body { padding-right: 0 !important; }
@@ -688,9 +713,10 @@ function renderHtml(data) {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${esc(data.projectName)} — Plan Status</title>
-  <script>tailwind.config={darkMode:'class'}</script>
+  <script>window.tailwind={config:{darkMode:'class'}}</script>
   <script>(function(){var t=localStorage.getItem('theme');if(t==='dark'||(t==null&&window.matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');}})()</script>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={darkMode:'class'}</script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">

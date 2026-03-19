@@ -578,3 +578,73 @@ Status: Fixed
 Fix Branch: feature/dark-mode-readability
 Lesson Encoded: Yes — see docs/LESSONS.md
 Estimated Cost USD: 0.00
+
+BUG-0039: Bugs tab Story column wraps on narrow viewports
+Severity: Low
+Related Story: US-0031
+Related Task: n/a
+Steps to Reproduce:
+  1. Open plan-status.html → Bugs tab
+  2. Narrow the browser window or view on mobile
+Expected: Story ID (e.g. US-0031) stays on one line in the Story column
+Actual: Story cell wraps mid-string due to missing whitespace-nowrap on the td element
+Status: Fixed
+Fix Branch: feature/dark-mode-readability
+Lesson Encoded: No
+Estimated Cost USD: 0.00
+
+BUG-0040: Dark mode toggle changes About modal but not the rest of the page
+Severity: High
+Related Story: US-0031
+Related Task: TASK-0030
+Steps to Reproduce:
+  1. Open plan-status.html
+  2. Click the sun/moon toggle in the header
+Expected: Entire page switches between light and dark themes
+Actual: Only the About modal responds; rest of page unchanged — tailwind.config={darkMode:'class'} was set before the CDN loaded so tailwind was undefined, config never applied, CDN defaulted to prefers-color-scheme strategy
+Status: Fixed
+Fix Branch: feature/dark-mode-readability
+Lesson Encoded: Yes — see docs/LESSONS.md
+Estimated Cost USD: 0.00
+
+BUG-0041: New bugs BUG-0034–0038 show $0.00 AI cost and 0/0 tokens in Costs tab
+Severity: Low
+Related Story: US-0031
+Related Task: n/a
+Steps to Reproduce:
+  1. Open plan-status.html → Costs tab → Bug Fix Costs section
+  2. Observe AI Cost and Tokens columns for BUG-0034 through BUG-0038
+Expected: AI cost and token columns show values from the feature/dark-mode-readability branch sessions
+Actual: $0.00 / 0/0 because no cost log entries existed for the fix branch and Estimated Cost USD was 0.00 so isEstimated stayed false (no — dash shown either)
+Status: Fixed
+Fix Branch: feature/dark-mode-readability
+Lesson Encoded: Yes — see docs/LESSONS.md
+Estimated Cost USD: 0.00
+
+BUG-0042: dark:* Tailwind variants not applied — dark mode toggle has no effect on page text/backgrounds
+Severity: High
+Related Story: US-0031
+Related Task: TASK-0030
+Steps to Reproduce:
+  1. Open plan-status.html; dark mode activates (via localStorage or prefers-color-scheme)
+  2. Observe Hierarchy tab story text — black text on dark background, unreadable
+Expected: All dark:text-* and dark:bg-* classes apply when html.dark is present
+Actual: Tailwind CDN generates styles using prefers-color-scheme strategy instead of class strategy because tailwind.config={darkMode:'class'} is set AFTER CDN loads; during initial CSS generation darkMode:'class' is unknown so dark: variants are never emitted
+Status: Open
+Fix Branch: feature/dark-mode-readability
+Lesson Encoded: No
+Estimated Cost USD: 0.00
+
+BUG-0043: Header does not change when toggling dark/light mode
+Severity: Medium
+Related Story: US-0031
+Related Task: TASK-0030
+Steps to Reproduce:
+  1. Open plan-status.html in light mode
+  2. Click the sun/moon toggle
+Expected: Header gradient shifts to a darker blue variant in dark mode
+Actual: Header always shows the same EPAM blue gradient — inline style= cannot use dark: Tailwind variants, and no CSS rule overrides it in .dark context
+Status: Open
+Fix Branch: feature/dark-mode-readability
+Lesson Encoded: No
+Estimated Cost USD: 0.00
