@@ -35,8 +35,8 @@ Active implementation plan for the current development phase.
 
 | # | Task | US | Status |
 |---|------|----|--------|
-| 1 | Write docs/DESIGN.md | US-0019 | Done |
-| 2 | Write docs/ARCHITECTURE.md | US-0019 | Done |
+| 1 | Write docs/architecture/DESIGN.md | US-0019 | Done |
+| 2 | Write docs/architecture/ARCHITECTURE.md | US-0019 | Done |
 | 3 | Write docs/RELEASE_PLAN.md | US-0020 | Done |
 | 4 | Write docs/ID_REGISTRY.md | US-0020 | Done |
 | 5 | Write docs/TEST_CASES.md | US-0021 | Done |

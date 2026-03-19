@@ -1,8 +1,8 @@
 # PlanVisualizer
 
-A self-contained project dashboard for Claude Code projects. Parses your `RELEASE_PLAN.md`, `TEST_CASES.md`, `BUGS.md`, `AI_COST_LOG.md`, coverage JSON, and `progress.md` into a static `plan-status.html` with six tabs:
+A self-contained project dashboard for Claude Code projects. Parses your `RELEASE_PLAN.md`, `TEST_CASES.md`, `BUGS.md`, `AI_COST_LOG.md`, `LESSONS.md`, coverage JSON, and `progress.md` into a static `plan-status.html` with seven tabs:
 
-**Hierarchy · Kanban · Traceability · Charts · Costs · Bugs**
+**Hierarchy · Kanban · Traceability · Charts · Costs · Bugs · Lessons**
 
 No runtime dependencies — Node.js and git only.
 
@@ -59,6 +59,7 @@ After installation, edit `plan-visualizer.config.json` in your project root:
 | `docs.testCases` | `"docs/TEST_CASES.md"` | Path to test cases |
 | `docs.bugs` | `"docs/BUGS.md"` | Path to bug log |
 | `docs.costLog` | `"docs/AI_COST_LOG.md"` | Path to AI cost ledger |
+| `docs.lessons` | `"docs/LESSONS.md"` | Path to lessons log (surfaced in Lessons tab) |
 | `docs.outputDir` | `"docs"` | Directory where `plan-status.html` is written |
 | `coverage.summaryPath` | `"docs/coverage/coverage-summary.json"` | Path to Jest `coverage-summary.json` |
 | `progress.path` | `"progress.md"` | Path to session progress log |

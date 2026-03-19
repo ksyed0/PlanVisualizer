@@ -49,7 +49,8 @@ All parsers: `(markdown: string) → Array` — never throw; empty string return
 | `parse-bugs.js` | `bugs[{ id, title, severity, status, relatedStory, fixBranch, lessonEncoded }]` |
 | `parse-cost-log.js` | `rows[{ date, branch, inputTokens, outputTokens, costUsd }]` |
 | `parse-coverage.js` | `{ lines, statements, functions, branches, overall, meetsTarget }` |
-| `parse-progress.js` | `activity[{ date, summary }]` |
+| `parse-lessons.js` | `lessons[{ id, title, rule, context, date }]` |
+| `parse-progress.js` | `activity[{ sessionNum, date, summary }]` |
 
 ### compute-costs.js Output
 
@@ -77,11 +78,14 @@ All parsers: `(markdown: string) → Array` — never throw; empty string return
 ## §4 Behavioral Rules
 
 - Dashboard must show overall completion % in the header.
-- At-risk stories are flagged with ⚠ when: missing TCs, no branch while In Progress, or failed TC without a linked bug.
+- At-risk stories are flagged with ⚠ when: missing TCs, no branch while In Progress, or failed TC without a linked bug. Stories with status `Done` are never flagged at risk.
 - Coverage displays red when `meetsTarget: false` (below 80%).
-- Costs tab groups stories by epic with subtotal rows.
-- Recent Activity panel is fixed right, 280px expanded / 40px collapsed, persisted in `localStorage`.
+- Costs tab groups stories by epic with subtotal rows; Bug Fix Costs sub-table includes a totals row.
+- Filter bar is positioned below the tab bar and shows only the controls applicable to the active tab: story filters for Hierarchy/Kanban, bug filters for Bugs, hidden for all other tabs.
+- Lessons tab surfaces LESSONS.md entries with column/card view and Bug Ref cross-links.
+- Recent Activity panel is fixed right, 280px expanded / 40px collapsed, persisted in `localStorage`. Each entry shows "Session N · YYYY-MM-DD".
 - Print CSS hides all panels and navigation.
+- CSS colour tokens (`--clr-*`) defined in `:root` (light) and `html.dark` (dark) are the sole source of colour values; no hardcoded hex in CSS property rules.
 
 ---
 
@@ -98,24 +102,25 @@ All parsers: `(markdown: string) → Array` — never throw; empty string return
 ## §6 Design System
 
 **Framework:** Tailwind CSS (CDN) — no build step.
-**Colour palette:**
+
+**Dark mode:** Controlled via `html.dark` class toggled by `toggleTheme()`; preference persisted to `localStorage`. All colours are expressed as CSS custom properties (`--clr-*`).
+
+**Colour tokens:**
 
 | Token | Value | Usage |
 |-------|-------|-------|
 | Tab bar background | `bg-slate-800` | Navigation tab bar |
 | Tab active text | `text-blue-300` / `border-blue-400` | Active tab indicator |
 | Tab inactive text | `text-slate-400` | Inactive tabs |
-| Card background | `bg-white` | Story/epic cards |
-| Page background | `bg-slate-50` | Body |
 | At-risk badge | `bg-amber-100 text-amber-800` | Risk warnings |
 | Done badge | `bg-green-100 text-green-800` | Completed status |
 | In Progress badge | `bg-blue-100 text-blue-800` | Active status |
 | Planned badge | `bg-purple-100 text-purple-700` | Planned status |
 | Blocked badge | `bg-red-100 text-red-800` | Blocked status |
 
-**Charts:** Chart.js v4 (CDN). Coverage: doughnut. AI Costs: bar. Story status: doughnut.
+**Charts:** Chart.js v4 (CDN). All charts render at 300 px height (`maintainAspectRatio:false`). Coverage: doughnut. AI Costs: bar. Story status: doughnut.
 
-**Typography:** System font stack (Tailwind default). No custom fonts.
+**Typography:** Inter (Google Fonts) for body; JetBrains Mono for monospace.
 
 ---
 
@@ -124,3 +129,4 @@ All parsers: `(markdown: string) → Array` — never throw; empty string return
 | Date | Change | Who |
 |------|--------|-----|
 | 2026-03-10 | Initial constitution created | Claude Sonnet 4.6 |
+| 2026-03-18 | Added parse-lessons.js; sessionNum to parse-progress output; per-tab filter bar; Hierarchy card view; Bug tab filtering; CSS theme tokens; at-risk Done exclusion; Lessons tab; uniform chart heights; viewport-fill tabs; Bug Fix Costs totals row; session number in Recent Activity | Claude Sonnet 4.6 |

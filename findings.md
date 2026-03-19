@@ -33,3 +33,25 @@ The file is gitignored so that when PlanVisualizer is installed as a tool into a
 | @eslint/js | latest | ESLint recommended rules | MIT | Active |
 
 All CDN dependencies (Tailwind, Chart.js, Google Fonts) are loaded at runtime by the generated HTML. They are not npm packages and are not subject to npm audit.
+
+---
+
+## 2026-03-18 — Dashboard UX Improvements & Lessons Tab
+
+### CSS custom property theming
+Replacing hardcoded hex colours with CSS custom properties (`--clr-*`) requires a single canonical `:root` block (light theme defaults) and an `html.dark` override block. All CSS property values reference `var(--clr-*)` — hex literals only appear inside these two blocks. `chartTextColor()` must read the resolved value via `getComputedStyle` rather than returning a hardcoded string.
+
+### Chart.js aspect ratio conflict
+Doughnut charts default to `aspectRatio:1` (square) while bar and line charts default to `aspectRatio:2` (landscape). This produces mismatched heights when charts sit side-by-side. Fix: set `maintainAspectRatio:false` on **all** charts and give every canvas wrapper a fixed pixel height (e.g. 300 px).
+
+### Kanban per-column scroll
+CSS `position:sticky` inside a container that has `overflow-y:auto` does not work: the sticky element scrolls with the container. The correct approach for a kanban where column headers should stay visible is per-column independent scroll — each column is a flex column with its own `overflow-y:auto` body, and the column header `<h3>` sits above that scrolling area (outside the overflow container), so it never scrolls away.
+
+### Tab viewport-fill with flex
+A tab container with `max-height` collapses to content height when content is short, leaving blank space. The fix is a flex-column pattern: the tab container gets `height:calc(100vh - var(--sticky-top))` and `display:flex; flex-direction:column`. The inner scroll region gets `flex:1; min-height:0` — this stretches it to fill remaining vertical space while still being scrollable when content overflows.
+
+### Per-tab filter bar
+A single filter bar with groups hidden by JS (`updateFilterBar(tabName)`) is simpler than rendering multiple filter bars. `showTab()` calls `updateFilterBar` on every tab switch, so the bar state is always correct regardless of how the tab is changed (click, hash, localStorage restore).
+
+### At-risk guard for Done stories
+`detectAtRisk()` must exclude Done stories before evaluating any signal. A Done story with no TCs is not "at risk" — it is completed. The guard `story.status !== 'Done'` must be the first condition in the `isAtRisk` expression to prevent false positives.

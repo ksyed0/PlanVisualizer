@@ -7,6 +7,7 @@ const sampleData = {
   tasks: [],
   testCases: [],
   bugs: [],
+  lessons: [],
   costs: { 'US-0001': { projectedUsd: 800, aiCostUsd: 0.47, inputTokens: 50000, outputTokens: 14000 }, _totals: { costUsd: 0.89, inputTokens: 95000, outputTokens: 26000 } },
   atRisk: { 'US-0001': { missingTCs: true, noBranch: false, failedTCNoBug: false, isAtRisk: true } },
   coverage: { lines: 84.5, overall: 81.0, meetsTarget: true },
@@ -282,9 +283,9 @@ describe('renderHtml — projected cost from data.costs (BUG-0006)', () => {
   });
 });
 
-describe('renderHtml — f-type filter (BUG-0009)', () => {
-  it('includes f-type select in filter bar', () => {
-    expect(renderHtml(sampleData)).toContain('id="f-type"');
+describe('renderHtml — filter bar (BUG-0009)', () => {
+  it('includes f-bug-status select for bugs tab filtering', () => {
+    expect(renderHtml(sampleData)).toContain('id="f-bug-status"');
   });
   it('assigns bug-row class to bug table rows', () => {
     const dataWithBug = { ...sampleData, bugs: [{ id: 'BUG-0001', title: 'Crash', severity: 'High', status: 'Open', relatedStory: 'US-0001', fixBranch: 'bugfix/BUG-0001', lessonEncoded: 'No' }] };
@@ -325,5 +326,74 @@ describe('renderHtml — bug token dash for estimated costs (BUG-0037)', () => {
 describe('renderHtml — AI cost column colour (BUG-0036)', () => {
   it('uses text-teal-700 for AI cost cells', () => {
     expect(renderHtml(sampleData)).toContain('text-teal-700');
+  });
+});
+
+describe('renderHtml — Lessons tab (US-0032)', () => {
+  const sampleLesson = { id: 'L-0010', title: 'Update TC statuses', rule: 'Always update TCs when story is Done.', context: 'BUG-0003 caused 23 TCs to show Not Run.', date: '2026-03-10' };
+
+  it('renders Lessons tab when lessons present', () => {
+    const d = { ...sampleData, lessons: [sampleLesson] };
+    const html = renderHtml(d);
+    expect(html).toContain('id="tab-lessons"');
+    expect(html).toContain('L-0010');
+    expect(html).toContain('Always update TCs');
+  });
+
+  it('renders column and card view containers', () => {
+    const d = { ...sampleData, lessons: [sampleLesson] };
+    const html = renderHtml(d);
+    expect(html).toContain('lessons-column-view');
+    expect(html).toContain('lessons-card-view');
+  });
+
+  it('renders setLessonsView toggle JS', () => {
+    const d = { ...sampleData, lessons: [sampleLesson] };
+    expect(renderHtml(d)).toContain('setLessonsView');
+  });
+
+  it('renders Lessons tab button in tab bar', () => {
+    const d = { ...sampleData, lessons: [sampleLesson] };
+    expect(renderHtml(d)).toMatch(/Lessons/);
+  });
+
+  it('shows empty state when no lessons', () => {
+    const d = { ...sampleData, lessons: [] };
+    expect(renderHtml(d)).toContain('No lessons logged yet');
+  });
+
+  it('renders lesson anchor id for scroll target', () => {
+    const d = { ...sampleData, lessons: [sampleLesson] };
+    expect(renderHtml(d)).toContain('id="lesson-L-0010"');
+  });
+});
+
+describe('renderHtml — Bugs tab lesson hyperlink (US-0032)', () => {
+  const bugWithLessonId = { id: 'BUG-0001', title: 'Crash', severity: 'High', status: 'Fixed', relatedStory: 'US-0001', fixBranch: '', lessonEncoded: 'Yes — see docs/LESSONS.md (L-0010)' };
+  const bugWithYesNoId  = { id: 'BUG-0002', title: 'Other', severity: 'Low',  status: 'Fixed', relatedStory: 'US-0001', fixBranch: '', lessonEncoded: 'Yes — see docs/LESSONS.md' };
+  const bugNoLesson     = { id: 'BUG-0003', title: 'Minor', severity: 'Low',  status: 'Open',  relatedStory: 'US-0001', fixBranch: '', lessonEncoded: 'No' };
+
+  it('renders ✓ L-0010 ↗ as link when lesson ID present', () => {
+    const d = { ...sampleData, bugs: [bugWithLessonId] };
+    const html = renderHtml(d);
+    expect(html).toContain('✓ L-0010 ↗');
+    expect(html).toContain('lesson-L-0010');
+  });
+
+  it('renders plain ✓ when Yes but no L-ID', () => {
+    const d = { ...sampleData, bugs: [bugWithYesNoId] };
+    const html = renderHtml(d);
+    expect(html).toContain('✓');
+    expect(html).not.toContain('↗');
+  });
+
+  it('renders ○ when lesson not encoded', () => {
+    const d = { ...sampleData, bugs: [bugNoLesson] };
+    expect(renderHtml(d)).toContain('○');
+  });
+
+  it('adds bug-row id for reverse scroll from Lessons tab', () => {
+    const d = { ...sampleData, bugs: [bugWithLessonId] };
+    expect(renderHtml(d)).toContain('id="bug-row-BUG-0001"');
   });
 });
