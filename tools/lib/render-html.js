@@ -36,9 +36,7 @@ function fmtNum(n) { return Number(n).toLocaleString(); }
 
 function renderTopBar(data) {
   const totalProjected = data.stories.reduce((s, st) => s + (data.costs[st.id] && data.costs[st.id].projectedUsd || 0), 0);
-  const bugEstimated = Object.entries(data.costs._bugs || {})
-    .filter(([k, v]) => k !== '_totals' && v && v.isEstimated)
-    .reduce((s, [, v]) => s + (v.costUsd || 0), 0);
+  const bugEstimated = (data.bugs || []).reduce((s, b) => s + (b.estimatedCostUsd || 0), 0);
   const totalAI = (data.costs._totals.costUsd || 0) + bugEstimated;
   const done = data.stories.filter(s => s.status === 'Done').length;
   const inProgress = data.stories.filter(s => s.status === 'In Progress').length;
@@ -527,11 +525,14 @@ function renderCostsTab(data) {
   const totalProjected = data.stories.reduce((s, st) => s + (data.costs[st.id] && data.costs[st.id].projectedUsd || 0), 0);
   const bugCostsSection = data.bugs.length ? (() => {
     const allBugCosts = data.bugs.map(b => (data.costs._bugs && data.costs._bugs[b.id]) || { costUsd: 0, inputTokens: 0, outputTokens: 0 });
-    const bugTotalCost = allBugCosts.reduce((s, bc) => s + (bc.costUsd || 0), 0);
+    const bugTotalAI   = allBugCosts.reduce((s, bc) => s + (bc.isEstimated ? 0 : (bc.costUsd || 0)), 0);
+    const bugTotalEst  = data.bugs.reduce((s, b) => s + (b.estimatedCostUsd || 0), 0);
     const bugTotalIn   = allBugCosts.reduce((s, bc) => s + (bc.isEstimated ? 0 : (bc.inputTokens || 0)), 0);
     const bugTotalOut  = allBugCosts.reduce((s, bc) => s + (bc.isEstimated ? 0 : (bc.outputTokens || 0)), 0);
     const bugRows = data.bugs.map(bug => {
       const bc = (data.costs._bugs && data.costs._bugs[bug.id]) || { costUsd: 0, inputTokens: 0, outputTokens: 0 };
+      const aiCost = bc.isEstimated ? '—' : usd(bc.costUsd);
+      const estCost = bug.estimatedCostUsd > 0 ? `<span class="text-slate-400 italic" title="Manually estimated cost">${usd(bug.estimatedCostUsd)}</span>` : '—';
       return `<tr class="border-t border-slate-100 dark:border-slate-700">
         <td class="px-3 py-2 font-mono text-xs text-slate-500 whitespace-nowrap">${esc(bug.id)}</td>
         <td class="px-3 py-2 text-sm dark:text-slate-200">${esc(bug.title)}</td>
@@ -539,7 +540,8 @@ function renderCostsTab(data) {
         <td class="px-3 py-2 text-center">${badge(bug.status)}</td>
         <td class="px-3 py-2 text-xs text-slate-500">${esc(bug.relatedStory || '—')}</td>
         <td class="px-3 py-2 text-xs text-slate-500">${esc(bug.fixBranch || '—')}</td>
-        <td class="px-3 py-2 text-right text-sm text-teal-700 dark:text-teal-400">${bc.isEstimated ? `<span class="text-slate-400 italic" title="Estimated — predates cost logging">${usd(bc.costUsd)} est.</span>` : usd(bc.costUsd)}</td>
+        <td class="px-3 py-2 text-right text-sm">${estCost}</td>
+        <td class="px-3 py-2 text-right text-sm text-teal-700 dark:text-teal-400">${aiCost}</td>
         <td class="px-3 py-2 text-right text-xs text-slate-500 tokens-col">${bc.isEstimated ? '—' : `${fmtNum(bc.inputTokens)} / ${fmtNum(bc.outputTokens)}`}</td>
       </tr>`;
     }).join('');
@@ -551,7 +553,8 @@ function renderCostsTab(data) {
         <tr>
           <th class="px-3 py-2">Bug</th><th class="px-3 py-2">Title</th><th class="px-3 py-2 text-center">Severity</th>
           <th class="px-3 py-2 text-center">Status</th><th class="px-3 py-2">Story</th>
-          <th class="px-3 py-2">Fix Branch</th><th class="px-3 py-2 text-right">AI Cost</th>
+          <th class="px-3 py-2">Fix Branch</th><th class="px-3 py-2 text-right">Estimated</th>
+          <th class="px-3 py-2 text-right">AI Cost</th>
           <th class="px-3 py-2 text-right tokens-col">Tokens (in/out)</th>
         </tr>
       </thead>
@@ -559,7 +562,8 @@ function renderCostsTab(data) {
       <tfoot class="bg-slate-50 dark:bg-slate-700 font-semibold border-t-2 border-slate-300 dark:border-slate-600">
         <tr>
           <td colspan="6" class="px-3 py-2 text-right text-sm dark:text-slate-200">Totals</td>
-          <td class="px-3 py-2 text-right text-sm text-teal-700 dark:text-teal-400">${usd(bugTotalCost)}</td>
+          <td class="px-3 py-2 text-right text-sm text-slate-500 italic">${usd(bugTotalEst)}</td>
+          <td class="px-3 py-2 text-right text-sm text-teal-700 dark:text-teal-400">${usd(bugTotalAI)}</td>
           <td class="px-3 py-2 text-right text-xs text-slate-500 tokens-col">${fmtNum(bugTotalIn)} / ${fmtNum(bugTotalOut)}</td>
         </tr>
       </tfoot>
