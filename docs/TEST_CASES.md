@@ -1724,3 +1724,174 @@ Actual Result:
 Status: [x] Pass
 Defect Raised: None
 Notes:
+
+TC-0112: Bug Fix Costs table shows $0.00 AI Cost for bug with no matching fix branch in cost log
+Related Story: US-0030
+Related Task: TASK-0028
+Related AC: AC-0084
+Type: Functional
+Preconditions: BUGS.md contains a bug with Fix Branch set to a branch not present in AI_COST_LOG.md
+Steps:
+  1. Call attributeBugCosts([{id:'BUG-X', fixBranch:'bugfix/no-match', estimatedCostUsd:0}], {})
+  2. Inspect result['BUG-X']
+Expected Result: costUsd is 0, isEstimated is false, AI Cost column shows $0.00 (not —)
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0113: All tabs render readable text in both light and dark modes via CSS custom properties
+Related Story: US-0033
+Related Task: TASK-0035
+Related AC: AC-0099
+Type: Functional
+Preconditions: plan-status.html generated with CSS custom property theming
+Steps:
+  1. Open plan-status.html in light mode; inspect text on Hierarchy, Kanban, Bugs, Lessons, Costs tabs
+  2. Toggle to dark mode via sun/moon button; repeat inspection across all tabs
+Expected Result: All body text, table rows, and card content are legible in both modes; no hardcoded hex colours in CSS property rules
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes: Verified via TC-0097–0099; html.dark #top-bar gradient override added for header
+
+TC-0114: Hierarchy card view renders a responsive grid of story cards grouped under epic headings
+Related Story: US-0034
+Related Task: TASK-0036
+Related AC: AC-0102
+Type: Functional
+Preconditions: RELEASE_PLAN.md contains at least one epic with two or more stories
+Steps:
+  1. Open plan-status.html → Hierarchy tab
+  2. Click ⊞ Card toggle button
+  3. Inspect the card view area
+Expected Result: Story cards appear in a responsive grid (1→2→3 columns) grouped under their epic heading; each card shows story ID, title, status badge, priority, and AC list toggle
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0115: Filter bar is rendered inside the sticky nav area and scrolls with the tab bar
+Related Story: US-0035
+Related Task: TASK-0037
+Related AC: AC-0104
+Type: Functional
+Preconditions: plan-status.html loaded on a viewport that requires vertical scrolling
+Steps:
+  1. Open plan-status.html → Hierarchy tab
+  2. Scroll down past the top bar
+  3. Observe the filter bar position
+Expected Result: Filter bar remains fixed below the tab bar while content scrolls; --sticky-top CSS variable is updated on each tab switch to account for filter bar height change
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes: setStickyTop() called inside showTab() after updateFilterBar() to recalculate sticky offset
+
+TC-0116: Recent Activity entries display session number in visually distinct style
+Related Story: US-0037
+Related Task: TASK-0039
+Related AC: AC-0113
+Type: Functional
+Preconditions: progress.md contains at least one session with ## Session N — YYYY-MM-DD heading
+Steps:
+  1. Open plan-status.html
+  2. Expand the Recent Activity panel
+  3. Inspect each activity entry
+Expected Result: Session number appears as 'Session N · YYYY-MM-DD' with the session label in a muted/smaller style distinct from the summary text
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0117: Costs tab column/card toggle persists view preference to localStorage
+Related Story: US-0038
+Related Task: TASK-0040
+Related AC: AC-0114
+Type: Functional
+Preconditions: plan-status.html loaded; Costs tab accessible
+Steps:
+  1. Open plan-status.html → Costs tab
+  2. Click ⊞ Card toggle; reload page; navigate to Costs tab
+  3. Click ≡ Column toggle; reload page; navigate to Costs tab
+Expected Result: After reload, the last selected view (column or card) is restored from localStorage key 'costsView'
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0118: Costs tab card view shows story cards grouped by epic with projected and AI actual values
+Related Story: US-0038
+Related Task: TASK-0040
+Related AC: AC-0115
+Type: Functional
+Preconditions: RELEASE_PLAN.md contains epics with stories; AI_COST_LOG.md has cost entries
+Steps:
+  1. Open plan-status.html → Costs tab → switch to Card view
+  2. Inspect card layout for each epic section
+Expected Result: Each epic appears as a labelled section header; story cards within show ID, title, status badge, size, projected cost, and AI actual cost
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0119: Costs tab card view includes Bug Fix Costs section with one card per bug
+Related Story: US-0038
+Related Task: TASK-0040
+Related AC: AC-0116
+Type: Functional
+Preconditions: BUGS.md contains at least one bug entry
+Steps:
+  1. Open plan-status.html → Costs tab → switch to Card view
+  2. Scroll to the Bug Fix Costs section
+Expected Result: Bug Fix Costs section appears below epic story cards; one card per bug showing bug ID, severity, status, related story, projected cost, and AI actual cost
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0120: Bugs tab column/card toggle persists view preference to localStorage
+Related Story: US-0039
+Related Task: TASK-0041
+Related AC: AC-0117
+Type: Functional
+Preconditions: plan-status.html loaded; Bugs tab accessible
+Steps:
+  1. Open plan-status.html → Bugs tab
+  2. Click ⊞ Card toggle; reload page; navigate to Bugs tab
+  3. Click ≡ Column toggle; reload page; navigate to Bugs tab
+Expected Result: After reload, the last selected view is restored from localStorage key 'bugsView'
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0121: Bugs tab card view shows one card per bug with severity, status, story, branch, and lesson link
+Related Story: US-0039
+Related Task: TASK-0041
+Related AC: AC-0118
+Type: Functional
+Preconditions: BUGS.md contains bugs with various severities, statuses, and lesson references
+Steps:
+  1. Open plan-status.html → Bugs tab → switch to Card view
+  2. Inspect individual bug cards
+Expected Result: Each card shows bug ID, severity badge, status badge, title, related story (monospace), fix branch (truncated with tooltip), and lesson cell (✓ L-XXXX ↗ link or ○)
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0122: Bug status filter and text search apply to both column rows and card elements on Bugs tab
+Related Story: US-0039
+Related Task: TASK-0041
+Related AC: AC-0119
+Type: Functional
+Preconditions: BUGS.md contains bugs with mixed statuses
+Steps:
+  1. Open plan-status.html → Bugs tab in Column view; select a status filter; confirm rows hidden
+  2. Switch to Card view without clearing filter
+  3. Repeat: enter search text, observe card visibility
+Expected Result: Both column <tr> elements and card <div> elements are filtered identically; .bug-row class and data-status attribute present on both element types
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:

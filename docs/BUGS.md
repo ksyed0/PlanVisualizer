@@ -630,9 +630,9 @@ Steps to Reproduce:
   2. Observe Hierarchy tab story text — black text on dark background, unreadable
 Expected: All dark:text-* and dark:bg-* classes apply when html.dark is present
 Actual: Tailwind CDN generates styles using prefers-color-scheme strategy instead of class strategy because tailwind.config={darkMode:'class'} is set AFTER CDN loads; during initial CSS generation darkMode:'class' is unknown so dark: variants are never emitted
-Status: Open
+Status: Fixed
 Fix Branch: feature/dark-mode-readability
-Lesson Encoded: No
+Lesson Encoded: Yes — see docs/LESSONS.md
 Estimated Cost USD: 0.00
 
 BUG-0043: Header does not change when toggling dark/light mode
@@ -644,9 +644,9 @@ Steps to Reproduce:
   2. Click the sun/moon toggle
 Expected: Header gradient shifts to a darker blue variant in dark mode
 Actual: Header always shows the same EPAM blue gradient — inline style= cannot use dark: Tailwind variants, and no CSS rule overrides it in .dark context
-Status: Open
+Status: Fixed
 Fix Branch: feature/dark-mode-readability
-Lesson Encoded: No
+Lesson Encoded: Yes — see docs/LESSONS.md
 Estimated Cost USD: 0.00
 
 BUG-0044: Stories with status 'Done' incorrectly flagged as At Risk
