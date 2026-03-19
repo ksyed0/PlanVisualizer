@@ -45,7 +45,6 @@ function renderTopBar(data) {
   const covClass = (cov.available !== false) ? (cov.meetsTarget ? 'text-green-400' : 'text-red-400') : 'text-slate-500';
   const branchSubtitle = (cov.available !== false) ? `Branches: ${Number(cov.branches).toFixed(1)}%` : 'N/A';
   const genAt = data.generatedAt;
-  const genDateStr = genAt.slice(0,10) + ' ' + genAt.slice(11,16) + ' UTC';
   return `
   <div class="text-white px-6 py-5 shadow-xl" id="top-bar"
        style="background:linear-gradient(135deg,#003087 0%,#005EB8 55%,#0078C8 100%);backdrop-filter:blur(0px)">
@@ -56,7 +55,7 @@ function renderTopBar(data) {
           <button onclick="openAbout()" class="text-xs text-blue-100 border border-white/30 rounded px-2 py-0.5 hover:bg-white/15 hover:text-white transition-colors flex-shrink-0 backdrop-blur-sm">About</button>
           <button onclick="toggleTheme()" id="theme-toggle" class="text-xs text-blue-100 border border-white/30 rounded px-2 py-0.5 hover:bg-white/15 hover:text-white transition-colors flex-shrink-0 backdrop-blur-sm" aria-label="Toggle dark/light mode"><span id="theme-icon">☀</span></button>
         </div>
-        <p class="text-blue-100/80 text-sm mt-0.5 topbar-tagline">${esc(data.tagline)}&nbsp;·&nbsp;Updated ${genDateStr}&nbsp;·&nbsp;<code class="text-blue-200/60 text-xs">${data.commitSha}</code></p>
+        <p class="text-blue-100/80 text-sm mt-0.5 topbar-tagline">${esc(data.tagline)}&nbsp;·&nbsp;Updated <span id="gen-time" data-iso="${genAt}"></span>&nbsp;·&nbsp;<code class="text-blue-200/60 text-xs">${data.commitSha}</code></p>
         <div class="mt-2.5 flex items-center gap-2 topbar-progress">
           <div class="rounded-full h-2 w-40 overflow-hidden" style="background:rgba(255,255,255,0.2)">
             <div class="h-2 rounded-full" style="width:${pct}%;background:rgba(255,255,255,0.85)"></div>
@@ -918,6 +917,17 @@ function renderScripts(data) {
     if (savedSearch) document.getElementById('f-search').value = savedSearch;
     applyFilters();
 
+    // Format generation timestamps in local timezone
+    ['gen-time', 'about-gen-time'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      var d = new Date(el.dataset.iso);
+      el.textContent = d.toLocaleString(undefined, {
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', timeZoneName: 'short'
+      });
+    });
+
   });
 
   function setStickyTop() {
@@ -1094,7 +1104,7 @@ function renderHtml(data) {
       <div class="border-t border-slate-200 dark:border-slate-700 pt-4 text-slate-500 text-xs space-y-1.5">
         <p>Version <span class="text-slate-700 dark:text-slate-300 font-mono">v${esc(data.version)}</span></p>
         <p>Build <span class="text-slate-700 dark:text-slate-300 font-mono">#${esc(data.buildNumber)}</span>&nbsp;<code class="text-slate-500 dark:text-slate-600">${esc(data.commitSha)}</code></p>
-        <p>Updated <span class="text-slate-700 dark:text-slate-300">${data.generatedAt.slice(0,10)}</span></p>
+        <p>Updated <span id="about-gen-time" data-iso="${data.generatedAt}" class="text-slate-700 dark:text-slate-300"></span></p>
       </div>
       <p class="mt-5 text-slate-500 text-xs">Implemented by Kamal Syed, 2026</p>
     </div>
