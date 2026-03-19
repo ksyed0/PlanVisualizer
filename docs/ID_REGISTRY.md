@@ -6,11 +6,11 @@ Single source of truth for the next available ID in every artefact sequence.
 | **Sequence** | **Next Available ID** | **Last Assigned** |
 | ------------ | --------------------- | ----------------- |
 | EPIC         | EPIC-0007             | EPIC-0006         |
-| US           | US-0038               | US-0037           |
-| TASK         | TASK-0040             | TASK-0039         |
-| AC           | AC-0114               | AC-0113           |
+| US           | US-0040               | US-0039           |
+| TASK         | TASK-0042             | TASK-0041         |
+| AC           | AC-0120               | AC-0119           |
 | TC           | TC-0112               | TC-0111           |
-| BUG          | BUG-0053              | BUG-0052          |
+| BUG          | BUG-0056              | BUG-0055          |
 
 **Rules:**
 - Consult this file before creating any artefact to get the next available ID.

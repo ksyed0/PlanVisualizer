@@ -781,3 +781,47 @@ Status: Fixed
 Fix Branch: feature/US-0032-lessons-tab
 Lesson Encoded: No
 Estimated Cost USD: 0.00
+
+BUG-0053: AI Actual header stat tile excluded bug fix costs
+Severity: Medium
+Related Story: US-0025
+Related Task: TASK-0023
+Steps to Reproduce:
+  1. Open plan-status.html
+  2. Observe the AI Actual stat tile in the top bar
+  3. Open Costs tab and note Bug Fix Costs table total
+Expected: AI Actual tile reflects total AI spend including bug fix sessions
+Actual: Tile showed only story branch costs from cost log; bug estimated costs and bug branch AI costs were excluded
+Status: Fixed
+Fix Branch: feature/US-0032-lessons-tab
+Lesson Encoded: No
+Estimated Cost USD: 0.25
+
+BUG-0054: Bug Fix Costs Projected column used raw manual dollar amounts instead of t-shirt formula
+Severity: Medium
+Related Story: US-0025
+Related Task: TASK-0023
+Steps to Reproduce:
+  1. Open plan-status.html → Costs tab → Bug Fix Costs table
+  2. Observe the Projected column values (labelled 'Estimated' at the time)
+Expected: Projected column uses severity→t-shirt size×hourly rate (same formula as story Projected)
+Actual: Column showed raw Estimated Cost USD field values (e.g. $0.50) making values inconsistent with story projected costs ($800+)
+Status: Fixed
+Fix Branch: feature/US-0032-lessons-tab
+Lesson Encoded: No
+Estimated Cost USD: 0.25
+
+BUG-0055: Header Projected tile excluded bug projected costs
+Severity: Medium
+Related Story: US-0025
+Related Task: TASK-0023
+Steps to Reproduce:
+  1. Open plan-status.html
+  2. Observe the Projected stat tile in the top bar
+  3. Open Costs tab and note story projected total and bug projected total
+Expected: Projected tile = sum of story projected costs + sum of bug projected costs
+Actual: Tile showed only story projected costs; bug projected costs omitted
+Status: Fixed
+Fix Branch: feature/US-0032-lessons-tab
+Lesson Encoded: No
+Estimated Cost USD: 0.25

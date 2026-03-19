@@ -794,3 +794,47 @@ Status: Done
 Branch: feature/US-0032-lessons-tab
 Notes: Regex updated to /^## Session (\d+) — (\d{4}-\d{2}-\d{2})/gm capturing sessionNum as group 1 and date as group 2; push call includes { sessionNum, date, summary }; renderRecentActivity() displays 'Session N · YYYY-MM-DD' in each activity entry
 ```
+
+```
+US-0038 (EPIC-0006): As a user, I want to view the Costs tab in a card layout, so that I can scan story and bug cost data at a glance without reading a dense table.
+Priority: Low
+Estimate: S
+Status: Done
+Branch: feature/US-0032-lessons-tab
+Dependencies: US-0024
+Acceptance Criteria:
+  - [x] AC-0114: Column/card toggle appears at the top of the Costs tab; preference persists in localStorage
+  - [x] AC-0115: Card view shows story cards grouped by epic with Projected and AI Actual values
+  - [x] AC-0116: Bug Fix Costs card section shows one card per bug with severity, status, projected, and AI actual
+```
+
+```
+TASK-0040 (US-0038): Implement card view and column/card toggle in renderCostsTab()
+Type: Dev
+Assignee: Agent
+Status: Done
+Branch: feature/US-0032-lessons-tab
+Notes: setCostsView(v) toggles costs-column-view / costs-card-view; story cards grouped by epic; bug cards in grid; both sections in card view share overflow-y scroll container; tab-fill applied
+```
+
+```
+US-0039 (EPIC-0006): As a user, I want to view the Bugs tab in a card layout, so that I can see key bug attributes in a compact, scannable grid.
+Priority: Low
+Estimate: S
+Status: Done
+Branch: feature/US-0032-lessons-tab
+Dependencies: US-0036
+Acceptance Criteria:
+  - [x] AC-0117: Column/card toggle appears at the top of the Bugs tab; preference persists in localStorage
+  - [x] AC-0118: Card view shows one card per bug with severity, status, related story, fix branch, and lesson link
+  - [x] AC-0119: Bug status filter and text search apply to both column and card views
+```
+
+```
+TASK-0041 (US-0039): Implement card view and column/card toggle in renderBugsTab()
+Type: Dev
+Assignee: Agent
+Status: Done
+Branch: feature/US-0032-lessons-tab
+Notes: setBugsView(v) toggles bugs-column-view / bugs-card-view; card divs carry .bug-row class and data-status so existing applyFilters() works on both views without changes; setBugsView called in inline script on DOMContentLoaded
+```
