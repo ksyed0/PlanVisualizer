@@ -11,7 +11,8 @@ This file defines the exact document formats that PlanVisualizer parses to gener
 | `docs/TEST_CASES.md` | `parse-test-cases.js` | Traceability tab, at-risk detection |
 | `docs/BUGS.md` | `parse-bugs.js` | Bugs tab, at-risk detection |
 | `docs/AI_COST_LOG.md` | `parse-cost-log.js` | Costs tab, session timeline |
-| `progress.md` | `parse-progress.js` | Recent activity feed |
+| `docs/LESSONS.md` | `parse-lessons.js` | Lessons tab, Bug Ref cross-links |
+| `progress.md` | `parse-progress.js` | Recent activity feed (with session number) |
 
 All paths are relative to the project root and can be overridden in `plan-visualizer.config.json`.
 Files that are missing or empty produce empty sections — the generator will not fail.
@@ -116,6 +117,25 @@ Lesson Encoded: No
 
 ---
 
+## `docs/LESSONS.md`
+
+Each lesson block starts with `## L-XXXX — Title` at the beginning of a line. The parser reads
+until the next `## L-XXXX` heading. Lessons are displayed on the **Lessons tab** in column and
+card views. Bug Ref cross-links are generated automatically when a `BUG-XXXX` entry's
+`Lesson Encoded` field contains the lesson's ID.
+
+```markdown
+## L-0001 — Short lesson title
+**Rule:** The actionable rule derived from the lesson.
+*Context paragraph describing when this lesson was learned.*
+**Date:** 2026-03-18
+```
+
+Required fields per lesson block: `Rule:`, `Date:`. The context italics paragraph is optional.
+Lesson IDs must be sequential and registered in `docs/ID_REGISTRY.md`.
+
+---
+
 ## `docs/AI_COST_LOG.md`
 
 A markdown table appended automatically by the Claude Code Stop hook (`tools/capture-cost.js`).
@@ -195,6 +215,7 @@ Override default file paths in `plan-visualizer.config.json` at the project root
     "testCases":   "docs/TEST_CASES.md",
     "bugs":        "docs/BUGS.md",
     "costLog":     "docs/AI_COST_LOG.md",
+    "lessons":     "docs/LESSONS.md",
     "outputDir":   "docs"
   },
   "coverage": { "summaryPath": "docs/coverage/coverage-summary.json" },

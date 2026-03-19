@@ -305,8 +305,8 @@ Estimate: M
 Status: Done
 Branch: feature/US-0019-design-docs
 Acceptance Criteria:
-  - [x] AC-0045: docs/DESIGN.md covers product vision, user profile, core concepts, feature set, and design system
-  - [x] AC-0046: docs/ARCHITECTURE.md covers module structure, data flow, parser contract, renderer design, and CI architecture
+  - [x] AC-0045: docs/architecture/DESIGN.md covers product vision, user profile, core concepts, feature set, and design system
+  - [x] AC-0046: docs/architecture/ARCHITECTURE.md covers module structure, data flow, parser contract, renderer design, and CI architecture
   - [x] AC-0047: Both documents are committed to main
 Dependencies: None
 
@@ -425,14 +425,14 @@ Notes: npm + github-actions ecosystems; weekly; 5-PR limit
 ## Tasks — EPIC-0005: Project Self-Documentation
 
 ```
-TASK-0011 (US-0019): Write docs/DESIGN.md
+TASK-0011 (US-0019): Write docs/architecture/DESIGN.md
 Type: docs
 Assignee: Agent
 Status: Done
 Branch: feature/US-0019-design-docs
 Notes: Cover vision, user profile, core concepts, features, design system, data flow
 
-TASK-0012 (US-0019): Write docs/ARCHITECTURE.md
+TASK-0012 (US-0019): Write docs/architecture/ARCHITECTURE.md
 Type: docs
 Assignee: Agent
 Status: Done
@@ -696,4 +696,101 @@ Type: Dev
 Assignee: Agent
 Status: Done
 Branch: feature/US-0032-lessons-tab
+```
+
+```
+US-0033 (EPIC-0006): As a contributor, I want all dashboard colours defined as CSS custom properties, so that the light/dark theme is controlled from a single source of truth and extending the palette requires changing only one place.
+Priority: Medium (P2)
+Estimate: S
+Status: Done
+Branch: feature/US-0032-lessons-tab
+Acceptance Criteria:
+  - [x] AC-0097: All colour values in render-html.js are expressed as CSS custom properties (--clr-*); no standalone hex literals remain in CSS property rules
+  - [x] AC-0098: Theme tokens are declared in :root (light defaults) and html.dark (dark overrides) blocks in renderPrintCSS()
+  - [x] AC-0099: All tabs, filter bar, table headers, and chart text apply theme tokens and render correctly in both light and dark mode
+Dependencies: US-0031
+
+US-0034 (EPIC-0006): As a team member, I want to view the Hierarchy tab in either a column (tree) layout or a card layout, so that I can quickly scan stories grouped by epic.
+Priority: Low (P3)
+Estimate: S
+Status: Done
+Branch: feature/US-0032-lessons-tab
+Acceptance Criteria:
+  - [x] AC-0100: Hierarchy tab has ≡ Column and ⊞ Card toggle buttons at the top of the tab
+  - [x] AC-0101: Column view shows the existing collapsible epic → story → AC tree
+  - [x] AC-0102: Card view shows story cards grouped by epic in a responsive grid layout
+  - [x] AC-0103: The selected view persists in localStorage and is restored on page reload
+Dependencies: US-0009
+
+US-0035 (EPIC-0006): As a dashboard user, I want the filter bar to show only the filters relevant to the currently active tab, so that irrelevant controls do not cause confusion.
+Priority: Medium (P2)
+Estimate: S
+Status: Done
+Branch: feature/US-0032-lessons-tab
+Acceptance Criteria:
+  - [x] AC-0104: Filter bar is positioned in the sticky navigation area immediately below the tab bar
+  - [x] AC-0105: Story filters (epic, status, priority, search) are shown only when the Hierarchy or Kanban tab is active
+  - [x] AC-0106: Bug filters (status, search) are shown only when the Bugs tab is active
+  - [x] AC-0107: The filter bar is hidden entirely on Traceability, Charts, Costs, and Lessons tabs
+Dependencies: US-0025
+
+US-0036 (EPIC-0006): As a QA engineer, I want to filter the Bugs tab by status and free-text search, so that I can quickly find open or specific bugs.
+Priority: Medium (P2)
+Estimate: S
+Status: Done
+Branch: feature/US-0032-lessons-tab
+Acceptance Criteria:
+  - [x] AC-0108: Bug rows carry a data-status attribute matching the bug's Status field
+  - [x] AC-0109: The f-bug-status dropdown filters bug rows by status in real time
+  - [x] AC-0110: The search text box filters bug rows by matching text across ID, title, severity, story, and fix branch columns
+Dependencies: US-0032
+
+US-0037 (EPIC-0006): As a team member, I want Recent Activity entries to show the session number alongside the date, so that I can correlate activity items with specific session logs in progress.md.
+Priority: Low (P3)
+Estimate: XS
+Status: Done
+Branch: feature/US-0032-lessons-tab
+Acceptance Criteria:
+  - [x] AC-0111: Each Recent Activity entry displays the session number and date in the format 'Session N · YYYY-MM-DD'
+  - [x] AC-0112: parse-progress.js captures sessionNum from the ## Session N — YYYY-MM-DD heading and returns it on each activity object
+  - [x] AC-0113: Session number is displayed in a distinct style before the date
+Dependencies: US-0009
+```
+
+
+```
+TASK-0035 (US-0033): Replace hardcoded hex colours with CSS custom properties in render-html.js
+Type: Dev
+Assignee: Agent
+Status: Done
+Branch: feature/US-0032-lessons-tab
+Notes: Defined --clr-body-bg, --clr-panel-bg, --clr-surface-raised, --clr-border, --clr-header-bg, --clr-header-text, --clr-input-bg, --clr-input-border, --clr-chart-text, --clr-accent and text tokens in :root and html.dark blocks; replaced all hex colour strings in CSS sections with var(--clr-*); added .tab-fill flexbox class; scroll-table thead th background rule for opaque sticky headers; chartTextColor() reads via getComputedStyle
+
+TASK-0036 (US-0034): Add column/card view toggle and card view grid to renderHierarchyTab()
+Type: Dev
+Assignee: Agent
+Status: Done
+Branch: feature/US-0032-lessons-tab
+Notes: Both views rendered server-side; JS setHierarchyView(v) toggles hidden class and persists selection to localStorage under 'hierarchyView'; card view groups story cards in a responsive grid under each epic heading; toggle buttons use hier-col-btn / hier-card-btn IDs
+
+TASK-0037 (US-0035): Restructure renderFilterBar() with per-tab visibility; add updateFilterBar() JS
+Type: Dev
+Assignee: Agent
+Status: Done
+Branch: feature/US-0032-lessons-tab
+Notes: fgrp-story span wraps epic/status/priority/search controls; fgrp-bug span wraps bug status/search controls; updateFilterBar(tabName) called from showTab() on every tab switch; hides entire bar on Charts/Costs/Traceability/Lessons; f-type select removed
+
+TASK-0038 (US-0036): Add data-status to bug rows; add f-bug-status select; extend applyFilters() for Bugs tab
+Type: Dev
+Assignee: Agent
+Status: Done
+Branch: feature/US-0032-lessons-tab
+Notes: <tr> elements in renderBugsTab() gain data-status="${bug.status}" and class="bug-row"; applyFilters() reads f-bug-status value and search text to filter .bug-row elements; clearFilters() resets f-bug-status to empty
+
+TASK-0039 (US-0037): Update parse-progress.js to capture sessionNum; update renderRecentActivity()
+Type: Dev
+Assignee: Agent
+Status: Done
+Branch: feature/US-0032-lessons-tab
+Notes: Regex updated to /^## Session (\d+) — (\d{4}-\d{2}-\d{2})/gm capturing sessionNum as group 1 and date as group 2; push call includes { sessionNum, date, summary }; renderRecentActivity() displays 'Session N · YYYY-MM-DD' in each activity entry
 ```

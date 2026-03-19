@@ -692,12 +692,12 @@ Related Story: US-0019
 Related Task: TASK-0011
 Related AC: AC-0045
 Type: Functional
-Preconditions: docs/DESIGN.md present
+Preconditions: docs/architecture/DESIGN.md present
 Steps:
-  1. Open docs/DESIGN.md
+  1. Open docs/architecture/DESIGN.md
   2. Verify sections: Product Vision, User Profile, Core Concepts, Feature Set, Design System
 Expected Result: All five sections present with substantive content
-Actual Result: docs/DESIGN.md reviewed; all sections confirmed.
+Actual Result: docs/architecture/DESIGN.md reviewed; all sections confirmed.
 Status: [x] Pass
 Defect Raised: None
 Notes:
@@ -707,12 +707,12 @@ Related Story: US-0019
 Related Task: TASK-0012
 Related AC: AC-0046
 Type: Functional
-Preconditions: docs/ARCHITECTURE.md present
+Preconditions: docs/architecture/ARCHITECTURE.md present
 Steps:
-  1. Open docs/ARCHITECTURE.md
+  1. Open docs/architecture/ARCHITECTURE.md
   2. Verify sections: Module Structure, Data Flow, Parser Design Pattern, Renderer Architecture, CI/CD Architecture
 Expected Result: All five sections present with substantive content
-Actual Result: docs/ARCHITECTURE.md reviewed; all sections confirmed.
+Actual Result: docs/architecture/ARCHITECTURE.md reviewed; all sections confirmed.
 Status: [x] Pass
 Defect Raised: None
 Notes:
@@ -724,8 +724,8 @@ Related AC: AC-0047
 Type: Functional
 Preconditions: git repository with main branch
 Steps:
-  1. Run git show origin/main:docs/DESIGN.md
-  2. Run git show origin/main:docs/ARCHITECTURE.md
+  1. Run git show origin/main:docs/architecture/DESIGN.md
+  2. Run git show origin/main:docs/architecture/ARCHITECTURE.md
 Expected Result: Both files exist on main branch and contain content
 Actual Result: Both files confirmed on main.
 Status: [x] Pass
@@ -1493,6 +1493,233 @@ Steps:
   4. Locate a bug with no lesson encoded
   5. Click the ✓ L-XXXX ↗ link in step 2
 Expected Result: Bug with L-ID shows "✓ L-XXXX ↗" as a blue clickable link; clicking switches to Lessons tab and scrolls to that lesson. Bug with plain Yes shows "✓" (no link). Bug with no lesson shows "○"
+Actual Result:
+Status: [ ] Not Run
+Defect Raised: None
+Notes:
+
+TC-0097: renderHtml CSS :root block defines --clr-body-bg custom property
+Related Story: US-0033
+Related Task: TASK-0035
+Related AC: AC-0097
+Type: Unit
+Preconditions: sampleData object available as test fixture
+Steps:
+  1. Call renderHtml(sampleData)
+  2. Search output for '--clr-body-bg' within a :root block
+Expected Result: Output contains '--clr-body-bg' in a :root CSS block
+Actual Result:
+Status: [ ] Not Run
+Defect Raised: None
+Notes:
+
+TC-0098: renderHtml CSS html.dark block defines --clr-body-bg override
+Related Story: US-0033
+Related Task: TASK-0035
+Related AC: AC-0098
+Type: Unit
+Preconditions: sampleData object available as test fixture
+Steps:
+  1. Call renderHtml(sampleData)
+  2. Search output for 'html.dark' CSS block containing '--clr-body-bg'
+Expected Result: Output contains an html.dark rule that overrides --clr-body-bg
+Actual Result:
+Status: [ ] Not Run
+Defect Raised: None
+Notes:
+
+TC-0099: renderHtml output does not contain standalone hex colour literals in CSS rules
+Related Story: US-0033
+Related Task: TASK-0035
+Related AC: AC-0097
+Type: Unit
+Preconditions: sampleData object available as test fixture
+Steps:
+  1. Call renderHtml(sampleData)
+  2. Check for standalone hex literals (e.g. #0f172a, #1e293b) appearing inside <style> CSS rules outside of var() wrappers
+Expected Result: No standalone hex literals appear as CSS property values; all colours are expressed via var(--clr-*)
+Actual Result:
+Status: [ ] Not Run
+Defect Raised: None
+Notes:
+
+TC-0100: Hierarchy tab output contains column and card view containers
+Related Story: US-0034
+Related Task: TASK-0036
+Related AC: AC-0101
+Type: Unit
+Preconditions: sampleData contains at least one epic with stories
+Steps:
+  1. Call renderHtml(sampleData)
+  2. Search for id="hier-column-view" and id="hier-card-view" in output
+Expected Result: Both id="hier-column-view" and id="hier-card-view" present in the output
+Actual Result:
+Status: [ ] Not Run
+Defect Raised: None
+Notes:
+
+TC-0101: Hierarchy tab output contains setHierarchyView function
+Related Story: US-0034
+Related Task: TASK-0036
+Related AC: AC-0103
+Type: Unit
+Preconditions: sampleData object available as test fixture
+Steps:
+  1. Call renderHtml(sampleData)
+  2. Search for 'setHierarchyView' in output
+Expected Result: Output contains setHierarchyView function definition
+Actual Result:
+Status: [ ] Not Run
+Defect Raised: None
+Notes:
+
+TC-0102: Hierarchy tab output contains column and card toggle buttons
+Related Story: US-0034
+Related Task: TASK-0036
+Related AC: AC-0100
+Type: Unit
+Preconditions: sampleData object available as test fixture
+Steps:
+  1. Call renderHtml(sampleData)
+  2. Search for id="hier-col-btn" and id="hier-card-btn" in output
+Expected Result: Both toggle button IDs present in the output
+Actual Result:
+Status: [ ] Not Run
+Defect Raised: None
+Notes:
+
+TC-0103: Filter bar output contains fgrp-story span for story filters
+Related Story: US-0035
+Related Task: TASK-0037
+Related AC: AC-0105
+Type: Unit
+Preconditions: sampleData object available as test fixture
+Steps:
+  1. Call renderHtml(sampleData)
+  2. Search for 'fgrp-story' in output
+Expected Result: Output contains a span or div with id or class fgrp-story grouping story filter controls
+Actual Result:
+Status: [ ] Not Run
+Defect Raised: None
+Notes:
+
+TC-0104: Filter bar output contains fgrp-bug span for bug filters
+Related Story: US-0035
+Related Task: TASK-0037
+Related AC: AC-0106
+Type: Unit
+Preconditions: sampleData object available as test fixture
+Steps:
+  1. Call renderHtml(sampleData)
+  2. Search for 'fgrp-bug' in output
+Expected Result: Output contains a span or div with id or class fgrp-bug grouping bug filter controls
+Actual Result:
+Status: [ ] Not Run
+Defect Raised: None
+Notes:
+
+TC-0105: renderHtml output contains updateFilterBar function
+Related Story: US-0035
+Related Task: TASK-0037
+Related AC: AC-0107
+Type: Unit
+Preconditions: sampleData object available as test fixture
+Steps:
+  1. Call renderHtml(sampleData)
+  2. Search for 'updateFilterBar' in output
+Expected Result: Output contains updateFilterBar function definition that controls filter group visibility
+Actual Result:
+Status: [ ] Not Run
+Defect Raised: None
+Notes:
+
+TC-0106: renderHtml output contains f-bug-status select element
+Related Story: US-0036
+Related Task: TASK-0038
+Related AC: AC-0109
+Type: Unit
+Preconditions: sampleData object available as test fixture
+Steps:
+  1. Call renderHtml(sampleData)
+  2. Search for id="f-bug-status" in output
+Expected Result: Output contains a <select> with id="f-bug-status" for filtering bugs by status
+Actual Result:
+Status: [ ] Not Run
+Defect Raised: None
+Notes:
+
+TC-0107: Bug rows in renderBugsTab output carry data-status attribute
+Related Story: US-0036
+Related Task: TASK-0038
+Related AC: AC-0108
+Type: Unit
+Preconditions: sampleData.bugs contains at least one bug
+Steps:
+  1. Call renderHtml(sampleData)
+  2. Find <tr> elements within the bug table
+  3. Check that each bug row carries data-status matching the bug's Status field
+Expected Result: Each bug <tr> has a data-status attribute (e.g. data-status="Open")
+Actual Result:
+Status: [ ] Not Run
+Defect Raised: None
+Notes:
+
+TC-0108: Bug rows in renderBugsTab output carry bug-row class
+Related Story: US-0036
+Related Task: TASK-0038
+Related AC: AC-0110
+Type: Unit
+Preconditions: sampleData.bugs contains at least one bug
+Steps:
+  1. Call renderHtml(sampleData)
+  2. Search for 'bug-row' class on <tr> elements within the bug table
+Expected Result: Each bug <tr> element has class="bug-row" (or includes bug-row in its class list)
+Actual Result:
+Status: [ ] Not Run
+Defect Raised: None
+Notes:
+
+TC-0109: parseRecentActivity returns sessionNum field on each activity object
+Related Story: US-0037
+Related Task: TASK-0039
+Related AC: AC-0112
+Type: Unit
+Preconditions: Markdown string contains '## Session 7 — 2026-03-18' heading
+Steps:
+  1. Call parseRecentActivity with sample markdown containing session headings
+  2. Inspect the returned array
+Expected Result: Each object in the array has a sessionNum property matching the captured session number
+Actual Result:
+Status: [ ] Not Run
+Defect Raised: None
+Notes:
+
+TC-0110: renderHtml output contains 'Session' label in Recent Activity panel
+Related Story: US-0037
+Related Task: TASK-0039
+Related AC: AC-0111
+Type: Unit
+Preconditions: sampleData.activity contains at least one entry with sessionNum set
+Steps:
+  1. Call renderHtml(sampleData)
+  2. Find the recent-activity panel in the output
+  3. Search for 'Session' text within the activity entries
+Expected Result: Each activity entry displays 'Session N ·' before the date
+Actual Result:
+Status: [ ] Not Run
+Defect Raised: None
+Notes:
+
+TC-0111: detectAtRisk marks Done stories as not at risk even when they have missingTCs
+Related Story: US-0032
+Related Task: n/a
+Related AC: n/a
+Type: Unit
+Preconditions: A story with status='Done' and empty testCases array
+Steps:
+  1. Call detectAtRisk([{id:'US-0001', status:'Done', acs:[{id:'AC-0001'}]}], [], [])
+  2. Inspect result['US-0001'].isAtRisk
+Expected Result: isAtRisk is false for a Done story even when missingTCs would otherwise be true
 Actual Result:
 Status: [ ] Not Run
 Defect Raised: None
