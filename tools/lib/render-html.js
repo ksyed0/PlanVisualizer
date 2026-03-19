@@ -792,6 +792,7 @@ function renderScripts(data) {
       }
     });
     updateFilterBar(name);
+    setStickyTop();
     if (name === 'charts' && typeof initCharts === 'function') { initCharts(); initCharts = () => {}; }
     localStorage.setItem('activeTab', name);
     history.replaceState(null, '', '#' + name);
