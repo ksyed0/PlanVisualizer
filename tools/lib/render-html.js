@@ -36,7 +36,10 @@ function fmtNum(n) { return Number(n).toLocaleString(); }
 
 function renderTopBar(data) {
   const totalProjected = data.stories.reduce((s, st) => s + (data.costs[st.id] && data.costs[st.id].projectedUsd || 0), 0);
-  const totalAI = data.costs._totals.costUsd;
+  const bugEstimated = Object.entries(data.costs._bugs || {})
+    .filter(([k, v]) => k !== '_totals' && v && v.isEstimated)
+    .reduce((s, [, v]) => s + (v.costUsd || 0), 0);
+  const totalAI = (data.costs._totals.costUsd || 0) + bugEstimated;
   const done = data.stories.filter(s => s.status === 'Done').length;
   const inProgress = data.stories.filter(s => s.status === 'In Progress').length;
   const pct = data.stories.length ? Math.round((done / data.stories.length) * 100) : 0;
