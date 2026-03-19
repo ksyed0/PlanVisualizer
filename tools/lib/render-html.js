@@ -166,23 +166,34 @@ function renderHierarchyTab(data) {
     const storyCards = stories.map(story => {
       const risk = data.atRisk[story.id] || {};
       const riskBadge = risk.isAtRisk ? `<span class="text-orange-500 text-xs">⚠ At Risk</span>` : '';
+      const tcs = data.testCases.filter(tc => tc.relatedStory === story.id);
       const acDone = story.acs.filter(a => a.done).length;
       const acTotal = story.acs.length;
       const cost = usd(data.costs[story.id] && data.costs[story.id].projectedUsd || 0);
+      const acItems = story.acs.map(ac => {
+        const linkedTC = tcs.find(tc => tc.relatedAC === ac.id);
+        return `<li class="flex items-start gap-2 py-0.5">
+          <span class="${ac.done ? 'text-green-500' : 'text-slate-400'}">${ac.done ? '✓' : '○'}</span>
+          <span class="text-xs text-slate-400">${esc(ac.id)}</span>
+          <span class="text-xs dark:text-slate-300">${esc(ac.text)}</span>
+          ${linkedTC ? `<span class="ml-auto shrink-0 text-xs text-slate-400">→ ${linkedTC.id} ${badge(linkedTC.status)}</span>` : ''}
+        </li>`;
+      }).join('');
       return `
       <div class="story-row bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg p-3 flex flex-col gap-1 shadow-sm"
            data-epic="${story.epicId}" data-status="${story.status}" data-priority="${story.priority}">
-        <div class="flex flex-wrap items-center gap-1">
+        <div class="flex flex-wrap items-center gap-1 cursor-pointer" onclick="toggleCardACs('${story.id}')">
           ${badge(story.status)} ${badge(story.priority)}
           <span class="font-mono text-xs text-slate-500 ml-1">${story.id}</span>
         </div>
-        <p class="text-sm font-medium dark:text-slate-100 leading-snug">${esc(story.title)}</p>
+        <p class="text-sm font-medium dark:text-slate-100 leading-snug cursor-pointer" onclick="toggleCardACs('${story.id}')">${esc(story.title)}</p>
         <div class="flex items-center gap-2 mt-auto pt-1 text-xs text-slate-500 border-t border-slate-100 dark:border-slate-600">
           <span>${story.estimate || '?'}</span>
           <span>${cost}</span>
-          ${acTotal ? `<span>${acDone}/${acTotal} ACs</span>` : ''}
+          ${acTotal ? `<span class="cursor-pointer hover:text-blue-500 dark:hover:text-blue-400" onclick="toggleCardACs('${story.id}')">${acDone}/${acTotal} ACs ▾</span>` : ''}
           <span class="ml-auto">${riskBadge}</span>
         </div>
+        ${acTotal ? `<ul id="card-acs-${story.id}" class="hidden mt-1 pt-1 border-t border-slate-100 dark:border-slate-600 space-y-0.5">${acItems || '<li class="text-xs text-slate-500 pl-4">No ACs yet</li>'}</ul>` : ''}
       </div>`;
     }).join('');
 
@@ -800,6 +811,10 @@ function renderScripts(data) {
   }
   function toggleACs(id) {
     const el = document.getElementById('acs-' + id);
+    if (el) el.classList.toggle('hidden');
+  }
+  function toggleCardACs(id) {
+    const el = document.getElementById('card-acs-' + id);
     if (el) el.classList.toggle('hidden');
   }
 
