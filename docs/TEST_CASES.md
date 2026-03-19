@@ -1260,3 +1260,240 @@ Actual Result: Initial implementation used direct push (rejected by GH006 protec
 Status: [x] Pass
 Defect Raised: None
 Notes: Requires live GitHub environment to execute; cannot be verified via local test runner.
+
+TC-0082: plan_visualizer.md is copied to the target project root
+Related Story: US-0029
+Related Task: TASK-0027
+Related AC: AC-0078
+Type: Functional
+Preconditions: install.sh present; target project directory exists without plan_visualizer.md
+Steps:
+  1. Run ./install.sh <target-project-dir>
+  2. Inspect <target-project-dir>/plan_visualizer.md
+Expected Result: plan_visualizer.md exists at target project root and contains format specs for all 5 source files (RELEASE_PLAN.md, BUGS.md, AI_COST_LOG.md, TEST_CASES.md, progress.md)
+Actual Result:
+Status: [ ] Not Run
+Defect Raised: None
+Notes:
+
+TC-0083: Install script appends PlanVisualizer reference section to AGENTS.md rather than overwriting
+Related Story: US-0029
+Related Task: TASK-0027
+Related AC: AC-0079
+Type: Functional
+Preconditions: Target project directory has an existing AGENTS.md with custom content
+Steps:
+  1. Note the existing content of <target-project-dir>/AGENTS.md
+  2. Run ./install.sh <target-project-dir>
+  3. Inspect <target-project-dir>/AGENTS.md
+Expected Result: Original AGENTS.md content is preserved; a PlanVisualizer reference section is appended at the end; no original lines are removed or overwritten
+Actual Result:
+Status: [ ] Not Run
+Defect Raised: None
+Notes:
+
+TC-0084: Minimal AGENTS.md is created when none exists
+Related Story: US-0029
+Related Task: TASK-0027
+Related AC: AC-0080
+Type: Functional
+Preconditions: Target project directory has no AGENTS.md
+Steps:
+  1. Run ./install.sh <target-project-dir> where no AGENTS.md exists
+  2. Inspect <target-project-dir>/AGENTS.md
+Expected Result: AGENTS.md is created with a minimal structure containing the PlanVisualizer reference section
+Actual Result:
+Status: [ ] Not Run
+Defect Raised: None
+Notes:
+
+TC-0085: Re-running install script does not duplicate the reference section
+Related Story: US-0029
+Related Task: TASK-0027
+Related AC: AC-0081
+Type: Functional
+Preconditions: install.sh has already been run once against the target project directory
+Steps:
+  1. Run ./install.sh <target-project-dir> a second time
+  2. Inspect <target-project-dir>/AGENTS.md and count occurrences of the PlanVisualizer reference section header
+Expected Result: The PlanVisualizer reference section appears exactly once; no duplicate blocks are added
+Actual Result:
+Status: [ ] Not Run
+Defect Raised: None
+Notes:
+
+TC-0086: Sun/moon toggle appears in top-bar and switches theme on click
+Related Story: US-0031
+Related Task: TASK-0030
+Related AC: AC-0086
+Type: Functional
+Preconditions: docs/plan-status.html open in browser
+Steps:
+  1. Locate the sun/moon icon button in the top-bar header
+  2. Note the current theme (dark or light class on <html>)
+  3. Click the toggle button
+  4. Note the new theme
+Expected Result: Button is visible in the top-bar; clicking switches the <html> class between dark and light mode; page colours update immediately
+Actual Result:
+Status: [ ] Not Run
+Defect Raised: None
+Notes:
+
+TC-0087: Theme persists across page loads; system prefers-color-scheme used as default
+Related Story: US-0031
+Related Task: TASK-0030
+Related AC: AC-0087
+Type: Functional
+Preconditions: docs/plan-status.html open in browser with no localStorage theme key set
+Steps:
+  1. Clear localStorage (DevTools → Application → Clear)
+  2. Reload page; observe applied theme vs OS dark/light mode setting
+  3. Click toggle to switch theme; reload page again
+Expected Result: On first load with no stored preference, theme matches OS prefers-color-scheme; after toggling, the new theme is stored in localStorage and survives reload
+Actual Result:
+Status: [ ] Not Run
+Defect Raised: None
+Notes:
+
+TC-0088: Secondary text uses at minimum text-slate-500 in light mode
+Related Story: US-0031
+Related Task: TASK-0030
+Related AC: AC-0088
+Type: Functional
+Preconditions: docs/plan-status.html open in browser in light mode
+Steps:
+  1. Switch to light mode
+  2. Inspect all secondary/muted text elements across Hierarchy, Kanban, Costs, Bugs, and Lessons tabs
+Expected Result: No text using text-slate-400 (or lighter) is present on white/light backgrounds; all muted text uses text-slate-500 or darker
+Actual Result:
+Status: [ ] Not Run
+Defect Raised: None
+Notes:
+
+TC-0089: Updated timestamp shows date and time in UTC
+Related Story: US-0031
+Related Task: TASK-0030
+Related AC: AC-0089
+Type: Functional
+Preconditions: docs/plan-status.html generated with node tools/generate-plan.js
+Steps:
+  1. Open docs/plan-status.html
+  2. Locate the "Updated" timestamp in the top bar
+Expected Result: Timestamp format is "YYYY-MM-DD HH:MM UTC" (e.g. "2026-03-18 21:00 UTC")
+Actual Result:
+Status: [ ] Not Run
+Defect Raised: None
+Notes:
+
+TC-0090: Traceability epic rows coloured by worst TC status; badge shown
+Related Story: US-0031
+Related Task: TASK-0030
+Related AC: AC-0090
+Type: Functional
+Preconditions: docs/plan-status.html generated; test cases exist with at least one Fail and one Not Run status linked to different epics
+Steps:
+  1. Open Traceability tab
+  2. Locate an epic row whose stories have at least one Fail TC
+  3. Locate an epic row whose stories have only Not Run TCs (no Fail)
+  4. Locate an epic row whose stories have all Pass TCs
+Expected Result: Epic row with Fail TC is coloured red; epic row with Not Run only is amber; epic row with all Pass is grey; a badge label indicates the worst status
+Actual Result:
+Status: [ ] Not Run
+Defect Raised: None
+Notes:
+
+TC-0091: Lessons tab appears in tab bar after Bugs tab
+Related Story: US-0032
+Related Task: TASK-0033
+Related AC: AC-0091
+Type: Functional
+Preconditions: docs/plan-status.html generated with docs/LESSONS.md present and non-empty
+Steps:
+  1. Open docs/plan-status.html
+  2. Inspect the tab bar
+Expected Result: A "Lessons" tab appears in the tab bar, positioned after the "Bugs" tab; clicking it displays the Lessons tab content
+Actual Result:
+Status: [ ] Not Run
+Defect Raised: None
+Notes:
+
+TC-0092: Column view renders all lessons with correct columns
+Related Story: US-0032
+Related Task: TASK-0033
+Related AC: AC-0092
+Type: Functional
+Preconditions: docs/LESSONS.md contains at least 3 lessons; column view is active
+Steps:
+  1. Open Lessons tab in column view
+  2. Count lesson rows in the table
+  3. Verify columns: ID, Rule, Context, Date, Bug Ref
+Expected Result: All lessons from LESSONS.md appear as rows; each row has ID (monospace L-XXXX), Rule text, Context text, Date, and Bug Ref
+Actual Result:
+Status: [ ] Not Run
+Defect Raised: None
+Notes:
+
+TC-0093: Card view renders same data in card-per-lesson grid layout
+Related Story: US-0032
+Related Task: TASK-0033
+Related AC: AC-0093
+Type: Functional
+Preconditions: docs/LESSONS.md contains at least 3 lessons
+Steps:
+  1. Open Lessons tab; switch to card view using the ⊞ Card button
+  2. Count cards in the grid
+  3. Verify each card shows: ID, title, Rule, Context, Date, Bug Ref
+Expected Result: Each lesson appears as a distinct card; total card count matches lesson count; all fields visible
+Actual Result:
+Status: [ ] Not Run
+Defect Raised: None
+Notes:
+
+TC-0094: Toggle switches between column and card view; preference persists in localStorage
+Related Story: US-0032
+Related Task: TASK-0033
+Related AC: AC-0094
+Type: Functional
+Preconditions: docs/plan-status.html open in browser; Lessons tab active
+Steps:
+  1. Click ⊞ Card button; verify card view appears and column view is hidden
+  2. Click ≡ Column button; verify column view appears and card view is hidden
+  3. Switch to card view; reload page; open Lessons tab
+Expected Result: Toggle correctly shows/hides views; after reload, the last selected view (card) is restored from localStorage
+Actual Result:
+Status: [ ] Not Run
+Defect Raised: None
+Notes:
+
+TC-0095: Bug Ref cells in Lessons tab link to referencing bug row on Bugs tab
+Related Story: US-0032
+Related Task: TASK-0033
+Related AC: AC-0095
+Type: Functional
+Preconditions: docs/BUGS.md contains at least one bug with a lessonEncoded field referencing a lesson ID (e.g. "Yes — see docs/LESSONS.md (L-0010)")
+Steps:
+  1. Open Lessons tab; locate a lesson row/card whose Bug Ref shows "BUG-XXXX ↗"
+  2. Click the "BUG-XXXX ↗" link
+Expected Result: Page switches to Bugs tab and scrolls to the referenced bug row
+Actual Result:
+Status: [ ] Not Run
+Defect Raised: None
+Notes:
+
+TC-0096: Bugs tab Lesson column shows ✓ L-XXXX ↗ as clickable link when lesson ID present
+Related Story: US-0032
+Related Task: TASK-0033
+Related AC: AC-0096
+Type: Functional
+Preconditions: docs/BUGS.md contains bugs with lessonEncoded referencing L-IDs and bugs with plain "Yes" and bugs with no lesson
+Steps:
+  1. Open Bugs tab
+  2. Locate a bug with lessonEncoded containing an L-ID (e.g. L-0010)
+  3. Locate a bug with lessonEncoded "Yes" (no L-ID)
+  4. Locate a bug with no lesson encoded
+  5. Click the ✓ L-XXXX ↗ link in step 2
+Expected Result: Bug with L-ID shows "✓ L-XXXX ↗" as a blue clickable link; clicking switches to Lessons tab and scrolls to that lesson. Bug with plain Yes shows "✓" (no link). Bug with no lesson shows "○"
+Actual Result:
+Status: [ ] Not Run
+Defect Raised: None
+Notes:

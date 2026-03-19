@@ -13,7 +13,7 @@ function detectAtRisk(stories, testCases, bugs) {
            (b.severity === 'Critical' || b.severity === 'High') &&
            (b.status === 'Open' || b.status === 'In Progress')
     );
-    const isAtRisk = missingTCs || noBranch || failedTCNoBug || openCriticalBug;
+    const isAtRisk = story.status !== 'Done' && (missingTCs || noBranch || failedTCNoBug || openCriticalBug);
     result[story.id] = { missingTCs, noBranch, failedTCNoBug, openCriticalBug, isAtRisk };
   }
   return result;

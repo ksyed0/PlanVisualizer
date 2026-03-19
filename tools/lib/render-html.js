@@ -176,18 +176,20 @@ function renderKanbanTab(data) {
       col === 'To Do' ? s.status === 'To Do' : s.status === col
     );
     return `
-    <div class="flex-1 min-w-48">
-      <h3 class="kanban-col-header text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3 pb-1 border-b border-slate-200 dark:border-slate-600">${col} <span class="text-slate-500 font-normal">(${items.length})</span></h3>
-      ${items.map(s => `
-      <div class="story-row bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded p-3 mb-2 shadow-sm"
-           data-epic="${s.epicId}" data-status="${s.status}" data-priority="${s.priority}">
-        <div class="flex gap-1 mb-1">${badge(s.priority)} <span class="text-xs text-slate-500">${s.id}</span></div>
-        <p class="text-sm dark:text-slate-100">${esc(s.title)}</p>
-        <p class="text-xs text-slate-500 mt-1">${s.epicId} · ${s.estimate || '?'}</p>
-      </div>`).join('')}
+    <div class="kanban-col flex flex-col flex-1 min-w-48">
+      <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-2 pb-1 border-b border-slate-200 dark:border-slate-600 flex-shrink-0">${col} <span class="text-slate-500 font-normal">(${items.length})</span></h3>
+      <div class="kanban-col-body flex-1 overflow-y-auto">
+        ${items.map(s => `
+        <div class="story-row bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded p-3 mb-2 shadow-sm"
+             data-epic="${s.epicId}" data-status="${s.status}" data-priority="${s.priority}">
+          <div class="flex gap-1 mb-1">${badge(s.priority)} <span class="text-xs text-slate-500">${s.id}</span></div>
+          <p class="text-sm dark:text-slate-100">${esc(s.title)}</p>
+          <p class="text-xs text-slate-500 mt-1">${s.epicId} · ${s.estimate || '?'}</p>
+        </div>`).join('')}
+      </div>
     </div>`;
   }).join('');
-  return `<div id="tab-kanban" class="p-6 hidden"><div class="scroll-kanban flex gap-4">${colHtml}</div></div>`;
+  return `<div id="tab-kanban" class="p-6 hidden tab-fill"><div class="flex gap-4 min-h-0 flex-1 overflow-x-auto">${colHtml}</div></div>`;
 }
 
 function renderTraceabilityTab(data) {
@@ -237,8 +239,8 @@ function renderTraceabilityTab(data) {
     return epicHeader + storyRows;
   }).join('');
   return `
-  <div id="tab-traceability" class="p-6 hidden">
-    <div class="flex flex-wrap items-center gap-4 mb-3 text-xs">
+  <div id="tab-traceability" class="p-6 hidden tab-fill">
+    <div class="flex flex-wrap items-center gap-4 mb-3 text-xs flex-shrink-0">
       <span class="flex items-center gap-1">
         <span class="w-7 h-5 rounded bg-green-100 text-green-800 flex items-center justify-center font-medium">P</span> Pass
       </span>
@@ -289,19 +291,19 @@ function renderChartsTab(data) {
 
       <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Epic Progress</h3>
-        <canvas id="chart-epic-progress" height="200"></canvas>
+        <div style="height:300px;position:relative"><canvas id="chart-epic-progress"></canvas></div>
       </div>
 
       <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Cost Breakdown (Projected vs AI)</h3>
-        <canvas id="chart-cost-breakdown" height="200"></canvas>
+        <div style="height:300px;position:relative"><canvas id="chart-cost-breakdown"></canvas></div>
       </div>
 
       <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Test Coverage</h3>
-        <div class="relative" style="height:220px">
+        <div style="height:300px;position:relative">
           <canvas id="chart-coverage"></canvas>
-          <div class="absolute inset-0 flex items-center justify-center pointer-events-none" style="padding-bottom:2.5rem">
+          <div class="absolute inset-0 flex items-center justify-center pointer-events-none" style="padding-bottom:3rem">
             <div class="text-center">
               <div class="text-2xl font-bold text-slate-700 dark:text-slate-200">${coveragePct}%</div>
               <div class="text-xs text-slate-500 dark:text-slate-400">overall</div>
@@ -312,19 +314,17 @@ function renderChartsTab(data) {
 
       <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">AI Cost Timeline</h3>
-        <canvas id="chart-ai-timeline" height="200"></canvas>
+        <div style="height:300px;position:relative"><canvas id="chart-ai-timeline"></canvas></div>
       </div>
 
       <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Story Status Distribution</h3>
-        <div style="height:220px">
-          <canvas id="chart-burndown"></canvas>
-        </div>
+        <div style="height:300px;position:relative"><canvas id="chart-burndown"></canvas></div>
       </div>
 
       <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Budget Burn Rate</h3>
-        <canvas id="chart-burn-rate" height="200"></canvas>
+        <div style="height:300px;position:relative"><canvas id="chart-burn-rate"></canvas></div>
       </div>
 
     </div>
@@ -343,7 +343,7 @@ function renderChartsTab(data) {
         { label: 'In Progress', data: ${epicInProgress}, backgroundColor: '#3b82f6' },
         { label: 'Planned/To Do', data: ${epicPlanned}, backgroundColor: '#cbd5e1' },
       ]},
-      options: { indexAxis: 'y', responsive: true,
+      options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
         plugins: { legend: { labels: { color: tc } } },
         scales: { x: { stacked: true, ticks: { color: tc } }, y: { stacked: true, ticks: { color: tc } } } }
     });
@@ -354,7 +354,7 @@ function renderChartsTab(data) {
         { label: 'AI Cost ($)', data: ${epicAI}, backgroundColor: '#0d9488', yAxisID: 'yAI' },
       ]},
       options: {
-        responsive: true,
+        responsive: true, maintainAspectRatio: false,
         plugins: { legend: { labels: { color: tc } } },
         scales: {
           x: { ticks: { color: tc } },
@@ -371,7 +371,7 @@ function renderChartsTab(data) {
     _charts.aiTimeline = new Chart(document.getElementById('chart-ai-timeline'), {
       type: 'line',
       data: { labels: ${sessionDates}, datasets: [{ label: 'Cumulative AI Cost ($)', data: ${sessionCosts}, borderColor: '#0d9488', tension: 0.3, fill: true, backgroundColor: 'rgba(13,148,136,0.1)' }] },
-      options: { responsive: true, plugins: { legend: { labels: { color: tc } } }, scales: { x: { ticks: { color: tc } }, y: { ticks: { color: tc } } } }
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc } } }, scales: { x: { ticks: { color: tc } }, y: { ticks: { color: tc } } } }
     });
     _charts.burndown = new Chart(document.getElementById('chart-burndown'), {
       type: 'doughnut',
@@ -381,7 +381,7 @@ function renderChartsTab(data) {
     _charts.burnRate = new Chart(document.getElementById('chart-burn-rate'), {
       type: 'bar',
       data: { labels: ${sessionDates}, datasets: [{ label: 'Session AI Spend ($)', data: ${sessionPerCosts}, backgroundColor: '#6366f1' }] },
-      options: { responsive: true, plugins: { legend: { labels: { color: tc } } }, scales: { x: { ticks: { color: tc } }, y: { ticks: { color: tc } } } }
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc } } }, scales: { x: { ticks: { color: tc } }, y: { ticks: { color: tc } } } }
     });
   }
   function updateChartTheme() {
@@ -440,6 +440,10 @@ function renderCostsTab(data) {
   const t = data.costs._totals;
   const totalProjected = data.stories.reduce((s, st) => s + (data.costs[st.id] && data.costs[st.id].projectedUsd || 0), 0);
   const bugCostsSection = data.bugs.length ? (() => {
+    const allBugCosts = data.bugs.map(b => (data.costs._bugs && data.costs._bugs[b.id]) || { costUsd: 0, inputTokens: 0, outputTokens: 0 });
+    const bugTotalCost = allBugCosts.reduce((s, bc) => s + (bc.costUsd || 0), 0);
+    const bugTotalIn   = allBugCosts.reduce((s, bc) => s + (bc.isEstimated ? 0 : (bc.inputTokens || 0)), 0);
+    const bugTotalOut  = allBugCosts.reduce((s, bc) => s + (bc.isEstimated ? 0 : (bc.outputTokens || 0)), 0);
     const bugRows = data.bugs.map(bug => {
       const bc = (data.costs._bugs && data.costs._bugs[bug.id]) || { costUsd: 0, inputTokens: 0, outputTokens: 0 };
       return `<tr class="border-t border-slate-100 dark:border-slate-700">
@@ -466,6 +470,13 @@ function renderCostsTab(data) {
         </tr>
       </thead>
       <tbody>${bugRows}</tbody>
+      <tfoot class="bg-slate-50 dark:bg-slate-700 font-semibold border-t-2 border-slate-300 dark:border-slate-600">
+        <tr>
+          <td colspan="6" class="px-3 py-2 text-right text-sm dark:text-slate-200">Totals</td>
+          <td class="px-3 py-2 text-right text-sm text-teal-700 dark:text-teal-400">${usd(bugTotalCost)}</td>
+          <td class="px-3 py-2 text-right text-xs text-slate-500 tokens-col">${fmtNum(bugTotalIn)} / ${fmtNum(bugTotalOut)}</td>
+        </tr>
+      </tfoot>
     </table>
     </div>`;
   })() : '';
@@ -515,7 +526,7 @@ function renderBugsTab(data) {
     })()}</td>
   </tr>`).join('');
   return `
-  <div id="tab-bugs" class="p-6 hidden">
+  <div id="tab-bugs" class="p-6 hidden tab-fill">
     <div class="scroll-table">
     <table class="w-full text-left text-sm border-collapse">
       <thead class="text-xs uppercase">
@@ -581,8 +592,8 @@ function renderLessonsTab(data) {
   </div>`).join('');
 
   return `
-  <div id="tab-lessons" class="p-6 hidden">
-    <div class="flex items-center justify-between mb-4">
+  <div id="tab-lessons" class="p-6 hidden tab-fill">
+    <div class="flex items-center justify-between mb-4 flex-shrink-0">
       <span class="text-sm text-slate-500 dark:text-slate-400">${lessons.length} lesson${lessons.length !== 1 ? 's' : ''}</span>
       <div class="flex gap-1">
         <button id="lessons-col-btn" onclick="setLessonsView('column')"
@@ -873,9 +884,12 @@ function renderPrintCSS() {
   html.dark .story-row p { color: var(--clr-text-primary) !important; }
   html.dark #activity-panel { background-color: var(--clr-panel-bg) !important; border-color: var(--clr-border) !important; color: var(--clr-text-primary) !important; }
   html.dark #activity-panel li { border-color: var(--clr-border) !important; }
+  /* Tabs that should fill the full viewport height */
+  .tab-fill { display: flex; flex-direction: column; height: calc(100vh - var(--sticky-top, 120px)); box-sizing: border-box; }
+  .tab-fill .scroll-table { flex: 1; min-height: 0; max-height: none; }
   .scroll-table { overflow: auto; max-height: calc(100vh - var(--sticky-top, 120px) - 3rem); }
   .scroll-table thead th { position: sticky; top: 0; z-index: 10; background-color: var(--clr-header-bg); color: var(--clr-header-text); }
-  .scroll-kanban { overflow: auto; max-height: calc(100vh - var(--sticky-top, 120px) - 3rem); }
+  .scroll-kanban { overflow: auto; height: calc(100vh - var(--sticky-top, 120px) - 3rem); }
   .scroll-kanban .kanban-col-header { position: sticky; top: 0; z-index: 5; background: var(--clr-header-bg); color: var(--clr-header-text); padding-bottom: 6px; }
   html.dark .scroll-table table thead { background-color: transparent; }
   html.dark table tbody tr { border-color: var(--clr-border) !important; }
