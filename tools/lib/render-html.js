@@ -35,8 +35,15 @@ function usd(n) {
 function fmtNum(n) { return Number(n).toLocaleString(); }
 
 function renderTopBar(data) {
-  const totalProjected = data.stories.reduce((s, st) => s + (data.costs[st.id] && data.costs[st.id].projectedUsd || 0), 0);
-  const totalAI = data.costs._totals.costUsd;
+  const storyProjected = data.stories.reduce((s, st) => s + (data.costs[st.id] && data.costs[st.id].projectedUsd || 0), 0);
+  const bugProjected = Object.entries(data.costs._bugs || {})
+    .filter(([k]) => k !== '_totals')
+    .reduce((s, [, v]) => s + (v.projectedUsd || 0), 0);
+  const totalProjected = storyProjected + bugProjected;
+  const bugAI = Object.entries(data.costs._bugs || {})
+    .filter(([k, v]) => k !== '_totals' && v && !v.isEstimated)
+    .reduce((s, [, v]) => s + (v.costUsd || 0), 0);
+  const totalAI = (data.costs._totals.costUsd || 0) + bugAI;
   const done = data.stories.filter(s => s.status === 'Done').length;
   const inProgress = data.stories.filter(s => s.status === 'In Progress').length;
   const pct = data.stories.length ? Math.round((done / data.stories.length) * 100) : 0;
@@ -45,7 +52,6 @@ function renderTopBar(data) {
   const covClass = (cov.available !== false) ? (cov.meetsTarget ? 'text-green-400' : 'text-red-400') : 'text-slate-500';
   const branchSubtitle = (cov.available !== false) ? `Branches: ${Number(cov.branches).toFixed(1)}%` : 'N/A';
   const genAt = data.generatedAt;
-  const genDateStr = genAt.slice(0,10) + ' ' + genAt.slice(11,16) + ' UTC';
   return `
   <div class="text-white px-6 py-5 shadow-xl" id="top-bar"
        style="background:linear-gradient(135deg,#003087 0%,#005EB8 55%,#0078C8 100%);backdrop-filter:blur(0px)">
@@ -56,7 +62,7 @@ function renderTopBar(data) {
           <button onclick="openAbout()" class="text-xs text-blue-100 border border-white/30 rounded px-2 py-0.5 hover:bg-white/15 hover:text-white transition-colors flex-shrink-0 backdrop-blur-sm">About</button>
           <button onclick="toggleTheme()" id="theme-toggle" class="text-xs text-blue-100 border border-white/30 rounded px-2 py-0.5 hover:bg-white/15 hover:text-white transition-colors flex-shrink-0 backdrop-blur-sm" aria-label="Toggle dark/light mode"><span id="theme-icon">☀</span></button>
         </div>
-        <p class="text-blue-100/80 text-sm mt-0.5 topbar-tagline">${esc(data.tagline)}&nbsp;·&nbsp;Updated ${genDateStr}&nbsp;·&nbsp;<code class="text-blue-200/60 text-xs">${data.commitSha}</code></p>
+        <p class="text-blue-100/80 text-sm mt-0.5 topbar-tagline">${esc(data.tagline)}&nbsp;·&nbsp;Updated <span id="gen-time" data-iso="${genAt}"></span>&nbsp;·&nbsp;<code class="text-blue-200/60 text-xs">${data.commitSha}</code></p>
         <div class="mt-2.5 flex items-center gap-2 topbar-progress">
           <div class="rounded-full h-2 w-40 overflow-hidden" style="background:rgba(255,255,255,0.2)">
             <div class="h-2 rounded-full" style="width:${pct}%;background:rgba(255,255,255,0.85)"></div>
@@ -85,30 +91,36 @@ function renderTopBar(data) {
 function renderFilterBar(data) {
   const epicOptions = data.epics.map(e =>
     `<option value="${esc(e.id)}">${esc(e.id)}: ${esc(e.title)}</option>`).join('');
+  const sel = 'border border-slate-300 dark:border-slate-600 rounded px-2 py-1 text-sm dark:bg-slate-700 dark:text-slate-100';
   return `
-  <div class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-3 flex flex-wrap gap-3 items-center" id="filter-bar">
-    <select id="f-epic" onchange="applyFilters()" class="border border-slate-300 dark:border-slate-600 rounded px-2 py-1 text-sm dark:bg-slate-700 dark:text-slate-100">
-      <option value="">All Epics</option>${epicOptions}
-    </select>
-    <select id="f-status" onchange="applyFilters()" class="border border-slate-300 dark:border-slate-600 rounded px-2 py-1 text-sm dark:bg-slate-700 dark:text-slate-100">
-      <option value="">All Statuses</option>
-      <option>In Progress</option><option>Planned</option><option>Done</option><option>Blocked</option>
-    </select>
-    <select id="f-priority" onchange="applyFilters()" class="border border-slate-300 dark:border-slate-600 rounded px-2 py-1 text-sm dark:bg-slate-700 dark:text-slate-100">
-      <option value="">All Priorities</option>
-      <option>P0</option><option>P1</option><option>P2</option>
-    </select>
-    <select id="f-type" onchange="applyFilters()" class="border border-slate-300 dark:border-slate-600 rounded px-2 py-1 text-sm dark:bg-slate-700 dark:text-slate-100">
-      <option value="">Stories + Bugs</option><option value="story">Stories only</option><option value="bug">Bugs only</option>
-    </select>
+  <div class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-2 flex flex-wrap gap-2 items-center hidden" id="filter-bar">
+    <span id="fgrp-story" class="hidden flex-wrap gap-2 flex">
+      <select id="f-epic" onchange="applyFilters()" class="${sel}">
+        <option value="">All Epics</option>${epicOptions}
+      </select>
+      <select id="f-status" onchange="applyFilters()" class="${sel}">
+        <option value="">All Statuses</option>
+        <option>In Progress</option><option>Planned</option><option>Done</option><option>Blocked</option>
+      </select>
+      <select id="f-priority" onchange="applyFilters()" class="${sel}">
+        <option value="">All Priorities</option>
+        <option>P0</option><option>P1</option><option>P2</option>
+      </select>
+    </span>
+    <span id="fgrp-bug" class="hidden flex-wrap gap-2 flex">
+      <select id="f-bug-status" onchange="applyFilters()" class="${sel}">
+        <option value="">All Statuses</option>
+        <option>Open</option><option>In Progress</option><option>Fixed</option>
+      </select>
+    </span>
     <input id="f-search" oninput="applyFilters()" type="text" placeholder="Search IDs, titles…"
-      class="border border-slate-300 dark:border-slate-600 rounded px-2 py-1 text-sm w-full sm:w-48 dark:bg-slate-700 dark:text-slate-100 dark:placeholder-slate-400" />
+      class="${sel} w-full sm:w-48 dark:placeholder-slate-400" />
     <button onclick="clearFilters()" class="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 underline">Clear</button>
   </div>`;
 }
 
 function renderTabs() {
-  const tabs = ['Hierarchy','Kanban','Traceability','Charts','Costs','Bugs'];
+  const tabs = ['Hierarchy','Kanban','Traceability','Charts','Costs','Bugs','Lessons'];
   return `
   <div class="border-b border-slate-700 bg-slate-800 px-6 flex gap-1 overflow-x-auto" id="tab-bar">
     ${tabs.map((t, i) => `
@@ -123,7 +135,9 @@ function renderHierarchyTab(data) {
   const epicBlocks = data.epics.map(epic => {
     const stories = data.stories.filter(s => s.epicId === epic.id);
     const epicProjected = stories.reduce((s, st) => s + (data.costs[st.id] && data.costs[st.id].projectedUsd || 0), 0);
-    const storyBlocks = stories.map(story => {
+
+    // ── column view: expandable story rows ──────────────────────────────────
+    const storyRows = stories.map(story => {
       const risk = data.atRisk[story.id] || {};
       const riskBadge = risk.isAtRisk ? `<span class="at-risk text-orange-500 text-xs ml-1" title="${[
         risk.missingTCs && 'Missing TCs',
@@ -153,7 +167,55 @@ function renderHierarchyTab(data) {
         <ul id="acs-${story.id}" class="mt-2 hidden">${acItems || '<li class="text-xs text-slate-500 pl-4">No ACs yet</li>'}</ul>
       </div>`;
     }).join('');
-    return `
+
+    // ── card view: story cards in a grid ────────────────────────────────────
+    const storyCards = stories.map(story => {
+      const risk = data.atRisk[story.id] || {};
+      const riskBadge = risk.isAtRisk ? `<span class="text-orange-500 text-xs">⚠ At Risk</span>` : '';
+      const tcs = data.testCases.filter(tc => tc.relatedStory === story.id);
+      const acDone = story.acs.filter(a => a.done).length;
+      const acTotal = story.acs.length;
+      const cost = usd(data.costs[story.id] && data.costs[story.id].projectedUsd || 0);
+      const acItems = story.acs.map(ac => {
+        const linkedTC = tcs.find(tc => tc.relatedAC === ac.id);
+        return `<li class="flex items-start gap-2 py-0.5">
+          <span class="${ac.done ? 'text-green-500' : 'text-slate-400'}">${ac.done ? '✓' : '○'}</span>
+          <span class="text-xs text-slate-400">${esc(ac.id)}</span>
+          <span class="text-xs dark:text-slate-300">${esc(ac.text)}</span>
+          ${linkedTC ? `<span class="ml-auto shrink-0 text-xs text-slate-400">→ ${linkedTC.id} ${badge(linkedTC.status)}</span>` : ''}
+        </li>`;
+      }).join('');
+      return `
+      <div class="story-row bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg p-3 flex flex-col gap-1 shadow-sm"
+           data-epic="${story.epicId}" data-status="${story.status}" data-priority="${story.priority}">
+        <div class="flex flex-wrap items-center gap-1 cursor-pointer" onclick="toggleCardACs('${story.id}')">
+          ${badge(story.status)} ${badge(story.priority)}
+          <span class="font-mono text-xs text-slate-500 ml-1">${story.id}</span>
+        </div>
+        <p class="text-sm font-medium dark:text-slate-100 leading-snug cursor-pointer" onclick="toggleCardACs('${story.id}')">${esc(story.title)}</p>
+        <div class="flex items-center gap-2 mt-auto pt-1 text-xs text-slate-500 border-t border-slate-100 dark:border-slate-600">
+          <span>${story.estimate || '?'}</span>
+          <span>${cost}</span>
+          ${acTotal ? `<span class="cursor-pointer hover:text-blue-500 dark:hover:text-blue-400" onclick="toggleCardACs('${story.id}')">${acDone}/${acTotal} ACs ▾</span>` : ''}
+          <span class="ml-auto">${riskBadge}</span>
+        </div>
+        ${acTotal ? `<ul id="card-acs-${story.id}" class="hidden mt-1 pt-1 border-t border-slate-100 dark:border-slate-600 space-y-0.5">${acItems || '<li class="text-xs text-slate-500 pl-4">No ACs yet</li>'}</ul>` : ''}
+      </div>`;
+    }).join('');
+
+    const epicHeader = `
+      <div class="flex flex-wrap items-center gap-3 mb-3">
+        <span class="font-mono text-sm font-bold text-blue-600">${epic.id}</span>
+        ${badge(epic.status)}
+        <span class="font-semibold dark:text-slate-100">${esc(epic.title)}</span>
+        <span class="text-xs text-slate-500">${esc(epic.releaseTarget)}</span>
+        <span class="ml-auto text-sm text-slate-500">${usd(epicProjected)} projected</span>
+      </div>`;
+
+    return { epic, epicProjected, storyRows, storyCards, epicHeader };
+  });
+
+  const columnView = epicBlocks.map(({ epic, epicProjected, storyRows }) => `
     <div class="epic-block mb-4 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
       <div class="bg-slate-50 dark:bg-slate-800 px-4 py-3 flex flex-wrap items-center gap-3 cursor-pointer" onclick="toggleEpic('${epic.id}')">
         <span class="font-mono text-sm font-bold text-blue-600">${epic.id}</span>
@@ -162,10 +224,38 @@ function renderHierarchyTab(data) {
         <span class="text-xs text-slate-500">${esc(epic.releaseTarget)}</span>
         <span class="ml-auto text-sm text-slate-500">${usd(epicProjected)} projected</span>
       </div>
-      <div id="epic-stories-${epic.id}">${storyBlocks || '<p class="text-slate-500 dark:text-slate-400 text-sm px-4 py-2">No stories yet.</p>'}</div>
-    </div>`;
-  }).join('');
-  return `<div id="tab-hierarchy" class="p-6">${epicBlocks}</div>`;
+      <div id="epic-stories-${epic.id}">${storyRows || '<p class="text-slate-500 dark:text-slate-400 text-sm px-4 py-2">No stories yet.</p>'}</div>
+    </div>`).join('');
+
+  const cardView = epicBlocks.map(({ epic, storyCards, epicHeader }) => `
+    <div class="mb-8">
+      <div class="epic-block border border-slate-200 dark:border-slate-700 rounded-t-lg bg-slate-50 dark:bg-slate-800 px-4 py-3 mb-0">
+        ${epicHeader}
+      </div>
+      <div class="border border-t-0 border-slate-200 dark:border-slate-700 rounded-b-lg p-3">
+        ${storyCards
+          ? `<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">${storyCards}</div>`
+          : '<p class="text-slate-500 dark:text-slate-400 text-sm">No stories yet.</p>'}
+      </div>
+    </div>`).join('');
+
+  return `
+  <div id="tab-hierarchy" class="p-6">
+    <div class="flex items-center justify-end mb-4 flex-shrink-0">
+      <div class="flex gap-1">
+        <button id="hier-col-btn" onclick="setHierarchyView('column')"
+          class="px-3 py-1 text-xs rounded border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+          ≡ Column
+        </button>
+        <button id="hier-card-btn" onclick="setHierarchyView('card')"
+          class="px-3 py-1 text-xs rounded border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+          ⊞ Card
+        </button>
+      </div>
+    </div>
+    <div id="hier-column-view">${columnView}</div>
+    <div id="hier-card-view" class="hidden">${cardView}</div>
+  </div>`;
 }
 
 function renderKanbanTab(data) {
@@ -176,18 +266,20 @@ function renderKanbanTab(data) {
       col === 'To Do' ? s.status === 'To Do' : s.status === col
     );
     return `
-    <div class="flex-1 min-w-48">
-      <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3 pb-1 border-b border-slate-200 dark:border-slate-600">${col} <span class="text-slate-500 font-normal">(${items.length})</span></h3>
-      ${items.map(s => `
-      <div class="story-row bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded p-3 mb-2 shadow-sm"
-           data-epic="${s.epicId}" data-status="${s.status}" data-priority="${s.priority}">
-        <div class="flex gap-1 mb-1">${badge(s.priority)} <span class="text-xs text-slate-500">${s.id}</span></div>
-        <p class="text-sm dark:text-slate-100">${esc(s.title)}</p>
-        <p class="text-xs text-slate-500 mt-1">${s.epicId} · ${s.estimate || '?'}</p>
-      </div>`).join('')}
+    <div class="kanban-col flex flex-col flex-1 min-w-48">
+      <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-2 pb-1 border-b border-slate-200 dark:border-slate-600 flex-shrink-0">${col} <span class="text-slate-500 font-normal">(${items.length})</span></h3>
+      <div class="kanban-col-body flex-1 overflow-y-auto">
+        ${items.map(s => `
+        <div class="story-row bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded p-3 mb-2 shadow-sm"
+             data-epic="${s.epicId}" data-status="${s.status}" data-priority="${s.priority}">
+          <div class="flex gap-1 mb-1">${badge(s.priority)} <span class="text-xs text-slate-500">${s.id}</span></div>
+          <p class="text-sm dark:text-slate-100">${esc(s.title)}</p>
+          <p class="text-xs text-slate-500 mt-1">${s.epicId} · ${s.estimate || '?'}</p>
+        </div>`).join('')}
+      </div>
     </div>`;
   }).join('');
-  return `<div id="tab-kanban" class="p-6 hidden"><div class="flex gap-4 overflow-x-auto">${colHtml}</div></div>`;
+  return `<div id="tab-kanban" class="p-6 hidden tab-fill"><div class="flex gap-4 min-h-0 flex-1 overflow-x-auto">${colHtml}</div></div>`;
 }
 
 function renderTraceabilityTab(data) {
@@ -195,9 +287,9 @@ function renderTraceabilityTab(data) {
     return `<div id="tab-traceability" class="p-6 hidden"><p class="text-slate-500">No test cases yet.</p></div>`;
   }
   const tcStatusColor = {
-    'Pass': 'bg-green-100 text-green-800',
-    'Fail': 'bg-red-100 text-red-800',
-    'Not Run': 'bg-amber-50 text-amber-700',
+    'Pass':    'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300',
+    'Fail':    'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300',
+    'Not Run': 'bg-amber-50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
   };
   const passed = data.testCases.filter(tc => tc.status === 'Pass').length;
   const failed = data.testCases.filter(tc => tc.status === 'Fail').length;
@@ -218,7 +310,7 @@ function renderTraceabilityTab(data) {
       : '';
     const epicHeader = `<tr class="${epicRowBg} cursor-pointer select-none"
       onclick="(function(){var rows=document.querySelectorAll('[data-trace-epic=\\'${epic.id}\\']');var arr=document.getElementById('${epicRowId}-arrow');var collapsed=arr.textContent==='\\u25b6';rows.forEach(function(r){r.classList.toggle('hidden',!collapsed);});arr.textContent=collapsed?'\\u25bc':'\\u25b6';})()" >
-      <td colspan="${data.testCases.length + 1}" class="px-2 py-1 text-xs font-semibold text-blue-700">
+      <td colspan="${data.testCases.length + 1}" class="px-2 py-1 text-xs font-semibold text-blue-700 dark:text-blue-400">
         <span id="${epicRowId}-arrow" class="mr-1 text-slate-400">&#9654;</span>
         ${epic.id} \u2014 ${esc(epic.title)}${epicStatusBadge}
       </td>
@@ -237,8 +329,8 @@ function renderTraceabilityTab(data) {
     return epicHeader + storyRows;
   }).join('');
   return `
-  <div id="tab-traceability" class="p-6 hidden">
-    <div class="flex flex-wrap items-center gap-4 mb-3 text-xs">
+  <div id="tab-traceability" class="p-6 hidden tab-fill">
+    <div class="flex flex-wrap items-center gap-4 mb-3 text-xs flex-shrink-0">
       <span class="flex items-center gap-1">
         <span class="w-7 h-5 rounded bg-green-100 text-green-800 flex items-center justify-center font-medium">P</span> Pass
       </span>
@@ -253,9 +345,9 @@ function renderTraceabilityTab(data) {
       </span>
       <span class="text-slate-500 ml-2">${passed} Pass &middot; ${failed} Fail &middot; ${notRun} Not Run &middot; ${data.testCases.length} Total</span>
     </div>
-    <div class="overflow-x-auto">
+    <div class="scroll-table">
       <table class="border-collapse text-sm">
-        <thead><tr><th class="p-2 border border-slate-200 dark:border-slate-600 text-xs dark:text-slate-300">Story</th>${headers}</tr></thead>
+        <thead><tr><th class="p-2 border border-slate-200 dark:border-slate-600 text-xs">Story</th>${headers}</tr></thead>
         <tbody>${rows}</tbody>
       </table>
     </div>
@@ -289,22 +381,22 @@ function renderChartsTab(data) {
 
       <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Epic Progress</h3>
-        <canvas id="chart-epic-progress" height="200"></canvas>
+        <div style="height:300px;position:relative"><canvas id="chart-epic-progress"></canvas></div>
       </div>
 
       <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Cost Breakdown (Projected vs AI)</h3>
-        <canvas id="chart-cost-breakdown" height="200"></canvas>
+        <div style="height:300px;position:relative"><canvas id="chart-cost-breakdown"></canvas></div>
       </div>
 
       <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Test Coverage</h3>
-        <div class="relative">
-          <canvas id="chart-coverage" height="200"></canvas>
-          <div class="absolute inset-0 flex items-center justify-center pointer-events-none" style="padding-bottom:2.5rem">
+        <div style="height:300px;position:relative">
+          <canvas id="chart-coverage"></canvas>
+          <div class="absolute inset-0 flex items-center justify-center pointer-events-none" style="padding-bottom:3rem">
             <div class="text-center">
-              <div class="text-2xl font-bold text-slate-700">${coveragePct}%</div>
-              <div class="text-xs text-slate-500">overall</div>
+              <div class="text-2xl font-bold text-slate-700 dark:text-slate-200">${coveragePct}%</div>
+              <div class="text-xs text-slate-500 dark:text-slate-400">overall</div>
             </div>
           </div>
         </div>
@@ -312,71 +404,100 @@ function renderChartsTab(data) {
 
       <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">AI Cost Timeline</h3>
-        <canvas id="chart-ai-timeline" height="200"></canvas>
+        <div style="height:300px;position:relative"><canvas id="chart-ai-timeline"></canvas></div>
       </div>
 
       <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Story Status Distribution</h3>
-        <canvas id="chart-burndown" height="200"></canvas>
+        <div style="height:300px;position:relative"><canvas id="chart-burndown"></canvas></div>
       </div>
 
       <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Budget Burn Rate</h3>
-        <canvas id="chart-burn-rate" height="200"></canvas>
+        <div style="height:300px;position:relative"><canvas id="chart-burn-rate"></canvas></div>
       </div>
 
     </div>
   </div>
   <script>
+  var _charts = {};
+  function chartTextColor() {
+    return getComputedStyle(document.documentElement).getPropertyValue('--clr-chart-text').trim() || '#475569';
+  }
   function initCharts() {
-    new Chart(document.getElementById('chart-epic-progress'), {
+    var tc = chartTextColor();
+    _charts.epicProgress = new Chart(document.getElementById('chart-epic-progress'), {
       type: 'bar',
       data: { labels: ${epicLabels}, datasets: [
         { label: 'Done', data: ${epicDone}, backgroundColor: '#22c55e' },
         { label: 'In Progress', data: ${epicInProgress}, backgroundColor: '#3b82f6' },
         { label: 'Planned/To Do', data: ${epicPlanned}, backgroundColor: '#cbd5e1' },
       ]},
-      options: { indexAxis: 'y', responsive: true, scales: { x: { stacked: true }, y: { stacked: true } } }
+      options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { labels: { color: tc } } },
+        scales: { x: { stacked: true, ticks: { color: tc } }, y: { stacked: true, ticks: { color: tc } } } }
     });
-    new Chart(document.getElementById('chart-cost-breakdown'), {
+    _charts.costBreakdown = new Chart(document.getElementById('chart-cost-breakdown'), {
       type: 'bar',
       data: { labels: ${epicLabels}, datasets: [
         { label: 'Projected ($)', data: ${epicProjected}, backgroundColor: '#f59e0b', yAxisID: 'yProjected' },
         { label: 'AI Cost ($)', data: ${epicAI}, backgroundColor: '#0d9488', yAxisID: 'yAI' },
       ]},
       options: {
-        responsive: true,
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { labels: { color: tc } } },
         scales: {
-          yProjected: { type: 'linear', position: 'left', title: { display: true, text: 'Projected ($)' } },
-          yAI: { type: 'linear', position: 'right', title: { display: true, text: 'AI Cost ($)' }, grid: { drawOnChartArea: false } }
+          x: { ticks: { color: tc } },
+          yProjected: { type: 'linear', position: 'left', ticks: { color: tc }, title: { display: true, text: 'Projected ($)', color: tc } },
+          yAI: { type: 'linear', position: 'right', ticks: { color: tc }, title: { display: true, text: 'AI Cost ($)', color: tc }, grid: { drawOnChartArea: false } }
         }
       }
     });
-    new Chart(document.getElementById('chart-coverage'), {
+    _charts.coverage = new Chart(document.getElementById('chart-coverage'), {
       type: 'doughnut',
       data: { labels: ['Covered', 'Gap'], datasets: [{ data: [${coveragePct}, ${100 - parseFloat(coveragePct)}], backgroundColor: ['#22c55e','#cbd5e1'], borderWidth: 0 }] },
-      options: { cutout: '70%', plugins: { legend: { display: true, position: 'bottom' } } }
+      options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: true, position: 'bottom', labels: { color: tc } } } }
     });
-    new Chart(document.getElementById('chart-ai-timeline'), {
+    _charts.aiTimeline = new Chart(document.getElementById('chart-ai-timeline'), {
       type: 'line',
       data: { labels: ${sessionDates}, datasets: [{ label: 'Cumulative AI Cost ($)', data: ${sessionCosts}, borderColor: '#0d9488', tension: 0.3, fill: true, backgroundColor: 'rgba(13,148,136,0.1)' }] },
-      options: { responsive: true }
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc } } }, scales: { x: { ticks: { color: tc } }, y: { ticks: { color: tc } } } }
     });
-    new Chart(document.getElementById('chart-burndown'), {
+    _charts.burndown = new Chart(document.getElementById('chart-burndown'), {
       type: 'doughnut',
       data: { labels: ['Done','In Progress','Planned','To Do','Blocked'], datasets: [{ data: ${statusCounts}, backgroundColor: ['#22c55e','#3b82f6','#94a3b8','#f59e0b','#ef4444'], borderWidth: 1 }] },
-      options: { plugins: { legend: { display: true, position: 'bottom' } } }
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { color: tc } } } }
     });
-    new Chart(document.getElementById('chart-burn-rate'), {
+    _charts.burnRate = new Chart(document.getElementById('chart-burn-rate'), {
       type: 'bar',
       data: { labels: ${sessionDates}, datasets: [{ label: 'Session AI Spend ($)', data: ${sessionPerCosts}, backgroundColor: '#6366f1' }] },
-      options: { responsive: true }
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc } } }, scales: { x: { ticks: { color: tc } }, y: { ticks: { color: tc } } } }
+    });
+  }
+  function updateChartTheme() {
+    var tc = chartTextColor();
+    Object.values(_charts).forEach(function(c) {
+      if (!c) return;
+      if (c.options.plugins && c.options.plugins.legend && c.options.plugins.legend.labels) {
+        c.options.plugins.legend.labels.color = tc;
+      }
+      if (c.options.scales) {
+        Object.values(c.options.scales).forEach(function(s) {
+          if (s.ticks) s.ticks.color = tc;
+          if (s.title) s.title.color = tc;
+        });
+      }
+      c.update();
     });
   }
   </script>`;
 }
 
 function renderCostsTab(data) {
+  const t = data.costs._totals;
+  const totalProjected = data.stories.reduce((s, st) => s + (data.costs[st.id] && data.costs[st.id].projectedUsd || 0), 0);
+
+  // ── Column view: stories table ──────────────────────────────────────────
   const epicBlocks = data.epics.map(epic => {
     const epicStories = data.stories.filter(s => s.epicId === epic.id);
     const epicProjected = epicStories.reduce((s, st) => s + (data.costs[st.id] && data.costs[st.id].projectedUsd || 0), 0);
@@ -386,14 +507,13 @@ function renderCostsTab(data) {
     const storyRows = epicStories.map(story => {
       const projected = (data.costs[story.id] && data.costs[story.id].projectedUsd || 0);
       const ai = data.costs[story.id] || {};
-      const aiCost = ai.costUsd || 0;
       return `<tr class="border-t border-slate-100 dark:border-slate-700">
         <td class="px-3 py-2 pl-8 font-mono text-xs text-slate-500 whitespace-nowrap">${story.id}</td>
         <td class="px-3 py-2 text-sm dark:text-slate-200">${esc(story.title)}</td>
         <td class="px-3 py-2 text-center">${badge(story.status)}</td>
         <td class="px-3 py-2 text-center text-sm dark:text-slate-200">${story.estimate || '?'}</td>
         <td class="px-3 py-2 text-right text-sm dark:text-slate-200">${usd(projected)}</td>
-        <td class="px-3 py-2 text-right text-sm text-teal-700 dark:text-teal-400">${usd(aiCost)}</td>
+        <td class="px-3 py-2 text-right text-sm text-teal-700 dark:text-teal-400">${usd(ai.costUsd || 0)}</td>
         <td class="px-3 py-2 text-right text-xs text-slate-500 tokens-col">${fmtNum(ai.inputTokens || 0)} / ${fmtNum(ai.outputTokens || 0)}</td>
       </tr>`;
     }).join('');
@@ -410,94 +530,393 @@ function renderCostsTab(data) {
     </tr>
     ${storyRows}`;
   }).join('');
-  const t = data.costs._totals;
-  const totalProjected = data.stories.reduce((s, st) => s + (data.costs[st.id] && data.costs[st.id].projectedUsd || 0), 0);
-  const bugCostsSection = data.bugs.length ? (() => {
-    const bugRows = data.bugs.map(bug => {
-      const bc = (data.costs._bugs && data.costs._bugs[bug.id]) || { costUsd: 0, inputTokens: 0, outputTokens: 0 };
-      return `<tr class="border-t border-slate-100 dark:border-slate-700">
-        <td class="px-3 py-2 font-mono text-xs text-slate-500 whitespace-nowrap">${esc(bug.id)}</td>
-        <td class="px-3 py-2 text-sm dark:text-slate-200">${esc(bug.title)}</td>
-        <td class="px-3 py-2 text-center">${badge(bug.severity)}</td>
-        <td class="px-3 py-2 text-center">${badge(bug.status)}</td>
-        <td class="px-3 py-2 text-xs text-slate-500">${esc(bug.relatedStory || '—')}</td>
-        <td class="px-3 py-2 text-xs text-slate-500">${esc(bug.fixBranch || '—')}</td>
-        <td class="px-3 py-2 text-right text-sm text-teal-700 dark:text-teal-400">${bc.isEstimated ? `<span class="text-slate-400 italic" title="Estimated — predates cost logging">${usd(bc.costUsd)} est.</span>` : usd(bc.costUsd)}</td>
-        <td class="px-3 py-2 text-right text-xs text-slate-500 tokens-col">${bc.isEstimated ? '—' : `${fmtNum(bc.inputTokens)} / ${fmtNum(bc.outputTokens)}`}</td>
-      </tr>`;
+
+  // ── Bug cost helpers (shared by column + card) ──────────────────────────
+  const allBugCosts = data.bugs.map(b => (data.costs._bugs && data.costs._bugs[b.id]) || { costUsd: 0, inputTokens: 0, outputTokens: 0 });
+  const bugTotalAI        = allBugCosts.reduce((s, bc) => s + (bc.isEstimated ? 0 : (bc.costUsd || 0)), 0);
+  const bugTotalProjected = allBugCosts.reduce((s, bc) => s + (bc.projectedUsd || 0), 0);
+  const bugTotalIn        = allBugCosts.reduce((s, bc) => s + (bc.isEstimated ? 0 : (bc.inputTokens || 0)), 0);
+  const bugTotalOut       = allBugCosts.reduce((s, bc) => s + (bc.isEstimated ? 0 : (bc.outputTokens || 0)), 0);
+
+  // ── Column view: bug rows ────────────────────────────────────────────────
+  const bugColRows = data.bugs.map(bug => {
+    const bc = (data.costs._bugs && data.costs._bugs[bug.id]) || { costUsd: 0, inputTokens: 0, outputTokens: 0 };
+    return `<tr class="border-t border-slate-100 dark:border-slate-700">
+      <td class="px-3 py-2 font-mono text-xs text-slate-500 whitespace-nowrap">${esc(bug.id)}</td>
+      <td class="px-3 py-2 text-sm dark:text-slate-200">${esc(bug.title)}</td>
+      <td class="px-3 py-2 text-center">${badge(bug.severity)}</td>
+      <td class="px-3 py-2 text-center">${badge(bug.status)}</td>
+      <td class="px-3 py-2 text-xs text-slate-500">${esc(bug.relatedStory || '—')}</td>
+      <td class="px-3 py-2 text-xs text-slate-500">${esc(bug.fixBranch || '—')}</td>
+      <td class="px-3 py-2 text-right text-sm dark:text-slate-200">${bc.projectedUsd > 0 ? usd(bc.projectedUsd) : '—'}</td>
+      <td class="px-3 py-2 text-right text-sm text-teal-700 dark:text-teal-400">${bc.isEstimated ? '—' : usd(bc.costUsd)}</td>
+      <td class="px-3 py-2 text-right text-xs text-slate-500 tokens-col">${bc.isEstimated ? '—' : `${fmtNum(bc.inputTokens)} / ${fmtNum(bc.outputTokens)}`}</td>
+    </tr>`;
+  }).join('');
+
+  // ── Card view: story cards grouped by epic ──────────────────────────────
+  const epicCardBlocks = data.epics.map(epic => {
+    const epicStories = data.stories.filter(s => s.epicId === epic.id);
+    if (!epicStories.length) return '';
+    const storyCards = epicStories.map(story => {
+      const ai = data.costs[story.id] || {};
+      const projected = ai.projectedUsd || 0;
+      return `<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 flex flex-col gap-2">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="font-mono text-xs text-slate-500 whitespace-nowrap">${story.id}</span>
+          ${badge(story.status)}
+          <span class="ml-auto text-xs text-slate-400">${story.estimate || '?'}</span>
+        </div>
+        <p class="text-sm font-medium dark:text-slate-200">${esc(story.title)}</p>
+        <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs mt-1">
+          <div>
+            <span class="text-slate-500 block">Projected</span>
+            <span class="font-mono dark:text-slate-200">${usd(projected)}</span>
+          </div>
+          <div>
+            <span class="text-slate-500 block">AI Actual</span>
+            <span class="font-mono text-teal-700 dark:text-teal-400">${usd(ai.costUsd || 0)}</span>
+          </div>
+          <div class="tokens-col col-span-2">
+            <span class="text-slate-500 block">Tokens (in / out)</span>
+            <span class="font-mono text-slate-500">${fmtNum(ai.inputTokens || 0)} / ${fmtNum(ai.outputTokens || 0)}</span>
+          </div>
+        </div>
+      </div>`;
     }).join('');
-    return `
-    <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mt-6 mb-2">Bug Fix Costs</h3>
+    const epicProjTotal = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).projectedUsd || 0), 0);
+    const epicAITotal   = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).costUsd || 0), 0);
+    return `<div class="mb-6">
+      <div class="flex items-center gap-2 mb-3 flex-wrap">
+        <span class="font-mono text-xs font-bold text-blue-600">${epic.id}</span>
+        <span class="text-sm font-semibold text-slate-700 dark:text-slate-200">${esc(epic.title)}</span>
+        ${badge(epic.status)}
+        <span class="ml-auto text-xs text-slate-500">Proj ${usd(epicProjTotal)} · AI ${usd(epicAITotal)}</span>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">${storyCards}</div>
+    </div>`;
+  }).join('');
+
+  // ── Card view: bug cards ─────────────────────────────────────────────────
+  const bugCards = data.bugs.map(bug => {
+    const bc = (data.costs._bugs && data.costs._bugs[bug.id]) || {};
+    return `<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 flex flex-col gap-2">
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="font-mono text-xs text-slate-500 whitespace-nowrap">${esc(bug.id)}</span>
+        ${badge(bug.severity)} ${badge(bug.status)}
+      </div>
+      <p class="text-sm font-medium dark:text-slate-200">${esc(bug.title)}</p>
+      <div class="text-xs text-slate-500">
+        Story: <span class="font-mono">${esc(bug.relatedStory || '—')}</span>
+      </div>
+      <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs mt-1">
+        <div>
+          <span class="text-slate-500 block">Projected</span>
+          <span class="font-mono dark:text-slate-200">${bc.projectedUsd > 0 ? usd(bc.projectedUsd) : '—'}</span>
+        </div>
+        <div>
+          <span class="text-slate-500 block">AI Actual</span>
+          <span class="font-mono text-teal-700 dark:text-teal-400">${bc.isEstimated ? '—' : usd(bc.costUsd || 0)}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const bugFixColumnSection = data.bugs.length ? `
+    <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mt-4 mb-2 flex-shrink-0">Bug Fix Costs</h3>
+    <div class="scroll-table">
     <table class="w-full text-left text-sm border-collapse">
-      <thead class="bg-slate-800 text-slate-200 text-xs uppercase">
+      <thead class="text-xs uppercase">
         <tr>
           <th class="px-3 py-2">Bug</th><th class="px-3 py-2">Title</th><th class="px-3 py-2 text-center">Severity</th>
           <th class="px-3 py-2 text-center">Status</th><th class="px-3 py-2">Story</th>
-          <th class="px-3 py-2">Fix Branch</th><th class="px-3 py-2 text-right">AI Cost</th>
+          <th class="px-3 py-2">Fix Branch</th><th class="px-3 py-2 text-right">Projected</th>
+          <th class="px-3 py-2 text-right">AI Cost</th>
           <th class="px-3 py-2 text-right tokens-col">Tokens (in/out)</th>
         </tr>
       </thead>
-      <tbody>${bugRows}</tbody>
-    </table>`;
-  })() : '';
-  return `
-  <div id="tab-costs" class="p-6 hidden overflow-x-auto">
-    <table class="w-full text-left text-sm border-collapse">
-      <thead class="bg-slate-800 text-slate-200 text-xs uppercase">
-        <tr>
-          <th class="px-3 py-2">Story</th><th class="px-3 py-2">Title</th><th class="px-3 py-2 text-center">Status</th>
-          <th class="px-3 py-2 text-center">Size</th><th class="px-3 py-2 text-right">Projected</th>
-          <th class="px-3 py-2 text-right">AI Cost</th><th class="px-3 py-2 text-right tokens-col">Tokens (in/out)</th>
-        </tr>
-      </thead>
-      <tbody>${epicBlocks}</tbody>
+      <tbody>${bugColRows}</tbody>
       <tfoot class="bg-slate-50 dark:bg-slate-700 font-semibold border-t-2 border-slate-300 dark:border-slate-600">
         <tr>
-          <td colspan="4" class="px-3 py-2 text-right text-sm dark:text-slate-200">Totals</td>
-          <td class="px-3 py-2 text-right text-sm dark:text-slate-200">${usd(totalProjected)}</td>
-          <td class="px-3 py-2 text-right text-sm text-teal-700 dark:text-teal-400">${usd(t.costUsd)}</td>
-          <td class="px-3 py-2 text-right text-xs text-slate-500 tokens-col">${fmtNum(t.inputTokens)} / ${fmtNum(t.outputTokens)}</td>
+          <td colspan="6" class="px-3 py-2 text-right text-sm dark:text-slate-200">Totals</td>
+          <td class="px-3 py-2 text-right text-sm dark:text-slate-200">${usd(bugTotalProjected)}</td>
+          <td class="px-3 py-2 text-right text-sm text-teal-700 dark:text-teal-400">${usd(bugTotalAI)}</td>
+          <td class="px-3 py-2 text-right text-xs text-slate-500 tokens-col">${fmtNum(bugTotalIn)} / ${fmtNum(bugTotalOut)}</td>
         </tr>
       </tfoot>
     </table>
-    ${bugCostsSection}
-  </div>`;
+    </div>` : '';
+
+  const bugFixCardSection = data.bugs.length ? `
+    <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mt-6 mb-3">Bug Fix Costs</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">${bugCards}</div>` : '';
+
+  return `
+  <div id="tab-costs" class="p-6 hidden tab-fill">
+    <div class="flex items-center justify-between mb-4 flex-shrink-0">
+      <span class="text-sm text-slate-500 dark:text-slate-400">${data.stories.length} stories · ${data.bugs.length} bugs</span>
+      <div class="flex gap-1">
+        <button id="costs-col-btn" onclick="setCostsView('column')"
+          class="px-3 py-1 text-xs rounded border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+          ≡ Column
+        </button>
+        <button id="costs-card-btn" onclick="setCostsView('card')"
+          class="px-3 py-1 text-xs rounded border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+          ⊞ Card
+        </button>
+      </div>
+    </div>
+
+    <div id="costs-column-view" class="flex flex-col" style="flex:1;min-height:0;overflow-y:auto">
+      <div class="scroll-table">
+      <table class="w-full text-left text-sm border-collapse">
+        <thead class="text-xs uppercase">
+          <tr>
+            <th class="px-3 py-2">Story</th><th class="px-3 py-2">Title</th><th class="px-3 py-2 text-center">Status</th>
+            <th class="px-3 py-2 text-center">Size</th><th class="px-3 py-2 text-right">Projected</th>
+            <th class="px-3 py-2 text-right">AI Cost</th><th class="px-3 py-2 text-right tokens-col">Tokens (in/out)</th>
+          </tr>
+        </thead>
+        <tbody>${epicBlocks}</tbody>
+        <tfoot class="bg-slate-50 dark:bg-slate-700 font-semibold border-t-2 border-slate-300 dark:border-slate-600">
+          <tr>
+            <td colspan="4" class="px-3 py-2 text-right text-sm dark:text-slate-200">Totals</td>
+            <td class="px-3 py-2 text-right text-sm dark:text-slate-200">${usd(totalProjected)}</td>
+            <td class="px-3 py-2 text-right text-sm text-teal-700 dark:text-teal-400">${usd(t.costUsd)}</td>
+            <td class="px-3 py-2 text-right text-xs text-slate-500 tokens-col">${fmtNum(t.inputTokens)} / ${fmtNum(t.outputTokens)}</td>
+          </tr>
+        </tfoot>
+      </table>
+      </div>
+      ${bugFixColumnSection}
+    </div>
+
+    <div id="costs-card-view" class="hidden" style="flex:1;min-height:0;overflow-y:auto">
+      ${epicCardBlocks}
+      ${bugFixCardSection}
+    </div>
+  </div>
+  <script>
+  function setCostsView(v) {
+    var col = document.getElementById('costs-column-view');
+    var card = document.getElementById('costs-card-view');
+    var colBtn = document.getElementById('costs-col-btn');
+    var cardBtn = document.getElementById('costs-card-btn');
+    if (!col) return;
+    col.classList.toggle('hidden', v !== 'column');
+    card.classList.toggle('hidden', v !== 'card');
+    colBtn.style.fontWeight = v === 'column' ? '700' : '';
+    colBtn.style.background = v === 'column' ? 'rgba(59,130,246,0.1)' : '';
+    cardBtn.style.fontWeight = v === 'card' ? '700' : '';
+    cardBtn.style.background = v === 'card' ? 'rgba(59,130,246,0.1)' : '';
+    localStorage.setItem('costsView', v);
+  }
+  (function() { setCostsView(localStorage.getItem('costsView') || 'column'); })();
+  </script>`;
 }
 
 function renderBugsTab(data) {
   if (!data.bugs.length) {
     return `<div id="tab-bugs" class="p-6 hidden"><p class="text-slate-500">No bugs logged yet.</p></div>`;
   }
+
+  const lessonCell = (bug) => {
+    if (!bug.lessonEncoded || !bug.lessonEncoded.startsWith('Yes')) return '○';
+    const lm = bug.lessonEncoded.match(/L-\d{4}/);
+    if (!lm) return '✓';
+    return `<a href="#" onclick="showTab('lessons');setTimeout(function(){var el=document.getElementById('lesson-${lm[0]}');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});},50);return false;" class="text-blue-600 dark:text-blue-400 hover:underline font-mono text-xs whitespace-nowrap" title="View lesson ${lm[0]}">✓ ${lm[0]} ↗</a>`;
+  };
+
   const rows = data.bugs.map(bug => `
-  <tr class="bug-row border-t border-slate-100 dark:border-slate-700">
+  <tr id="bug-row-${bug.id}" class="bug-row border-t border-slate-100 dark:border-slate-700" data-status="${bug.status}">
     <td class="px-3 py-2 font-mono text-xs whitespace-nowrap dark:text-slate-200">${bug.id}</td>
     <td class="px-3 py-2 text-sm dark:text-slate-200">${esc(bug.title)}</td>
     <td class="px-3 py-2 text-center">${badge(bug.severity)}</td>
     <td class="px-3 py-2 text-center">${badge(bug.status)}</td>
     <td class="px-3 py-2 text-xs text-slate-500 whitespace-nowrap">${esc(bug.relatedStory)}</td>
     <td class="px-3 py-2 text-xs text-slate-500">${esc(bug.fixBranch || '—')}</td>
-    <td class="px-3 py-2 text-center text-xs dark:text-slate-200">${bug.lessonEncoded && bug.lessonEncoded.startsWith('Yes') ? '✓' : '○'}</td>
+    <td class="px-3 py-2 text-center text-xs dark:text-slate-200">${lessonCell(bug)}</td>
   </tr>`).join('');
+
+  const cards = data.bugs.map(bug => `
+  <div id="bug-card-${bug.id}" class="bug-row bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 flex flex-col gap-2" data-status="${bug.status}">
+    <div class="flex items-center gap-2 flex-wrap">
+      <span class="font-mono text-xs text-slate-500 whitespace-nowrap">${bug.id}</span>
+      ${badge(bug.severity)} ${badge(bug.status)}
+    </div>
+    <p class="text-sm font-medium dark:text-slate-200">${esc(bug.title)}</p>
+    <div class="text-xs text-slate-500 flex flex-col gap-0.5">
+      <span>Story: <span class="font-mono">${esc(bug.relatedStory || '—')}</span></span>
+      <span class="truncate" title="${esc(bug.fixBranch || '')}">Branch: <span class="font-mono">${esc(bug.fixBranch || '—')}</span></span>
+    </div>
+    <div class="flex items-center justify-between mt-1">
+      <span class="text-xs text-slate-500">Lesson: <span class="dark:text-slate-200">${lessonCell(bug)}</span></span>
+    </div>
+  </div>`).join('');
+
   return `
-  <div id="tab-bugs" class="p-6 hidden overflow-x-auto">
-    <table class="w-full text-left text-sm border-collapse">
-      <thead class="bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs uppercase">
-        <tr>
-          <th class="px-3 py-2">ID</th><th class="px-3 py-2">Title</th><th class="px-3 py-2 text-center">Severity</th>
-          <th class="px-3 py-2 text-center">Status</th><th class="px-3 py-2">Story</th>
-          <th class="px-3 py-2">Branch</th><th class="px-3 py-2 text-center">Lesson</th>
-        </tr>
-      </thead>
-      <tbody>${rows}</tbody>
-    </table>
-  </div>`;
+  <div id="tab-bugs" class="p-6 hidden tab-fill">
+    <div class="flex items-center justify-between mb-4 flex-shrink-0">
+      <span class="text-sm text-slate-500 dark:text-slate-400">${data.bugs.length} bug${data.bugs.length !== 1 ? 's' : ''}</span>
+      <div class="flex gap-1">
+        <button id="bugs-col-btn" onclick="setBugsView('column')"
+          class="px-3 py-1 text-xs rounded border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+          ≡ Column
+        </button>
+        <button id="bugs-card-btn" onclick="setBugsView('card')"
+          class="px-3 py-1 text-xs rounded border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+          ⊞ Card
+        </button>
+      </div>
+    </div>
+
+    <div id="bugs-column-view" class="scroll-table">
+      <table class="w-full text-left text-sm border-collapse">
+        <thead class="text-xs uppercase">
+          <tr>
+            <th class="px-3 py-2">ID</th><th class="px-3 py-2">Title</th><th class="px-3 py-2 text-center">Severity</th>
+            <th class="px-3 py-2 text-center">Status</th><th class="px-3 py-2">Story</th>
+            <th class="px-3 py-2">Branch</th><th class="px-3 py-2 text-center whitespace-nowrap" style="min-width:8rem">Lesson</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+
+    <div id="bugs-card-view" class="hidden grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4" style="overflow-y:auto">
+      ${cards}
+    </div>
+  </div>
+  <script>
+  function setBugsView(v) {
+    var col = document.getElementById('bugs-column-view');
+    var card = document.getElementById('bugs-card-view');
+    var colBtn = document.getElementById('bugs-col-btn');
+    var cardBtn = document.getElementById('bugs-card-btn');
+    if (!col) return;
+    col.classList.toggle('hidden', v !== 'column');
+    card.classList.toggle('hidden', v !== 'card');
+    colBtn.style.fontWeight = v === 'column' ? '700' : '';
+    colBtn.style.background = v === 'column' ? 'rgba(59,130,246,0.1)' : '';
+    cardBtn.style.fontWeight = v === 'card' ? '700' : '';
+    cardBtn.style.background = v === 'card' ? 'rgba(59,130,246,0.1)' : '';
+    localStorage.setItem('bugsView', v);
+  }
+  (function() { setBugsView(localStorage.getItem('bugsView') || 'column'); })();
+  </script>`;
+}
+
+function renderLessonsTab(data) {
+  const lessons = data.lessons || [];
+  if (!lessons.length) {
+    return `<div id="tab-lessons" class="p-6 hidden"><p class="text-slate-500">No lessons logged yet.</p></div>`;
+  }
+
+  // Build reverse map: lessonId → first bugId that references it
+  const lessonBugMap = {};
+  for (const bug of data.bugs) {
+    const m = bug.lessonEncoded && bug.lessonEncoded.match(/L-\d{4}/);
+    if (m && !lessonBugMap[m[0]]) lessonBugMap[m[0]] = bug.id;
+  }
+
+  const bugRefLink = (lessonId) => {
+    const bugId = lessonBugMap[lessonId];
+    if (!bugId) return '—';
+    return `<a href="#" onclick="showTab('bugs');setTimeout(function(){var el=document.getElementById('bug-row-${bugId}');if(el)el.scrollIntoView({behavior:'smooth',block:'center'});},50);return false;" class="text-blue-600 dark:text-blue-400 hover:underline font-mono text-xs">${bugId} ↗</a>`;
+  };
+
+  const colRows = lessons.map(l => `
+  <tr id="lesson-${l.id}" class="border-t border-slate-100 dark:border-slate-700 align-top">
+    <td class="px-3 py-3 font-mono text-xs text-blue-600 dark:text-blue-400 whitespace-nowrap">${l.id}</td>
+    <td class="px-3 py-3 text-sm text-slate-700 dark:text-slate-200">${esc(l.rule)}</td>
+    <td class="px-3 py-3 text-sm text-slate-500 dark:text-slate-400 italic">${esc(l.context)}</td>
+    <td class="px-3 py-3 text-xs text-slate-400 whitespace-nowrap">${l.date ? l.date.slice(0, 7) : '—'}</td>
+    <td class="px-3 py-3 text-xs whitespace-nowrap">${bugRefLink(l.id)}</td>
+  </tr>`).join('');
+
+  const cards = lessons.map(l => `
+  <div id="lesson-${l.id}" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 flex flex-col gap-2">
+    <div class="flex items-center gap-2">
+      <span class="font-mono text-xs font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap flex-shrink-0">${l.id}</span>
+      <span class="text-sm font-semibold text-slate-700 dark:text-slate-200">${esc(l.title)}</span>
+    </div>
+    <hr class="border-slate-100 dark:border-slate-700">
+    <div>
+      <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Rule</span>
+      <p class="text-sm text-slate-700 dark:text-slate-200 mt-0.5">${esc(l.rule)}</p>
+    </div>
+    <div>
+      <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Context</span>
+      <p class="text-sm text-slate-500 dark:text-slate-400 italic mt-0.5">${esc(l.context)}</p>
+    </div>
+    <div class="flex items-center justify-between mt-1">
+      <span class="text-xs text-slate-400">${l.date ? l.date.slice(0, 7) : '—'}</span>
+      <span class="text-xs text-slate-500">Bug ref: ${bugRefLink(l.id)}</span>
+    </div>
+  </div>`).join('');
+
+  return `
+  <div id="tab-lessons" class="p-6 hidden tab-fill">
+    <div class="flex items-center justify-between mb-4 flex-shrink-0">
+      <span class="text-sm text-slate-500 dark:text-slate-400">${lessons.length} lesson${lessons.length !== 1 ? 's' : ''}</span>
+      <div class="flex gap-1">
+        <button id="lessons-col-btn" onclick="setLessonsView('column')"
+          class="px-3 py-1 text-xs rounded border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+          ≡ Column
+        </button>
+        <button id="lessons-card-btn" onclick="setLessonsView('card')"
+          class="px-3 py-1 text-xs rounded border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+          ⊞ Card
+        </button>
+      </div>
+    </div>
+
+    <div id="lessons-column-view" class="scroll-table">
+      <table class="w-full text-left text-sm border-collapse">
+        <thead class="text-xs uppercase">
+          <tr>
+            <th class="px-3 py-2 whitespace-nowrap">ID</th>
+            <th class="px-3 py-2">Rule</th>
+            <th class="px-3 py-2">Context</th>
+            <th class="px-3 py-2 whitespace-nowrap">Date</th>
+            <th class="px-3 py-2 whitespace-nowrap">Bug Ref</th>
+          </tr>
+        </thead>
+        <tbody>${colRows}</tbody>
+      </table>
+    </div>
+
+    <div id="lessons-card-view" class="hidden grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      ${cards}
+    </div>
+  </div>
+  <script>
+  function setLessonsView(v) {
+    var col = document.getElementById('lessons-column-view');
+    var card = document.getElementById('lessons-card-view');
+    var colBtn = document.getElementById('lessons-col-btn');
+    var cardBtn = document.getElementById('lessons-card-btn');
+    if (!col) return;
+    col.classList.toggle('hidden', v !== 'column');
+    card.classList.toggle('hidden', v !== 'card');
+    colBtn.style.fontWeight = v === 'column' ? '700' : '';
+    colBtn.style.background = v === 'column' ? 'rgba(59,130,246,0.1)' : '';
+    cardBtn.style.fontWeight = v === 'card' ? '700' : '';
+    cardBtn.style.background = v === 'card' ? 'rgba(59,130,246,0.1)' : '';
+    localStorage.setItem('lessonsView', v);
+  }
+  (function() {
+    var saved = localStorage.getItem('lessonsView') || 'column';
+    setLessonsView(saved);
+  })();
+  </script>`;
 }
 
 function renderRecentActivity(data) {
   if (!data.recentActivity.length) return '';
   const items = data.recentActivity.map(a =>
     `<li class="py-2 border-b border-slate-100 dark:border-slate-700 last:border-0">
-      <span class="text-xs text-slate-500 block">${a.date}</span>
+      <span class="text-xs text-slate-500 block">Session ${a.sessionNum} &middot; ${a.date}</span>
       <span class="text-sm text-slate-700 dark:text-slate-200">${esc(a.summary)}</span>
     </li>`
   ).join('');
@@ -525,7 +944,20 @@ function renderScripts(data) {
   <script>
   const ALL_DATA = ${allData};
 
-  const VALID_TABS = ['hierarchy','kanban','traceability','charts','costs','bugs'];
+  const VALID_TABS = ['hierarchy','kanban','traceability','charts','costs','bugs','lessons'];
+
+  function updateFilterBar(name) {
+    const bar = document.getElementById('filter-bar');
+    const storyGrp = document.getElementById('fgrp-story');
+    const bugGrp = document.getElementById('fgrp-bug');
+    const typeGrp = document.getElementById('fgrp-type');
+    const showStory = name === 'hierarchy' || name === 'kanban';
+    const showBug = name === 'bugs';
+    bar.classList.toggle('hidden', !showStory && !showBug);
+    storyGrp.classList.toggle('hidden', !showStory);
+    bugGrp.classList.toggle('hidden', !showBug);
+    if (typeGrp) typeGrp.classList.toggle('hidden', name !== 'hierarchy');
+  }
 
   function showTab(name) {
     VALID_TABS.forEach(t => {
@@ -539,9 +971,19 @@ function renderScripts(data) {
         btn.classList.toggle('text-slate-400', t !== name);
       }
     });
+    updateFilterBar(name);
+    setStickyTop();
     if (name === 'charts' && typeof initCharts === 'function') { initCharts(); initCharts = () => {}; }
     localStorage.setItem('activeTab', name);
     history.replaceState(null, '', '#' + name);
+  }
+
+  function setHierarchyView(v) {
+    document.getElementById('hier-column-view').classList.toggle('hidden', v !== 'column');
+    document.getElementById('hier-card-view').classList.toggle('hidden', v !== 'card');
+    document.getElementById('hier-col-btn').classList.toggle('active-view', v === 'column');
+    document.getElementById('hier-card-btn').classList.toggle('active-view', v === 'card');
+    localStorage.setItem('hierarchyView', v);
   }
 
   function toggleEpic(id) {
@@ -552,15 +994,19 @@ function renderScripts(data) {
     const el = document.getElementById('acs-' + id);
     if (el) el.classList.toggle('hidden');
   }
+  function toggleCardACs(id) {
+    const el = document.getElementById('card-acs-' + id);
+    if (el) el.classList.toggle('hidden');
+  }
 
   function applyFilters() {
     const epic = document.getElementById('f-epic').value;
     const status = document.getElementById('f-status').value;
     const priority = document.getElementById('f-priority').value;
-    const type = document.getElementById('f-type').value;
+    const bugStatus = document.getElementById('f-bug-status').value;
     const search = document.getElementById('f-search').value.toLowerCase();
     document.querySelectorAll('.story-row').forEach(row => {
-      const hide = (type === 'bug') ||
+      const hide =
         (epic && row.dataset.epic !== epic) ||
         (status && row.dataset.status !== status) ||
         (priority && row.dataset.priority !== priority) ||
@@ -568,19 +1014,22 @@ function renderScripts(data) {
       row.style.display = hide ? 'none' : '';
     });
     document.querySelectorAll('.bug-row').forEach(row => {
-      row.style.display = (type === 'story') ? 'none' : '';
+      const hide =
+        (bugStatus && row.dataset.status !== bugStatus) ||
+        (search && !row.innerText.toLowerCase().includes(search));
+      row.style.display = hide ? 'none' : '';
     });
     localStorage.setItem('f-epic', epic);
     localStorage.setItem('f-status', status);
     localStorage.setItem('f-priority', priority);
-    localStorage.setItem('f-type', type);
+    localStorage.setItem('f-bug-status', bugStatus);
     localStorage.setItem('f-search', document.getElementById('f-search').value);
   }
 
   function clearFilters() {
-    ['f-epic','f-status','f-priority','f-type'].forEach(id => document.getElementById(id).value = '');
+    ['f-epic','f-status','f-priority','f-bug-status'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('f-search').value = '';
-    ['f-epic','f-status','f-priority','f-type','f-search'].forEach(k => localStorage.removeItem(k));
+    ['f-epic','f-status','f-priority','f-bug-status','f-search'].forEach(k => localStorage.removeItem(k));
     applyFilters();
   }
 
@@ -636,16 +1085,38 @@ function renderScripts(data) {
     const savedTab = VALID_TABS.includes(hash) ? hash : (VALID_TABS.includes(localStorage.getItem('activeTab')) ? localStorage.getItem('activeTab') : 'hierarchy');
     showTab(savedTab);
 
+    // Restore hierarchy view preference
+    setHierarchyView(localStorage.getItem('hierarchyView') || 'column');
+
     // Restore filter state
-    ['f-epic','f-status','f-priority','f-type'].forEach(id => {
+    ['f-epic','f-status','f-priority','f-bug-status'].forEach(id => {
+      const el = document.getElementById(id);
       const val = localStorage.getItem(id);
-      if (val) document.getElementById(id).value = val;
+      if (el && val) el.value = val;
     });
     const savedSearch = localStorage.getItem('f-search');
     if (savedSearch) document.getElementById('f-search').value = savedSearch;
     applyFilters();
 
+    // Format generation timestamps in local timezone
+    ['gen-time', 'about-gen-time'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      var d = new Date(el.dataset.iso);
+      el.textContent = d.toLocaleString(undefined, {
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', timeZoneName: 'short'
+      });
+    });
+
   });
+
+  function setStickyTop() {
+    var nav = document.getElementById('sticky-nav');
+    if (nav) document.documentElement.style.setProperty('--sticky-top', nav.offsetHeight + 'px');
+  }
+  document.addEventListener('DOMContentLoaded', setStickyTop);
+  window.addEventListener('resize', setStickyTop);
 
   function toggleTheme() {
     var html = document.documentElement;
@@ -653,6 +1124,7 @@ function renderScripts(data) {
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
     var icon = document.getElementById('theme-icon');
     if (icon) icon.textContent = isDark ? '\u2600' : '\u263e';
+    updateChartTheme();
   }
 
   function openAbout() {
@@ -670,35 +1142,76 @@ function renderScripts(data) {
 function renderPrintCSS() {
   return `
   <style>
+  /* === Theme tokens — all colours flow from here === */
+  :root {
+    --clr-body-bg:       #ffffff;
+    --clr-panel-bg:      #ffffff;
+    --clr-surface-raised:#e2e8f0;   /* slate-200 */
+    --clr-border:        #e2e8f0;
+    --clr-border-mid:    #cbd5e1;   /* slate-300 */
+    --clr-text-primary:  #1e293b;   /* slate-800 */
+    --clr-text-secondary:#475569;   /* slate-600 */
+    --clr-text-muted:    #64748b;   /* slate-500 */
+    --clr-header-bg:     #e2e8f0;
+    --clr-header-text:   #374151;   /* gray-700 */
+    --clr-input-bg:      #ffffff;
+    --clr-input-border:  #d1d5db;   /* gray-300 */
+    --clr-input-text:    #1e293b;
+    --clr-chart-text:    #475569;
+    --clr-accent:        #3b82f6;   /* blue-500 */
+  }
+  html.dark {
+    --clr-body-bg:       #0f172a;   /* slate-900 */
+    --clr-panel-bg:      #1e293b;   /* slate-800 */
+    --clr-surface-raised:#334155;   /* slate-700 */
+    --clr-border:        #334155;
+    --clr-border-mid:    #475569;   /* slate-600 */
+    --clr-text-primary:  #cbd5e1;   /* slate-300 */
+    --clr-text-secondary:#cbd5e1;
+    --clr-text-muted:    #94a3b8;   /* slate-400 */
+    --clr-header-bg:     #334155;
+    --clr-header-text:   #e2e8f0;   /* slate-200 */
+    --clr-input-bg:      #334155;
+    --clr-input-border:  #475569;
+    --clr-input-text:    #cbd5e1;
+    --clr-chart-text:    #94a3b8;
+    --clr-accent:        #3b82f6;
+  }
   /* === Dark mode fallbacks (guaranteed via .dark class regardless of Tailwind CDN recompile) === */
-  html.dark body { background-color: #0f172a; color: #cbd5e1; }
+  html.dark body { background-color: var(--clr-body-bg); color: var(--clr-text-primary); }
   html.dark #top-bar { background: linear-gradient(135deg, #001a4d 0%, #002d6e 55%, #003d8c 100%) !important; }
-  html.dark #filter-bar { background-color: #1e293b !important; border-color: #334155 !important; }
-  html.dark #filter-bar select, html.dark #filter-bar input { background-color: #334155 !important; border-color: #475569 !important; color: #cbd5e1 !important; }
-  html.dark #filter-bar button { color: #94a3b8 !important; }
-  html.dark #tab-bar { background-color: #1e293b !important; border-color: #334155 !important; }
-  html.dark #tab-bar button { color: #94a3b8 !important; }
-  html.dark #tab-bar button.active { color: #cbd5e1 !important; border-color: #3b82f6 !important; }
-  html.dark .epic-block { border-color: #334155 !important; }
-  html.dark .epic-block > div:first-child { background-color: #1e293b !important; }
-  html.dark .epic-block > div:first-child span { color: #cbd5e1 !important; }
-  html.dark .story-row { color: #cbd5e1; }
-  html.dark .story-row p { color: #cbd5e1 !important; }
-  html.dark #activity-panel { background-color: #1e293b !important; border-color: #334155 !important; color: #cbd5e1 !important; }
-  html.dark #activity-panel li { border-color: #334155 !important; }
-  html.dark table thead { background-color: #1e293b !important; color: #cbd5e1 !important; }
-  html.dark table tbody tr { border-color: #334155 !important; }
-  html.dark table tbody td { color: #cbd5e1; }
-  html.dark .bg-white { background-color: #1e293b !important; }
-  html.dark .border-slate-200 { border-color: #334155 !important; }
-  html.dark .text-slate-700, html.dark .text-slate-600 { color: #cbd5e1 !important; }
-  html.dark .text-slate-500 { color: #94a3b8 !important; }
-  html.dark h3 { color: #cbd5e1 !important; }
+  html.dark #filter-bar { background-color: var(--clr-panel-bg) !important; border-color: var(--clr-border) !important; }
+  html.dark #filter-bar select, html.dark #filter-bar input { background-color: var(--clr-input-bg) !important; border-color: var(--clr-input-border) !important; color: var(--clr-input-text) !important; }
+  html.dark #filter-bar button { color: var(--clr-text-muted) !important; }
+  html.dark #tab-bar { background-color: var(--clr-panel-bg) !important; border-color: var(--clr-border) !important; }
+  html.dark #tab-bar button { color: var(--clr-text-muted) !important; }
+  html.dark #tab-bar button.active { color: var(--clr-text-primary) !important; border-color: var(--clr-accent) !important; }
+  html.dark .epic-block { border-color: var(--clr-border) !important; }
+  html.dark .epic-block > div:first-child { background-color: var(--clr-panel-bg) !important; }
+  html.dark .epic-block > div:first-child span { color: var(--clr-text-primary) !important; }
+  html.dark .story-row { color: var(--clr-text-primary); }
+  html.dark .story-row p { color: var(--clr-text-primary) !important; }
+  html.dark #activity-panel { background-color: var(--clr-panel-bg) !important; border-color: var(--clr-border) !important; color: var(--clr-text-primary) !important; }
+  html.dark #activity-panel li { border-color: var(--clr-border) !important; }
+  /* Tabs that should fill the full viewport height */
+  .tab-fill { display: flex; flex-direction: column; height: calc(100vh - var(--sticky-top, 120px)); box-sizing: border-box; }
+  .tab-fill .scroll-table { flex: 1; min-height: 0; max-height: none; }
+  .scroll-table { overflow: auto; max-height: calc(100vh - var(--sticky-top, 120px) - 3rem); }
+  .scroll-table thead th { position: sticky; top: 0; z-index: 10; background-color: var(--clr-header-bg); color: var(--clr-header-text); }
+  .scroll-kanban { overflow: auto; height: calc(100vh - var(--sticky-top, 120px) - 3rem); }
+  .scroll-kanban .kanban-col-header { position: sticky; top: 0; z-index: 5; background: var(--clr-header-bg); color: var(--clr-header-text); padding-bottom: 6px; }
+  html.dark .scroll-table table thead { background-color: transparent; }
+  html.dark table tbody tr { border-color: var(--clr-border) !important; }
+  html.dark .bg-white { background-color: var(--clr-panel-bg) !important; }
+  html.dark .border-slate-200 { border-color: var(--clr-border) !important; }
+  html.dark .text-slate-700, html.dark .text-slate-600 { color: var(--clr-text-primary) !important; }
+  html.dark .text-slate-500 { color: var(--clr-text-muted) !important; }
+  html.dark h3 { color: var(--clr-text-primary) !important; }
   @media print {
     #filter-bar, #tab-bar, .fixed, .activity-panel { display: none !important; }
     body { padding-right: 0 !important; }
     #tab-hierarchy, #tab-costs { display: block !important; }
-    #tab-kanban, #tab-traceability, #tab-charts, #tab-bugs { display: none !important; }
+    #tab-kanban, #tab-traceability, #tab-charts, #tab-bugs, #tab-lessons { display: none !important; }
     body { font-size: 11pt; }
     .bg-slate-900 { background: white !important; color: black !important; }
     .text-white, .text-blue-400, .text-slate-400 { color: black !important; }
@@ -743,10 +1256,10 @@ function renderHtml(data) {
   ${renderPrintCSS()}
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 min-h-screen">
-  <div class="sticky top-0 z-30">
+  <div id="sticky-nav" class="sticky top-0 z-30">
     ${renderTopBar(data)}
-    ${renderFilterBar(data)}
     ${renderTabs()}
+    ${renderFilterBar(data)}
   </div>
   <div id="tab-content">
     ${renderHierarchyTab(data)}
@@ -755,6 +1268,7 @@ function renderHtml(data) {
     ${renderChartsTab(data)}
     ${renderCostsTab(data)}
     ${renderBugsTab(data)}
+    ${renderLessonsTab(data)}
   </div>
   ${renderRecentActivity(data)}
   ${renderScripts(data)}
@@ -771,7 +1285,7 @@ function renderHtml(data) {
       <div class="border-t border-slate-200 dark:border-slate-700 pt-4 text-slate-500 text-xs space-y-1.5">
         <p>Version <span class="text-slate-700 dark:text-slate-300 font-mono">v${esc(data.version)}</span></p>
         <p>Build <span class="text-slate-700 dark:text-slate-300 font-mono">#${esc(data.buildNumber)}</span>&nbsp;<code class="text-slate-500 dark:text-slate-600">${esc(data.commitSha)}</code></p>
-        <p>Updated <span class="text-slate-700 dark:text-slate-300">${data.generatedAt.slice(0,10)}</span></p>
+        <p>Updated <span id="about-gen-time" data-iso="${data.generatedAt}" class="text-slate-700 dark:text-slate-300"></span></p>
       </div>
       <p class="mt-5 text-slate-500 text-xs">Implemented by Kamal Syed, 2026</p>
     </div>

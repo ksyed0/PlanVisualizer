@@ -1,6 +1,6 @@
 # PlanVisualizer — Technical Architecture
 
-**Version:** 1.4
+**Version:** 1.5
 **Last Updated:** 2026-03-18
 
 ---
@@ -38,13 +38,14 @@ tools/
     parse-bugs.js          Extracts BUG artefacts from markdown
     parse-cost-log.js      Parses pipe-delimited table rows; aggregates by branch
     parse-coverage.js      Normalises Jest coverage-summary.json into a flat object
-    parse-progress.js      Extracts recent session summaries from progress.md
+    parse-lessons.js       Extracts L-XXXX lesson entries from LESSONS.md
+    parse-progress.js      Extracts recent session summaries from progress.md; captures sessionNum
     compute-costs.js       Calculates projected costs; attributes AI costs to stories
-    detect-at-risk.js      Flags stories matching at-risk signals
+    detect-at-risk.js      Flags stories matching at-risk signals (excludes Done stories)
     render-html.js         Assembles complete HTML from a data object
 
 tests/
-  unit/                   One test file per lib module (9 suites, 138 tests)
+  unit/                   One test file per lib module (10 suites, 153+ tests)
   fixtures/               Deterministic markdown/JSON samples shared across suites
 
 scripts/
@@ -76,9 +77,10 @@ plan_visualizer.md        Distributed format reference — exact parser-level fo
                  │  parseBugs()        → bugs[]           │──► data{} ──► renderHtml()
                  │  parseCostLog()     → costRows[]       │
   JSON   ────────►  parseCoverage()    → coverage{}      │         │
-                 │  parseRecentActivity() → activity[]   │         ▼
-                 │                                       │   plan-status.html
-                 │  computeProjectedCost()               │   plan-status.json
+                 │  parseLessons()     → lessons[]        │         ▼
+                 │  parseRecentActivity() → activity[]   │   plan-status.html
+                 │                       (+ sessionNum)  │   plan-status.json
+                 │  computeProjectedCost()               │
                  │  attributeAICosts() → costs{}         │
                  │  detectAtRisk()     → atRisk{}        │
                  └─────────────────────────────────────┘
@@ -108,23 +110,26 @@ function parseXxx(markdown) { ... }
 
 ## 6. Renderer Architecture
 
-`renderHtml(data)` in `render-html.js` orchestrates 11 sub-renderers, each returning an HTML string:
+`renderHtml(data)` in `render-html.js` orchestrates 12 sub-renderers, each returning an HTML string:
 
 | Function | Output |
 |----------|--------|
 | `renderTopBar(data)` | Project name, progress bar, 6 stat tiles |
-| `renderFilterBar(data)` | Epic / status / priority / search dropdowns |
-| `renderTabs()` | 6 tab buttons |
-| `renderHierarchyTab(data)` | Collapsible epic → story → AC tree |
-| `renderKanbanTab(data)` | 5-column kanban board |
+| `renderFilterBar(data)` | Per-tab contextual filter groups (fgrp-story / fgrp-bug); hidden when no filters apply |
+| `renderTabs()` | 7 tab buttons (Hierarchy, Kanban, Traceability, Charts, Costs, Bugs, Lessons) |
+| `renderHierarchyTab(data)` | Collapsible epic → story → AC tree (column view) + story card grid (card view); toggle persists to localStorage |
+| `renderKanbanTab(data)` | 5-column kanban board; each column scrolls independently so headers never leave view |
 | `renderTraceabilityTab(data)` | Story × TC matrix |
-| `renderChartsTab(data)` | 6 Chart.js canvases + inline `<script>` |
-| `renderCostsTab(data)` | Per-story cost table with totals + Bug Fix Costs sub-table |
-| `renderBugsTab(data)` | Bug register table |
-| `renderRecentActivity(data)` | Floating activity panel |
-| `renderScripts(data)` | Tab switching + filter logic |
+| `renderChartsTab(data)` | 6 Chart.js canvases at uniform 300 px height (`maintainAspectRatio:false`) + inline `<script>` |
+| `renderCostsTab(data)` | Per-story cost table with totals + Bug Fix Costs sub-table with totals row |
+| `renderBugsTab(data)` | Bug register table; rows carry `data-status` and `class="bug-row"` for filtering |
+| `renderLessonsTab(data)` | Lessons column/card view with Bug Ref cross-links; toggle persists to localStorage |
+| `renderRecentActivity(data)` | Floating activity panel; shows "Session N · YYYY-MM-DD" per entry |
+| `renderScripts(data)` | Tab switching (`showTab` → `updateFilterBar`), filter logic (`applyFilters`), view toggles |
 
 **Inline JavaScript** handles all interactivity. No frameworks. Tab switching, filter application, and chart initialisation are implemented as plain functions serialised into the HTML output.
+
+**CSS theme tokens:** All colours are defined as CSS custom properties (`--clr-*`) in `:root` (light) and `html.dark` (dark) blocks. No hardcoded hex literals appear in CSS property rules outside these declarations.
 
 **Chart initialisation** is lazy: charts are only initialised when the Charts tab is first activated (`initCharts()` is nulled after first call to prevent re-render).
 
@@ -173,7 +178,7 @@ The `plan-visualizer.config.json` is gitignored by default so target projects ke
 | `failedTCNoBug` | A linked TC has `status === 'Fail'` AND `defect === 'None'` | Known failure not tracked as a bug |
 | `openCriticalBug` | A linked bug has `severity === 'Critical' \| 'High'` AND `status === 'Open' \| 'In Progress'` | Unresolved defect blocking the story |
 
-A story is `isAtRisk` if any signal is true. The ⚠ badge and tooltip are rendered in the Hierarchy tab.
+A story is `isAtRisk` if **any signal is true AND the story status is not `Done`**. Done stories are always `isAtRisk: false` regardless of missing TCs or other signals. The ⚠ badge and tooltip are rendered in the Hierarchy tab.
 
 ---
 
@@ -218,7 +223,7 @@ The `plan-visualizer.yml` workflow uses the official `actions/upload-pages-artif
 | Operation | Typical time | Notes |
 |-----------|-------------|-------|
 | `generate-plan.js` full run | < 200ms | Pure Node.js I/O + regex |
-| Jest test suite (138 tests) | < 1s | No I/O mocking needed |
+| Jest test suite (153+ tests) | < 1s | No I/O mocking needed |
 | ESLint on `tools/**/*.js` | < 2s | ~11 source files |
 | `npm audit` | < 10s | Network call to npm registry |
 | CodeQL analysis | 3–5 min | Depends on codebase size |
