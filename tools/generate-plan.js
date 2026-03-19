@@ -115,6 +115,14 @@ function main() {
   costs._totals = aiAttribution._totals || { costUsd: 0, inputTokens: 0, outputTokens: 0 };
   costs._bugs = attributeBugCosts(bugs, costByBranch);
 
+  const SEVERITY_SIZE = { Critical: 'L', High: 'M', Medium: 'S', Low: 'S' };
+  for (const bug of bugs) {
+    if (costs._bugs[bug.id]) {
+      const size = SEVERITY_SIZE[bug.severity] || 'S';
+      costs._bugs[bug.id].projectedUsd = computeProjectedCost(size, HOURS, RATE);
+    }
+  }
+
   const atRisk = detectAtRisk(stories, testCases, bugs);
   const generatedAt = new Date().toISOString();
   const commitSha = getCommitSha();
