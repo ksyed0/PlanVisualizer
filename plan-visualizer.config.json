@@ -1,7 +1,7 @@
 {
   "project": {
     "name": "PlanVisualizer",
-    "tagline": "Self-documenting project dashboards for Claude Code.",
+    "tagline": "Self-documenting project dashboards for Agentic coding platforms.",
     "githubUrl": "https://github.com/ksyed0/PlanVisualizer"
   },
   "docs": {

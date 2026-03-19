@@ -692,12 +692,12 @@ Related Story: US-0019
 Related Task: TASK-0011
 Related AC: AC-0045
 Type: Functional
-Preconditions: docs/DESIGN.md present
+Preconditions: docs/architecture/DESIGN.md present
 Steps:
-  1. Open docs/DESIGN.md
+  1. Open docs/architecture/DESIGN.md
   2. Verify sections: Product Vision, User Profile, Core Concepts, Feature Set, Design System
 Expected Result: All five sections present with substantive content
-Actual Result: docs/DESIGN.md reviewed; all sections confirmed.
+Actual Result: docs/architecture/DESIGN.md reviewed; all sections confirmed.
 Status: [x] Pass
 Defect Raised: None
 Notes:
@@ -707,12 +707,12 @@ Related Story: US-0019
 Related Task: TASK-0012
 Related AC: AC-0046
 Type: Functional
-Preconditions: docs/ARCHITECTURE.md present
+Preconditions: docs/architecture/ARCHITECTURE.md present
 Steps:
-  1. Open docs/ARCHITECTURE.md
+  1. Open docs/architecture/ARCHITECTURE.md
   2. Verify sections: Module Structure, Data Flow, Parser Design Pattern, Renderer Architecture, CI/CD Architecture
 Expected Result: All five sections present with substantive content
-Actual Result: docs/ARCHITECTURE.md reviewed; all sections confirmed.
+Actual Result: docs/architecture/ARCHITECTURE.md reviewed; all sections confirmed.
 Status: [x] Pass
 Defect Raised: None
 Notes:
@@ -724,8 +724,8 @@ Related AC: AC-0047
 Type: Functional
 Preconditions: git repository with main branch
 Steps:
-  1. Run git show origin/main:docs/DESIGN.md
-  2. Run git show origin/main:docs/ARCHITECTURE.md
+  1. Run git show origin/main:docs/architecture/DESIGN.md
+  2. Run git show origin/main:docs/architecture/ARCHITECTURE.md
 Expected Result: Both files exist on main branch and contain content
 Actual Result: Both files confirmed on main.
 Status: [x] Pass
@@ -1257,6 +1257,641 @@ Steps:
   5. Check develop branch package.json version
 Expected Result: Version increments by one patch level (e.g. 1.0.1 → 1.0.2); bump arrives via a squash-merged auto-merge PR; no additional CI loop triggered
 Actual Result: Initial implementation used direct push (rejected by GH006 protected branch rule). Fixed: workflow now creates a chore/version-bump-* branch, opens a squash PR, and calls gh pr merge --auto. Requires "Allow auto-merge" enabled in repo settings.
-Status: [ ] Not Run
+Status: [x] Pass
 Defect Raised: None
 Notes: Requires live GitHub environment to execute; cannot be verified via local test runner.
+
+TC-0082: plan_visualizer.md is copied to the target project root
+Related Story: US-0029
+Related Task: TASK-0027
+Related AC: AC-0078
+Type: Functional
+Preconditions: install.sh present; target project directory exists without plan_visualizer.md
+Steps:
+  1. Run ./install.sh <target-project-dir>
+  2. Inspect <target-project-dir>/plan_visualizer.md
+Expected Result: plan_visualizer.md exists at target project root and contains format specs for all 5 source files (RELEASE_PLAN.md, BUGS.md, AI_COST_LOG.md, TEST_CASES.md, progress.md)
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0083: Install script appends PlanVisualizer reference section to AGENTS.md rather than overwriting
+Related Story: US-0029
+Related Task: TASK-0027
+Related AC: AC-0079
+Type: Functional
+Preconditions: Target project directory has an existing AGENTS.md with custom content
+Steps:
+  1. Note the existing content of <target-project-dir>/AGENTS.md
+  2. Run ./install.sh <target-project-dir>
+  3. Inspect <target-project-dir>/AGENTS.md
+Expected Result: Original AGENTS.md content is preserved; a PlanVisualizer reference section is appended at the end; no original lines are removed or overwritten
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0084: Minimal AGENTS.md is created when none exists
+Related Story: US-0029
+Related Task: TASK-0027
+Related AC: AC-0080
+Type: Functional
+Preconditions: Target project directory has no AGENTS.md
+Steps:
+  1. Run ./install.sh <target-project-dir> where no AGENTS.md exists
+  2. Inspect <target-project-dir>/AGENTS.md
+Expected Result: AGENTS.md is created with a minimal structure containing the PlanVisualizer reference section
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0085: Re-running install script does not duplicate the reference section
+Related Story: US-0029
+Related Task: TASK-0027
+Related AC: AC-0081
+Type: Functional
+Preconditions: install.sh has already been run once against the target project directory
+Steps:
+  1. Run ./install.sh <target-project-dir> a second time
+  2. Inspect <target-project-dir>/AGENTS.md and count occurrences of the PlanVisualizer reference section header
+Expected Result: The PlanVisualizer reference section appears exactly once; no duplicate blocks are added
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0086: Sun/moon toggle appears in top-bar and switches theme on click
+Related Story: US-0031
+Related Task: TASK-0030
+Related AC: AC-0086
+Type: Functional
+Preconditions: docs/plan-status.html open in browser
+Steps:
+  1. Locate the sun/moon icon button in the top-bar header
+  2. Note the current theme (dark or light class on <html>)
+  3. Click the toggle button
+  4. Note the new theme
+Expected Result: Button is visible in the top-bar; clicking switches the <html> class between dark and light mode; page colours update immediately
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0087: Theme persists across page loads; system prefers-color-scheme used as default
+Related Story: US-0031
+Related Task: TASK-0030
+Related AC: AC-0087
+Type: Functional
+Preconditions: docs/plan-status.html open in browser with no localStorage theme key set
+Steps:
+  1. Clear localStorage (DevTools → Application → Clear)
+  2. Reload page; observe applied theme vs OS dark/light mode setting
+  3. Click toggle to switch theme; reload page again
+Expected Result: On first load with no stored preference, theme matches OS prefers-color-scheme; after toggling, the new theme is stored in localStorage and survives reload
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0088: Secondary text uses at minimum text-slate-500 in light mode
+Related Story: US-0031
+Related Task: TASK-0030
+Related AC: AC-0088
+Type: Functional
+Preconditions: docs/plan-status.html open in browser in light mode
+Steps:
+  1. Switch to light mode
+  2. Inspect all secondary/muted text elements across Hierarchy, Kanban, Costs, Bugs, and Lessons tabs
+Expected Result: No text using text-slate-400 (or lighter) is present on white/light backgrounds; all muted text uses text-slate-500 or darker
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0089: Updated timestamp shows date and time in UTC
+Related Story: US-0031
+Related Task: TASK-0030
+Related AC: AC-0089
+Type: Functional
+Preconditions: docs/plan-status.html generated with node tools/generate-plan.js
+Steps:
+  1. Open docs/plan-status.html
+  2. Locate the "Updated" timestamp in the top bar
+Expected Result: Timestamp format is "YYYY-MM-DD HH:MM UTC" (e.g. "2026-03-18 21:00 UTC")
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0090: Traceability epic rows coloured by worst TC status; badge shown
+Related Story: US-0031
+Related Task: TASK-0030
+Related AC: AC-0090
+Type: Functional
+Preconditions: docs/plan-status.html generated; test cases exist with at least one Fail and one Not Run status linked to different epics
+Steps:
+  1. Open Traceability tab
+  2. Locate an epic row whose stories have at least one Fail TC
+  3. Locate an epic row whose stories have only Not Run TCs (no Fail)
+  4. Locate an epic row whose stories have all Pass TCs
+Expected Result: Epic row with Fail TC is coloured red; epic row with Not Run only is amber; epic row with all Pass is grey; a badge label indicates the worst status
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0091: Lessons tab appears in tab bar after Bugs tab
+Related Story: US-0032
+Related Task: TASK-0033
+Related AC: AC-0091
+Type: Functional
+Preconditions: docs/plan-status.html generated with docs/LESSONS.md present and non-empty
+Steps:
+  1. Open docs/plan-status.html
+  2. Inspect the tab bar
+Expected Result: A "Lessons" tab appears in the tab bar, positioned after the "Bugs" tab; clicking it displays the Lessons tab content
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0092: Column view renders all lessons with correct columns
+Related Story: US-0032
+Related Task: TASK-0033
+Related AC: AC-0092
+Type: Functional
+Preconditions: docs/LESSONS.md contains at least 3 lessons; column view is active
+Steps:
+  1. Open Lessons tab in column view
+  2. Count lesson rows in the table
+  3. Verify columns: ID, Rule, Context, Date, Bug Ref
+Expected Result: All lessons from LESSONS.md appear as rows; each row has ID (monospace L-XXXX), Rule text, Context text, Date, and Bug Ref
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0093: Card view renders same data in card-per-lesson grid layout
+Related Story: US-0032
+Related Task: TASK-0033
+Related AC: AC-0093
+Type: Functional
+Preconditions: docs/LESSONS.md contains at least 3 lessons
+Steps:
+  1. Open Lessons tab; switch to card view using the ⊞ Card button
+  2. Count cards in the grid
+  3. Verify each card shows: ID, title, Rule, Context, Date, Bug Ref
+Expected Result: Each lesson appears as a distinct card; total card count matches lesson count; all fields visible
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0094: Toggle switches between column and card view; preference persists in localStorage
+Related Story: US-0032
+Related Task: TASK-0033
+Related AC: AC-0094
+Type: Functional
+Preconditions: docs/plan-status.html open in browser; Lessons tab active
+Steps:
+  1. Click ⊞ Card button; verify card view appears and column view is hidden
+  2. Click ≡ Column button; verify column view appears and card view is hidden
+  3. Switch to card view; reload page; open Lessons tab
+Expected Result: Toggle correctly shows/hides views; after reload, the last selected view (card) is restored from localStorage
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0095: Bug Ref cells in Lessons tab link to referencing bug row on Bugs tab
+Related Story: US-0032
+Related Task: TASK-0033
+Related AC: AC-0095
+Type: Functional
+Preconditions: docs/BUGS.md contains at least one bug with a lessonEncoded field referencing a lesson ID (e.g. "Yes — see docs/LESSONS.md (L-0010)")
+Steps:
+  1. Open Lessons tab; locate a lesson row/card whose Bug Ref shows "BUG-XXXX ↗"
+  2. Click the "BUG-XXXX ↗" link
+Expected Result: Page switches to Bugs tab and scrolls to the referenced bug row
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0096: Bugs tab Lesson column shows ✓ L-XXXX ↗ as clickable link when lesson ID present
+Related Story: US-0032
+Related Task: TASK-0033
+Related AC: AC-0096
+Type: Functional
+Preconditions: docs/BUGS.md contains bugs with lessonEncoded referencing L-IDs and bugs with plain "Yes" and bugs with no lesson
+Steps:
+  1. Open Bugs tab
+  2. Locate a bug with lessonEncoded containing an L-ID (e.g. L-0010)
+  3. Locate a bug with lessonEncoded "Yes" (no L-ID)
+  4. Locate a bug with no lesson encoded
+  5. Click the ✓ L-XXXX ↗ link in step 2
+Expected Result: Bug with L-ID shows "✓ L-XXXX ↗" as a blue clickable link; clicking switches to Lessons tab and scrolls to that lesson. Bug with plain Yes shows "✓" (no link). Bug with no lesson shows "○"
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0097: renderHtml CSS :root block defines --clr-body-bg custom property
+Related Story: US-0033
+Related Task: TASK-0035
+Related AC: AC-0097
+Type: Unit
+Preconditions: sampleData object available as test fixture
+Steps:
+  1. Call renderHtml(sampleData)
+  2. Search output for '--clr-body-bg' within a :root block
+Expected Result: Output contains '--clr-body-bg' in a :root CSS block
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0098: renderHtml CSS html.dark block defines --clr-body-bg override
+Related Story: US-0033
+Related Task: TASK-0035
+Related AC: AC-0098
+Type: Unit
+Preconditions: sampleData object available as test fixture
+Steps:
+  1. Call renderHtml(sampleData)
+  2. Search output for 'html.dark' CSS block containing '--clr-body-bg'
+Expected Result: Output contains an html.dark rule that overrides --clr-body-bg
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0099: renderHtml output does not contain standalone hex colour literals in CSS rules
+Related Story: US-0033
+Related Task: TASK-0035
+Related AC: AC-0097
+Type: Unit
+Preconditions: sampleData object available as test fixture
+Steps:
+  1. Call renderHtml(sampleData)
+  2. Check for standalone hex literals (e.g. #0f172a, #1e293b) appearing inside <style> CSS rules outside of var() wrappers
+Expected Result: No standalone hex literals appear as CSS property values; all colours are expressed via var(--clr-*)
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0100: Hierarchy tab output contains column and card view containers
+Related Story: US-0034
+Related Task: TASK-0036
+Related AC: AC-0101
+Type: Unit
+Preconditions: sampleData contains at least one epic with stories
+Steps:
+  1. Call renderHtml(sampleData)
+  2. Search for id="hier-column-view" and id="hier-card-view" in output
+Expected Result: Both id="hier-column-view" and id="hier-card-view" present in the output
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0101: Hierarchy tab output contains setHierarchyView function
+Related Story: US-0034
+Related Task: TASK-0036
+Related AC: AC-0103
+Type: Unit
+Preconditions: sampleData object available as test fixture
+Steps:
+  1. Call renderHtml(sampleData)
+  2. Search for 'setHierarchyView' in output
+Expected Result: Output contains setHierarchyView function definition
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0102: Hierarchy tab output contains column and card toggle buttons
+Related Story: US-0034
+Related Task: TASK-0036
+Related AC: AC-0100
+Type: Unit
+Preconditions: sampleData object available as test fixture
+Steps:
+  1. Call renderHtml(sampleData)
+  2. Search for id="hier-col-btn" and id="hier-card-btn" in output
+Expected Result: Both toggle button IDs present in the output
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0103: Filter bar output contains fgrp-story span for story filters
+Related Story: US-0035
+Related Task: TASK-0037
+Related AC: AC-0105
+Type: Unit
+Preconditions: sampleData object available as test fixture
+Steps:
+  1. Call renderHtml(sampleData)
+  2. Search for 'fgrp-story' in output
+Expected Result: Output contains a span or div with id or class fgrp-story grouping story filter controls
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0104: Filter bar output contains fgrp-bug span for bug filters
+Related Story: US-0035
+Related Task: TASK-0037
+Related AC: AC-0106
+Type: Unit
+Preconditions: sampleData object available as test fixture
+Steps:
+  1. Call renderHtml(sampleData)
+  2. Search for 'fgrp-bug' in output
+Expected Result: Output contains a span or div with id or class fgrp-bug grouping bug filter controls
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0105: renderHtml output contains updateFilterBar function
+Related Story: US-0035
+Related Task: TASK-0037
+Related AC: AC-0107
+Type: Unit
+Preconditions: sampleData object available as test fixture
+Steps:
+  1. Call renderHtml(sampleData)
+  2. Search for 'updateFilterBar' in output
+Expected Result: Output contains updateFilterBar function definition that controls filter group visibility
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0106: renderHtml output contains f-bug-status select element
+Related Story: US-0036
+Related Task: TASK-0038
+Related AC: AC-0109
+Type: Unit
+Preconditions: sampleData object available as test fixture
+Steps:
+  1. Call renderHtml(sampleData)
+  2. Search for id="f-bug-status" in output
+Expected Result: Output contains a <select> with id="f-bug-status" for filtering bugs by status
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0107: Bug rows in renderBugsTab output carry data-status attribute
+Related Story: US-0036
+Related Task: TASK-0038
+Related AC: AC-0108
+Type: Unit
+Preconditions: sampleData.bugs contains at least one bug
+Steps:
+  1. Call renderHtml(sampleData)
+  2. Find <tr> elements within the bug table
+  3. Check that each bug row carries data-status matching the bug's Status field
+Expected Result: Each bug <tr> has a data-status attribute (e.g. data-status="Open")
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0108: Bug rows in renderBugsTab output carry bug-row class
+Related Story: US-0036
+Related Task: TASK-0038
+Related AC: AC-0110
+Type: Unit
+Preconditions: sampleData.bugs contains at least one bug
+Steps:
+  1. Call renderHtml(sampleData)
+  2. Search for 'bug-row' class on <tr> elements within the bug table
+Expected Result: Each bug <tr> element has class="bug-row" (or includes bug-row in its class list)
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0109: parseRecentActivity returns sessionNum field on each activity object
+Related Story: US-0037
+Related Task: TASK-0039
+Related AC: AC-0112
+Type: Unit
+Preconditions: Markdown string contains '## Session 7 — 2026-03-18' heading
+Steps:
+  1. Call parseRecentActivity with sample markdown containing session headings
+  2. Inspect the returned array
+Expected Result: Each object in the array has a sessionNum property matching the captured session number
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0110: renderHtml output contains 'Session' label in Recent Activity panel
+Related Story: US-0037
+Related Task: TASK-0039
+Related AC: AC-0111
+Type: Unit
+Preconditions: sampleData.activity contains at least one entry with sessionNum set
+Steps:
+  1. Call renderHtml(sampleData)
+  2. Find the recent-activity panel in the output
+  3. Search for 'Session' text within the activity entries
+Expected Result: Each activity entry displays 'Session N ·' before the date
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0111: detectAtRisk marks Done stories as not at risk even when they have missingTCs
+Related Story: US-0032
+Related Task: n/a
+Related AC: n/a
+Type: Unit
+Preconditions: A story with status='Done' and empty testCases array
+Steps:
+  1. Call detectAtRisk([{id:'US-0001', status:'Done', acs:[{id:'AC-0001'}]}], [], [])
+  2. Inspect result['US-0001'].isAtRisk
+Expected Result: isAtRisk is false for a Done story even when missingTCs would otherwise be true
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0112: Bug Fix Costs table shows $0.00 AI Cost for bug with no matching fix branch in cost log
+Related Story: US-0030
+Related Task: TASK-0028
+Related AC: AC-0084
+Type: Functional
+Preconditions: BUGS.md contains a bug with Fix Branch set to a branch not present in AI_COST_LOG.md
+Steps:
+  1. Call attributeBugCosts([{id:'BUG-X', fixBranch:'bugfix/no-match', estimatedCostUsd:0}], {})
+  2. Inspect result['BUG-X']
+Expected Result: costUsd is 0, isEstimated is false, AI Cost column shows $0.00 (not —)
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0113: All tabs render readable text in both light and dark modes via CSS custom properties
+Related Story: US-0033
+Related Task: TASK-0035
+Related AC: AC-0099
+Type: Functional
+Preconditions: plan-status.html generated with CSS custom property theming
+Steps:
+  1. Open plan-status.html in light mode; inspect text on Hierarchy, Kanban, Bugs, Lessons, Costs tabs
+  2. Toggle to dark mode via sun/moon button; repeat inspection across all tabs
+Expected Result: All body text, table rows, and card content are legible in both modes; no hardcoded hex colours in CSS property rules
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes: Verified via TC-0097–0099; html.dark #top-bar gradient override added for header
+
+TC-0114: Hierarchy card view renders a responsive grid of story cards grouped under epic headings
+Related Story: US-0034
+Related Task: TASK-0036
+Related AC: AC-0102
+Type: Functional
+Preconditions: RELEASE_PLAN.md contains at least one epic with two or more stories
+Steps:
+  1. Open plan-status.html → Hierarchy tab
+  2. Click ⊞ Card toggle button
+  3. Inspect the card view area
+Expected Result: Story cards appear in a responsive grid (1→2→3 columns) grouped under their epic heading; each card shows story ID, title, status badge, priority, and AC list toggle
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0115: Filter bar is rendered inside the sticky nav area and scrolls with the tab bar
+Related Story: US-0035
+Related Task: TASK-0037
+Related AC: AC-0104
+Type: Functional
+Preconditions: plan-status.html loaded on a viewport that requires vertical scrolling
+Steps:
+  1. Open plan-status.html → Hierarchy tab
+  2. Scroll down past the top bar
+  3. Observe the filter bar position
+Expected Result: Filter bar remains fixed below the tab bar while content scrolls; --sticky-top CSS variable is updated on each tab switch to account for filter bar height change
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes: setStickyTop() called inside showTab() after updateFilterBar() to recalculate sticky offset
+
+TC-0116: Recent Activity entries display session number in visually distinct style
+Related Story: US-0037
+Related Task: TASK-0039
+Related AC: AC-0113
+Type: Functional
+Preconditions: progress.md contains at least one session with ## Session N — YYYY-MM-DD heading
+Steps:
+  1. Open plan-status.html
+  2. Expand the Recent Activity panel
+  3. Inspect each activity entry
+Expected Result: Session number appears as 'Session N · YYYY-MM-DD' with the session label in a muted/smaller style distinct from the summary text
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0117: Costs tab column/card toggle persists view preference to localStorage
+Related Story: US-0038
+Related Task: TASK-0040
+Related AC: AC-0114
+Type: Functional
+Preconditions: plan-status.html loaded; Costs tab accessible
+Steps:
+  1. Open plan-status.html → Costs tab
+  2. Click ⊞ Card toggle; reload page; navigate to Costs tab
+  3. Click ≡ Column toggle; reload page; navigate to Costs tab
+Expected Result: After reload, the last selected view (column or card) is restored from localStorage key 'costsView'
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0118: Costs tab card view shows story cards grouped by epic with projected and AI actual values
+Related Story: US-0038
+Related Task: TASK-0040
+Related AC: AC-0115
+Type: Functional
+Preconditions: RELEASE_PLAN.md contains epics with stories; AI_COST_LOG.md has cost entries
+Steps:
+  1. Open plan-status.html → Costs tab → switch to Card view
+  2. Inspect card layout for each epic section
+Expected Result: Each epic appears as a labelled section header; story cards within show ID, title, status badge, size, projected cost, and AI actual cost
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0119: Costs tab card view includes Bug Fix Costs section with one card per bug
+Related Story: US-0038
+Related Task: TASK-0040
+Related AC: AC-0116
+Type: Functional
+Preconditions: BUGS.md contains at least one bug entry
+Steps:
+  1. Open plan-status.html → Costs tab → switch to Card view
+  2. Scroll to the Bug Fix Costs section
+Expected Result: Bug Fix Costs section appears below epic story cards; one card per bug showing bug ID, severity, status, related story, projected cost, and AI actual cost
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0120: Bugs tab column/card toggle persists view preference to localStorage
+Related Story: US-0039
+Related Task: TASK-0041
+Related AC: AC-0117
+Type: Functional
+Preconditions: plan-status.html loaded; Bugs tab accessible
+Steps:
+  1. Open plan-status.html → Bugs tab
+  2. Click ⊞ Card toggle; reload page; navigate to Bugs tab
+  3. Click ≡ Column toggle; reload page; navigate to Bugs tab
+Expected Result: After reload, the last selected view is restored from localStorage key 'bugsView'
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0121: Bugs tab card view shows one card per bug with severity, status, story, branch, and lesson link
+Related Story: US-0039
+Related Task: TASK-0041
+Related AC: AC-0118
+Type: Functional
+Preconditions: BUGS.md contains bugs with various severities, statuses, and lesson references
+Steps:
+  1. Open plan-status.html → Bugs tab → switch to Card view
+  2. Inspect individual bug cards
+Expected Result: Each card shows bug ID, severity badge, status badge, title, related story (monospace), fix branch (truncated with tooltip), and lesson cell (✓ L-XXXX ↗ link or ○)
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0122: Bug status filter and text search apply to both column rows and card elements on Bugs tab
+Related Story: US-0039
+Related Task: TASK-0041
+Related AC: AC-0119
+Type: Functional
+Preconditions: BUGS.md contains bugs with mixed statuses
+Steps:
+  1. Open plan-status.html → Bugs tab in Column view; select a status filter; confirm rows hidden
+  2. Switch to Card view without clearing filter
+  3. Repeat: enter search text, observe card visibility
+Expected Result: Both column <tr> elements and card <div> elements are filtered identically; .bug-row class and data-status attribute present on both element types
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:

@@ -1,8 +1,8 @@
 # PlanVisualizer — Design Document
 
-**Version:** 1.2
+**Version:** 1.3
 **Status:** Active
-**Last Updated:** 2026-03-11
+**Last Updated:** 2026-03-18
 
 ---
 
@@ -53,6 +53,8 @@ Four automated signals flag a story as ⚠ At Risk:
 3. **Failed TC, no bug** — a test case for the story has status "Fail" but no defect has been raised
 4. **Open critical/high bug** — an open Critical or High severity bug is linked to this story
 
+Stories with status `Done` are never flagged at risk regardless of the above signals.
+
 ---
 
 ## 5. Feature Set
@@ -61,21 +63,25 @@ Four automated signals flag a story as ⚠ At Risk:
 
 | Tab | Content |
 |-----|---------|
-| **Hierarchy** | Epic → Story → AC tree, collapsible, with status badges and risk warnings |
-| **Kanban** | 5-column board (To Do / Planned / In Progress / Blocked / Done) |
+| **Hierarchy** | Epic → Story → AC tree (column view) or story card grid per epic (card view); toggle persists to localStorage |
+| **Kanban** | 5-column board (To Do / Planned / In Progress / Blocked / Done); each column scrolls independently |
 | **Traceability** | Story × Test Case matrix showing Pass/Fail/Not Run linkage |
-| **Charts** | Epic progress, cost breakdown, coverage donut, AI cost timeline, burndown, burn rate |
-| **Costs** | Per-story projected vs. actual AI cost table with token counts |
-| **Bugs** | Bug register with severity, status, fix branch, and lesson-encoded flag |
+| **Charts** | Epic progress, cost breakdown, coverage donut, AI cost timeline, burndown, burn rate; all charts at uniform 300 px height |
+| **Costs** | Per-story projected vs. actual AI cost table with totals; Bug Fix Costs sub-table with totals row |
+| **Bugs** | Bug register with severity, status, fix branch, lesson-encoded flag; filterable by status and free-text search |
+| **Lessons** | Lesson register (column/card view) parsed from LESSONS.md; Bug Ref column cross-links to referencing bugs |
 
 ### Top Bar
-Displays project name, tagline, last-generated timestamp, commit SHA, overall progress bar, stories done/in-progress count, projected cost, actual AI cost, line coverage %, and branch coverage %.
+Displays project name, tagline, last-generated timestamp (date + time UTC), commit SHA, overall progress bar, stories done/in-progress count, projected cost, actual AI cost, line coverage %, and branch coverage %.
 
 ### Filters
-Epic, status, priority, type (stories/bugs/both), and free-text search filters apply across the Hierarchy and Kanban tabs in real-time.
+The filter bar is positioned below the tab bar and shows only the controls relevant to the active tab:
+- **Hierarchy / Kanban tabs:** epic, status, priority, and free-text search filters
+- **Bugs tab:** status dropdown and free-text search
+- **All other tabs:** filter bar hidden
 
 ### Recent Activity
-A floating panel shows the 5 most recent session summaries parsed from `progress.md`.
+A floating panel shows the 5 most recent session summaries parsed from `progress.md`. Each entry displays "Session N · YYYY-MM-DD" alongside the session summary.
 
 ---
 
@@ -87,14 +93,20 @@ A floating panel shows the 5 most recent session summaries parsed from `progress
 | Monospace font | JetBrains Mono (Google Fonts) |
 | Framework | Tailwind CSS (CDN) |
 | Charts | Chart.js v4 (CDN) |
-| Background | `bg-slate-50` |
-| Top bar | `bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900` |
 | Accent (primary) | `text-blue-400` / `bg-blue-500` |
 | Success | `text-green-400` / `bg-green-100` |
 | Warning | `text-orange-500` / `bg-yellow-100` |
 | Danger | `text-red-400` / `bg-red-100` |
 
+### CSS Theme Tokens
+All dashboard colours are defined as CSS custom properties (`--clr-*`) in `:root` (light theme) and `html.dark` (dark theme) blocks inside the generated HTML. No hardcoded hex literals appear in CSS property rules. Dark mode is activated by adding the `dark` class to `<html>` via `toggleTheme()`; the chosen preference is persisted to `localStorage`.
+
+Key tokens: `--clr-body-bg`, `--clr-panel-bg`, `--clr-surface-raised`, `--clr-border`, `--clr-header-bg`, `--clr-header-text`, `--clr-input-bg`, `--clr-input-border`, `--clr-chart-text`, `--clr-accent`, and semantic text tokens.
+
 Status badge colours are defined in `render-html.js` `badge()` function and must not be overridden inline.
+
+### Viewport-Fill Tabs
+Tabs that contain scrollable tables (Bugs, Traceability, Lessons, Kanban) use the `.tab-fill` CSS class: `display:flex; flex-direction:column; height:calc(100vh - var(--sticky-top))`. The inner scroll container gets `flex:1; min-height:0` so it fills remaining space rather than collapsing to content height.
 
 ---
 
@@ -121,14 +133,16 @@ All configuration lives in `plan-visualizer.config.json` (gitignored; created fr
 ## 8. Data Flow
 
 ```
-RELEASE_PLAN.md ──► parseReleasePlan()  ─┐
-TEST_CASES.md   ──► parseTestCases()    ─┤
-BUGS.md         ──► parseBugs()         ─┤
-AI_COST_LOG.md  ──► parseCostLog()      ─┤──► data{} ──► renderHtml() ──► plan-status.html
-coverage.json   ──► parseCoverage()     ─┤              plan-status.json
+RELEASE_PLAN.md ──► parseReleasePlan()   ─┐
+TEST_CASES.md   ──► parseTestCases()     ─┤
+BUGS.md         ──► parseBugs()          ─┤
+AI_COST_LOG.md  ──► parseCostLog()       ─┤──► data{} ──► renderHtml() ──► plan-status.html
+coverage.json   ──► parseCoverage()      ─┤              plan-status.json
+LESSONS.md      ──► parseLessons()       ─┤
 progress.md     ──► parseRecentActivity()─┤
-                    computeCosts()       ─┤
-                    detectAtRisk()      ─┘
+                    (+ sessionNum)        ─┤
+                    computeCosts()        ─┤
+                    detectAtRisk()       ─┘
 ```
 
 ---

@@ -507,3 +507,321 @@ Actual: Font-mono IDs like "BUG-0001" and "US-0001" wrap between characters — 
 Status: Fixed
 Fix Branch: feature/US-0031-dashboard-ux-fixes
 Lesson Encoded: No
+
+BUG-0034: TC-0078 shows Not Run despite version-bump workflow being verified
+Severity: Low
+Related Story: US-0028
+Related Task: TASK-0026
+Steps to Reproduce:
+  1. Open plan-status.html → Traceability tab
+  2. Locate TC-0078
+Expected: TC-0078 shows Pass — the version-bump workflow was verified via PRs #52 and #54
+Actual: TC-0078 displays "Not Run" because TEST_CASES.md status was never updated to [x] Pass
+Status: Fixed
+Fix Branch: feature/dark-mode-readability
+Lesson Encoded: No
+Estimated Cost USD: 0.00
+
+BUG-0035: About modal hardcoded dark — does not respond to light/dark toggle
+Severity: Medium
+Related Story: US-0031
+Related Task: TASK-0030
+Steps to Reproduce:
+  1. Open plan-status.html in light mode
+  2. Click the "About" button in the header
+Expected: About modal adapts to light mode (white card, dark text)
+Actual: Modal always shows dark slate background and light text regardless of theme
+Status: Fixed
+Fix Branch: feature/dark-mode-readability
+Lesson Encoded: Yes — see docs/LESSONS.md
+Estimated Cost USD: 0.00
+
+BUG-0036: AI Cost column uses text-teal-600, unreadable on white backgrounds
+Severity: Medium
+Related Story: US-0031
+Related Task: TASK-0030
+Steps to Reproduce:
+  1. Open plan-status.html in light mode
+  2. Navigate to Costs tab
+  3. Observe AI Cost column
+Expected: AI Cost values are clearly readable in both light and dark modes
+Actual: text-teal-600 (#0d9488) has insufficient contrast on white — WCAG AA fails
+Status: Fixed
+Fix Branch: feature/dark-mode-readability
+Lesson Encoded: Yes — see docs/LESSONS.md
+Estimated Cost USD: 0.00
+
+BUG-0037: Bug token counts display 0/0 for estimated-cost bugs
+Severity: Low
+Related Story: US-0031
+Related Task: TASK-0030
+Steps to Reproduce:
+  1. Open plan-status.html → Costs tab → Bug Fix Costs section
+  2. Observe Tokens column for bugs with estimated costs
+Expected: Dash (—) for bugs whose token counts are unknown; real counts for bugs with cost log entries
+Actual: 0 / 0 displayed for all estimated-cost bugs — misleading, implies tokens were measured
+Status: Fixed
+Fix Branch: feature/dark-mode-readability
+Lesson Encoded: Yes — see docs/LESSONS.md
+Estimated Cost USD: 0.00
+
+BUG-0038: Lesson column always shows ○ due to lessonEncoded partial-string mismatch
+Severity: Low
+Related Story: US-0031
+Related Task: TASK-0030
+Steps to Reproduce:
+  1. Open plan-status.html → Bugs tab
+  2. Observe Lesson column for any bug with Lesson Encoded: Yes — see docs/LESSONS.md
+Expected: ✓ shown for bugs with encoded lessons
+Actual: ○ always shown because renderer checks lessonEncoded === 'Yes' but parser returns full string "Yes — see docs/LESSONS.md"
+Status: Fixed
+Fix Branch: feature/dark-mode-readability
+Lesson Encoded: Yes — see docs/LESSONS.md
+Estimated Cost USD: 0.00
+
+BUG-0039: Bugs tab Story column wraps on narrow viewports
+Severity: Low
+Related Story: US-0031
+Related Task: n/a
+Steps to Reproduce:
+  1. Open plan-status.html → Bugs tab
+  2. Narrow the browser window or view on mobile
+Expected: Story ID (e.g. US-0031) stays on one line in the Story column
+Actual: Story cell wraps mid-string due to missing whitespace-nowrap on the td element
+Status: Fixed
+Fix Branch: feature/dark-mode-readability
+Lesson Encoded: No
+Estimated Cost USD: 0.00
+
+BUG-0040: Dark mode toggle changes About modal but not the rest of the page
+Severity: High
+Related Story: US-0031
+Related Task: TASK-0030
+Steps to Reproduce:
+  1. Open plan-status.html
+  2. Click the sun/moon toggle in the header
+Expected: Entire page switches between light and dark themes
+Actual: Only the About modal responds; rest of page unchanged — tailwind.config={darkMode:'class'} was set before the CDN loaded so tailwind was undefined, config never applied, CDN defaulted to prefers-color-scheme strategy
+Status: Fixed
+Fix Branch: feature/dark-mode-readability
+Lesson Encoded: Yes — see docs/LESSONS.md
+Estimated Cost USD: 0.00
+
+BUG-0041: New bugs BUG-0034–0038 show $0.00 AI cost and 0/0 tokens in Costs tab
+Severity: Low
+Related Story: US-0031
+Related Task: n/a
+Steps to Reproduce:
+  1. Open plan-status.html → Costs tab → Bug Fix Costs section
+  2. Observe AI Cost and Tokens columns for BUG-0034 through BUG-0038
+Expected: AI cost and token columns show values from the feature/dark-mode-readability branch sessions
+Actual: $0.00 / 0/0 because no cost log entries existed for the fix branch and Estimated Cost USD was 0.00 so isEstimated stayed false (no — dash shown either)
+Status: Fixed
+Fix Branch: feature/dark-mode-readability
+Lesson Encoded: Yes — see docs/LESSONS.md
+Estimated Cost USD: 0.00
+
+BUG-0042: dark:* Tailwind variants not applied — dark mode toggle has no effect on page text/backgrounds
+Severity: High
+Related Story: US-0031
+Related Task: TASK-0030
+Steps to Reproduce:
+  1. Open plan-status.html; dark mode activates (via localStorage or prefers-color-scheme)
+  2. Observe Hierarchy tab story text — black text on dark background, unreadable
+Expected: All dark:text-* and dark:bg-* classes apply when html.dark is present
+Actual: Tailwind CDN generates styles using prefers-color-scheme strategy instead of class strategy because tailwind.config={darkMode:'class'} is set AFTER CDN loads; during initial CSS generation darkMode:'class' is unknown so dark: variants are never emitted
+Status: Fixed
+Fix Branch: feature/dark-mode-readability
+Lesson Encoded: Yes — see docs/LESSONS.md
+Estimated Cost USD: 0.00
+
+BUG-0043: Header does not change when toggling dark/light mode
+Severity: Medium
+Related Story: US-0031
+Related Task: TASK-0030
+Steps to Reproduce:
+  1. Open plan-status.html in light mode
+  2. Click the sun/moon toggle
+Expected: Header gradient shifts to a darker blue variant in dark mode
+Actual: Header always shows the same EPAM blue gradient — inline style= cannot use dark: Tailwind variants, and no CSS rule overrides it in .dark context
+Status: Fixed
+Fix Branch: feature/dark-mode-readability
+Lesson Encoded: Yes — see docs/LESSONS.md
+Estimated Cost USD: 0.00
+
+BUG-0044: Stories with status 'Done' incorrectly flagged as At Risk
+Severity: Medium
+Related Story: US-0032
+Related Task: n/a
+Steps to Reproduce:
+  1. Open plan-status.html → Hierarchy tab
+  2. Observe any story with Status: Done that has no linked test cases (e.g. US-0029, US-0031, US-0032)
+Expected: Done stories do not show ⚠ At Risk badge
+Actual: Done stories showed ⚠ At Risk badge because detectAtRisk() evaluated missingTCs/noBranch signals without excluding Done status
+Status: Fixed
+Fix Branch: feature/US-0032-lessons-tab
+Lesson Encoded: No
+Estimated Cost USD: 0.00
+
+BUG-0045: Bug Fix Costs table on Costs tab missing totals row
+Severity: Low
+Related Story: US-0030
+Related Task: TASK-0028
+Steps to Reproduce:
+  1. Open plan-status.html → Costs tab
+  2. Scroll to Bug Fix Costs section
+  3. Observe the bottom of the table
+Expected: A totals row shows the sum of AI Cost and Token columns across all bug entries
+Actual: Table ends after the last bug row; no totals row rendered
+Status: Fixed
+Fix Branch: feature/US-0032-lessons-tab
+Lesson Encoded: No
+Estimated Cost USD: 0.00
+
+BUG-0046: Bugs, Traceability, Lessons, and Kanban tabs do not fill viewport height
+Severity: Low
+Related Story: US-0032
+Related Task: n/a
+Steps to Reproduce:
+  1. Open plan-status.html → Bugs tab (or Traceability, Lessons, Kanban)
+  2. View when fewer rows exist than the visible area
+Expected: Tab container fills available viewport height; scroll region occupies remaining space
+Actual: Container collapses to content height — blank area below short lists
+Status: Fixed
+Fix Branch: feature/US-0032-lessons-tab
+Lesson Encoded: No
+Estimated Cost USD: 0.00
+
+BUG-0047: Kanban column headers scroll off screen when column content overflows
+Severity: Medium
+Related Story: US-0032
+Related Task: n/a
+Steps to Reproduce:
+  1. Open plan-status.html → Kanban tab
+  2. Ensure at least one column has more cards than the visible area
+  3. Scroll down within the Kanban view
+Expected: Column header (e.g. "In Progress") remains pinned at the top of its column
+Actual: The whole Kanban board scrolled as one unit; column headers disappeared off screen
+Status: Fixed
+Fix Branch: feature/US-0032-lessons-tab
+Lesson Encoded: No
+Estimated Cost USD: 0.00
+
+BUG-0048: Charts tab shows inconsistent heights between doughnut and bar/line charts
+Severity: Low
+Related Story: US-0031
+Related Task: TASK-0030
+Steps to Reproduce:
+  1. Open plan-status.html → Charts tab
+  2. Compare Test Coverage doughnut (top-left) with AI Cost Timeline line chart (top-right)
+  3. Compare Story Status doughnut (bottom-left) with Budget Burn Rate bar chart (bottom-right)
+Expected: All six charts render at the same height (300 px)
+Actual: Doughnut charts rendered shorter than bar/line charts because Chart.js defaulted to 1:1 aspect ratio for doughnuts and 2:1 for bar/line charts
+Status: Fixed
+Fix Branch: feature/US-0032-lessons-tab
+Lesson Encoded: No
+Estimated Cost USD: 0.00
+
+BUG-0049: Filter bar displayed on tabs where no filters apply
+Severity: Low
+Related Story: US-0025
+Related Task: TASK-0025
+Steps to Reproduce:
+  1. Open plan-status.html
+  2. Click Charts tab, then Costs tab, then Traceability tab, then Lessons tab
+  3. Observe the filter bar below the tab strip on each tab
+Expected: Filter bar hidden on tabs where filters have no applicable rows
+Actual: Filter bar remained visible with story-type dropdowns on tabs where they had no effect
+Status: Fixed
+Fix Branch: feature/US-0032-lessons-tab
+Lesson Encoded: No
+Estimated Cost USD: 0.00
+
+BUG-0050: Hierarchy tab filter included 'Stories + Bugs' type option — bugs do not appear on this tab
+Severity: Low
+Related Story: US-0025
+Related Task: TASK-0025
+Steps to Reproduce:
+  1. Open plan-status.html → Hierarchy tab
+  2. Expand the Type dropdown in the filter bar
+  3. Select 'Bugs only' or 'Stories + Bugs'
+Expected: Type dropdown should not include bug options on the Hierarchy tab since bugs are not rendered there
+Actual: Type dropdown showed 'Bugs only' and 'Stories + Bugs' options that returned zero results
+Status: Fixed
+Fix Branch: feature/US-0032-lessons-tab
+Lesson Encoded: No
+Estimated Cost USD: 0.00
+
+BUG-0051: Lesson column link text wraps mid-string in the Bugs tab
+Severity: Low
+Related Story: US-0032
+Related Task: TASK-0033
+Steps to Reproduce:
+  1. Open plan-status.html → Bugs tab
+  2. Find a bug whose Lesson Encoded references a lesson ID (e.g. L-0010)
+  3. Observe the Lesson column cell at normal viewport width
+Expected: '✓ L-XXXX ↗' renders on a single line
+Actual: Text wrapped mid-string (e.g. '✓ L-0010' on line one and '↗' on line two)
+Status: Fixed
+Fix Branch: feature/US-0032-lessons-tab
+Lesson Encoded: No
+Estimated Cost USD: 0.00
+
+BUG-0052: Lesson ID (L-XXXX) wraps onto a second line in the Lessons card view
+Severity: Low
+Related Story: US-0032
+Related Task: TASK-0033
+Steps to Reproduce:
+  1. Open plan-status.html → Lessons tab
+  2. Switch to Card view
+  3. Observe the top-left corner of any lesson card at a medium viewport width
+Expected: 'L-XXXX' ID token stays on a single line at all viewport widths
+Actual: ID text wrapped mid-value at certain card widths
+Status: Fixed
+Fix Branch: feature/US-0032-lessons-tab
+Lesson Encoded: No
+Estimated Cost USD: 0.00
+
+BUG-0053: AI Actual header stat tile excluded bug fix costs
+Severity: Medium
+Related Story: US-0025
+Related Task: TASK-0023
+Steps to Reproduce:
+  1. Open plan-status.html
+  2. Observe the AI Actual stat tile in the top bar
+  3. Open Costs tab and note Bug Fix Costs table total
+Expected: AI Actual tile reflects total AI spend including bug fix sessions
+Actual: Tile showed only story branch costs from cost log; bug estimated costs and bug branch AI costs were excluded
+Status: Fixed
+Fix Branch: feature/US-0032-lessons-tab
+Lesson Encoded: No
+Estimated Cost USD: 0.25
+
+BUG-0054: Bug Fix Costs Projected column used raw manual dollar amounts instead of t-shirt formula
+Severity: Medium
+Related Story: US-0025
+Related Task: TASK-0023
+Steps to Reproduce:
+  1. Open plan-status.html → Costs tab → Bug Fix Costs table
+  2. Observe the Projected column values (labelled 'Estimated' at the time)
+Expected: Projected column uses severity→t-shirt size×hourly rate (same formula as story Projected)
+Actual: Column showed raw Estimated Cost USD field values (e.g. $0.50) making values inconsistent with story projected costs ($800+)
+Status: Fixed
+Fix Branch: feature/US-0032-lessons-tab
+Lesson Encoded: No
+Estimated Cost USD: 0.25
+
+BUG-0055: Header Projected tile excluded bug projected costs
+Severity: Medium
+Related Story: US-0025
+Related Task: TASK-0023
+Steps to Reproduce:
+  1. Open plan-status.html
+  2. Observe the Projected stat tile in the top bar
+  3. Open Costs tab and note story projected total and bug projected total
+Expected: Projected tile = sum of story projected costs + sum of bug projected costs
+Actual: Tile showed only story projected costs; bug projected costs omitted
+Status: Fixed
+Fix Branch: feature/US-0032-lessons-tab
+Lesson Encoded: No
+Estimated Cost USD: 0.25

@@ -17,6 +17,7 @@ const { parseBugs } = require('./lib/parse-bugs');
 const { parseCostLog, aggregateCostByBranch } = require('./lib/parse-cost-log');
 const { parseCoverage } = require('./lib/parse-coverage');
 const { parseRecentActivity } = require('./lib/parse-progress');
+const { parseLessons } = require('./lib/parse-lessons');
 const { computeProjectedCost, attributeAICosts, attributeBugCosts } = require('./lib/compute-costs');
 const { detectAtRisk } = require('./lib/detect-at-risk');
 const { renderHtml } = require('./lib/render-html');
@@ -30,6 +31,7 @@ const DEFAULTS = {
     testCases: 'docs/TEST_CASES.md',
     bugs: 'docs/BUGS.md',
     costLog: 'docs/AI_COST_LOG.md',
+    lessons: 'docs/LESSONS.md',
     outputDir: 'docs',
   },
   coverage: { summaryPath: 'docs/coverage/coverage-summary.json' },
@@ -98,6 +100,7 @@ function main() {
     ? parseCoverage(coverageJson)
     : { lines: 0, statements: 0, functions: 0, branches: 0, overall: 0, meetsTarget: false, available: false };
   const recentActivity = parseRecentActivity(readFile(config.progress.path), 5);
+  const lessons = parseLessons(readFile(config.docs.lessons));
 
   const aiAttribution = attributeAICosts(stories, costByBranch);
   const costs = {};
@@ -111,6 +114,14 @@ function main() {
   }
   costs._totals = aiAttribution._totals || { costUsd: 0, inputTokens: 0, outputTokens: 0 };
   costs._bugs = attributeBugCosts(bugs, costByBranch);
+
+  const SEVERITY_SIZE = { Critical: 'L', High: 'M', Medium: 'S', Low: 'S' };
+  for (const bug of bugs) {
+    if (costs._bugs[bug.id]) {
+      const size = SEVERITY_SIZE[bug.severity] || 'S';
+      costs._bugs[bug.id].projectedUsd = computeProjectedCost(size, HOURS, RATE);
+    }
+  }
 
   const atRisk = detectAtRisk(stories, testCases, bugs);
   const generatedAt = new Date().toISOString();
@@ -128,7 +139,7 @@ function main() {
 
   const data = {
     epics, stories, tasks, testCases, bugs, costs, atRisk, coverage,
-    recentActivity, generatedAt, commitSha, buildNumber, sessionTimeline,
+    recentActivity, lessons, generatedAt, commitSha, buildNumber, sessionTimeline,
     projectName: config.project.name,
     tagline: config.project.tagline,
     version: pkg.version,
@@ -146,7 +157,7 @@ function main() {
   const htmlPath = path.join(outputDir, 'plan-status.html');
   fs.writeFileSync(htmlPath, html, 'utf8');
   console.log(`[generate-plan] Written ${htmlPath}`);
-  console.log(`[generate-plan] Done. ${epics.length} epics, ${stories.length} stories, ${testCases.length} TCs, ${bugs.length} bugs.`);
+  console.log(`[generate-plan] Done. ${epics.length} epics, ${stories.length} stories, ${testCases.length} TCs, ${bugs.length} bugs, ${lessons.length} lessons.`);
 }
 
 try { main(); } catch (e) { console.error('[generate-plan] Fatal:', e.message); process.exit(1); }
