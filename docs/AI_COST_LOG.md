@@ -77,3 +77,5 @@ Pricing basis: Claude Sonnet 4.6 — Input $3/MTok · Output $15/MTok · Cache R
 | 2026-03-18 | sess_0041-est | feature/dark-mode-readability | 150000 | 38000 | 75000 | 1.0425 |
 | 2026-03-18 | sess_0042-est | feature/dark-mode-readability | 140000 | 35000 | 70000 | 0.9660 |
 | 2026-03-18 | sess_0043-est | feature/dark-mode-readability | 100000 | 25000 | 50000 | 0.6900 |
+| 2026-03-22 | sess_0044-est | feature/US-0040-visual-design-overhaul | 220000 | 58000 | 160000 | 1.5930 |
+| 2026-03-22 | sess_0045-est | feature/US-0040-visual-design-overhaul | 180000 | 48000 | 140000 | 1.3020 |
