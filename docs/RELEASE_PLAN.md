@@ -838,3 +838,116 @@ Status: Done
 Branch: feature/US-0032-lessons-tab
 Notes: setBugsView(v) toggles bugs-column-view / bugs-card-view; card divs carry .bug-row class and data-status so existing applyFilters() works on both views without changes; setBugsView called in inline script on DOMContentLoaded
 ```
+
+---
+
+## Epic — EPIC-0007: Dashboard Visual Design Overhaul
+
+```
+EPIC-0007: Dashboard Visual Design Overhaul
+Description: Replace the generic Tailwind slate palette and default blue accent with a distinctive dark design system. Improvements span the colour palette, badge styling, tab indicator, typography, hover interactions, and background texture to produce a visually unique dashboard.
+Release Target: Release 1.3
+Status: Done
+Dependencies: EPIC-0006
+```
+
+---
+
+## User Stories — EPIC-0007: Dashboard Visual Design Overhaul
+
+```
+US-0040 (EPIC-0007): As a user, I want the dashboard dark mode to use a custom near-black palette instead of Tailwind slate defaults, so that the design feels distinctive rather than template-like.
+Priority: High (P0)
+Estimate: S
+Status: Done
+Branch: feature/US-0040-visual-design-overhaul
+Acceptance Criteria:
+  - [x] AC-0120: CSS custom properties in html.dark are replaced with custom dark values: body-bg #0b0d12, panel-bg #111318, surface-raised #1a1d24, border #252831, border-mid #32363f
+  - [x] AC-0121: All dark: Tailwind class references to bg-slate-800/700/900 in render-html.js are updated to use var(--clr-*) tokens or removed in favour of the CSS variable fallbacks
+  - [x] AC-0122: node tools/generate-plan.js regenerates plan-status.html with the new palette and no regression in light mode or existing tests
+Dependencies: US-0033
+```
+
+```
+US-0041 (EPIC-0007): As a user, I want the accent colour to be a distinctive indigo/violet instead of the default Tailwind blue-500, so that active states, links, and focus indicators feel intentional rather than generic.
+Priority: High (P0)
+Estimate: S
+Status: Done
+Branch: feature/US-0040-visual-design-overhaul
+Acceptance Criteria:
+  - [x] AC-0123: --clr-accent in both :root and html.dark is changed from #3b82f6 to #7c3aed (violet-600); all var(--clr-accent) usages automatically pick up the new value
+  - [x] AC-0124: Hard-coded blue-600 / text-blue-600 colour literals in epic headers, tab active underline, and about modal title are updated to use the new accent token
+Dependencies: US-0033
+```
+
+```
+US-0042 (EPIC-0007): As a user, I want status and priority badges to use a dark outlined style instead of pastel fills, so that they are visually sharp and legible on dark backgrounds.
+Priority: Medium (P1)
+Estimate: S
+Status: Done
+Branch: feature/US-0040-visual-design-overhaul
+Acceptance Criteria:
+  - [x] AC-0125: The badge() function in render-html.js is updated so each status/priority key maps to border + tinted dark background + bright text (e.g. Done → bg-[#052e16] text-[#4ade80] border border-[#166534])
+  - [x] AC-0126: All seven statuses (Done, In Progress, Planned, To Do, Blocked, Open, Fixed) and all priority levels (P0, P1, P2, Critical, High, Medium, Low, Pass, Fail, Not Run) have distinct outlined dark styles; no pastel bg-*-100 classes remain
+Dependencies: US-0040
+```
+
+```
+US-0043 (EPIC-0007): As a user, I want the active tab to be indicated by a filled pill/capsule rather than an underline, so that the navigation looks distinctive and modern.
+Priority: Medium (P1)
+Estimate: XS
+Status: Done
+Branch: feature/US-0040-visual-design-overhaul
+Acceptance Criteria:
+  - [x] AC-0127: renderTabs() removes the border-b-2 underline pattern; the active tab button receives a filled background (e.g. bg-[#7c3aed] text-white rounded-md) while inactive buttons are unstyled text with hover highlight
+  - [x] AC-0128: The JS showTab() function updates the active class to apply the filled pill style and remove it from all other tabs; localStorage tab persistence continues to work
+Dependencies: US-0041
+```
+
+```
+US-0044 (EPIC-0007): As a user, I want subtle hover transforms on story cards and top-bar stat tiles, so that the dashboard feels responsive and interactive.
+Priority: Medium (P1)
+Estimate: XS
+Status: Done
+Branch: feature/US-0040-visual-design-overhaul
+Acceptance Criteria:
+  - [x] AC-0129: Story cards in card view (renderHierarchyTab) and kanban cards gain transition-transform duration-150 and hover:scale-[1.02] via an inline style or class addition
+  - [x] AC-0130: Top-bar stat tiles (.topbar-tile) gain transition-transform duration-150 and hover:-translate-y-0.5 via a CSS rule so they lift slightly on hover
+Dependencies: US-0040
+```
+
+```
+US-0045 (EPIC-0007): As a user, I want bolder, more dramatically scaled typography in the dashboard header and section labels, so that information hierarchy is immediately clear.
+Priority: Medium (P2)
+Estimate: XS
+Status: Done
+Branch: feature/US-0040-visual-design-overhaul
+Acceptance Criteria:
+  - [x] AC-0131: The project title h1 in renderTopBar() uses text-4xl font-black tracking-tight (up from text-3xl font-bold) on desktop; mobile override is adjusted proportionally
+  - [x] AC-0132: Section header labels (epic IDs, table column headers, kanban column titles) use uppercase tracking-widest text-xs font-semibold styling to create clear visual separation from body text
+Dependencies: US-0040
+```
+
+```
+US-0046 (EPIC-0007): As a user, I want a subtle dot-grid texture on the page background, so that the flat solid background gains visual depth without being distracting.
+Priority: Low (P2)
+Estimate: XS
+Status: Done
+Branch: feature/US-0040-visual-design-overhaul
+Acceptance Criteria:
+  - [x] AC-0133: The body element (or a full-height wrapper) receives a CSS background-image using a repeating radial-gradient that produces a faint dot grid (e.g. radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px) at 24px × 24px)
+  - [x] AC-0134: The dot grid is visible in dark mode and invisible/negligible in light mode; it does not interfere with print styles (@media print hides it)
+Dependencies: US-0040
+```
+
+```
+US-0047 (EPIC-0007): As a user, I want each epic block to have a distinct left-border accent line using a per-epic colour, so that epics are visually differentiated at a glance in the Hierarchy tab.
+Priority: Low (P3)
+Estimate: S
+Status: Done
+Branch: feature/US-0040-visual-design-overhaul
+Acceptance Criteria:
+  - [x] AC-0135: renderHierarchyTab() defines a fixed palette of 6–8 accent colours (one per epic slot, cycling if there are more epics than colours); each epic block receives a border-l-4 left border in its assigned colour
+  - [x] AC-0136: The left-border accent colour is also used to tint the epic header background very subtly (e.g. bg-[color]/10) so the visual association between border and header is clear; story rows within the epic retain standard card styling
+Dependencies: US-0040
+```

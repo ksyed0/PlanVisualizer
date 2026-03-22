@@ -1895,3 +1895,262 @@ Actual Result:
 Status: [x] Pass
 Defect Raised: None
 Notes:
+
+TC-0123: Dark mode body background uses custom near-black #0b0d12
+Related Story: US-0040
+Related Task:
+Related AC: AC-0120
+Type: Visual
+Preconditions: plan-status.html generated and opened in browser with dark mode active
+Steps:
+  1. Open plan-status.html; activate dark mode via the toggle
+  2. Inspect computed style on <body> or <html> for background-color
+Expected Result: Background-color resolves to #0b0d12 (or the equivalent rgb); panel surfaces resolve to #111318; raised surfaces to #1a1d24; borders to #252831
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0124: Dark mode Tailwind slate overrides are replaced by CSS variable fallbacks
+Related Story: US-0040
+Related Task:
+Related AC: AC-0121
+Type: Visual
+Preconditions: render-html.js updated; plan-status.html regenerated
+Steps:
+  1. Search render-html.js for hard-coded dark: bg-slate-800 / dark: bg-slate-900 / dark: bg-slate-700 classes
+  2. Open plan-status.html in dark mode; confirm panel and card backgrounds match the new custom tokens
+Expected Result: No remaining dark:bg-slate-* classes that contradict the custom palette; all dark surfaces match the --clr-* variable values
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0125: Regenerated dashboard passes existing Jest tests after palette change
+Related Story: US-0040
+Related Task:
+Related AC: AC-0122
+Type: Regression
+Preconditions: render-html.js updated with new CSS variables
+Steps:
+  1. Run npx jest --coverage
+  2. Check all tests pass and coverage remains ≥ 80%
+Expected Result: All tests pass; no new failures; coverage gate met
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0126: Accent colour CSS variable resolves to violet-600 (#7c3aed)
+Related Story: US-0041
+Related Task:
+Related AC: AC-0123
+Type: Visual
+Preconditions: plan-status.html opened in browser; dark mode active
+Steps:
+  1. Inspect --clr-accent in DevTools (computed on :root and html.dark)
+  2. Confirm active tab indicator, link highlights, and focus rings use the new violet colour
+Expected Result: --clr-accent = #7c3aed in both themes; no blue-500 (#3b82f6) accent visible in active states
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0127: Blue literal colour references in epic headers and about modal are updated to accent token
+Related Story: US-0041
+Related Task:
+Related AC: AC-0124
+Type: Visual
+Preconditions: render-html.js updated; plan-status.html regenerated
+Steps:
+  1. Open Hierarchy tab; inspect epic ID labels for colour
+  2. Open About dialog; inspect project title colour
+Expected Result: Epic ID labels and About modal title use var(--clr-accent) / violet; no hard-coded text-blue-600 or #3b82f6 remains in those elements
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0128: Status badges use outlined dark style with bright text
+Related Story: US-0042
+Related Task:
+Related AC: AC-0125
+Type: Visual
+Preconditions: plan-status.html opened in dark mode; Hierarchy and Bugs tabs loaded
+Steps:
+  1. Inspect a Done badge — verify background is dark tinted green, border is green, text is bright green
+  2. Inspect an In Progress badge — dark blue tint, blue border, bright blue text
+  3. Inspect a Blocked badge — dark red tint, red border, bright red text
+Expected Result: All badges have visible border, dark background tint, bright legible text; no bg-*-100 pastel backgrounds remain
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0129: All badge variants have distinct outlined dark styles — no pastel bg-*-100 classes remain
+Related Story: US-0042
+Related Task:
+Related AC: AC-0126
+Type: Visual
+Preconditions: render-html.js updated
+Steps:
+  1. Search render-html.js badge() function for any remaining bg-green-100, bg-red-100, bg-yellow-100, bg-blue-100, bg-gray-100, bg-orange-100 classes
+  2. Open plan-status.html; visit Bugs, Traceability, and Hierarchy tabs and visually verify all badge types
+Expected Result: No bg-*-100 classes in badge(); every badge variant (Done, In Progress, Planned, To Do, Blocked, Open, Fixed, Pass, Fail, Not Run, P0–P2, Critical–Low) renders in the outlined dark style
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0130: Active tab shows filled pill indicator instead of underline
+Related Story: US-0043
+Related Task:
+Related AC: AC-0127
+Type: Visual
+Preconditions: plan-status.html opened in browser
+Steps:
+  1. Click each tab in sequence
+  2. Observe the active tab's visual treatment vs. inactive tabs
+Expected Result: Active tab has a filled coloured background (violet pill/capsule); inactive tabs show plain text with hover highlight; no border-b-2 underline indicator on any tab
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0131: Tab active pill style updates correctly on navigation; localStorage persistence works
+Related Story: US-0043
+Related Task:
+Related AC: AC-0128
+Type: Functional
+Preconditions: plan-status.html opened; localStorage cleared
+Steps:
+  1. Click the Costs tab; reload page
+  2. Verify Costs tab is still active (restored from localStorage)
+  3. Verify the filled pill highlight is on Costs tab after reload
+Expected Result: Active tab pill moves correctly on each click; reloading restores the correct tab with the pill on the right button
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0132: Story cards in card view scale up subtly on hover
+Related Story: US-0044
+Related Task:
+Related AC: AC-0129
+Type: Visual / Interactive
+Preconditions: plan-status.html opened; Hierarchy tab in Card view
+Steps:
+  1. Hover over a story card
+  2. Observe the card transform
+Expected Result: Card scales to approximately 1.02× on hover with a smooth 150ms transition; card returns to original scale on mouse-out; no layout shift in surrounding cards
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0133: Top-bar stat tiles lift on hover via translate-y transform
+Related Story: US-0044
+Related Task:
+Related AC: AC-0130
+Type: Visual / Interactive
+Preconditions: plan-status.html opened
+Steps:
+  1. Hover over each stat tile (Projected, AI Actual, Coverage) in the top bar
+  2. Observe the tile motion
+Expected Result: Each tile lifts upward by ~2px (translate-y -0.5) on hover with a smooth 150ms transition; tile returns to original position on mouse-out
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0134: Project title renders at text-4xl font-black tracking-tight on desktop
+Related Story: US-0045
+Related Task:
+Related AC: AC-0131
+Type: Visual
+Preconditions: plan-status.html opened on viewport ≥ 768px
+Steps:
+  1. Inspect the h1 element in the top bar via DevTools
+  2. Check font-size, font-weight, and letter-spacing
+Expected Result: h1 has font-size ≥ 2.25rem (36px), font-weight 900 (black), letter-spacing tight; visually larger and bolder than before
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0135: Epic IDs, kanban column titles, and table headers use uppercase tracking-widest label style
+Related Story: US-0045
+Related Task:
+Related AC: AC-0132
+Type: Visual
+Preconditions: plan-status.html opened; visit Hierarchy, Kanban, and Costs tabs
+Steps:
+  1. Inspect epic ID labels (e.g. EPIC-0001) in the Hierarchy column view
+  2. Inspect kanban column headings (To Do, Planned, etc.)
+  3. Inspect table column headers on Costs and Bugs tabs
+Expected Result: All section labels appear in UPPERCASE with wide letter-spacing (tracking-widest) and xs/semibold weight, creating clear visual separation from body text
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0136: Dot-grid texture is visible on dark mode page background
+Related Story: US-0046
+Related Task:
+Related AC: AC-0133
+Type: Visual
+Preconditions: plan-status.html opened in dark mode
+Steps:
+  1. Zoom into an empty area of the page background (between panels)
+  2. Inspect computed background-image on body or wrapper element
+Expected Result: A subtle repeating dot pattern is visible on close inspection; background-image contains a radial-gradient at ~24px intervals; the dots are faint (≤ 5% opacity) and do not distract from content
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0137: Dot-grid is absent in light mode and hidden in print styles
+Related Story: US-0046
+Related Task:
+Related AC: AC-0134
+Type: Visual / Print
+Preconditions: plan-status.html loaded in both themes; browser print preview accessible
+Steps:
+  1. Switch to light mode; verify dot grid is invisible or not present
+  2. Open print preview (Ctrl+P); verify background texture does not appear in print output
+Expected Result: Dot grid is imperceptible in light mode; @media print suppresses the background-image so printed output is clean
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0138: Each epic block has a distinct left-border accent line in Hierarchy column view
+Related Story: US-0047
+Related Task:
+Related AC: AC-0135
+Type: Visual
+Preconditions: plan-status.html opened; Hierarchy tab in Column view; multiple epics present
+Steps:
+  1. Observe each epic block in the Hierarchy column view
+  2. Verify each has a visible left border in a distinct accent colour
+  3. Verify colours cycle correctly if there are more epics than palette entries
+Expected Result: Each epic block has a border-l-4 left border in a unique colour from a predefined palette; if epics exceed palette size, colours cycle without two adjacent epics sharing the same colour
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:
+
+TC-0139: Epic header background is subtly tinted to match its left-border accent colour
+Related Story: US-0047
+Related Task:
+Related AC: AC-0136
+Type: Visual
+Preconditions: plan-status.html opened; Hierarchy tab in Column view
+Steps:
+  1. Inspect each epic header element via DevTools
+  2. Check background-color for a low-opacity tint matching the left-border accent
+Expected Result: Epic header has a very faint background tint (e.g. 10% opacity of the accent colour) that visually ties the header to its left border; story rows inside the epic retain the standard card background
+Actual Result:
+Status: [x] Pass
+Defect Raised: None
+Notes:

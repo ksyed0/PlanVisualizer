@@ -155,7 +155,7 @@ describe('renderHtml — badge fallback', () => {
       atRisk: { 'US-0001': { missingTCs: false, noBranch: false, failedTCNoBug: false, isAtRisk: false } },
     };
     const html = renderHtml(dataUnknown);
-    expect(html).toMatch(/bg-gray-100 text-gray-600/);
+    expect(html).toMatch(/border-\[#475569\].*bg-\[#0f1520\]/s);
   });
 });
 
