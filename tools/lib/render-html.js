@@ -239,7 +239,7 @@ function renderHierarchyTab(data) {
       <div id="epic-stories-${epic.id}">${storyRows || '<p class="text-slate-500 dark:text-slate-400 text-sm px-4 py-2">No stories yet.</p>'}</div>
     </div>`).join('');
 
-  const cardView = epicBlocks.map(({ epic, accent, storyCards, epicHeader }) => `
+  const cardView = epicBlocks.map(({ accent, storyCards, epicHeader }) => `
     <div class="mb-8">
       <div class="epic-block border border-slate-200 dark:border-slate-700 rounded-t-lg px-4 py-3 mb-0" style="border-left:4px solid ${accent.border};background:${accent.bg}">
         ${epicHeader}
@@ -1225,9 +1225,9 @@ function renderPrintCSS() {
   html.dark .scroll-table table thead { background-color: transparent; }
   html.dark table tbody tr { border-color: var(--clr-border) !important; }
   html.dark .bg-white { background-color: var(--clr-panel-bg) !important; }
-  html.dark .dark\:bg-slate-800 { background-color: var(--clr-panel-bg) !important; }
-  html.dark .dark\:bg-slate-700 { background-color: var(--clr-surface-raised) !important; }
-  html.dark .border-slate-200, html.dark .dark\:border-slate-700, html.dark .dark\:border-slate-600 { border-color: var(--clr-border) !important; }
+  html.dark .dark\\:bg-slate-800 { background-color: var(--clr-panel-bg) !important; }
+  html.dark .dark\\:bg-slate-700 { background-color: var(--clr-surface-raised) !important; }
+  html.dark .border-slate-200, html.dark .dark\\:border-slate-700, html.dark .dark\\:border-slate-600 { border-color: var(--clr-border) !important; }
   html.dark .text-slate-700, html.dark .text-slate-600 { color: var(--clr-text-primary) !important; }
   html.dark .text-slate-500 { color: var(--clr-text-muted) !important; }
   html.dark h3 { color: var(--clr-text-primary) !important; }
