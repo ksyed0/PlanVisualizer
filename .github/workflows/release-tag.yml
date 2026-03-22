@@ -1,0 +1,43 @@
+name: Release Tag
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+jobs:
+  tag:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Read version and create release tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="v$(jq -r .version package.json)"
+          echo "Tagging main as $VERSION"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Skip if tag already exists
+          if git ls-remote --tags origin "$VERSION" | grep -q "$VERSION"; then
+            echo "Tag $VERSION already exists — skipping."
+            exit 0
+          fi
+
+          git tag -a "$VERSION" -m "Release $VERSION"
+          git push origin "$VERSION"
+
+          gh release create "$VERSION" \
+            --title "Release $VERSION" \
+            --generate-notes \
+            --target main
