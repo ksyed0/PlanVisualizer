@@ -86,7 +86,7 @@ npm run plan:test
 npm run plan:test:coverage
 ```
 
-The Claude Code stop hook (`tools/capture-cost.js`) appends session token usage and cost to `AI_COST_LOG.md` automatically after every Claude Code session.
+The Claude Code Stop hook (`tools/capture-cost.js`) appends session token usage and cost to `AI_COST_LOG.md` automatically at the end of every Claude Code session. It reads token counts from the JSONL transcript at `~/.claude/projects/<project>/<session_id>.jsonl` (using the `transcript_path` provided in the Stop hook stdin, with a glob fallback) and computes cost from per-type rates. The "Input Tokens" column includes both direct input and cache-write tokens.
 
 ### Continuous Deployment
 
