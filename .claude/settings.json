@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /Users/Kamal_Syed/Projects/PlanVisualizer/tools/capture-cost.js",
+            "timeout": 10,
+            "statusMessage": "Capturing session cost..."
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -5,8 +5,7 @@
 #   bash /path/to/PlanVisualizer/scripts/install.sh [TARGET_DIR]
 #
 # If TARGET_DIR is omitted the current directory is used.
-# Idempotent for steps 1–4. Step 5 (.claude/settings.json) only creates the file
-# on first run; if it already exists, the Stop hook must be added manually.
+# Idempotent — all steps including the Stop hook merge are safe to re-run.
 
 set -euo pipefail
 
@@ -109,27 +108,39 @@ fi
 SETTINGS_DIR="${TARGET}/.claude"
 SETTINGS_FILE="${SETTINGS_DIR}/settings.json"
 mkdir -p "$SETTINGS_DIR"
-if [ ! -f "$SETTINGS_FILE" ]; then
-  cat > "$SETTINGS_FILE" <<'JSON'
-{
-  "hooks": {
-    "Stop": [
-      {
-        "matcher": "",
-        "hooks": [
-          { "type": "command", "command": "node tools/capture-cost.js" }
-        ]
-      }
-    ]
+node - <<'JS' "$SETTINGS_FILE"
+const fs = require('fs');
+const path = require('path');
+const filePath = process.argv[2];
+
+let settings = {};
+if (fs.existsSync(filePath)) {
+  try { settings = JSON.parse(fs.readFileSync(filePath, 'utf8')); } catch (e) {
+    console.error('[install] Warning: could not parse ' + filePath + ' — skipping hook merge.');
+    process.exit(0);
   }
 }
-JSON
-  echo "[install] Created ${SETTINGS_FILE} with Stop hook."
-else
-  echo "[install] ${SETTINGS_FILE} already exists."
-  echo "[install] Add this Stop hook manually if not present:"
-  echo '  { "type": "command", "command": "node tools/capture-cost.js" }'
-fi
+
+settings.hooks = settings.hooks || {};
+settings.hooks.Stop = settings.hooks.Stop || [];
+
+const hookCmd = 'node tools/capture-cost.js';
+const alreadyPresent = settings.hooks.Stop.some(
+  entry => (entry.hooks || []).some(h => h.type === 'command' && h.command === hookCmd)
+);
+
+if (alreadyPresent) {
+  console.log('[install] Stop hook already present in ' + path.basename(filePath) + ' — skipping.');
+  process.exit(0);
+}
+
+settings.hooks.Stop.push({
+  hooks: [{ type: 'command', command: hookCmd }]
+});
+
+fs.writeFileSync(filePath, JSON.stringify(settings, null, 2) + '\n', 'utf8');
+console.log('[install] Merged Stop hook into ' + filePath);
+JS
 
 echo ""
 echo "[install] Done. Next steps:"

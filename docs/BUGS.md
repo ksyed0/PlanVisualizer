@@ -4,6 +4,30 @@ Append-only defect log. Never delete entries. Mark resolved bugs as Fixed or Clo
 
 ---
 
+BUG-0056: Stop hook never registered — all session costs missing from AI_COST_LOG.md
+Severity: Medium
+Related Story: US-0012 (capture-cost)
+Steps to Reproduce:
+  1. Fresh clone or install of PlanVisualizer
+  2. Run any Claude Code session
+  3. Check docs/AI_COST_LOG.md — no new rows appended automatically
+Expected: Each session appends a cost row to AI_COST_LOG.md via the Stop hook
+Actual: No rows appended; all existing rows are manually estimated ([est])
+Root Cause: install.sh only created .claude/settings.json if the file was absent.
+  When settings.json already existed (or was never created for the PlanVisualizer
+  repo itself), the Stop hook was silently skipped with a manual instruction only.
+Status: Fixed
+Fix Branch: chore/fix-version-workflows
+Fix Summary:
+  1. Created .claude/settings.json with the Stop hook registered
+  2. Updated scripts/install.sh step 5 to merge the Stop hook into an existing
+     settings.json using node, rather than printing a manual instruction
+  3. Updated README.md to reflect that the install script handles the merge
+  4. Removed redundant manual hook instruction from the Claude Code install prompt
+Estimated Cost USD: 0.05
+
+---
+
 BUG-0001: Lines Cov and Branch Cov badges show N/A
 Severity: High
 Related Story: US-0016
