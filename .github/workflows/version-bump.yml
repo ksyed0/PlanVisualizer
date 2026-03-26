@@ -39,4 +39,4 @@ jobs:
             --body "Automated patch version bump triggered by merged PR." \
             --base develop \
             --head "$BUMP_BRANCH"
-          gh pr merge "$BUMP_BRANCH" --squash --admin
+          gh pr merge "$BUMP_BRANCH" --squash --auto
