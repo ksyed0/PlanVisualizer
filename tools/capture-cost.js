@@ -104,7 +104,7 @@ async function main() {
   const sessionId = data.session_id || `sess_${Date.now()}`;
   const gitBranch = data.gitBranch || null;
 
-  // Resolve transcript path — prefer what the hook provides, fall back to glob by session ID
+  // Resolve transcript path — prefer what the hook provides, fall back to fs search by session ID
   let transcriptPath = data.transcript_path || null;
   if (!transcriptPath && sessionId) {
     try {
