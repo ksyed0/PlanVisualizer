@@ -4,7 +4,8 @@ Append-only ledger of AI session costs. Never edit or delete rows.
 Updated automatically by the Claude Code stop hook (`tools/capture-cost.js`).
 
 Rows marked `[est]` are manually estimated for sessions that predate the capture-cost hook.
-Pricing basis: Claude Sonnet 4.6 — Input $3/MTok · Output $15/MTok · Cache Read $0.30/MTok
+Pricing basis: Claude Sonnet 4.6 — Input $3/MTok · Cache Write $3.75/MTok · Output $15/MTok · Cache Read $0.30/MTok
+Input Tokens column = direct input + cache-write tokens; cost computed with distinct rates internally.
 
 ---
 

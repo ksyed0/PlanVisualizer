@@ -4,6 +4,49 @@ Append-only defect log. Never delete entries. Mark resolved bugs as Fixed or Clo
 
 ---
 
+BUG-0056: capture-cost.js produces all-zero rows — session costs never captured
+Severity: Medium
+Related Story: US-0012 (capture-cost)
+Steps to Reproduce:
+  1. Install PlanVisualizer and register the Stop hook in .claude/settings.json
+  2. Run any Claude Code session
+  3. Check docs/AI_COST_LOG.md — new rows appended but all token counts and cost are 0
+Expected: Each session appends a cost row with real token counts and cost
+Actual: Rows appended with 0 | 0 | 0 | 0.0000 for all numeric fields
+Root Cause (two-part):
+  Part A — Hook not registered: install.sh only created .claude/settings.json when
+    the file was absent. When settings.json already existed the Stop hook was silently
+    skipped with a manual instruction only.
+  Part B — Script reads wrong data source: capture-cost.js read cost_usd and usage
+    from stdin, but the Claude Code Stop hook stdin payload only contains session
+    metadata (session_id, transcript_path, cwd, gitBranch). Token usage and cost are
+    NOT included in the Stop hook stdin. The script always received zeroes.
+    The actual token data lives in the JSONL transcript at
+    ~/.claude/projects/<project>/<session_id>.jsonl inside each assistant message's
+    usage object — but cost_usd is absent there too (Anthropic does not expose
+    per-message cost in transcripts); cost must be computed from token counts.
+Status: Fixed
+Fix Branch: chore/fix-version-workflows
+Fix Summary:
+  Part A fixes:
+    1. Created .claude/settings.json with the Stop hook registered
+    2. Updated scripts/install.sh step 5 to merge the Stop hook into an existing
+       settings.json using node (idempotent), rather than printing a manual instruction
+    3. Updated README.md and install prompt accordingly
+  Part B fixes:
+    4. Rewrote capture-cost.js to resolve the transcript path (from transcript_path
+       in stdin, or via glob fallback ~/.claude/projects/*/<session_id>.jsonl)
+    5. Streams the JSONL and sums usage from assistant entries with output_tokens > 0
+       (skips streaming partial entries)
+    6. Computes cost using per-type rates: input $3/MTok, cache-write $3.75/MTok,
+       cache-read $0.30/MTok, output $15/MTok
+    7. Input Tokens column = input_tokens + cache_creation_input_tokens (both
+       input-side; cost uses their distinct rates internally)
+    8. Cleaned up the 5 all-zero rows appended during the broken session
+Estimated Cost USD: 0.10
+
+---
+
 BUG-0001: Lines Cov and Branch Cov badges show N/A
 Severity: High
 Related Story: US-0016

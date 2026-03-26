@@ -37,11 +37,11 @@ Paste this prompt directly into Claude Code in your target repo:
 Install the PlanVisualizer tool into this project from the ksyed0/PlanVisualizer
 GitHub repo. Clone it to a temp directory, run scripts/install.sh targeting this
 project root, create plan-visualizer.config.json with the correct project name and
-file paths for this project, add the .claude/settings.json Stop hook for
-capture-cost.js, copy the .github/workflows/plan-visualizer.yml workflow, run
-npm run plan:test from the repo root to confirm all suites pass, then commit all added
-files to the current branch. The install script will copy plan_visualizer.md into
-this project root and automatically update AGENTS.md with a reference to it.
+file paths for this project, copy the .github/workflows/plan-visualizer.yml workflow,
+run npm run plan:test from the repo root to confirm all suites pass, then commit all
+added files to the current branch. The install script will copy plan_visualizer.md
+into this project root, automatically update AGENTS.md with a reference to it, and
+merge the Claude Code Stop hook for capture-cost.js into .claude/settings.json.
 ```
 
 ---
@@ -86,7 +86,7 @@ npm run plan:test
 npm run plan:test:coverage
 ```
 
-The Claude Code stop hook (`tools/capture-cost.js`) appends session token usage and cost to `AI_COST_LOG.md` automatically after every Claude Code session.
+The Claude Code Stop hook (`tools/capture-cost.js`) appends session token usage and cost to `AI_COST_LOG.md` automatically at the end of every Claude Code session. It reads token counts from the JSONL transcript at `~/.claude/projects/<project>/<session_id>.jsonl` (using the `transcript_path` provided in the Stop hook stdin, with a glob fallback) and computes cost from per-type rates. The "Input Tokens" column includes both direct input and cache-write tokens.
 
 ### Continuous Deployment
 
@@ -114,11 +114,11 @@ If you prefer not to use the install script:
    "plan:generate": "node tools/generate-plan.js"
    ```
 4. Copy `plan-visualizer.config.example.json` to `plan-visualizer.config.json` and edit it
-5. Add to `.claude/settings.json`:
+5. Ensure `.claude/settings.json` contains the Stop hook (the install script does this automatically):
    ```json
    {
      "hooks": {
-       "Stop": [{ "matcher": "", "hooks": [{ "type": "command", "command": "node tools/capture-cost.js" }] }]
+       "Stop": [{ "hooks": [{ "type": "command", "command": "node tools/capture-cost.js" }] }]
      }
    }
    ```
