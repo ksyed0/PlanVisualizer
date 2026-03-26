@@ -109,9 +109,20 @@ async function main() {
   if (!transcriptPath && sessionId) {
     try {
       const claudeProjects = path.join(process.env.HOME || '', '.claude', 'projects');
-      const found = execSync(`ls "${claudeProjects}"/*/"${sessionId}.jsonl" 2>/dev/null || true`, { encoding: 'utf8' }).trim();
-      if (found) transcriptPath = found.split('\n')[0];
-    } catch { /* leave null */ }
+      if (fs.existsSync(claudeProjects) && fs.statSync(claudeProjects).isDirectory()) {
+        const projectDirs = fs.readdirSync(claudeProjects, { withFileTypes: true });
+        for (const entry of projectDirs) {
+          if (!entry.isDirectory()) continue;
+          const candidate = path.join(claudeProjects, entry.name, `${sessionId}.jsonl`);
+          if (fs.existsSync(candidate)) {
+            transcriptPath = candidate;
+            break;
+          }
+        }
+      }
+    } catch {
+      /* leave null */
+    }
   }
 
   const { inputTokens, cacheWriteTokens, cacheReadTokens, outputTokens } =
