@@ -81,3 +81,5 @@ Input Tokens column = direct input + cache-write tokens; cost computed with dist
 | 2026-03-22 | sess_0044-est | feature/US-0040-visual-design-overhaul | 220000 | 58000 | 160000 | 1.5930 |
 | 2026-03-22 | sess_0045-est | feature/US-0040-visual-design-overhaul | 180000 | 48000 | 140000 | 1.3020 |
 | 2026-03-26 | f655eb8e-96ab-4c4a-bdb6-ab0a6023ce09 | chore/fix-version-workflows | 365343 | 35439 | 18487655 | 7.4478 |
+| 2026-03-26 | f655eb8e-96ab-4c4a-bdb6-ab0a6023ce09 | chore/fix-version-workflows | 659702 | 43851 | 24053007 | 10.3474 |
+| 2026-03-28 | f655eb8e-96ab-4c4a-bdb6-ab0a6023ce09 | chore/fix-version-workflows | 795181 | 44787 | 24717113 | 11.0687 |

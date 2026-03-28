@@ -19,9 +19,20 @@ function parseCostLog(markdown) {
   return rows;
 }
 
-function aggregateCostByBranch(rows) {
-  const agg = {};
+function deduplicateSessions(rows) {
+  // The Stop hook fires on every turn, appending cumulative rows for the same session.
+  // Keep only the last row per session_id (the highest cumulative total).
+  const seen = new Map();
   for (const row of rows) {
+    seen.set(row.sessionId, row);
+  }
+  return Array.from(seen.values());
+}
+
+function aggregateCostByBranch(rows) {
+  const deduped = deduplicateSessions(rows);
+  const agg = {};
+  for (const row of deduped) {
     if (!agg[row.branch]) {
       agg[row.branch] = { inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, costUsd: 0, sessions: 0 };
     }
@@ -34,4 +45,4 @@ function aggregateCostByBranch(rows) {
   return agg;
 }
 
-module.exports = { parseCostLog, aggregateCostByBranch };
+module.exports = { parseCostLog, deduplicateSessions, aggregateCostByBranch };
