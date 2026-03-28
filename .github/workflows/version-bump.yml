@@ -32,10 +32,10 @@ jobs:
           git checkout -b "$BUMP_BRANCH"
           npm version patch --no-git-tag-version
           git add package.json package-lock.json
-          git commit -m "chore: bump patch version [skip ci]"
+          git commit -m "chore: bump patch version"
           git push origin "$BUMP_BRANCH"
           gh pr create \
-            --title "chore: bump patch version [skip ci]" \
+            --title "chore: bump patch version" \
             --body "Automated patch version bump triggered by merged PR." \
             --base develop \
             --head "$BUMP_BRANCH"

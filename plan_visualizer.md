@@ -139,21 +139,23 @@ Lesson IDs must be sequential and registered in `docs/ID_REGISTRY.md`.
 ## `docs/AI_COST_LOG.md`
 
 A markdown table appended automatically by the Claude Code Stop hook (`tools/capture-cost.js`).
+The hook reads token counts from the JSONL transcript and computes cost using per-type rates
+(input $3/MTok · cache-write $3.75/MTok · output $15/MTok · cache-read $0.30/MTok).
 **Do not edit the column order.** Add a header if the file is new:
 
 ```markdown
-| Date       | Session ID | Branch | Input | Output | Cache Read | Cost USD |
-|------------|------------|--------|-------|--------|------------|----------|
-| 2026-03-18 | abc123def  | main   | 1000  | 500    | 200        | 0.0150   |
+| Date       | Session ID | Branch | Input Tokens | Output Tokens | Cache Read Tokens | Cost USD |
+|------------|------------|--------|--------------|---------------|-------------------|----------|
+| 2026-03-18 | abc123def  | main   | 1000         | 500           | 200               | 0.0150   |
 ```
 
 Columns (positional, all required):
 1. `Date` — `YYYY-MM-DD`
 2. `Session ID` — short alphanumeric identifier (no spaces)
 3. `Branch` — current git branch at session end
-4. `Input` — input token count (integer)
-5. `Output` — output token count (integer)
-6. `Cache Read` — cache-read token count (integer)
+4. `Input Tokens` — direct input tokens + cache-write tokens (integer); cost uses distinct rates internally
+5. `Output Tokens` — output token count (integer)
+6. `Cache Read Tokens` — cache-read token count (integer)
 7. `Cost USD` — total session cost in USD (decimal)
 
 ---
