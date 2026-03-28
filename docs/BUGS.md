@@ -868,3 +868,18 @@ Status: Fixed
 Fix Branch: feature/US-0032-lessons-tab
 Lesson Encoded: No
 Estimated Cost USD: 0.25
+
+BUG-0057: aggregateCostByBranch inflates costs — same session counted multiple times
+Severity: Medium
+Related Story: US-0012
+Related Task: TASK-0009
+Steps to Reproduce:
+  1. Run a Claude Code session (Stop hook fires on every turn, appending cumulative rows to AI_COST_LOG.md)
+  2. Generate plan-status.html and open Costs tab
+  3. Observe AI cost for the branch — it is a multiple of the actual session cost
+Expected: Each session counted once; dashboard shows the final cumulative total for the session
+Actual: aggregateCostByBranch summed all rows naively — e.g. session f655eb8e had rows $7.45 + $10.35 + $11.07 = $28.87 reported instead of the correct $11.07
+Status: Fixed
+Fix Branch: fix/parse-cost-log-session-dedup
+Lesson Encoded: No
+Estimated Cost USD: 0.10
