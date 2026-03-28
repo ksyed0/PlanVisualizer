@@ -4,6 +4,21 @@ Running log of session activity, errors, test results, and blockers.
 
 ---
 
+## Session 10 — 2026-03-28
+
+### What Was Done
+- Fixed BUG-0057: `aggregateCostByBranch` inflated AI costs because Stop hook appends cumulative rows per turn for the same session. Added `deduplicateSessions()` to `parse-cost-log.js` — keeps only the last row per `session_id` (Map last-write-wins) before aggregating. Exported function and added 4 new tests.
+- Patched `brace-expansion` ReDoS vulnerability (GHSA-f886-m6hf-6m8v) via `npm audit fix`.
+- Merged PR #78 (`fix/parse-cost-log-session-dedup` → develop), closed stale PR #76, reconciled develop/main divergence (dependabot commits on main), merged PR #77 (develop → main).
+
+### Test Results
+- 175 tests pass (was 138 — 37 new tests added in prior sessions plus 4 this session).
+
+### Errors or Blockers
+- None.
+
+---
+
 ## Session 9 — 2026-03-18
 
 ### What Was Done

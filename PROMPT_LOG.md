@@ -4,6 +4,18 @@ Timestamped log of every user prompt across all sessions. Append-only. Never edi
 
 ---
 
+## Session 10 — 2026-03-28
+
+| # | Timestamp | Prompt |
+|---|-----------|--------|
+| 1 | 2026-03-28T00:00:00Z | for the cost logging issue, can't we extract token usage and estimate costs? |
+| 2 | 2026-03-28T00:10:00Z | do you need to clean up any data |
+| 3 | 2026-03-28T00:15:00Z | ok do you need to merge anything back to develop? |
+| 4 | 2026-03-28T00:20:00Z | yes |
+| 5 | 2026-03-28T00:30:00Z | update @docs/BUGS.md and close the session |
+
+---
+
 ## Session 9 — 2026-03-18
 
 | # | Timestamp | Prompt |
