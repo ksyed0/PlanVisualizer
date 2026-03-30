@@ -64,7 +64,7 @@ After installation, edit `plan-visualizer.config.json` in your project root:
 | `coverage.summaryPath` | `"docs/coverage/coverage-summary.json"` | Path to Jest `coverage-summary.json` |
 | `progress.path` | `"progress.md"` | Path to session progress log |
 | `costs.hourlyRate` | `100` | Hourly rate (USD) for projected cost estimates |
-| `costs.tshirtHours` | `{S:4, M:8, L:16, XL:32}` | Hours per t-shirt size estimate |
+| `costs.tshirtHours` | `{XS:2, S:4, M:8, L:16, XL:32}` | Hours per t-shirt size estimate |
 
 All paths are relative to the project root. If no config file is present, built-in defaults are used.
 

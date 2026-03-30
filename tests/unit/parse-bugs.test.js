@@ -26,6 +26,12 @@ describe('parseBugs', () => {
   });
 });
 
+describe('parseBugs — empty input', () => {
+  it('returns empty array for empty input', () => {
+    expect(parseBugs('')).toEqual([]);
+  });
+});
+
 describe('parseBugs — multiple bugs', () => {
   it('slices correctly between two bugs', () => {
     const md = `BUG-0002: First bug\nSeverity: Medium\nRelated Story: US-0001\nRelated Task:\nStatus: Open\nFix Branch: bugfix/BUG-0002\nLesson Encoded: No\n\nBUG-0003: Second bug\nSeverity: Low\nRelated Story: US-0002\nRelated Task:\nStatus: Fixed\nFix Branch: bugfix/BUG-0003\nLesson Encoded: Yes\n`;

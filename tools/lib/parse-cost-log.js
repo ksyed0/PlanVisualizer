@@ -4,7 +4,7 @@ function parseCostLog(markdown) {
   const rows = [];
   const lines = markdown.split('\n');
   for (const line of lines) {
-    const m = line.match(/^\|\s*(\d{4}-\d{2}-\d{2})\s*\|\s*(\S+)\s*\|\s*(\S+)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|\s*([\d.]+)\s*\|/);
+    const m = line.match(/^\|\s*(\d{4}-\d{2}-\d{2})\s*\|\s*(\S+)\s*\|\s*([^|]+?)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|\s*([\d.]+)\s*\|/);
     if (!m) continue;
     rows.push({
       date: m[1],
@@ -13,7 +13,7 @@ function parseCostLog(markdown) {
       inputTokens: parseInt(m[4], 10),
       outputTokens: parseInt(m[5], 10),
       cacheReadTokens: parseInt(m[6], 10),
-      costUsd: parseFloat(m[7]),
+      costUsd: parseFloat(m[7]) || 0,
     });
   }
   return rows;

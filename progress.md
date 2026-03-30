@@ -4,6 +4,96 @@ Running log of session activity, errors, test results, and blockers.
 
 ---
 
+## Session 13 — 2026-03-30
+
+### What Was Done
+- **US-0051**: Bug Fix Costs section in Costs tab now groups bugs by epic with collapsible accordion headers (both column and card views), matching the story costs section style
+- **US-0051**: All bug epic groups (Bugs tab + Bug Fix Costs) sorted ascending by epic ID; ungrouped bugs appear last
+- **US-0052**: All epic group sections (Hierarchy, Kanban, Costs, Bugs, Lessons, Traceability) now start collapsed by default (▶ arrow, hidden content)
+- **US-0052**: Traceability tab epic header refactored to match hierarchy style — `EPIC_ACCENT_COLORS` tinted bg, 4px left border, mono uppercase epic ID, status badge
+- Fixed Stories chip in header to exclude Retired stories from denominator (49/49 instead of 49/50)
+- Added `XS: 2` to default `tshirtHours` map in `generate-plan.js` to fix $0.00 projected cost for XS stories
+- Added 2 new tests covering multi-epic bug grouping sort comparator branches (BUG-0093 test describe)
+- Added US-0051 and US-0052 to `docs/RELEASE_PLAN.md`; updated `docs/ID_REGISTRY.md`
+
+### Test Results
+- 179 tests pass. Branch: 86.85%, Statement: 95.74%. Gate: ≥80% ✓
+
+### Errors or Blockers
+- None.
+
+---
+
+## Session 12 — 2026-03-30
+
+### What Was Done
+- Restored blue gradient header (`linear-gradient(135deg, #003087 0%, #0050b3 50%, #0066cc 100%)`)
+- Replaced pill stat chips with glassmorphic stat tiles (backdrop-filter: blur, rgba bg/border)
+- Topbar height raised from 56px → 72px; all dependent CSS updated
+- Added nav contrast: 3px active border-left, item separators (border-bottom on each nav-item), stronger active background
+- Fixed BUG-0060 through BUG-0074 in `render-html.js`:
+  - BUG-0060: 7th Lessons tab in test assertion
+  - BUG-0061: Removed dead `fgrp-type` code from `updateFilterBar()`
+  - BUG-0062: Removed duplicate `window.tailwind={}` before CDN load
+  - BUG-0063: Null guards in `applyFilters()` and `clearFilters()`
+  - BUG-0064/0071: Fixed `coveragePct` NaN in `renderChartsTab()`
+  - BUG-0066: Prefixed lesson IDs `lesson-col-${id}` / `lesson-card-${id}` to avoid duplicates
+  - BUG-0067: `esc(text)` added to `badge()` helper
+  - BUG-0069: Activity toggle top position fixed to 76px (clears 72px topbar)
+  - BUG-0072: Costs footer total now includes bug AI cost
+  - BUG-0073: "To Do" added to status filter dropdown
+  - BUG-0074: `esc()` on all `story.estimate` interpolations
+- Fixed BUG-0076 through BUG-0087 in library files (via parallel background agent):
+  - BUG-0076: `parse-coverage.js` per-field `.pct`+NaN guards
+  - BUG-0077: `parse-release-plan.js` epic regex `(.+)`→`(.*)`
+  - BUG-0078: `detect-at-risk.js` `!!` coerce `missingTCs` to boolean
+  - BUG-0079: `generate-plan.js` `package.json` try-catch
+  - BUG-0080: `compute-costs.js` `_totals` explanatory comment
+  - BUG-0081: `parse-progress.js` `parseInt(sessionNum, 10)`
+  - BUG-0082/0087: `parse-cost-log.js` branch regex + NaN guard
+  - BUG-0083: `parse-lessons.js` `matchAll` for multi-block context
+  - BUG-0084: `parse-release-plan.test.js` AC-TBD format test
+  - BUG-0086: `parse-bugs.test.js` empty-input test
+- Fixed 3 regression test assertions in `render-html.test.js` (lesson IDs, coverage tile class, 7-tab count)
+- Marked all BUG-0060–BUG-0087 as Fixed in `docs/BUGS.md`
+- Pushed to `feature/US-0048-ui-redesign-sidebar`, updated PR #83
+
+### Test Results
+- 177 tests pass. Statement: 96.55%, Branch: 82.01%. Gate: ≥80% ✓
+
+### Errors or Blockers
+- None.
+
+---
+
+## Session 11 — 2026-03-29
+
+### What Was Done
+- Implemented US-0048 (EPIC-0007): complete UI redesign in `tools/lib/render-html.js`
+  - Replaced horizontal tab bar with responsive vertical sidebar (200px desktop, 160px tablet portrait, 44px icon-only <768px)
+  - Rewrote topbar: neutral dark/white bar (removed blue gradient), 5 inline stat chips
+  - Bug chip conditional colour: red = Critical/High open, amber = Med/Low only, muted = 0 open
+  - Coverage chip turns red (`chip-danger`) when below 80% target
+  - Inline SVG Heroicons (Heroicons outline v2); no CDN dependency
+  - Responsive CSS: 4 tiers including foldable (`horizontal-viewport-segments: 2`), phone portrait (relative topbar), phone landscape compact (40px topbar)
+  - Kanban sticky column headers + per-column `overflow-y: auto` scroll zones
+  - ARIA: `<nav aria-label="Main navigation">`, `aria-current="page"`, `role="tabpanel"`, `aria-labelledby`, `aria-label` on filter inputs
+  - BUG-0058 fix: `githubUrl` validated to `https://` prefix only
+  - BUG-0059 fix: all IDs in `onclick` attrs wrapped with `esc()`
+  - Updated `showTab()` JS to manage `nav-active` + `aria-current`
+  - Updated `setStickyTop()` to handle fixed vs relative topbar across breakpoints
+  - Created design spec: `docs/superpowers/specs/2026-03-29-ui-redesign-design.md`
+- Fixed 2 test assertions to match new HTML structure
+- Opened PR #83 (feature/US-0048-ui-redesign-sidebar → develop)
+
+### Test Results
+- 175 tests pass. Statement coverage: 96.71%. Branch coverage: 81.91%. Gate: ≥80% ✓
+
+### Errors or Blockers
+- None.
+
+---
+
 ## Session 10 — 2026-03-28
 
 ### What Was Done
