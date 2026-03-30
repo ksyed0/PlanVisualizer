@@ -1,6 +1,7 @@
 'use strict';
 
 const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const jsEsc = s => String(s ?? '').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n');
 
 function badge(text) {
   const colors = {
@@ -194,7 +195,7 @@ function renderHierarchyTab(data) {
       return `
       <div class="story-row ml-6 border-l-2 border-slate-200 dark:border-slate-600 pl-4 py-2"
            data-epic="${story.epicId}" data-status="${story.status}" data-priority="${story.priority}">
-        <div class="flex flex-wrap items-center gap-2 cursor-pointer" onclick="toggleACs('${esc(story.id)}')">
+        <div class="flex flex-wrap items-center gap-2 cursor-pointer" onclick="toggleACs('${jsEsc(story.id)}')">
           <span class="font-mono text-xs text-slate-500 whitespace-nowrap">${story.id}</span>
           ${badge(story.status)} ${badge(story.priority)}
           <span class="text-sm font-medium">${esc(story.title)}</span>
@@ -225,15 +226,15 @@ function renderHierarchyTab(data) {
       return `
       <div class="story-row story-card-hover bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg p-3 flex flex-col gap-1"
            data-epic="${story.epicId}" data-status="${story.status}" data-priority="${story.priority}">
-        <div class="flex flex-wrap items-center gap-1 cursor-pointer" onclick="toggleCardACs('${esc(story.id)}')">
+        <div class="flex flex-wrap items-center gap-1 cursor-pointer" onclick="toggleCardACs('${jsEsc(story.id)}')">
           ${badge(story.status)} ${badge(story.priority)}
           <span class="font-mono text-xs text-slate-500 ml-1">${story.id}</span>
         </div>
-        <p class="text-sm font-medium dark:text-slate-100 leading-snug cursor-pointer" onclick="toggleCardACs('${esc(story.id)}')">${esc(story.title)}</p>
+        <p class="text-sm font-medium dark:text-slate-100 leading-snug cursor-pointer" onclick="toggleCardACs('${jsEsc(story.id)}')">${esc(story.title)}</p>
         <div class="flex items-center gap-2 mt-auto pt-1 text-xs text-slate-500 border-t border-slate-100 dark:border-slate-600">
           <span>${esc(story.estimate || '?')}</span>
           <span>${cost}</span>
-          ${acTotal ? `<span class="cursor-pointer" onclick="toggleCardACs('${esc(story.id)}')">${acDone}/${acTotal} ACs ▾</span>` : ''}
+          ${acTotal ? `<span class="cursor-pointer" onclick="toggleCardACs('${jsEsc(story.id)}')">${acDone}/${acTotal} ACs ▾</span>` : ''}
           <span class="ml-auto">${riskBadge}</span>
         </div>
         ${acTotal ? `<ul id="card-acs-${story.id}" class="hidden mt-1 pt-1 border-t border-slate-100 dark:border-slate-600 space-y-0.5">${acItems || '<li class="text-xs text-slate-500 pl-4">No ACs yet</li>'}</ul>` : ''}
@@ -254,7 +255,7 @@ function renderHierarchyTab(data) {
 
   const columnView = epicBlocks.map(({ epic, accent, epicProjected, storyRows }) => `
     <div class="epic-block mb-4 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden" style="border-left:4px solid ${accent.border}">
-      <div class="px-4 py-3 flex flex-wrap items-center gap-3 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('epic-stories-${esc(epic.id)}','epic-arrow-${esc(epic.id)}')">
+      <div class="px-4 py-3 flex flex-wrap items-center gap-3 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('epic-stories-${jsEsc(epic.id)}','epic-arrow-${jsEsc(epic.id)}')">
         <span id="epic-arrow-${esc(epic.id)}" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9654;</span>
         <span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${epic.id}</span>
         ${badge(epic.status)}
@@ -267,7 +268,7 @@ function renderHierarchyTab(data) {
 
   const cardView = epicBlocks.map(({ epic, accent, epicProjected, storyCards }) => `
     <div class="mb-8">
-      <div class="epic-block border border-slate-200 dark:border-slate-700 rounded-t-lg px-4 py-3 mb-0 cursor-pointer select-none" style="border-left:4px solid ${accent.border};background:${accent.bg}" onclick="toggleSection('epic-cards-${esc(epic.id)}','epic-card-arrow-${esc(epic.id)}')">
+      <div class="epic-block border border-slate-200 dark:border-slate-700 rounded-t-lg px-4 py-3 mb-0 cursor-pointer select-none" style="border-left:4px solid ${accent.border};background:${accent.bg}" onclick="toggleSection('epic-cards-${jsEsc(epic.id)}','epic-card-arrow-${jsEsc(epic.id)}')">
         <div class="flex flex-wrap items-center gap-3">
           <span id="epic-card-arrow-${esc(epic.id)}" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9654;</span>
           <span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${epic.id}</span>
@@ -408,7 +409,7 @@ function renderTraceabilityTab(data) {
       ? '<span class="inline-block px-1.5 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">Not Run</span>'
       : '';
     const epicHeader = `<tr class="cursor-pointer select-none" style="background:${accent.bg}"
-      onclick="(function(){var rows=document.querySelectorAll('[data-trace-epic=\\'${epic.id}\\']');var arr=document.getElementById('${epicRowId}-arrow');var collapsed=arr.textContent==='\\u25b6';rows.forEach(function(r){r.classList.toggle('hidden',!collapsed);});arr.textContent=collapsed?'\\u25bc':'\\u25b6';})()" >
+      onclick="toggleTraceEpic('${jsEsc(epic.id)}')" >
       <td colspan="${data.testCases.length + 1}" class="px-3 py-2" style="border-left:4px solid ${accent.border}">
         <div class="flex items-center gap-2 flex-wrap">
           <span id="${epicRowId}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9654;</span>
@@ -611,7 +612,7 @@ function renderCostsTab(data) {
     const epicAI = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).costUsd || 0), 0);
     const epicIn = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).inputTokens || 0), 0);
     const epicOut = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).outputTokens || 0), 0);
-    const ceid = `costs-ep-${epic.id}`;
+    const ceid = `costs-ep-${jsEsc(epic.id)}`;
     const storyRows = epicStories.map(story => {
       const projected = (data.costs[story.id] && data.costs[story.id].projectedUsd || 0);
       const ai = data.costs[story.id] || {};
@@ -734,7 +735,7 @@ function renderCostsTab(data) {
     }).join('');
     const epicProjTotal = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).projectedUsd || 0), 0);
     const epicAITotal   = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).costUsd || 0), 0);
-    const cceid = `costs-card-ep-${epic.id}`;
+    const cceid = `costs-card-ep-${jsEsc(epic.id)}`;
     const accent2 = EPIC_ACCENT_COLORS[data.epics.indexOf(epic) % EPIC_ACCENT_COLORS.length];
     return `<div class="mb-6 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden" style="border-left:4px solid ${accent2.border}">
       <div class="flex items-center gap-2 px-4 py-3 flex-wrap cursor-pointer select-none" style="background:${accent2.bg}" onclick="toggleSection('${cceid}','${cceid}-arrow')">
@@ -1271,6 +1272,14 @@ function renderScripts(data) {
     if (arr) arr.innerHTML = hidden ? '&#9654;' : '&#9660;';
   }
   function toggleEpic(id) { toggleSection('epic-stories-' + id, 'epic-arrow-' + id); }
+  function toggleTraceEpic(epicId) {
+    var rows = document.querySelectorAll('[data-trace-epic="' + epicId + '"]');
+    var arrow = document.getElementById('trace-epic-' + epicId + '-arrow');
+    if (!arrow) return;
+    var collapsed = arrow.textContent === '\u25b6';
+    rows.forEach(function(r) { r.classList.toggle('hidden', !collapsed); });
+    arrow.textContent = collapsed ? '\u25bc' : '\u25b6';
+  }
   function toggleKsw(id) {
     var body = document.getElementById(id + '-body');
     var arrow = document.getElementById(id + '-arrow');

@@ -121,3 +121,13 @@ Input Tokens column = direct input + cache-write tokens; cost computed with dist
 | 2026-03-30 | f655eb8e-96ab-4c4a-bdb6-ab0a6023ce09 | feature/US-0048-ui-redesign-sidebar | 3519239 | 329467 | 127251908 | 56.3129 |
 | 2026-03-30 | f655eb8e-96ab-4c4a-bdb6-ab0a6023ce09 | feature/US-0048-ui-redesign-sidebar | 3549630 | 339124 | 131809584 | 57.9390 |
 | 2026-03-30 | f655eb8e-96ab-4c4a-bdb6-ab0a6023ce09 | feature/US-0048-ui-redesign-sidebar | 3568348 | 340311 | 133105021 | 58.4156 |
+| 2026-03-30 | f655eb8e-96ab-4c4a-bdb6-ab0a6023ce09 | feature/US-0048-ui-redesign-sidebar | 3719858 | 343205 | 134048628 | 59.3102 |
+| 2026-03-30 | f655eb8e-96ab-4c4a-bdb6-ab0a6023ce09 | feature/US-0048-ui-redesign-sidebar | 3743662 | 352260 | 138239765 | 60.7926 |
+| 2026-03-30 | f655eb8e-96ab-4c4a-bdb6-ab0a6023ce09 | feature/US-0048-ui-redesign-sidebar | 3755747 | 357701 | 141693923 | 61.9558 |
+| 2026-03-30 | f655eb8e-96ab-4c4a-bdb6-ab0a6023ce09 | feature/US-0048-ui-redesign-sidebar | 3758943 | 358621 | 142598188 | 62.2528 |
+| 2026-03-30 | f655eb8e-96ab-4c4a-bdb6-ab0a6023ce09 | release/1.0.11 | 3775043 | 364941 | 145661120 | 63.3268 |
+| 2026-03-30 | f655eb8e-96ab-4c4a-bdb6-ab0a6023ce09 | release/1.0.11 | 3776095 | 365363 | 146217921 | 63.5041 |
+| 2026-03-30 | f655eb8e-96ab-4c4a-bdb6-ab0a6023ce09 | release/1.0.11 | 3779982 | 366392 | 146893165 | 63.7367 |
+| 2026-03-30 | f655eb8e-96ab-4c4a-bdb6-ab0a6023ce09 | release/1.0.11 | 3780269 | 366526 | 147121944 | 63.8084 |
+| 2026-03-30 | f655eb8e-96ab-4c4a-bdb6-ab0a6023ce09 | release/1.0.11 | 3780941 | 366694 | 147465467 | 63.9165 |
+| 2026-03-30 | f102be3a-dbfa-45ae-a702-d78e28c0cd41 | release/1.0.11 | 108032 | 1178 | 330303 | 0.5198 |
