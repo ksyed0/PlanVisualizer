@@ -117,17 +117,17 @@ Branch name in `AI_COST_LOG.md` row must exactly match `Branch:` field in story 
 
 ---
 
-## Project Completion Status (as of 2026-03-11)
+## Project Completion Status (as of 2026-03-30)
 
-All 5 EPICs Done. All 22 user stories Done. All 20 tasks Done. 57 TCs cover all 56 ACs. 19 bugs Fixed.
-The release plan (Release 1.1) is fully complete.
+7 EPICs, 52 active stories (49 Done, 1 In Progress, 2 Retired), 139 TCs, 89 bugs (all Fixed), 21 lessons.
+Current feature branch: `feature/US-0048-ui-redesign-sidebar` (EPIC-0007 UI overhaul, US-0048–US-0052).
 
 ---
 
 ## Coverage Thresholds
 
 Jest coverage gate: 80% lines, branches, functions, statements (all global).
-Current coverage (2026-03-16): 97.46% statements, 84.28% branches, 96.73% functions, 99.61% lines. 138 tests.
+Current coverage (2026-03-30): 95.74% statements, 86.85% branches, 95.88% functions, 97.71% lines. 179 tests.
 
 ---
 
@@ -179,3 +179,7 @@ Current coverage (2026-03-16): 97.46% statements, 84.28% branches, 96.73% functi
 - **Dual y-axes are required when Chart.js datasets differ by 3+ orders of magnitude.** Sharing one y-axis makes the smaller dataset sub-pixel. Use `yAxisID` on each dataset and define two separate `scales` entries (position: left / right). (L-0015, BUG-0024, 2026-03-16)
 - **Mobile layout: use `@media (max-width: 767px)` with `!important` to override Tailwind CDN utilities.** Tailwind CDN emits utility classes at runtime — inline `!important` overrides in a `<style>` block are needed to beat specificity. (L-0016, BUG-0020, 2026-03-16)
 - **Activity panel z-order: give the close button a higher z-index than the panel, or place it inside the panel.** The toggle button was at `z-50` but the panel covered it once opened. Fixed by adding a `×` button inside the panel header with `md:hidden`. (L-0017, BUG-0022, 2026-03-16)
+- **Bug status `Fixed (...)` strings must use prefix regex, not equality.** `!/^Fixed/i.test(b.status)` catches extended status strings like "Fixed (false positive — …)". Plain `=== 'Fixed'` would count those bugs as open. (BUG-0011, 2026-03-30)
+- **Default collapsed state: set `hidden` class on content elements + ▶ (&#9654;) on arrows in templates.** `toggleSection()` logic uses `classList.toggle('hidden')` and sets arrow based on resulting hidden state — no JS init code needed. Use `replace_all` on `&#9660;</span>` → `&#9654;</span>` to batch-change all template arrows without touching JS toggle logic. (Session 13, 2026-03-30)
+- **Sort epic groups in comparators: always put `_ungrouped` last.** Sort: `if (a === '_ungrouped') return 1; if (b === '_ungrouped') return -1; return a.localeCompare(b)`. Cover all comparator branches in tests by using data with 2 named epics + 1 ungrouped bug. (Session 13, 2026-03-30)
+- **Retired stories should be excluded from the Stories chip denominator.** Filter with `status !== 'Retired'` before counting Done/total. Retired work is abandoned scope, not incomplete work. (Session 13, 2026-03-30)

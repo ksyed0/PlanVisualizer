@@ -982,4 +982,25 @@ Acceptance Criteria:
   - [x] AC-0143: Kanban is restructured as a 2D CSS grid — Epic rows (Y) × Status columns (X) — where each swimlane header row spans the full board width and each cell contains stories matching that epic + status combination
   - [x] AC-0144: Clicking an epic swimlane header collapses/expands its story row (▼/▶ toggle) using toggleKsw(); collapsed state is reflected in the arrow indicator
 Dependencies: US-0049
+
+US-0051 (EPIC-0007): As a user, I want the Bug Fix Costs section in the Costs tab to group bugs by their related epic (collapsible, ascending order), so that bug remediation spend is visible in the same structure as story costs.
+Priority: Medium (P2)
+Estimate: S
+Status: Done
+Branch: feature/US-0048-ui-redesign-sidebar
+Acceptance Criteria:
+  - [x] AC-0145: Bug Fix Costs column view groups bugs into collapsible per-epic <tbody> sections with accent-coloured headers showing epic ID, title, count, and per-epic projected/AI/token totals
+  - [x] AC-0146: Bug Fix Costs card view groups bugs into collapsible bordered accordion blocks matching the story costs card view style
+  - [x] AC-0147: All bug epic groups (Bugs tab and Bug Fix Costs) are sorted in ascending epic ID order with ungrouped bugs appearing last
+Dependencies: US-0050
+
+US-0052 (EPIC-0007): As a user, I want all epic group sections to start collapsed by default, the traceability epic header to match the hierarchy style, and the Stories chip to exclude Retired stories, so that the dashboard loads in a clean compact state with consistent visuals.
+Priority: Medium (P2)
+Estimate: S
+Status: Done
+Branch: feature/US-0048-ui-redesign-sidebar
+Acceptance Criteria:
+  - [x] AC-0148: All epic group accordion sections across Hierarchy, Kanban, Costs, Bugs, Lessons, and Traceability tabs render with hidden content and ▶ arrow on initial page load
+  - [x] AC-0149: The Traceability tab epic header row uses EPIC_ACCENT_COLORS (tinted background, 4px coloured left border, mono uppercase epic ID, status badge) matching the Hierarchy tab epic header style
+Dependencies: US-0051
 ```

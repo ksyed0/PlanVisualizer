@@ -4,6 +4,26 @@ Running log of session activity, errors, test results, and blockers.
 
 ---
 
+## Session 13 — 2026-03-30
+
+### What Was Done
+- **US-0051**: Bug Fix Costs section in Costs tab now groups bugs by epic with collapsible accordion headers (both column and card views), matching the story costs section style
+- **US-0051**: All bug epic groups (Bugs tab + Bug Fix Costs) sorted ascending by epic ID; ungrouped bugs appear last
+- **US-0052**: All epic group sections (Hierarchy, Kanban, Costs, Bugs, Lessons, Traceability) now start collapsed by default (▶ arrow, hidden content)
+- **US-0052**: Traceability tab epic header refactored to match hierarchy style — `EPIC_ACCENT_COLORS` tinted bg, 4px left border, mono uppercase epic ID, status badge
+- Fixed Stories chip in header to exclude Retired stories from denominator (49/49 instead of 49/50)
+- Added `XS: 2` to default `tshirtHours` map in `generate-plan.js` to fix $0.00 projected cost for XS stories
+- Added 2 new tests covering multi-epic bug grouping sort comparator branches (BUG-0093 test describe)
+- Added US-0051 and US-0052 to `docs/RELEASE_PLAN.md`; updated `docs/ID_REGISTRY.md`
+
+### Test Results
+- 179 tests pass. Branch: 86.85%, Statement: 95.74%. Gate: ≥80% ✓
+
+### Errors or Blockers
+- None.
+
+---
+
 ## Session 12 — 2026-03-30
 
 ### What Was Done
