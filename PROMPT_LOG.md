@@ -4,6 +4,16 @@ Timestamped log of every user prompt across all sessions. Append-only. Never edi
 
 ---
 
+## Session 12 — 2026-03-30
+
+| # | Timestamp | Prompt |
+|---|-----------|--------|
+| 1 | 2026-03-30T00:00:00Z | [Context carry-over from Session 11] can you generate the dashboard from the branch |
+| 2 | 2026-03-30T00:05:00Z | I preferred the gradients in the header and the larger glassmorphic stats / fix all the open bugs in @docs/BUGS.md |
+| 3 | 2026-03-30T00:10:00Z | also I prefer a little more contrast in the left nav area |
+
+---
+
 ## Session 11 — 2026-03-29
 
 | # | Timestamp | Prompt |

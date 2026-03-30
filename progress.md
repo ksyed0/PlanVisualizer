@@ -4,6 +4,48 @@ Running log of session activity, errors, test results, and blockers.
 
 ---
 
+## Session 12 — 2026-03-30
+
+### What Was Done
+- Restored blue gradient header (`linear-gradient(135deg, #003087 0%, #0050b3 50%, #0066cc 100%)`)
+- Replaced pill stat chips with glassmorphic stat tiles (backdrop-filter: blur, rgba bg/border)
+- Topbar height raised from 56px → 72px; all dependent CSS updated
+- Added nav contrast: 3px active border-left, item separators (border-bottom on each nav-item), stronger active background
+- Fixed BUG-0060 through BUG-0074 in `render-html.js`:
+  - BUG-0060: 7th Lessons tab in test assertion
+  - BUG-0061: Removed dead `fgrp-type` code from `updateFilterBar()`
+  - BUG-0062: Removed duplicate `window.tailwind={}` before CDN load
+  - BUG-0063: Null guards in `applyFilters()` and `clearFilters()`
+  - BUG-0064/0071: Fixed `coveragePct` NaN in `renderChartsTab()`
+  - BUG-0066: Prefixed lesson IDs `lesson-col-${id}` / `lesson-card-${id}` to avoid duplicates
+  - BUG-0067: `esc(text)` added to `badge()` helper
+  - BUG-0069: Activity toggle top position fixed to 76px (clears 72px topbar)
+  - BUG-0072: Costs footer total now includes bug AI cost
+  - BUG-0073: "To Do" added to status filter dropdown
+  - BUG-0074: `esc()` on all `story.estimate` interpolations
+- Fixed BUG-0076 through BUG-0087 in library files (via parallel background agent):
+  - BUG-0076: `parse-coverage.js` per-field `.pct`+NaN guards
+  - BUG-0077: `parse-release-plan.js` epic regex `(.+)`→`(.*)`
+  - BUG-0078: `detect-at-risk.js` `!!` coerce `missingTCs` to boolean
+  - BUG-0079: `generate-plan.js` `package.json` try-catch
+  - BUG-0080: `compute-costs.js` `_totals` explanatory comment
+  - BUG-0081: `parse-progress.js` `parseInt(sessionNum, 10)`
+  - BUG-0082/0087: `parse-cost-log.js` branch regex + NaN guard
+  - BUG-0083: `parse-lessons.js` `matchAll` for multi-block context
+  - BUG-0084: `parse-release-plan.test.js` AC-TBD format test
+  - BUG-0086: `parse-bugs.test.js` empty-input test
+- Fixed 3 regression test assertions in `render-html.test.js` (lesson IDs, coverage tile class, 7-tab count)
+- Marked all BUG-0060–BUG-0087 as Fixed in `docs/BUGS.md`
+- Pushed to `feature/US-0048-ui-redesign-sidebar`, updated PR #83
+
+### Test Results
+- 177 tests pass. Statement: 96.55%, Branch: 82.01%. Gate: ≥80% ✓
+
+### Errors or Blockers
+- None.
+
+---
+
 ## Session 11 — 2026-03-29
 
 ### What Was Done
