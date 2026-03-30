@@ -966,10 +966,20 @@ Dependencies: US-0047
 US-0049 (EPIC-0007): As a user, I want the Kanban board to group stories into Epic swimlanes within each status column, so that I can see how each epic is progressing across the board at a glance.
 Priority: Medium (P2)
 Estimate: S
-Status: Done
+Status: Retired
 Branch: feature/US-0048-ui-redesign-sidebar
 Acceptance Criteria:
   - [x] AC-0141: Each status column groups its stories by Epic, with a coloured swimlane header (10px uppercase, epic ID) and a matching left border using a per-epic accent colour from a fixed 8-colour palette
   - [x] AC-0142: Stories with no epicId are rendered ungrouped after all swimlane groups in the column
 Dependencies: US-0048
+
+US-0050 (EPIC-0007): As a user, I want the Kanban board to display Epic swimlane rows that span all status columns, with collapsible rows, so that I can see the full picture of an epic across all statuses and hide epics I'm not focused on.
+Priority: High (P1)
+Estimate: M
+Status: Done
+Branch: feature/US-0048-ui-redesign-sidebar
+Acceptance Criteria:
+  - [x] AC-0143: Kanban is restructured as a 2D CSS grid — Epic rows (Y) × Status columns (X) — where each swimlane header row spans the full board width and each cell contains stories matching that epic + status combination
+  - [x] AC-0144: Clicking an epic swimlane header collapses/expands its story row (▼/▶ toggle) using toggleKsw(); collapsed state is reflected in the arrow indicator
+Dependencies: US-0049
 ```
