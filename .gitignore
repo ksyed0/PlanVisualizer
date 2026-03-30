@@ -3,3 +3,4 @@ coverage/
 docs/coverage/
 docs/plan-status.html
 docs/plan-status.json
+.history/
