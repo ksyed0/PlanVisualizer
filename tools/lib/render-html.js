@@ -253,7 +253,8 @@ function renderHierarchyTab(data) {
 
   const columnView = epicBlocks.map(({ epic, accent, epicProjected, storyRows }) => `
     <div class="epic-block mb-4 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden" style="border-left:4px solid ${accent.border}">
-      <div class="px-4 py-3 flex flex-wrap items-center gap-3 cursor-pointer" style="background:${accent.bg}" onclick="toggleEpic('${esc(epic.id)}')">
+      <div class="px-4 py-3 flex flex-wrap items-center gap-3 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('epic-stories-${esc(epic.id)}','epic-arrow-${esc(epic.id)}')">
+        <span id="epic-arrow-${esc(epic.id)}" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9660;</span>
         <span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${epic.id}</span>
         ${badge(epic.status)}
         <span class="font-semibold dark:text-slate-100">${esc(epic.title)}</span>
@@ -263,12 +264,19 @@ function renderHierarchyTab(data) {
       <div id="epic-stories-${epic.id}">${storyRows || '<p class="text-slate-500 dark:text-slate-400 text-sm px-4 py-2">No stories yet.</p>'}</div>
     </div>`).join('');
 
-  const cardView = epicBlocks.map(({ accent, storyCards, epicHeader }) => `
+  const cardView = epicBlocks.map(({ epic, accent, epicProjected, storyCards }) => `
     <div class="mb-8">
-      <div class="epic-block border border-slate-200 dark:border-slate-700 rounded-t-lg px-4 py-3 mb-0" style="border-left:4px solid ${accent.border};background:${accent.bg}">
-        ${epicHeader}
+      <div class="epic-block border border-slate-200 dark:border-slate-700 rounded-t-lg px-4 py-3 mb-0 cursor-pointer select-none" style="border-left:4px solid ${accent.border};background:${accent.bg}" onclick="toggleSection('epic-cards-${esc(epic.id)}','epic-card-arrow-${esc(epic.id)}')">
+        <div class="flex flex-wrap items-center gap-3">
+          <span id="epic-card-arrow-${esc(epic.id)}" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9660;</span>
+          <span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${epic.id}</span>
+          ${badge(epic.status)}
+          <span class="font-semibold dark:text-slate-100">${esc(epic.title)}</span>
+          <span class="text-xs text-slate-500">${esc(epic.releaseTarget)}</span>
+          <span class="ml-auto text-sm text-slate-500">${usd(epicProjected)} projected</span>
+        </div>
       </div>
-      <div class="border border-t-0 border-slate-200 dark:border-slate-700 rounded-b-lg p-3">
+      <div id="epic-cards-${epic.id}" class="border border-t-0 border-slate-200 dark:border-slate-700 rounded-b-lg p-3">
         ${storyCards
           ? `<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">${storyCards}</div>`
           : '<p class="text-slate-500 dark:text-slate-400 text-sm">No stories yet.</p>'}
@@ -590,12 +598,14 @@ function renderCostsTab(data) {
   const totalProjected = data.stories.reduce((s, st) => s + (data.costs[st.id] && data.costs[st.id].projectedUsd || 0), 0);
 
   // ── Column view: stories table ──────────────────────────────────────────
-  const epicBlocks = data.epics.map(epic => {
+  const epicBlocks = data.epics.map((epic, epicIdx) => {
+    const accent = EPIC_ACCENT_COLORS[epicIdx % EPIC_ACCENT_COLORS.length];
     const epicStories = data.stories.filter(s => s.epicId === epic.id);
     const epicProjected = epicStories.reduce((s, st) => s + (data.costs[st.id] && data.costs[st.id].projectedUsd || 0), 0);
     const epicAI = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).costUsd || 0), 0);
     const epicIn = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).inputTokens || 0), 0);
     const epicOut = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).outputTokens || 0), 0);
+    const ceid = `costs-ep-${epic.id}`;
     const storyRows = epicStories.map(story => {
       const projected = (data.costs[story.id] && data.costs[story.id].projectedUsd || 0);
       const ai = data.costs[story.id] || {};
@@ -609,10 +619,11 @@ function renderCostsTab(data) {
         <td class="px-3 py-2 text-right text-xs text-slate-500 tokens-col">${fmtNum(ai.inputTokens || 0)} / ${fmtNum(ai.outputTokens || 0)}</td>
       </tr>`;
     }).join('');
-    return `
-    <tr class="bg-slate-50 dark:bg-slate-700 border-t-2 border-slate-300 dark:border-slate-600">
+    return `<tbody>
+    <tr class="border-t-2 border-slate-300 dark:border-slate-600 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('${ceid}','${ceid}-arrow')">
       <td colspan="4" class="px-3 py-2">
-        <span class="font-mono text-xs font-bold text-blue-600">${epic.id}</span>
+        <span id="${ceid}-arrow" class="text-slate-400 text-xs mr-2">&#9660;</span>
+        <span class="font-mono text-xs font-bold" style="color:${accent.border}">${epic.id}</span>
         <span class="text-sm font-semibold ml-2 text-slate-700 dark:text-slate-200">${esc(epic.title)}</span>
         <span class="ml-2">${badge(epic.status)}</span>
       </td>
@@ -620,7 +631,7 @@ function renderCostsTab(data) {
       <td class="px-3 py-2 text-right text-sm font-medium text-teal-700 dark:text-teal-400">${usd(epicAI)}</td>
       <td class="px-3 py-2 text-right text-xs text-slate-500 tokens-col">${fmtNum(epicIn)} / ${fmtNum(epicOut)}</td>
     </tr>
-    ${storyRows}`;
+    </tbody><tbody id="${ceid}">${storyRows}</tbody>`;
   }).join('');
 
   // ── Bug cost helpers (shared by column + card) ──────────────────────────
@@ -678,14 +689,19 @@ function renderCostsTab(data) {
     }).join('');
     const epicProjTotal = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).projectedUsd || 0), 0);
     const epicAITotal   = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).costUsd || 0), 0);
-    return `<div class="mb-6">
-      <div class="flex items-center gap-2 mb-3 flex-wrap">
-        <span class="font-mono text-xs font-bold text-blue-600">${epic.id}</span>
+    const cceid = `costs-card-ep-${epic.id}`;
+    const accent2 = EPIC_ACCENT_COLORS[data.epics.indexOf(epic) % EPIC_ACCENT_COLORS.length];
+    return `<div class="mb-6 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden" style="border-left:4px solid ${accent2.border}">
+      <div class="flex items-center gap-2 px-4 py-3 flex-wrap cursor-pointer select-none" style="background:${accent2.bg}" onclick="toggleSection('${cceid}','${cceid}-arrow')">
+        <span id="${cceid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9660;</span>
+        <span class="font-mono text-xs font-bold" style="color:${accent2.border}">${epic.id}</span>
         <span class="text-sm font-semibold text-slate-700 dark:text-slate-200">${esc(epic.title)}</span>
         ${badge(epic.status)}
         <span class="ml-auto text-xs text-slate-500">Proj ${usd(epicProjTotal)} · AI ${usd(epicAITotal)}</span>
       </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">${storyCards}</div>
+      <div id="${cceid}" class="p-3">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">${storyCards}</div>
+      </div>
     </div>`;
   }).join('');
 
@@ -819,7 +835,21 @@ function renderBugsTab(data) {
     return `<a href="#" onclick="showTab('lessons');setTimeout(function(){var colView=document.getElementById('lessons-column-view');var prefix=colView&&!colView.classList.contains('hidden')?'lesson-col-':'lesson-card-';var el=document.getElementById(prefix+'${lm[0]}');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});},50);return false;" class="text-blue-600 dark:text-blue-400 hover:underline font-mono text-xs whitespace-nowrap" title="View lesson ${lm[0]}">&#10003; ${lm[0]} &#8599;</a>`;
   };
 
-  const rows = data.bugs.map(bug => `
+  // Build story→epic map
+  const storyEpicMap = {};
+  data.stories.forEach(s => { storyEpicMap[s.id] = s.epicId; });
+
+  // Group bugs by epic
+  const bugEpicIds = [];
+  const bugsByEpic = {};
+  data.bugs.forEach(bug => {
+    const epicId = storyEpicMap[bug.relatedStory] || '_ungrouped';
+    if (!bugsByEpic[epicId]) { bugsByEpic[epicId] = []; bugEpicIds.push(epicId); }
+    bugsByEpic[epicId].push(bug);
+  });
+  const bugEpicOrder = [...new Set(bugEpicIds)];
+
+  const renderBugRow = bug => `
   <tr id="bug-row-${bug.id}" class="bug-row border-t border-slate-100 dark:border-slate-700" data-status="${bug.status}">
     <td class="px-3 py-2 font-mono text-xs whitespace-nowrap dark:text-slate-200">${bug.id}</td>
     <td class="px-3 py-2 text-sm dark:text-slate-200">${esc(bug.title)}</td>
@@ -828,9 +858,9 @@ function renderBugsTab(data) {
     <td class="px-3 py-2 text-xs text-slate-500 whitespace-nowrap">${esc(bug.relatedStory)}</td>
     <td class="px-3 py-2 text-xs text-slate-500">${esc(bug.fixBranch || '—')}</td>
     <td class="px-3 py-2 text-center text-xs dark:text-slate-200">${lessonCell(bug)}</td>
-  </tr>`).join('');
+  </tr>`;
 
-  const cards = data.bugs.map(bug => `
+  const renderBugCard = bug => `
   <div id="bug-card-${bug.id}" class="bug-row bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 flex flex-col gap-2" data-status="${bug.status}">
     <div class="flex items-center gap-2 flex-wrap">
       <span class="font-mono text-xs text-slate-500 whitespace-nowrap">${bug.id}</span>
@@ -844,7 +874,42 @@ function renderBugsTab(data) {
     <div class="flex items-center justify-between mt-1">
       <span class="text-xs text-slate-500">Lesson: <span class="dark:text-slate-200">${lessonCell(bug)}</span></span>
     </div>
-  </div>`).join('');
+  </div>`;
+
+  const bugColGroups = bugEpicOrder.map((epicId, i) => {
+    const bugs = bugsByEpic[epicId];
+    const epic = data.epics.find(e => e.id === epicId);
+    const accent = EPIC_ACCENT_COLORS[i % EPIC_ACCENT_COLORS.length];
+    const label = epic ? `${epicId}: ${esc(epic.title)}` : (epicId === '_ungrouped' ? 'No Epic' : epicId);
+    const beid = `bugs-ep-${epicId.replace(/[^a-zA-Z0-9]/g, '-')}`;
+    return `<tbody>
+    <tr class="border-t-2 border-slate-300 dark:border-slate-600 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('${beid}','${beid}-arrow')">
+      <td colspan="7" class="px-3 py-2">
+        <span id="${beid}-arrow" class="text-slate-400 text-xs mr-2">&#9660;</span>
+        <span class="font-mono text-xs font-bold" style="color:${accent.border}">${label}</span>
+        <span class="ml-2 text-xs text-slate-500">(${bugs.length})</span>
+      </td>
+    </tr>
+    </tbody><tbody id="${beid}">${bugs.map(renderBugRow).join('')}</tbody>`;
+  }).join('');
+
+  const bugCardGroups = bugEpicOrder.map((epicId, i) => {
+    const bugs = bugsByEpic[epicId];
+    const epic = data.epics.find(e => e.id === epicId);
+    const accent = EPIC_ACCENT_COLORS[i % EPIC_ACCENT_COLORS.length];
+    const label = epic ? `${epicId}: ${esc(epic.title)}` : (epicId === '_ungrouped' ? 'No Epic' : epicId);
+    const bceid = `bugs-card-ep-${epicId.replace(/[^a-zA-Z0-9]/g, '-')}`;
+    return `<div class="mb-6 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden" style="border-left:4px solid ${accent.border}">
+      <div class="flex items-center gap-2 px-4 py-3 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('${bceid}','${bceid}-arrow')">
+        <span id="${bceid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9660;</span>
+        <span class="font-mono text-xs font-bold" style="color:${accent.border}">${label}</span>
+        <span class="ml-1 text-xs text-slate-500">(${bugs.length})</span>
+      </div>
+      <div id="${bceid}" class="p-3">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">${bugs.map(renderBugCard).join('')}</div>
+      </div>
+    </div>`;
+  }).join('');
 
   return `
   <div id="tab-bugs" class="p-6 hidden tab-fill" role="tabpanel" aria-labelledby="tab-btn-bugs">
@@ -871,12 +936,12 @@ function renderBugsTab(data) {
             <th class="px-3 py-2">Branch</th><th class="px-3 py-2 text-center whitespace-nowrap" style="min-width:8rem">Lesson</th>
           </tr>
         </thead>
-        <tbody>${rows}</tbody>
+        ${bugColGroups}
       </table>
     </div>
 
-    <div id="bugs-card-view" class="hidden grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4" style="overflow-y:auto">
-      ${cards}
+    <div id="bugs-card-view" class="hidden" style="overflow-y:auto">
+      ${bugCardGroups}
     </div>
   </div>
   <script>
@@ -917,16 +982,35 @@ function renderLessonsTab(data) {
     return `<a href="#" onclick="showTab('bugs');setTimeout(function(){var el=document.getElementById('bug-row-${bugId}');if(el)el.scrollIntoView({behavior:'smooth',block:'center'});},50);return false;" class="text-blue-600 dark:text-blue-400 hover:underline font-mono text-xs">${bugId} ↗</a>`;
   };
 
-  const colRows = lessons.map(l => `
+  // Build lesson→epic grouping via lesson→bug→story→epic
+  const lessonStoryMap = {};
+  for (const bug of data.bugs) {
+    const m = bug.lessonEncoded && bug.lessonEncoded.match(/L-\d{4}/);
+    if (m) lessonStoryMap[m[0]] = bug.relatedStory;
+  }
+  const lessonStoryEpicMap = {};
+  data.stories.forEach(s => { lessonStoryEpicMap[s.id] = s.epicId; });
+
+  const lessonEpicIds = [];
+  const lessonsByEpic = {};
+  lessons.forEach(l => {
+    const storyId = lessonStoryMap[l.id];
+    const epicId = (storyId && lessonStoryEpicMap[storyId]) || '_ungrouped';
+    if (!lessonsByEpic[epicId]) { lessonsByEpic[epicId] = []; lessonEpicIds.push(epicId); }
+    lessonsByEpic[epicId].push(l);
+  });
+  const lessonEpicOrder = [...new Set(lessonEpicIds)];
+
+  const renderLessonRow = l => `
   <tr id="lesson-col-${l.id}" class="border-t border-slate-100 dark:border-slate-700 align-top">
     <td class="px-3 py-3 font-mono text-xs text-blue-600 dark:text-blue-400 whitespace-nowrap">${l.id}</td>
     <td class="px-3 py-3 text-sm text-slate-700 dark:text-slate-200">${esc(l.rule)}</td>
     <td class="px-3 py-3 text-sm text-slate-500 dark:text-slate-400 italic">${esc(l.context)}</td>
     <td class="px-3 py-3 text-xs text-slate-400 whitespace-nowrap">${l.date ? l.date.slice(0, 7) : '—'}</td>
     <td class="px-3 py-3 text-xs whitespace-nowrap">${bugRefLink(l.id)}</td>
-  </tr>`).join('');
+  </tr>`;
 
-  const cards = lessons.map(l => `
+  const renderLessonCard = l => `
   <div id="lesson-card-${l.id}" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 flex flex-col gap-2">
     <div class="flex items-center gap-2">
       <span class="font-mono text-xs font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap flex-shrink-0">${l.id}</span>
@@ -945,7 +1029,42 @@ function renderLessonsTab(data) {
       <span class="text-xs text-slate-400">${l.date ? l.date.slice(0, 7) : '—'}</span>
       <span class="text-xs text-slate-500">Bug ref: ${bugRefLink(l.id)}</span>
     </div>
-  </div>`).join('');
+  </div>`;
+
+  const lessonColGroups = lessonEpicOrder.map((epicId, i) => {
+    const ls = lessonsByEpic[epicId];
+    const epic = data.epics.find(e => e.id === epicId);
+    const accent = EPIC_ACCENT_COLORS[i % EPIC_ACCENT_COLORS.length];
+    const label = epic ? `${epicId}: ${esc(epic.title)}` : (epicId === '_ungrouped' ? 'No Epic' : epicId);
+    const leid = `lessons-ep-${epicId.replace(/[^a-zA-Z0-9]/g, '-')}`;
+    return `<tbody>
+    <tr class="border-t-2 border-slate-300 dark:border-slate-600 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('${leid}','${leid}-arrow')">
+      <td colspan="5" class="px-3 py-2">
+        <span id="${leid}-arrow" class="text-slate-400 text-xs mr-2">&#9660;</span>
+        <span class="font-mono text-xs font-bold" style="color:${accent.border}">${label}</span>
+        <span class="ml-2 text-xs text-slate-500">(${ls.length})</span>
+      </td>
+    </tr>
+    </tbody><tbody id="${leid}">${ls.map(renderLessonRow).join('')}</tbody>`;
+  }).join('');
+
+  const lessonCardGroups = lessonEpicOrder.map((epicId, i) => {
+    const ls = lessonsByEpic[epicId];
+    const epic = data.epics.find(e => e.id === epicId);
+    const accent = EPIC_ACCENT_COLORS[i % EPIC_ACCENT_COLORS.length];
+    const label = epic ? `${epicId}: ${esc(epic.title)}` : (epicId === '_ungrouped' ? 'No Epic' : epicId);
+    const lceid = `lessons-card-ep-${epicId.replace(/[^a-zA-Z0-9]/g, '-')}`;
+    return `<div class="mb-6 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden" style="border-left:4px solid ${accent.border}">
+      <div class="flex items-center gap-2 px-4 py-3 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('${lceid}','${lceid}-arrow')">
+        <span id="${lceid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9660;</span>
+        <span class="font-mono text-xs font-bold" style="color:${accent.border}">${label}</span>
+        <span class="ml-1 text-xs text-slate-500">(${ls.length})</span>
+      </div>
+      <div id="${lceid}" class="p-3">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">${ls.map(renderLessonCard).join('')}</div>
+      </div>
+    </div>`;
+  }).join('');
 
   return `
   <div id="tab-lessons" class="p-6 hidden tab-fill" role="tabpanel" aria-labelledby="tab-btn-lessons">
@@ -974,12 +1093,12 @@ function renderLessonsTab(data) {
             <th class="px-3 py-2 whitespace-nowrap">Bug Ref</th>
           </tr>
         </thead>
-        <tbody>${colRows}</tbody>
+        ${lessonColGroups}
       </table>
     </div>
 
-    <div id="lessons-card-view" class="hidden grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-      ${cards}
+    <div id="lessons-card-view" class="hidden" style="overflow-y:auto">
+      ${lessonCardGroups}
     </div>
   </div>
   <script>
@@ -1078,10 +1197,14 @@ function renderScripts(data) {
     localStorage.setItem('hierarchyView', v);
   }
 
-  function toggleEpic(id) {
-    const el = document.getElementById('epic-stories-' + id);
-    if (el) el.classList.toggle('hidden');
+  function toggleSection(contentId, arrowId) {
+    var el = document.getElementById(contentId);
+    var arr = document.getElementById(arrowId);
+    if (!el) return;
+    var hidden = el.classList.toggle('hidden');
+    if (arr) arr.innerHTML = hidden ? '&#9654;' : '&#9660;';
   }
+  function toggleEpic(id) { toggleSection('epic-stories-' + id, 'epic-arrow-' + id); }
   function toggleKsw(id) {
     var body = document.getElementById(id + '-body');
     var arrow = document.getElementById(id + '-arrow');
