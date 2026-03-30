@@ -143,7 +143,7 @@ describe('renderHtml — coverage below target', () => {
   it('renders red coverage when below 80%', () => {
     const dataLowCoverage = { ...sampleData, coverage: { lines: 70, overall: 70, meetsTarget: false } };
     const html = renderHtml(dataLowCoverage);
-    expect(html).toMatch(/FCA5A5/);
+    expect(html).toMatch(/chip chip-coverage chip-danger/);
   });
 });
 
@@ -272,7 +272,7 @@ describe('renderHtml — traceability with Not Run TC', () => {
 describe('renderHtml — sticky header (BUG-0004 regression)', () => {
   it('wraps header in a sticky container', () => {
     const html = renderHtml(sampleData);
-    expect(html).toContain('sticky top-0 z-30');
+    expect(html).toContain('id="topbar-fixed"');
   });
 });
 

@@ -35,57 +35,40 @@ function usd(n) {
 function fmtNum(n) { return Number(n).toLocaleString(); }
 
 function renderTopBar(data) {
-  const storyProjected = data.stories.reduce((s, st) => s + (data.costs[st.id] && data.costs[st.id].projectedUsd || 0), 0);
-  const bugProjected = Object.entries(data.costs._bugs || {})
-    .filter(([k]) => k !== '_totals')
-    .reduce((s, [, v]) => s + (v.projectedUsd || 0), 0);
-  const totalProjected = storyProjected + bugProjected;
   const bugAI = Object.entries(data.costs._bugs || {})
     .filter(([k, v]) => k !== '_totals' && v && !v.isEstimated)
     .reduce((s, [, v]) => s + (v.costUsd || 0), 0);
   const totalAI = (data.costs._totals.costUsd || 0) + bugAI;
   const done = data.stories.filter(s => s.status === 'Done').length;
   const inProgress = data.stories.filter(s => s.status === 'In Progress').length;
-  const pct = data.stories.length ? Math.round((done / data.stories.length) * 100) : 0;
   const cov = data.coverage;
   const covLabel = (cov.available !== false) ? `${cov.overall.toFixed(1)}%` : 'N/A';
-  const covClass = (cov.available !== false) ? (cov.meetsTarget ? 'text-green-400' : 'text-red-400') : 'text-slate-500';
-  const branchSubtitle = (cov.available !== false) ? `Branches: ${Number(cov.branches).toFixed(1)}%` : 'N/A';
+  const openBugs = (data.bugs || []).filter(b => b.status !== 'Fixed');
+  const critHighBugs = openBugs.filter(b => ['Critical', 'High'].includes(b.severity)).length;
+  const bugChipCls = openBugs.length === 0
+    ? 'chip chip-neutral'
+    : critHighBugs > 0 ? 'chip chip-danger' : 'chip chip-warning';
   const genAt = data.generatedAt;
   return `
-  <div class="text-white px-6 py-5 shadow-xl" id="top-bar"
-       style="background:linear-gradient(135deg,#003087 0%,#005EB8 55%,#0078C8 100%);backdrop-filter:blur(0px)">
-    <div class="flex flex-wrap gap-4 items-start justify-between">
-      <div class="min-w-0">
-        <div class="flex items-center gap-3 flex-wrap">
-          <h1 class="text-4xl font-black text-white tracking-tight topbar-title" style="text-shadow:0 2px 6px rgba(0,0,0,.4)">${esc(data.projectName)}</h1>
-          <button onclick="openAbout()" class="text-xs text-blue-100 border border-white/30 rounded px-2 py-0.5 hover:bg-white/15 hover:text-white transition-colors flex-shrink-0 backdrop-blur-sm">About</button>
-          <button onclick="toggleTheme()" id="theme-toggle" class="text-xs text-blue-100 border border-white/30 rounded px-2 py-0.5 hover:bg-white/15 hover:text-white transition-colors flex-shrink-0 backdrop-blur-sm" aria-label="Toggle dark/light mode"><span id="theme-icon">☀</span></button>
+  <header id="topbar-fixed">
+    <div class="topbar-inner">
+      <div class="topbar-project">
+        <div class="flex items-center gap-2 flex-wrap">
+          <h1 class="topbar-title">${esc(data.projectName)}</h1>
+          <button onclick="openAbout()" class="topbar-btn">About</button>
+          <button onclick="toggleTheme()" id="theme-toggle" class="topbar-btn" aria-label="Toggle dark/light mode"><span id="theme-icon">☀</span></button>
         </div>
-        <p class="text-blue-100/80 text-sm mt-0.5 topbar-tagline">${esc(data.tagline)}&nbsp;·&nbsp;Updated <span id="gen-time" data-iso="${genAt}"></span>&nbsp;·&nbsp;<code class="text-blue-200/60 text-xs">${data.commitSha}</code></p>
-        <div class="mt-2.5 flex items-center gap-2 topbar-progress">
-          <div class="rounded-full h-2 w-40 overflow-hidden" style="background:rgba(255,255,255,0.2)">
-            <div class="h-2 rounded-full" style="width:${pct}%;background:rgba(255,255,255,0.85)"></div>
-          </div>
-          <span class="text-xs text-blue-100/80">${done}/${data.stories.length} &middot; ${pct}%${inProgress ? ` &middot; ${inProgress} active` : ''}</span>
-        </div>
+        <p class="topbar-tagline">${esc(data.tagline)}&nbsp;·&nbsp;Updated <span id="gen-time" data-iso="${genAt}"></span>&nbsp;·&nbsp;<code class="font-mono" style="font-size:10px">${esc(data.commitSha)}</code></p>
       </div>
-      <div class="flex gap-3 flex-wrap topbar-stats">
-        <div class="rounded-xl px-4 py-3 text-center min-w-[80px] topbar-tile" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.22);backdrop-filter:blur(8px)">
-          <div class="text-xl font-bold text-white topbar-tile-num">${usd(totalProjected)}</div>
-          <div class="text-xs mt-0.5" style="color:rgba(255,255,255,0.65)">Projected</div>
-        </div>
-        <div class="rounded-xl px-4 py-3 text-center min-w-[80px] topbar-tile" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.22);backdrop-filter:blur(8px)">
-          <div class="text-xl font-bold text-white topbar-tile-num">${usd(totalAI)}</div>
-          <div class="text-xs mt-0.5" style="color:rgba(255,255,255,0.65)">AI Actual</div>
-        </div>
-        <div class="rounded-xl px-4 py-3 text-center min-w-[80px] topbar-tile" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.22);backdrop-filter:blur(8px)" aria-label="Coverage: ${covLabel} overall, ${branchSubtitle}">
-          <div class="text-2xl font-bold topbar-tile-num" style="color:${(cov.available !== false) ? (cov.meetsTarget ? '#6EE7B7' : '#FCA5A5') : 'rgba(255,255,255,0.5)'}">${covLabel}</div>
-          <div class="text-xs mt-0.5" style="color:rgba(255,255,255,0.65)">${branchSubtitle}</div>
-        </div>
+      <div class="topbar-chips">
+        <span class="chip" title="Stories done / total">&#128203; ${done}/${data.stories.length}</span>
+        <span class="chip" title="In Progress">&#9889; ${inProgress}</span>
+        <span class="${bugChipCls}" title="Open bugs">&#128027; ${openBugs.length}</span>
+        <span class="chip chip-coverage${(cov.available !== false && !cov.meetsTarget) ? ' chip-danger' : ''}" title="Line coverage: ${covLabel}">${covLabel}</span>
+        <span class="chip chip-cost font-mono" title="AI cost to date">${usd(totalAI)}</span>
       </div>
     </div>
-  </div>`;
+  </header>`;
 }
 
 function renderFilterBar(data) {
@@ -95,40 +78,63 @@ function renderFilterBar(data) {
   return `
   <div class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-2 flex flex-wrap gap-2 items-center hidden" id="filter-bar">
     <span id="fgrp-story" class="hidden flex-wrap gap-2 flex">
-      <select id="f-epic" onchange="applyFilters()" class="${sel}">
+      <select id="f-epic" onchange="applyFilters()" class="${sel}" aria-label="Filter by epic">
         <option value="">All Epics</option>${epicOptions}
       </select>
-      <select id="f-status" onchange="applyFilters()" class="${sel}">
+      <select id="f-status" onchange="applyFilters()" class="${sel}" aria-label="Filter by status">
         <option value="">All Statuses</option>
         <option>In Progress</option><option>Planned</option><option>Done</option><option>Blocked</option>
       </select>
-      <select id="f-priority" onchange="applyFilters()" class="${sel}">
+      <select id="f-priority" onchange="applyFilters()" class="${sel}" aria-label="Filter by priority">
         <option value="">All Priorities</option>
         <option>P0</option><option>P1</option><option>P2</option>
       </select>
     </span>
     <span id="fgrp-bug" class="hidden flex-wrap gap-2 flex">
-      <select id="f-bug-status" onchange="applyFilters()" class="${sel}">
+      <select id="f-bug-status" onchange="applyFilters()" class="${sel}" aria-label="Filter bugs by status">
         <option value="">All Statuses</option>
         <option>Open</option><option>In Progress</option><option>Fixed</option>
       </select>
     </span>
     <input id="f-search" oninput="applyFilters()" type="text" placeholder="Search IDs, titles…"
-      class="${sel} w-full sm:w-48 dark:placeholder-slate-400" />
+      class="${sel} w-full sm:w-48 dark:placeholder-slate-400" aria-label="Search stories and bugs" />
     <button onclick="clearFilters()" class="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 underline">Clear</button>
   </div>`;
 }
 
-function renderTabs() {
-  const tabs = ['Hierarchy','Kanban','Traceability','Charts','Costs','Bugs','Lessons'];
+function svgIcon(path) {
+  return `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="18" height="18" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="${path}"/></svg>`;
+}
+
+function renderSidebar() {
+  const items = [
+    { id: 'hierarchy',    label: 'Hierarchy',
+      path: 'M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z' },
+    { id: 'kanban',       label: 'Kanban',
+      path: 'M9 4.5v15m6-15v15m-10.875 0h15.75c.621 0 1.125-.504 1.125-1.125V5.625c0-.621-.504-1.125-1.125-1.125H4.125C3.504 4.5 3 5.004 3 5.625v12.75c0 .621.504 1.125 1.125 1.125z' },
+    { id: 'traceability', label: 'Traceability',
+      path: 'M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25' },
+    { id: 'charts',       label: 'Charts',
+      path: 'M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z' },
+    { id: 'costs',        label: 'Costs',
+      path: 'M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
+    { id: 'bugs',         label: 'Bugs',
+      path: 'M12 12.75c1.148 0 2.278.08 3.383.237 1.037.146 1.866.966 1.866 2.013 0 3.728-2.35 6.75-5.25 6.75S6.75 18.728 6.75 15c0-1.046.83-1.867 1.866-2.013A24.204 24.204 0 0112 12.75zm0 0c2.883 0 5.647.508 8.207 1.44a23.91 23.91 0 01-1.152 6.06M12 12.75c-2.883 0-5.647.508-8.208 1.44a23.916 23.916 0 001.153 6.06M12 12.75a2.25 2.25 0 002.248-2.354M12 12.75a2.25 2.25 0 01-2.248-2.354M12 8.25c.995 0 1.971-.08 2.922-.236.403-.066.74-.358.795-.762a3.778 3.778 0 00-.399-2.25M12 8.25c-.995 0-1.97-.08-2.922-.236-.402-.066-.74-.358-.795-.762a3.778 3.778 0 01.4-2.25m0 0a3.75 3.75 0 016.958.464M12 5.25a3.75 3.75 0 00-6.958.464' },
+    { id: 'lessons',      label: 'Lessons',
+      path: 'M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18' },
+  ];
   return `
-  <div class="border-b border-slate-700 bg-slate-800 px-4 py-2 flex gap-1 overflow-x-auto" id="tab-bar">
-    ${tabs.map((t, i) => `
-    <button onclick="showTab('${t.toLowerCase()}')" id="tab-btn-${t.toLowerCase()}"
-      class="px-3 py-1.5 text-xs font-semibold rounded-md flex-shrink-0 transition-colors ${i===0 ? 'tab-active' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}">
-      ${t}
-    </button>`).join('')}
-  </div>`;
+  <aside id="sidebar">
+    <nav id="sidebar-nav" aria-label="Main navigation">
+      ${items.map((item, i) => `
+      <button onclick="showTab('${item.id}')" id="tab-btn-${item.id}"
+        class="nav-item${i === 0 ? ' nav-active' : ''}"
+        ${i === 0 ? 'aria-current="page"' : ''}>
+        ${svgIcon(item.path)}
+        <span class="nav-label">${item.label}</span>
+      </button>`).join('')}
+    </nav>
+  </aside>`;
 }
 
 const EPIC_ACCENT_COLORS = [
@@ -169,7 +175,7 @@ function renderHierarchyTab(data) {
       return `
       <div class="story-row ml-6 border-l-2 border-slate-200 dark:border-slate-600 pl-4 py-2"
            data-epic="${story.epicId}" data-status="${story.status}" data-priority="${story.priority}">
-        <div class="flex flex-wrap items-center gap-2 cursor-pointer" onclick="toggleACs('${story.id}')">
+        <div class="flex flex-wrap items-center gap-2 cursor-pointer" onclick="toggleACs('${esc(story.id)}')">
           <span class="font-mono text-xs text-slate-500 whitespace-nowrap">${story.id}</span>
           ${badge(story.status)} ${badge(story.priority)}
           <span class="text-sm font-medium">${esc(story.title)}</span>
@@ -200,15 +206,15 @@ function renderHierarchyTab(data) {
       return `
       <div class="story-row story-card-hover bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg p-3 flex flex-col gap-1"
            data-epic="${story.epicId}" data-status="${story.status}" data-priority="${story.priority}">
-        <div class="flex flex-wrap items-center gap-1 cursor-pointer" onclick="toggleCardACs('${story.id}')">
+        <div class="flex flex-wrap items-center gap-1 cursor-pointer" onclick="toggleCardACs('${esc(story.id)}')">
           ${badge(story.status)} ${badge(story.priority)}
           <span class="font-mono text-xs text-slate-500 ml-1">${story.id}</span>
         </div>
-        <p class="text-sm font-medium dark:text-slate-100 leading-snug cursor-pointer" onclick="toggleCardACs('${story.id}')">${esc(story.title)}</p>
+        <p class="text-sm font-medium dark:text-slate-100 leading-snug cursor-pointer" onclick="toggleCardACs('${esc(story.id)}')">${esc(story.title)}</p>
         <div class="flex items-center gap-2 mt-auto pt-1 text-xs text-slate-500 border-t border-slate-100 dark:border-slate-600">
           <span>${story.estimate || '?'}</span>
           <span>${cost}</span>
-          ${acTotal ? `<span class="cursor-pointer" onclick="toggleCardACs('${story.id}')">${acDone}/${acTotal} ACs ▾</span>` : ''}
+          ${acTotal ? `<span class="cursor-pointer" onclick="toggleCardACs('${esc(story.id)}')">${acDone}/${acTotal} ACs ▾</span>` : ''}
           <span class="ml-auto">${riskBadge}</span>
         </div>
         ${acTotal ? `<ul id="card-acs-${story.id}" class="hidden mt-1 pt-1 border-t border-slate-100 dark:border-slate-600 space-y-0.5">${acItems || '<li class="text-xs text-slate-500 pl-4">No ACs yet</li>'}</ul>` : ''}
@@ -229,7 +235,7 @@ function renderHierarchyTab(data) {
 
   const columnView = epicBlocks.map(({ epic, accent, epicProjected, storyRows }) => `
     <div class="epic-block mb-4 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden" style="border-left:4px solid ${accent.border}">
-      <div class="px-4 py-3 flex flex-wrap items-center gap-3 cursor-pointer" style="background:${accent.bg}" onclick="toggleEpic('${epic.id}')">
+      <div class="px-4 py-3 flex flex-wrap items-center gap-3 cursor-pointer" style="background:${accent.bg}" onclick="toggleEpic('${esc(epic.id)}')">
         <span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${epic.id}</span>
         ${badge(epic.status)}
         <span class="font-semibold dark:text-slate-100">${esc(epic.title)}</span>
@@ -252,7 +258,7 @@ function renderHierarchyTab(data) {
     </div>`).join('');
 
   return `
-  <div id="tab-hierarchy" class="p-6">
+  <div id="tab-hierarchy" class="p-6" role="tabpanel" aria-labelledby="tab-btn-hierarchy">
     <div class="flex items-center justify-end mb-4 flex-shrink-0">
       <div class="flex gap-1">
         <button id="hier-col-btn" onclick="setHierarchyView('column')"
@@ -278,25 +284,28 @@ function renderKanbanTab(data) {
       col === 'To Do' ? s.status === 'To Do' : s.status === col
     );
     return `
-    <div class="kanban-col flex flex-col flex-1 min-w-48">
-      <h3 class="text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-2 pb-1 border-b border-slate-200 dark:border-slate-600 flex-shrink-0">${col} <span class="font-normal opacity-60">(${items.length})</span></h3>
-      <div class="kanban-col-body flex-1 overflow-y-auto">
+    <div class="kanban-col">
+      <div class="kanban-col-header">
+        <span class="text-xs font-semibold uppercase tracking-widest">${col}</span>
+        <span class="text-xs font-normal opacity-60 ml-1">(${items.length})</span>
+      </div>
+      <div class="kanban-col-body">
         ${items.map(s => `
         <div class="story-row story-card-hover bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded p-3 mb-2"
-             data-epic="${s.epicId}" data-status="${s.status}" data-priority="${s.priority}">
-          <div class="flex gap-1 mb-1">${badge(s.priority)} <span class="text-xs text-slate-500">${s.id}</span></div>
+             data-epic="${esc(s.epicId)}" data-status="${esc(s.status)}" data-priority="${esc(s.priority)}">
+          <div class="flex gap-1 mb-1">${badge(s.priority)} <span class="text-xs text-slate-500 font-mono">${esc(s.id)}</span></div>
           <p class="text-sm dark:text-slate-100">${esc(s.title)}</p>
-          <p class="text-xs text-slate-500 mt-1">${s.epicId} · ${s.estimate || '?'}</p>
+          <p class="text-xs text-slate-500 mt-1 font-mono">${esc(s.epicId)} · ${esc(s.estimate || '?')}</p>
         </div>`).join('')}
       </div>
     </div>`;
   }).join('');
-  return `<div id="tab-kanban" class="p-6 hidden tab-fill"><div class="flex gap-4 min-h-0 flex-1 overflow-x-auto">${colHtml}</div></div>`;
+  return `<div id="tab-kanban" class="p-6 hidden tab-fill" role="tabpanel" aria-labelledby="tab-btn-kanban"><div class="kanban-outer">${colHtml}</div></div>`;
 }
 
 function renderTraceabilityTab(data) {
   if (!data.testCases.length) {
-    return `<div id="tab-traceability" class="p-6 hidden"><p class="text-slate-500">No test cases yet.</p></div>`;
+    return `<div id="tab-traceability" class="p-6 hidden" role="tabpanel" aria-labelledby="tab-btn-traceability"><p class="text-slate-500">No test cases yet.</p></div>`;
   }
   const tcStatusColor = {
     'Pass':    'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300',
@@ -341,7 +350,7 @@ function renderTraceabilityTab(data) {
     return epicHeader + storyRows;
   }).join('');
   return `
-  <div id="tab-traceability" class="p-6 hidden tab-fill">
+  <div id="tab-traceability" class="p-6 hidden tab-fill" role="tabpanel" aria-labelledby="tab-btn-traceability">
     <div class="flex flex-wrap items-center gap-4 mb-3 text-xs flex-shrink-0">
       <span class="flex items-center gap-1">
         <span class="w-7 h-5 rounded bg-green-100 text-green-800 flex items-center justify-center font-medium">P</span> Pass
@@ -388,7 +397,7 @@ function renderChartsTab(data) {
   );
 
   return `
-  <div id="tab-charts" class="p-6 hidden">
+  <div id="tab-charts" class="p-6 hidden" role="tabpanel" aria-labelledby="tab-btn-charts">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
       <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
@@ -664,7 +673,7 @@ function renderCostsTab(data) {
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">${bugCards}</div>` : '';
 
   return `
-  <div id="tab-costs" class="p-6 hidden tab-fill">
+  <div id="tab-costs" class="p-6 hidden tab-fill" role="tabpanel" aria-labelledby="tab-btn-costs">
     <div class="flex items-center justify-between mb-4 flex-shrink-0">
       <span class="text-sm text-slate-500 dark:text-slate-400">${data.stories.length} stories · ${data.bugs.length} bugs</span>
       <div class="flex gap-1">
@@ -729,7 +738,7 @@ function renderCostsTab(data) {
 
 function renderBugsTab(data) {
   if (!data.bugs.length) {
-    return `<div id="tab-bugs" class="p-6 hidden"><p class="text-slate-500">No bugs logged yet.</p></div>`;
+    return `<div id="tab-bugs" class="p-6 hidden" role="tabpanel" aria-labelledby="tab-btn-bugs"><p class="text-slate-500">No bugs logged yet.</p></div>`;
   }
 
   const lessonCell = (bug) => {
@@ -767,7 +776,7 @@ function renderBugsTab(data) {
   </div>`).join('');
 
   return `
-  <div id="tab-bugs" class="p-6 hidden tab-fill">
+  <div id="tab-bugs" class="p-6 hidden tab-fill" role="tabpanel" aria-labelledby="tab-btn-bugs">
     <div class="flex items-center justify-between mb-4 flex-shrink-0">
       <span class="text-sm text-slate-500 dark:text-slate-400">${data.bugs.length} bug${data.bugs.length !== 1 ? 's' : ''}</span>
       <div class="flex gap-1">
@@ -821,7 +830,7 @@ function renderBugsTab(data) {
 function renderLessonsTab(data) {
   const lessons = data.lessons || [];
   if (!lessons.length) {
-    return `<div id="tab-lessons" class="p-6 hidden"><p class="text-slate-500">No lessons logged yet.</p></div>`;
+    return `<div id="tab-lessons" class="p-6 hidden" role="tabpanel" aria-labelledby="tab-btn-lessons"><p class="text-slate-500">No lessons logged yet.</p></div>`;
   }
 
   // Build reverse map: lessonId → first bugId that references it
@@ -868,7 +877,7 @@ function renderLessonsTab(data) {
   </div>`).join('');
 
   return `
-  <div id="tab-lessons" class="p-6 hidden tab-fill">
+  <div id="tab-lessons" class="p-6 hidden tab-fill" role="tabpanel" aria-labelledby="tab-btn-lessons">
     <div class="flex items-center justify-between mb-4 flex-shrink-0">
       <span class="text-sm text-slate-500 dark:text-slate-400">${lessons.length} lesson${lessons.length !== 1 ? 's' : ''}</span>
       <div class="flex gap-1">
@@ -977,10 +986,12 @@ function renderScripts(data) {
       const btn = document.getElementById('tab-btn-' + t);
       if (el) el.classList.toggle('hidden', t !== name);
       if (btn) {
-        btn.classList.toggle('tab-active', t === name);
-        btn.classList.toggle('text-slate-400', t !== name);
-        btn.classList.toggle('hover:text-slate-200', t !== name);
-        btn.classList.toggle('hover:bg-white\\/5', t !== name);
+        btn.classList.toggle('nav-active', t === name);
+        if (t === name) {
+          btn.setAttribute('aria-current', 'page');
+        } else {
+          btn.removeAttribute('aria-current');
+        }
       }
     });
     updateFilterBar(name);
@@ -1124,8 +1135,12 @@ function renderScripts(data) {
   });
 
   function setStickyTop() {
-    var nav = document.getElementById('sticky-nav');
-    if (nav) document.documentElement.style.setProperty('--sticky-top', nav.offsetHeight + 'px');
+    var topbar = document.getElementById('topbar-fixed');
+    var topbarFixed = topbar && getComputedStyle(topbar).position === 'fixed';
+    var topbarH = topbarFixed ? (topbar.offsetHeight || 56) : 0;
+    var filterBar = document.getElementById('filter-bar');
+    var filterH = (filterBar && !filterBar.classList.contains('hidden')) ? filterBar.offsetHeight : 0;
+    document.documentElement.style.setProperty('--sticky-top', (topbarH + filterH) + 'px');
   }
   document.addEventListener('DOMContentLoaded', setStickyTop);
   window.addEventListener('resize', setStickyTop);
@@ -1156,14 +1171,16 @@ function renderPrintCSS() {
   <style>
   /* === Theme tokens — all colours flow from here === */
   :root {
-    --clr-body-bg:       #ffffff;
+    --clr-body-bg:       #f1f5f9;
+    --clr-topbar-bg:     #ffffff;
+    --clr-sidebar-bg:    #f8fafc;
     --clr-panel-bg:      #ffffff;
     --clr-surface-raised:#e2e8f0;
     --clr-border:        #e2e8f0;
     --clr-border-mid:    #cbd5e1;
-    --clr-text-primary:  #1e293b;
+    --clr-text-primary:  #0f172a;
     --clr-text-secondary:#475569;
-    --clr-text-muted:    #64748b;
+    --clr-text-muted:    #94a3b8;
     --clr-header-bg:     #e2e8f0;
     --clr-header-text:   #374151;
     --clr-input-bg:      #ffffff;
@@ -1174,6 +1191,8 @@ function renderPrintCSS() {
   }
   html.dark {
     --clr-body-bg:       #0b0d12;
+    --clr-topbar-bg:     #0b0d12;
+    --clr-sidebar-bg:    #111318;
     --clr-panel-bg:      #111318;
     --clr-surface-raised:#1a1d24;
     --clr-border:        #252831;
@@ -1196,32 +1215,29 @@ function renderPrintCSS() {
     background-image: radial-gradient(rgba(255,255,255,0.028) 1px, transparent 1px);
     background-size: 24px 24px;
   }
-  html.dark #top-bar { background: linear-gradient(135deg, #1a0533 0%, #2d0d52 55%, #3b1270 100%) !important; }
+  html.dark #topbar-fixed { border-color: var(--clr-border) !important; }
+  html.dark #sidebar { border-color: var(--clr-border) !important; }
   html.dark #filter-bar { background-color: var(--clr-panel-bg) !important; border-color: var(--clr-border) !important; }
   html.dark #filter-bar select, html.dark #filter-bar input { background-color: var(--clr-input-bg) !important; border-color: var(--clr-input-border) !important; color: var(--clr-input-text) !important; }
   html.dark #filter-bar button { color: var(--clr-text-muted) !important; }
-  html.dark #tab-bar { background-color: var(--clr-panel-bg) !important; border-color: var(--clr-border) !important; }
-  html.dark #tab-bar button { color: var(--clr-text-muted) !important; }
-  html.dark #tab-bar button.tab-active { background-color: var(--clr-accent) !important; color: #fff !important; }
   html.dark .epic-block { border-color: var(--clr-border) !important; }
   html.dark .story-row { color: var(--clr-text-primary); }
   html.dark .story-row p { color: var(--clr-text-primary) !important; }
   html.dark #activity-panel { background-color: var(--clr-panel-bg) !important; border-color: var(--clr-border) !important; color: var(--clr-text-primary) !important; }
   html.dark #activity-panel li { border-color: var(--clr-border) !important; }
-  /* === Tab pill active state === */
-  #tab-bar button.tab-active { background-color: var(--clr-accent); color: #fff; border-radius: 6px; }
   /* === Hover transforms === */
   .story-card-hover { transition: transform 150ms ease, box-shadow 150ms ease; }
   .story-card-hover:hover { transform: scale(1.02); box-shadow: 0 4px 16px rgba(0,0,0,0.35); }
-  .topbar-tile { transition: transform 150ms ease; }
-  .topbar-tile:hover { transform: translateY(-2px); }
   /* Tabs that should fill the full viewport height */
-  .tab-fill { display: flex; flex-direction: column; height: calc(100vh - var(--sticky-top, 120px)); box-sizing: border-box; }
+  .tab-fill { display: flex; flex-direction: column; height: calc(100vh - var(--sticky-top, 100px)); box-sizing: border-box; }
   .tab-fill .scroll-table { flex: 1; min-height: 0; max-height: none; }
-  .scroll-table { overflow: auto; max-height: calc(100vh - var(--sticky-top, 120px) - 3rem); }
+  .scroll-table { overflow: auto; max-height: calc(100vh - var(--sticky-top, 100px) - 3rem); }
   .scroll-table thead th { position: sticky; top: 0; z-index: 10; background-color: var(--clr-header-bg); color: var(--clr-header-text); }
-  .scroll-kanban { overflow: auto; height: calc(100vh - var(--sticky-top, 120px) - 3rem); }
-  .scroll-kanban .kanban-col-header { position: sticky; top: 0; z-index: 5; background: var(--clr-header-bg); color: var(--clr-header-text); padding-bottom: 6px; }
+  /* Kanban: sticky column headers + per-column scroll */
+  .kanban-outer { display: flex; gap: 12px; overflow-x: auto; height: calc(100vh - var(--sticky-top, 100px) - 3rem); }
+  .kanban-col { flex: 0 0 220px; display: flex; flex-direction: column; min-width: 180px; }
+  .kanban-col-header { position: sticky; top: 0; z-index: 5; background: var(--clr-header-bg); color: var(--clr-header-text); padding: 8px 12px; border-bottom: 1px solid var(--clr-border); flex-shrink: 0; }
+  .kanban-col-body { flex: 1; overflow-y: auto; padding: 8px 4px; }
   html.dark .scroll-table table thead { background-color: transparent; }
   html.dark table tbody tr { border-color: var(--clr-border) !important; }
   html.dark .bg-white { background-color: var(--clr-panel-bg) !important; }
@@ -1232,8 +1248,10 @@ function renderPrintCSS() {
   html.dark .text-slate-500 { color: var(--clr-text-muted) !important; }
   html.dark h3 { color: var(--clr-text-primary) !important; }
   @media print {
-    #filter-bar, #tab-bar, .fixed, .activity-panel { display: none !important; }
-    body { padding-right: 0 !important; }
+    #filter-bar, #sidebar, #topbar-fixed, .fixed, .activity-panel { display: none !important; }
+    body { padding: 0 !important; }
+    #app-shell { display: block !important; }
+    #main-content { display: block !important; }
     #tab-hierarchy, #tab-costs { display: block !important; }
     #tab-kanban, #tab-traceability, #tab-charts, #tab-bugs, #tab-lessons { display: none !important; }
     body { font-size: 11pt; }
@@ -1258,41 +1276,115 @@ function renderHtml(data) {
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Inter', sans-serif; }
+    /* === Base === */
+    body { font-family: 'Inter', sans-serif; padding-top: 56px; background-color: var(--clr-body-bg); color: var(--clr-text-primary); }
     code, .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+    /* === Topbar (fixed) === */
+    #topbar-fixed {
+      position: fixed; top: 0; left: 0; right: 0; height: 56px; z-index: 40;
+      background: var(--clr-topbar-bg); border-bottom: 1px solid var(--clr-border);
+      box-shadow: 0 1px 3px rgba(0,0,0,.06); display: flex; align-items: center; padding: 0 16px;
+    }
+    .topbar-inner { display: flex; align-items: center; gap: 12px; width: 100%; min-width: 0; }
+    .topbar-project { flex: 1; min-width: 0; }
+    .topbar-title { font-size: 1rem; font-weight: 700; color: var(--clr-text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .topbar-tagline { font-size: 11px; color: var(--clr-text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 1px; }
+    .topbar-btn { background: none; border: 1px solid var(--clr-border); color: var(--clr-text-muted); border-radius: 4px; padding: 2px 8px; font-size: 11px; cursor: pointer; transition: color 150ms, border-color 150ms; }
+    .topbar-btn:hover { color: var(--clr-text-primary); }
+
+    /* Stat chips */
+    .topbar-chips { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+    .chip { display: inline-flex; align-items: center; gap: 3px; padding: 3px 8px; border-radius: 9999px; font-size: 12px; font-weight: 500; border: 1px solid var(--clr-border); color: var(--clr-text-secondary); background: transparent; white-space: nowrap; }
+    .chip-danger { color: #f87171; border-color: #7f1d1d; }
+    .chip-warning { color: #fbbf24; border-color: #78350f; }
+    .chip-neutral { color: var(--clr-text-muted); }
+
+    /* === App shell === */
+    #app-shell { display: flex; min-height: calc(100vh - 56px); }
+
+    /* === Sidebar === */
+    #sidebar { width: 200px; flex-shrink: 0; position: sticky; top: 56px; height: calc(100vh - 56px); overflow-y: auto; background: var(--clr-sidebar-bg); border-right: 1px solid var(--clr-border); }
+    #sidebar-nav { display: flex; flex-direction: column; padding: 8px 0; gap: 1px; }
+    .nav-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; text-align: left; font-size: 13px; font-weight: 500; color: var(--clr-text-secondary); border: none; border-left: 2px solid transparent; background: none; cursor: pointer; transition: color 150ms, background 150ms; }
+    .nav-item:hover { color: var(--clr-text-primary); background: rgba(139,92,246,0.06); }
+    .nav-item.nav-active { color: var(--clr-accent); background: rgba(139,92,246,0.1); border-left-color: var(--clr-accent); }
+    .nav-item svg { flex-shrink: 0; }
+    .nav-label { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* === Main content === */
+    #main-content { flex: 1; min-width: 0; }
+    #filter-sticky { position: sticky; top: 56px; z-index: 20; }
+
+    /* ── Responsive tiers ───────────────────────────── */
+    /* Activity panel offset: ≥768px */
     @media (min-width: 768px) { body { padding-right: 280px; } }
+
+    /* Tablet portrait / unfolded foldable (768–1023px) */
+    @media (min-width: 768px) and (max-width: 1023px) {
+      #sidebar { width: 160px; }
+      .nav-label { font-size: 11px; }
+    }
+
+    /* Phone landscape / folded foldable — icon sidebar (480–767px) */
     @media (max-width: 767px) {
-      #top-bar { padding: 8px 12px !important; }
-      .topbar-title { font-size: 1.35rem !important; line-height: 1.3 !important; }
-      .topbar-tagline { font-size: 0.65rem !important; margin-top: 1px !important; line-height: 1.3 !important; }
-      .topbar-progress { margin-top: 4px !important; }
-      .topbar-stats { gap: 4px !important; flex-wrap: nowrap !important; overflow-x: auto !important; padding-bottom: 2px; }
-      .topbar-tile { padding: 3px 6px !important; min-width: 50px !important; border-radius: 8px !important; }
-      .topbar-tile-num { font-size: 0.8rem !important; line-height: 1.2 !important; }
-      .topbar-tile .text-xs { font-size: 0.6rem !important; margin-top: 1px !important; }
+      #sidebar { width: 44px; }
+      .nav-label { display: none; }
+      .nav-item { justify-content: center; padding: 10px 0; gap: 0; }
+      .nav-item.nav-active { border-left-color: transparent; border-bottom: 2px solid var(--clr-accent); }
+      .tokens-col { display: none !important; }
       #filter-bar { padding: 4px 12px !important; gap: 4px !important; }
       #filter-bar select, #filter-bar input[type="text"] { padding: 2px 4px !important; font-size: 0.7rem !important; }
-      #filter-bar button { font-size: 0.7rem !important; }
-      #tab-bar button { padding: 5px 10px !important; font-size: 0.72rem !important; }
-      .tokens-col { display: none !important; }
+    }
+
+    /* Phone portrait (<480px) — topbar in flow, chips trimmed */
+    @media (max-width: 479px) {
+      #topbar-fixed { position: relative; height: auto; min-height: 48px; padding: 8px 12px 6px; flex-wrap: wrap; align-items: flex-start; box-shadow: none; border-bottom: 1px solid var(--clr-border); }
+      body { padding-top: 0; }
+      #app-shell { min-height: 100vh; }
+      #sidebar { top: 0; height: 100vh; }
+      #filter-sticky { top: 0; }
+      .chip-coverage, .chip-cost { display: none; }
+      .topbar-project { width: 100%; }
+      .topbar-chips { padding-top: 4px; }
+    }
+
+    /* Phone landscape — compact topbar (short height) */
+    @media (max-height: 500px) and (orientation: landscape) {
+      #topbar-fixed { height: 40px; }
+      body { padding-top: 40px; }
+      #sidebar { top: 40px; height: calc(100vh - 40px); }
+      #filter-sticky { top: 40px; }
+      .nav-item { padding: 7px 0; }
+    }
+
+    /* Foldable unfolded (dual-segment) */
+    @media (horizontal-viewport-segments: 2) {
+      #app-shell { width: 100vw; }
+      #sidebar { width: 200px; }
+      .nav-label { display: flex !important; }
     }
   </style>
   ${renderPrintCSS()}
 </head>
-<body class="min-h-screen" style="background-color:var(--clr-body-bg);color:var(--clr-text-primary)">
-  <div id="sticky-nav" class="sticky top-0 z-30">
-    ${renderTopBar(data)}
-    ${renderTabs()}
-    ${renderFilterBar(data)}
-  </div>
-  <div id="tab-content">
-    ${renderHierarchyTab(data)}
-    ${renderKanbanTab(data)}
-    ${renderTraceabilityTab(data)}
-    ${renderChartsTab(data)}
-    ${renderCostsTab(data)}
-    ${renderBugsTab(data)}
-    ${renderLessonsTab(data)}
+<body class="min-h-screen">
+  ${renderTopBar(data)}
+  <div id="app-shell">
+    ${renderSidebar()}
+    <main id="main-content" role="main">
+      <div id="filter-sticky">
+        ${renderFilterBar(data)}
+      </div>
+      <div id="tab-content">
+        ${renderHierarchyTab(data)}
+        ${renderKanbanTab(data)}
+        ${renderTraceabilityTab(data)}
+        ${renderChartsTab(data)}
+        ${renderCostsTab(data)}
+        ${renderBugsTab(data)}
+        ${renderLessonsTab(data)}
+      </div>
+    </main>
   </div>
   ${renderRecentActivity(data)}
   ${renderScripts(data)}
@@ -1302,7 +1394,7 @@ function renderHtml(data) {
       <button onclick="closeAbout()" class="absolute top-3 right-4 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white text-xl leading-none" aria-label="Close">&#x2715;</button>
       <h2 class="text-2xl font-bold mb-1" style="color:var(--clr-accent)">${esc(data.projectName)}</h2>
       <p class="text-slate-500 dark:text-slate-400 text-sm mb-4">${esc(data.tagline)}</p>
-      <a href="${esc(data.githubUrl)}" target="_blank" rel="noopener noreferrer"
+      <a href="${/^https?:\/\//.test(data.githubUrl || '') ? esc(data.githubUrl) : ''}" target="_blank" rel="noopener noreferrer"
          class="inline-flex items-center gap-1.5 text-sm underline underline-offset-2 mb-5" style="color:var(--clr-accent)">
         GitHub Repository
       </a>
