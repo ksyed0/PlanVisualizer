@@ -115,3 +115,5 @@ Input Tokens column = direct input + cache-write tokens; cost computed with dist
 | 2026-03-30 | f655eb8e-96ab-4c4a-bdb6-ab0a6023ce09 | feature/US-0048-ui-redesign-sidebar | 3282999 | 292780 | 112366012 | 50.4110 |
 | 2026-03-30 | f655eb8e-96ab-4c4a-bdb6-ab0a6023ce09 | feature/US-0048-ui-redesign-sidebar | 3469724 | 315082 | 120305499 | 53.8275 |
 | 2026-03-30 | f655eb8e-96ab-4c4a-bdb6-ab0a6023ce09 | feature/US-0048-ui-redesign-sidebar | 3470796 | 315238 | 120629192 | 53.9310 |
+| 2026-03-30 | f655eb8e-96ab-4c4a-bdb6-ab0a6023ce09 | feature/US-0048-ui-redesign-sidebar | 3508441 | 325268 | 124994626 | 55.5322 |
+| 2026-03-30 | f655eb8e-96ab-4c4a-bdb6-ab0a6023ce09 | feature/US-0048-ui-redesign-sidebar | 3508701 | 325350 | 125254808 | 55.6125 |

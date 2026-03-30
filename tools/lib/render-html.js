@@ -398,20 +398,25 @@ function renderTraceabilityTab(data) {
     const epicStories = data.stories.filter(s => s.epicId === epic.id);
     if (!epicStories.length) return '';
     const epicRowId = `trace-epic-${epic.id}`;
+    const accent = EPIC_ACCENT_COLORS[data.epics.indexOf(epic) % EPIC_ACCENT_COLORS.length];
     const epicTCs = epicStories.flatMap(s => data.testCases.filter(tc => tc.relatedStory === s.id));
     const hasFail = epicTCs.some(tc => tc.status === 'Fail');
     const hasNotRun = !hasFail && epicTCs.some(tc => tc.status === 'Not Run');
-    const epicRowBg = hasFail ? 'bg-red-50 dark:bg-red-900/20' : hasNotRun ? 'bg-amber-50 dark:bg-amber-900/20' : 'bg-slate-100 dark:bg-slate-700';
     const epicStatusBadge = hasFail
-      ? ' <span class="ml-2 inline-block px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">Fail</span>'
+      ? '<span class="inline-block px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300">Fail</span>'
       : hasNotRun
-      ? ' <span class="ml-2 inline-block px-1.5 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-700">Not Run</span>'
+      ? '<span class="inline-block px-1.5 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">Not Run</span>'
       : '';
-    const epicHeader = `<tr class="${epicRowBg} cursor-pointer select-none"
+    const epicHeader = `<tr class="cursor-pointer select-none" style="background:${accent.bg}"
       onclick="(function(){var rows=document.querySelectorAll('[data-trace-epic=\\'${epic.id}\\']');var arr=document.getElementById('${epicRowId}-arrow');var collapsed=arr.textContent==='\\u25b6';rows.forEach(function(r){r.classList.toggle('hidden',!collapsed);});arr.textContent=collapsed?'\\u25bc':'\\u25b6';})()" >
-      <td colspan="${data.testCases.length + 1}" class="px-2 py-1 text-xs font-semibold" style="color:var(--clr-accent)">
-        <span id="${epicRowId}-arrow" class="mr-1 text-slate-400">&#9654;</span>
-        ${epic.id} \u2014 ${esc(epic.title)}${epicStatusBadge}
+      <td colspan="${data.testCases.length + 1}" class="px-3 py-2" style="border-left:4px solid ${accent.border}">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span id="${epicRowId}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9654;</span>
+          <span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${epic.id}</span>
+          ${badge(epic.status)}
+          <span class="font-semibold text-sm dark:text-slate-100">${esc(epic.title)}</span>
+          ${epicStatusBadge}
+        </div>
       </td>
     </tr>`;
     const storyRows = epicStories.map(story => {
