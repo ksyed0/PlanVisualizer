@@ -16,7 +16,7 @@ function parseRecentActivity(markdown, limit = 5) {
     const summary = doneMatch
       ? doneMatch[1].replace(/^- /gm, '').trim().split('\n').slice(0, 3).join('; ')
       : '';
-    sessions.push({ sessionNum, date, summary });
+    sessions.push({ sessionNum: parseInt(sessionNum, 10), date, summary });
   }
   return sessions.slice(0, limit);
 }

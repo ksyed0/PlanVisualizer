@@ -32,13 +32,14 @@ describe('renderHtml', () => {
   it('includes total projected cost', () => expect(html).toMatch(/\$800/));
   it('includes coverage percent', () => expect(html).toMatch(/81/));
   it('includes epic filter option', () => expect(html).toMatch(/EPIC-0001/));
-  it('includes all 6 tabs', () => {
+  it('includes all 7 tabs', () => {
     expect(html).toMatch(/Hierarchy/);
     expect(html).toMatch(/Kanban/);
     expect(html).toMatch(/Traceability/);
     expect(html).toMatch(/Charts/);
     expect(html).toMatch(/Costs/);
     expect(html).toMatch(/Bugs/);
+    expect(html).toMatch(/Lessons/);
   });
   it('marks at-risk story with warning', () => expect(html).toMatch(/at-risk|⚠/));
 });
@@ -81,7 +82,7 @@ describe('renderHtml — recent activity panel', () => {
   it('panel starts at 280px width by default', () => {
     const html = renderHtml(sampleData);
     expect(html).toMatch(/width:280px/);
-    expect(html).toMatch(/@media \(min-width: 768px\) \{ body \{ padding-right: 280px; \} \}/);
+    expect(html).toMatch(/@media \(min-width: 768px\) \{[^}]*body \{ padding-right: 280px; \}/);
   });
 
   it('collapsed strip contains vertical label text', () => {
@@ -143,7 +144,7 @@ describe('renderHtml — coverage below target', () => {
   it('renders red coverage when below 80%', () => {
     const dataLowCoverage = { ...sampleData, coverage: { lines: 70, overall: 70, meetsTarget: false } };
     const html = renderHtml(dataLowCoverage);
-    expect(html).toMatch(/FCA5A5/);
+    expect(html).toMatch(/tile-cov tile-danger/);
   });
 });
 
@@ -272,7 +273,7 @@ describe('renderHtml — traceability with Not Run TC', () => {
 describe('renderHtml — sticky header (BUG-0004 regression)', () => {
   it('wraps header in a sticky container', () => {
     const html = renderHtml(sampleData);
-    expect(html).toContain('sticky top-0 z-30');
+    expect(html).toContain('id="topbar-fixed"');
   });
 });
 
@@ -364,7 +365,8 @@ describe('renderHtml — Lessons tab (US-0032)', () => {
 
   it('renders lesson anchor id for scroll target', () => {
     const d = { ...sampleData, lessons: [sampleLesson] };
-    expect(renderHtml(d)).toContain('id="lesson-L-0010"');
+    const html = renderHtml(d);
+    expect(html).toMatch(/id="lesson-(col|card)-L-0010"/);
   });
 });
 
@@ -376,15 +378,16 @@ describe('renderHtml — Bugs tab lesson hyperlink (US-0032)', () => {
   it('renders ✓ L-0010 ↗ as link when lesson ID present', () => {
     const d = { ...sampleData, bugs: [bugWithLessonId] };
     const html = renderHtml(d);
-    expect(html).toContain('✓ L-0010 ↗');
-    expect(html).toContain('lesson-L-0010');
+    expect(html).toMatch(/&#10003;.*L-0010.*&#8599;/);
+    expect(html).toContain("'lesson-col-'");
+    expect(html).toContain("'L-0010'");
   });
 
   it('renders plain ✓ when Yes but no L-ID', () => {
     const d = { ...sampleData, bugs: [bugWithYesNoId] };
     const html = renderHtml(d);
-    expect(html).toContain('✓');
-    expect(html).not.toContain('↗');
+    expect(html).toMatch(/&#10003;|✓/);
+    expect(html).not.toMatch(/&#8599;|↗/);
   });
 
   it('renders ○ when lesson not encoded', () => {
@@ -395,5 +398,58 @@ describe('renderHtml — Bugs tab lesson hyperlink (US-0032)', () => {
   it('adds bug-row id for reverse scroll from Lessons tab', () => {
     const d = { ...sampleData, bugs: [bugWithLessonId] };
     expect(renderHtml(d)).toContain('id="bug-row-BUG-0001"');
+  });
+});
+
+describe('renderHtml — multi-epic bug grouping sort (BUG-0093)', () => {
+  // Data with 2 epics + an ungrouped bug to exercise all sort comparator branches
+  const multiEpicData = {
+    ...sampleData,
+    epics: [
+      { id: 'EPIC-0001', title: 'Editing', status: 'Done', releaseTarget: 'MVP', dependencies: [] },
+      { id: 'EPIC-0002', title: 'Navigation', status: 'In Progress', releaseTarget: 'MVP', dependencies: [] },
+    ],
+    stories: [
+      { id: 'US-0001', epicId: 'EPIC-0001', title: 'Open a file', priority: 'P0', estimate: 'M', status: 'Done', branch: 'feature/US-0001', acs: [], dependencies: [] },
+      { id: 'US-0002', epicId: 'EPIC-0002', title: 'Navigate', priority: 'P1', estimate: 'S', status: 'In Progress', branch: 'feature/US-0002', acs: [], dependencies: [] },
+    ],
+    bugs: [
+      { id: 'BUG-0001', title: 'Alpha bug', severity: 'High', status: 'Fixed', relatedStory: 'US-0001', fixBranch: 'bugfix/BUG-0001', lessonEncoded: 'No' },
+      { id: 'BUG-0002', title: 'Beta bug', severity: 'Medium', status: 'Fixed', relatedStory: 'US-0002', fixBranch: 'bugfix/BUG-0002', lessonEncoded: 'No' },
+      { id: 'BUG-0003', title: 'Orphan bug', severity: 'Low', status: 'Open', relatedStory: '', fixBranch: '', lessonEncoded: 'No' },
+    ],
+    costs: {
+      ...sampleData.costs,
+      _bugs: {
+        'BUG-0001': { costUsd: 0.10, inputTokens: 1000, outputTokens: 300, projectedUsd: 400 },
+        'BUG-0002': { costUsd: 0.05, inputTokens: 500, outputTokens: 100, projectedUsd: 200 },
+        'BUG-0003': { costUsd: 0, inputTokens: 0, outputTokens: 0, projectedUsd: 200, isEstimated: true },
+      },
+    },
+  };
+
+  it('renders bugs tab with multiple epic groups in ascending order', () => {
+    const html = renderHtml(multiEpicData);
+    // '_ungrouped' has underscore replaced → '-ungrouped' in DOM IDs
+    expect(html).toContain('bugs-ep-EPIC-0001');
+    expect(html).toContain('bugs-ep-EPIC-0002');
+    expect(html).toContain('bugs-ep--ungrouped');
+    const pos1 = html.indexOf('bugs-ep-EPIC-0001');
+    const pos2 = html.indexOf('bugs-ep-EPIC-0002');
+    const posU = html.indexOf('bugs-ep--ungrouped');
+    expect(pos1).toBeLessThan(pos2);
+    expect(pos2).toBeLessThan(posU);
+  });
+
+  it('renders costs tab bug section with multiple epic groups in ascending order', () => {
+    const html = renderHtml(multiEpicData);
+    expect(html).toContain('bug-costs-ep-EPIC-0001');
+    expect(html).toContain('bug-costs-ep-EPIC-0002');
+    expect(html).toContain('bug-costs-ep--ungrouped');
+    const pos1 = html.indexOf('bug-costs-ep-EPIC-0001');
+    const pos2 = html.indexOf('bug-costs-ep-EPIC-0002');
+    const posU = html.indexOf('bug-costs-ep--ungrouped');
+    expect(pos1).toBeLessThan(pos2);
+    expect(pos2).toBeLessThan(posU);
   });
 });

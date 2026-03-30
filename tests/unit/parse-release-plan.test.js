@@ -79,6 +79,26 @@ describe('parseReleasePlan — edge cases', () => {
     expect(result.stories[0].priority).toBe('P1');
   });
 
+  it('parses AC-TBD placeholder format', () => {
+    const md = `\`\`\`
+EPIC-0001: My Epic
+Status: In Progress
+
+US-0001 (EPIC-0001): My Story
+Status: Planned
+Priority: P2 (P2)
+Estimate: M
+Branch: None
+Dependencies: None
+  - [ ] AC-TBD: Placeholder acceptance criterion
+\`\`\``;
+    const { stories } = parseReleasePlan(md);
+    expect(stories).toHaveLength(1);
+    expect(stories[0].acs).toHaveLength(1);
+    expect(stories[0].acs[0].id).toBe('AC-TBD');
+    expect(stories[0].acs[0].done).toBe(false);
+  });
+
   it('ignores blocks with no code-fence markers', () => {
     const result = parseReleasePlan('No fences here at all');
     expect(result.epics).toHaveLength(0);

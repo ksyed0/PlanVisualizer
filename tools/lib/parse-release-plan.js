@@ -27,7 +27,7 @@ function parseEpicBlock(text) {
   const idTitle = text.match(/^(EPIC-\d{4}):\s*(.+)/m);
   if (!idTitle) return null;
   const get = (key) => {
-    const m = text.match(new RegExp(`^${key}:[ \\t]*(.+)`, 'm'));
+    const m = text.match(new RegExp(`^${key}:[ \\t]*(.*)`, 'm'));
     return m ? m[1].trim() : '';
   };
   return {
