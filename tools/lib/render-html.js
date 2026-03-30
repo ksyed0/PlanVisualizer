@@ -255,21 +255,21 @@ function renderHierarchyTab(data) {
   const columnView = epicBlocks.map(({ epic, accent, epicProjected, storyRows }) => `
     <div class="epic-block mb-4 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden" style="border-left:4px solid ${accent.border}">
       <div class="px-4 py-3 flex flex-wrap items-center gap-3 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('epic-stories-${esc(epic.id)}','epic-arrow-${esc(epic.id)}')">
-        <span id="epic-arrow-${esc(epic.id)}" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9660;</span>
+        <span id="epic-arrow-${esc(epic.id)}" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9654;</span>
         <span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${epic.id}</span>
         ${badge(epic.status)}
         <span class="font-semibold dark:text-slate-100">${esc(epic.title)}</span>
         <span class="text-xs text-slate-500">${esc(epic.releaseTarget)}</span>
         <span class="ml-auto text-sm text-slate-500">${usd(epicProjected)} projected</span>
       </div>
-      <div id="epic-stories-${epic.id}">${storyRows || '<p class="text-slate-500 dark:text-slate-400 text-sm px-4 py-2">No stories yet.</p>'}</div>
+      <div id="epic-stories-${epic.id}" class="hidden">${storyRows || '<p class="text-slate-500 dark:text-slate-400 text-sm px-4 py-2">No stories yet.</p>'}</div>
     </div>`).join('');
 
   const cardView = epicBlocks.map(({ epic, accent, epicProjected, storyCards }) => `
     <div class="mb-8">
       <div class="epic-block border border-slate-200 dark:border-slate-700 rounded-t-lg px-4 py-3 mb-0 cursor-pointer select-none" style="border-left:4px solid ${accent.border};background:${accent.bg}" onclick="toggleSection('epic-cards-${esc(epic.id)}','epic-card-arrow-${esc(epic.id)}')">
         <div class="flex flex-wrap items-center gap-3">
-          <span id="epic-card-arrow-${esc(epic.id)}" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9660;</span>
+          <span id="epic-card-arrow-${esc(epic.id)}" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9654;</span>
           <span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${epic.id}</span>
           ${badge(epic.status)}
           <span class="font-semibold dark:text-slate-100">${esc(epic.title)}</span>
@@ -277,7 +277,7 @@ function renderHierarchyTab(data) {
           <span class="ml-auto text-sm text-slate-500">${usd(epicProjected)} projected</span>
         </div>
       </div>
-      <div id="epic-cards-${epic.id}" class="border border-t-0 border-slate-200 dark:border-slate-700 rounded-b-lg p-3">
+      <div id="epic-cards-${epic.id}" class="border border-t-0 border-slate-200 dark:border-slate-700 rounded-b-lg p-3 hidden">
         ${storyCards
           ? `<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">${storyCards}</div>`
           : '<p class="text-slate-500 dark:text-slate-400 text-sm">No stories yet.</p>'}
@@ -339,11 +339,11 @@ function renderKanbanTab(data) {
     return `
     <div class="ksw-swimlane" style="border-left:3px solid ${color}">
       <div class="ksw-swim-hdr" onclick="toggleKsw('${sid}')" style="border-left-color:${color}">
-        <span id="${sid}-arrow" class="ksw-arrow">&#9660;</span>
+        <span id="${sid}-arrow" class="ksw-arrow">&#9654;</span>
         <span class="ksw-epic-title" style="color:${color}">${epicLabel}</span>
         <span class="ksw-epic-count">${epicCount}</span>
       </div>
-      <div id="${sid}-body" class="ksw-swim-body">
+      <div id="${sid}-body" class="ksw-swim-body hidden">
         <div class="ksw-label-cell"></div>
         ${cols.map(col => {
           const items = data.stories.filter(s => s.epicId === epicId && s.status === col);
@@ -360,11 +360,11 @@ function renderKanbanTab(data) {
     return `
     <div class="ksw-swimlane" style="border-left:3px solid #64748b">
       <div class="ksw-swim-hdr" onclick="toggleKsw('${sid}')" style="border-left-color:#64748b">
-        <span id="${sid}-arrow" class="ksw-arrow">&#9660;</span>
+        <span id="${sid}-arrow" class="ksw-arrow">&#9654;</span>
         <span class="ksw-epic-title" style="color:#64748b">No Epic</span>
         <span class="ksw-epic-count">${items.length}</span>
       </div>
-      <div id="${sid}-body" class="ksw-swim-body">
+      <div id="${sid}-body" class="ksw-swim-body hidden">
         <div class="ksw-label-cell"></div>
         ${cols.map(col => {
           const ci = items.filter(s => s.status === col);
@@ -623,7 +623,7 @@ function renderCostsTab(data) {
     return `<tbody>
     <tr class="border-t-2 border-slate-300 dark:border-slate-600 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('${ceid}','${ceid}-arrow')">
       <td colspan="4" class="px-3 py-2">
-        <span id="${ceid}-arrow" class="text-slate-400 text-xs mr-2">&#9660;</span>
+        <span id="${ceid}-arrow" class="text-slate-400 text-xs mr-2">&#9654;</span>
         <span class="font-mono text-xs font-bold" style="color:${accent.border}">${epic.id}</span>
         <span class="text-sm font-semibold ml-2 text-slate-700 dark:text-slate-200">${esc(epic.title)}</span>
         <span class="ml-2">${badge(epic.status)}</span>
@@ -632,7 +632,7 @@ function renderCostsTab(data) {
       <td class="px-3 py-2 text-right text-sm font-medium text-teal-700 dark:text-teal-400">${usd(epicAI)}</td>
       <td class="px-3 py-2 text-right text-xs text-slate-500 tokens-col">${fmtNum(epicIn)} / ${fmtNum(epicOut)}</td>
     </tr>
-    </tbody><tbody id="${ceid}">${storyRows}</tbody>`;
+    </tbody><tbody id="${ceid}" class="hidden">${storyRows}</tbody>`;
   }).join('');
 
   // ── Bug cost helpers (shared by column + card) ──────────────────────────
@@ -686,7 +686,7 @@ function renderCostsTab(data) {
     return `<tbody>
     <tr class="border-t-2 border-slate-300 dark:border-slate-600 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('${bceid}','${bceid}-arrow')">
       <td colspan="6" class="px-3 py-2">
-        <span id="${bceid}-arrow" class="text-slate-400 text-xs mr-2">&#9660;</span>
+        <span id="${bceid}-arrow" class="text-slate-400 text-xs mr-2">&#9654;</span>
         <span class="font-mono text-xs font-bold" style="color:${accent.border}">${label}</span>
         <span class="ml-2 text-xs text-slate-500">(${bugs.length})</span>
       </td>
@@ -694,7 +694,7 @@ function renderCostsTab(data) {
       <td class="px-3 py-2 text-right text-sm font-medium text-teal-700 dark:text-teal-400">${usd(epicAI)}</td>
       <td class="px-3 py-2 text-right text-xs text-slate-500 tokens-col">${fmtNum(epicIn)} / ${fmtNum(epicOut)}</td>
     </tr>
-    </tbody><tbody id="${bceid}">${bugRows}</tbody>`;
+    </tbody><tbody id="${bceid}" class="hidden">${bugRows}</tbody>`;
   }).join('');
 
   // ── Card view: story cards grouped by epic ──────────────────────────────
@@ -733,13 +733,13 @@ function renderCostsTab(data) {
     const accent2 = EPIC_ACCENT_COLORS[data.epics.indexOf(epic) % EPIC_ACCENT_COLORS.length];
     return `<div class="mb-6 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden" style="border-left:4px solid ${accent2.border}">
       <div class="flex items-center gap-2 px-4 py-3 flex-wrap cursor-pointer select-none" style="background:${accent2.bg}" onclick="toggleSection('${cceid}','${cceid}-arrow')">
-        <span id="${cceid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9660;</span>
+        <span id="${cceid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9654;</span>
         <span class="font-mono text-xs font-bold" style="color:${accent2.border}">${epic.id}</span>
         <span class="text-sm font-semibold text-slate-700 dark:text-slate-200">${esc(epic.title)}</span>
         ${badge(epic.status)}
         <span class="ml-auto text-xs text-slate-500">Proj ${usd(epicProjTotal)} · AI ${usd(epicAITotal)}</span>
       </div>
-      <div id="${cceid}" class="p-3">
+      <div id="${cceid}" class="p-3 hidden">
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">${storyCards}</div>
       </div>
     </div>`;
@@ -777,11 +777,11 @@ function renderCostsTab(data) {
     }).join('');
     return `<div class="mb-6 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden" style="border-left:4px solid ${accent.border}">
       <div class="flex items-center gap-2 px-4 py-3 flex-wrap cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('${bcceid}','${bcceid}-arrow')">
-        <span id="${bcceid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9660;</span>
+        <span id="${bcceid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9654;</span>
         <span class="font-mono text-xs font-bold" style="color:${accent.border}">${label}</span>
         <span class="ml-auto text-xs text-slate-500">Proj ${usd(epicBugProjected)} · AI ${usd(epicBugAI)}</span>
       </div>
-      <div id="${bcceid}" class="p-3">
+      <div id="${bcceid}" class="p-3 hidden">
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">${bugCardItems}</div>
       </div>
     </div>`;
@@ -946,12 +946,12 @@ function renderBugsTab(data) {
     return `<tbody>
     <tr class="border-t-2 border-slate-300 dark:border-slate-600 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('${beid}','${beid}-arrow')">
       <td colspan="7" class="px-3 py-2">
-        <span id="${beid}-arrow" class="text-slate-400 text-xs mr-2">&#9660;</span>
+        <span id="${beid}-arrow" class="text-slate-400 text-xs mr-2">&#9654;</span>
         <span class="font-mono text-xs font-bold" style="color:${accent.border}">${label}</span>
         <span class="ml-2 text-xs text-slate-500">(${bugs.length})</span>
       </td>
     </tr>
-    </tbody><tbody id="${beid}">${bugs.map(renderBugRow).join('')}</tbody>`;
+    </tbody><tbody id="${beid}" class="hidden">${bugs.map(renderBugRow).join('')}</tbody>`;
   }).join('');
 
   const bugCardGroups = bugEpicOrder.map((epicId, i) => {
@@ -962,11 +962,11 @@ function renderBugsTab(data) {
     const bceid = `bugs-card-ep-${epicId.replace(/[^a-zA-Z0-9]/g, '-')}`;
     return `<div class="mb-6 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden" style="border-left:4px solid ${accent.border}">
       <div class="flex items-center gap-2 px-4 py-3 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('${bceid}','${bceid}-arrow')">
-        <span id="${bceid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9660;</span>
+        <span id="${bceid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9654;</span>
         <span class="font-mono text-xs font-bold" style="color:${accent.border}">${label}</span>
         <span class="ml-1 text-xs text-slate-500">(${bugs.length})</span>
       </div>
-      <div id="${bceid}" class="p-3">
+      <div id="${bceid}" class="p-3 hidden">
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">${bugs.map(renderBugCard).join('')}</div>
       </div>
     </div>`;
@@ -1101,12 +1101,12 @@ function renderLessonsTab(data) {
     return `<tbody>
     <tr class="border-t-2 border-slate-300 dark:border-slate-600 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('${leid}','${leid}-arrow')">
       <td colspan="5" class="px-3 py-2">
-        <span id="${leid}-arrow" class="text-slate-400 text-xs mr-2">&#9660;</span>
+        <span id="${leid}-arrow" class="text-slate-400 text-xs mr-2">&#9654;</span>
         <span class="font-mono text-xs font-bold" style="color:${accent.border}">${label}</span>
         <span class="ml-2 text-xs text-slate-500">(${ls.length})</span>
       </td>
     </tr>
-    </tbody><tbody id="${leid}">${ls.map(renderLessonRow).join('')}</tbody>`;
+    </tbody><tbody id="${leid}" class="hidden">${ls.map(renderLessonRow).join('')}</tbody>`;
   }).join('');
 
   const lessonCardGroups = lessonEpicOrder.map((epicId, i) => {
@@ -1117,11 +1117,11 @@ function renderLessonsTab(data) {
     const lceid = `lessons-card-ep-${epicId.replace(/[^a-zA-Z0-9]/g, '-')}`;
     return `<div class="mb-6 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden" style="border-left:4px solid ${accent.border}">
       <div class="flex items-center gap-2 px-4 py-3 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('${lceid}','${lceid}-arrow')">
-        <span id="${lceid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9660;</span>
+        <span id="${lceid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9654;</span>
         <span class="font-mono text-xs font-bold" style="color:${accent.border}">${label}</span>
         <span class="ml-1 text-xs text-slate-500">(${ls.length})</span>
       </div>
-      <div id="${lceid}" class="p-3">
+      <div id="${lceid}" class="p-3 hidden">
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">${ls.map(renderLessonCard).join('')}</div>
       </div>
     </div>`;
