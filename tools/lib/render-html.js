@@ -1108,9 +1108,11 @@ function renderScripts(data) {
     const expanded = document.getElementById('activity-expanded');
     const list = document.getElementById('activity-list');
     const collapsed = document.getElementById('activity-collapsed');
+    const topbar = document.getElementById('topbar-fixed');
     if (isCollapsed) {
       panel.style.width = '280px';
       document.body.style.paddingRight = '';
+      if (topbar) topbar.style.paddingRight = '';
       expanded.classList.remove('hidden');
       list.classList.remove('hidden');
       collapsed.classList.add('hidden');
@@ -1119,6 +1121,7 @@ function renderScripts(data) {
     } else {
       panel.style.width = '40px';
       document.body.style.paddingRight = '40px';
+      if (topbar) topbar.style.paddingRight = '40px';
       expanded.classList.add('hidden');
       list.classList.add('hidden');
       collapsed.classList.remove('hidden');
@@ -1134,6 +1137,8 @@ function renderScripts(data) {
     if (window.innerWidth >= 768 && localStorage.getItem('activityPanelCollapsed') === 'true') {
       panel.style.width = '40px';
       document.body.style.paddingRight = '40px';
+      var topbarEl = document.getElementById('topbar-fixed');
+      if (topbarEl) topbarEl.style.paddingRight = '40px';
       document.getElementById('activity-expanded').classList.add('hidden');
       document.getElementById('activity-list').classList.add('hidden');
       const collapsed = document.getElementById('activity-collapsed');
@@ -1367,7 +1372,7 @@ function renderHtml(data) {
 
     /* ── Responsive tiers ───────────────────────────── */
     /* Activity panel offset: ≥768px */
-    @media (min-width: 768px) { body { padding-right: 280px; } #topbar-fixed { right: 280px; } }
+    @media (min-width: 768px) { body { padding-right: 280px; } #topbar-fixed { padding-right: 280px; } }
 
     /* Tablet portrait / unfolded foldable (768–1023px) */
     @media (min-width: 768px) and (max-width: 1023px) {

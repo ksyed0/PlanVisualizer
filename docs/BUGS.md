@@ -1303,6 +1303,21 @@ Fix Branch: fix/parse-cost-log-session-dedup
 Lesson Encoded: No
 Estimated Cost USD: 0.10
 
+BUG-0092: Header gradient truncated at 280px — does not span full window width
+Severity: Medium
+Related Story: US-0048
+Related Task: TASK-0041
+Steps to Reproduce:
+  1. Open plan-status.html on a desktop viewport (≥768px) with the activity panel visible
+  2. Observe the topbar background — the blue gradient ends 280px short of the right edge, leaving a gap
+  3. Collapse the activity panel to 40px — gradient still does not reach the right edge
+Expected: Blue gradient spans the full window width; stat tiles are inset from the right to leave space for the activity panel (expanded 280px or collapsed 40px)
+Actual: #topbar-fixed has right:280px which clips the gradient background; tiles align to the gradient edge rather than being padded within a full-width bar
+Status: Fixed
+Fix Branch: feature/US-0048-ui-redesign-sidebar
+Lesson Encoded: No
+Estimated Cost USD: 0.02
+
 BUG-0091: Topbar overlaps activity panel — last stat tile clipped on desktop
 Severity: Medium
 Related Story: US-0048
