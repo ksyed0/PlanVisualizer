@@ -35,10 +35,8 @@ function usd(n) {
 function fmtNum(n) { return Number(n).toLocaleString(); }
 
 function renderTopBar(data) {
-  const bugAI = Object.entries(data.costs._bugs || {})
-    .filter(([k, v]) => k !== '_totals' && v && !v.isEstimated)
-    .reduce((s, [, v]) => s + (v.costUsd || 0), 0);
-  const totalAI = (data.costs._totals.costUsd || 0) + bugAI;
+  const totalAI = data.costs._totals.costUsd || 0;
+  const projectedTotal = data.stories.reduce((s, st) => s + (data.costs[st.id] ? data.costs[st.id].projectedUsd || 0 : 0), 0);
   const done = data.stories.filter(s => s.status === 'Done').length;
   const inProgress = data.stories.filter(s => s.status === 'In Progress').length;
   const cov = data.coverage;
@@ -79,6 +77,10 @@ function renderTopBar(data) {
         <div class="topbar-tile tile-ai-cost">
           <span class="tile-value font-mono">${usd(totalAI)}</span>
           <span class="tile-label">AI Cost</span>
+        </div>
+        <div class="topbar-tile tile-projected">
+          <span class="tile-value font-mono">${usd(projectedTotal)}</span>
+          <span class="tile-label">Estimated</span>
         </div>
       </div>
     </div>
@@ -492,7 +494,7 @@ function renderChartsTab(data) {
     });
     _charts.coverage = new Chart(document.getElementById('chart-coverage'), {
       type: 'doughnut',
-      data: { labels: ['Covered', 'Gap'], datasets: [{ data: [${coveragePctNum}, ${coverageGap}], backgroundColor: [coveragePct !== null ? '#22c55e' : '#94a3b8','#cbd5e1'], borderWidth: 0 }] },
+      data: { labels: ['Covered', 'Gap'], datasets: [{ data: [${coveragePctNum}, ${coverageGap}], backgroundColor: ['${coveragePct !== null ? '#22c55e' : '#94a3b8'}','#cbd5e1'], borderWidth: 0 }] },
       options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: true, position: 'bottom', labels: { color: tc } } } }
     });
     _charts.aiTimeline = new Chart(document.getElementById('chart-ai-timeline'), {
@@ -1132,8 +1134,8 @@ function renderScripts(data) {
     // Restore hierarchy view preference
     setHierarchyView(localStorage.getItem('hierarchyView') || 'column');
 
-    // Restore filter state
-    ['f-epic','f-status','f-priority','f-bug-status'].forEach(id => {
+    // Restore filter state (bug status intentionally not restored — bug status changes between sessions)
+    ['f-epic','f-status','f-priority'].forEach(id => {
       const el = document.getElementById(id);
       const val = localStorage.getItem(id);
       if (el && val) el.value = val;
