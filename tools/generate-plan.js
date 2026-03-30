@@ -36,7 +36,7 @@ const DEFAULTS = {
   },
   coverage: { summaryPath: 'docs/coverage/coverage-summary.json' },
   progress: { path: 'progress.md' },
-  costs: { hourlyRate: 100, tshirtHours: { S: 4, M: 8, L: 16, XL: 32 } },
+  costs: { hourlyRate: 100, tshirtHours: { XS: 2, S: 4, M: 8, L: 16, XL: 32 } },
 };
 
 function loadConfig() {
