@@ -1,6 +1,7 @@
 'use strict';
 
 const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const jsEsc = s => String(s ?? '').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n');
 
 function badge(text) {
   const colors = {
@@ -135,6 +136,8 @@ function renderSidebar() {
       path: 'M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25' },
     { id: 'charts',       label: 'Charts',
       path: 'M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z' },
+    { id: 'trends',       label: 'Trends',
+      path: 'M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941' },
     { id: 'costs',        label: 'Costs',
       path: 'M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
     { id: 'bugs',         label: 'Bugs',
@@ -194,7 +197,7 @@ function renderHierarchyTab(data) {
       return `
       <div class="story-row ml-6 border-l-2 border-slate-200 dark:border-slate-600 pl-4 py-2"
            data-epic="${story.epicId}" data-status="${story.status}" data-priority="${story.priority}">
-        <div class="flex flex-wrap items-center gap-2 cursor-pointer" onclick="toggleACs('${esc(story.id)}')">
+        <div class="flex flex-wrap items-center gap-2 cursor-pointer" onclick="toggleACs('${jsEsc(story.id)}')">
           <span class="font-mono text-xs text-slate-500 whitespace-nowrap">${story.id}</span>
           ${badge(story.status)} ${badge(story.priority)}
           <span class="text-sm font-medium">${esc(story.title)}</span>
@@ -225,15 +228,15 @@ function renderHierarchyTab(data) {
       return `
       <div class="story-row story-card-hover bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg p-3 flex flex-col gap-1"
            data-epic="${story.epicId}" data-status="${story.status}" data-priority="${story.priority}">
-        <div class="flex flex-wrap items-center gap-1 cursor-pointer" onclick="toggleCardACs('${esc(story.id)}')">
+        <div class="flex flex-wrap items-center gap-1 cursor-pointer" onclick="toggleCardACs('${jsEsc(story.id)}')">
           ${badge(story.status)} ${badge(story.priority)}
           <span class="font-mono text-xs text-slate-500 ml-1">${story.id}</span>
         </div>
-        <p class="text-sm font-medium dark:text-slate-100 leading-snug cursor-pointer" onclick="toggleCardACs('${esc(story.id)}')">${esc(story.title)}</p>
+        <p class="text-sm font-medium dark:text-slate-100 leading-snug cursor-pointer" onclick="toggleCardACs('${jsEsc(story.id)}')">${esc(story.title)}</p>
         <div class="flex items-center gap-2 mt-auto pt-1 text-xs text-slate-500 border-t border-slate-100 dark:border-slate-600">
           <span>${esc(story.estimate || '?')}</span>
           <span>${cost}</span>
-          ${acTotal ? `<span class="cursor-pointer" onclick="toggleCardACs('${esc(story.id)}')">${acDone}/${acTotal} ACs ▾</span>` : ''}
+          ${acTotal ? `<span class="cursor-pointer" onclick="toggleCardACs('${jsEsc(story.id)}')">${acDone}/${acTotal} ACs ▾</span>` : ''}
           <span class="ml-auto">${riskBadge}</span>
         </div>
         ${acTotal ? `<ul id="card-acs-${story.id}" class="hidden mt-1 pt-1 border-t border-slate-100 dark:border-slate-600 space-y-0.5">${acItems || '<li class="text-xs text-slate-500 pl-4">No ACs yet</li>'}</ul>` : ''}
@@ -254,7 +257,7 @@ function renderHierarchyTab(data) {
 
   const columnView = epicBlocks.map(({ epic, accent, epicProjected, storyRows }) => `
     <div class="epic-block mb-4 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden" style="border-left:4px solid ${accent.border}">
-      <div class="px-4 py-3 flex flex-wrap items-center gap-3 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('epic-stories-${esc(epic.id)}','epic-arrow-${esc(epic.id)}')">
+      <div class="px-4 py-3 flex flex-wrap items-center gap-3 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('epic-stories-${jsEsc(epic.id)}','epic-arrow-${jsEsc(epic.id)}')">
         <span id="epic-arrow-${esc(epic.id)}" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9654;</span>
         <span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${epic.id}</span>
         ${badge(epic.status)}
@@ -267,7 +270,7 @@ function renderHierarchyTab(data) {
 
   const cardView = epicBlocks.map(({ epic, accent, epicProjected, storyCards }) => `
     <div class="mb-8">
-      <div class="epic-block border border-slate-200 dark:border-slate-700 rounded-t-lg px-4 py-3 mb-0 cursor-pointer select-none" style="border-left:4px solid ${accent.border};background:${accent.bg}" onclick="toggleSection('epic-cards-${esc(epic.id)}','epic-card-arrow-${esc(epic.id)}')">
+      <div class="epic-block border border-slate-200 dark:border-slate-700 rounded-t-lg px-4 py-3 mb-0 cursor-pointer select-none" style="border-left:4px solid ${accent.border};background:${accent.bg}" onclick="toggleSection('epic-cards-${jsEsc(epic.id)}','epic-card-arrow-${jsEsc(epic.id)}')">
         <div class="flex flex-wrap items-center gap-3">
           <span id="epic-card-arrow-${esc(epic.id)}" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9654;</span>
           <span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${epic.id}</span>
@@ -408,7 +411,7 @@ function renderTraceabilityTab(data) {
       ? '<span class="inline-block px-1.5 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">Not Run</span>'
       : '';
     const epicHeader = `<tr class="cursor-pointer select-none" style="background:${accent.bg}"
-      onclick="(function(){var rows=document.querySelectorAll('[data-trace-epic=\\'${epic.id}\\']');var arr=document.getElementById('${epicRowId}-arrow');var collapsed=arr.textContent==='\\u25b6';rows.forEach(function(r){r.classList.toggle('hidden',!collapsed);});arr.textContent=collapsed?'\\u25bc':'\\u25b6';})()" >
+      onclick="toggleTraceEpic('${jsEsc(epic.id)}')" >
       <td colspan="${data.testCases.length + 1}" class="px-3 py-2" style="border-left:4px solid ${accent.border}">
         <div class="flex items-center gap-2 flex-wrap">
           <span id="${epicRowId}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9654;</span>
@@ -456,6 +459,153 @@ function renderTraceabilityTab(data) {
       </table>
     </div>
   </div>`;
+}
+
+function renderTrendsTab(data, options = {}) {
+  const trends = options.trends || null;
+  const hasData = trends && trends.dates && trends.dates.length >= 2;
+
+  const datesJson = trends ? JSON.stringify(trends.dates.map(d => d.replace('T', ' ').slice(0, 16))) : '[]';
+  const doneJson = trends ? JSON.stringify(trends.doneCounts) : '[]';
+  const totalJson = trends ? JSON.stringify(trends.totalStories) : '[]';
+  const costJson = trends ? JSON.stringify(trends.aiCosts.map(c => c.toFixed(2))) : '[]';
+  const coverageJson = trends ? JSON.stringify(trends.coverage.map(c => c !== null ? c.toFixed(1) : null)) : '[]';
+  const velocityJson = trends ? JSON.stringify(trends.velocity.map(v => v.toFixed(1))) : '[]';
+  const bugsJson = trends ? JSON.stringify(trends.openBugs) : '[]';
+  const riskJson = trends ? JSON.stringify(trends.atRisk) : '[]';
+  const inputTokensJson = trends ? JSON.stringify(trends.inputTokens) : '[]';
+  const outputTokensJson = trends ? JSON.stringify(trends.outputTokens) : '[]';
+
+  const placeholder = `
+    <div class="col-span-full flex flex-col items-center justify-center py-16 text-center">
+      <svg class="w-16 h-16 text-slate-300 dark:text-slate-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" />
+      </svg>
+      <p class="text-slate-500 dark:text-slate-400 text-lg font-medium">Generate the dashboard at least twice to see trends</p>
+      <p class="text-slate-400 dark:text-slate-500 text-sm mt-1">Each generation creates a snapshot in .history/</p>
+    </div>`;
+
+  return `
+  <div id="tab-trends" class="p-6 hidden" role="tabpanel" aria-labelledby="tab-btn-trends">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      ${!hasData ? placeholder : ''}
+      ${hasData ? `
+      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+        <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Done Stories Over Time</h3>
+        <div style="height:250px;position:relative"><canvas id="chart-trends-progress"></canvas></div>
+      </div>
+
+      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+        <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">AI Cost Over Time</h3>
+        <div style="height:250px;position:relative"><canvas id="chart-trends-cost"></canvas></div>
+      </div>
+
+      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+        <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Coverage Over Time</h3>
+        <div style="height:250px;position:relative"><canvas id="chart-trends-coverage"></canvas></div>
+      </div>
+
+      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+        <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Velocity (Story Points)</h3>
+        <div style="height:250px;position:relative"><canvas id="chart-trends-velocity"></canvas></div>
+      </div>
+
+      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+        <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Open Bugs Over Time</h3>
+        <div style="height:250px;position:relative"><canvas id="chart-trends-bugs"></canvas></div>
+      </div>
+
+      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+        <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">At-Risk Stories Over Time</h3>
+        <div style="height:250px;position:relative"><canvas id="chart-trends-risk"></canvas></div>
+      </div>
+
+      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 col-span-full">
+        <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Token Usage Over Time</h3>
+        <div style="height:250px;position:relative"><canvas id="chart-trends-tokens"></canvas></div>
+      </div>
+      ` : ''}
+    </div>
+  </div>
+  <script>
+  function initTrendsCharts() {
+    var tc = chartTextColor();
+    var labels = ${datesJson};
+    var hasEnough = labels.length >= 2;
+
+    if (hasEnough && document.getElementById('chart-trends-progress')) {
+      _charts.trendsProgress = new Chart(document.getElementById('chart-trends-progress'), {
+        type: 'line',
+        data: { labels: labels, datasets: [
+          { label: 'Done', data: ${doneJson}, borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,0.1)', fill: true, tension: 0.3 },
+          { label: 'Total', data: ${totalJson}, borderColor: '#64748b', backgroundColor: 'transparent', borderDash: [5,5], tension: 0.3 }
+        ]},
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc }}}, scales: { x: { ticks: { color: tc }, grid: { color: '#e2e8f0' }}, y: { ticks: { color: tc }, grid: { color: '#e2e8f0' }, beginAtZero: true }}}
+      });
+    }
+
+    if (hasEnough && document.getElementById('chart-trends-cost')) {
+      _charts.trendsCost = new Chart(document.getElementById('chart-trends-cost'), {
+        type: 'line',
+        data: { labels: labels, datasets: [
+          { label: 'Total Cost ($)', data: ${costJson}, borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.1)', fill: true, tension: 0.3 }
+        ]},
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc }}}, scales: { x: { ticks: { color: tc }, grid: { color: '#e2e8f0' }}, y: { ticks: { color: tc }, grid: { color: '#e2e8f0' }, beginAtZero: true }}}
+      });
+    }
+
+    if (hasEnough && document.getElementById('chart-trends-coverage')) {
+      _charts.trendsCoverage = new Chart(document.getElementById('chart-trends-coverage'), {
+        type: 'line',
+        data: { labels: labels, datasets: [
+          { label: 'Coverage %', data: ${coverageJson}, borderColor: '#8b5cf6', backgroundColor: 'rgba(139,92,246,0.1)', fill: true, tension: 0.3 }
+        ]},
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc }}}, scales: { x: { ticks: { color: tc }, grid: { color: '#e2e8f0' }}, y: { min: 0, max: 100, ticks: { color: tc }, grid: { color: '#e2e8f0' }}}}
+      });
+    }
+
+    if (hasEnough && document.getElementById('chart-trends-velocity')) {
+      _charts.trendsVelocity = new Chart(document.getElementById('chart-trends-velocity'), {
+        type: 'bar',
+        data: { labels: labels, datasets: [
+          { label: 'Story Points', data: ${velocityJson}, backgroundColor: '#3b82f6' }
+        ]},
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc }}}, scales: { x: { ticks: { color: tc }, grid: { color: '#e2e8f0' }}, y: { ticks: { color: tc }, grid: { color: '#e2e8f0' }, beginAtZero: true }}}
+      });
+    }
+
+    if (hasEnough && document.getElementById('chart-trends-bugs')) {
+      _charts.trendsBugs = new Chart(document.getElementById('chart-trends-bugs'), {
+        type: 'line',
+        data: { labels: labels, datasets: [
+          { label: 'Open Bugs', data: ${bugsJson}, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)', fill: true, tension: 0.3 }
+        ]},
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc }}}, scales: { x: { ticks: { color: tc }, grid: { color: '#e2e8f0' }}, y: { ticks: { color: tc }, grid: { color: '#e2e8f0' }, beginAtZero: true }}}
+      });
+    }
+
+    if (hasEnough && document.getElementById('chart-trends-risk')) {
+      _charts.trendsRisk = new Chart(document.getElementById('chart-trends-risk'), {
+        type: 'line',
+        data: { labels: labels, datasets: [
+          { label: 'At-Risk Stories', data: ${riskJson}, borderColor: '#f97316', backgroundColor: 'rgba(249,115,22,0.1)', fill: true, tension: 0.3 }
+        ]},
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc }}}, scales: { x: { ticks: { color: tc }, grid: { color: '#e2e8f0' }}, y: { ticks: { color: tc }, grid: { color: '#e2e8f0' }, beginAtZero: true }}}
+      });
+    }
+
+    if (hasEnough && document.getElementById('chart-trends-tokens')) {
+      _charts.trendsTokens = new Chart(document.getElementById('chart-trends-tokens'), {
+        type: 'line',
+        data: { labels: labels, datasets: [
+          { label: 'Input', data: ${inputTokensJson}, borderColor: '#06b6d4', backgroundColor: 'rgba(6,182,212,0.2)', fill: true },
+          { label: 'Output', data: ${outputTokensJson}, borderColor: '#ec4899', backgroundColor: 'rgba(236,72,153,0.2)', fill: true }
+        ]},
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc }}}, scales: { x: { ticks: { color: tc }, grid: { color: '#e2e8f0' }}, y: { ticks: { color: tc }, grid: { color: '#e2e8f0' }, beginAtZero: true }}}
+      });
+    }
+  }
+  </script>`;
 }
 
 function renderChartsTab(data) {
@@ -611,7 +761,7 @@ function renderCostsTab(data) {
     const epicAI = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).costUsd || 0), 0);
     const epicIn = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).inputTokens || 0), 0);
     const epicOut = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).outputTokens || 0), 0);
-    const ceid = `costs-ep-${epic.id}`;
+    const ceid = `costs-ep-${jsEsc(epic.id)}`;
     const storyRows = epicStories.map(story => {
       const projected = (data.costs[story.id] && data.costs[story.id].projectedUsd || 0);
       const ai = data.costs[story.id] || {};
@@ -734,7 +884,7 @@ function renderCostsTab(data) {
     }).join('');
     const epicProjTotal = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).projectedUsd || 0), 0);
     const epicAITotal   = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).costUsd || 0), 0);
-    const cceid = `costs-card-ep-${epic.id}`;
+    const cceid = `costs-card-ep-${jsEsc(epic.id)}`;
     const accent2 = EPIC_ACCENT_COLORS[data.epics.indexOf(epic) % EPIC_ACCENT_COLORS.length];
     return `<div class="mb-6 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden" style="border-left:4px solid ${accent2.border}">
       <div class="flex items-center gap-2 px-4 py-3 flex-wrap cursor-pointer select-none" style="background:${accent2.bg}" onclick="toggleSection('${cceid}','${cceid}-arrow')">
@@ -1251,6 +1401,7 @@ function renderScripts(data) {
     updateFilterBar(name);
     setStickyTop();
     if (name === 'charts' && typeof initCharts === 'function') { initCharts(); initCharts = () => {}; }
+    if (name === 'trends' && typeof initTrendsCharts === 'function') { initTrendsCharts(); initTrendsCharts = () => {}; }
     localStorage.setItem('activeTab', name);
     history.replaceState(null, '', '#' + name);
   }
@@ -1271,6 +1422,14 @@ function renderScripts(data) {
     if (arr) arr.innerHTML = hidden ? '&#9654;' : '&#9660;';
   }
   function toggleEpic(id) { toggleSection('epic-stories-' + id, 'epic-arrow-' + id); }
+  function toggleTraceEpic(epicId) {
+    var rows = document.querySelectorAll('[data-trace-epic="' + epicId + '"]');
+    var arrow = document.getElementById('trace-epic-' + epicId + '-arrow');
+    if (!arrow) return;
+    var collapsed = arrow.textContent === '\u25b6';
+    rows.forEach(function(r) { r.classList.toggle('hidden', !collapsed); });
+    arrow.textContent = collapsed ? '\u25bc' : '\u25b6';
+  }
   function toggleKsw(id) {
     var body = document.getElementById(id + '-body');
     var arrow = document.getElementById(id + '-arrow');
@@ -1548,7 +1707,7 @@ function renderPrintCSS() {
   </style>`;
 }
 
-function renderHtml(data) {
+function renderHtml(data, options = {}) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1674,6 +1833,7 @@ function renderHtml(data) {
         ${renderKanbanTab(data)}
         ${renderTraceabilityTab(data)}
         ${renderChartsTab(data)}
+        ${renderTrendsTab(data, options)}
         ${renderCostsTab(data)}
         ${renderBugsTab(data)}
         ${renderLessonsTab(data)}

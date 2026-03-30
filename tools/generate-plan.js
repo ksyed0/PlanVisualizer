@@ -20,6 +20,7 @@ const { parseRecentActivity } = require('./lib/parse-progress');
 const { parseLessons } = require('./lib/parse-lessons');
 const { computeProjectedCost, attributeAICosts, attributeBugCosts } = require('./lib/compute-costs');
 const { detectAtRisk } = require('./lib/detect-at-risk');
+const { saveSnapshot, loadSnapshots, extractTrends } = require('./lib/snapshot');
 const { renderHtml } = require('./lib/render-html');
 
 const ROOT = path.join(__dirname, '..');
@@ -151,6 +152,14 @@ function main() {
     githubUrl: config.project.githubUrl ?? '',
   };
 
+  console.log('[generate-plan] Saving snapshot...');
+  const snapshotData = { epics, stories, bugs, costs, coverage, lessons, testCases };
+  saveSnapshot(snapshotData, { root: ROOT, commit: commitSha });
+
+  console.log('[generate-plan] Loading historical snapshots...');
+  const snapshots = loadSnapshots({ root: ROOT });
+  const trends = extractTrends(snapshots);
+
   const outputDir = path.join(ROOT, config.docs.outputDir);
   if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
 
@@ -158,7 +167,7 @@ function main() {
   fs.writeFileSync(jsonPath, JSON.stringify(data, null, 2), 'utf8');
   console.log(`[generate-plan] Written ${jsonPath}`);
 
-  const html = renderHtml(data);
+  const html = renderHtml(data, { trends });
   const htmlPath = path.join(outputDir, 'plan-status.html');
   fs.writeFileSync(htmlPath, html, 'utf8');
   console.log(`[generate-plan] Written ${htmlPath}`);

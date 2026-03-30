@@ -8,7 +8,7 @@ function detectAtRisk(stories, testCases, bugs) {
     const missingTCs = !!(hasACs && linkedTCs.length === 0);
     const noBranch = story.status === 'In Progress' && !story.branch;
     const failedTCNoBug = linkedTCs.some(tc => tc.status === 'Fail' && (!tc.defect || tc.defect === 'None'));
-    const openCriticalBug = Array.isArray(bugs) && bugs.some(
+    const openCriticalBug = Array.isArray(bugs) && bugs.some( // Array.isArray guard: bugs param may be undefined when called from certain contexts
       b => b.relatedStory === story.id &&
            (b.severity === 'Critical' || b.severity === 'High') &&
            (b.status === 'Open' || b.status === 'In Progress')
