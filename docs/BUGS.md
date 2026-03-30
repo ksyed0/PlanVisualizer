@@ -1059,8 +1059,8 @@ Steps to Reproduce:
   2. Generate plan-status.html and click the GitHub link in the About dialog
 Expected: Link opens a valid HTTPS URL or is not rendered
 Actual: javascript: URI executes arbitrary code when clicked; esc() only HTML-encodes, does not block javascript: schemes
-Status: Open
-Fix Branch: TBD
+Status: Fixed
+Fix Branch: feature/US-0048-ui-redesign-sidebar
 Lesson Encoded: No
 Estimated Cost USD: 0.15
 
@@ -1073,8 +1073,8 @@ Steps to Reproduce:
   2. Note IDs are used in id="...", data-* attributes, and onclick="...toggleACs('${story.id}')" without esc()
 Expected: All string interpolation into HTML passes through esc() — no exceptions
 Actual: Structured IDs (US-0001, BUG-0003) happen to be safe today, but any non-standard ID with <, ", or ' bypasses XSS protection
-Status: Open
-Fix Branch: TBD
+Status: Fixed
+Fix Branch: feature/US-0048-ui-redesign-sidebar
 Lesson Encoded: No
 Estimated Cost USD: 0.25
 

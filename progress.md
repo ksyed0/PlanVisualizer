@@ -4,6 +4,34 @@ Running log of session activity, errors, test results, and blockers.
 
 ---
 
+## Session 11 — 2026-03-29
+
+### What Was Done
+- Implemented US-0048 (EPIC-0007): complete UI redesign in `tools/lib/render-html.js`
+  - Replaced horizontal tab bar with responsive vertical sidebar (200px desktop, 160px tablet portrait, 44px icon-only <768px)
+  - Rewrote topbar: neutral dark/white bar (removed blue gradient), 5 inline stat chips
+  - Bug chip conditional colour: red = Critical/High open, amber = Med/Low only, muted = 0 open
+  - Coverage chip turns red (`chip-danger`) when below 80% target
+  - Inline SVG Heroicons (Heroicons outline v2); no CDN dependency
+  - Responsive CSS: 4 tiers including foldable (`horizontal-viewport-segments: 2`), phone portrait (relative topbar), phone landscape compact (40px topbar)
+  - Kanban sticky column headers + per-column `overflow-y: auto` scroll zones
+  - ARIA: `<nav aria-label="Main navigation">`, `aria-current="page"`, `role="tabpanel"`, `aria-labelledby`, `aria-label` on filter inputs
+  - BUG-0058 fix: `githubUrl` validated to `https://` prefix only
+  - BUG-0059 fix: all IDs in `onclick` attrs wrapped with `esc()`
+  - Updated `showTab()` JS to manage `nav-active` + `aria-current`
+  - Updated `setStickyTop()` to handle fixed vs relative topbar across breakpoints
+  - Created design spec: `docs/superpowers/specs/2026-03-29-ui-redesign-design.md`
+- Fixed 2 test assertions to match new HTML structure
+- Opened PR #83 (feature/US-0048-ui-redesign-sidebar → develop)
+
+### Test Results
+- 175 tests pass. Statement coverage: 96.71%. Branch coverage: 81.91%. Gate: ≥80% ✓
+
+### Errors or Blockers
+- None.
+
+---
+
 ## Session 10 — 2026-03-28
 
 ### What Was Done

@@ -134,3 +134,17 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 **Rule:** When a panel overlays part of the screen (e.g. `position:fixed; top:0; right:0; width:280px`), any close button positioned at the same coordinates outside the panel will be covered by the panel once it opens. Always place the close button as a child element inside the panel header so it is never obscured. For desktop-only toggle buttons outside the panel, verify the panel dimensions do not reach that coordinate.
 *Learned when BUG-0022 showed the `≡ Activity` toggle at `fixed top-4 right-4` was covered by the panel (`fixed top-0 right-0 width:280px`) after opening, making it impossible to close. Fixed by adding a `×` button inside the panel with `md:hidden`.*
 **Date:** 2026-03-16
+
+---
+
+## L-0020 — `position:fixed` topbar with auto-height breaks on phone portrait
+**Rule:** A `position:fixed` topbar with `height:auto` and wrapping content (e.g. stat chips on 2 rows) doesn't scroll with the page, leaving content hidden under it. For <480px phone portrait where the topbar height is variable, switch to `position:relative` so the topbar flows in the document — then `body { padding-top: 0 }` and sidebar `top: 0`. This means the topbar scrolls away on small screens, which is acceptable trade-off over unreachable content.
+*Learned during US-0048 responsive layout design — fixed-height topbar assumption broke when chips wrapped to 2 rows on narrow screens.*
+**Date:** 2026-03-29
+
+---
+
+## L-0021 — Hover doesn't exist on touch devices; mobile nav patterns must use tap
+**Rule:** When designing icon-only sidebars or collapsed nav for mobile, never rely on `:hover` to reveal labels — touch screens have no hover state. The three valid patterns are: (a) tap icon = navigate directly, (b) tap icon = open a drawer, (c) long-press = show tooltip. "Tap to navigate" is the simplest and requires no extra UI state; use it as the default for utility dashboards.
+*Learned during US-0048 brainstorm when user asked "how does hover work on tablets and phones" — the answer was it doesn't, and the design was corrected.*
+**Date:** 2026-03-29
