@@ -43,7 +43,7 @@ function renderTopBar(data) {
   const inProgress = data.stories.filter(s => s.status === 'In Progress').length;
   const cov = data.coverage;
   const covLabel = (cov.available !== false) ? `${cov.overall.toFixed(1)}%` : 'N/A';
-  const openBugs = (data.bugs || []).filter(b => b.status !== 'Fixed');
+  const openBugs = (data.bugs || []).filter(b => !/^Fixed/i.test(b.status));
   const critHighBugs = openBugs.filter(b => ['Critical', 'High'].includes(b.severity)).length;
   const bugValueCls = openBugs.length === 0 ? '' : critHighBugs > 0 ? ' tile-danger' : ' tile-warn';
   const covValueCls = (cov.available !== false && !cov.meetsTarget) ? ' tile-danger' : '';
