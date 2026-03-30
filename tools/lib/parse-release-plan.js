@@ -64,12 +64,18 @@ function parseStoryBlock(text) {
     const m = text.match(new RegExp(`^${key}:[ \\t]*(.*)`, 'm'));
     return m ? m[1].trim() : '';
   };
-  const priority = get('Priority').match(/\((P\d)\)/);
+  const priorityRaw = get('Priority');
+  const priorityMatch = priorityRaw.match(/\((P\d)\)/);
+  let priority = priorityMatch ? priorityMatch[1] : priorityRaw;
+  if (!priorityMatch && priorityRaw) {
+    const levelMatch = priorityRaw.match(/^(High|Medium|Low)/i);
+    if (levelMatch) priority = levelMatch[1];
+  }
   return {
     id: header[1],
     epicId: header[2],
     title: header[3].trim(),
-    priority: priority ? priority[1] : get('Priority'),
+    priority: priority,
     estimate: get('Estimate'),
     status: get('Status'),
     branch: get('Branch'),

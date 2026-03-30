@@ -8,6 +8,9 @@ module.exports = [
     files: ['tools/**/*.js'],
     languageOptions: {
       sourceType: 'commonjs',
+      globals: {
+        process: 'readonly',
+      },
     },
     rules: {
       'no-unused-vars': 'warn',
