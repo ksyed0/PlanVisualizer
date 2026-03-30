@@ -297,48 +297,79 @@ function renderHierarchyTab(data) {
 function renderKanbanTab(data) {
   const cols = ['To Do','Planned','In Progress','Blocked','Done'];
   const epicOrder = [...new Set(data.stories.map(s => s.epicId).filter(Boolean))];
+  const hasUngrouped = data.stories.some(s => !s.epicId);
   const SWIM_COLORS = ['#7c3aed','#0369a1','#b45309','#166534','#9f1239','#6b21a8','#0e7490','#92400e'];
 
-  const colHtml = cols.map(col => {
-    const items = data.stories.filter(s => s.status === col);
+  const renderCard = s => `
+    <div class="story-row story-card-hover bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded p-3 mb-2"
+         data-epic="${esc(s.epicId)}" data-status="${esc(s.status)}" data-priority="${esc(s.priority)}">
+      <div class="flex gap-1 mb-1">${badge(s.priority)} <span class="text-xs text-slate-500 font-mono">${esc(s.id)}</span></div>
+      <p class="text-sm dark:text-slate-100">${esc(s.title)}</p>
+      <p class="text-xs text-slate-500 mt-1 font-mono">${esc(s.estimate || '?')}</p>
+    </div>`;
 
-    // Group by epic
-    const epicGroups = epicOrder
-      .map(epicId => ({ epicId, stories: items.filter(s => s.epicId === epicId) }))
-      .filter(g => g.stories.length > 0);
-    // Ungrouped (no epicId)
-    const ungrouped = items.filter(s => !s.epicId);
-
-    const renderCard = s => `
-        <div class="story-row story-card-hover bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded p-3 mb-2"
-             data-epic="${esc(s.epicId)}" data-status="${esc(s.status)}" data-priority="${esc(s.priority)}">
-          <div class="flex gap-1 mb-1">${badge(s.priority)} <span class="text-xs text-slate-500 font-mono">${esc(s.id)}</span></div>
-          <p class="text-sm dark:text-slate-100">${esc(s.title)}</p>
-          <p class="text-xs text-slate-500 mt-1 font-mono">${esc(s.estimate || '?')}</p>
-        </div>`;
-
-    const swimHtml = epicGroups.map(({ epicId, stories: gs }) => {
-      const color = SWIM_COLORS[epicOrder.indexOf(epicId) % SWIM_COLORS.length];
-      return `<div class="kanban-swimlane" style="border-left:3px solid ${color}">
-        <div class="kanban-swim-header" style="color:${color}">${esc(epicId)}</div>
-        ${gs.map(renderCard).join('')}
-      </div>`;
-    }).join('');
-
-    const ungroupedHtml = ungrouped.map(renderCard).join('');
-
-    return `
-    <div class="kanban-col">
-      <div class="kanban-col-header">
+  // Column header row
+  const headerRow = `<div class="ksw-header-row">
+    <div class="ksw-label-cell"></div>
+    ${cols.map(col => {
+      const count = data.stories.filter(s => s.status === col).length;
+      return `<div class="ksw-status-cell">
         <span class="text-xs font-semibold uppercase tracking-widest">${col}</span>
-        <span class="text-xs font-normal opacity-60 ml-1">(${items.length})</span>
+        <span class="text-xs font-normal opacity-60 ml-1">(${count})</span>
+      </div>`;
+    }).join('')}
+  </div>`;
+
+  // Epic swimlane rows
+  const swimlaneRows = epicOrder.map((epicId, i) => {
+    const color = SWIM_COLORS[i % SWIM_COLORS.length];
+    const epicTitle = (data.epics || []).find(e => e.id === epicId);
+    const epicLabel = epicTitle ? `${esc(epicId)}: ${esc(epicTitle.title)}` : esc(epicId);
+    const epicCount = data.stories.filter(s => s.epicId === epicId).length;
+    const sid = `ksw-${epicId.replace(/[^a-zA-Z0-9]/g, '-')}`;
+    return `
+    <div class="ksw-swimlane" style="border-left:3px solid ${color}">
+      <div class="ksw-swim-hdr" onclick="toggleKsw('${sid}')" style="border-left-color:${color}">
+        <span id="${sid}-arrow" class="ksw-arrow">&#9660;</span>
+        <span class="ksw-epic-title" style="color:${color}">${epicLabel}</span>
+        <span class="ksw-epic-count">${epicCount}</span>
       </div>
-      <div class="kanban-col-body">
-        ${swimHtml}${ungroupedHtml}
+      <div id="${sid}-body" class="ksw-swim-body">
+        <div class="ksw-label-cell"></div>
+        ${cols.map(col => {
+          const items = data.stories.filter(s => s.epicId === epicId && s.status === col);
+          return `<div class="ksw-cards-cell">${items.map(renderCard).join('')}</div>`;
+        }).join('')}
       </div>
     </div>`;
   }).join('');
-  return `<div id="tab-kanban" class="p-6 hidden tab-fill" role="tabpanel" aria-labelledby="tab-btn-kanban"><div class="kanban-outer">${colHtml}</div></div>`;
+
+  // Ungrouped row
+  const ungroupedRow = hasUngrouped ? (() => {
+    const sid = 'ksw-ungrouped';
+    const items = data.stories.filter(s => !s.epicId);
+    return `
+    <div class="ksw-swimlane" style="border-left:3px solid #64748b">
+      <div class="ksw-swim-hdr" onclick="toggleKsw('${sid}')" style="border-left-color:#64748b">
+        <span id="${sid}-arrow" class="ksw-arrow">&#9660;</span>
+        <span class="ksw-epic-title" style="color:#64748b">No Epic</span>
+        <span class="ksw-epic-count">${items.length}</span>
+      </div>
+      <div id="${sid}-body" class="ksw-swim-body">
+        <div class="ksw-label-cell"></div>
+        ${cols.map(col => {
+          const ci = items.filter(s => s.status === col);
+          return `<div class="ksw-cards-cell">${ci.map(renderCard).join('')}</div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  })() : '';
+
+  return `<div id="tab-kanban" class="hidden tab-fill" role="tabpanel" aria-labelledby="tab-btn-kanban">
+    <div class="ksw-outer">
+      <div class="ksw-board">${headerRow}${swimlaneRows}${ungroupedRow}</div>
+    </div>
+  </div>`;
 }
 
 function renderTraceabilityTab(data) {
@@ -1051,6 +1082,14 @@ function renderScripts(data) {
     const el = document.getElementById('epic-stories-' + id);
     if (el) el.classList.toggle('hidden');
   }
+  function toggleKsw(id) {
+    var body = document.getElementById(id + '-body');
+    var arrow = document.getElementById(id + '-arrow');
+    if (!body) return;
+    var isCollapsed = body.classList.contains('hidden');
+    body.classList.toggle('hidden', !isCollapsed);
+    if (arrow) arrow.innerHTML = isCollapsed ? '&#9660;' : '&#9654;';
+  }
   function toggleACs(id) {
     const el = document.getElementById('acs-' + id);
     if (el) el.classList.toggle('hidden');
@@ -1283,13 +1322,20 @@ function renderPrintCSS() {
   .tab-fill .scroll-table { flex: 1; min-height: 0; max-height: none; }
   .scroll-table { overflow: auto; max-height: calc(100vh - var(--sticky-top, 100px) - 3rem); }
   .scroll-table thead th { position: sticky; top: 0; z-index: 10; background-color: var(--clr-header-bg); color: var(--clr-header-text); }
-  /* Kanban: sticky column headers + per-column scroll */
-  .kanban-outer { display: flex; gap: 12px; overflow-x: auto; height: calc(100vh - var(--sticky-top, 100px) - 3rem); }
-  .kanban-col { flex: 0 0 220px; display: flex; flex-direction: column; min-width: 180px; }
-  .kanban-col-header { position: sticky; top: 0; z-index: 5; background: var(--clr-header-bg); color: var(--clr-header-text); padding: 8px 12px; border-bottom: 1px solid var(--clr-border); flex-shrink: 0; }
-  .kanban-col-body { flex: 1; overflow-y: auto; padding: 8px 4px; }
-  .kanban-swimlane { margin-bottom: 10px; padding-left: 6px; }
-  .kanban-swim-header { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 4px 4px 0; opacity: 0.85; }
+  /* Kanban: Epic swimlane grid */
+  .ksw-outer { overflow: auto; height: calc(100vh - var(--sticky-top, 100px) - 1rem); padding: 16px; }
+  .ksw-board { min-width: calc(160px + 5 * 200px); }
+  .ksw-header-row, .ksw-swim-body { display: grid; grid-template-columns: 160px repeat(5, minmax(200px, 1fr)); }
+  .ksw-status-cell { padding: 8px 10px; background: var(--clr-header-bg); color: var(--clr-header-text); border-bottom: 2px solid var(--clr-border); position: sticky; top: 0; z-index: 6; }
+  .ksw-label-cell { padding: 8px 10px; }
+  .ksw-header-row .ksw-label-cell { background: var(--clr-header-bg); border-bottom: 2px solid var(--clr-border); position: sticky; top: 0; z-index: 6; }
+  .ksw-swimlane { border-left: 3px solid transparent; margin-bottom: 4px; }
+  .ksw-swim-hdr { display: flex; align-items: center; gap: 8px; padding: 6px 12px; cursor: pointer; background: var(--clr-surface); border-bottom: 1px solid var(--clr-border); user-select: none; }
+  .ksw-swim-hdr:hover { filter: brightness(1.05); }
+  .ksw-arrow { font-size: 10px; color: var(--clr-text-muted); flex-shrink: 0; }
+  .ksw-epic-title { font-size: 12px; font-weight: 700; letter-spacing: 0.04em; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ksw-epic-count { font-size: 11px; color: var(--clr-text-muted); flex-shrink: 0; }
+  .ksw-cards-cell { padding: 8px 6px; border-right: 1px solid var(--clr-border); min-height: 40px; }
   html.dark .scroll-table table thead { background-color: transparent; }
   html.dark table tbody tr { border-color: var(--clr-border) !important; }
   html.dark .bg-white { background-color: var(--clr-panel-bg) !important; }
