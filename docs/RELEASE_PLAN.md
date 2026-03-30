@@ -950,4 +950,16 @@ Acceptance Criteria:
   - [x] AC-0135: renderHierarchyTab() defines a fixed palette of 6–8 accent colours (one per epic slot, cycling if there are more epics than colours); each epic block receives a border-l-4 left border in its assigned colour
   - [x] AC-0136: The left-border accent colour is also used to tint the epic header background very subtly (e.g. bg-[color]/10) so the visual association between border and header is clear; story rows within the epic retain standard card styling
 Dependencies: US-0040
+
+US-0048 (EPIC-0007): As a user, I want the dashboard to use a sidebar navigation, blue gradient header with glassmorphic stat tiles, and epic swimlanes on the Kanban board, so that the layout is more navigable and visually distinctive.
+Priority: High (P1)
+Estimate: L
+Status: Done
+Branch: feature/US-0048-ui-redesign-sidebar
+Acceptance Criteria:
+  - [x] AC-0137: Dashboard replaces horizontal tab strip with a vertical sidebar nav (200px on desktop, icon-only on mobile) with inline SVG icons and active state highlighting
+  - [x] AC-0138: Topbar uses a blue gradient background with glassmorphic stat tiles showing Stories, In Progress, Bugs Open, Coverage, AI Cost, and Estimated projected cost
+  - [x] AC-0139: Kanban tab groups stories into Epic swimlanes within each status column
+  - [x] AC-0140: All 87 open bugs from prior sessions are resolved and marked Fixed
+Dependencies: US-0047
 ```

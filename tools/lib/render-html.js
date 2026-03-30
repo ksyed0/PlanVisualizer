@@ -296,11 +296,37 @@ function renderHierarchyTab(data) {
 
 function renderKanbanTab(data) {
   const cols = ['To Do','Planned','In Progress','Blocked','Done'];
+  const epicOrder = [...new Set(data.stories.map(s => s.epicId).filter(Boolean))];
+  const SWIM_COLORS = ['#7c3aed','#0369a1','#b45309','#166534','#9f1239','#6b21a8','#0e7490','#92400e'];
+
   const colHtml = cols.map(col => {
-    const items = data.stories.filter(s =>
-      col === 'Planned' ? s.status === 'Planned' :
-      col === 'To Do' ? s.status === 'To Do' : s.status === col
-    );
+    const items = data.stories.filter(s => s.status === col);
+
+    // Group by epic
+    const epicGroups = epicOrder
+      .map(epicId => ({ epicId, stories: items.filter(s => s.epicId === epicId) }))
+      .filter(g => g.stories.length > 0);
+    // Ungrouped (no epicId)
+    const ungrouped = items.filter(s => !s.epicId);
+
+    const renderCard = s => `
+        <div class="story-row story-card-hover bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded p-3 mb-2"
+             data-epic="${esc(s.epicId)}" data-status="${esc(s.status)}" data-priority="${esc(s.priority)}">
+          <div class="flex gap-1 mb-1">${badge(s.priority)} <span class="text-xs text-slate-500 font-mono">${esc(s.id)}</span></div>
+          <p class="text-sm dark:text-slate-100">${esc(s.title)}</p>
+          <p class="text-xs text-slate-500 mt-1 font-mono">${esc(s.estimate || '?')}</p>
+        </div>`;
+
+    const swimHtml = epicGroups.map(({ epicId, stories: gs }) => {
+      const color = SWIM_COLORS[epicOrder.indexOf(epicId) % SWIM_COLORS.length];
+      return `<div class="kanban-swimlane" style="border-left:3px solid ${color}">
+        <div class="kanban-swim-header" style="color:${color}">${esc(epicId)}</div>
+        ${gs.map(renderCard).join('')}
+      </div>`;
+    }).join('');
+
+    const ungroupedHtml = ungrouped.map(renderCard).join('');
+
     return `
     <div class="kanban-col">
       <div class="kanban-col-header">
@@ -308,13 +334,7 @@ function renderKanbanTab(data) {
         <span class="text-xs font-normal opacity-60 ml-1">(${items.length})</span>
       </div>
       <div class="kanban-col-body">
-        ${items.map(s => `
-        <div class="story-row story-card-hover bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded p-3 mb-2"
-             data-epic="${esc(s.epicId)}" data-status="${esc(s.status)}" data-priority="${esc(s.priority)}">
-          <div class="flex gap-1 mb-1">${badge(s.priority)} <span class="text-xs text-slate-500 font-mono">${esc(s.id)}</span></div>
-          <p class="text-sm dark:text-slate-100">${esc(s.title)}</p>
-          <p class="text-xs text-slate-500 mt-1 font-mono">${esc(s.epicId)} · ${esc(s.estimate || '?')}</p>
-        </div>`).join('')}
+        ${swimHtml}${ungroupedHtml}
       </div>
     </div>`;
   }).join('');
@@ -1263,6 +1283,8 @@ function renderPrintCSS() {
   .kanban-col { flex: 0 0 220px; display: flex; flex-direction: column; min-width: 180px; }
   .kanban-col-header { position: sticky; top: 0; z-index: 5; background: var(--clr-header-bg); color: var(--clr-header-text); padding: 8px 12px; border-bottom: 1px solid var(--clr-border); flex-shrink: 0; }
   .kanban-col-body { flex: 1; overflow-y: auto; padding: 8px 4px; }
+  .kanban-swimlane { margin-bottom: 10px; padding-left: 6px; }
+  .kanban-swim-header { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 4px 4px 0; opacity: 0.85; }
   html.dark .scroll-table table thead { background-color: transparent; }
   html.dark table tbody tr { border-color: var(--clr-border) !important; }
   html.dark .bg-white { background-color: var(--clr-panel-bg) !important; }
@@ -1345,7 +1367,7 @@ function renderHtml(data) {
 
     /* ── Responsive tiers ───────────────────────────── */
     /* Activity panel offset: ≥768px */
-    @media (min-width: 768px) { body { padding-right: 280px; } }
+    @media (min-width: 768px) { body { padding-right: 280px; } #topbar-fixed { right: 280px; } }
 
     /* Tablet portrait / unfolded foldable (768–1023px) */
     @media (min-width: 768px) and (max-width: 1023px) {

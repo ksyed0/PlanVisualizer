@@ -8,7 +8,7 @@ Single source of truth for the next available ID in every artefact sequence.
 | EPIC         | EPIC-0008             | EPIC-0007         |
 | US           | US-0049               | US-0048           |
 | TASK         | TASK-0042             | TASK-0041         |
-| AC           | AC-0137               | AC-0136           |
+| AC           | AC-0141               | AC-0140           |
 | TC           | TC-0140               | TC-0139           |
 | BUG          | BUG-0091              | BUG-0090          |
 

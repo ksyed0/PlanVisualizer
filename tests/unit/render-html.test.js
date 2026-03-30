@@ -82,7 +82,7 @@ describe('renderHtml — recent activity panel', () => {
   it('panel starts at 280px width by default', () => {
     const html = renderHtml(sampleData);
     expect(html).toMatch(/width:280px/);
-    expect(html).toMatch(/@media \(min-width: 768px\) \{ body \{ padding-right: 280px; \} \}/);
+    expect(html).toMatch(/@media \(min-width: 768px\) \{[^}]*body \{ padding-right: 280px; \}/);
   });
 
   it('collapsed strip contains vertical label text', () => {
