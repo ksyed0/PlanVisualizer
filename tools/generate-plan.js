@@ -127,7 +127,12 @@ function main() {
   const generatedAt = new Date().toISOString();
   const commitSha = getCommitSha();
   const buildNumber = getBuildNumber();
-  const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
+  let pkg;
+  try {
+    pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
+  } catch (e) {
+    throw new Error(`Failed to read package.json: ${e.message}`);
+  }
 
   const sessionTimeline = deduplicateSessions(costRows)
     .sort((a, b) => a.date.localeCompare(b.date))

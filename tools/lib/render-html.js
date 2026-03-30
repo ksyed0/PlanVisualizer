@@ -23,7 +23,7 @@ function badge(text) {
     'Low':         'border border-[#475569] bg-[#0f1520] text-[#94a3b8]',
   };
   const cls = colors[text] || 'border border-[#475569] bg-[#0f1520] text-[#94a3b8]';
-  return `<span class="inline-block px-2 py-0.5 rounded text-xs font-medium ${cls}">${text}</span>`;
+  return `<span class="inline-block px-2 py-0.5 rounded text-xs font-medium ${cls}">${esc(text)}</span>`;
 }
 
 function usd(n) {
@@ -45,9 +45,8 @@ function renderTopBar(data) {
   const covLabel = (cov.available !== false) ? `${cov.overall.toFixed(1)}%` : 'N/A';
   const openBugs = (data.bugs || []).filter(b => b.status !== 'Fixed');
   const critHighBugs = openBugs.filter(b => ['Critical', 'High'].includes(b.severity)).length;
-  const bugChipCls = openBugs.length === 0
-    ? 'chip chip-neutral'
-    : critHighBugs > 0 ? 'chip chip-danger' : 'chip chip-warning';
+  const bugValueCls = openBugs.length === 0 ? '' : critHighBugs > 0 ? ' tile-danger' : ' tile-warn';
+  const covValueCls = (cov.available !== false && !cov.meetsTarget) ? ' tile-danger' : '';
   const genAt = data.generatedAt;
   return `
   <header id="topbar-fixed">
@@ -56,16 +55,31 @@ function renderTopBar(data) {
         <div class="flex items-center gap-2 flex-wrap">
           <h1 class="topbar-title">${esc(data.projectName)}</h1>
           <button onclick="openAbout()" class="topbar-btn">About</button>
-          <button onclick="toggleTheme()" id="theme-toggle" class="topbar-btn" aria-label="Toggle dark/light mode"><span id="theme-icon">☀</span></button>
+          <button onclick="toggleTheme()" id="theme-toggle" class="topbar-btn" aria-label="Toggle dark/light mode"><span id="theme-icon">&#9788;</span></button>
         </div>
         <p class="topbar-tagline">${esc(data.tagline)}&nbsp;·&nbsp;Updated <span id="gen-time" data-iso="${genAt}"></span>&nbsp;·&nbsp;<code class="font-mono" style="font-size:10px">${esc(data.commitSha)}</code></p>
       </div>
-      <div class="topbar-chips">
-        <span class="chip" title="Stories done / total">&#128203; ${done}/${data.stories.length}</span>
-        <span class="chip" title="In Progress">&#9889; ${inProgress}</span>
-        <span class="${bugChipCls}" title="Open bugs">&#128027; ${openBugs.length}</span>
-        <span class="chip chip-coverage${(cov.available !== false && !cov.meetsTarget) ? ' chip-danger' : ''}" title="Line coverage: ${covLabel}">${covLabel}</span>
-        <span class="chip chip-cost font-mono" title="AI cost to date">${usd(totalAI)}</span>
+      <div class="topbar-tiles">
+        <div class="topbar-tile">
+          <span class="tile-value">&#128203; ${done}/${data.stories.length}</span>
+          <span class="tile-label">Stories</span>
+        </div>
+        <div class="topbar-tile">
+          <span class="tile-value">&#9889; ${inProgress}</span>
+          <span class="tile-label">In Progress</span>
+        </div>
+        <div class="topbar-tile">
+          <span class="tile-value tile-bugs${bugValueCls}">&#128027; ${openBugs.length}</span>
+          <span class="tile-label">Bugs Open</span>
+        </div>
+        <div class="topbar-tile tile-coverage">
+          <span class="tile-value tile-cov${covValueCls}">${covLabel}</span>
+          <span class="tile-label">Coverage</span>
+        </div>
+        <div class="topbar-tile tile-ai-cost">
+          <span class="tile-value font-mono">${usd(totalAI)}</span>
+          <span class="tile-label">AI Cost</span>
+        </div>
       </div>
     </div>
   </header>`;
@@ -83,7 +97,7 @@ function renderFilterBar(data) {
       </select>
       <select id="f-status" onchange="applyFilters()" class="${sel}" aria-label="Filter by status">
         <option value="">All Statuses</option>
-        <option>In Progress</option><option>Planned</option><option>Done</option><option>Blocked</option>
+        <option>In Progress</option><option>Planned</option><option>To Do</option><option>Done</option><option>Blocked</option>
       </select>
       <select id="f-priority" onchange="applyFilters()" class="${sel}" aria-label="Filter by priority">
         <option value="">All Priorities</option>
@@ -180,7 +194,7 @@ function renderHierarchyTab(data) {
           ${badge(story.status)} ${badge(story.priority)}
           <span class="text-sm font-medium">${esc(story.title)}</span>
           ${riskBadge}
-          <span class="ml-auto text-xs text-slate-500">${story.estimate || '?'} · ${usd(data.costs[story.id] && data.costs[story.id].projectedUsd || 0)}</span>
+          <span class="ml-auto text-xs text-slate-500">${esc(story.estimate || '?')} · ${usd(data.costs[story.id] && data.costs[story.id].projectedUsd || 0)}</span>
         </div>
         <ul id="acs-${story.id}" class="mt-2 hidden">${acItems || '<li class="text-xs text-slate-500 pl-4">No ACs yet</li>'}</ul>
       </div>`;
@@ -212,7 +226,7 @@ function renderHierarchyTab(data) {
         </div>
         <p class="text-sm font-medium dark:text-slate-100 leading-snug cursor-pointer" onclick="toggleCardACs('${esc(story.id)}')">${esc(story.title)}</p>
         <div class="flex items-center gap-2 mt-auto pt-1 text-xs text-slate-500 border-t border-slate-100 dark:border-slate-600">
-          <span>${story.estimate || '?'}</span>
+          <span>${esc(story.estimate || '?')}</span>
           <span>${cost}</span>
           ${acTotal ? `<span class="cursor-pointer" onclick="toggleCardACs('${esc(story.id)}')">${acDone}/${acTotal} ACs ▾</span>` : ''}
           <span class="ml-auto">${riskBadge}</span>
@@ -385,7 +399,9 @@ function renderChartsTab(data) {
     const branchStories = data.stories.filter(s => s.epicId === e.id);
     return branchStories.reduce((sum, s) => sum + (data.costs[s.id] ? data.costs[s.id].costUsd || 0 : 0), 0);
   }));
-  const coveragePct = data.coverage.overall.toFixed(1);
+  const coveragePct = data.coverage.available !== false ? data.coverage.overall.toFixed(1) : null;
+  const coveragePctNum = coveragePct !== null ? parseFloat(coveragePct) : 0;
+  const coverageGap = coveragePct !== null ? (100 - coveragePctNum).toFixed(1) : '100';
   const timeline = data.sessionTimeline || [];
   const sessionDates = JSON.stringify(timeline.map(s => s.date));
   const sessionCosts = JSON.stringify(timeline.map(s => s.cumCost.toFixed(2)));
@@ -416,7 +432,7 @@ function renderChartsTab(data) {
           <canvas id="chart-coverage"></canvas>
           <div class="absolute inset-0 flex items-center justify-center pointer-events-none" style="padding-bottom:3rem">
             <div class="text-center">
-              <div class="text-2xl font-bold text-slate-700 dark:text-slate-200">${coveragePct}%</div>
+              <div class="text-2xl font-bold text-slate-700 dark:text-slate-200">${coveragePct !== null ? coveragePct + '%' : 'N/A'}</div>
               <div class="text-xs text-slate-500 dark:text-slate-400">overall</div>
             </div>
           </div>
@@ -476,7 +492,7 @@ function renderChartsTab(data) {
     });
     _charts.coverage = new Chart(document.getElementById('chart-coverage'), {
       type: 'doughnut',
-      data: { labels: ['Covered', 'Gap'], datasets: [{ data: [${coveragePct}, ${100 - parseFloat(coveragePct)}], backgroundColor: ['#22c55e','#cbd5e1'], borderWidth: 0 }] },
+      data: { labels: ['Covered', 'Gap'], datasets: [{ data: [${coveragePctNum}, ${coverageGap}], backgroundColor: [coveragePct !== null ? '#22c55e' : '#94a3b8','#cbd5e1'], borderWidth: 0 }] },
       options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: true, position: 'bottom', labels: { color: tc } } } }
     });
     _charts.aiTimeline = new Chart(document.getElementById('chart-ai-timeline'), {
@@ -532,7 +548,7 @@ function renderCostsTab(data) {
         <td class="px-3 py-2 pl-8 font-mono text-xs text-slate-500 whitespace-nowrap">${story.id}</td>
         <td class="px-3 py-2 text-sm dark:text-slate-200">${esc(story.title)}</td>
         <td class="px-3 py-2 text-center">${badge(story.status)}</td>
-        <td class="px-3 py-2 text-center text-sm dark:text-slate-200">${story.estimate || '?'}</td>
+        <td class="px-3 py-2 text-center text-sm dark:text-slate-200">${esc(story.estimate || '?')}</td>
         <td class="px-3 py-2 text-right text-sm dark:text-slate-200">${usd(projected)}</td>
         <td class="px-3 py-2 text-right text-sm text-teal-700 dark:text-teal-400">${usd(ai.costUsd || 0)}</td>
         <td class="px-3 py-2 text-right text-xs text-slate-500 tokens-col">${fmtNum(ai.inputTokens || 0)} / ${fmtNum(ai.outputTokens || 0)}</td>
@@ -586,7 +602,7 @@ function renderCostsTab(data) {
         <div class="flex items-center gap-2 flex-wrap">
           <span class="font-mono text-xs text-slate-500 whitespace-nowrap">${story.id}</span>
           ${badge(story.status)}
-          <span class="ml-auto text-xs text-slate-400">${story.estimate || '?'}</span>
+          <span class="ml-auto text-xs text-slate-400">${esc(story.estimate || '?')}</span>
         </div>
         <p class="text-sm font-medium dark:text-slate-200">${esc(story.title)}</p>
         <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs mt-1">
@@ -703,7 +719,7 @@ function renderCostsTab(data) {
           <tr>
             <td colspan="4" class="px-3 py-2 text-right text-sm dark:text-slate-200">Totals</td>
             <td class="px-3 py-2 text-right text-sm dark:text-slate-200">${usd(totalProjected)}</td>
-            <td class="px-3 py-2 text-right text-sm text-teal-700 dark:text-teal-400">${usd(t.costUsd)}</td>
+            <td class="px-3 py-2 text-right text-sm text-teal-700 dark:text-teal-400">${usd(t.costUsd + bugTotalAI)}</td>
             <td class="px-3 py-2 text-right text-xs text-slate-500 tokens-col">${fmtNum(t.inputTokens)} / ${fmtNum(t.outputTokens)}</td>
           </tr>
         </tfoot>
@@ -745,7 +761,7 @@ function renderBugsTab(data) {
     if (!bug.lessonEncoded || !bug.lessonEncoded.startsWith('Yes')) return '○';
     const lm = bug.lessonEncoded.match(/L-\d{4}/);
     if (!lm) return '✓';
-    return `<a href="#" onclick="showTab('lessons');setTimeout(function(){var el=document.getElementById('lesson-${lm[0]}');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});},50);return false;" class="text-blue-600 dark:text-blue-400 hover:underline font-mono text-xs whitespace-nowrap" title="View lesson ${lm[0]}">✓ ${lm[0]} ↗</a>`;
+    return `<a href="#" onclick="showTab('lessons');setTimeout(function(){var colView=document.getElementById('lessons-column-view');var prefix=colView&&!colView.classList.contains('hidden')?'lesson-col-':'lesson-card-';var el=document.getElementById(prefix+'${lm[0]}');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});},50);return false;" class="text-blue-600 dark:text-blue-400 hover:underline font-mono text-xs whitespace-nowrap" title="View lesson ${lm[0]}">&#10003; ${lm[0]} &#8599;</a>`;
   };
 
   const rows = data.bugs.map(bug => `
@@ -847,7 +863,7 @@ function renderLessonsTab(data) {
   };
 
   const colRows = lessons.map(l => `
-  <tr id="lesson-${l.id}" class="border-t border-slate-100 dark:border-slate-700 align-top">
+  <tr id="lesson-col-${l.id}" class="border-t border-slate-100 dark:border-slate-700 align-top">
     <td class="px-3 py-3 font-mono text-xs text-blue-600 dark:text-blue-400 whitespace-nowrap">${l.id}</td>
     <td class="px-3 py-3 text-sm text-slate-700 dark:text-slate-200">${esc(l.rule)}</td>
     <td class="px-3 py-3 text-sm text-slate-500 dark:text-slate-400 italic">${esc(l.context)}</td>
@@ -856,7 +872,7 @@ function renderLessonsTab(data) {
   </tr>`).join('');
 
   const cards = lessons.map(l => `
-  <div id="lesson-${l.id}" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 flex flex-col gap-2">
+  <div id="lesson-card-${l.id}" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 flex flex-col gap-2">
     <div class="flex items-center gap-2">
       <span class="font-mono text-xs font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap flex-shrink-0">${l.id}</span>
       <span class="text-sm font-semibold text-slate-700 dark:text-slate-200">${esc(l.title)}</span>
@@ -971,13 +987,11 @@ function renderScripts(data) {
     const bar = document.getElementById('filter-bar');
     const storyGrp = document.getElementById('fgrp-story');
     const bugGrp = document.getElementById('fgrp-bug');
-    const typeGrp = document.getElementById('fgrp-type');
     const showStory = name === 'hierarchy' || name === 'kanban';
     const showBug = name === 'bugs';
     bar.classList.toggle('hidden', !showStory && !showBug);
     storyGrp.classList.toggle('hidden', !showStory);
     bugGrp.classList.toggle('hidden', !showBug);
-    if (typeGrp) typeGrp.classList.toggle('hidden', name !== 'hierarchy');
   }
 
   function showTab(name) {
@@ -1023,11 +1037,17 @@ function renderScripts(data) {
   }
 
   function applyFilters() {
-    const epic = document.getElementById('f-epic').value;
-    const status = document.getElementById('f-status').value;
-    const priority = document.getElementById('f-priority').value;
-    const bugStatus = document.getElementById('f-bug-status').value;
-    const search = document.getElementById('f-search').value.toLowerCase();
+    const epicEl = document.getElementById('f-epic');
+    const statusEl = document.getElementById('f-status');
+    const priorityEl = document.getElementById('f-priority');
+    const bugStatusEl = document.getElementById('f-bug-status');
+    const searchEl = document.getElementById('f-search');
+    if (!epicEl || !statusEl || !priorityEl || !bugStatusEl || !searchEl) return;
+    const epic = epicEl.value;
+    const status = statusEl.value;
+    const priority = priorityEl.value;
+    const bugStatus = bugStatusEl.value;
+    const search = searchEl.value.toLowerCase();
     document.querySelectorAll('.story-row').forEach(row => {
       const hide =
         (epic && row.dataset.epic !== epic) ||
@@ -1046,12 +1066,13 @@ function renderScripts(data) {
     localStorage.setItem('f-status', status);
     localStorage.setItem('f-priority', priority);
     localStorage.setItem('f-bug-status', bugStatus);
-    localStorage.setItem('f-search', document.getElementById('f-search').value);
+    localStorage.setItem('f-search', searchEl.value);
   }
 
   function clearFilters() {
-    ['f-epic','f-status','f-priority','f-bug-status'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('f-search').value = '';
+    ['f-epic','f-status','f-priority','f-bug-status'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    const searchEl2 = document.getElementById('f-search');
+    if (searchEl2) searchEl2.value = '';
     ['f-epic','f-status','f-priority','f-bug-status','f-search'].forEach(k => localStorage.removeItem(k));
     applyFilters();
   }
@@ -1137,7 +1158,7 @@ function renderScripts(data) {
   function setStickyTop() {
     var topbar = document.getElementById('topbar-fixed');
     var topbarFixed = topbar && getComputedStyle(topbar).position === 'fixed';
-    var topbarH = topbarFixed ? (topbar.offsetHeight || 56) : 0;
+    var topbarH = topbarFixed ? (topbar.offsetHeight || 72) : 0;
     var filterBar = document.getElementById('filter-bar');
     var filterH = (filterBar && !filterBar.classList.contains('hidden')) ? filterBar.offsetHeight : 0;
     document.documentElement.style.setProperty('--sticky-top', (topbarH + filterH) + 'px');
@@ -1215,7 +1236,7 @@ function renderPrintCSS() {
     background-image: radial-gradient(rgba(255,255,255,0.028) 1px, transparent 1px);
     background-size: 24px 24px;
   }
-  html.dark #topbar-fixed { border-color: var(--clr-border) !important; }
+  html.dark #topbar-fixed { border-color: rgba(0,80,179,0.5) !important; }
   html.dark #sidebar { border-color: var(--clr-border) !important; }
   html.dark #filter-bar { background-color: var(--clr-panel-bg) !important; border-color: var(--clr-border) !important; }
   html.dark #filter-bar select, html.dark #filter-bar input { background-color: var(--clr-input-bg) !important; border-color: var(--clr-input-border) !important; color: var(--clr-input-text) !important; }
@@ -1268,7 +1289,6 @@ function renderHtml(data) {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${esc(data.projectName)} — Plan Status</title>
-  <script>window.tailwind={config:{darkMode:'class'}}</script>
   <script>(function(){var t=localStorage.getItem('theme');if(t==='dark'||(t==null&&window.matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');}})()</script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>tailwind.config={darkMode:'class'}</script>
@@ -1277,44 +1297,47 @@ function renderHtml(data) {
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
   <style>
     /* === Base === */
-    body { font-family: 'Inter', sans-serif; padding-top: 56px; background-color: var(--clr-body-bg); color: var(--clr-text-primary); }
+    body { font-family: 'Inter', sans-serif; padding-top: 72px; background-color: var(--clr-body-bg); color: var(--clr-text-primary); }
     code, .font-mono { font-family: 'JetBrains Mono', monospace; }
 
-    /* === Topbar (fixed) === */
+    /* === Topbar (fixed, gradient) === */
     #topbar-fixed {
-      position: fixed; top: 0; left: 0; right: 0; height: 56px; z-index: 40;
-      background: var(--clr-topbar-bg); border-bottom: 1px solid var(--clr-border);
-      box-shadow: 0 1px 3px rgba(0,0,0,.06); display: flex; align-items: center; padding: 0 16px;
+      position: fixed; top: 0; left: 0; right: 0; height: 72px; z-index: 40;
+      background: linear-gradient(135deg, #003087 0%, #0050b3 50%, #0066cc 100%);
+      border-bottom: 1px solid rgba(0,80,179,0.4);
+      box-shadow: 0 2px 8px rgba(0,0,80,0.25); display: flex; align-items: center; padding: 0 16px;
     }
     .topbar-inner { display: flex; align-items: center; gap: 12px; width: 100%; min-width: 0; }
     .topbar-project { flex: 1; min-width: 0; }
-    .topbar-title { font-size: 1rem; font-weight: 700; color: var(--clr-text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .topbar-tagline { font-size: 11px; color: var(--clr-text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 1px; }
-    .topbar-btn { background: none; border: 1px solid var(--clr-border); color: var(--clr-text-muted); border-radius: 4px; padding: 2px 8px; font-size: 11px; cursor: pointer; transition: color 150ms, border-color 150ms; }
-    .topbar-btn:hover { color: var(--clr-text-primary); }
+    .topbar-title { font-size: 1rem; font-weight: 700; color: #ffffff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .topbar-tagline { font-size: 11px; color: rgba(255,255,255,0.72); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 1px; }
+    .topbar-btn { background: none; border: 1px solid rgba(255,255,255,0.35); color: rgba(255,255,255,0.8); border-radius: 4px; padding: 2px 8px; font-size: 11px; cursor: pointer; transition: color 150ms, border-color 150ms; }
+    .topbar-btn:hover { color: #ffffff; border-color: rgba(255,255,255,0.65); }
 
-    /* Stat chips */
-    .topbar-chips { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-    .chip { display: inline-flex; align-items: center; gap: 3px; padding: 3px 8px; border-radius: 9999px; font-size: 12px; font-weight: 500; border: 1px solid var(--clr-border); color: var(--clr-text-secondary); background: transparent; white-space: nowrap; }
-    .chip-danger { color: #f87171; border-color: #7f1d1d; }
-    .chip-warning { color: #fbbf24; border-color: #78350f; }
-    .chip-neutral { color: var(--clr-text-muted); }
+    /* Glassmorphic stat tiles */
+    .topbar-tiles { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .topbar-tile { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px 12px; border-radius: 8px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); min-width: 58px; }
+    .tile-value { font-size: 15px; font-weight: 700; color: #ffffff; line-height: 1.25; white-space: nowrap; }
+    .tile-label { font-size: 10px; font-weight: 500; color: rgba(255,255,255,0.68); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; white-space: nowrap; }
+    .tile-danger { color: #fca5a5 !important; }
+    .tile-warn { color: #fde68a !important; }
 
     /* === App shell === */
-    #app-shell { display: flex; min-height: calc(100vh - 56px); }
+    #app-shell { display: flex; min-height: calc(100vh - 72px); }
 
     /* === Sidebar === */
-    #sidebar { width: 200px; flex-shrink: 0; position: sticky; top: 56px; height: calc(100vh - 56px); overflow-y: auto; background: var(--clr-sidebar-bg); border-right: 1px solid var(--clr-border); }
-    #sidebar-nav { display: flex; flex-direction: column; padding: 8px 0; gap: 1px; }
-    .nav-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; text-align: left; font-size: 13px; font-weight: 500; color: var(--clr-text-secondary); border: none; border-left: 2px solid transparent; background: none; cursor: pointer; transition: color 150ms, background 150ms; }
-    .nav-item:hover { color: var(--clr-text-primary); background: rgba(139,92,246,0.06); }
-    .nav-item.nav-active { color: var(--clr-accent); background: rgba(139,92,246,0.1); border-left-color: var(--clr-accent); }
+    #sidebar { width: 200px; flex-shrink: 0; position: sticky; top: 72px; height: calc(100vh - 72px); overflow-y: auto; background: var(--clr-sidebar-bg); border-right: 2px solid var(--clr-border); }
+    #sidebar-nav { display: flex; flex-direction: column; padding: 8px 0; }
+    .nav-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; text-align: left; font-size: 13px; font-weight: 500; color: var(--clr-text-secondary); border: none; border-left: 3px solid transparent; border-bottom: 1px solid var(--clr-border); background: none; cursor: pointer; transition: color 150ms, background 150ms; }
+    .nav-item:last-child { border-bottom: none; }
+    .nav-item:hover { color: var(--clr-text-primary); background: rgba(139,92,246,0.08); }
+    .nav-item.nav-active { color: var(--clr-accent); background: rgba(139,92,246,0.12); border-left-color: var(--clr-accent); font-weight: 600; }
     .nav-item svg { flex-shrink: 0; }
     .nav-label { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     /* === Main content === */
     #main-content { flex: 1; min-width: 0; }
-    #filter-sticky { position: sticky; top: 56px; z-index: 20; }
+    #filter-sticky { position: sticky; top: 72px; z-index: 20; }
 
     /* ── Responsive tiers ───────────────────────────── */
     /* Activity panel offset: ≥768px */
@@ -1337,16 +1360,21 @@ function renderHtml(data) {
       #filter-bar select, #filter-bar input[type="text"] { padding: 2px 4px !important; font-size: 0.7rem !important; }
     }
 
-    /* Phone portrait (<480px) — topbar in flow, chips trimmed */
+    /* Activity toggle: clear the topbar */
+    #activity-toggle { top: 76px !important; }
+    @media (max-height: 500px) and (orientation: landscape) { #activity-toggle { top: 44px !important; } }
+    @media (max-width: 479px) { #activity-toggle { top: auto !important; bottom: 16px; } }
+
+    /* Phone portrait (<480px) — topbar in flow, tiles trimmed */
     @media (max-width: 479px) {
-      #topbar-fixed { position: relative; height: auto; min-height: 48px; padding: 8px 12px 6px; flex-wrap: wrap; align-items: flex-start; box-shadow: none; border-bottom: 1px solid var(--clr-border); }
+      #topbar-fixed { position: relative; height: auto; min-height: 56px; padding: 8px 12px 6px; flex-wrap: wrap; align-items: flex-start; box-shadow: none; border-bottom: 1px solid rgba(0,80,179,0.4); }
       body { padding-top: 0; }
       #app-shell { min-height: 100vh; }
       #sidebar { top: 0; height: 100vh; }
       #filter-sticky { top: 0; }
-      .chip-coverage, .chip-cost { display: none; }
+      .tile-coverage, .tile-ai-cost { display: none !important; }
       .topbar-project { width: 100%; }
-      .topbar-chips { padding-top: 4px; }
+      .topbar-tiles { padding-top: 4px; }
     }
 
     /* Phone landscape — compact topbar (short height) */

@@ -32,13 +32,14 @@ describe('renderHtml', () => {
   it('includes total projected cost', () => expect(html).toMatch(/\$800/));
   it('includes coverage percent', () => expect(html).toMatch(/81/));
   it('includes epic filter option', () => expect(html).toMatch(/EPIC-0001/));
-  it('includes all 6 tabs', () => {
+  it('includes all 7 tabs', () => {
     expect(html).toMatch(/Hierarchy/);
     expect(html).toMatch(/Kanban/);
     expect(html).toMatch(/Traceability/);
     expect(html).toMatch(/Charts/);
     expect(html).toMatch(/Costs/);
     expect(html).toMatch(/Bugs/);
+    expect(html).toMatch(/Lessons/);
   });
   it('marks at-risk story with warning', () => expect(html).toMatch(/at-risk|⚠/));
 });
@@ -143,7 +144,7 @@ describe('renderHtml — coverage below target', () => {
   it('renders red coverage when below 80%', () => {
     const dataLowCoverage = { ...sampleData, coverage: { lines: 70, overall: 70, meetsTarget: false } };
     const html = renderHtml(dataLowCoverage);
-    expect(html).toMatch(/chip chip-coverage chip-danger/);
+    expect(html).toMatch(/tile-cov tile-danger/);
   });
 });
 
@@ -364,7 +365,8 @@ describe('renderHtml — Lessons tab (US-0032)', () => {
 
   it('renders lesson anchor id for scroll target', () => {
     const d = { ...sampleData, lessons: [sampleLesson] };
-    expect(renderHtml(d)).toContain('id="lesson-L-0010"');
+    const html = renderHtml(d);
+    expect(html).toMatch(/id="lesson-(col|card)-L-0010"/);
   });
 });
 
@@ -376,15 +378,16 @@ describe('renderHtml — Bugs tab lesson hyperlink (US-0032)', () => {
   it('renders ✓ L-0010 ↗ as link when lesson ID present', () => {
     const d = { ...sampleData, bugs: [bugWithLessonId] };
     const html = renderHtml(d);
-    expect(html).toContain('✓ L-0010 ↗');
-    expect(html).toContain('lesson-L-0010');
+    expect(html).toMatch(/&#10003;.*L-0010.*&#8599;/);
+    expect(html).toContain("'lesson-col-'");
+    expect(html).toContain("'L-0010'");
   });
 
   it('renders plain ✓ when Yes but no L-ID', () => {
     const d = { ...sampleData, bugs: [bugWithYesNoId] };
     const html = renderHtml(d);
-    expect(html).toContain('✓');
-    expect(html).not.toContain('↗');
+    expect(html).toMatch(/&#10003;|✓/);
+    expect(html).not.toMatch(/&#8599;|↗/);
   });
 
   it('renders ○ when lesson not encoded', () => {

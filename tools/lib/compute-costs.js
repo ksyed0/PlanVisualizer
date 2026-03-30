@@ -17,6 +17,8 @@ function attributeAICosts(stories, costByBranch) {
       : { costUsd: 0, inputTokens: 0, outputTokens: 0, sessions: 0 };
   }
 
+  // _totals includes ALL branches (linked and unlinked) for a complete AI spend figure.
+  // Individual story/bug attributions above reflect only matched branches.
   for (const v of Object.values(costByBranch)) {
     totalCost += v.costUsd;
     totalInput += v.inputTokens;
