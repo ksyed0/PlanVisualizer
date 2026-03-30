@@ -962,4 +962,14 @@ Acceptance Criteria:
   - [x] AC-0139: Kanban tab groups stories into Epic swimlanes within each status column
   - [x] AC-0140: All 87 open bugs from prior sessions are resolved and marked Fixed
 Dependencies: US-0047
+
+US-0049 (EPIC-0007): As a user, I want the Kanban board to group stories into Epic swimlanes within each status column, so that I can see how each epic is progressing across the board at a glance.
+Priority: Medium (P2)
+Estimate: S
+Status: Done
+Branch: feature/US-0048-ui-redesign-sidebar
+Acceptance Criteria:
+  - [x] AC-0141: Each status column groups its stories by Epic, with a coloured swimlane header (10px uppercase, epic ID) and a matching left border using a per-epic accent colour from a fixed 8-colour palette
+  - [x] AC-0142: Stories with no epicId are rendered ungrouped after all swimlane groups in the column
+Dependencies: US-0048
 ```

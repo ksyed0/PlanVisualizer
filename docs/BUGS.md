@@ -1302,3 +1302,17 @@ Status: Fixed
 Fix Branch: fix/parse-cost-log-session-dedup
 Lesson Encoded: No
 Estimated Cost USD: 0.10
+
+BUG-0091: Topbar overlaps activity panel — last stat tile clipped on desktop
+Severity: Medium
+Related Story: US-0048
+Related Task: TASK-0041
+Steps to Reproduce:
+  1. Open plan-status.html on a desktop viewport (≥768px) with the activity panel visible
+  2. Observe the rightmost header tile — it is partially hidden behind the 280px activity panel
+Expected: All six topbar stat tiles are fully visible; topbar ends where the activity panel begins
+Actual: #topbar-fixed uses right:0 and spans full viewport width, causing the Estimated tile to be obscured by the activity panel overlay
+Status: Fixed
+Fix Branch: feature/US-0048-ui-redesign-sidebar
+Lesson Encoded: No
+Estimated Cost USD: 0.02
