@@ -45,7 +45,7 @@ function renderTopBar(data) {
   const inProgress = activeStories.filter(s => s.status === 'In Progress').length;
   const cov = data.coverage;
   const covLabel = (cov.available !== false) ? `${cov.overall.toFixed(1)}%` : 'N/A';
-  const openBugs = (data.bugs || []).filter(b => !/^Fixed/i.test(b.status));
+  const openBugs = (data.bugs || []).filter(b => !/^(Fixed|Retired|Cancelled)/i.test(b.status));
   const critHighBugs = openBugs.filter(b => ['Critical', 'High'].includes(b.severity)).length;
   const bugValueCls = openBugs.length === 0 ? '' : critHighBugs > 0 ? ' tile-danger' : ' tile-warn';
   const covValueCls = (cov.available !== false && !cov.meetsTarget) ? ' tile-danger' : '';
@@ -1573,6 +1573,17 @@ function renderScripts(data, options = {}) {
         (bugStatus && row.dataset.status !== bugStatus) ||
         (search && !row.innerText.toLowerCase().includes(search));
       row.style.display = hide ? 'none' : '';
+    });
+    document.querySelectorAll('.epic-block').forEach(block => {
+      const visibleChildren = block.querySelectorAll('.story-row:not([style*="display: none"])');
+      const header = block.querySelector('div[onclick*="toggleSection"]');
+      if (header) header.style.display = visibleChildren.length > 0 ? '' : 'none';
+    });
+    document.querySelectorAll('[id^="bug-costs-ep-"], [id^="bug-costs-card-ep-"]').forEach(block => {
+      const visibleChildren = block.querySelectorAll('.bug-row:not([style*="display: none"])');
+      if (block.tagName === 'TBODY') {
+        block.style.display = visibleChildren.length > 0 ? '' : 'none';
+      }
     });
     localStorage.setItem('f-epic', epic);
     localStorage.setItem('f-status', status);

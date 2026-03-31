@@ -23,6 +23,9 @@ const { detectAtRisk } = require('./lib/detect-at-risk');
 const { saveSnapshot, loadSnapshots, extractTrends } = require('./lib/snapshot');
 const { computeBudgetMetrics, generateBudgetCSV } = require('./lib/budget');
 const { renderHtml } = require('./lib/render-html');
+const { backfillHistory, calculateAvgTokensPerEstimate, estimateStoryCost } = require('./lib/historical-sim');
+
+const TOKEN_RATES = { input: 3, output: 15 };
 
 const ROOT = path.join(__dirname, '..');
 
@@ -111,10 +114,22 @@ function main() {
   const lessons = parseLessons(readFile(config.docs.lessons));
 
   const aiAttribution = attributeAICosts(stories, costByBranch);
+  const avgTokens = calculateAvgTokensPerEstimate({ stories, costs: aiAttribution });
+  const hasRealCosts = Object.values(aiAttribution).some(c => c && c.costUsd > 0);
+  
   const costs = {};
   for (const story of stories) {
+    let projectedUsd;
+    if (story.status === 'Done' || story.status === 'In Progress') {
+      projectedUsd = computeProjectedCost(story.estimate, HOURS, RATE);
+    } else if (hasRealCosts && avgTokens && Object.keys(avgTokens).length > 0) {
+      projectedUsd = estimateStoryCost(story.estimate, avgTokens, TOKEN_RATES.input, TOKEN_RATES.output);
+    } else {
+      projectedUsd = computeProjectedCost(story.estimate, HOURS, RATE);
+    }
+    
     costs[story.id] = {
-      projectedUsd: computeProjectedCost(story.estimate, HOURS, RATE),
+      projectedUsd: projectedUsd,
       costUsd: aiAttribution[story.id] ? aiAttribution[story.id].costUsd : 0,
       inputTokens: aiAttribution[story.id] ? aiAttribution[story.id].inputTokens : 0,
       outputTokens: aiAttribution[story.id] ? aiAttribution[story.id].outputTokens : 0,
@@ -164,7 +179,17 @@ function main() {
   saveSnapshot(snapshotData, { root: ROOT, commit: commitSha });
 
   console.log('[generate-plan] Loading historical snapshots...');
-  const snapshots = loadSnapshots({ root: ROOT });
+  let snapshots = loadSnapshots({ root: ROOT });
+  
+  if (snapshots.length < 2) {
+    console.log('[generate-plan] Less than 2 snapshots found, attempting historical backfill...');
+    const backfillResult = backfillHistory({ root: ROOT, days: 30 });
+    if (!backfillResult.skipped) {
+      console.log('[generate-plan] Reloading snapshots after backfill...');
+      snapshots = loadSnapshots({ root: ROOT });
+    }
+  }
+  
   const trends = extractTrends(snapshots);
 
   console.log('[generate-plan] Computing budget metrics...');
