@@ -28,6 +28,7 @@ function calculateAvgTokensPerEstimate(data) {
     if (!byEstimate[est]) {
       byEstimate[est] = { totalTokens: 0, count: 0, points: points };
     }
+    byEstimate[est].count += 1;
   });
   
   Object.entries(data.costs || {}).forEach(([storyId, cost]) => {
