@@ -1110,6 +1110,29 @@ Acceptance Criteria:
   - [ ] AC-0167: Points are summed from story estimates (L=5, M=3, S=1, XS=0.5) where status is Done
   - [ ] AC-0168: If no stories have estimates, the chart shows a placeholder "Add estimates to stories to see velocity"
 Dependencies: US-0054
+
+US-0079 (EPIC-0008): As a user, I want to backfill historical trend data when no real snapshots exist, so that the Trends charts are useful from the first generation.
+Priority: High (P0)
+Estimate: S
+Status: Planned
+Branch: 
+Acceptance Criteria:
+  - [ ] AC-0247: A backfillHistory(options) function in tools/lib/historical-sim.js generates synthetic snapshots going back ~30 days from project start
+  - [ ] AC-0248: Backfill distributes actual costs proportionally across simulated time periods using average tokens per story estimate from Done stories
+  - [ ] AC-0249: The function is exported as a module and can be called programmatically
+  - [ ] AC-0250: The install.sh script prompts users "Would you like to estimate historical data? (y/n)" and runs backfillHistory() if yes
+Dependencies: US-0054
+
+US-0080 (EPIC-0008): As a user, I want the Trends charts to show bug count and risk trends over time, so that I can visualise defect and at-risk story trends.
+Priority: Medium (P2)
+Estimate: S
+Status: Planned
+Branch: 
+Acceptance Criteria:
+  - [ ] AC-0251: Trends tab displays an "Open Bugs Over Time" line chart sourced from .history/ snapshots
+  - [ ] AC-0252: Trends tab displays an "At-Risk Stories Over Time" line chart sourced from .history/ snapshots
+  - [ ] AC-0253: Trends tab displays a "Token Usage Over Time" stacked area chart showing input/output tokens over time
+Dependencies: US-0054
 ```
 
 ---
@@ -1186,6 +1209,18 @@ Acceptance Criteria:
   - [ ] AC-0185: Clicking downloads a CSV with columns: Date, Epic ID, Epic Title, Budget, Spent, Remaining, % Used, Burn Rate, Projected Exhaustion
   - [ ] AC-0186: CSV includes all historical snapshots as rows for trend analysis in external tools
 Dependencies: US-0060
+
+US-0081 (EPIC-0009): As a project manager, I want the budget to automatically estimate Planned story costs and set total budget to actuals plus estimated, so that I don't have to manually configure budgets.
+Priority: High (P0)
+Estimate: S
+Status: Planned
+Branch: 
+Acceptance Criteria:
+  - [ ] AC-0254: computeBudgetMetrics() calculates average tokens per story estimate (XS, S, M, L, XL) from Done stories
+  - [ ] AC-0255: For each Planned story, estimated cost is calculated using average tokens × rates ($3/M input, $15/M output tokens)
+  - [ ] AC-0256: Total budget = actual spent + sum of estimated Planned story costs (auto-calculated if not manually configured)
+  - [ ] AC-0257: Per-epic budgets are estimated proportionally if not manually configured
+Dependencies: US-0059, US-0079
 ```
 
 ---
