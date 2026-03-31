@@ -1589,9 +1589,9 @@ function renderScripts(data, options = {}) {
     });
     document.querySelectorAll('[id^="bug-costs-ep-"], [id^="bug-costs-card-ep-"]').forEach(block => {
       const visibleChildren = block.querySelectorAll('.bug-row:not([style*="display: none"])');
-      if (block.tagName === 'TBODY') {
-        block.style.display = visibleChildren.length > 0 ? '' : 'none';
-      }
+      block.style.display = visibleChildren.length > 0 ? '' : 'none';
+      const header = block.querySelector('tr[onclick*="toggleSection"], div[onclick*="toggleSection"]');
+      if (header) header.style.display = visibleChildren.length > 0 ? '' : 'none';
     });
     localStorage.setItem('f-epic', epic);
     localStorage.setItem('f-status', status);
