@@ -148,7 +148,7 @@ async function main() {
   if (!gitBranch) {
     try {
       branch = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf8' }).trim();
-    } catch {}
+    } catch { /* ignore - use default branch value */ }
   }
 
   const row = `| ${date} | ${sessionId} | ${branch} | ${displayInput} | ${outputTokens} | ${cacheReadTokens} | ${costUsd} |\n`;

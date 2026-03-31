@@ -153,8 +153,10 @@ function main() {
   let pkg;
   try {
     pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
-  } catch (e) {
-    throw new Error(`Failed to read package.json: ${e.message}`);
+  } catch (err) {
+    let msg = 'Failed to read package.json';
+    if (err instanceof Error) msg += ': ' + err.message;
+    throw new Error(msg);
   }
 
   const sessionTimeline = deduplicateSessions(costRows)

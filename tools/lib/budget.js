@@ -21,7 +21,7 @@ function computeBudgetMetrics(data, config, snapshots) {
 
   const totalBudget = explicitTotalBudget 
     ? budget.totalUsd 
-    : (totalSpent + plannedProjected);
+    : (plannedProjected > 0 ? (totalSpent + plannedProjected) : null);
 
   let burnRate = 0;
   let daysRemaining = null;

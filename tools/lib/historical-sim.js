@@ -92,13 +92,8 @@ function backfillHistory(options = {}) {
   
   const doneStories = (currentData.stories || []).filter(s => s.status === 'Done');
   const plannedStories = (currentData.stories || []).filter(s => s.status === 'Planned' || s.status === 'To Do');
-  
-  const avgDailySpend = days > 0 ? totalSpent / days : totalSpent;
-  const totalStories = (currentData.stories || []).length;
-  const allBugs = currentData.bugs || [];
-  const totalOpenBugs = allBugs.filter(b => b.status === 'Open' || b.status === 'In Progress').length;
-  const totalFixedBugs = allBugs.filter(b => b.status === 'Fixed').length;
   const currentCoverage = currentData.coverage?.overall || 0;
+  const allBugs = currentData.bugs || [];
   
   const generated = [];
   
@@ -109,10 +104,7 @@ function backfillHistory(options = {}) {
     const progressRatio = (i + 1) / days;
     const simulatedSpent = totalSpent * progressRatio;
     const simulatedDoneCount = Math.round(doneStories.length * progressRatio);
-    const simulatedInProgressCount = Math.round((doneStories.length * 0.2) * progressRatio);
     const simulatedCoverage = Math.round(currentCoverage * progressRatio * 0.7);
-    const simulatedOpenBugs = Math.max(0, Math.round(totalOpenBugs * (1 - progressRatio * 0.8)));
-    const simulatedAtRisk = Math.max(0, Math.round((currentData.stories || []).filter(s => s.atRisk).length * (1 - progressRatio)));
     
     const simulatedCosts = {};
     
@@ -165,7 +157,7 @@ function backfillHistory(options = {}) {
       outputTokens: Object.values(simulatedCosts).reduce((sum, c) => sum + (c.outputTokens || 0), 0),
     };
     
-    const simulatedStories = (currentData.stories || []).map((story, idx) => {
+    const simulatedStories = (currentData.stories || []).map(story => {
       const isDone = doneStories.some(ds => ds.id === story.id);
       const doneIdx = doneStories.findIndex(ds => ds.id === story.id);
       const isPlanned = plannedStories.some(ps => ps.id === story.id);

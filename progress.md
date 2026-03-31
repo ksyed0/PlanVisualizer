@@ -4,7 +4,29 @@ Running log of session activity, errors, test results, and blockers.
 
 ---
 
-## Session 13 — 2026-03-30
+## Session 14 — 2026-03-30
+
+### What Was Done
+- **US-0081**: Budget auto-estimation - calculate total budget as spent + sum(Planned stories projected costs)
+- **US-0081**: Per-epic budget auto-calculated as epic spent + epic Planned projected costs
+- **US-0079**: Historical backfill - simulate ~30 days of history going back to project start
+- **US-0079**: backfillHistory() function creates simulated snapshots with dynamic progression
+- Done stories increase from 2 to 51 over 30 days, velocity increases, open bugs decrease, coverage increases
+- **US-0080**: Trends charts now show bug count and at-risk story trends
+- **BUG-0098**: Fixed open bug count to exclude Retired/Cancelled bugs
+- **BUG-0099**: Fixed epic group header hiding when all children filtered (Hierarchy + Kanban)
+- Fixed bugs tab epic filtering - now filters by epic and updates counts
+- Fixed duplicate epics in RELEASE_PLAN.md parser (EPIC-0007, EPIC-0008 duplicated)
+- Updated README with historical data prompt instructions
+- Updated install.sh with historical backfill prompt
+
+### Test Results
+- 208 tests pass. Coverage maintained above 80%.
+
+### Errors or Blockers
+- None.
+
+---
 
 ### What Was Done
 - **US-0051**: Bug Fix Costs section in Costs tab now groups bugs by epic with collapsible accordion headers (both column and card views), matching the story costs section style
