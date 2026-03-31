@@ -1197,11 +1197,11 @@ function renderBugsTab(data) {
     const label = epic ? `${epicId}: ${esc(epic.title)}` : (epicId === '_ungrouped' ? 'No Epic' : epicId);
     const beid = `bugs-ep-${epicId.replace(/[^a-zA-Z0-9]/g, '-')}`;
     return `<tbody>
-    <tr class="border-t-2 border-slate-300 dark:border-slate-600 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('${beid}','${beid}-arrow')">
+    <tr class="border-t-2 border-slate-300 dark:border-slate-600 cursor-pointer select-none bug-epic-header" data-epic="${epicId}" style="background:${accent.bg}" onclick="toggleSection('${beid}','${beid}-arrow')">
       <td colspan="7" class="px-3 py-2">
         <span id="${beid}-arrow" class="text-slate-400 text-xs mr-2">&#9654;</span>
         <span class="font-mono text-xs font-bold" style="color:${accent.border}">${label}</span>
-        <span class="ml-2 text-xs text-slate-500">(${bugs.length})</span>
+        <span class="ml-2 text-xs text-slate-500 bug-count">(${bugs.length})</span>
       </td>
     </tr>
     </tbody><tbody id="${beid}" class="hidden">${bugs.map(renderBugRow).join('')}</tbody>`;
@@ -1213,11 +1213,11 @@ function renderBugsTab(data) {
     const accent = EPIC_ACCENT_COLORS[i % EPIC_ACCENT_COLORS.length];
     const label = epic ? `${epicId}: ${esc(epic.title)}` : (epicId === '_ungrouped' ? 'No Epic' : epicId);
     const bceid = `bugs-card-ep-${epicId.replace(/[^a-zA-Z0-9]/g, '-')}`;
-    return `<div class="mb-6 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden" style="border-left:4px solid ${accent.border}">
-      <div class="flex items-center gap-2 px-4 py-3 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('${bceid}','${bceid}-arrow')">
+    return `<div class="mb-6 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden bug-epic-card" data-epic="${epicId}" style="border-left:4px solid ${accent.border}">
+      <div class="flex items-center gap-2 px-4 py-3 cursor-pointer select-none bug-epic-header" data-epic="${epicId}" style="background:${accent.bg}" onclick="toggleSection('${bceid}','${bceid}-arrow')">
         <span id="${bceid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9654;</span>
         <span class="font-mono text-xs font-bold" style="color:${accent.border}">${label}</span>
-        <span class="ml-1 text-xs text-slate-500">(${bugs.length})</span>
+        <span class="ml-1 text-xs text-slate-500 bug-count">(${bugs.length})</span>
       </div>
       <div id="${bceid}" class="p-3 hidden">
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">${bugs.map(renderBugCard).join('')}</div>
