@@ -94,6 +94,11 @@ function backfillHistory(options = {}) {
   const plannedStories = (currentData.stories || []).filter(s => s.status === 'Planned' || s.status === 'To Do');
   
   const avgDailySpend = days > 0 ? totalSpent / days : totalSpent;
+  const totalStories = (currentData.stories || []).length;
+  const allBugs = currentData.bugs || [];
+  const totalOpenBugs = allBugs.filter(b => b.status === 'Open' || b.status === 'In Progress').length;
+  const totalFixedBugs = allBugs.filter(b => b.status === 'Fixed').length;
+  const currentCoverage = currentData.coverage?.overall || 0;
   
   const generated = [];
   
@@ -104,19 +109,23 @@ function backfillHistory(options = {}) {
     const progressRatio = (i + 1) / days;
     const simulatedSpent = totalSpent * progressRatio;
     const simulatedDoneCount = Math.round(doneStories.length * progressRatio);
+    const simulatedInProgressCount = Math.round((doneStories.length * 0.2) * progressRatio);
+    const simulatedCoverage = Math.round(currentCoverage * progressRatio * 0.7);
+    const simulatedOpenBugs = Math.max(0, Math.round(totalOpenBugs * (1 - progressRatio * 0.8)));
+    const simulatedAtRisk = Math.max(0, Math.round((currentData.stories || []).filter(s => s.atRisk).length * (1 - progressRatio)));
     
     const simulatedCosts = {};
     
     doneStories.forEach((story, idx) => {
+      const storyDoneRatio = (idx + 1) / doneStories.length;
+      const storyProgress = Math.min(1, progressRatio / storyDoneRatio);
       if (idx < simulatedDoneCount) {
-        const storyRatio = (idx + 1) / doneStories.length;
-        const storySpent = simulatedSpent * storyRatio;
         const avgCostPerStory = doneStories.length > 0 ? simulatedSpent / simulatedDoneCount : 0;
         simulatedCosts[story.id] = {
           projectedUsd: currentData.costs[story.id]?.projectedUsd || 0,
           costUsd: avgCostPerStory || 0,
-          inputTokens: Math.round((avgTokens[story.estimate?.toUpperCase()] || 50000) * progressRatio),
-          outputTokens: Math.round((avgTokens[story.estimate?.toUpperCase()] || 15000) * progressRatio),
+          inputTokens: Math.round((avgTokens[story.estimate?.toUpperCase()] || 50000) * storyProgress),
+          outputTokens: Math.round((avgTokens[story.estimate?.toUpperCase()] || 15000) * storyProgress),
         };
       } else {
         simulatedCosts[story.id] = {
@@ -129,14 +138,24 @@ function backfillHistory(options = {}) {
     });
     
     if (estimatePlanned) {
-      plannedStories.forEach(story => {
-        const estimatedCost = estimateStoryCost(story.estimate, avgTokens);
-        simulatedCosts[story.id] = {
-          projectedUsd: estimatedCost,
-          costUsd: 0,
-          inputTokens: 0,
-          outputTokens: 0,
-        };
+      plannedStories.forEach((story, idx) => {
+        const storyStartRatio = 0.3 + (idx / plannedStories.length) * 0.5;
+        if (progressRatio > storyStartRatio) {
+          const estimatedCost = estimateStoryCost(story.estimate, avgTokens);
+          simulatedCosts[story.id] = {
+            projectedUsd: estimatedCost,
+            costUsd: 0,
+            inputTokens: 0,
+            outputTokens: 0,
+          };
+        } else {
+          simulatedCosts[story.id] = {
+            projectedUsd: estimateStoryCost(story.estimate, avgTokens),
+            costUsd: 0,
+            inputTokens: 0,
+            outputTokens: 0,
+          };
+        }
       });
     }
     
@@ -146,14 +165,35 @@ function backfillHistory(options = {}) {
       outputTokens: Object.values(simulatedCosts).reduce((sum, c) => sum + (c.outputTokens || 0), 0),
     };
     
-    const simulatedStories = (currentData.stories || []).map(story => {
-      if (story.status === 'Done') {
-        const doneIdx = doneStories.findIndex(ds => ds.id === story.id);
-        if (doneIdx >= 0 && doneIdx < simulatedDoneCount) {
-          return { ...story };
+    const simulatedStories = (currentData.stories || []).map((story, idx) => {
+      const isDone = doneStories.some(ds => ds.id === story.id);
+      const doneIdx = doneStories.findIndex(ds => ds.id === story.id);
+      const isPlanned = plannedStories.some(ps => ps.id === story.id);
+      const plannedIdx = plannedStories.findIndex(ps => ps.id === story.id);
+      
+      if (isDone && doneIdx >= 0 && doneIdx < simulatedDoneCount) {
+        return { ...story };
+      } else if (isDone) {
+        return { ...story, status: 'Planned' };
+      } else if (isPlanned && plannedIdx >= 0) {
+        const inProgressThreshold = doneStories.length + Math.floor(plannedStories.length * 0.2 * progressRatio);
+        if (doneStories.length + plannedIdx < inProgressThreshold) {
+          return { ...story, status: 'In Progress' };
         }
+        return { ...story };
       }
       return { ...story };
+    });
+    
+    const simulatedBugs = allBugs.map((bug, idx) => {
+      const bugFixedRatio = idx / allBugs.length;
+      const bugProgress = (bugFixedRatio + 0.2) * progressRatio;
+      if (bug.status === 'Fixed' && bugProgress > 0.8) {
+        return { ...bug };
+      } else if (bug.status === 'Fixed') {
+        return { ...bug, status: 'Open' };
+      }
+      return { ...bug };
     });
     
     const snapshot = {
@@ -162,9 +202,9 @@ function backfillHistory(options = {}) {
       data: {
         epics: currentData.epics || [],
         stories: simulatedStories,
-        bugs: currentData.bugs || [],
+        bugs: simulatedBugs,
         costs: simulatedCosts,
-        coverage: currentData.coverage || { available: false },
+        coverage: { ...currentData.coverage, overall: simulatedCoverage, available: true },
         lessons: currentData.lessons || [],
         testCases: currentData.testCases || [],
       },
