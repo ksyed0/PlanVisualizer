@@ -892,8 +892,8 @@ Steps to Reproduce:
   2. Generate plan-status.html
 Expected: available: false when .pct cannot be read; renderer shows N/A
 Actual: Guard at parse-coverage.js:8 checks key presence not .pct presence; available:true returned with overall:NaN; renderer displays NaN% to user
-Status: Fixed
-Fix Branch: feature/US-0048-ui-redesign-sidebar
+Status: Open
+Fix Branch: TBD
 Lesson Encoded: No
 Estimated Cost USD: 0.10
 
@@ -905,8 +905,8 @@ Steps to Reproduce:
   1. Compare epic get() helper (~line 29) using (.+) vs story/task get() helper (~line 63) using (.*)
 Expected: Consistent regex pattern across all field-extraction helpers
 Actual: Epic uses (.+) requiring non-empty value; story/task uses (.*) allowing empty — different behaviour for same intent; maintenance hazard
-Status: Fixed
-Fix Branch: feature/US-0048-ui-redesign-sidebar
+Status: Open
+Fix Branch: TBD
 Lesson Encoded: No
 Estimated Cost USD: 0.05
 
@@ -919,8 +919,8 @@ Steps to Reproduce:
   2. Inspect result.missingTCs
 Expected: false (boolean)
 Actual: undefined — hasACs evaluates to undefined when story.acs is absent; strict === false checks on missingTCs return wrong answer
-Status: Fixed
-Fix Branch: feature/US-0048-ui-redesign-sidebar
+Status: Open
+Fix Branch: TBD
 Lesson Encoded: No
 Estimated Cost USD: 0.05
 
@@ -933,8 +933,8 @@ Steps to Reproduce:
   2. Run node tools/generate-plan.js
 Expected: Clear error message identifying package.json as the problem
 Actual: JSON.parse throws with "Unexpected end of JSON input"; caught by outer catch and exits with code 1 but no useful context
-Status: Fixed
-Fix Branch: feature/US-0048-ui-redesign-sidebar
+Status: Open
+Fix Branch: TBD
 Lesson Encoded: No
 Estimated Cost USD: 0.05
 
@@ -947,8 +947,8 @@ Steps to Reproduce:
   2. Generate plan-status.html and observe Total AI Cost tile
 Expected: Behaviour documented; optionally separate "attributed" vs "total" costs
 Actual: compute-costs.js:20-26 sums all costByBranch entries including unlinked branches; AI Actual tile overstates attributed cost without documentation
-Status: Fixed
-Fix Branch: feature/US-0048-ui-redesign-sidebar
+Status: Open
+Fix Branch: TBD
 Lesson Encoded: No
 Estimated Cost USD: 0.05
 
@@ -961,8 +961,8 @@ Steps to Reproduce:
   2. Sort sessions by sessionNum lexicographically vs numerically
 Expected: sessionNum is an integer; "10" > "2" numerically but not lexicographically
 Actual: match[1] string stored without parseInt(); session 10 sorts before session 2 lexicographically
-Status: Fixed
-Fix Branch: feature/US-0048-ui-redesign-sidebar
+Status: Open
+Fix Branch: TBD
 Lesson Encoded: No
 Estimated Cost USD: 0.05
 
@@ -975,8 +975,8 @@ Steps to Reproduce:
   2. Run parseCostLog() — row is silently omitted
 Expected: Warning logged or [^|]+ pattern used to match any non-pipe character including spaces
 Actual: \S+ stops at first space; row fails to match and is silently skipped
-Status: Fixed
-Fix Branch: feature/US-0048-ui-redesign-sidebar
+Status: Open
+Fix Branch: TBD
 Lesson Encoded: No
 Estimated Cost USD: 0.05
 
@@ -989,8 +989,8 @@ Steps to Reproduce:
   2. Parse and inspect the lesson.context field
 Expected: Both italic paragraphs captured; or behaviour documented as intentional
 Actual: Regex at parse-lessons.js:16 captures only the first *...* block; second paragraph silently dropped
-Status: Fixed
-Fix Branch: feature/US-0048-ui-redesign-sidebar
+Status: Open
+Fix Branch: TBD
 Lesson Encoded: No
 Estimated Cost USD: 0.05
 
@@ -1003,8 +1003,8 @@ Steps to Reproduce:
   2. Search test suite — no test exercises AC-TBD input
 Expected: Test case for AC-TBD placeholder format
 Actual: AC-TBD code path untested; future changes to AC regex could silently break AC-TBD handling
-Status: Fixed
-Fix Branch: feature/US-0048-ui-redesign-sidebar
+Status: Open
+Fix Branch: TBD
 Lesson Encoded: No
 Estimated Cost USD: 0.05
 
@@ -1016,8 +1016,8 @@ Steps to Reproduce:
   1. Run jest --coverage and inspect generate-plan.js line coverage
 Expected: loadConfig, readFile, readJson, getCommitSha, getBuildNumber and cost loop covered by tests
 Actual: Orchestrator module entirely untested; config-merging logic, KNOWN_KEYS warning, deep merge of tshirtHours, and bug projected cost loop all lack test coverage
-Status: Fixed
-Fix Branch: feature/US-0048-ui-redesign-sidebar
+Status: Open
+Fix Branch: TBD
 Lesson Encoded: No
 Estimated Cost USD: 0.15
 
@@ -1030,8 +1030,8 @@ Steps to Reproduce:
   2. Note parseTestCases and parseReleasePlan test empty string input; parseBugs does not
 Expected: parseBugs('') test asserts return value is []
 Actual: Empty-input path is logically correct but unverified; coverage gap vs sibling parsers
-Status: Fixed
-Fix Branch: feature/US-0048-ui-redesign-sidebar
+Status: Open
+Fix Branch: TBD
 Lesson Encoded: No
 Estimated Cost USD: 0.05
 
@@ -1045,8 +1045,8 @@ Steps to Reproduce:
   3. Generate plan-status.html — all AI cost figures show NaN
 Expected: parseFloat fallback to 0 for non-numeric cost values; NaN isolated to the bad row
 Actual: No || 0 guard in parseCostLog:16; NaN propagates through all aggregation
-Status: Fixed
-Fix Branch: feature/US-0048-ui-redesign-sidebar
+Status: Open
+Fix Branch: TBD
 Lesson Encoded: No
 Estimated Cost USD: 0.05
 
@@ -1059,8 +1059,8 @@ Steps to Reproduce:
   2. Generate plan-status.html and click the GitHub link in the About dialog
 Expected: Link opens a valid HTTPS URL or is not rendered
 Actual: javascript: URI executes arbitrary code when clicked; esc() only HTML-encodes, does not block javascript: schemes
-Status: Fixed
-Fix Branch: feature/US-0048-ui-redesign-sidebar
+Status: Open
+Fix Branch: TBD
 Lesson Encoded: No
 Estimated Cost USD: 0.15
 
@@ -1073,8 +1073,8 @@ Steps to Reproduce:
   2. Note IDs are used in id="...", data-* attributes, and onclick="...toggleACs('${story.id}')" without esc()
 Expected: All string interpolation into HTML passes through esc() — no exceptions
 Actual: Structured IDs (US-0001, BUG-0003) happen to be safe today, but any non-standard ID with <, ", or ' bypasses XSS protection
-Status: Fixed
-Fix Branch: feature/US-0048-ui-redesign-sidebar
+Status: Open
+Fix Branch: TBD
 Lesson Encoded: No
 Estimated Cost USD: 0.25
 
@@ -1087,8 +1087,8 @@ Steps to Reproduce:
   2. Observe description says "includes all 6 tabs" and Lessons is absent from assertions
 Expected: Test description says "7 tabs" and asserts all seven tab labels including Lessons
 Actual: Stale test description; Lessons tab existence is unverified by the smoke test
-Status: Fixed
-Fix Branch: feature/US-0048-ui-redesign-sidebar
+Status: Open
+Fix Branch: TBD
 Lesson Encoded: No
 Estimated Cost USD: 0.05
 
@@ -1101,8 +1101,8 @@ Steps to Reproduce:
   2. Search for element emission of id="fgrp-type" in renderFilterBar() — not found
 Expected: Either the element exists or the JS reference is removed
 Actual: document.getElementById('fgrp-type') always returns null; null guard prevents throw but dead code confuses future developers
-Status: Fixed
-Fix Branch: feature/US-0048-ui-redesign-sidebar
+Status: Open
+Fix Branch: TBD
 Lesson Encoded: No
 Estimated Cost USD: 0.05
 
@@ -1115,8 +1115,8 @@ Steps to Reproduce:
   2. Observe window.tailwind={config:{darkMode:'class'}} before CDN load and tailwind.config={darkMode:'class'} after
 Expected: One canonical config assignment after CDN load
 Actual: Two different assignment patterns for the same config; pre-load partial object on window.tailwind is redundant and may interact unexpectedly with CDN init logic depending on CDN version
-Status: Fixed
-Fix Branch: feature/US-0048-ui-redesign-sidebar
+Status: Open
+Fix Branch: TBD
 Lesson Encoded: No
 Estimated Cost USD: 0.05
 
@@ -1129,8 +1129,8 @@ Steps to Reproduce:
   2. Note document.getElementById('f-epic').value called unconditionally
 Expected: Null check before accessing .value to prevent TypeError if filter bar is ever absent
 Actual: Currently safe because filter elements are always rendered, but any future conditional omission of the filter bar will cause an uncaught TypeError
-Status: Fixed
-Fix Branch: feature/US-0048-ui-redesign-sidebar
+Status: Open
+Fix Branch: TBD
 Lesson Encoded: No
 Estimated Cost USD: 0.05
 
@@ -1144,8 +1144,8 @@ Steps to Reproduce:
   3. Observe the coverage doughnut chart centre text
 Expected: Chart shows N/A or is hidden when coverage.available === false
 Actual: coveragePct becomes "NaN" or "0.0"; overlay displays NaN% or 0.0% instead of N/A; topbar correctly shows N/A but Charts tab is inconsistent
-Status: Fixed
-Fix Branch: feature/US-0048-ui-redesign-sidebar
+Status: Open
+Fix Branch: TBD
 Lesson Encoded: No
 Estimated Cost USD: 0.10
 
@@ -1159,8 +1159,8 @@ Steps to Reproduce:
   3. Inspect render-html.js renderKanbanTab() — columns use class "kanban-col flex flex-col flex-1 min-w-48" (no scroll-kanban) and headings use <h3> (not kanban-col-header class)
 Expected: Column headers remain sticky while scrolling within a column
 Actual: .scroll-kanban and .kanban-col-header CSS rules exist but are never applied — sticky header feature is entirely dead
-Status: Fixed
-Fix Branch: feature/US-0048-ui-redesign-sidebar
+Status: Open
+Fix Branch: TBD
 Lesson Encoded: No
 Estimated Cost USD: 0.10
 
@@ -1173,8 +1173,8 @@ Steps to Reproduce:
   2. Observe whether the page scrolls to the correct lesson in the active view
 Expected: Page switches to Lessons tab and scrolls to the lesson in the currently active view (column or card)
 Actual: Both column view (<tr id="lesson-L-0001">) and card view (<div id="lesson-L-0001">) are in the DOM simultaneously; getElementById returns the first match (column view row), which is hidden when card view is active — scroll silently targets the invisible element
-Status: Fixed
-Fix Branch: feature/US-0048-ui-redesign-sidebar
+Status: Open
+Fix Branch: TBD
 Lesson Encoded: No
 Estimated Cost USD: 0.15
 
@@ -1187,8 +1187,8 @@ Steps to Reproduce:
   2. Note ${text} is interpolated without esc()
 Expected: badge(text) passes text through esc() before interpolation — defence in depth
 Actual: Currently safe because badge() is only called with known-enum values (status, severity); if ever called with user-supplied text the inner HTML would be unescaped
-Status: Fixed
-Fix Branch: feature/US-0048-ui-redesign-sidebar
+Status: Open
+Fix Branch: TBD
 Lesson Encoded: No
 Estimated Cost USD: 0.05
 
@@ -1200,8 +1200,8 @@ Steps to Reproduce:
   1. Inspect the tab bar HTML (lines 126–131 of render-html.js) with a screen reader
 Expected: role="tablist" on container, role="tab" + aria-selected="true/false" on each button, role="tabpanel" on each panel
 Actual: Plain <button> elements with no ARIA; keyboard navigation works but screen readers cannot announce tab identity or selection state
-Status: Fixed
-Fix Branch: feature/US-0048-ui-redesign-sidebar
+Status: Open
+Fix Branch: TBD
 Lesson Encoded: No
 Estimated Cost USD: 0.10
 
@@ -1214,8 +1214,8 @@ Steps to Reproduce:
   2. Toggle the activity panel open
 Expected: Page body gains right padding to prevent content overlap with the panel
 Actual: The padding-right:280px rule is applied via @media only and does not account for the toggle state on mobile viewports — content remains overlapped when panel is visible
-Status: Fixed
-Fix Branch: feature/US-0048-ui-redesign-sidebar
+Status: Open
+Fix Branch: TBD
 Lesson Encoded: No
 Estimated Cost USD: 0.05
 
@@ -1227,8 +1227,8 @@ Steps to Reproduce:
   1. Open plan-status.html on a mobile viewport at the top of the page
 Expected: Activity toggle button visible and not obscured by sticky nav
 Actual: Activity panel at z-index:50, sticky nav at z-30, toggle button at z-50 — at the top of the page the button and nav may visually overlap
-Status: Fixed
-Fix Branch: feature/US-0048-ui-redesign-sidebar
+Status: Open
+Fix Branch: TBD
 Lesson Encoded: No
 Estimated Cost USD: 0.05
 
@@ -1241,8 +1241,8 @@ Steps to Reproduce:
   2. Generate plan-status.html → Charts tab → coverage doughnut
 Expected: Overlay reads N/A (consistent with topbar behaviour)
 Actual: Overlay reads 0.0%; topbar correctly shows N/A; inconsistency between the two displays for the same metric
-Status: Fixed
-Fix Branch: feature/US-0048-ui-redesign-sidebar
+Status: Open
+Fix Branch: TBD
 Lesson Encoded: No
 Estimated Cost USD: 0.05
 
@@ -1255,8 +1255,8 @@ Steps to Reproduce:
   2. Compare AI total in footer with AI Actual tile in the top bar
 Expected: Both figures are identical — total AI = story AI costs + bug AI costs
 Actual: Footer at render-html.js ~line 697 shows only data.costs._totals.costUsd (story costs); bug AI costs are excluded — understates the true total vs topbar
-Status: Fixed
-Fix Branch: feature/US-0048-ui-redesign-sidebar
+Status: Open
+Fix Branch: TBD
 Lesson Encoded: No
 Estimated Cost USD: 0.10
 
@@ -1270,8 +1270,8 @@ Steps to Reproduce:
   3. Observe available options
 Expected: Dropdown includes "To Do" alongside In Progress, Planned, Done, Blocked
 Actual: "To Do" is absent; stories with Status: To Do cannot be filtered to in isolation
-Status: Fixed
-Fix Branch: feature/US-0048-ui-redesign-sidebar
+Status: Open
+Fix Branch: TBD
 Lesson Encoded: No
 Estimated Cost USD: 0.05
 
@@ -1283,8 +1283,8 @@ Steps to Reproduce:
   1. View render-html.js lines 177, 209, 289, 526 — story.estimate and story.epicId used as ${...} without esc()
 Expected: All interpolated strings use esc() — defence in depth even for structured fields
 Actual: estimate (S/M/L/XL) and epicId (EPIC-XXXX) are currently safe enum values but bypass esc() — inconsistent with the project's own XSS policy
-Status: Fixed
-Fix Branch: feature/US-0048-ui-redesign-sidebar
+Status: Open
+Fix Branch: TBD
 Lesson Encoded: No
 Estimated Cost USD: 0.05
 
@@ -1302,32 +1302,3 @@ Status: Fixed
 Fix Branch: fix/parse-cost-log-session-dedup
 Lesson Encoded: No
 Estimated Cost USD: 0.10
-
-BUG-0092: Header gradient truncated at 280px — does not span full window width
-Severity: Medium
-Related Story: US-0048
-Related Task: TASK-0041
-Steps to Reproduce:
-  1. Open plan-status.html on a desktop viewport (≥768px) with the activity panel visible
-  2. Observe the topbar background — the blue gradient ends 280px short of the right edge, leaving a gap
-  3. Collapse the activity panel to 40px — gradient still does not reach the right edge
-Expected: Blue gradient spans the full window width; stat tiles are inset from the right to leave space for the activity panel (expanded 280px or collapsed 40px)
-Actual: #topbar-fixed has right:280px which clips the gradient background; tiles align to the gradient edge rather than being padded within a full-width bar
-Status: Fixed
-Fix Branch: feature/US-0048-ui-redesign-sidebar
-Lesson Encoded: No
-Estimated Cost USD: 0.02
-
-BUG-0091: Topbar overlaps activity panel — last stat tile clipped on desktop
-Severity: Medium
-Related Story: US-0048
-Related Task: TASK-0041
-Steps to Reproduce:
-  1. Open plan-status.html on a desktop viewport (≥768px) with the activity panel visible
-  2. Observe the rightmost header tile — it is partially hidden behind the 280px activity panel
-Expected: All six topbar stat tiles are fully visible; topbar ends where the activity panel begins
-Actual: #topbar-fixed uses right:0 and spans full viewport width, causing the Estimated tile to be obscured by the activity panel overlay
-Status: Fixed
-Fix Branch: feature/US-0048-ui-redesign-sidebar
-Lesson Encoded: No
-Estimated Cost USD: 0.02
