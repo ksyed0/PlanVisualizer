@@ -2,7 +2,7 @@
 
 function computeBudgetMetrics(data, config, snapshots) {
   const budget = config.budget || {};
-  const totalBudget = budget.totalUsd !== null ? budget.totalUsd : null;
+  const explicitTotalBudget = budget.totalUsd !== null && budget.totalUsd !== undefined;
   const byEpic = budget.byEpic || {};
   const thresholds = budget.thresholds || [50, 75, 90, 100];
 
@@ -14,6 +14,14 @@ function computeBudgetMetrics(data, config, snapshots) {
     }
     return sum;
   }, 0);
+
+  const plannedProjected = (data.stories || [])
+    .filter(s => s.status === 'Planned' || s.status === 'To Do')
+    .reduce((sum, st) => sum + ((data.costs[st.id] && data.costs[st.id].projectedUsd) || 0), 0);
+
+  const totalBudget = explicitTotalBudget 
+    ? budget.totalUsd 
+    : (totalSpent + plannedProjected);
 
   let burnRate = 0;
   let daysRemaining = null;
@@ -46,7 +54,12 @@ function computeBudgetMetrics(data, config, snapshots) {
   const epicBudgets = (data.epics || []).map(epic => {
     const epicStories = (data.stories || []).filter(s => s.epicId === epic.id);
     const spent = epicStories.reduce((sum, st) => sum + ((data.costs[st.id] && data.costs[st.id].costUsd) || 0), 0);
-    const epicBudget = byEpic[epic.id];
+    const epicPlanned = epicStories.filter(s => s.status === 'Planned' || s.status === 'To Do');
+    const plannedProjected = epicPlanned.reduce((sum, st) => sum + ((data.costs[st.id] && data.costs[st.id].projectedUsd) || 0), 0);
+    const explicitEpicBudget = byEpic[epic.id];
+    const epicBudget = explicitEpicBudget !== undefined 
+      ? explicitEpicBudget 
+      : (spent + plannedProjected);
     const remaining = epicBudget !== undefined ? epicBudget - spent : null;
     const pctUsed = epicBudget !== undefined ? Math.round((spent / epicBudget) * 100) : null;
     return {

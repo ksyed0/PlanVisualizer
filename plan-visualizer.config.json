@@ -15,12 +15,8 @@
   "progress": { "path": "progress.md" },
   "costs": { "hourlyRate": 100, "tshirtHours": { "S": 4, "M": 8, "L": 16, "XL": 32 } },
   "budget": {
-    "totalUsd": 100,
-    "byEpic": {
-      "EPIC-0001": 20,
-      "EPIC-0002": 30,
-      "EPIC-0003": 25
-    },
+    "totalUsd": null,
+    "byEpic": {},
     "thresholds": [50, 75, 90, 100]
   }
 }
