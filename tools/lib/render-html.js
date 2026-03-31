@@ -1578,6 +1578,13 @@ function renderScripts(data, options = {}) {
       const visibleChildren = block.querySelectorAll('.story-row:not([style*="display: none"])');
       const header = block.querySelector('div[onclick*="toggleSection"]');
       if (header) header.style.display = visibleChildren.length > 0 ? '' : 'none';
+      const wrapper = block.closest('.mb-8');
+      if (wrapper) wrapper.style.display = visibleChildren.length > 0 ? '' : 'none';
+    });
+    document.querySelectorAll('.ksw-swimlane').forEach(swimlane => {
+      const visibleChildren = swimlane.querySelectorAll('.story-row:not([style*="display: none"])');
+      const header = swimlane.querySelector('.ksw-swim-hdr');
+      if (header) header.style.display = visibleChildren.length > 0 ? '' : 'none';
     });
     document.querySelectorAll('[id^="bug-costs-ep-"], [id^="bug-costs-card-ep-"]').forEach(block => {
       const visibleChildren = block.querySelectorAll('.bug-row:not([style*="display: none"])');
