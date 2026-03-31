@@ -25,6 +25,9 @@ cp -r "${REPO_ROOT}/tests" "${TARGET}/"
 echo "[install] Copying jest.config.js ..."
 cp "${REPO_ROOT}/jest.config.js" "${TARGET}/jest.config.js"
 
+echo "[install] Copying eslint.config.js ..."
+cp "${REPO_ROOT}/eslint.config.js" "${TARGET}/eslint.config.js"
+
 # ── 2. Copy GitHub Actions workflow ─────────────────────────────────────────
 mkdir -p "${TARGET}/.github/workflows"
 if [ -f "${REPO_ROOT}/.github/workflows/plan-visualizer.yml" ]; then
