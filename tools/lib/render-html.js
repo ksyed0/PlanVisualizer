@@ -45,13 +45,35 @@ function renderTopBar(data) {
   const inProgress = activeStories.filter(s => s.status === 'In Progress').length;
   const cov = data.coverage;
   const covLabel = (cov.available !== false) ? `${cov.overall.toFixed(1)}%` : 'N/A';
-  const openBugs = (data.bugs || []).filter(b => !/^Fixed/i.test(b.status));
+  const openBugs = (data.bugs || []).filter(b => !/^(Fixed|Retired|Cancelled)/i.test(b.status));
   const critHighBugs = openBugs.filter(b => ['Critical', 'High'].includes(b.severity)).length;
   const bugValueCls = openBugs.length === 0 ? '' : critHighBugs > 0 ? ' tile-danger' : ' tile-warn';
   const covValueCls = (cov.available !== false && !cov.meetsTarget) ? ' tile-danger' : '';
   const genAt = data.generatedAt;
+
+  const budget = data.budget || {};
+  const hasBudget = budget.hasBudget;
+  const pct = budget.percentUsed;
+  let budgetTile = '';
+  if (hasBudget && pct !== null) {
+    let barColor = '#22c55e';
+    let warnIcon = '';
+    if (pct >= 90) { barColor = '#ef4444'; warnIcon = '&#9888;'; }
+    else if (pct >= 75) { barColor = '#f97316'; warnIcon = '&#9888;'; }
+    else if (pct >= 50) { barColor = '#eab308'; }
+    const clampedPct = Math.min(100, pct);
+    budgetTile = `
+        <div class="topbar-tile" style="min-width:90px">
+          <span class="tile-value font-mono">${warnIcon} ${pct}%</span>
+          <span class="tile-label">${usd(budget.totalSpent)} / ${usd(budget.totalBudget)}</span>
+          <div style="width:100%;height:3px;background:#334155;margin-top:4px;border-radius:2px;overflow:hidden">
+            <div style="width:${clampedPct}%;height:100%;background:${barColor};transition:width 0.3s"></div>
+          </div>
+        </div>`;
+  }
+
   return `
-  <header id="topbar-fixed">
+  <header id="topbar-fixed" class="${(data.budget && data.budget.crossedThresholds && data.budget.crossedThresholds.length > 0) ? 'has-alert' : ''}">
     <div class="topbar-inner">
       <div class="topbar-project">
         <div class="flex items-center gap-2 flex-wrap">
@@ -62,6 +84,7 @@ function renderTopBar(data) {
         <p class="topbar-tagline">${esc(data.tagline)}&nbsp;·&nbsp;Updated <span id="gen-time" data-iso="${genAt}"></span>&nbsp;·&nbsp;<code class="font-mono" style="font-size:10px">${esc(data.commitSha)}</code></p>
       </div>
       <div class="topbar-tiles">
+        ${budgetTile}
         <div class="topbar-tile">
           <span class="tile-value">&#128203; ${done}/${activeStories.length}</span>
           <span class="tile-label">Stories</span>
@@ -749,9 +772,75 @@ function renderChartsTab(data) {
   </script>`;
 }
 
-function renderCostsTab(data) {
+function renderCostsTab(data, options = {}) {
   const t = data.costs._totals;
   const totalProjected = data.stories.reduce((s, st) => s + (data.costs[st.id] && data.costs[st.id].projectedUsd || 0), 0);
+
+  const budget = data.budget || {};
+  const hasBudget = budget.hasBudget;
+
+  let budgetSection = '';
+  if (hasBudget) {
+    const br = budget.burnRate;
+    const days = budget.daysRemaining;
+    const brDisplay = br > 0 ? `Burn Rate: $${br.toFixed(2)}/day` : 'No recent spend data';
+    const exDisplay = days !== null ? `Exhaustion: ${days} days remaining` : (br > 0 ? 'Budget unlimited' : '');
+
+    const epicRows = budget.epicBudgets.map((eb, i) => {
+      const accent = EPIC_ACCENT_COLORS[i % EPIC_ACCENT_COLORS.length];
+      const barPct = eb.percentUsed !== null ? Math.min(100, eb.percentUsed) : 0;
+      let barColor = '#22c55e';
+      if (eb.percentUsed !== null) {
+        if (eb.percentUsed >= 90) barColor = '#ef4444';
+        else if (eb.percentUsed >= 75) barColor = '#f97316';
+        else if (eb.percentUsed >= 50) barColor = '#eab308';
+      }
+      return `<tr class="border-t border-slate-100 dark:border-slate-700">
+        <td class="px-3 py-2"><span class="font-mono text-xs font-bold" style="color:${accent.border}">${eb.id}</span></td>
+        <td class="px-3 py-2 text-sm dark:text-slate-200">${eb.budget !== null ? usd(eb.budget) : '—'}</td>
+        <td class="px-3 py-2 text-sm dark:text-slate-200">${usd(eb.spent)}</td>
+        <td class="px-3 py-2 text-sm dark:text-slate-200">${eb.remaining !== null ? usd(eb.remaining) : '—'}</td>
+        <td class="px-3 py-2">
+          ${eb.percentUsed !== null ? `<div class="flex items-center gap-2"><div style="width:60px;height:6px;background:#334155;border-radius:3px;overflow:hidden"><div style="width:${barPct}%;height:100%;background:${barColor}"></div></div><span class="text-xs" style="color:${barColor}">${eb.percentUsed}%</span></div>` : '—'}
+        </td>
+      </tr>`;
+    }).join('');
+
+    const csvDownload = options.budgetCSV ? `onclick="downloadBudgetCSV()"` : '';
+    budgetSection = `
+    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 mb-4">
+      <div class="flex flex-wrap items-center gap-6 mb-4">
+        <div>
+          <span class="text-xs text-slate-500 uppercase">${brDisplay}</span>
+        </div>
+        <div>
+          <span class="text-xs text-slate-500 uppercase">${exDisplay}</span>
+        </div>
+        <div>
+          <span class="text-xs text-slate-500 uppercase">Total Budget: ${usd(budget.totalBudget)}</span>
+        </div>
+        <div>
+          <span class="text-xs text-slate-500 uppercase">Spent: ${usd(budget.totalSpent)}</span>
+        </div>
+      </div>
+      <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Per-Epic Budget</h3>
+      <table class="w-full text-left text-sm">
+        <thead class="text-xs uppercase bg-slate-50 dark:bg-slate-700">
+          <tr>
+            <th class="px-3 py-2">Epic</th>
+            <th class="px-3 py-2">Budget</th>
+            <th class="px-3 py-2">Spent</th>
+            <th class="px-3 py-2">Remaining</th>
+            <th class="px-3 py-2">% Used</th>
+          </tr>
+        </thead>
+        <tbody>${epicRows}</tbody>
+      </table>
+      <div class="mt-4">
+        <button ${csvDownload} class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm font-medium">Export Budget CSV</button>
+      </div>
+    </div>`;
+  }
 
   // ── Column view: stories table ──────────────────────────────────────────
   const epicBlocks = data.epics.map((epic, epicIdx) => {
@@ -839,11 +928,11 @@ function renderCostsTab(data) {
       </tr>`;
     }).join('');
     return `<tbody>
-    <tr class="border-t-2 border-slate-300 dark:border-slate-600 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('${bceid}','${bceid}-arrow')">
+    <tr class="border-t-2 border-slate-300 dark:border-slate-600 cursor-pointer select-none bug-epic-header" data-epic="${epicId}" style="background:${accent.bg}" onclick="toggleSection('${bceid}','${bceid}-arrow')">
       <td colspan="6" class="px-3 py-2">
         <span id="${bceid}-arrow" class="text-slate-400 text-xs mr-2">&#9654;</span>
         <span class="font-mono text-xs font-bold" style="color:${accent.border}">${label}</span>
-        <span class="ml-2 text-xs text-slate-500">(${bugs.length})</span>
+        <span class="ml-2 text-xs text-slate-500 bug-count">(${bugs.length})</span>
       </td>
       <td class="px-3 py-2 text-right text-sm font-medium dark:text-slate-200">${epicProjected > 0 ? usd(epicProjected) : '—'}</td>
       <td class="px-3 py-2 text-right text-sm font-medium text-teal-700 dark:text-teal-400">${usd(epicAI)}</td>
@@ -930,10 +1019,11 @@ function renderCostsTab(data) {
         </div>
       </div>`;
     }).join('');
-    return `<div class="mb-6 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden" style="border-left:4px solid ${accent.border}">
-      <div class="flex items-center gap-2 px-4 py-3 flex-wrap cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('${bcceid}','${bcceid}-arrow')">
+    return `<div class="mb-6 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden bug-epic-card" data-epic="${epicId}" style="border-left:4px solid ${accent.border}">
+      <div class="flex items-center gap-2 px-4 py-3 flex-wrap cursor-pointer select-none bug-epic-header" data-epic="${epicId}" style="background:${accent.bg}" onclick="toggleSection('${bcceid}','${bcceid}-arrow')">
         <span id="${bcceid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9654;</span>
         <span class="font-mono text-xs font-bold" style="color:${accent.border}">${label}</span>
+        <span class="ml-2 text-xs text-slate-500 bug-count">(${bugs.length})</span>
         <span class="ml-auto text-xs text-slate-500">Proj ${usd(epicBugProjected)} · AI ${usd(epicBugAI)}</span>
       </div>
       <div id="${bcceid}" class="p-3 hidden">
@@ -973,6 +1063,7 @@ function renderCostsTab(data) {
 
   return `
   <div id="tab-costs" class="p-6 hidden tab-fill" role="tabpanel" aria-labelledby="tab-btn-costs">
+    ${budgetSection}
     <div class="flex items-center justify-between mb-4 flex-shrink-0">
       <span class="text-sm text-slate-500 dark:text-slate-400">${data.stories.length} stories · ${data.bugs.length} bugs</span>
       <div class="flex gap-1">
@@ -1065,32 +1156,39 @@ function renderBugsTab(data) {
     return a.localeCompare(b);
   });
 
-  const renderBugRow = bug => `
-  <tr id="bug-row-${bug.id}" class="bug-row border-t border-slate-100 dark:border-slate-700" data-status="${bug.status}">
-    <td class="px-3 py-2 font-mono text-xs whitespace-nowrap dark:text-slate-200">${bug.id}</td>
-    <td class="px-3 py-2 text-sm dark:text-slate-200">${esc(bug.title)}</td>
-    <td class="px-3 py-2 text-center">${badge(bug.severity)}</td>
-    <td class="px-3 py-2 text-center">${badge(bug.status)}</td>
-    <td class="px-3 py-2 text-xs text-slate-500 whitespace-nowrap">${esc(bug.relatedStory)}</td>
-    <td class="px-3 py-2 text-xs text-slate-500">${esc(bug.fixBranch || '—')}</td>
-    <td class="px-3 py-2 text-center text-xs dark:text-slate-200">${lessonCell(bug)}</td>
-  </tr>`;
+  const renderBugRow = bug => {
+    const epicId = storyEpicMap[bug.relatedStory] || '_ungrouped';
+    return `
+    <tr id="bug-row-${bug.id}" class="bug-row border-t border-slate-100 dark:border-slate-700" data-status="${bug.status}" data-epic="${epicId}">
+      <td class="px-3 py-2 font-mono text-xs whitespace-nowrap dark:text-slate-200">${bug.id}</td>
+      <td class="px-3 py-2 text-sm dark:text-slate-200">${esc(bug.title)}</td>
+      <td class="px-3 py-2 text-center">${badge(bug.severity)}</td>
+      <td class="px-3 py-2 text-center">${badge(bug.status)}</td>
+      <td class="px-3 py-2 text-xs text-slate-500 whitespace-nowrap">${esc(bug.relatedStory)}</td>
+      <td class="px-3 py-2 text-xs text-slate-500">${esc(bug.fixBranch || '—')}</td>
+      <td class="px-3 py-2 text-center text-xs dark:text-slate-200">${lessonCell(bug)}</td>
+    </tr>`;
+  };
 
-  const renderBugCard = bug => `
-  <div id="bug-card-${bug.id}" class="bug-row bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 flex flex-col gap-2" data-status="${bug.status}">
-    <div class="flex items-center gap-2 flex-wrap">
-      <span class="font-mono text-xs text-slate-500 whitespace-nowrap">${bug.id}</span>
-      ${badge(bug.severity)} ${badge(bug.status)}
-    </div>
-    <p class="text-sm font-medium dark:text-slate-200">${esc(bug.title)}</p>
-    <div class="text-xs text-slate-500 flex flex-col gap-0.5">
-      <span>Story: <span class="font-mono">${esc(bug.relatedStory || '—')}</span></span>
-      <span class="truncate" title="${esc(bug.fixBranch || '')}">Branch: <span class="font-mono">${esc(bug.fixBranch || '—')}</span></span>
+  const renderBugCard = bug => {
+    const epicId = storyEpicMap[bug.relatedStory] || '_ungrouped';
+    return `
+    <div id="bug-card-${bug.id}" class="bug-row bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 flex flex-col gap-2" data-status="${bug.status}" data-epic="${epicId}">
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="font-mono text-xs text-slate-500 whitespace-nowrap">${bug.id}</span>
+        ${badge(bug.severity)} ${badge(bug.status)}
+      </div>
+      <p class="text-sm font-medium dark:text-slate-200">${esc(bug.title)}</p>
+      <div class="text-xs text-slate-500 flex flex-col gap-0.5">
+        <span>Story: <span class="font-mono">${esc(bug.relatedStory || '—')}</span></span>
+        <span class="truncate" title="${esc(bug.fixBranch || '')}">Branch: <span class="font-mono">${esc(bug.fixBranch || '—')}</span></span>
+      </span>
     </div>
     <div class="flex items-center justify-between mt-1">
       <span class="text-xs text-slate-500">Lesson: <span class="dark:text-slate-200">${lessonCell(bug)}</span></span>
     </div>
   </div>`;
+  };
 
   const bugColGroups = bugEpicOrder.map((epicId, i) => {
     const bugs = bugsByEpic[epicId];
@@ -1099,11 +1197,11 @@ function renderBugsTab(data) {
     const label = epic ? `${epicId}: ${esc(epic.title)}` : (epicId === '_ungrouped' ? 'No Epic' : epicId);
     const beid = `bugs-ep-${epicId.replace(/[^a-zA-Z0-9]/g, '-')}`;
     return `<tbody>
-    <tr class="border-t-2 border-slate-300 dark:border-slate-600 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('${beid}','${beid}-arrow')">
+    <tr class="border-t-2 border-slate-300 dark:border-slate-600 cursor-pointer select-none bug-epic-header" data-epic="${epicId}" style="background:${accent.bg}" onclick="toggleSection('${beid}','${beid}-arrow')">
       <td colspan="7" class="px-3 py-2">
         <span id="${beid}-arrow" class="text-slate-400 text-xs mr-2">&#9654;</span>
         <span class="font-mono text-xs font-bold" style="color:${accent.border}">${label}</span>
-        <span class="ml-2 text-xs text-slate-500">(${bugs.length})</span>
+        <span class="ml-2 text-xs text-slate-500 bug-count">(${bugs.length})</span>
       </td>
     </tr>
     </tbody><tbody id="${beid}" class="hidden">${bugs.map(renderBugRow).join('')}</tbody>`;
@@ -1115,11 +1213,11 @@ function renderBugsTab(data) {
     const accent = EPIC_ACCENT_COLORS[i % EPIC_ACCENT_COLORS.length];
     const label = epic ? `${epicId}: ${esc(epic.title)}` : (epicId === '_ungrouped' ? 'No Epic' : epicId);
     const bceid = `bugs-card-ep-${epicId.replace(/[^a-zA-Z0-9]/g, '-')}`;
-    return `<div class="mb-6 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden" style="border-left:4px solid ${accent.border}">
-      <div class="flex items-center gap-2 px-4 py-3 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('${bceid}','${bceid}-arrow')">
+    return `<div class="mb-6 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden bug-epic-card" data-epic="${epicId}" style="border-left:4px solid ${accent.border}">
+      <div class="flex items-center gap-2 px-4 py-3 cursor-pointer select-none bug-epic-header" data-epic="${epicId}" style="background:${accent.bg}" onclick="toggleSection('${bceid}','${bceid}-arrow')">
         <span id="${bceid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9654;</span>
         <span class="font-mono text-xs font-bold" style="color:${accent.border}">${label}</span>
-        <span class="ml-1 text-xs text-slate-500">(${bugs.length})</span>
+        <span class="ml-1 text-xs text-slate-500 bug-count">(${bugs.length})</span>
       </div>
       <div id="${bceid}" class="p-3 hidden">
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">${bugs.map(renderBugCard).join('')}</div>
@@ -1365,13 +1463,24 @@ function renderRecentActivity(data) {
   </div>`;
 }
 
-function renderScripts(data) {
+function renderScripts(data, options = {}) {
   const allData = JSON.stringify({ epics: data.epics, stories: data.stories });
   return `
   <script>
   const ALL_DATA = ${allData};
 
-  const VALID_TABS = ['hierarchy','kanban','traceability','charts','costs','bugs','lessons'];
+  const VALID_TABS = ['hierarchy','kanban','traceability','charts','trends','costs','bugs','lessons'];
+
+  function downloadBudgetCSV() {
+    const csv = ${JSON.stringify(options.budgetCSV || '')};
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'budget-report-' + new Date().toISOString().split('T')[0] + '.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
   function updateFilterBar(name) {
     const bar = document.getElementById('filter-bar');
@@ -1468,10 +1577,38 @@ function renderScripts(data) {
       row.style.display = hide ? 'none' : '';
     });
     document.querySelectorAll('.bug-row').forEach(row => {
+      const rowEpic = row.dataset.epic || '_ungrouped';
       const hide =
+        (epic && rowEpic !== epic) ||
         (bugStatus && row.dataset.status !== bugStatus) ||
         (search && !row.innerText.toLowerCase().includes(search));
       row.style.display = hide ? 'none' : '';
+    });
+    document.querySelectorAll('.epic-block').forEach(block => {
+      const visibleChildren = block.querySelectorAll('.story-row:not([style*="display: none"])');
+      const header = block.querySelector('div[onclick*="toggleSection"]');
+      if (header) header.style.display = visibleChildren.length > 0 ? '' : 'none';
+      block.style.display = visibleChildren.length > 0 ? '' : 'none';
+      const wrapper = block.closest('.mb-8');
+      if (wrapper) wrapper.style.display = visibleChildren.length > 0 ? '' : 'none';
+    });
+    document.querySelectorAll('.ksw-swimlane').forEach(swimlane => {
+      const visibleChildren = swimlane.querySelectorAll('.story-row:not([style*="display: none"])');
+      const header = swimlane.querySelector('.ksw-swim-hdr');
+      if (header) header.style.display = visibleChildren.length > 0 ? '' : 'none';
+    });
+    document.querySelectorAll('.bug-epic-header').forEach(header => {
+      const headerEpic = header.dataset.epic || '_ungrouped';
+      const container = header.closest('tbody') || header.closest('.bug-epic-card');
+      const visibleChildren = container ? container.querySelectorAll('.bug-row:not([style*="display: none"])') : [];
+      header.style.display = visibleChildren.length > 0 ? '' : 'none';
+      const countSpan = header.querySelector('.bug-count');
+      if (countSpan) {
+        countSpan.textContent = '(' + visibleChildren.length + ')';
+      }
+      if (container && container.tagName !== 'TR') {
+        container.style.display = visibleChildren.length > 0 ? '' : 'none';
+      }
     });
     localStorage.setItem('f-epic', epic);
     localStorage.setItem('f-status', status);
@@ -1723,6 +1860,9 @@ function renderHtml(data, options = {}) {
   <style>
     /* === Base === */
     body { font-family: 'Inter', sans-serif; padding-top: 72px; background-color: var(--clr-body-bg); color: var(--clr-text-primary); }
+    body.has-alert { padding-top: 100px; }
+    #topbar-fixed.has-alert { top: 28px; }
+    #sidebar.has-alert { top: 100px; height: calc(100vh - 100px); }
     code, .font-mono { font-family: 'JetBrains Mono', monospace; }
 
     /* === Topbar (fixed, gradient) === */
@@ -1820,7 +1960,16 @@ function renderHtml(data, options = {}) {
   </style>
   ${renderPrintCSS()}
 </head>
-<body class="min-h-screen">
+<body class="min-h-screen ${(data.budget && data.budget.crossedThresholds && data.budget.crossedThresholds.length > 0) ? 'has-alert' : ''}">
+  ${(data.budget && data.budget.crossedThresholds && data.budget.crossedThresholds.length > 0) ? `
+  <div id="budget-alert" class="fixed top-0 left-0 right-0 z-50 px-4 py-2 flex items-center justify-between ${data.budget.percentUsed >= 90 ? 'bg-red-600' : data.budget.percentUsed >= 75 ? 'bg-orange-500' : 'bg-amber-500'} text-white">
+    <span class="font-medium">
+      ${data.budget.percentUsed >= 90 ? '⛔' : '⚠️'} Budget Alert: ${data.budget.percentUsed}% of budget consumed
+    </span>
+    <button onclick="dismissBudgetAlert()" class="text-white hover:text-gray-200 text-sm font-bold px-2">✕</button>
+  </div>
+  <script>function dismissBudgetAlert(){document.getElementById('budget-alert').style.display='none';document.body.classList.remove('has-alert');localStorage.setItem('budgetAlertDismissed','${data.generatedAt}');}</script>
+  ` : ''}
   ${renderTopBar(data)}
   <div id="app-shell">
     ${renderSidebar()}
@@ -1834,14 +1983,14 @@ function renderHtml(data, options = {}) {
         ${renderTraceabilityTab(data)}
         ${renderChartsTab(data)}
         ${renderTrendsTab(data, options)}
-        ${renderCostsTab(data)}
+        ${renderCostsTab(data, options)}
         ${renderBugsTab(data)}
         ${renderLessonsTab(data)}
       </div>
     </main>
   </div>
   ${renderRecentActivity(data)}
-  ${renderScripts(data)}
+  ${renderScripts(data, options)}
   <div id="aboutModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
     <div onclick="closeAbout()" class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
     <div class="relative z-10 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl shadow-2xl w-full max-w-sm p-6 text-center">

@@ -142,6 +142,23 @@ fs.writeFileSync(filePath, JSON.stringify(settings, null, 2) + '\n', 'utf8');
 console.log('[install] Merged Stop hook into ' + filePath);
 JS
 
+# ── 6. Prompt for historical data backfill ─────────────────────────────────────
+if [ -f "${TARGET}/docs/plan-status.json" ]; then
+  echo ""
+  echo "[install] PlanVisualizer has detected existing project data."
+  read -p "[install] Would you like to estimate historical data? (y/n) " -n 1 -r
+  echo ""
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    echo "[install] Running historical backfill..."
+    node -e "
+      const { backfillHistory } = require('${TARGET}/tools/lib/historical-sim.js');
+      backfillHistory({ root: '${TARGET}', days: 30 });
+    " || echo "[install] Warning: Failed to run backfill — this is normal on first install."
+  else
+    echo "[install] Skipping historical backfill. History will build naturally from real generations."
+  fi
+fi
+
 echo ""
 echo "[install] Done. Next steps:"
 echo "  1. Edit plan-visualizer.config.json with your project name and file paths."

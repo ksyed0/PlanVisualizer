@@ -1011,3 +1011,33 @@ Status: Fixed
 Fix Branch: feature/US-0048-ui-redesign-sidebar
 Lesson Encoded: No
 Estimated Cost USD: 0.02
+
+---
+
+BUG-0098: Open bug count includes Retired bugs — shows incorrect count in header
+Severity: Medium
+Related Story: US-0036
+Steps to Reproduce:
+  1. Open plan-status.html
+  2. Observe the Bugs Open stat tile in the top bar
+  3. Click the Bugs tab and apply a status filter
+Expected: Open bug count excludes Retired and Cancelled bugs; shows only truly open bugs
+Actual: Bugs with status "Retired" are counted as open because filter uses !/^Fixed/i which passes Retired
+Status: Open
+Fix Branch: 
+Lesson Encoded: No
+
+---
+
+BUG-0099: Epic group headers remain visible when all children are filtered out
+Severity: Medium
+Related Story: US-0010
+Steps to Reproduce:
+  1. Open plan-status.html → Hierarchy or Bugs tab
+  2. Apply a filter that results in zero matches for a specific epic group
+  3. Observe the epic group header
+Expected: Epic group headers with zero visible children are hidden; counts reflect filtered results
+Actual: Epic group headers remain visible even when all children are hidden by filters; counts show original totals
+Status: Open
+Fix Branch: 
+Lesson Encoded: No

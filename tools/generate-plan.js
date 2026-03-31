@@ -21,7 +21,11 @@ const { parseLessons } = require('./lib/parse-lessons');
 const { computeProjectedCost, attributeAICosts, attributeBugCosts } = require('./lib/compute-costs');
 const { detectAtRisk } = require('./lib/detect-at-risk');
 const { saveSnapshot, loadSnapshots, extractTrends } = require('./lib/snapshot');
+const { computeBudgetMetrics, generateBudgetCSV } = require('./lib/budget');
 const { renderHtml } = require('./lib/render-html');
+const { backfillHistory, calculateAvgTokensPerEstimate, estimateStoryCost } = require('./lib/historical-sim');
+
+const TOKEN_RATES = { input: 3, output: 15 };
 
 const ROOT = path.join(__dirname, '..');
 
@@ -38,6 +42,7 @@ const DEFAULTS = {
   coverage: { summaryPath: 'docs/coverage/coverage-summary.json' },
   progress: { path: 'progress.md' },
   costs: { hourlyRate: 100, tshirtHours: { XS: 2, S: 4, M: 8, L: 16, XL: 32 } },
+  budget: { totalUsd: null, byEpic: {}, thresholds: [50, 75, 90, 100] },
 };
 
 function loadConfig() {
@@ -45,7 +50,7 @@ function loadConfig() {
   if (!fs.existsSync(cfgPath)) return DEFAULTS;
   try {
     const raw = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
-    const KNOWN_KEYS = ['project', 'docs', 'coverage', 'progress', 'costs'];
+    const KNOWN_KEYS = ['project', 'docs', 'coverage', 'progress', 'costs', 'budget'];
     Object.keys(raw).forEach(k => {
       if (!KNOWN_KEYS.includes(k)) console.warn(`[generate-plan] Unknown config key: "${k}" — ignored`);
     });
@@ -57,6 +62,11 @@ function loadConfig() {
       costs: {
         hourlyRate: raw.costs?.hourlyRate ?? DEFAULTS.costs.hourlyRate,
         tshirtHours: { ...DEFAULTS.costs.tshirtHours, ...raw.costs?.tshirtHours },
+      },
+      budget: {
+        totalUsd: raw.budget?.totalUsd ?? DEFAULTS.budget.totalUsd,
+        byEpic: { ...DEFAULTS.budget.byEpic, ...raw.budget?.byEpic },
+        thresholds: raw.budget?.thresholds ?? DEFAULTS.budget.thresholds,
       },
     };
   } catch (e) {
@@ -104,10 +114,22 @@ function main() {
   const lessons = parseLessons(readFile(config.docs.lessons));
 
   const aiAttribution = attributeAICosts(stories, costByBranch);
+  const avgTokens = calculateAvgTokensPerEstimate({ stories, costs: aiAttribution });
+  const hasRealCosts = Object.values(aiAttribution).some(c => c && c.costUsd > 0);
+  
   const costs = {};
   for (const story of stories) {
+    let projectedUsd;
+    if (story.status === 'Done' || story.status === 'In Progress') {
+      projectedUsd = computeProjectedCost(story.estimate, HOURS, RATE);
+    } else if (hasRealCosts && avgTokens && Object.keys(avgTokens).length > 0) {
+      projectedUsd = estimateStoryCost(story.estimate, avgTokens, TOKEN_RATES.input, TOKEN_RATES.output);
+    } else {
+      projectedUsd = computeProjectedCost(story.estimate, HOURS, RATE);
+    }
+    
     costs[story.id] = {
-      projectedUsd: computeProjectedCost(story.estimate, HOURS, RATE),
+      projectedUsd: projectedUsd,
       costUsd: aiAttribution[story.id] ? aiAttribution[story.id].costUsd : 0,
       inputTokens: aiAttribution[story.id] ? aiAttribution[story.id].inputTokens : 0,
       outputTokens: aiAttribution[story.id] ? aiAttribution[story.id].outputTokens : 0,
@@ -131,8 +153,10 @@ function main() {
   let pkg;
   try {
     pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
-  } catch (e) {
-    throw new Error(`Failed to read package.json: ${e.message}`);
+  } catch (err) {
+    let msg = 'Failed to read package.json';
+    if (err instanceof Error) msg += ': ' + err.message;
+    throw new Error(msg);
   }
 
   const sessionTimeline = deduplicateSessions(costRows)
@@ -157,8 +181,24 @@ function main() {
   saveSnapshot(snapshotData, { root: ROOT, commit: commitSha });
 
   console.log('[generate-plan] Loading historical snapshots...');
-  const snapshots = loadSnapshots({ root: ROOT });
+  let snapshots = loadSnapshots({ root: ROOT });
+  
+  if (snapshots.length < 2) {
+    console.log('[generate-plan] Less than 2 snapshots found, attempting historical backfill...');
+    const backfillResult = backfillHistory({ root: ROOT, days: 30 });
+    if (!backfillResult.skipped) {
+      console.log('[generate-plan] Reloading snapshots after backfill...');
+      snapshots = loadSnapshots({ root: ROOT });
+    }
+  }
+  
   const trends = extractTrends(snapshots);
+
+  console.log('[generate-plan] Computing budget metrics...');
+  const budgetMetrics = computeBudgetMetrics(data, config, snapshots);
+  const budgetCSV = generateBudgetCSV(data, budgetMetrics, snapshots);
+
+  data.budget = budgetMetrics;
 
   const outputDir = path.join(ROOT, config.docs.outputDir);
   if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
@@ -167,7 +207,7 @@ function main() {
   fs.writeFileSync(jsonPath, JSON.stringify(data, null, 2), 'utf8');
   console.log(`[generate-plan] Written ${jsonPath}`);
 
-  const html = renderHtml(data, { trends });
+  const html = renderHtml(data, { trends, budgetCSV });
   const htmlPath = path.join(outputDir, 'plan-status.html');
   fs.writeFileSync(htmlPath, html, 'utf8');
   console.log(`[generate-plan] Written ${htmlPath}`);

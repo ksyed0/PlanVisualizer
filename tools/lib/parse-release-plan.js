@@ -112,6 +112,7 @@ function parseTaskBlock(text) {
 function parseReleasePlan(markdown) {
   const blocks = extractCodeBlocks(markdown);
   const epics = [], stories = [], tasks = [];
+  const seenEpics = new Set(), seenStories = new Set(), seenTasks = new Set();
 
   for (const block of blocks) {
     const chunks = block.split(/\n{2,}/);
@@ -120,13 +121,22 @@ function parseReleasePlan(markdown) {
       if (!trimmed) continue;
       if (/^EPIC-\d{4}:/.test(trimmed)) {
         const e = parseEpicBlock(trimmed);
-        if (e) epics.push(e);
+        if (e && !seenEpics.has(e.id)) {
+          seenEpics.add(e.id);
+          epics.push(e);
+        }
       } else if (/^US-\d{4}\s*\(EPIC-/.test(trimmed)) {
         const s = parseStoryBlock(trimmed);
-        if (s) stories.push(s);
+        if (s && !seenStories.has(s.id)) {
+          seenStories.add(s.id);
+          stories.push(s);
+        }
       } else if (/^TASK-\d{4}\s*\(US-/.test(trimmed)) {
         const t = parseTaskBlock(trimmed);
-        if (t) tasks.push(t);
+        if (t && !seenTasks.has(t.id)) {
+          seenTasks.add(t.id);
+          tasks.push(t);
+        }
       }
     }
   }
