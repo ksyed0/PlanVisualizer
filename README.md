@@ -40,8 +40,9 @@ project root, create plan-visualizer.config.json with the correct project name a
 file paths for this project, copy the .github/workflows/plan-visualizer.yml workflow,
 run npm run plan:test from the repo root to confirm all suites pass, then commit all
 added files to the current branch. The install script will copy plan_visualizer.md
-into this project root, automatically update AGENTS.md with a reference to it, and
-merge the Claude Code Stop hook for capture-cost.js into .claude/settings.json.
+into this project root, automatically update AGENTS.md with a reference to it,
+merge the Claude Code Stop hook for capture-cost.js into .claude/settings.json,
+and prompt for historical data backfill (if project data exists).
 ```
 
 ---
@@ -153,7 +154,8 @@ Paste this prompt directly into Claude Code in your target repo:
 Update the PlanVisualizer tool in this project from the ksyed0/PlanVisualizer
 GitHub repo. Clone it to a temp directory, run scripts/install.sh targeting this
 project root, run npm run plan:test from the repo root to confirm all suites pass, then
-commit all changed files to the current branch.
+commit all changed files to the current branch. The install script will prompt for
+historical data backfill if existing project data is detected.
 ```
 
 ---
