@@ -928,11 +928,11 @@ function renderCostsTab(data, options = {}) {
       </tr>`;
     }).join('');
     return `<tbody>
-    <tr class="border-t-2 border-slate-300 dark:border-slate-600 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('${bceid}','${bceid}-arrow')">
+    <tr class="border-t-2 border-slate-300 dark:border-slate-600 cursor-pointer select-none bug-epic-header" data-epic="${epicId}" style="background:${accent.bg}" onclick="toggleSection('${bceid}','${bceid}-arrow')">
       <td colspan="6" class="px-3 py-2">
         <span id="${bceid}-arrow" class="text-slate-400 text-xs mr-2">&#9654;</span>
         <span class="font-mono text-xs font-bold" style="color:${accent.border}">${label}</span>
-        <span class="ml-2 text-xs text-slate-500">(${bugs.length})</span>
+        <span class="ml-2 text-xs text-slate-500 bug-count">(${bugs.length})</span>
       </td>
       <td class="px-3 py-2 text-right text-sm font-medium dark:text-slate-200">${epicProjected > 0 ? usd(epicProjected) : '—'}</td>
       <td class="px-3 py-2 text-right text-sm font-medium text-teal-700 dark:text-teal-400">${usd(epicAI)}</td>
@@ -1019,10 +1019,11 @@ function renderCostsTab(data, options = {}) {
         </div>
       </div>`;
     }).join('');
-    return `<div class="mb-6 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden" style="border-left:4px solid ${accent.border}">
-      <div class="flex items-center gap-2 px-4 py-3 flex-wrap cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('${bcceid}','${bcceid}-arrow')">
+    return `<div class="mb-6 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden bug-epic-card" data-epic="${epicId}" style="border-left:4px solid ${accent.border}">
+      <div class="flex items-center gap-2 px-4 py-3 flex-wrap cursor-pointer select-none bug-epic-header" data-epic="${epicId}" style="background:${accent.bg}" onclick="toggleSection('${bcceid}','${bcceid}-arrow')">
         <span id="${bcceid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9654;</span>
         <span class="font-mono text-xs font-bold" style="color:${accent.border}">${label}</span>
+        <span class="ml-2 text-xs text-slate-500 bug-count">(${bugs.length})</span>
         <span class="ml-auto text-xs text-slate-500">Proj ${usd(epicBugProjected)} · AI ${usd(epicBugAI)}</span>
       </div>
       <div id="${bcceid}" class="p-3 hidden">
@@ -1155,32 +1156,39 @@ function renderBugsTab(data) {
     return a.localeCompare(b);
   });
 
-  const renderBugRow = bug => `
-  <tr id="bug-row-${bug.id}" class="bug-row border-t border-slate-100 dark:border-slate-700" data-status="${bug.status}">
-    <td class="px-3 py-2 font-mono text-xs whitespace-nowrap dark:text-slate-200">${bug.id}</td>
-    <td class="px-3 py-2 text-sm dark:text-slate-200">${esc(bug.title)}</td>
-    <td class="px-3 py-2 text-center">${badge(bug.severity)}</td>
-    <td class="px-3 py-2 text-center">${badge(bug.status)}</td>
-    <td class="px-3 py-2 text-xs text-slate-500 whitespace-nowrap">${esc(bug.relatedStory)}</td>
-    <td class="px-3 py-2 text-xs text-slate-500">${esc(bug.fixBranch || '—')}</td>
-    <td class="px-3 py-2 text-center text-xs dark:text-slate-200">${lessonCell(bug)}</td>
-  </tr>`;
+  const renderBugRow = bug => {
+    const epicId = storyEpicMap[bug.relatedStory] || '_ungrouped';
+    return `
+    <tr id="bug-row-${bug.id}" class="bug-row border-t border-slate-100 dark:border-slate-700" data-status="${bug.status}" data-epic="${epicId}">
+      <td class="px-3 py-2 font-mono text-xs whitespace-nowrap dark:text-slate-200">${bug.id}</td>
+      <td class="px-3 py-2 text-sm dark:text-slate-200">${esc(bug.title)}</td>
+      <td class="px-3 py-2 text-center">${badge(bug.severity)}</td>
+      <td class="px-3 py-2 text-center">${badge(bug.status)}</td>
+      <td class="px-3 py-2 text-xs text-slate-500 whitespace-nowrap">${esc(bug.relatedStory)}</td>
+      <td class="px-3 py-2 text-xs text-slate-500">${esc(bug.fixBranch || '—')}</td>
+      <td class="px-3 py-2 text-center text-xs dark:text-slate-200">${lessonCell(bug)}</td>
+    </tr>`;
+  };
 
-  const renderBugCard = bug => `
-  <div id="bug-card-${bug.id}" class="bug-row bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 flex flex-col gap-2" data-status="${bug.status}">
-    <div class="flex items-center gap-2 flex-wrap">
-      <span class="font-mono text-xs text-slate-500 whitespace-nowrap">${bug.id}</span>
-      ${badge(bug.severity)} ${badge(bug.status)}
-    </div>
-    <p class="text-sm font-medium dark:text-slate-200">${esc(bug.title)}</p>
-    <div class="text-xs text-slate-500 flex flex-col gap-0.5">
-      <span>Story: <span class="font-mono">${esc(bug.relatedStory || '—')}</span></span>
-      <span class="truncate" title="${esc(bug.fixBranch || '')}">Branch: <span class="font-mono">${esc(bug.fixBranch || '—')}</span></span>
+  const renderBugCard = bug => {
+    const epicId = storyEpicMap[bug.relatedStory] || '_ungrouped';
+    return `
+    <div id="bug-card-${bug.id}" class="bug-row bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 flex flex-col gap-2" data-status="${bug.status}" data-epic="${epicId}">
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="font-mono text-xs text-slate-500 whitespace-nowrap">${bug.id}</span>
+        ${badge(bug.severity)} ${badge(bug.status)}
+      </div>
+      <p class="text-sm font-medium dark:text-slate-200">${esc(bug.title)}</p>
+      <div class="text-xs text-slate-500 flex flex-col gap-0.5">
+        <span>Story: <span class="font-mono">${esc(bug.relatedStory || '—')}</span></span>
+        <span class="truncate" title="${esc(bug.fixBranch || '')}">Branch: <span class="font-mono">${esc(bug.fixBranch || '—')}</span></span>
+      </span>
     </div>
     <div class="flex items-center justify-between mt-1">
       <span class="text-xs text-slate-500">Lesson: <span class="dark:text-slate-200">${lessonCell(bug)}</span></span>
     </div>
   </div>`;
+  };
 
   const bugColGroups = bugEpicOrder.map((epicId, i) => {
     const bugs = bugsByEpic[epicId];
@@ -1569,7 +1577,9 @@ function renderScripts(data, options = {}) {
       row.style.display = hide ? 'none' : '';
     });
     document.querySelectorAll('.bug-row').forEach(row => {
+      const rowEpic = row.dataset.epic || '_ungrouped';
       const hide =
+        (epic && rowEpic !== epic) ||
         (bugStatus && row.dataset.status !== bugStatus) ||
         (search && !row.innerText.toLowerCase().includes(search));
       row.style.display = hide ? 'none' : '';
@@ -1587,11 +1597,18 @@ function renderScripts(data, options = {}) {
       const header = swimlane.querySelector('.ksw-swim-hdr');
       if (header) header.style.display = visibleChildren.length > 0 ? '' : 'none';
     });
-    document.querySelectorAll('[id^="bug-costs-ep-"], [id^="bug-costs-card-ep-"]').forEach(block => {
-      const visibleChildren = block.querySelectorAll('.bug-row:not([style*="display: none"])');
-      block.style.display = visibleChildren.length > 0 ? '' : 'none';
-      const header = block.querySelector('tr[onclick*="toggleSection"], div[onclick*="toggleSection"]');
-      if (header) header.style.display = visibleChildren.length > 0 ? '' : 'none';
+    document.querySelectorAll('.bug-epic-header').forEach(header => {
+      const headerEpic = header.dataset.epic || '_ungrouped';
+      const container = header.closest('tbody') || header.closest('.bug-epic-card');
+      const visibleChildren = container ? container.querySelectorAll('.bug-row:not([style*="display: none"])') : [];
+      header.style.display = visibleChildren.length > 0 ? '' : 'none';
+      const countSpan = header.querySelector('.bug-count');
+      if (countSpan) {
+        countSpan.textContent = '(' + visibleChildren.length + ')';
+      }
+      if (container && container.tagName !== 'TR') {
+        container.style.display = visibleChildren.length > 0 ? '' : 'none';
+      }
     });
     localStorage.setItem('f-epic', epic);
     localStorage.setItem('f-status', status);
