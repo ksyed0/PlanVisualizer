@@ -1,6 +1,6 @@
 {
   "name": "plan-visualizer",
-  "version": "1.0.15",
+  "version": "1.0.177",
   "description": "Self-contained project dashboard for Claude Code projects",
   "scripts": {
     "test": "jest",
@@ -10,7 +10,7 @@
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
-    "eslint": "10.1.0",
+    "eslint": "10.0.3",
     "jest": "^30.3.0"
   }
 }

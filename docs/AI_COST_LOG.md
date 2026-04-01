@@ -121,3 +121,8 @@ Input Tokens column = direct input + cache-write tokens; cost computed with dist
 | 2026-03-30 | f655eb8e-96ab-4c4a-bdb6-ab0a6023ce09 | feature/US-0048-ui-redesign-sidebar | 3519239 | 329467 | 127251908 | 56.3129 |
 | 2026-03-30 | f655eb8e-96ab-4c4a-bdb6-ab0a6023ce09 | feature/US-0048-ui-redesign-sidebar | 3549630 | 339124 | 131809584 | 57.9390 |
 | 2026-03-30 | f655eb8e-96ab-4c4a-bdb6-ab0a6023ce09 | feature/US-0048-ui-redesign-sidebar | 3568348 | 340311 | 133105021 | 58.4156 |
+| 2026-03-31 | f102be3a-dbfa-45ae-a702-d78e28c0cd41 | docs/update-readme-and-progress | 214571 | 1783 | 595238 | 1.0079 |
+| 2026-04-01 | f102be3a-dbfa-45ae-a702-d78e28c0cd41 | docs/update-readme-and-progress | 328296 | 4384 | 1372905 | 1.7067 |
+| 2026-04-01 | f102be3a-dbfa-45ae-a702-d78e28c0cd41 | docs/update-readme-and-progress | 329418 | 4877 | 1488753 | 1.7530 |
+| 2026-04-01 | f102be3a-dbfa-45ae-a702-d78e28c0cd41 | docs/update-readme-and-progress | 335561 | 6860 | 2454936 | 2.0956 |
+| 2026-04-01 | f102be3a-dbfa-45ae-a702-d78e28c0cd41 | docs/update-readme-and-progress | 337600 | 7192 | 2769667 | 2.2027 |

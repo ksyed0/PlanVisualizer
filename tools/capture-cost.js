@@ -128,6 +128,10 @@ async function main() {
   const { inputTokens, cacheWriteTokens, cacheReadTokens, outputTokens } =
     await sumTokensFromTranscript(transcriptPath || '');
 
+  if (!transcriptPath || (inputTokens === 0 && outputTokens === 0)) {
+    process.stderr.write(`[capture-cost] Warning: No transcript found for session ${sessionId}; costs will be zeroed\n`);
+  }
+
   // Cost: input and cache-write at their respective rates; fold into displayed "Input Tokens"
   const costUsd = (
     inputTokens      * RATES.input      / 1_000_000 +
@@ -144,7 +148,7 @@ async function main() {
   if (!gitBranch) {
     try {
       branch = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf8' }).trim();
-    } catch {}
+    } catch { /* ignore - use default branch value */ }
   }
 
   const row = `| ${date} | ${sessionId} | ${branch} | ${displayInput} | ${outputTokens} | ${cacheReadTokens} | ${costUsd} |\n`;

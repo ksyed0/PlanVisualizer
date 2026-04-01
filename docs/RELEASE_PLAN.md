@@ -56,6 +56,18 @@ Description: Mobile-responsive layout fixes, display accuracy improvements, navi
 Release Target: Release 1.2
 Status: Done
 Dependencies: EPIC-0002
+
+EPIC-0007: Dashboard Visual Design Overhaul
+Description: Replace the generic Tailwind slate palette and default blue accent with a distinctive dark design system. Improvements span the colour palette, badge styling, tab indicator, typography, hover interactions, and background texture to produce a visually unique dashboard.
+Release Target: Release 1.3
+Status: Done
+Dependencies: EPIC-0006
+
+EPIC-0008: Trend Analysis & Historical Tracking
+Description: Capture and visualise project metrics over time. Store snapshots of dashboard data on each generation and display trend charts showing progress, costs, coverage, and velocity.
+Release Target: Release 1.4
+Status: Planned
+Dependencies: EPIC-0007
 ```
 
 ---
@@ -233,6 +245,18 @@ Acceptance Criteria:
   - [x] AC-0084: Bugs with no fix branch or no logged cost show $0.00 (not hidden)
   - [x] AC-0085: Bug Fix Costs section is absent when bugs array is empty
 Dependencies: US-0029
+
+US-0082 (EPIC-0003): As a developer, I want the source code and npm packages to be cleanly separated in the install script, so that the target project only gets runtime dependencies and not development tools.
+Priority: Medium (P1)
+Estimate: S
+Status: Done
+Branch: feature/EPIC-0009-budget-forecasting
+Acceptance Criteria:
+  - [x] AC-0258: The install script copies only the generated output files (tools/lib/*.js, scripts/, .github/workflows/) to the target project
+  - [x] AC-0259: DevDependencies (jest, eslint) remain in the PlanVisualizer repo and are NOT copied to target projects
+  - [x] AC-0260: The target project's package.json receives only runtime scripts (plan:test, plan:generate)
+  - [x] AC-0261: Users installing PlanVisualizer do not need to run npm install for devDependencies
+Dependencies: US-0011
 ```
 
 ---
@@ -1003,4 +1027,507 @@ Acceptance Criteria:
   - [x] AC-0148: All epic group accordion sections across Hierarchy, Kanban, Costs, Bugs, Lessons, and Traceability tabs render with hidden content and ▶ arrow on initial page load
   - [x] AC-0149: The Traceability tab epic header row uses EPIC_ACCENT_COLORS (tinted background, 4px coloured left border, mono uppercase epic ID, status badge) matching the Hierarchy tab epic header style
 Dependencies: US-0051
+```
+
+---
+
+## Technical Debt
+
+```
+US-0053 (EPIC-0007): As a developer, I want the render-html.js module to be split into smaller focused files, so that the codebase is easier to maintain and debug.
+Priority: Low (P3)
+Estimate: M
+Status: Planned
+Branch: 
+Acceptance Criteria:
+  - [ ] AC-0150: render-html.js is refactored into separate modules (e.g., render-header.js, render-tabs.js, render-charts.js, render-scripts.js)
+  - [ ] AC-0151: Each module exports a single render function that follows the existing contract
+  - [ ] AC-0152: All existing tests pass after refactoring
+  - [ ] AC-0153: The generate-plan.js orchestrator imports from the new module files
+Dependencies: None
+```
+
+---
+
+## Epic — EPIC-0008: Trend Analysis & Historical Tracking
+
+```
+EPIC-0008: Trend Analysis & Historical Tracking
+Description: Capture and visualise project metrics over time. Store snapshots of dashboard data on each generation and display trend charts showing progress, costs, coverage, and velocity.
+Release Target: Release 1.4
+Status: Planned
+Dependencies: EPIC-0007
+```
+
+---
+
+## User Stories — EPIC-0008: Trend Analysis & Historical Tracking
+
+```
+US-0054 (EPIC-0008): As a user, I want the dashboard to store a JSON snapshot on each generation, so that historical data can be analysed over time.
+Priority: High (P0)
+Estimate: S
+Status: Planned
+Branch: 
+Acceptance Criteria:
+  - [ ] AC-0150: A .history/ directory is created in the project root (gitignored) if it does not exist
+  - [ ] AC-0151: On each generate-plan.js run, a timestamped JSON file (e.g., 2026-03-30T14-00-00Z.json) is saved to .history/ containing all parsed dashboard data (epics, stories, bugs, costs, coverage, lessons, progress)
+  - [ ] AC-0152: The snapshot includes a generation timestamp, Git commit SHA (if available), and all data sections that would otherwise be rendered to HTML
+  - [ ] AC-0153: Invalid or corrupt JSON files in .history/ are gracefully skipped without crashing
+Dependencies: None
+
+US-0055 (EPIC-0008): As a user, I want to view a progress trend chart showing story completion over time, so that I can see whether the project is accelerating or decelerating.
+Priority: High (P0)
+Estimate: S
+Status: Planned
+Branch: 
+Acceptance Criteria:
+  - [ ] AC-0154: The Charts tab displays a new "Progress Over Time" line chart with dates on X-axis and cumulative Done story count on Y-axis
+  - [ ] AC-0155: Data is sourced from .history/ snapshots; each point represents a generation timestamp
+  - [ ] AC-0156: If fewer than 2 snapshots exist, the chart shows a placeholder message "Generate the dashboard at least twice to see trends"
+  - [ ] AC-0157: Hovering a data point shows a tooltip with the date and Done/Total story count
+Dependencies: US-0054
+
+US-0056 (EPIC-0008): As a user, I want to view a cost trend chart showing AI spend over time, so that I can track budget burn rate.
+Priority: Medium (P1)
+Estimate: S
+Status: Planned
+Branch: 
+Acceptance Criteria:
+  - [ ] AC-0158: The Charts tab displays a new "AI Cost Over Time" line chart with dates on X-axis and cumulative AI spend ($) on Y-axis
+  - [ ] AC-0159: Data is sourced from .history/ snapshots; the line shows total spend to date
+  - [ ] AC-0160: If fewer than 2 snapshots exist, the chart shows the same placeholder as AC-0156
+  - [ ] AC-0161: Hovering a data point shows a tooltip with the date and total spend
+Dependencies: US-0054
+
+US-0057 (EPIC-0008): As a user, I want to view a coverage trend chart showing test coverage over time, so that I can verify coverage improvements are sustained.
+Priority: Medium (P1)
+Estimate: S
+Status: Planned
+Branch: 
+Acceptance Criteria:
+  - [ ] AC-0162: The Charts tab displays a new "Coverage Over Time" line chart with dates on X-axis and overall coverage % on Y-axis
+  - [ ] AC-0163: Data is sourced from .history/ snapshots; each point shows the overall coverage percentage from that snapshot
+  - [ ] AC-0164: A horizontal reference line at 80% is drawn to visualise the coverage target
+  - [ ] AC-0165: If fewer than 2 snapshots exist, the chart shows the placeholder message
+Dependencies: US-0054
+
+US-0058 (EPIC-0008): As a user, I want to view a velocity chart showing story points completed per release, so that I can predict future delivery dates.
+Priority: Medium (P1)
+Estimate: S
+Status: Planned
+Branch: 
+Acceptance Criteria:
+  - [ ] AC-0166: The Charts tab displays a new "Velocity" bar chart with release names on X-axis and total completed story points (Done) on Y-axis
+  - [ ] AC-0167: Points are summed from story estimates (L=5, M=3, S=1, XS=0.5) where status is Done
+  - [ ] AC-0168: If no stories have estimates, the chart shows a placeholder "Add estimates to stories to see velocity"
+Dependencies: US-0054
+
+US-0079 (EPIC-0008): As a user, I want to backfill historical trend data when no real snapshots exist, so that the Trends charts are useful from the first generation.
+Priority: High (P0)
+Estimate: S
+Status: Planned
+Branch: 
+Acceptance Criteria:
+  - [ ] AC-0247: A backfillHistory(options) function in tools/lib/historical-sim.js generates synthetic snapshots going back ~30 days from project start
+  - [ ] AC-0248: Backfill distributes actual costs proportionally across simulated time periods using average tokens per story estimate from Done stories
+  - [ ] AC-0249: The function is exported as a module and can be called programmatically
+  - [ ] AC-0250: The install.sh script prompts users "Would you like to estimate historical data? (y/n)" and runs backfillHistory() if yes
+Dependencies: US-0054
+
+US-0080 (EPIC-0008): As a user, I want the Trends charts to show bug count and risk trends over time, so that I can visualise defect and at-risk story trends.
+Priority: Medium (P2)
+Estimate: S
+Status: Planned
+Branch: 
+Acceptance Criteria:
+  - [ ] AC-0251: Trends tab displays an "Open Bugs Over Time" line chart sourced from .history/ snapshots
+  - [ ] AC-0252: Trends tab displays an "At-Risk Stories Over Time" line chart sourced from .history/ snapshots
+  - [ ] AC-0253: Trends tab displays a "Token Usage Over Time" stacked area chart showing input/output tokens over time
+Dependencies: US-0054
+```
+
+---
+
+## Epic — EPIC-0009: Budget Forecasting
+
+```
+EPIC-0009: Budget Forecasting
+Description: Track burn rate and predict when budget exhausts. Alert when projected costs exceed thresholds. Help teams stay on budget by visualising spend velocity and forecasting future costs.
+Release Target: Release 1.5
+Status: Planned
+Dependencies: EPIC-0008
+```
+
+---
+
+## User Stories — EPIC-0009: Budget Forecasting
+
+```
+US-0059 (EPIC-0009): As a project manager, I want to set a total budget ceiling and per-epic budget limits, so that I can track spend against defined limits.
+Priority: High (P0)
+Estimate: S
+Status: Planned
+Branch: 
+Acceptance Criteria:
+  - [ ] AC-0169: plan-visualizer.config.json accepts a "budget" object with "totalUsd" (number) and "byEpic" (object mapping epicId to budget amounts)
+  - [ ] AC-0170: The dashboard displays a budget progress bar in the top bar showing "Spent $X / $Y Budget" with a percentage
+  - [ ] AC-0171: If total spend exceeds budget, the progress bar turns red and shows an warning icon
+  - [ ] AC-0172: Config validation warns if budget values are not positive numbers
+Dependencies: None
+
+US-0060 (EPIC-0009): As a project manager, I want to see a burn rate calculation (daily/weekly spend), so that I can predict when the budget will be exhausted.
+Priority: High (P0)
+Estimate: M
+Status: Planned
+Branch: 
+Acceptance Criteria:
+  - [ ] AC-0173: Using .history/ snapshots, calculate the average daily spend over the last 30 days (or available history)
+  - [ ] AC-0174: The Costs tab displays "Burn Rate: $X/day" and "Projected Exhaustion: Y days remaining" based on current spend velocity
+  - [ ] AC-0175: If burn rate is zero or negative (no recent spend), show "No recent spend data" instead of a projection
+  - [ ] AC-0176: A line on the Cost Trend chart extrapolates forward using the calculated burn rate, shown as a dotted line
+Dependencies: US-0054, US-0059
+
+US-0061 (EPIC-0009): As a project manager, I want to receive alerts when projected costs exceed configurable thresholds, so that I can take action before going over budget.
+Priority: Medium (P1)
+Estimate: S
+Status: Planned
+Branch: 
+Acceptance Criteria:
+  - [ ] AC-0177: Config accepts "budget.thresholds" as an array of percentage triggers (e.g., [50, 75, 90, 100])
+  - - [ ] AC-0178: When spend crosses a threshold, a dismissible alert banner appears at the top of the dashboard: "Budget Alert: X% of budget consumed"
+  - [ ] AC-0179: Alert state is stored in localStorage so it doesn't reappear after being dismissed for the current generation
+  - [ ] AC-0180: Alerts are colour-coded: green (50%), amber (75%), red (90%+)
+Dependencies: US-0059, US-0060
+
+US-0062 (EPIC-0009): As a project manager, I want to see per-epic budget breakdown and remaining amounts, so that I can identify which epics are over/under budget.
+Priority: Medium (P1)
+Estimate: S
+Status: Planned
+Branch: 
+Acceptance Criteria:
+  - [ ] AC-0181: The Costs tab displays a per-epic budget table with columns: Epic ID, Budget, Spent, Remaining, % Used
+  - [ ] [ ] AC-0182: Rows are sorted by % Used descending (most over-budget first); epics without defined budgets are shown at the bottom with "—" 
+  - [ ] AC-0183: Per-epic budget rows use the same accent colours as the epic swimlanes for visual consistency
+Dependencies: US-0059
+
+US-0063 (EPIC-0009): As a developer, I want to export a budget report as CSV, so that I can share financial status with stakeholders who don't use the dashboard.
+Priority: Low (P2)
+Estimate: S
+Status: Planned
+Branch: 
+Acceptance Criteria:
+  - [ ] AC-0184: A "Export Budget CSV" button appears on the Costs tab
+  - [ ] AC-0185: Clicking downloads a CSV with columns: Date, Epic ID, Epic Title, Budget, Spent, Remaining, % Used, Burn Rate, Projected Exhaustion
+  - [ ] AC-0186: CSV includes all historical snapshots as rows for trend analysis in external tools
+Dependencies: US-0060
+
+US-0081 (EPIC-0009): As a project manager, I want the budget to automatically estimate Planned story costs and set total budget to actuals plus estimated, so that I don't have to manually configure budgets.
+Priority: High (P0)
+Estimate: S
+Status: Planned
+Branch: 
+Acceptance Criteria:
+  - [ ] AC-0254: computeBudgetMetrics() calculates average tokens per story estimate (XS, S, M, L, XL) from Done stories
+  - [ ] AC-0255: For each Planned story, estimated cost is calculated using average tokens × rates ($3/M input, $15/M output tokens)
+  - [ ] AC-0256: Total budget = actual spent + sum of estimated Planned story costs (auto-calculated if not manually configured)
+  - [ ] AC-0257: Per-epic budgets are estimated proportionally if not manually configured
+Dependencies: US-0059, US-0079
+```
+
+---
+
+## Epic — EPIC-0010: Risk Analytics
+
+```
+EPIC-0010: Risk Analytics
+Description: More sophisticated risk scoring weighted by priority and severity. Risk trend chart over time. Predict project completion date based on velocity.
+Release Target: Release 1.6
+Status: Planned
+Dependencies: EPIC-0009
+```
+
+---
+
+## User Stories — EPIC-0010: Risk Analytics
+
+```
+US-0064 (EPIC-0010): As a project manager, I want stories to have a composite risk score based on priority, severity, and status, so that I can prioritise mitigation efforts.
+Priority: High (P0)
+Estimate: M
+Status: Planned
+Branch: 
+Acceptance Criteria:
+  - [ ] AC-0187: Each story receives a risk score calculated as: (priorityWeight × 0.4) + (severityWeight × 0.3) + (statusWeight × 0.3)
+  - [ ] AC-0188: Priority weights: P0=4, P1=3, P2=2, P3=1; Severity weights (for bugs): Critical=4, High=3, Medium=2, Low=1; Status weights: Blocked=4, In Progress=3, Planned=2, To Do=1, Done=0
+  - [ ] AC-0189: The Hierarchy tab displays a risk badge (Low/Medium/High/Critical) on each story card based on score thresholds (0-1: Low, 1.1-2: Medium, 2.1-3: High, 3.1+: Critical)
+  - [ ] AC-0190: Stories can be sorted by risk score descending in the Hierarchy tab
+Dependencies: None
+
+US-0065 (EPIC-0010): As a project manager, I want a risk trend chart showing aggregate risk over time, so that I can see if the project is becoming more or less risky.
+Priority: Medium (P1)
+Estimate: S
+Status: Planned
+Branch: 
+Acceptance Criteria:
+  - [ ] AC-0191: The Charts tab displays a "Risk Trend" line chart with dates on X-axis and average risk score on Y-axis
+  - [ ] AC-0192: Data is sourced from .history/ snapshots; each point is the average risk score of all stories at that point in time
+  - [ ] AC-0193: A horizontal reference line at 2.0 (High threshold) helps identify when risk crosses into critical territory
+  - [ ] AC-0194: If fewer than 2 snapshots exist, show placeholder message
+Dependencies: US-0054, US-0064
+
+US-0066 (EPIC-0010): As a project manager, I want to predict the project completion date based on current velocity, so that I can set realistic delivery expectations.
+Priority: High (P0)
+Estimate: M
+Status: Planned
+Branch: 
+Acceptance Criteria:
+  - [ ] AC-0195: Using .history/ data, calculate weekly velocity as the average story points completed per week over the last 4 weeks
+  - [ ] AC-0196: Remaining story points = sum of estimates for all non-Done stories
+  - [ ] AC-0197: Projected completion = today + (remainingPoints / weeklyVelocity × 7 days)
+  - [ ] AC-0198: The dashboard displays "Estimated Completion: YYYY-MM-DD (based on N weeks of velocity data)" in the top bar
+  - [ ] AC-0199: If insufficient velocity data (< 2 weeks), show "Insufficient data for completion estimate"
+Dependencies: US-0054, US-0058
+
+US-0067 (EPIC-0010): As a project manager, I want to see an at-risk epic summary highlighting which epics are most likely to miss deadlines, so that I can focus rescue efforts.
+Priority: Medium (P1)
+Estimate: S
+Status: Planned
+Branch: 
+Acceptance Criteria:
+  - [ ] AC-0200: Each epic receives an aggregate risk score = average of all story risk scores within that epic
+  - [ ] AC-0201: The Hierarchy tab epic headers display a risk indicator (Low/Medium/High/Critical) matching the epic's aggregate score
+  - [ ] AC-0202: Epics are sorted by risk score descending by default within each tab that shows epics
+  - [ ] AC-0203: A filter allows showing only High/Critical risk epics
+Dependencies: US-0064
+
+US-0068 (EPIC-0010): As a project manager, I want to see a Monte Carlo simulation for completion date range, so that I can provide stakeholders with optimistic, likely, and pessimistic delivery dates.
+Priority: Low (P2)
+Estimate: L
+Status: Planned
+Branch: 
+Acceptance Criteria:
+  - [ ] AC-0204: Using historical velocity data, run 1000 Monte Carlo iterations sampling from weekly velocity distribution
+  - [ ] AC-0205: Display three completion dates: Optimistic (10th percentile), Likely (50th percentile), Pessimistic (90th percentile)
+  - [ ] AC-0206: Show as a date range in the top bar: "Completion: Mar 15 — Apr 20 (likely Apr 1)"
+  - [ ] AC-0207: If velocity data is insufficient (< 4 weeks), fall back to the simple projection from US-0066
+Dependencies: US-0066
+```
+
+---
+
+## Epic — EPIC-0011: Search
+
+```
+EPIC-0011: Search
+Description: Global search across all stories, bugs, and lessons. Quick jump to any item by ID.
+Release Target: Release 1.7
+Status: Planned
+Dependencies: EPIC-0010
+```
+
+---
+
+## User Stories — EPIC-0011: Search
+
+```
+US-0069 (EPIC-0011): As a user, I want a global search bar that searches across all content types, so that I can quickly find any story, bug, or lesson.
+Priority: High (P0)
+Estimate: M
+Status: Planned
+Branch: 
+Acceptance Criteria:
+  - [ ] AC-0208: A global search input appears in the sidebar (or top bar on mobile) with placeholder "Search stories, bugs, lessons..."
+  - [ ] AC-0209: Search indexes: story ID, title, description; bug ID, title, severity; lesson ID, rule, context
+  - [ ] AC-0210: Results appear in a dropdown as the user types (debounced 200ms); max 10 results shown
+  - [ ] AC-0211: Each result shows: type icon (story/bug/lesson), ID, title, and parent context (e.g., "in EPIC-0003")
+  - [ ] AC-0212: Clicking a result navigates to the relevant tab and scrolls to/expands the item
+Dependencies: None
+
+US-0070 (EPIC-0011): As a user, I want to jump directly to any item by typing its ID, so that I can quickly access known items without searching.
+Priority: High (P0)
+Estimate: S
+Status: Planned
+Branch: 
+Acceptance Criteria:
+  - [ ] AC-0213: Typing a known ID (e.g., "US-0042", "BUG-0015", "TC-0099") in the global search immediately shows that single result
+  - [ ] AC-0214: If the ID exists, the result is highlighted with a "Jump to" label
+  - [ ] AC-0215: Pressing Enter with a valid ID navigates directly to the item
+  - [ ] AC-0216: Invalid IDs show "No results found" rather than an empty dropdown
+Dependencies: US-0069
+
+US-0071 (EPIC-0011): As a user, I want search to support fuzzy matching, so that I can find items even with typos or partial matches.
+Priority: Medium (P1)
+Estimate: S
+Status: Planned
+Branch: 
+Acceptance Criteria:
+  - [ ] AC-0217: Search uses fuzzy matching (e.g., "stor" matches "story", "bug" matches all bugs)
+  - [ ] AC-0218: Results are sorted by relevance score (exact match > starts with > contains)
+  - [ ] AC-0219: Matched text portions are highlighted in results (e.g., "<strong>stor</strong>y")
+Dependencies: US-0069
+
+US-0072 (EPIC-0011): As a user, I want recent searches to be remembered, so that I can quickly re-run previous searches.
+Priority: Low (P2)
+Estimate: S
+Status: Planned
+Branch: 
+Acceptance Criteria:
+  - [ ] AC-0220: The last 5 unique search queries are stored in localStorage under 'recentSearches'
+  - [ ] AC-0221: When the search input is focused but empty, show a "Recent Searches" section with clickable pills
+  - [ ] AC-0222: Clicking a recent search populates the input and runs the search
+  - [ ] AC-0223: A clear (×) button clears the recent searches list
+Dependencies: US-0069
+```
+
+---
+
+## Epic — EPIC-0012: Stakeholder View
+
+```
+EPIC-0012: Stakeholder View
+Description: Simplified read-only view for non-technical stakeholders. Exportable summary report.
+Release Target: Release 1.8
+Status: Planned
+Dependencies: EPIC-0011
+```
+
+---
+
+## User Stories — EPIC-0012: Stakeholder View
+
+```
+US-0073 (EPIC-0012): As a project manager, I want a stakeholder-friendly view that hides technical details, so that non-technical team members can understand project status without confusion.
+Priority: High (P0)
+Estimate: M
+Status: Planned
+Branch: 
+Acceptance Criteria:
+  - [ ] AC-0224: A "Stakeholder View" toggle appears in the sidebar (or top bar) next to the theme toggle
+  - [ ] AC-0225: When enabled, the dashboard switches to a simplified layout: only shows Progress, Milestones (epics), Risks, and Budget sections
+  - [ ] AC-0226: Technical elements are hidden: branch names, token counts, test case details, lesson IDs, bug fix branches
+  - [ ] AC-0227: Status labels use plain language: "In Progress" → "Being Worked On", "To Do" → "Planned", "At Risk" → "Needs Attention"
+Dependencies: None
+
+US-0074 (EPIC-0012): As a stakeholder, I want to see a high-level milestone progress view, so that I can understand which epics are on track.
+Priority: High (P0)
+Estimate: S
+Status: Planned
+Branch: 
+Acceptance Criteria:
+  - [ ] AC-0228: The Stakeholder View displays each epic as a milestone card with: Epic ID, Title, Status, Progress bar (% Done), and Key Risks
+  - [ ] AC-0229: Progress is calculated as Done stories / Total stories for that epic
+  - [ ] AC-0230: Each card shows a simplified status: "On Track" (Done + In Progress > 50%), "At Risk" (Blocked or In Progress < 50%), "Complete" (all Done)
+  - [ ] AC-0231: Clicking a milestone card expands to show top-level story summaries (no AC details)
+Dependencies: US-0073
+
+US-0075 (EPIC-0012): As a stakeholder, I want to see a budget summary with simple traffic-light indicators, so that I can understand financial health at a glance.
+Priority: Medium (P1)
+Estimate: S
+Status: Planned
+Branch: 
+Acceptance Criteria:
+  - [ ] AC-0232: Budget section shows: Total Budget, Spent, Remaining, and a traffic light (🟢 <50%, 🟡 50-80%, 🔴 >80%)
+  - [ ] AC-0233: Burn rate and projected exhaustion date are shown in plain language: "At current pace, budget lasts X more weeks"
+  - [ ] AC-0234: All technical details (exact token counts, per-epic breakdowns) are hidden
+Dependencies: US-0073, US-0060
+
+US-0076 (EPIC-0012): As a project manager, I want to export a PDF summary report for stakeholders, so that I can share status via email without granting dashboard access.
+Priority: High (P0)
+Estimate: M
+Status: Planned
+Branch: 
+Acceptance Criteria:
+  - [ ] AC-0235: An "Export PDF" button appears in the Stakeholder View header
+  - [ ] AC-0236: Clicking generates a PDF with: project name, date, overall progress, milestone cards, budget summary, and top 3 risks
+  - [ ] AC-0237: The PDF uses a clean, branded layout suitable for executive presentation
+  - [ ] AC-0238: PDF generation happens client-side using the browser's print-to-PDF or a library (e.g., html2pdf.js)
+Dependencies: US-0073, US-0074, US-0075
+
+US-0077 (EPIC-0012): As a stakeholder, I want to subscribe to weekly email digests, so that I receive updates without accessing the dashboard.
+Priority: Low (P2)
+Estimate: L
+Status: Planned
+Branch: 
+Acceptance Criteria:
+  - [ ] AC-0239: A "Subscribe to Updates" form in the Stakeholder View accepts an email address
+  - [ ] AC-0240: Email subscriptions are stored in a JSON file (e.g., stakeholders.json) in the project
+  - [ ] AC-0241: A new script (tools/email-digest.js) generates a plain-text or HTML email summary from the latest .history/ snapshot
+  - [ ] AC-0242: The script can be run manually or via cron; it outputs an email-ready HTML fragment (not a full dashboard)
+Dependencies: US-0054, US-0076
+
+US-0078 (EPIC-0012): As a developer, I want to password-protect the stakeholder view, so that sensitive project data is not exposed to unintended audiences.
+Priority: Medium (P1)
+Estimate: S
+Status: Planned
+Branch: 
+Acceptance Criteria:
+  - [ ] AC-0243: plan-visualizer.config.json accepts a "stakeholderPassword" string field
+  - [ ] AC-0244: When set, accessing the dashboard prompts for a password; stakeholder view is only accessible after authentication
+  - [ ] AC-0245: Password is hashed (bcrypt) or compared client-side (simpler for static deployment)
+  - [ ] AC-0246: The regular dashboard view remains accessible without password; only stakeholder view requires it
+Dependencies: US-0073
+```
+Acceptance Criteria:
+  - [ ] AC-0154: generate-plan.js saves a snapshot JSON to docs/snapshots/YYYY-MM-DD.json on each run
+  - [ ] AC-0155: Snapshot contains: timestamp, story counts by status, epic counts, costs totals, coverage metrics, bug counts, lesson counts
+  - [ ] AC-0156: Config option snapshots.enabled (default: true) controls whether snapshots are saved
+  - [ ] AC-0157: Config option snapshots.path (default: docs/snapshots) specifies the output directory
+  - [ ] AC-0158: Snapshot file names use ISO date format (YYYY-MM-DD) and are sorted chronologically
+Dependencies: None
+```
+
+```
+US-0055 (EPIC-0008): As a user, I want a Trends tab that shows charts of project metrics over time, so that I can visualise progress, costs, and coverage trends.
+Priority: High (P0)
+Estimate: M
+Status: Planned
+Branch: 
+Acceptance Criteria:
+  - [ ] AC-0159: A new "Trends" tab appears in the sidebar navigation after Lessons
+  - [ ] AC-0160: Progress Burn-down chart shows stories completed over time (line chart)
+  - [ ] AC-0161: Cost Accumulation chart shows cumulative AI spend over time (line chart)
+  - [ ] AC-0162: Coverage Trend chart shows lines % and branch % over time (dual-line chart)
+  - [ ] AC-0163: Bug Burn chart shows open vs closed bugs over time (stacked area chart)
+  - [ ] AC-0164: Each chart includes at least 2 data points; shows message if insufficient data
+Dependencies: US-0054
+```
+
+```
+US-0056 (EPIC-0008): As a user, I want to filter trend charts by date range, so that I can focus on specific time periods.
+Priority: Medium (P1)
+Estimate: S
+Status: Planned
+Branch: 
+Acceptance Criteria:
+  - [ ] AC-0165: Date range picker allows selecting start and end dates
+  - [ ] AC-0166: All trend charts update to show only data within the selected range
+  - [ ] AC-0167: Quick filters for "Last 7 days", "Last 30 days", "All time"
+Dependencies: US-0055
+```
+
+```
+US-0057 (EPIC-0008): As a user, I want to see velocity metrics in the trends, so that I can predict project completion and budget burn rate.
+Priority: Medium (P1)
+Estimate: S
+Status: Planned
+Branch: 
+Acceptance Criteria:
+  - [ ] AC-0168: Velocity chart shows stories completed per session/week
+  - [ ] AC-0169: Average velocity (stories per session) displayed as a dashed reference line
+  - [ ] AC-0170: Projected completion date calculated based on remaining stories and average velocity
+Dependencies: US-0055
+```
+
+```
+US-0058 (EPIC-0008): As a user, I want snapshot storage to be managed automatically, so that old snapshots don't accumulate indefinitely.
+Priority: Low (P2)
+Estimate: S
+Status: Planned
+Branch: 
+Acceptance Criteria:
+  - [ ] AC-0171: Config option snapshots.retainDays (default: 90) deletes snapshots older than N days
+  - [ ] AC-0172: Config option snapshots.maxCount (default: 100) limits total snapshot count, keeping most recent
+  - [ ] AC-0173: Cleanup runs on each generate-plan.js execution
+Dependencies: US-0054
 ```
