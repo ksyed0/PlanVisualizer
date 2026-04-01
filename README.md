@@ -138,7 +138,7 @@ bash /tmp/PlanVisualizer/scripts/install.sh
 rm -rf /tmp/PlanVisualizer
 ```
 
-The script is idempotent — it is safe to re-run at any time.
+The script is idempotent — it is safe to re-run at any time. If you have existing project data, it will prompt: "Would you like to estimate historical data? (y/n)" — answering yes runs a 30-day backfill to populate trend charts immediately.
 
 **What gets overwritten on update:** `tools/`, `tests/`, `jest.config.js`, `plan_visualizer.md`, `.github/workflows/plan-visualizer.yml`, `eslint.config.js` — these are tool files managed by PlanVisualizer.
 

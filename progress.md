@@ -8,6 +8,9 @@ Running log of session activity, errors, test results, and blockers.
 
 ### What Was Done
 - **EPIC-0008/0009**: Released v1.0.15 with Trends & Budget Forecasting
+## Session 14 — 2026-03-30
+
+### What Was Done
 - **US-0081**: Budget auto-estimation - calculate total budget as spent + sum(Planned stories projected costs)
 - **US-0081**: Per-epic budget auto-calculated as epic spent + epic Planned projected costs
 - **US-0079**: Historical backfill - simulate ~30 days of history going back to project start
@@ -26,6 +29,8 @@ Running log of session activity, errors, test results, and blockers.
 
 ### Test Results
 - 215 tests pass. Coverage: Lines 80%, Branches 70%, Functions 80%, Statements 80%
+### Test Results
+- 208 tests pass. Coverage maintained above 80%.
 
 ### Errors or Blockers
 - None.

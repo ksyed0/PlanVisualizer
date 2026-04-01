@@ -64,12 +64,18 @@ function parseStoryBlock(text) {
     const m = text.match(new RegExp(`^${key}:[ \\t]*(.*)`, 'm'));
     return m ? m[1].trim() : '';
   };
-  const priority = get('Priority').match(/\((P\d)\)/);
+  const priorityRaw = get('Priority');
+  const priorityMatch = priorityRaw.match(/\((P\d)\)/);
+  let priority = priorityMatch ? priorityMatch[1] : priorityRaw;
+  if (!priorityMatch && priorityRaw) {
+    const levelMatch = priorityRaw.match(/^(High|Medium|Low)/i);
+    if (levelMatch) priority = levelMatch[1];
+  }
   return {
     id: header[1],
     epicId: header[2],
     title: header[3].trim(),
-    priority: priority ? priority[1] : get('Priority'),
+    priority: priority,
     estimate: get('Estimate'),
     status: get('Status'),
     branch: get('Branch'),
@@ -106,6 +112,7 @@ function parseTaskBlock(text) {
 function parseReleasePlan(markdown) {
   const blocks = extractCodeBlocks(markdown);
   const epics = [], stories = [], tasks = [];
+  const seenEpics = new Set(), seenStories = new Set(), seenTasks = new Set();
 
   for (const block of blocks) {
     const chunks = block.split(/\n{2,}/);
@@ -114,13 +121,22 @@ function parseReleasePlan(markdown) {
       if (!trimmed) continue;
       if (/^EPIC-\d{4}:/.test(trimmed)) {
         const e = parseEpicBlock(trimmed);
-        if (e) epics.push(e);
+        if (e && !seenEpics.has(e.id)) {
+          seenEpics.add(e.id);
+          epics.push(e);
+        }
       } else if (/^US-\d{4}\s*\(EPIC-/.test(trimmed)) {
         const s = parseStoryBlock(trimmed);
-        if (s) stories.push(s);
+        if (s && !seenStories.has(s.id)) {
+          seenStories.add(s.id);
+          stories.push(s);
+        }
       } else if (/^TASK-\d{4}\s*\(US-/.test(trimmed)) {
         const t = parseTaskBlock(trimmed);
-        if (t) tasks.push(t);
+        if (t && !seenTasks.has(t.id)) {
+          seenTasks.add(t.id);
+          tasks.push(t);
+        }
       }
     }
   }

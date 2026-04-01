@@ -1,6 +1,7 @@
 'use strict';
 
 const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const jsEsc = s => String(s ?? '').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n');
 
 function badge(text) {
   const colors = {
@@ -44,13 +45,35 @@ function renderTopBar(data) {
   const inProgress = activeStories.filter(s => s.status === 'In Progress').length;
   const cov = data.coverage;
   const covLabel = (cov.available !== false) ? `${cov.overall.toFixed(1)}%` : 'N/A';
-  const openBugs = (data.bugs || []).filter(b => !/^Fixed/i.test(b.status));
+  const openBugs = (data.bugs || []).filter(b => !/^(Fixed|Retired|Cancelled)/i.test(b.status));
   const critHighBugs = openBugs.filter(b => ['Critical', 'High'].includes(b.severity)).length;
   const bugValueCls = openBugs.length === 0 ? '' : critHighBugs > 0 ? ' tile-danger' : ' tile-warn';
   const covValueCls = (cov.available !== false && !cov.meetsTarget) ? ' tile-danger' : '';
   const genAt = data.generatedAt;
+
+  const budget = data.budget || {};
+  const hasBudget = budget.hasBudget;
+  const pct = budget.percentUsed;
+  let budgetTile = '';
+  if (hasBudget && pct !== null) {
+    let barColor = '#22c55e';
+    let warnIcon = '';
+    if (pct >= 90) { barColor = '#ef4444'; warnIcon = '&#9888;'; }
+    else if (pct >= 75) { barColor = '#f97316'; warnIcon = '&#9888;'; }
+    else if (pct >= 50) { barColor = '#eab308'; }
+    const clampedPct = Math.min(100, pct);
+    budgetTile = `
+        <div class="topbar-tile" style="min-width:90px">
+          <span class="tile-value font-mono">${warnIcon} ${pct}%</span>
+          <span class="tile-label">${usd(budget.totalSpent)} / ${usd(budget.totalBudget)}</span>
+          <div style="width:100%;height:3px;background:#334155;margin-top:4px;border-radius:2px;overflow:hidden">
+            <div style="width:${clampedPct}%;height:100%;background:${barColor};transition:width 0.3s"></div>
+          </div>
+        </div>`;
+  }
+
   return `
-  <header id="topbar-fixed">
+  <header id="topbar-fixed" class="${(data.budget && data.budget.crossedThresholds && data.budget.crossedThresholds.length > 0) ? 'has-alert' : ''}">
     <div class="topbar-inner">
       <div class="topbar-project">
         <div class="flex items-center gap-2 flex-wrap">
@@ -61,6 +84,7 @@ function renderTopBar(data) {
         <p class="topbar-tagline">${esc(data.tagline)}&nbsp;·&nbsp;Updated <span id="gen-time" data-iso="${genAt}"></span>&nbsp;·&nbsp;<code class="font-mono" style="font-size:10px">${esc(data.commitSha)}</code></p>
       </div>
       <div class="topbar-tiles">
+        ${budgetTile}
         <div class="topbar-tile">
           <span class="tile-value">&#128203; ${done}/${activeStories.length}</span>
           <span class="tile-label">Stories</span>
@@ -135,6 +159,8 @@ function renderSidebar() {
       path: 'M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25' },
     { id: 'charts',       label: 'Charts',
       path: 'M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z' },
+    { id: 'trends',       label: 'Trends',
+      path: 'M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941' },
     { id: 'costs',        label: 'Costs',
       path: 'M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
     { id: 'bugs',         label: 'Bugs',
@@ -194,7 +220,7 @@ function renderHierarchyTab(data) {
       return `
       <div class="story-row ml-6 border-l-2 border-slate-200 dark:border-slate-600 pl-4 py-2"
            data-epic="${story.epicId}" data-status="${story.status}" data-priority="${story.priority}">
-        <div class="flex flex-wrap items-center gap-2 cursor-pointer" onclick="toggleACs('${esc(story.id)}')">
+        <div class="flex flex-wrap items-center gap-2 cursor-pointer" onclick="toggleACs('${jsEsc(story.id)}')">
           <span class="font-mono text-xs text-slate-500 whitespace-nowrap">${story.id}</span>
           ${badge(story.status)} ${badge(story.priority)}
           <span class="text-sm font-medium">${esc(story.title)}</span>
@@ -225,15 +251,15 @@ function renderHierarchyTab(data) {
       return `
       <div class="story-row story-card-hover bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg p-3 flex flex-col gap-1"
            data-epic="${story.epicId}" data-status="${story.status}" data-priority="${story.priority}">
-        <div class="flex flex-wrap items-center gap-1 cursor-pointer" onclick="toggleCardACs('${esc(story.id)}')">
+        <div class="flex flex-wrap items-center gap-1 cursor-pointer" onclick="toggleCardACs('${jsEsc(story.id)}')">
           ${badge(story.status)} ${badge(story.priority)}
           <span class="font-mono text-xs text-slate-500 ml-1">${story.id}</span>
         </div>
-        <p class="text-sm font-medium dark:text-slate-100 leading-snug cursor-pointer" onclick="toggleCardACs('${esc(story.id)}')">${esc(story.title)}</p>
+        <p class="text-sm font-medium dark:text-slate-100 leading-snug cursor-pointer" onclick="toggleCardACs('${jsEsc(story.id)}')">${esc(story.title)}</p>
         <div class="flex items-center gap-2 mt-auto pt-1 text-xs text-slate-500 border-t border-slate-100 dark:border-slate-600">
           <span>${esc(story.estimate || '?')}</span>
           <span>${cost}</span>
-          ${acTotal ? `<span class="cursor-pointer" onclick="toggleCardACs('${esc(story.id)}')">${acDone}/${acTotal} ACs ▾</span>` : ''}
+          ${acTotal ? `<span class="cursor-pointer" onclick="toggleCardACs('${jsEsc(story.id)}')">${acDone}/${acTotal} ACs ▾</span>` : ''}
           <span class="ml-auto">${riskBadge}</span>
         </div>
         ${acTotal ? `<ul id="card-acs-${story.id}" class="hidden mt-1 pt-1 border-t border-slate-100 dark:border-slate-600 space-y-0.5">${acItems || '<li class="text-xs text-slate-500 pl-4">No ACs yet</li>'}</ul>` : ''}
@@ -254,7 +280,7 @@ function renderHierarchyTab(data) {
 
   const columnView = epicBlocks.map(({ epic, accent, epicProjected, storyRows }) => `
     <div class="epic-block mb-4 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden" style="border-left:4px solid ${accent.border}">
-      <div class="px-4 py-3 flex flex-wrap items-center gap-3 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('epic-stories-${esc(epic.id)}','epic-arrow-${esc(epic.id)}')">
+      <div class="px-4 py-3 flex flex-wrap items-center gap-3 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('epic-stories-${jsEsc(epic.id)}','epic-arrow-${jsEsc(epic.id)}')">
         <span id="epic-arrow-${esc(epic.id)}" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9654;</span>
         <span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${epic.id}</span>
         ${badge(epic.status)}
@@ -267,7 +293,7 @@ function renderHierarchyTab(data) {
 
   const cardView = epicBlocks.map(({ epic, accent, epicProjected, storyCards }) => `
     <div class="mb-8">
-      <div class="epic-block border border-slate-200 dark:border-slate-700 rounded-t-lg px-4 py-3 mb-0 cursor-pointer select-none" style="border-left:4px solid ${accent.border};background:${accent.bg}" onclick="toggleSection('epic-cards-${esc(epic.id)}','epic-card-arrow-${esc(epic.id)}')">
+      <div class="epic-block border border-slate-200 dark:border-slate-700 rounded-t-lg px-4 py-3 mb-0 cursor-pointer select-none" style="border-left:4px solid ${accent.border};background:${accent.bg}" onclick="toggleSection('epic-cards-${jsEsc(epic.id)}','epic-card-arrow-${jsEsc(epic.id)}')">
         <div class="flex flex-wrap items-center gap-3">
           <span id="epic-card-arrow-${esc(epic.id)}" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9654;</span>
           <span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${epic.id}</span>
@@ -408,7 +434,7 @@ function renderTraceabilityTab(data) {
       ? '<span class="inline-block px-1.5 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">Not Run</span>'
       : '';
     const epicHeader = `<tr class="cursor-pointer select-none" style="background:${accent.bg}"
-      onclick="(function(){var rows=document.querySelectorAll('[data-trace-epic=\\'${epic.id}\\']');var arr=document.getElementById('${epicRowId}-arrow');var collapsed=arr.textContent==='\\u25b6';rows.forEach(function(r){r.classList.toggle('hidden',!collapsed);});arr.textContent=collapsed?'\\u25bc':'\\u25b6';})()" >
+      onclick="toggleTraceEpic('${jsEsc(epic.id)}')" >
       <td colspan="${data.testCases.length + 1}" class="px-3 py-2" style="border-left:4px solid ${accent.border}">
         <div class="flex items-center gap-2 flex-wrap">
           <span id="${epicRowId}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9654;</span>
@@ -456,6 +482,153 @@ function renderTraceabilityTab(data) {
       </table>
     </div>
   </div>`;
+}
+
+function renderTrendsTab(data, options = {}) {
+  const trends = options.trends || null;
+  const hasData = trends && trends.dates && trends.dates.length >= 2;
+
+  const datesJson = trends ? JSON.stringify(trends.dates.map(d => d.replace('T', ' ').slice(0, 16))) : '[]';
+  const doneJson = trends ? JSON.stringify(trends.doneCounts) : '[]';
+  const totalJson = trends ? JSON.stringify(trends.totalStories) : '[]';
+  const costJson = trends ? JSON.stringify(trends.aiCosts.map(c => c.toFixed(2))) : '[]';
+  const coverageJson = trends ? JSON.stringify(trends.coverage.map(c => c !== null ? c.toFixed(1) : null)) : '[]';
+  const velocityJson = trends ? JSON.stringify(trends.velocity.map(v => v.toFixed(1))) : '[]';
+  const bugsJson = trends ? JSON.stringify(trends.openBugs) : '[]';
+  const riskJson = trends ? JSON.stringify(trends.atRisk) : '[]';
+  const inputTokensJson = trends ? JSON.stringify(trends.inputTokens) : '[]';
+  const outputTokensJson = trends ? JSON.stringify(trends.outputTokens) : '[]';
+
+  const placeholder = `
+    <div class="col-span-full flex flex-col items-center justify-center py-16 text-center">
+      <svg class="w-16 h-16 text-slate-300 dark:text-slate-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" />
+      </svg>
+      <p class="text-slate-500 dark:text-slate-400 text-lg font-medium">Generate the dashboard at least twice to see trends</p>
+      <p class="text-slate-400 dark:text-slate-500 text-sm mt-1">Each generation creates a snapshot in .history/</p>
+    </div>`;
+
+  return `
+  <div id="tab-trends" class="p-6 hidden" role="tabpanel" aria-labelledby="tab-btn-trends">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      ${!hasData ? placeholder : ''}
+      ${hasData ? `
+      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+        <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Done Stories Over Time</h3>
+        <div style="height:250px;position:relative"><canvas id="chart-trends-progress"></canvas></div>
+      </div>
+
+      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+        <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">AI Cost Over Time</h3>
+        <div style="height:250px;position:relative"><canvas id="chart-trends-cost"></canvas></div>
+      </div>
+
+      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+        <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Coverage Over Time</h3>
+        <div style="height:250px;position:relative"><canvas id="chart-trends-coverage"></canvas></div>
+      </div>
+
+      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+        <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Velocity (Story Points)</h3>
+        <div style="height:250px;position:relative"><canvas id="chart-trends-velocity"></canvas></div>
+      </div>
+
+      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+        <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Open Bugs Over Time</h3>
+        <div style="height:250px;position:relative"><canvas id="chart-trends-bugs"></canvas></div>
+      </div>
+
+      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+        <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">At-Risk Stories Over Time</h3>
+        <div style="height:250px;position:relative"><canvas id="chart-trends-risk"></canvas></div>
+      </div>
+
+      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 col-span-full">
+        <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Token Usage Over Time</h3>
+        <div style="height:250px;position:relative"><canvas id="chart-trends-tokens"></canvas></div>
+      </div>
+      ` : ''}
+    </div>
+  </div>
+  <script>
+  function initTrendsCharts() {
+    var tc = chartTextColor();
+    var labels = ${datesJson};
+    var hasEnough = labels.length >= 2;
+
+    if (hasEnough && document.getElementById('chart-trends-progress')) {
+      _charts.trendsProgress = new Chart(document.getElementById('chart-trends-progress'), {
+        type: 'line',
+        data: { labels: labels, datasets: [
+          { label: 'Done', data: ${doneJson}, borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,0.1)', fill: true, tension: 0.3 },
+          { label: 'Total', data: ${totalJson}, borderColor: '#64748b', backgroundColor: 'transparent', borderDash: [5,5], tension: 0.3 }
+        ]},
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc }}}, scales: { x: { ticks: { color: tc }, grid: { color: '#e2e8f0' }}, y: { ticks: { color: tc }, grid: { color: '#e2e8f0' }, beginAtZero: true }}}
+      });
+    }
+
+    if (hasEnough && document.getElementById('chart-trends-cost')) {
+      _charts.trendsCost = new Chart(document.getElementById('chart-trends-cost'), {
+        type: 'line',
+        data: { labels: labels, datasets: [
+          { label: 'Total Cost ($)', data: ${costJson}, borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.1)', fill: true, tension: 0.3 }
+        ]},
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc }}}, scales: { x: { ticks: { color: tc }, grid: { color: '#e2e8f0' }}, y: { ticks: { color: tc }, grid: { color: '#e2e8f0' }, beginAtZero: true }}}
+      });
+    }
+
+    if (hasEnough && document.getElementById('chart-trends-coverage')) {
+      _charts.trendsCoverage = new Chart(document.getElementById('chart-trends-coverage'), {
+        type: 'line',
+        data: { labels: labels, datasets: [
+          { label: 'Coverage %', data: ${coverageJson}, borderColor: '#8b5cf6', backgroundColor: 'rgba(139,92,246,0.1)', fill: true, tension: 0.3 }
+        ]},
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc }}}, scales: { x: { ticks: { color: tc }, grid: { color: '#e2e8f0' }}, y: { min: 0, max: 100, ticks: { color: tc }, grid: { color: '#e2e8f0' }}}}
+      });
+    }
+
+    if (hasEnough && document.getElementById('chart-trends-velocity')) {
+      _charts.trendsVelocity = new Chart(document.getElementById('chart-trends-velocity'), {
+        type: 'bar',
+        data: { labels: labels, datasets: [
+          { label: 'Story Points', data: ${velocityJson}, backgroundColor: '#3b82f6' }
+        ]},
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc }}}, scales: { x: { ticks: { color: tc }, grid: { color: '#e2e8f0' }}, y: { ticks: { color: tc }, grid: { color: '#e2e8f0' }, beginAtZero: true }}}
+      });
+    }
+
+    if (hasEnough && document.getElementById('chart-trends-bugs')) {
+      _charts.trendsBugs = new Chart(document.getElementById('chart-trends-bugs'), {
+        type: 'line',
+        data: { labels: labels, datasets: [
+          { label: 'Open Bugs', data: ${bugsJson}, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)', fill: true, tension: 0.3 }
+        ]},
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc }}}, scales: { x: { ticks: { color: tc }, grid: { color: '#e2e8f0' }}, y: { ticks: { color: tc }, grid: { color: '#e2e8f0' }, beginAtZero: true }}}
+      });
+    }
+
+    if (hasEnough && document.getElementById('chart-trends-risk')) {
+      _charts.trendsRisk = new Chart(document.getElementById('chart-trends-risk'), {
+        type: 'line',
+        data: { labels: labels, datasets: [
+          { label: 'At-Risk Stories', data: ${riskJson}, borderColor: '#f97316', backgroundColor: 'rgba(249,115,22,0.1)', fill: true, tension: 0.3 }
+        ]},
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc }}}, scales: { x: { ticks: { color: tc }, grid: { color: '#e2e8f0' }}, y: { ticks: { color: tc }, grid: { color: '#e2e8f0' }, beginAtZero: true }}}
+      });
+    }
+
+    if (hasEnough && document.getElementById('chart-trends-tokens')) {
+      _charts.trendsTokens = new Chart(document.getElementById('chart-trends-tokens'), {
+        type: 'line',
+        data: { labels: labels, datasets: [
+          { label: 'Input', data: ${inputTokensJson}, borderColor: '#06b6d4', backgroundColor: 'rgba(6,182,212,0.2)', fill: true },
+          { label: 'Output', data: ${outputTokensJson}, borderColor: '#ec4899', backgroundColor: 'rgba(236,72,153,0.2)', fill: true }
+        ]},
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc }}}, scales: { x: { ticks: { color: tc }, grid: { color: '#e2e8f0' }}, y: { ticks: { color: tc }, grid: { color: '#e2e8f0' }, beginAtZero: true }}}
+      });
+    }
+  }
+  </script>`;
 }
 
 function renderChartsTab(data) {
@@ -599,9 +772,75 @@ function renderChartsTab(data) {
   </script>`;
 }
 
-function renderCostsTab(data) {
+function renderCostsTab(data, options = {}) {
   const t = data.costs._totals;
   const totalProjected = data.stories.reduce((s, st) => s + (data.costs[st.id] && data.costs[st.id].projectedUsd || 0), 0);
+
+  const budget = data.budget || {};
+  const hasBudget = budget.hasBudget;
+
+  let budgetSection = '';
+  if (hasBudget) {
+    const br = budget.burnRate;
+    const days = budget.daysRemaining;
+    const brDisplay = br > 0 ? `Burn Rate: $${br.toFixed(2)}/day` : 'No recent spend data';
+    const exDisplay = days !== null ? `Exhaustion: ${days} days remaining` : (br > 0 ? 'Budget unlimited' : '');
+
+    const epicRows = budget.epicBudgets.map((eb, i) => {
+      const accent = EPIC_ACCENT_COLORS[i % EPIC_ACCENT_COLORS.length];
+      const barPct = eb.percentUsed !== null ? Math.min(100, eb.percentUsed) : 0;
+      let barColor = '#22c55e';
+      if (eb.percentUsed !== null) {
+        if (eb.percentUsed >= 90) barColor = '#ef4444';
+        else if (eb.percentUsed >= 75) barColor = '#f97316';
+        else if (eb.percentUsed >= 50) barColor = '#eab308';
+      }
+      return `<tr class="border-t border-slate-100 dark:border-slate-700">
+        <td class="px-3 py-2"><span class="font-mono text-xs font-bold" style="color:${accent.border}">${eb.id}</span></td>
+        <td class="px-3 py-2 text-sm dark:text-slate-200">${eb.budget !== null ? usd(eb.budget) : '—'}</td>
+        <td class="px-3 py-2 text-sm dark:text-slate-200">${usd(eb.spent)}</td>
+        <td class="px-3 py-2 text-sm dark:text-slate-200">${eb.remaining !== null ? usd(eb.remaining) : '—'}</td>
+        <td class="px-3 py-2">
+          ${eb.percentUsed !== null ? `<div class="flex items-center gap-2"><div style="width:60px;height:6px;background:#334155;border-radius:3px;overflow:hidden"><div style="width:${barPct}%;height:100%;background:${barColor}"></div></div><span class="text-xs" style="color:${barColor}">${eb.percentUsed}%</span></div>` : '—'}
+        </td>
+      </tr>`;
+    }).join('');
+
+    const csvDownload = options.budgetCSV ? `onclick="downloadBudgetCSV()"` : '';
+    budgetSection = `
+    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 mb-4">
+      <div class="flex flex-wrap items-center gap-6 mb-4">
+        <div>
+          <span class="text-xs text-slate-500 uppercase">${brDisplay}</span>
+        </div>
+        <div>
+          <span class="text-xs text-slate-500 uppercase">${exDisplay}</span>
+        </div>
+        <div>
+          <span class="text-xs text-slate-500 uppercase">Total Budget: ${usd(budget.totalBudget)}</span>
+        </div>
+        <div>
+          <span class="text-xs text-slate-500 uppercase">Spent: ${usd(budget.totalSpent)}</span>
+        </div>
+      </div>
+      <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Per-Epic Budget</h3>
+      <table class="w-full text-left text-sm">
+        <thead class="text-xs uppercase bg-slate-50 dark:bg-slate-700">
+          <tr>
+            <th class="px-3 py-2">Epic</th>
+            <th class="px-3 py-2">Budget</th>
+            <th class="px-3 py-2">Spent</th>
+            <th class="px-3 py-2">Remaining</th>
+            <th class="px-3 py-2">% Used</th>
+          </tr>
+        </thead>
+        <tbody>${epicRows}</tbody>
+      </table>
+      <div class="mt-4">
+        <button ${csvDownload} class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm font-medium">Export Budget CSV</button>
+      </div>
+    </div>`;
+  }
 
   // ── Column view: stories table ──────────────────────────────────────────
   const epicBlocks = data.epics.map((epic, epicIdx) => {
@@ -611,7 +850,7 @@ function renderCostsTab(data) {
     const epicAI = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).costUsd || 0), 0);
     const epicIn = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).inputTokens || 0), 0);
     const epicOut = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).outputTokens || 0), 0);
-    const ceid = `costs-ep-${epic.id}`;
+    const ceid = `costs-ep-${jsEsc(epic.id)}`;
     const storyRows = epicStories.map(story => {
       const projected = (data.costs[story.id] && data.costs[story.id].projectedUsd || 0);
       const ai = data.costs[story.id] || {};
@@ -689,11 +928,11 @@ function renderCostsTab(data) {
       </tr>`;
     }).join('');
     return `<tbody>
-    <tr class="border-t-2 border-slate-300 dark:border-slate-600 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('${bceid}','${bceid}-arrow')">
+    <tr class="border-t-2 border-slate-300 dark:border-slate-600 cursor-pointer select-none bug-epic-header" data-epic="${epicId}" style="background:${accent.bg}" onclick="toggleSection('${bceid}','${bceid}-arrow')">
       <td colspan="6" class="px-3 py-2">
         <span id="${bceid}-arrow" class="text-slate-400 text-xs mr-2">&#9654;</span>
         <span class="font-mono text-xs font-bold" style="color:${accent.border}">${label}</span>
-        <span class="ml-2 text-xs text-slate-500">(${bugs.length})</span>
+        <span class="ml-2 text-xs text-slate-500 bug-count">(${bugs.length})</span>
       </td>
       <td class="px-3 py-2 text-right text-sm font-medium dark:text-slate-200">${epicProjected > 0 ? usd(epicProjected) : '—'}</td>
       <td class="px-3 py-2 text-right text-sm font-medium text-teal-700 dark:text-teal-400">${usd(epicAI)}</td>
@@ -734,7 +973,7 @@ function renderCostsTab(data) {
     }).join('');
     const epicProjTotal = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).projectedUsd || 0), 0);
     const epicAITotal   = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).costUsd || 0), 0);
-    const cceid = `costs-card-ep-${epic.id}`;
+    const cceid = `costs-card-ep-${jsEsc(epic.id)}`;
     const accent2 = EPIC_ACCENT_COLORS[data.epics.indexOf(epic) % EPIC_ACCENT_COLORS.length];
     return `<div class="mb-6 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden" style="border-left:4px solid ${accent2.border}">
       <div class="flex items-center gap-2 px-4 py-3 flex-wrap cursor-pointer select-none" style="background:${accent2.bg}" onclick="toggleSection('${cceid}','${cceid}-arrow')">
@@ -780,10 +1019,11 @@ function renderCostsTab(data) {
         </div>
       </div>`;
     }).join('');
-    return `<div class="mb-6 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden" style="border-left:4px solid ${accent.border}">
-      <div class="flex items-center gap-2 px-4 py-3 flex-wrap cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('${bcceid}','${bcceid}-arrow')">
+    return `<div class="mb-6 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden bug-epic-card" data-epic="${epicId}" style="border-left:4px solid ${accent.border}">
+      <div class="flex items-center gap-2 px-4 py-3 flex-wrap cursor-pointer select-none bug-epic-header" data-epic="${epicId}" style="background:${accent.bg}" onclick="toggleSection('${bcceid}','${bcceid}-arrow')">
         <span id="${bcceid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9654;</span>
         <span class="font-mono text-xs font-bold" style="color:${accent.border}">${label}</span>
+        <span class="ml-2 text-xs text-slate-500 bug-count">(${bugs.length})</span>
         <span class="ml-auto text-xs text-slate-500">Proj ${usd(epicBugProjected)} · AI ${usd(epicBugAI)}</span>
       </div>
       <div id="${bcceid}" class="p-3 hidden">
@@ -823,6 +1063,7 @@ function renderCostsTab(data) {
 
   return `
   <div id="tab-costs" class="p-6 hidden tab-fill" role="tabpanel" aria-labelledby="tab-btn-costs">
+    ${budgetSection}
     <div class="flex items-center justify-between mb-4 flex-shrink-0">
       <span class="text-sm text-slate-500 dark:text-slate-400">${data.stories.length} stories · ${data.bugs.length} bugs</span>
       <div class="flex gap-1">
@@ -915,32 +1156,39 @@ function renderBugsTab(data) {
     return a.localeCompare(b);
   });
 
-  const renderBugRow = bug => `
-  <tr id="bug-row-${bug.id}" class="bug-row border-t border-slate-100 dark:border-slate-700" data-status="${bug.status}">
-    <td class="px-3 py-2 font-mono text-xs whitespace-nowrap dark:text-slate-200">${bug.id}</td>
-    <td class="px-3 py-2 text-sm dark:text-slate-200">${esc(bug.title)}</td>
-    <td class="px-3 py-2 text-center">${badge(bug.severity)}</td>
-    <td class="px-3 py-2 text-center">${badge(bug.status)}</td>
-    <td class="px-3 py-2 text-xs text-slate-500 whitespace-nowrap">${esc(bug.relatedStory)}</td>
-    <td class="px-3 py-2 text-xs text-slate-500">${esc(bug.fixBranch || '—')}</td>
-    <td class="px-3 py-2 text-center text-xs dark:text-slate-200">${lessonCell(bug)}</td>
-  </tr>`;
+  const renderBugRow = bug => {
+    const epicId = storyEpicMap[bug.relatedStory] || '_ungrouped';
+    return `
+    <tr id="bug-row-${bug.id}" class="bug-row border-t border-slate-100 dark:border-slate-700" data-status="${bug.status}" data-epic="${epicId}">
+      <td class="px-3 py-2 font-mono text-xs whitespace-nowrap dark:text-slate-200">${bug.id}</td>
+      <td class="px-3 py-2 text-sm dark:text-slate-200">${esc(bug.title)}</td>
+      <td class="px-3 py-2 text-center">${badge(bug.severity)}</td>
+      <td class="px-3 py-2 text-center">${badge(bug.status)}</td>
+      <td class="px-3 py-2 text-xs text-slate-500 whitespace-nowrap">${esc(bug.relatedStory)}</td>
+      <td class="px-3 py-2 text-xs text-slate-500">${esc(bug.fixBranch || '—')}</td>
+      <td class="px-3 py-2 text-center text-xs dark:text-slate-200">${lessonCell(bug)}</td>
+    </tr>`;
+  };
 
-  const renderBugCard = bug => `
-  <div id="bug-card-${bug.id}" class="bug-row bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 flex flex-col gap-2" data-status="${bug.status}">
-    <div class="flex items-center gap-2 flex-wrap">
-      <span class="font-mono text-xs text-slate-500 whitespace-nowrap">${bug.id}</span>
-      ${badge(bug.severity)} ${badge(bug.status)}
-    </div>
-    <p class="text-sm font-medium dark:text-slate-200">${esc(bug.title)}</p>
-    <div class="text-xs text-slate-500 flex flex-col gap-0.5">
-      <span>Story: <span class="font-mono">${esc(bug.relatedStory || '—')}</span></span>
-      <span class="truncate" title="${esc(bug.fixBranch || '')}">Branch: <span class="font-mono">${esc(bug.fixBranch || '—')}</span></span>
+  const renderBugCard = bug => {
+    const epicId = storyEpicMap[bug.relatedStory] || '_ungrouped';
+    return `
+    <div id="bug-card-${bug.id}" class="bug-row bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 flex flex-col gap-2" data-status="${bug.status}" data-epic="${epicId}">
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="font-mono text-xs text-slate-500 whitespace-nowrap">${bug.id}</span>
+        ${badge(bug.severity)} ${badge(bug.status)}
+      </div>
+      <p class="text-sm font-medium dark:text-slate-200">${esc(bug.title)}</p>
+      <div class="text-xs text-slate-500 flex flex-col gap-0.5">
+        <span>Story: <span class="font-mono">${esc(bug.relatedStory || '—')}</span></span>
+        <span class="truncate" title="${esc(bug.fixBranch || '')}">Branch: <span class="font-mono">${esc(bug.fixBranch || '—')}</span></span>
+      </span>
     </div>
     <div class="flex items-center justify-between mt-1">
       <span class="text-xs text-slate-500">Lesson: <span class="dark:text-slate-200">${lessonCell(bug)}</span></span>
     </div>
   </div>`;
+  };
 
   const bugColGroups = bugEpicOrder.map((epicId, i) => {
     const bugs = bugsByEpic[epicId];
@@ -949,11 +1197,11 @@ function renderBugsTab(data) {
     const label = epic ? `${epicId}: ${esc(epic.title)}` : (epicId === '_ungrouped' ? 'No Epic' : epicId);
     const beid = `bugs-ep-${epicId.replace(/[^a-zA-Z0-9]/g, '-')}`;
     return `<tbody>
-    <tr class="border-t-2 border-slate-300 dark:border-slate-600 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('${beid}','${beid}-arrow')">
+    <tr class="border-t-2 border-slate-300 dark:border-slate-600 cursor-pointer select-none bug-epic-header" data-epic="${epicId}" style="background:${accent.bg}" onclick="toggleSection('${beid}','${beid}-arrow')">
       <td colspan="7" class="px-3 py-2">
         <span id="${beid}-arrow" class="text-slate-400 text-xs mr-2">&#9654;</span>
         <span class="font-mono text-xs font-bold" style="color:${accent.border}">${label}</span>
-        <span class="ml-2 text-xs text-slate-500">(${bugs.length})</span>
+        <span class="ml-2 text-xs text-slate-500 bug-count">(${bugs.length})</span>
       </td>
     </tr>
     </tbody><tbody id="${beid}" class="hidden">${bugs.map(renderBugRow).join('')}</tbody>`;
@@ -965,11 +1213,11 @@ function renderBugsTab(data) {
     const accent = EPIC_ACCENT_COLORS[i % EPIC_ACCENT_COLORS.length];
     const label = epic ? `${epicId}: ${esc(epic.title)}` : (epicId === '_ungrouped' ? 'No Epic' : epicId);
     const bceid = `bugs-card-ep-${epicId.replace(/[^a-zA-Z0-9]/g, '-')}`;
-    return `<div class="mb-6 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden" style="border-left:4px solid ${accent.border}">
-      <div class="flex items-center gap-2 px-4 py-3 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('${bceid}','${bceid}-arrow')">
+    return `<div class="mb-6 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden bug-epic-card" data-epic="${epicId}" style="border-left:4px solid ${accent.border}">
+      <div class="flex items-center gap-2 px-4 py-3 cursor-pointer select-none bug-epic-header" data-epic="${epicId}" style="background:${accent.bg}" onclick="toggleSection('${bceid}','${bceid}-arrow')">
         <span id="${bceid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9654;</span>
         <span class="font-mono text-xs font-bold" style="color:${accent.border}">${label}</span>
-        <span class="ml-1 text-xs text-slate-500">(${bugs.length})</span>
+        <span class="ml-1 text-xs text-slate-500 bug-count">(${bugs.length})</span>
       </div>
       <div id="${bceid}" class="p-3 hidden">
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">${bugs.map(renderBugCard).join('')}</div>
@@ -1215,13 +1463,24 @@ function renderRecentActivity(data) {
   </div>`;
 }
 
-function renderScripts(data) {
+function renderScripts(data, options = {}) {
   const allData = JSON.stringify({ epics: data.epics, stories: data.stories });
   return `
   <script>
   const ALL_DATA = ${allData};
 
-  const VALID_TABS = ['hierarchy','kanban','traceability','charts','costs','bugs','lessons'];
+  const VALID_TABS = ['hierarchy','kanban','traceability','charts','trends','costs','bugs','lessons'];
+
+  function downloadBudgetCSV() {
+    const csv = ${JSON.stringify(options.budgetCSV || '')};
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'budget-report-' + new Date().toISOString().split('T')[0] + '.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
   function updateFilterBar(name) {
     const bar = document.getElementById('filter-bar');
@@ -1251,6 +1510,7 @@ function renderScripts(data) {
     updateFilterBar(name);
     setStickyTop();
     if (name === 'charts' && typeof initCharts === 'function') { initCharts(); initCharts = () => {}; }
+    if (name === 'trends' && typeof initTrendsCharts === 'function') { initTrendsCharts(); initTrendsCharts = () => {}; }
     localStorage.setItem('activeTab', name);
     history.replaceState(null, '', '#' + name);
   }
@@ -1271,6 +1531,14 @@ function renderScripts(data) {
     if (arr) arr.innerHTML = hidden ? '&#9654;' : '&#9660;';
   }
   function toggleEpic(id) { toggleSection('epic-stories-' + id, 'epic-arrow-' + id); }
+  function toggleTraceEpic(epicId) {
+    var rows = document.querySelectorAll('[data-trace-epic="' + epicId + '"]');
+    var arrow = document.getElementById('trace-epic-' + epicId + '-arrow');
+    if (!arrow) return;
+    var collapsed = arrow.textContent === '\u25b6';
+    rows.forEach(function(r) { r.classList.toggle('hidden', !collapsed); });
+    arrow.textContent = collapsed ? '\u25bc' : '\u25b6';
+  }
   function toggleKsw(id) {
     var body = document.getElementById(id + '-body');
     var arrow = document.getElementById(id + '-arrow');
@@ -1309,10 +1577,38 @@ function renderScripts(data) {
       row.style.display = hide ? 'none' : '';
     });
     document.querySelectorAll('.bug-row').forEach(row => {
+      const rowEpic = row.dataset.epic || '_ungrouped';
       const hide =
+        (epic && rowEpic !== epic) ||
         (bugStatus && row.dataset.status !== bugStatus) ||
         (search && !row.innerText.toLowerCase().includes(search));
       row.style.display = hide ? 'none' : '';
+    });
+    document.querySelectorAll('.epic-block').forEach(block => {
+      const visibleChildren = block.querySelectorAll('.story-row:not([style*="display: none"])');
+      const header = block.querySelector('div[onclick*="toggleSection"]');
+      if (header) header.style.display = visibleChildren.length > 0 ? '' : 'none';
+      block.style.display = visibleChildren.length > 0 ? '' : 'none';
+      const wrapper = block.closest('.mb-8');
+      if (wrapper) wrapper.style.display = visibleChildren.length > 0 ? '' : 'none';
+    });
+    document.querySelectorAll('.ksw-swimlane').forEach(swimlane => {
+      const visibleChildren = swimlane.querySelectorAll('.story-row:not([style*="display: none"])');
+      const header = swimlane.querySelector('.ksw-swim-hdr');
+      if (header) header.style.display = visibleChildren.length > 0 ? '' : 'none';
+    });
+    document.querySelectorAll('.bug-epic-header').forEach(header => {
+      const headerEpic = header.dataset.epic || '_ungrouped';
+      const container = header.closest('tbody') || header.closest('.bug-epic-card');
+      const visibleChildren = container ? container.querySelectorAll('.bug-row:not([style*="display: none"])') : [];
+      header.style.display = visibleChildren.length > 0 ? '' : 'none';
+      const countSpan = header.querySelector('.bug-count');
+      if (countSpan) {
+        countSpan.textContent = '(' + visibleChildren.length + ')';
+      }
+      if (container && container.tagName !== 'TR') {
+        container.style.display = visibleChildren.length > 0 ? '' : 'none';
+      }
     });
     localStorage.setItem('f-epic', epic);
     localStorage.setItem('f-status', status);
@@ -1548,7 +1844,7 @@ function renderPrintCSS() {
   </style>`;
 }
 
-function renderHtml(data) {
+function renderHtml(data, options = {}) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1564,6 +1860,9 @@ function renderHtml(data) {
   <style>
     /* === Base === */
     body { font-family: 'Inter', sans-serif; padding-top: 72px; background-color: var(--clr-body-bg); color: var(--clr-text-primary); }
+    body.has-alert { padding-top: 100px; }
+    #topbar-fixed.has-alert { top: 28px; }
+    #sidebar.has-alert { top: 100px; height: calc(100vh - 100px); }
     code, .font-mono { font-family: 'JetBrains Mono', monospace; }
 
     /* === Topbar (fixed, gradient) === */
@@ -1661,7 +1960,16 @@ function renderHtml(data) {
   </style>
   ${renderPrintCSS()}
 </head>
-<body class="min-h-screen">
+<body class="min-h-screen ${(data.budget && data.budget.crossedThresholds && data.budget.crossedThresholds.length > 0) ? 'has-alert' : ''}">
+  ${(data.budget && data.budget.crossedThresholds && data.budget.crossedThresholds.length > 0) ? `
+  <div id="budget-alert" class="fixed top-0 left-0 right-0 z-50 px-4 py-2 flex items-center justify-between ${data.budget.percentUsed >= 90 ? 'bg-red-600' : data.budget.percentUsed >= 75 ? 'bg-orange-500' : 'bg-amber-500'} text-white">
+    <span class="font-medium">
+      ${data.budget.percentUsed >= 90 ? '⛔' : '⚠️'} Budget Alert: ${data.budget.percentUsed}% of budget consumed
+    </span>
+    <button onclick="dismissBudgetAlert()" class="text-white hover:text-gray-200 text-sm font-bold px-2">✕</button>
+  </div>
+  <script>function dismissBudgetAlert(){document.getElementById('budget-alert').style.display='none';document.body.classList.remove('has-alert');localStorage.setItem('budgetAlertDismissed','${data.generatedAt}');}</script>
+  ` : ''}
   ${renderTopBar(data)}
   <div id="app-shell">
     ${renderSidebar()}
@@ -1674,14 +1982,15 @@ function renderHtml(data) {
         ${renderKanbanTab(data)}
         ${renderTraceabilityTab(data)}
         ${renderChartsTab(data)}
-        ${renderCostsTab(data)}
+        ${renderTrendsTab(data, options)}
+        ${renderCostsTab(data, options)}
         ${renderBugsTab(data)}
         ${renderLessonsTab(data)}
       </div>
     </main>
   </div>
   ${renderRecentActivity(data)}
-  ${renderScripts(data)}
+  ${renderScripts(data, options)}
   <div id="aboutModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
     <div onclick="closeAbout()" class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
     <div class="relative z-10 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl shadow-2xl w-full max-w-sm p-6 text-center">

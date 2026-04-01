@@ -892,413 +892,152 @@ Steps to Reproduce:
   2. Generate plan-status.html
 Expected: available: false when .pct cannot be read; renderer shows N/A
 Actual: Guard at parse-coverage.js:8 checks key presence not .pct presence; available:true returned with overall:NaN; renderer displays NaN% to user
-Status: Open
-Fix Branch: TBD
+Status: Fixed
+Fix Branch: feature/US-0048-ui-redesign-sidebar
+Lesson Encoded: No
+Estimated Cost USD: 0.02
+
+---
+
+BUG-0094: XSS via inline onclick handlers — esc() only escapes HTML, not JavaScript
+Severity: High
+Related Story: US-0009
+Steps to Reproduce:
+  1. Add a story with ID containing a single quote (e.g., `US-0001'`) to RELEASE_PLAN.md
+  2. Generate dashboard and click to expand ACs
+Expected: ID safely rendered; no JS execution
+Actual: `onclick="toggleCardACs('${esc(story.id)}')"` breaks — esc() doesn't escape `'` in JS context
+Status: Fixed
+Fix Branch: feature/US-0048-ui-redesign-sidebar
+Lesson Encoded: No
+Estimated Cost USD: 0.15
+
+---
+
+BUG-0095: Complex inline IIFE in traceability onclick attribute — unmaintainable
+Severity: Medium
+Related Story: US-0009
+Steps to Reproduce:
+  1. View render-html.js line 411
+  2. Note inline IIFE in onclick: `onclick="(function(){var rows=...})()"`
+Expected: Named function or event listener
+Actual: Inline IIFE is fragile and hard to debug
+Status: Fixed
+Fix Branch: feature/US-0048-ui-redesign-sidebar
 Lesson Encoded: No
 Estimated Cost USD: 0.10
 
-BUG-0077: get() regex inconsistency between epic and story/task parsers in parse-release-plan.js
-Severity: Low
+---
+
+BUG-0096: Priority parsing inconsistent — returns full string or regex match
+Severity: Medium
 Related Story: US-0001
-Related Task: TASK-0001
 Steps to Reproduce:
-  1. Compare epic get() helper (~line 29) using (.+) vs story/task get() helper (~line 63) using (.*)
-Expected: Consistent regex pattern across all field-extraction helpers
-Actual: Epic uses (.+) requiring non-empty value; story/task uses (.*) allowing empty — different behaviour for same intent; maintenance hazard
-Status: Open
-Fix Branch: TBD
+  1. Parse story with `Priority: High` (no parens) vs `Priority: High (P0)`
+Expected: Consistent output format
+Actual: With parens returns `P0`, without returns full string
+Status: Fixed
+Fix Branch: feature/US-0048-ui-redesign-sidebar
 Lesson Encoded: No
 Estimated Cost USD: 0.05
 
-BUG-0078: detect-at-risk.js returns undefined not false for missingTCs when story.acs is absent
+---
+
+BUG-0097: render-html.js ~1700 lines — monolithic file hard to maintain
 Severity: Low
-Related Story: US-0008
-Related Task: TASK-0006
+Related Story: US-0053
 Steps to Reproduce:
-  1. Pass a story with no acs field to detectAtRisk()
-  2. Inspect result.missingTCs
-Expected: false (boolean)
-Actual: undefined — hasACs evaluates to undefined when story.acs is absent; strict === false checks on missingTCs return wrong answer
-Status: Open
-Fix Branch: TBD
+  1. Open tools/lib/render-html.js
+Expected: Modular functions in separate files
+Actual: Single 1700-line file
+Status: Retired
+Fix Branch: 
 Lesson Encoded: No
-Estimated Cost USD: 0.05
+Estimated Cost USD: 0.00
+Notes: Moved to US-0053 in RELEASE_PLAN.md as a planned technical debt refactoring task
 
-BUG-0079: generate-plan.js reads package.json without error handling unlike all other file reads
-Severity: Low
-Related Story: US-0009
-Related Task: TASK-0007
-Steps to Reproduce:
-  1. Remove or corrupt package.json
-  2. Run node tools/generate-plan.js
-Expected: Clear error message identifying package.json as the problem
-Actual: JSON.parse throws with "Unexpected end of JSON input"; caught by outer catch and exits with code 1 but no useful context
-Status: Open
-Fix Branch: TBD
-Lesson Encoded: No
-Estimated Cost USD: 0.05
+---
 
-BUG-0080: _totals in compute-costs.js includes AI costs from branches not linked to any story or bug
-Severity: Low
-Related Story: US-0007
-Related Task: TASK-0005
-Steps to Reproduce:
-  1. Add cost log rows on main or develop branches with no matching story branch
-  2. Generate plan-status.html and observe Total AI Cost tile
-Expected: Behaviour documented; optionally separate "attributed" vs "total" costs
-Actual: compute-costs.js:20-26 sums all costByBranch entries including unlinked branches; AI Actual tile overstates attributed cost without documentation
-Status: Open
-Fix Branch: TBD
-Lesson Encoded: No
-Estimated Cost USD: 0.05
-
-BUG-0081: parse-progress.js stores sessionNum as string not number — breaks numeric sort
-Severity: Low
-Related Story: US-0006
-Related Task: TASK-0005
-Steps to Reproduce:
-  1. Inspect parse-progress.js output for sessions 2 and 10
-  2. Sort sessions by sessionNum lexicographically vs numerically
-Expected: sessionNum is an integer; "10" > "2" numerically but not lexicographically
-Actual: match[1] string stored without parseInt(); session 10 sorts before session 2 lexicographically
-Status: Open
-Fix Branch: TBD
-Lesson Encoded: No
-Estimated Cost USD: 0.05
-
-BUG-0082: parse-cost-log.js regex uses \S+ for branch column — silently drops rows with spaces in branch name
+BUG-0098: parse-cost-log.js regex too complex to read
 Severity: Low
 Related Story: US-0004
-Related Task: TASK-0003
 Steps to Reproduce:
-  1. Add a cost log row where branch column contains a space
-  2. Run parseCostLog() — row is silently omitted
-Expected: Warning logged or [^|]+ pattern used to match any non-pipe character including spaces
-Actual: \S+ stops at first space; row fails to match and is silently skipped
-Status: Open
-Fix Branch: TBD
-Lesson Encoded: No
-Estimated Cost USD: 0.05
-
-BUG-0083: parse-lessons.js context regex captures only first italic block — multi-block context silently truncated
-Severity: Low
-Related Story: US-0032
-Related Task: TASK-0029
-Steps to Reproduce:
-  1. Write a lesson with two italic paragraphs as context
-  2. Parse and inspect the lesson.context field
-Expected: Both italic paragraphs captured; or behaviour documented as intentional
-Actual: Regex at parse-lessons.js:16 captures only the first *...* block; second paragraph silently dropped
-Status: Open
-Fix Branch: TBD
-Lesson Encoded: No
-Estimated Cost USD: 0.05
-
-BUG-0084: AC-TBD format handled by parser but has no test coverage
-Severity: Low
-Related Story: US-0001
-Related Task: TASK-0001
-Steps to Reproduce:
-  1. View parse-release-plan.js ~line 49 — AC-TBD is explicitly handled as valid
-  2. Search test suite — no test exercises AC-TBD input
-Expected: Test case for AC-TBD placeholder format
-Actual: AC-TBD code path untested; future changes to AC regex could silently break AC-TBD handling
-Status: Open
-Fix Branch: TBD
-Lesson Encoded: No
-Estimated Cost USD: 0.05
-
-BUG-0085: generate-plan.js has zero unit or integration test coverage
-Severity: Low
-Related Story: US-0009
-Related Task: TASK-0007
-Steps to Reproduce:
-  1. Run jest --coverage and inspect generate-plan.js line coverage
-Expected: loadConfig, readFile, readJson, getCommitSha, getBuildNumber and cost loop covered by tests
-Actual: Orchestrator module entirely untested; config-merging logic, KNOWN_KEYS warning, deep merge of tshirtHours, and bug projected cost loop all lack test coverage
-Status: Open
-Fix Branch: TBD
-Lesson Encoded: No
-Estimated Cost USD: 0.15
-
-BUG-0086: parse-bugs.test.js missing empty-input test unlike sibling parser tests
-Severity: Low
-Related Story: US-0003
-Related Task: TASK-0002
-Steps to Reproduce:
-  1. Compare parseBugs, parseTestCases, parseReleasePlan test suites
-  2. Note parseTestCases and parseReleasePlan test empty string input; parseBugs does not
-Expected: parseBugs('') test asserts return value is []
-Actual: Empty-input path is logically correct but unverified; coverage gap vs sibling parsers
-Status: Open
-Fix Branch: TBD
-Lesson Encoded: No
-Estimated Cost USD: 0.05
-
-BUG-0087: No NaN guard on costUsd accumulation in compute-costs.js — NaN from malformed log rows propagates silently
-Severity: Low
-Related Story: US-0007
-Related Task: TASK-0005
-Steps to Reproduce:
-  1. Add a cost log row with a non-numeric Cost USD value
-  2. parseCostLog returns NaN for costUsd; compute-costs accumulation becomes NaN
-  3. Generate plan-status.html — all AI cost figures show NaN
-Expected: parseFloat fallback to 0 for non-numeric cost values; NaN isolated to the bad row
-Actual: No || 0 guard in parseCostLog:16; NaN propagates through all aggregation
-Status: Open
-Fix Branch: TBD
-Lesson Encoded: No
-Estimated Cost USD: 0.05
-
-BUG-0058: githubUrl not validated against javascript: URI injection in About dialog
-Severity: High
-Related Story: US-0009
-Related Task: TASK-0007
-Steps to Reproduce:
-  1. Set githubUrl to "javascript:alert(1)" in plan-visualizer.config.json
-  2. Generate plan-status.html and click the GitHub link in the About dialog
-Expected: Link opens a valid HTTPS URL or is not rendered
-Actual: javascript: URI executes arbitrary code when clicked; esc() only HTML-encodes, does not block javascript: schemes
-Status: Open
-Fix Branch: TBD
-Lesson Encoded: No
-Estimated Cost USD: 0.15
-
-BUG-0059: IDs (story.id, epic.id, bug.id etc.) interpolated without esc() into HTML attributes and onclick handlers
-Severity: High
-Related Story: US-0009
-Related Task: TASK-0007
-Steps to Reproduce:
-  1. Observe lines 172, 179, 232, 239, 309, 324, 337, 743, 841, 850 of render-html.js
-  2. Note IDs are used in id="...", data-* attributes, and onclick="...toggleACs('${story.id}')" without esc()
-Expected: All string interpolation into HTML passes through esc() — no exceptions
-Actual: Structured IDs (US-0001, BUG-0003) happen to be safe today, but any non-standard ID with <, ", or ' bypasses XSS protection
-Status: Open
-Fix Branch: TBD
-Lesson Encoded: No
-Estimated Cost USD: 0.25
-
-BUG-0060: Smoke test says "6 tabs" but dashboard has 7 — Lessons tab not asserted
-Severity: Low
-Related Story: US-0032
-Related Task: TASK-0029
-Steps to Reproduce:
-  1. Open tests/unit/render-html.test.js line 35
-  2. Observe description says "includes all 6 tabs" and Lessons is absent from assertions
-Expected: Test description says "7 tabs" and asserts all seven tab labels including Lessons
-Actual: Stale test description; Lessons tab existence is unverified by the smoke test
-Status: Open
-Fix Branch: TBD
-Lesson Encoded: No
-Estimated Cost USD: 0.05
-
-BUG-0061: fgrp-type element referenced in JS but never rendered — dead code
-Severity: Low
-Related Story: US-0009
-Related Task: TASK-0007
-Steps to Reproduce:
-  1. Search render-html.js for "fgrp-type" — referenced in renderScripts() ~line 965
-  2. Search for element emission of id="fgrp-type" in renderFilterBar() — not found
-Expected: Either the element exists or the JS reference is removed
-Actual: document.getElementById('fgrp-type') always returns null; null guard prevents throw but dead code confuses future developers
-Status: Open
-Fix Branch: TBD
-Lesson Encoded: No
-Estimated Cost USD: 0.05
-
-BUG-0062: Tailwind darkMode config set twice — conflicting initialisation pattern
-Severity: Low
-Related Story: US-0009
-Related Task: TASK-0007
-Steps to Reproduce:
-  1. View render-html.js lines 1253 and 1256
-  2. Observe window.tailwind={config:{darkMode:'class'}} before CDN load and tailwind.config={darkMode:'class'} after
-Expected: One canonical config assignment after CDN load
-Actual: Two different assignment patterns for the same config; pre-load partial object on window.tailwind is redundant and may interact unexpectedly with CDN init logic depending on CDN version
-Status: Open
-Fix Branch: TBD
-Lesson Encoded: No
-Estimated Cost USD: 0.05
-
-BUG-0063: applyFilters() accesses filter DOM elements without null guards
-Severity: Low
-Related Story: US-0009
-Related Task: TASK-0007
-Steps to Reproduce:
-  1. View render-html.js ~line 1015
-  2. Note document.getElementById('f-epic').value called unconditionally
-Expected: Null check before accessing .value to prevent TypeError if filter bar is ever absent
-Actual: Currently safe because filter elements are always rendered, but any future conditional omission of the filter bar will cause an uncaught TypeError
-Status: Open
-Fix Branch: TBD
-Lesson Encoded: No
-Estimated Cost USD: 0.05
-
-BUG-0064: Coverage chart renders NaN% when coverage data is unavailable
-Severity: Low
-Related Story: US-0005
-Related Task: TASK-0004
-Steps to Reproduce:
-  1. Remove or empty docs/coverage/coverage-summary.json
-  2. Generate plan-status.html and open Charts tab
-  3. Observe the coverage doughnut chart centre text
-Expected: Chart shows N/A or is hidden when coverage.available === false
-Actual: coveragePct becomes "NaN" or "0.0"; overlay displays NaN% or 0.0% instead of N/A; topbar correctly shows N/A but Charts tab is inconsistent
-Status: Open
-Fix Branch: TBD
-Lesson Encoded: No
-Estimated Cost USD: 0.10
-
-BUG-0065: Kanban sticky-header CSS class never applied — sticky column headers non-functional
-Severity: Low
-Related Story: US-0009
-Related Task: TASK-0007
-Steps to Reproduce:
-  1. Open plan-status.html → Kanban tab with many stories
-  2. Scroll down — column headers scroll out of view
-  3. Inspect render-html.js renderKanbanTab() — columns use class "kanban-col flex flex-col flex-1 min-w-48" (no scroll-kanban) and headings use <h3> (not kanban-col-header class)
-Expected: Column headers remain sticky while scrolling within a column
-Actual: .scroll-kanban and .kanban-col-header CSS rules exist but are never applied — sticky header feature is entirely dead
-Status: Open
-Fix Branch: TBD
-Lesson Encoded: No
-Estimated Cost USD: 0.10
-
-BUG-0066: Duplicate id="lesson-{id}" in column and card views — cross-tab scroll targets hidden element
-Severity: Medium
-Related Story: US-0032
-Related Task: TASK-0029
-Steps to Reproduce:
-  1. Open plan-status.html → Bugs tab → click a Lesson link for a bug with Lesson Encoded: Yes
-  2. Observe whether the page scrolls to the correct lesson in the active view
-Expected: Page switches to Lessons tab and scrolls to the lesson in the currently active view (column or card)
-Actual: Both column view (<tr id="lesson-L-0001">) and card view (<div id="lesson-L-0001">) are in the DOM simultaneously; getElementById returns the first match (column view row), which is hidden when card view is active — scroll silently targets the invisible element
-Status: Open
-Fix Branch: TBD
-Lesson Encoded: No
-Estimated Cost USD: 0.15
-
-BUG-0067: badge() interpolates text directly into HTML without escaping
-Severity: Low
-Related Story: US-0009
-Related Task: TASK-0007
-Steps to Reproduce:
-  1. View render-html.js badge() function ~line 5
-  2. Note ${text} is interpolated without esc()
-Expected: badge(text) passes text through esc() before interpolation — defence in depth
-Actual: Currently safe because badge() is only called with known-enum values (status, severity); if ever called with user-supplied text the inner HTML would be unescaped
-Status: Open
-Fix Branch: TBD
-Lesson Encoded: No
-Estimated Cost USD: 0.05
-
-BUG-0068: Tab bar lacks ARIA roles — screen reader accessibility degraded
-Severity: Low
-Related Story: US-0009
-Related Task: TASK-0007
-Steps to Reproduce:
-  1. Inspect the tab bar HTML (lines 126–131 of render-html.js) with a screen reader
-Expected: role="tablist" on container, role="tab" + aria-selected="true/false" on each button, role="tabpanel" on each panel
-Actual: Plain <button> elements with no ARIA; keyboard navigation works but screen readers cannot announce tab identity or selection state
-Status: Open
-Fix Branch: TBD
-Lesson Encoded: No
-Estimated Cost USD: 0.10
-
-BUG-0069: Activity panel body padding not applied on mobile — panel overlaps content after toggle
-Severity: Low
-Related Story: US-0009
-Related Task: TASK-0007
-Steps to Reproduce:
-  1. Open plan-status.html on a mobile viewport
-  2. Toggle the activity panel open
-Expected: Page body gains right padding to prevent content overlap with the panel
-Actual: The padding-right:280px rule is applied via @media only and does not account for the toggle state on mobile viewports — content remains overlapped when panel is visible
-Status: Open
-Fix Branch: TBD
-Lesson Encoded: No
-Estimated Cost USD: 0.05
-
-BUG-0070: Mobile activity toggle button may overlap sticky nav due to z-index ordering
-Severity: Low
-Related Story: US-0009
-Related Task: TASK-0007
-Steps to Reproduce:
-  1. Open plan-status.html on a mobile viewport at the top of the page
-Expected: Activity toggle button visible and not obscured by sticky nav
-Actual: Activity panel at z-index:50, sticky nav at z-30, toggle button at z-50 — at the top of the page the button and nav may visually overlap
-Status: Open
-Fix Branch: TBD
-Lesson Encoded: No
-Estimated Cost USD: 0.05
-
-BUG-0071: Charts tab coverage overlay shows 0.0% instead of N/A when coverage file is absent
-Severity: Low
-Related Story: US-0005
-Related Task: TASK-0004
-Steps to Reproduce:
-  1. Remove docs/coverage/coverage-summary.json
-  2. Generate plan-status.html → Charts tab → coverage doughnut
-Expected: Overlay reads N/A (consistent with topbar behaviour)
-Actual: Overlay reads 0.0%; topbar correctly shows N/A; inconsistency between the two displays for the same metric
-Status: Open
-Fix Branch: TBD
-Lesson Encoded: No
-Estimated Cost USD: 0.05
-
-BUG-0072: Costs tab footer AI total omits bug-fix AI costs — inconsistent with topbar figure
-Severity: Medium
-Related Story: US-0025
-Related Task: TASK-0023
-Steps to Reproduce:
-  1. Open plan-status.html → Costs tab → scroll to footer row
-  2. Compare AI total in footer with AI Actual tile in the top bar
-Expected: Both figures are identical — total AI = story AI costs + bug AI costs
-Actual: Footer at render-html.js ~line 697 shows only data.costs._totals.costUsd (story costs); bug AI costs are excluded — understates the true total vs topbar
-Status: Open
-Fix Branch: TBD
-Lesson Encoded: No
-Estimated Cost USD: 0.10
-
-BUG-0073: Filter bar status dropdown missing "To Do" option
-Severity: Low
-Related Story: US-0009
-Related Task: TASK-0007
-Steps to Reproduce:
-  1. Open plan-status.html → Hierarchy or Kanban tab
-  2. Open the Status filter dropdown (render-html.js ~line 102)
-  3. Observe available options
-Expected: Dropdown includes "To Do" alongside In Progress, Planned, Done, Blocked
-Actual: "To Do" is absent; stories with Status: To Do cannot be filtered to in isolation
-Status: Open
-Fix Branch: TBD
-Lesson Encoded: No
-Estimated Cost USD: 0.05
-
-BUG-0074: story.estimate and story.epicId interpolated without esc() in HTML output
-Severity: Low
-Related Story: US-0009
-Related Task: TASK-0007
-Steps to Reproduce:
-  1. View render-html.js lines 177, 209, 289, 526 — story.estimate and story.epicId used as ${...} without esc()
-Expected: All interpolated strings use esc() — defence in depth even for structured fields
-Actual: estimate (S/M/L/XL) and epicId (EPIC-XXXX) are currently safe enum values but bypass esc() — inconsistent with the project's own XSS policy
-Status: Open
-Fix Branch: TBD
-Lesson Encoded: No
-Estimated Cost USD: 0.05
-
-BUG-0057: aggregateCostByBranch inflates costs — same session counted multiple times
-Severity: Medium
-Related Story: US-0012
-Related Task: TASK-0009
-Steps to Reproduce:
-  1. Run a Claude Code session (Stop hook fires on every turn, appending cumulative rows to AI_COST_LOG.md)
-  2. Generate plan-status.html and open Costs tab
-  3. Observe AI cost for the branch — it is a multiple of the actual session cost
-Expected: Each session counted once; dashboard shows the final cumulative total for the session
-Actual: aggregateCostByBranch summed all rows naively — e.g. session f655eb8e had rows $7.45 + $10.35 + $11.07 = $28.87 reported instead of the correct $11.07
+  1. View line 7 of parse-cost-log.js
+Expected: Named regex constants
+Actual: Single 200+ char regex
 Status: Fixed
-Fix Branch: fix/parse-cost-log-session-dedup
+Fix Branch: feature/US-0048-ui-redesign-sidebar
 Lesson Encoded: No
-Estimated Cost USD: 0.10
+Estimated Cost USD: 0.05
+
+---
+
+BUG-0099: detect-at-risk.js Array.isArray check may be unnecessary
+Severity: Low
+Related Story: US-0008
+Steps to Reproduce:
+  1. View line 11 of detect-at-risk.js
+Expected: Comment explaining why check exists
+Actual: Check present but may be redundant
+Status: Fixed
+Fix Branch: feature/US-0048-ui-redesign-sidebar
+Lesson Encoded: No
+Estimated Cost USD: 0.02
+
+---
+
+BUG-0100: capture-cost.js silent failure when transcript not found
+Severity: Low
+Related Story: US-0012
+Steps to Reproduce:
+  1. Run capture-cost.js with invalid session
+Expected: Warning printed
+Actual: Silent null returned
+Status: Fixed
+Fix Branch: feature/US-0048-ui-redesign-sidebar
+Lesson Encoded: No
+Estimated Cost USD: 0.05
+
+BUG-0091: Topbar overlaps activity panel — last stat tile clipped on desktop
+Severity: Medium
+Related Story: US-0048
+Related Task: TASK-0041
+Steps to Reproduce:
+  1. Open plan-status.html on a desktop viewport (≥768px) with the activity panel visible
+  2. Observe the rightmost header tile — it is partially hidden behind the 280px activity panel
+Expected: All six topbar stat tiles are fully visible; topbar ends where the activity panel begins
+Actual: #topbar-fixed uses right:0 and spans full viewport width, causing the Estimated tile to be obscured by the activity panel overlay
+Status: Fixed
+Fix Branch: feature/US-0048-ui-redesign-sidebar
+Lesson Encoded: No
+Estimated Cost USD: 0.02
+
+---
+
+BUG-0098: Open bug count includes Retired bugs — shows incorrect count in header
+Severity: Medium
+Related Story: US-0036
+Steps to Reproduce:
+  1. Open plan-status.html
+  2. Observe the Bugs Open stat tile in the top bar
+  3. Click the Bugs tab and apply a status filter
+Expected: Open bug count excludes Retired and Cancelled bugs; shows only truly open bugs
+Actual: Bugs with status "Retired" are counted as open because filter uses !/^Fixed/i which passes Retired
+Status: Open
+Fix Branch: 
+Lesson Encoded: No
+
+---
+
+BUG-0099: Epic group headers remain visible when all children are filtered out
+Severity: Medium
+Related Story: US-0010
+Steps to Reproduce:
+  1. Open plan-status.html → Hierarchy or Bugs tab
+  2. Apply a filter that results in zero matches for a specific epic group
+  3. Observe the epic group header
+Expected: Epic group headers with zero visible children are hidden; counts reflect filtered results
+Actual: Epic group headers remain visible even when all children are hidden by filters; counts show original totals
+Status: Open
+Fix Branch: 
+Lesson Encoded: No
