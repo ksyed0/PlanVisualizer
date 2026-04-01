@@ -40,8 +40,9 @@ project root, create plan-visualizer.config.json with the correct project name a
 file paths for this project, copy the .github/workflows/plan-visualizer.yml workflow,
 run npm run plan:test from the repo root to confirm all suites pass, then commit all
 added files to the current branch. The install script will copy plan_visualizer.md
-into this project root, automatically update AGENTS.md with a reference to it, and
-merge the Claude Code Stop hook for capture-cost.js into .claude/settings.json.
+into this project root, automatically update AGENTS.md with a reference to it,
+merge the Claude Code Stop hook for capture-cost.js into .claude/settings.json,
+and prompt for historical data backfill (if project data exists).
 ```
 
 ---
@@ -106,15 +107,16 @@ If you prefer not to use the install script:
    Read plan_visualizer.md for the exact document formats required for RELEASE_PLAN.md,
    TEST_CASES.md, BUGS.md, AI_COST_LOG.md, and progress.md.
    ```
-2. Copy `tools/`, `tests/`, `jest.config.js` into your project root
-3. Add to your `package.json` scripts:
+2. Copy `tools/`, `tests/`, `jest.config.js`, `eslint.config.js` into your project root
+3. Copy `.github/workflows/plan-visualizer.yml` to `.github/workflows/`
+4. Add to your `package.json` scripts:
    ```json
    "plan:test": "jest --watchAll=false",
    "plan:test:coverage": "jest --watchAll=false --coverage",
    "plan:generate": "node tools/generate-plan.js"
    ```
-4. Copy `plan-visualizer.config.example.json` to `plan-visualizer.config.json` and edit it
-5. Ensure `.claude/settings.json` contains the Stop hook (the install script does this automatically):
+5. Copy `plan-visualizer.config.example.json` to `plan-visualizer.config.json` and edit it
+6. Ensure `.claude/settings.json` contains the Stop hook (the install script does this automatically):
    ```json
    {
      "hooks": {
@@ -122,7 +124,7 @@ If you prefer not to use the install script:
      }
    }
    ```
-6. Add `docs/coverage/` to your `.gitignore`
+7. Add `docs/coverage/` to your `.gitignore`
 
 ---
 
@@ -138,7 +140,9 @@ rm -rf /tmp/PlanVisualizer
 
 The script is idempotent — it is safe to re-run at any time. If you have existing project data, it will prompt: "Would you like to estimate historical data? (y/n)" — answering yes runs a 30-day backfill to populate trend charts immediately.
 
-**What gets overwritten on update:** `tools/`, `tests/`, `jest.config.js`, `plan_visualizer.md`, `.github/workflows/plan-visualizer.yml` — these are tool files managed by PlanVisualizer.
+**What gets overwritten on update:** `tools/`, `tests/`, `jest.config.js`, `plan_visualizer.md`, `.github/workflows/plan-visualizer.yml`, `eslint.config.js` — these are tool files managed by PlanVisualizer.
+
+**Historical data:** When updating, the install script will ask "Would you like to estimate historical data? (y/n)" — answering yes runs a 30-day backfill to populate trend charts immediately with simulated historical data. Answering no lets history build naturally from real generations.
 
 **What is never overwritten:** `plan-visualizer.config.json` (your project config), `AGENTS.md` content (the script only appends; it will skip if the reference already exists).
 
@@ -150,7 +154,8 @@ Paste this prompt directly into Claude Code in your target repo:
 Update the PlanVisualizer tool in this project from the ksyed0/PlanVisualizer
 GitHub repo. Clone it to a temp directory, run scripts/install.sh targeting this
 project root, run npm run plan:test from the repo root to confirm all suites pass, then
-commit all changed files to the current branch.
+commit all changed files to the current branch. The install script will prompt for
+historical data backfill if existing project data is detected.
 ```
 
 ---
