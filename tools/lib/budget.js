@@ -30,7 +30,8 @@ function computeBudgetMetrics(data, config, snapshots) {
   if (snapshots && snapshots.length >= 2) {
     const sorted = [...snapshots].sort((a, b) => new Date(b.generatedAt) - new Date(a.generatedAt));
     const latest = sorted[0];
-    const thirtyDaysAgo = new Date();
+    const latestDate = new Date(latest.generatedAt);
+    const thirtyDaysAgo = new Date(latestDate);
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
     const recent = sorted.filter(s => new Date(s.generatedAt) >= thirtyDaysAgo);
