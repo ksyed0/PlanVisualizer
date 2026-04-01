@@ -3,6 +3,6 @@ coverage/
 docs/coverage/
 docs/plan-status.html
 docs/plan-status.json
-.history/
+# .history/ tracked intentionally for Trends tab persistence
 .DS_Store
 .superpowers/
