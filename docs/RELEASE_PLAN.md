@@ -245,6 +245,18 @@ Acceptance Criteria:
   - [x] AC-0084: Bugs with no fix branch or no logged cost show $0.00 (not hidden)
   - [x] AC-0085: Bug Fix Costs section is absent when bugs array is empty
 Dependencies: US-0029
+
+US-0082 (EPIC-0003): As a developer, I want the source code and npm packages to be cleanly separated in the install script, so that the target project only gets runtime dependencies and not development tools.
+Priority: Medium (P1)
+Estimate: S
+Status: Done
+Branch: feature/EPIC-0009-budget-forecasting
+Acceptance Criteria:
+  - [x] AC-0258: The install script copies only the generated output files (tools/lib/*.js, scripts/, .github/workflows/) to the target project
+  - [x] AC-0259: DevDependencies (jest, eslint) remain in the PlanVisualizer repo and are NOT copied to target projects
+  - [x] AC-0260: The target project's package.json receives only runtime scripts (plan:test, plan:generate)
+  - [x] AC-0261: Users installing PlanVisualizer do not need to run npm install for devDependencies
+Dependencies: US-0011
 ```
 
 ---
