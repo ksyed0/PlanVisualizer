@@ -3,13 +3,13 @@ const path = require('path');
 const fs = require('fs');
 const { parseReleasePlan } = require('../../tools/lib/parse-release-plan');
 
-const fixture = fs.readFileSync(
-  path.join(__dirname, '../fixtures/RELEASE_PLAN.md'), 'utf8'
-);
+const fixture = fs.readFileSync(path.join(__dirname, '../fixtures/RELEASE_PLAN.md'), 'utf8');
 
 describe('parseReleasePlan', () => {
   let result;
-  beforeAll(() => { result = parseReleasePlan(fixture); });
+  beforeAll(() => {
+    result = parseReleasePlan(fixture);
+  });
 
   describe('epics', () => {
     it('extracts two epics', () => expect(result.epics).toHaveLength(2));
@@ -62,7 +62,8 @@ describe('parseReleasePlan — edge cases', () => {
   });
 
   it('parses comma-separated dependencies', () => {
-    const md = '```\nEPIC-0010: Multi-dep\nDescription: Test\nRelease Target: v1\nStatus: Planned\nDependencies: EPIC-0001, EPIC-0002\n```';
+    const md =
+      '```\nEPIC-0010: Multi-dep\nDescription: Test\nRelease Target: v1\nStatus: Planned\nDependencies: EPIC-0001, EPIC-0002\n```';
     const result = parseReleasePlan(md);
     expect(result.epics[0].dependencies).toEqual(['EPIC-0001', 'EPIC-0002']);
   });
@@ -74,7 +75,8 @@ describe('parseReleasePlan — edge cases', () => {
   });
 
   it('uses raw priority string when no (Px) wrapper', () => {
-    const md = '```\nUS-0099 (EPIC-0001): As a user, I want something.\nPriority: P1\nEstimate: S\nStatus: Planned\nBranch:\nAcceptance Criteria:\nDependencies: None\n```';
+    const md =
+      '```\nUS-0099 (EPIC-0001): As a user, I want something.\nPriority: P1\nEstimate: S\nStatus: Planned\nBranch:\nAcceptance Criteria:\nDependencies: None\n```';
     const result = parseReleasePlan(md);
     expect(result.stories[0].priority).toBe('P1');
   });
@@ -105,7 +107,8 @@ Dependencies: None
   });
 
   it('handles multiple separate fenced blocks', () => {
-    const md = '```\nEPIC-0020: Alpha\nDescription: A\nRelease Target: v1\nStatus: Planned\nDependencies: None\n```\n\n```\nEPIC-0021: Beta\nDescription: B\nRelease Target: v1\nStatus: Planned\nDependencies: None\n```';
+    const md =
+      '```\nEPIC-0020: Alpha\nDescription: A\nRelease Target: v1\nStatus: Planned\nDependencies: None\n```\n\n```\nEPIC-0021: Beta\nDescription: B\nRelease Target: v1\nStatus: Planned\nDependencies: None\n```';
     const result = parseReleasePlan(md);
     expect(result.epics).toHaveLength(2);
   });

@@ -42,11 +42,15 @@ describe('computeBudgetMetrics', () => {
   });
 
   it('calculates per-epic budgets', () => {
-    const result = computeBudgetMetrics(baseData, {
-      budget: { totalUsd: 100, byEpic: { 'EPIC-0001': 50, 'EPIC-0002': 30 } }
-    }, []);
+    const result = computeBudgetMetrics(
+      baseData,
+      {
+        budget: { totalUsd: 100, byEpic: { 'EPIC-0001': 50, 'EPIC-0002': 30 } },
+      },
+      [],
+    );
     expect(result.epicBudgets).toHaveLength(2);
-    const epic1 = result.epicBudgets.find(e => e.id === 'EPIC-0001');
+    const epic1 = result.epicBudgets.find((e) => e.id === 'EPIC-0001');
     expect(epic1.budget).toBe(50);
     expect(epic1.spent).toBe(40);
     expect(epic1.remaining).toBe(10);
@@ -87,9 +91,7 @@ describe('generateBudgetCSV', () => {
     const metrics = {
       burnRate: 1.5,
       daysRemaining: 30,
-      epicBudgets: [
-        { id: 'EPIC-0001', title: 'Test Epic', budget: 100, spent: 50, remaining: 50, percentUsed: 50 },
-      ],
+      epicBudgets: [{ id: 'EPIC-0001', title: 'Test Epic', budget: 100, spent: 50, remaining: 50, percentUsed: 50 }],
     };
     const result = generateBudgetCSV(data, metrics, []);
     expect(result).toContain('Date,Epic ID,Epic Title,Budget,Spent,Remaining,% Used,Burn Rate,Projected Exhaustion');
