@@ -1,60 +1,112 @@
 name: CI
 
 on:
-  push:
-    branches: ['**']
   pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
 
 jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run ESLint
-        run: npm run lint
+          cache: 'npm'
+      - run: npm ci
+      - run: npx eslint .
 
   test:
-    name: Test & Coverage Gate
+    name: Test & Coverage
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: npm
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run test:coverage
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage/
 
-      - name: Install dependencies
-        run: npm ci
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build
 
-      - name: Run tests with coverage
-        run: npm run test:coverage -- --ci
-        env:
-          CI: true
+  orchestrator:
+    name: Orchestrator Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: node orchestrator/spawn.js --list-platforms
+      - run: node orchestrator/spawn.js --list-agents
+
+  format:
+    name: Prettier Format Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run format:check
 
   audit:
     name: Dependency Audit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: npm
+          cache: 'npm'
+      - run: npm ci
+      - run: npm audit --audit-level=high
 
-      - name: Install dependencies
-        run: npm ci
+  codeql:
+    name: CodeQL SAST
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+      - uses: github/codeql-action/autobuild@v3
+      - uses: github/codeql-action/analyze@v3
 
-      - name: Audit dependencies
-        run: npm audit --audit-level=moderate
+  secret-scan:
+    name: Secret Scanning
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: trufflesecurity/trufflehog@main
+        with:
+          extra_args: --only-verified
