@@ -13,6 +13,7 @@
 ## Task 1: Install ESLint and create config
 
 **Files:**
+
 - Modify: `package.json`
 - Create: `eslint.config.js`
 
@@ -57,7 +58,7 @@ module.exports = [
     rules: {
       'no-unused-vars': 'warn',
       'no-console': 'warn',
-      'eqeqeq': 'error',
+      eqeqeq: 'error',
       'no-eval': 'error',
       'no-implied-eval': 'error',
     },
@@ -97,6 +98,7 @@ git commit -m "chore: add ESLint with recommended + security rules"
 ## Task 2: Add coverage threshold to Jest config
 
 **Files:**
+
 - Modify: `jest.config.js`
 
 **Step 1: Verify current coverage before adding gate**
@@ -106,6 +108,7 @@ npm run test:coverage
 ```
 
 Expected output (confirm all four metrics are ≥ 80% before adding the gate):
+
 ```
 All files  |   97.55 |    84.18 |    96.2  |   99.58
 ```
@@ -113,6 +116,7 @@ All files  |   97.55 |    84.18 |    96.2  |   99.58
 **Step 2: Add `coverageThreshold` to `jest.config.js`**
 
 Current file:
+
 ```js
 module.exports = {
   testEnvironment: 'node',
@@ -123,6 +127,7 @@ module.exports = {
 ```
 
 Updated file — add `coverageThreshold` block:
+
 ```js
 module.exports = {
   testEnvironment: 'node',
@@ -160,6 +165,7 @@ git commit -m "test: enforce 80% coverage threshold in jest config"
 ## Task 3: Replace ci.yml with consolidated 4-job workflow
 
 **Files:**
+
 - Modify: `.github/workflows/ci.yml`
 
 **Step 1: Replace the entire content of `.github/workflows/ci.yml`**
@@ -333,6 +339,7 @@ git commit -m "ci: consolidate lint, test, and audit into ci.yml"
 ## Task 4: Add CodeQL in its own workflow file
 
 **Files:**
+
 - Create: `.github/workflows/codeql.yml`
 
 **Step 1: Create `.github/workflows/codeql.yml`**
@@ -345,7 +352,7 @@ on:
     branches: [main]
   pull_request:
   schedule:
-    - cron: '0 8 * * 1'   # Every Monday at 08:00 UTC
+    - cron: '0 8 * * 1' # Every Monday at 08:00 UTC
 
 jobs:
   analyze:
@@ -383,6 +390,7 @@ git commit -m "ci: add CodeQL analysis workflow (PRs + main + weekly schedule)"
 ## Task 5: Add Dependabot config
 
 **Files:**
+
 - Create: `.github/dependabot.yml`
 
 **Step 1: Create `.github/dependabot.yml`**
@@ -424,11 +432,13 @@ git commit -m "chore: add Dependabot for weekly npm and Actions updates"
 ## Task 6: Update .gitignore and push
 
 **Files:**
+
 - Modify: `.gitignore`
 
 **Step 1: Add `node_modules` to `.gitignore` if not already present**
 
 Current `.gitignore`:
+
 ```
 node_modules/
 docs/coverage/
@@ -458,5 +468,6 @@ Expected: GitHub Actions triggers `CI` workflow (lint + test + audit) and `CodeQ
 **Step 4: Verify on GitHub**
 
 Open `https://github.com/ksyed0/PlanVisualizer/actions` and confirm:
+
 - `CI` workflow shows 3 green jobs: Lint, Test & Coverage Gate, Dependency Audit
 - `CodeQL` workflow shows 1 green job: Analyze JavaScript

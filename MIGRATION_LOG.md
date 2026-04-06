@@ -9,12 +9,14 @@ Log every change that must propagate to other platforms, modules, or installatio
 **Files changed:** `scripts/install.sh`, `README.md`, `plan_visualizer.md` (new)
 **Platforms / modules affected:** All target projects that install or update PlanVisualizer via `scripts/install.sh`
 **What changed:**
+
 - `plan_visualizer.md` is now the canonical format reference for PlanVisualizer source files. It replaces the previous approach of copying the full PlanVisualizer `AGENTS.md` into the target project.
 - `install.sh` no longer offers to overwrite `AGENTS.md`. It instead copies `plan_visualizer.md` and appends a mandatory reference section to the target's `AGENTS.md` (append-only, idempotent, creates a minimal `AGENTS.md` if none exists).
 - README manual setup, install prompt, and update sections updated accordingly.
 
 **Adaptations completed:** Done in PlanVisualizer repo.
 **Adaptations still needed for existing installs:**
+
 1. Copy `plan_visualizer.md` from the PlanVisualizer repo into the project root.
 2. Append the following to `AGENTS.md` (if not already present):
    ```
@@ -43,11 +45,12 @@ Log every change that must propagate to other platforms, modules, or installatio
 **Files changed:** `.github/workflows/plan-visualizer.yml`, `docs/index.html` (new)
 **Platforms / modules affected:** PlanVisualizer repo GitHub Pages deployment only
 **What changed:**
+
 1. Removed the "Commit generated files" step from plan-visualizer.yml — `peaceiris/actions-gh-pages` deploys directly from the `./docs` filesystem; a commit-back step was never needed and failed because `plan-status.html` is gitignored.
 2. Created `docs/index.html` with a `<meta http-equiv="refresh">` redirect to `plan-status.html` so GitHub Pages serves the dashboard instead of README.md.
 3. Added `workflow_dispatch:` trigger so the workflow can be manually triggered when changes don't touch the `paths:` filter.
-**Adaptations completed:** Done. Workflow re-triggered manually; dashboard now deploys correctly.
-**Adaptations still needed:** None.
+   **Adaptations completed:** Done. Workflow re-triggered manually; dashboard now deploys correctly.
+   **Adaptations still needed:** None.
 
 ---
 

@@ -25,9 +25,9 @@ No restructuring of existing layout functions is required.
 ## Dimensions
 
 | State     | Panel width | Body padding-right |
-|-----------|-------------|-------------------|
-| Expanded  | 280px       | 280px             |
-| Collapsed | 40px        | 40px              |
+| --------- | ----------- | ------------------ |
+| Expanded  | 280px       | 280px              |
+| Collapsed | 40px        | 40px               |
 
 ---
 
@@ -59,11 +59,11 @@ No restructuring of existing layout functions is required.
 
 Only two functions in `tools/lib/render-html.js` change:
 
-| Function | Change |
-|----------|--------|
-| `renderRecentActivity(data)` | Replace fixed bottom-right widget with full-height fixed right panel; add toggle button, collapsed-state strip |
-| `renderScripts(data)` | Add `toggleActivityPanel()` JS function; add `initActivityPanel()` called on DOMContentLoaded to restore localStorage state |
-| `renderPrintCSS()` | Ensure `.activity-panel` is hidden on print |
+| Function                     | Change                                                                                                                      |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `renderRecentActivity(data)` | Replace fixed bottom-right widget with full-height fixed right panel; add toggle button, collapsed-state strip              |
+| `renderScripts(data)`        | Add `toggleActivityPanel()` JS function; add `initActivityPanel()` called on DOMContentLoaded to restore localStorage state |
+| `renderPrintCSS()`           | Ensure `.activity-panel` is hidden on print                                                                                 |
 
 One unit test in `tests/unit/render-html.test.js` needs updating to match new HTML structure.
 

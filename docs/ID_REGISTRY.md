@@ -8,11 +8,12 @@ Single source of truth for the next available ID in every artefact sequence.
 | EPIC         | EPIC-0013             | EPIC-0012         |
 | US           | US-0083               | US-0082           |
 | TASK         | TASK-0042             | TASK-0041         |
-| AC           | AC-0261              | AC-0260           |
+| AC           | AC-0261               | AC-0260           |
 | TC           | TC-0140               | TC-0139           |
 | BUG          | BUG-0100              | BUG-0099          |
 
 **Rules:**
+
 - Consult this file before creating any artefact to get the next available ID.
 - Update immediately after assigning — before writing the artefact content.
 - IDs are permanent. Retired artefacts are marked `Status: Retired`, never deleted.

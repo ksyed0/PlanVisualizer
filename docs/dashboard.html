@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Project — SDLC Live Dashboard</title>
+<meta http-equiv="refresh" content="5">
+<style>
+  :root {
+    --brand-primary: #1565C0;
+    --bg-primary: #1a1a2e;
+    --bg-card: #16213e;
+    --bg-card-inner: #1a1a3e;
+    --bg-card-border: #2a2a5a;
+    --bg-phase-pending: #2a2a4a;
+    --bg-phase-border: #3a3a5a;
+    --bg-phase-complete: #1a3a2a;
+    --bg-progress: #2a2a4a;
+    --text-primary: #e0e0e0;
+    --text-secondary: #aaa;
+    --text-muted: #999;
+    --text-dim: #777;
+    --divider: #2a2a4a;
+    --story-title: #ccc;
+    --footer-text: #666;
+    --status-planned-bg: #2a2a4a;
+    --status-planned-color: #888;
+    --status-inprogress-bg: #3a2a0a;
+    --status-complete-bg: #1a3a2a;
+  }
+  [data-theme="light"] {
+    --bg-primary: #f0f2f5;
+    --bg-card: #ffffff;
+    --bg-card-inner: #f5f5f5;
+    --bg-card-border: #e0e0e0;
+    --bg-phase-pending: #f5f5f5;
+    --bg-phase-border: #ddd;
+    --bg-phase-complete: #e8f5e9;
+    --bg-progress: #e0e0e0;
+    --text-primary: #1a1a2e;
+    --text-secondary: #555;
+    --text-muted: #666;
+    --text-dim: #999;
+    --divider: #e8e8e8;
+    --story-title: #333;
+    --footer-text: #999;
+    --status-planned-bg: #e8e8e8;
+    --status-planned-color: #666;
+    --status-inprogress-bg: #fff3e0;
+    --status-complete-bg: #e8f5e9;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; transition: background 0.3s, color 0.3s; }
+
+  .header { background: linear-gradient(135deg, var(--brand-primary) 0%, #8B1A12 100%); padding: 20px 32px; display: flex; align-items: center; justify-content: space-between; }
+  .header h1 { font-size: 22px; color: white; font-weight: 700; }
+  .header .subtitle { font-size: 13px; color: rgba(255,255,255,0.8); margin-top: 2px; }
+  .header .controls { display: flex; align-items: center; gap: 16px; }
+  .header .clock { text-align: right; }
+  .header .clock .time { font-size: 28px; font-weight: 700; color: white; font-variant-numeric: tabular-nums; }
+  .header .clock .label { font-size: 11px; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 1px; }
+  #theme-toggle { background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px 14px; border-radius: 20px; cursor: pointer; font-size: 13px; transition: background 0.2s; }
+  #theme-toggle:hover { background: rgba(255,255,255,0.35); }
+
+  .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+
+  /* Phase Pipeline */
+  .pipeline { display: flex; gap: 4px; margin-bottom: 24px; }
+  .phase-block { flex: 1; border-radius: 8px; padding: 16px; position: relative; overflow: hidden; transition: all 0.3s; }
+  .phase-block.pending { background: var(--bg-phase-pending); border: 1px solid var(--bg-phase-border); }
+  .phase-block.in-progress { background: var(--bg-phase-pending); border: 2px solid #F57C00; animation: pulse 2s infinite; }
+  .phase-block.complete { background: var(--bg-phase-complete); border: 1px solid #2E7D32; }
+  .phase-name { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+  .phase-agents { font-size: 11px; color: var(--text-muted); }
+  .phase-status { position: absolute; top: 8px; right: 12px; font-size: 18px; }
+  .phase-deliverables { font-size: 10px; color: var(--text-dim); margin-top: 8px; }
+
+  @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(245, 124, 0, 0.4); } 50% { box-shadow: 0 0 20px 4px rgba(245, 124, 0, 0.2); } }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+  .grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
+  .grid-2 > * { min-width: 0; }
+
+  .card { background: var(--bg-card); border-radius: 12px; padding: 20px; border: 1px solid var(--bg-card-border); transition: background 0.3s, border-color 0.3s; }
+  .card h2 { font-size: 15px; font-weight: 700; margin-bottom: 16px; color: var(--brand-primary); text-transform: uppercase; letter-spacing: 1px; }
+
+  /* Metrics */
+  .metric-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--divider); }
+  .metric-row:last-child { border-bottom: none; }
+  .metric-label { font-size: 13px; color: var(--text-secondary); }
+  .metric-value { font-size: 20px; font-weight: 700; }
+  .metric-value.green { color: #34A853; }
+  .metric-value.red { color: var(--brand-primary); }
+  .metric-value.blue { color: #1565C0; }
+  .metric-value.orange { color: #F57C00; }
+  [data-theme="light"] .metric-value.orange { color: #E65100; }
+  [data-theme="light"] .metric-value.green { color: #2E7D32; }
+
+  /* Progress bars */
+  .progress-bar { height: 8px; background: var(--bg-progress); border-radius: 4px; overflow: hidden; margin-top: 6px; }
+  .progress-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+  .progress-fill.red { background: linear-gradient(90deg, var(--brand-primary), #F44336); }
+  .progress-fill.green { background: linear-gradient(90deg, #2E7D32, #4CAF50); }
+  .progress-fill.blue { background: linear-gradient(90deg, #1565C0, #42A5F5); }
+
+  /* Agent spotlight banner (Option 2) */
+  .agent-spotlight { position: relative; border-radius: 10px; overflow: hidden; margin-bottom: 14px; height: 120px; background: var(--bg-card-inner); display: flex; align-items: flex-end; }
+  .agent-spotlight.no-active { display: flex; align-items: center; justify-content: center; height: 80px; }
+  .agent-spotlight.no-active .spotlight-waiting { color: var(--text-muted); font-size: 13px; font-style: italic; }
+  .spotlight-img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+  .spotlight-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.1) 60%, transparent 100%); }
+  .spotlight-info { position: relative; z-index: 1; padding: 12px 16px; width: 100%; }
+  .spotlight-name { font-size: 18px; font-weight: 700; color: white; }
+  .spotlight-role { font-size: 12px; color: rgba(255,255,255,0.75); margin-top: 2px; }
+  .spotlight-task { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* Agent grid (Option 1: avatar images) */
+  .agent-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .agent-card { background: var(--bg-card-inner); border-radius: 8px; padding: 10px; border-left: 4px solid; transition: all 0.3s; display: flex; gap: 10px; align-items: flex-start; }
+  .agent-card:hover { filter: brightness(1.1); }
+  .agent-card.active { animation: pulse-agent 1.5s infinite; }
+  @keyframes pulse-agent { 0%, 100% { opacity: 1; } 50% { opacity: 0.85; } }
+  .agent-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid; flex-shrink: 0; }
+  .agent-avatar-fallback { width: 40px; height: 40px; border-radius: 50%; border: 2px solid; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 20px; background: var(--bg-phase-pending); }
+  .agent-info { min-width: 0; flex: 1; }
+  .agent-name { font-size: 13px; font-weight: 700; }
+  .agent-role { font-size: 10px; color: var(--text-muted); margin-bottom: 4px; }
+  .agent-status { font-size: 11px; padding: 2px 8px; border-radius: 10px; display: inline-block; }
+  .agent-task { font-size: 10px; color: var(--text-secondary); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* Story table */
+  .story-list { display: flex; flex-direction: column; gap: 10px; }
+  .epic-group { }
+  .epic-header { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; padding: 0 4px 4px; border-bottom: 1px solid var(--divider); margin-bottom: 4px; display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; }
+  .epic-header:hover { color: var(--text-secondary); }
+  .epic-toggle { font-size: 9px; margin-left: auto; opacity: 0.6; transition: transform 0.2s; }
+  .epic-group.collapsed .epic-toggle { transform: rotate(-90deg); }
+  .epic-group.collapsed .epic-stories { display: none; }
+  .epic-id { color: var(--brand-primary); font-size: 10px; font-weight: 600; }
+  .epic-stories { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+  .story-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: var(--bg-card-inner); border-radius: 6px; font-size: 12px; transition: all 0.2s; }
+  .story-row:hover { filter: brightness(1.1); }
+  .story-id { font-weight: 700; color: var(--brand-primary); width: 65px; }
+  .story-title { flex: 1; color: var(--story-title); margin: 0 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .story-status { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600; flex-shrink: 0; white-space: nowrap; }
+  .story-status.Planned { background: var(--status-planned-bg); color: var(--status-planned-color); }
+  .story-status.InProgress { background: var(--status-inprogress-bg); color: #F57C00; }
+  [data-theme="light"] .story-status.InProgress { color: #E65100; }
+  .story-status.Complete { background: var(--status-complete-bg); color: #34A853; }
+  [data-theme="light"] .story-status.Complete { color: #2E7D32; }
+
+  /* Activity log */
+  .log-entry { padding: 8px 0; border-bottom: 1px solid var(--divider); font-size: 12px; }
+  .log-entry:last-child { border-bottom: none; }
+  .log-time { color: var(--text-dim); font-variant-numeric: tabular-nums; margin-right: 8px; }
+  .log-agent { font-weight: 700; margin-right: 4px; }
+  .log-scroll { max-height: 240px; overflow-y: auto; }
+
+  /* Footer */
+  .footer { text-align: center; padding: 16px; color: var(--footer-text); font-size: 11px; }
+  .footer span { color: var(--brand-primary); }
+  .footer a { color: var(--brand-primary); text-decoration: none; }
+  .footer a:hover { text-decoration: underline; }
+
+  /* About button */
+  .btn-header { background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px 14px; border-radius: 20px; cursor: pointer; font-size: 13px; transition: background 0.2s; }
+  .btn-header:hover { background: rgba(255,255,255,0.35); }
+
+  /* About modal */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--bg-card); border: 1px solid var(--bg-card-border); border-radius: 16px; padding: 32px; max-width: 420px; width: 90%; text-align: center; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+  .modal h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; color: var(--brand-primary); }
+  .modal p { font-size: 14px; color: var(--text-secondary); margin-bottom: 6px; }
+  .modal .author { font-size: 15px; font-weight: 600; color: var(--text-primary); margin: 16px 0 8px; }
+  .modal .repo-link { display: inline-block; margin-top: 12px; background: var(--brand-primary); color: white; padding: 8px 20px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 600; transition: background 0.2s; }
+  .modal .repo-link:hover { filter: brightness(0.85); text-decoration: none; }
+  .modal-close { position: absolute; top: 12px; right: 16px; background: none; border: none; color: var(--text-muted); font-size: 22px; cursor: pointer; line-height: 1; padding: 4px 8px; border-radius: 6px; transition: background 0.2s; }
+  .modal-close:hover { background: var(--bg-card-inner); color: var(--text-primary); }
+
+  /* ===== RESPONSIVE: Tablet portrait (768-1024px) ===== */
+  @media (max-width: 1024px) {
+    .header { padding: 16px 20px; }
+    .header h1 { font-size: 18px; }
+    .container { padding: 16px; }
+    .grid { grid-template-columns: 1fr 1fr; gap: 16px; }
+    .grid-2 { grid-template-columns: 1fr; gap: 16px; }
+    .agent-grid { grid-template-columns: repeat(3, 1fr); }
+    .epic-stories { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* ===== RESPONSIVE: Tablet landscape adjustments ===== */
+  @media (max-width: 1024px) and (orientation: landscape) {
+    .pipeline { flex-wrap: wrap; }
+    .phase-block { flex: 1 1 calc(33.33% - 4px); min-width: 150px; }
+    .grid { grid-template-columns: 1fr 1fr 1fr; }
+    .grid-2 { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* ===== RESPONSIVE: Phone landscape (up to 767px landscape) ===== */
+  @media (max-width: 767px) and (orientation: landscape) {
+    .header { padding: 10px 16px; }
+    .header h1 { font-size: 16px; }
+    .header .subtitle { font-size: 11px; }
+    .header .clock .time { font-size: 20px; }
+    .container { padding: 10px; }
+    .pipeline { flex-wrap: wrap; gap: 4px; }
+    .phase-block { flex: 1 1 calc(33.33% - 4px); min-width: 120px; padding: 10px; }
+    .phase-name { font-size: 12px; }
+    .phase-deliverables { display: none; }
+    .grid { grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    .grid-2 { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .card { padding: 12px; }
+    .card h2 { font-size: 12px; margin-bottom: 10px; }
+    .agent-spotlight { height: 90px; }
+    .spotlight-name { font-size: 15px; }
+    .agent-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .agent-card { padding: 8px; gap: 8px; }
+    .agent-avatar, .agent-avatar-fallback { width: 32px; height: 32px; }
+    .agent-name { font-size: 11px; }
+    .epic-stories { grid-template-columns: 1fr; }
+    .log-scroll { max-height: 150px; }
+    .metric-value { font-size: 16px; }
+  }
+
+  /* ===== RESPONSIVE: Phone portrait (up to 480px) ===== */
+  @media (max-width: 480px) {
+    .header { padding: 12px 16px; flex-wrap: wrap; gap: 8px; }
+    .header h1 { font-size: 15px; }
+    .header .subtitle { font-size: 10px; }
+    .header .controls { gap: 8px; }
+    .header .clock .time { font-size: 20px; }
+    .header .clock .label { font-size: 9px; }
+    .container { padding: 10px; }
+    .pipeline { flex-direction: column; gap: 6px; }
+    .phase-block { padding: 10px 12px; display: flex; align-items: center; gap: 10px; }
+    .phase-block .phase-status { position: static; font-size: 16px; }
+    .phase-block .phase-name { margin-bottom: 0; font-size: 13px; flex: 1; }
+    .phase-block .phase-agents { display: none; }
+    .phase-block .phase-deliverables { display: none; }
+    .grid { grid-template-columns: 1fr; gap: 12px; margin-bottom: 12px; }
+    .grid-2 { grid-template-columns: 1fr; gap: 12px; }
+    .card { padding: 14px; border-radius: 10px; }
+    .card h2 { font-size: 13px; margin-bottom: 12px; }
+    .agent-spotlight { height: 100px; }
+    .spotlight-name { font-size: 15px; }
+    .spotlight-task { display: none; }
+    .agent-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .agent-card { padding: 8px; gap: 6px; }
+    .agent-avatar, .agent-avatar-fallback { width: 32px; height: 32px; font-size: 16px; }
+    .agent-name { font-size: 11px; }
+    .agent-role { font-size: 9px; }
+    .agent-status { font-size: 9px; padding: 1px 6px; }
+    .agent-task { display: none; }
+    .story-grid { grid-template-columns: 1fr; gap: 4px; }
+    .story-row { padding: 8px 10px; }
+    .story-title { font-size: 11px; }
+    .metric-value { font-size: 18px; }
+    .metric-label { font-size: 12px; }
+    .log-scroll { max-height: 180px; }
+    .log-entry { font-size: 11px; }
+    .footer { font-size: 10px; padding: 12px; }
+    .modal { padding: 24px 20px; }
+  }
+
+  /* ===== RESPONSIVE: Small phone (up to 375px) ===== */
+  @media (max-width: 375px) {
+    .header h1 { font-size: 13px; }
+    .agent-spotlight { height: 80px; }
+    .spotlight-name { font-size: 14px; }
+    .agent-grid { grid-template-columns: repeat(2, 1fr); }
+    .agent-avatar, .agent-avatar-fallback { width: 28px; height: 28px; font-size: 14px; }
+    .header .clock .time { font-size: 18px; }
+    #theme-toggle, .btn-header { font-size: 11px; padding: 4px 10px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>My Project — Agentic AI SDLC</h1>
+    <div class="subtitle">Claude Code | 9 Specialized Agents | Live Agentic Pipeline Dashboard</div>
+  </div>
+  <div class="controls">
+    <button class="btn-header" onclick="document.getElementById('about-modal').classList.add('open')">ℹ️ About</button>
+    <button id="notif-btn" class="btn-header" onclick="requestAlerts()">🔔 Alerts</button>
+    <button id="theme-toggle" onclick="toggleTheme()">☀️ Light</button>
+    <div class="clock">
+      <div class="time">05:56:59 PM</div>
+      <div class="label">Last Updated</div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+
+
+<!-- Phase Pipeline -->
+<div class="pipeline">
+
+</div>
+
+<!-- Metrics Row -->
+<div class="grid">
+  <div class="card">
+    <h2>Phase Progress</h2>
+    <div class="metric-row">
+      <span class="metric-label">Phases Complete</span>
+      <span class="metric-value blue">0 / 0</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill blue" style="width: 0%"></div></div>
+    <div class="metric-row" style="margin-top: 12px">
+      <span class="metric-label">Stories Done</span>
+      <span class="metric-value green">0 / 0</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill green" style="width: 0%"></div></div>
+    <div class="metric-row" style="margin-top: 12px">
+      <span class="metric-label">Tasks Done</span>
+      <span class="metric-value orange">0 / 0</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill red" style="width: 0%"></div></div>
+  </div>
+
+  <div class="card">
+    <h2>Quality</h2>
+    <div class="metric-row">
+      <span class="metric-label">Tests Passed</span>
+      <span class="metric-value green">0</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-label">Tests Failed</span>
+      <span class="metric-value red">0</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-label">Code Coverage</span>
+      <span class="metric-value orange">0%</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-label">Bugs Open</span>
+      <span class="metric-value green">0</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Reviews</h2>
+    <div class="metric-row">
+      <span class="metric-label">Reviews Approved</span>
+      <span class="metric-value green">0</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-label">Reviews Blocked</span>
+      <span class="metric-value red">0</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-label">Bugs Fixed</span>
+      <span class="metric-value blue">0</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-label">Tests Total</span>
+      <span class="metric-value">0</span>
+    </div>
+  </div>
+</div>
+
+<!-- Agents + Stories -->
+<div class="grid-2">
+  <div class="card">
+    <h2>Agent Status</h2>
+    <div class="agent-spotlight no-active">
+      <div class="spotlight-waiting">Waiting for Conductor to activate agents...</div>
+    </div>
+    <div class="agent-grid">
+      <div class="agent-card " style="border-left-color: #D52B1E">
+        <img class="agent-avatar" src="agents/images/headshots/conductor.png" alt="Conductor" style="border-color: #D52B1E" onerror="this.onerror=function(){this.outerHTML='<div class=\'agent-avatar-fallback\' style=\'border-color: #D52B1E\'>🎯</div>'};this.src='agents/images/conductor.png'">
+        <div class="agent-info">
+          <div class="agent-name" style="color: #D52B1E">Conductor</div>
+          <div class="agent-role">Delivery Manager</div>
+          <div class="agent-status" style="background: rgba(136,136,136,0.15); color: #888">idle</div>
+          
+        </div>
+      </div>
+      <div class="agent-card " style="border-left-color: #1565C0">
+        <img class="agent-avatar" src="agents/images/headshots/compass.png" alt="Compass" style="border-color: #1565C0" onerror="this.onerror=function(){this.outerHTML='<div class=\'agent-avatar-fallback\' style=\'border-color: #1565C0\'>🧭</div>'};this.src='agents/images/compass.png'">
+        <div class="agent-info">
+          <div class="agent-name" style="color: #1565C0">Compass</div>
+          <div class="agent-role">Product Owner</div>
+          <div class="agent-status" style="background: rgba(136,136,136,0.15); color: #888">idle</div>
+          
+        </div>
+      </div>
+      <div class="agent-card " style="border-left-color: #6A1B9A">
+        <img class="agent-avatar" src="agents/images/headshots/keystone.png" alt="Keystone" style="border-color: #6A1B9A" onerror="this.onerror=function(){this.outerHTML='<div class=\'agent-avatar-fallback\' style=\'border-color: #6A1B9A\'>🏗️</div>'};this.src='agents/images/keystone.png'">
+        <div class="agent-info">
+          <div class="agent-name" style="color: #6A1B9A">Keystone</div>
+          <div class="agent-role">Architect</div>
+          <div class="agent-status" style="background: rgba(136,136,136,0.15); color: #888">idle</div>
+          
+        </div>
+      </div>
+      <div class="agent-card " style="border-left-color: #F57C00">
+        <img class="agent-avatar" src="agents/images/headshots/lens.png" alt="Lens" style="border-color: #F57C00" onerror="this.onerror=function(){this.outerHTML='<div class=\'agent-avatar-fallback\' style=\'border-color: #F57C00\'>🔍</div>'};this.src='agents/images/lens.png'">
+        <div class="agent-info">
+          <div class="agent-name" style="color: #F57C00">Lens</div>
+          <div class="agent-role">Code Reviewer</div>
+          <div class="agent-status" style="background: rgba(136,136,136,0.15); color: #888">idle</div>
+          
+        </div>
+      </div>
+      <div class="agent-card " style="border-left-color: #00897B">
+        <img class="agent-avatar" src="agents/images/headshots/palette.png" alt="Palette" style="border-color: #00897B" onerror="this.onerror=function(){this.outerHTML='<div class=\'agent-avatar-fallback\' style=\'border-color: #00897B\'>🎨</div>'};this.src='agents/images/palette.png'">
+        <div class="agent-info">
+          <div class="agent-name" style="color: #00897B">Palette</div>
+          <div class="agent-role">UI Designer</div>
+          <div class="agent-status" style="background: rgba(136,136,136,0.15); color: #888">idle</div>
+          
+        </div>
+      </div>
+      <div class="agent-card " style="border-left-color: #C62828">
+        <img class="agent-avatar" src="agents/images/headshots/forge.png" alt="Forge" style="border-color: #C62828" onerror="this.onerror=function(){this.outerHTML='<div class=\'agent-avatar-fallback\' style=\'border-color: #C62828\'>⚒️</div>'};this.src='agents/images/forge.png'">
+        <div class="agent-info">
+          <div class="agent-name" style="color: #C62828">Forge</div>
+          <div class="agent-role">Backend Developer</div>
+          <div class="agent-status" style="background: rgba(136,136,136,0.15); color: #888">idle</div>
+          
+        </div>
+      </div>
+      <div class="agent-card " style="border-left-color: #283593">
+        <img class="agent-avatar" src="agents/images/headshots/pixel.png" alt="Pixel" style="border-color: #283593" onerror="this.onerror=function(){this.outerHTML='<div class=\'agent-avatar-fallback\' style=\'border-color: #283593\'>📱</div>'};this.src='agents/images/pixel.png'">
+        <div class="agent-info">
+          <div class="agent-name" style="color: #283593">Pixel</div>
+          <div class="agent-role">Frontend Developer</div>
+          <div class="agent-status" style="background: rgba(136,136,136,0.15); color: #888">idle</div>
+          
+        </div>
+      </div>
+      <div class="agent-card " style="border-left-color: #2E7D32">
+        <img class="agent-avatar" src="agents/images/headshots/sentinel.png" alt="Sentinel" style="border-color: #2E7D32" onerror="this.onerror=function(){this.outerHTML='<div class=\'agent-avatar-fallback\' style=\'border-color: #2E7D32\'>🛡️</div>'};this.src='agents/images/sentinel.png'">
+        <div class="agent-info">
+          <div class="agent-name" style="color: #2E7D32">Sentinel</div>
+          <div class="agent-role">Functional Tester</div>
+          <div class="agent-status" style="background: rgba(136,136,136,0.15); color: #888">idle</div>
+          
+        </div>
+      </div>
+      <div class="agent-card " style="border-left-color: #4527A0">
+        <img class="agent-avatar" src="agents/images/headshots/circuit.png" alt="Circuit" style="border-color: #4527A0" onerror="this.onerror=function(){this.outerHTML='<div class=\'agent-avatar-fallback\' style=\'border-color: #4527A0\'>⚡</div>'};this.src='agents/images/circuit.png'">
+        <div class="agent-info">
+          <div class="agent-name" style="color: #4527A0">Circuit</div>
+          <div class="agent-role">Automation Tester</div>
+          <div class="agent-status" style="background: rgba(136,136,136,0.15); color: #888">idle</div>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>User Stories</h2>
+    <div class="story-list">
+
+    </div>
+  </div>
+</div>
+
+<!-- Activity Log -->
+<div class="card" style="margin-top: 24px">
+  <h2>Activity Log</h2>
+  <div class="log-scroll">
+    <div class="log-entry" style="color: #666">Waiting for Conductor to begin orchestration...</div>
+  </div>
+</div>
+
+</div>
+
+<!-- About Modal -->
+<div id="about-modal" class="modal-overlay" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal">
+    <button class="modal-close" onclick="document.getElementById('about-modal').classList.remove('open')">&times;</button>
+    <img src="agents/images/team.png" style="width:100%; border-radius:8px; margin-bottom:12px;" onerror="this.style.display='none'">
+    <h3>AI-SDLC Orchestrator Visualizer</h3>
+    <p>Real-time dashboard for agentic AI software development lifecycle orchestration</p>
+    <div class="author">by Your Name</div>
+    <p style="font-size:12px; color: var(--text-muted)">Your Role</p>
+    <a class="repo-link" href="https://github.com/yourorg/your-project" target="_blank" rel="noopener">View on GitHub</a>
+  </div>
+</div>
+
+<div class="footer">
+  Claude Code Agentic AI SDLC | Auto-refreshes every 5 seconds
+  <br><a href="plan-status.html">📊 Open Plan Visualizer →</a>
+</div>
+
+<script>
+function toggleTheme() {
+  const html = document.documentElement;
+  const current = html.getAttribute('data-theme');
+  const next = current === 'light' ? 'dark' : 'light';
+  html.setAttribute('data-theme', next);
+  localStorage.setItem('dashboard-theme', next);
+  updateToggleButton(next);
+}
+function updateToggleButton(theme) {
+  const btn = document.getElementById('theme-toggle');
+  if (btn) btn.textContent = theme === 'light' ? '🌙 Dark' : '☀️ Light';
+}
+(function() {
+  var saved = localStorage.getItem('dashboard-theme') || 'dark';
+  if (saved === 'light') document.documentElement.setAttribute('data-theme', 'light');
+  updateToggleButton(saved);
+})();
+// BUG-0083/0088: Log times are stored as local wall-clock HH:MM (24h).
+// Convert to 12-hour format using simple arithmetic — no Date/timezone manipulation
+// to avoid UTC drift across environments.
+(function() {
+  document.querySelectorAll('[data-log-time]').forEach(function(el) {
+    var t = el.getAttribute('data-log-time');
+    if (!t || !t.includes(':')) return;
+    var parts = t.split(':');
+    var h = parseInt(parts[0], 10);
+    var m = parseInt(parts[1], 10);
+    if (isNaN(h) || isNaN(m)) return;
+    var ampm = h >= 12 ? 'PM' : 'AM';
+    var h12 = h % 12 || 12;
+    el.textContent = h12 + ':' + ('0' + m).slice(-2) + ' ' + ampm;
+  });
+})();
+
+// ── Dashboard Alert System ────────────────────────────────────────────────────
+// Detects state changes across page refreshes using localStorage, then plays
+// a Web Audio tone and fires a browser Notification when attention is needed.
+var DASH_SNAPSHOT = {"currentPhase":0,"bugsOpen":0,"agentStatuses":{"Conductor":"idle","Compass":"idle","Keystone":"idle","Lens":"idle","Palette":"idle","Forge":"idle","Pixel":"idle","Sentinel":"idle","Circuit":"idle"},"phaseStatuses":[],"pipelineComplete":false};
+
+function playBeep(frequency, duration, type) {
+  try {
+    var ctx = new (window.AudioContext || window.webkitAudioContext)();
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = type || 'sine';
+    osc.frequency.value = frequency || 880;
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (duration || 0.5));
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + (duration || 0.5));
+  } catch(e) {}
+}
+
+function sendNotification(title, body) {
+  if (Notification && Notification.permission === 'granted') {
+    new Notification(title, { body: body, icon: '' });
+  }
+}
+
+function requestAlerts() {
+  if (!('Notification' in window)) {
+    alert('Browser notifications not supported. Audio alerts will still play.');
+    return;
+  }
+  Notification.requestPermission().then(function(perm) {
+    var btn = document.getElementById('notif-btn');
+    if (perm === 'granted') {
+      if (btn) { btn.textContent = '🔔 On'; btn.style.borderColor = '#34A853'; }
+      localStorage.setItem('dashboard-notif', 'granted');
+      playBeep(660, 0.2);
+      setTimeout(function() { playBeep(880, 0.3); }, 220);
+    } else {
+      if (btn) { btn.textContent = '🔕 Denied'; }
+      localStorage.setItem('dashboard-notif', 'denied');
+    }
+  });
+}
+
+(function() {
+  // Restore button state
+  var perm = localStorage.getItem('dashboard-notif');
+  var btn = document.getElementById('notif-btn');
+  if (perm === 'granted' && btn) { btn.textContent = '🔔 On'; btn.style.borderColor = '#34A853'; }
+  if (perm === 'denied' && btn) { btn.textContent = '🔕 Off'; }
+
+  var prevRaw = localStorage.getItem('dashboard-prev-snapshot');
+  var curr = DASH_SNAPSHOT;
+
+  // Always save current as baseline for next refresh
+  localStorage.setItem('dashboard-prev-snapshot', JSON.stringify(curr));
+
+  if (!prevRaw) return; // first visit — no comparison yet
+  var prev;
+  try { prev = JSON.parse(prevRaw); } catch(e) { return; }
+
+  var alerts = [];
+
+  // Phase completion (a phase just became complete)
+  if (curr.phaseStatuses && prev.phaseStatuses) {
+    curr.phaseStatuses.forEach(function(p) {
+      var old = prev.phaseStatuses.find(function(x) { return x.id === p.id; });
+      if (old && old.status !== 'complete' && p.status === 'complete') {
+        alerts.push({ title: 'Phase ' + p.id + ' Complete', body: 'Phase ' + p.id + ' just finished — ready for your review.', urgent: false });
+      }
+    });
+  }
+
+  // Agent blocked or needs review
+  if (curr.agentStatuses && prev.agentStatuses) {
+    Object.keys(curr.agentStatuses).forEach(function(agent) {
+      var newStatus = curr.agentStatuses[agent];
+      var oldStatus = prev.agentStatuses[agent];
+      if (oldStatus !== newStatus && (newStatus === 'blocked' || newStatus === 'needs-review')) {
+        alerts.push({ title: agent + ' Needs Attention', body: agent + ' status changed to: ' + newStatus, urgent: true });
+      }
+    });
+  }
+
+  // Pipeline just completed
+  if (!prev.pipelineComplete && curr.pipelineComplete) {
+    alerts.push({ title: 'Pipeline Complete!', body: 'All phases done — pipeline finished. Return to terminal.', urgent: false });
+  }
+
+  // New bugs opened
+  if (typeof prev.bugsOpen === 'number' && typeof curr.bugsOpen === 'number' && curr.bugsOpen > prev.bugsOpen) {
+    var delta = curr.bugsOpen - prev.bugsOpen;
+    alerts.push({ title: delta + ' New Bug' + (delta > 1 ? 's' : '') + ' Opened', body: 'Bugs open: ' + curr.bugsOpen + '. Your attention may be needed.', urgent: false });
+  }
+
+  if (alerts.length === 0) return;
+
+  var hasUrgent = alerts.some(function(a) { return a.urgent; });
+
+  // Play audio: urgent = two-tone alarm, normal = single ding
+  if (hasUrgent) {
+    playBeep(440, 0.25, 'square');
+    setTimeout(function() { playBeep(880, 0.25, 'square'); }, 280);
+    setTimeout(function() { playBeep(440, 0.25, 'square'); }, 560);
+  } else {
+    playBeep(880, 0.3);
+    setTimeout(function() { playBeep(1046, 0.4); }, 350);
+  }
+
+  // Browser notifications
+  alerts.forEach(function(a) { sendNotification(a.title, a.body); });
+})();
+// ─────────────────────────────────────────────────────────────────────────────
+</script>
+
+</body>
+</html>
