@@ -91,8 +91,7 @@ function main() {
     log: [],
   };
 
-  const dir = path.dirname(STATUS_PATH);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  fs.mkdirSync(path.dirname(STATUS_PATH), { recursive: true });
   fs.writeFileSync(STATUS_PATH, JSON.stringify(status, null, 2) + '\n', 'utf8');
   console.log(`[init-sdlc-status] Generated docs/sdlc-status.json with ${agentNames.length} agents.`);
 }
