@@ -51,7 +51,7 @@ function loadConfig() {
   try {
     const raw = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
     const KNOWN_KEYS = ['project', 'docs', 'coverage', 'progress', 'costs', 'budget'];
-    Object.keys(raw).forEach(k => {
+    Object.keys(raw).forEach((k) => {
       if (!KNOWN_KEYS.includes(k)) console.warn(`[generate-plan] Unknown config key: "${k}" — ignored`);
     });
     return {
@@ -61,7 +61,10 @@ function loadConfig() {
       progress: { ...DEFAULTS.progress, ...raw.progress },
       costs: {
         hourlyRate: raw.costs?.hourlyRate ?? DEFAULTS.costs.hourlyRate,
-        tshirtHours: { ...DEFAULTS.costs.tshirtHours, ...raw.costs?.tshirtHours },
+        tshirtHours: {
+          ...DEFAULTS.costs.tshirtHours,
+          ...raw.costs?.tshirtHours,
+        },
       },
       budget: {
         totalUsd: raw.budget?.totalUsd ?? DEFAULTS.budget.totalUsd,
@@ -83,15 +86,27 @@ function readFile(relPath) {
 function readJson(relPath) {
   const full = path.join(ROOT, relPath);
   if (!fs.existsSync(full)) return null;
-  try { return JSON.parse(fs.readFileSync(full, 'utf8')); } catch { return null; }
+  try {
+    return JSON.parse(fs.readFileSync(full, 'utf8'));
+  } catch {
+    return null;
+  }
 }
 
 function getCommitSha() {
-  try { return execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim(); } catch { return 'unknown'; }
+  try {
+    return execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim();
+  } catch {
+    return 'unknown';
+  }
 }
 
 function getBuildNumber() {
-  try { return execSync('git rev-list --count HEAD', { encoding: 'utf8' }).trim(); } catch { return '0'; }
+  try {
+    return execSync('git rev-list --count HEAD', { encoding: 'utf8' }).trim();
+  } catch {
+    return '0';
+  }
 }
 
 function main() {
@@ -109,14 +124,40 @@ function main() {
   const coverageJson = readJson(config.coverage.summaryPath);
   const coverage = coverageJson
     ? parseCoverage(coverageJson)
-    : { lines: 0, statements: 0, functions: 0, branches: 0, overall: 0, meetsTarget: false, available: false };
+    : {
+        lines: 0,
+        statements: 0,
+        functions: 0,
+        branches: 0,
+        overall: 0,
+        meetsTarget: false,
+        available: false,
+      };
   const recentActivity = parseRecentActivity(readFile(config.progress.path), 5);
   const lessons = parseLessons(readFile(config.docs.lessons));
 
+  // Back-fill lessonEncoded on bugs using LESSONS.md **Bugs:** as source of truth.
+  // parse-bugs reads this field from BUGS.md which has no Lesson Encoded entries,
+  // so we derive it here from the inverse mapping in LESSONS.md.
+  const bugToLesson = {};
+  for (const lesson of lessons) {
+    for (const bugId of lesson.bugIds || []) {
+      if (!bugToLesson[bugId]) bugToLesson[bugId] = lesson.id;
+    }
+  }
+  for (const bug of bugs) {
+    if (!bug.lessonEncoded && bugToLesson[bug.id]) {
+      bug.lessonEncoded = `Yes — ${bugToLesson[bug.id]}`;
+    }
+  }
+
   const aiAttribution = attributeAICosts(stories, costByBranch);
-  const avgTokens = calculateAvgTokensPerEstimate({ stories, costs: aiAttribution });
-  const hasRealCosts = Object.values(aiAttribution).some(c => c && c.costUsd > 0);
-  
+  const avgTokens = calculateAvgTokensPerEstimate({
+    stories,
+    costs: aiAttribution,
+  });
+  const hasRealCosts = Object.values(aiAttribution).some((c) => c && c.costUsd > 0);
+
   const costs = {};
   for (const story of stories) {
     let projectedUsd;
@@ -127,7 +168,7 @@ function main() {
     } else {
       projectedUsd = computeProjectedCost(story.estimate, HOURS, RATE);
     }
-    
+
     costs[story.id] = {
       projectedUsd: projectedUsd,
       costUsd: aiAttribution[story.id] ? aiAttribution[story.id].costUsd : 0,
@@ -135,7 +176,11 @@ function main() {
       outputTokens: aiAttribution[story.id] ? aiAttribution[story.id].outputTokens : 0,
     };
   }
-  costs._totals = aiAttribution._totals || { costUsd: 0, inputTokens: 0, outputTokens: 0 };
+  costs._totals = aiAttribution._totals || {
+    costUsd: 0,
+    inputTokens: 0,
+    outputTokens: 0,
+  };
   costs._bugs = attributeBugCosts(bugs, costByBranch);
 
   const SEVERITY_SIZE = { Critical: 'L', High: 'M', Medium: 'S', Low: 'S' };
@@ -156,20 +201,36 @@ function main() {
   } catch (err) {
     let msg = 'Failed to read package.json';
     if (err instanceof Error) msg += ': ' + err.message;
-    throw new Error(msg);
+    throw new Error(msg, { cause: err });
   }
 
   const sessionTimeline = deduplicateSessions(costRows)
+    .filter((row) => !row.branch.startsWith('est/'))
     .sort((a, b) => a.date.localeCompare(b.date))
     .reduce((acc, row) => {
       const prev = acc.length ? acc[acc.length - 1].cumCost : 0;
-      acc.push({ date: row.date, cumCost: parseFloat((prev + row.costUsd).toFixed(4)) });
+      acc.push({
+        date: row.date,
+        cumCost: parseFloat((prev + row.costUsd).toFixed(4)),
+      });
       return acc;
     }, []);
 
   const data = {
-    epics, stories, tasks, testCases, bugs, costs, atRisk, coverage,
-    recentActivity, lessons, generatedAt, commitSha, buildNumber, sessionTimeline,
+    epics,
+    stories,
+    tasks,
+    testCases,
+    bugs,
+    costs,
+    atRisk,
+    coverage,
+    recentActivity,
+    lessons,
+    generatedAt,
+    commitSha,
+    buildNumber,
+    sessionTimeline,
     projectName: config.project.name,
     tagline: config.project.tagline,
     version: pkg.version,
@@ -177,12 +238,20 @@ function main() {
   };
 
   console.log('[generate-plan] Saving snapshot...');
-  const snapshotData = { epics, stories, bugs, costs, coverage, lessons, testCases };
+  const snapshotData = {
+    epics,
+    stories,
+    bugs,
+    costs,
+    coverage,
+    lessons,
+    testCases,
+  };
   saveSnapshot(snapshotData, { root: ROOT, commit: commitSha });
 
   console.log('[generate-plan] Loading historical snapshots...');
   let snapshots = loadSnapshots({ root: ROOT });
-  
+
   if (snapshots.length < 2) {
     console.log('[generate-plan] Less than 2 snapshots found, attempting historical backfill...');
     const backfillResult = backfillHistory({ root: ROOT, days: 30 });
@@ -191,7 +260,7 @@ function main() {
       snapshots = loadSnapshots({ root: ROOT });
     }
   }
-  
+
   const trends = extractTrends(snapshots);
 
   console.log('[generate-plan] Computing budget metrics...');
@@ -211,7 +280,45 @@ function main() {
   const htmlPath = path.join(outputDir, 'plan-status.html');
   fs.writeFileSync(htmlPath, html, 'utf8');
   console.log(`[generate-plan] Written ${htmlPath}`);
-  console.log(`[generate-plan] Done. ${epics.length} epics, ${stories.length} stories, ${testCases.length} TCs, ${bugs.length} bugs, ${lessons.length} lessons.`);
+  console.log(
+    `[generate-plan] Done. ${epics.length} epics, ${stories.length} stories, ${testCases.length} TCs, ${bugs.length} bugs, ${lessons.length} lessons.`,
+  );
 }
 
-try { main(); } catch (e) { console.error('[generate-plan] Fatal:', e.message); process.exit(1); }
+function watch(config) {
+  const watchFiles = [
+    config.docs.releasePlan,
+    config.docs.testCases,
+    config.docs.bugs,
+    config.docs.costLog,
+    config.docs.lessons,
+    config.progress.path,
+  ].map((f) => path.join(ROOT, f));
+
+  console.log('[generate-plan] Watching for changes...');
+  let debounce = null;
+  for (const file of watchFiles) {
+    if (!fs.existsSync(file)) continue;
+    fs.watch(file, () => {
+      if (debounce) clearTimeout(debounce);
+      debounce = setTimeout(() => {
+        console.log(`[generate-plan] Change detected, regenerating...`);
+        try {
+          main();
+        } catch (e) {
+          console.error('[generate-plan] Error:', e.message);
+        }
+      }, 1000);
+    });
+  }
+}
+
+try {
+  main();
+  if (process.argv.includes('--watch')) {
+    watch(loadConfig());
+  }
+} catch (e) {
+  console.error('[generate-plan] Fatal:', e.message);
+  process.exit(1);
+}
