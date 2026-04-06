@@ -13,9 +13,7 @@ function parseRecentActivity(markdown, limit = 5) {
     const nextResult = nextRe.exec(markdown);
     const block = markdown.slice(startIdx, nextResult ? nextResult.index : undefined);
     const doneMatch = block.match(/### What Was Done\n([\s\S]*?)(?=\n###|\n---|\n##|$)/);
-    const summary = doneMatch
-      ? doneMatch[1].replace(/^- /gm, '').trim().split('\n').slice(0, 3).join('; ')
-      : '';
+    const summary = doneMatch ? doneMatch[1].replace(/^- /gm, '').trim().split('\n').slice(0, 3).join('; ') : '';
     sessions.push({ sessionNum: parseInt(sessionNum, 10), date, summary });
   }
   return sessions.slice(0, limit);

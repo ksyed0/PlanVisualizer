@@ -87,21 +87,21 @@ function extractTrends(snapshots) {
     return null;
   }
 
-  const dates = snapshots.map(s => s.generatedAt);
+  const dates = snapshots.map((s) => s.generatedAt);
 
-  const doneCounts = snapshots.map(s => {
+  const doneCounts = snapshots.map((s) => {
     const stories = s.data.stories || [];
-    return stories.filter(st => st.status === 'Done').length;
+    return stories.filter((st) => st.status === 'Done').length;
   });
 
-  const totalStories = snapshots.map(s => (s.data.stories || []).length);
+  const totalStories = snapshots.map((s) => (s.data.stories || []).length);
 
-  const aiCosts = snapshots.map(s => {
+  const aiCosts = snapshots.map((s) => {
     const costs = s.data.costs || {};
     return Object.values(costs).reduce((sum, c) => sum + (c.costUsd || 0), 0);
   });
 
-  const coverage = snapshots.map(s => {
+  const coverage = snapshots.map((s) => {
     const cov = s.data.coverage;
     if (!cov || cov.available === false) return null;
     const overall = cov.overall;
@@ -110,10 +110,10 @@ function extractTrends(snapshots) {
   });
 
   const tshirtPoints = { XS: 0.5, S: 1, M: 3, L: 5, XL: 8 };
-  const velocity = snapshots.map(s => {
+  const velocity = snapshots.map((s) => {
     const stories = s.data.stories || [];
     return stories
-      .filter(st => st.status === 'Done')
+      .filter((st) => st.status === 'Done')
       .reduce((sum, st) => {
         const est = st.estimate;
         if (!est) return sum;
@@ -122,22 +122,22 @@ function extractTrends(snapshots) {
       }, 0);
   });
 
-  const openBugs = snapshots.map(s => {
+  const openBugs = snapshots.map((s) => {
     const bugs = s.data.bugs || [];
-    return bugs.filter(b => b.status === 'Open' || b.status === 'In Progress').length;
+    return bugs.filter((b) => b.status === 'Open' || b.status === 'In Progress').length;
   });
 
-  const atRisk = snapshots.map(s => {
+  const atRisk = snapshots.map((s) => {
     const stories = s.data.stories || [];
-    return stories.filter(st => st.atRisk === true).length;
+    return stories.filter((st) => st.atRisk === true).length;
   });
 
-  const inputTokens = snapshots.map(s => {
+  const inputTokens = snapshots.map((s) => {
     const costs = s.data.costs || {};
     return Object.values(costs).reduce((sum, c) => sum + (c.inputTokens || 0), 0);
   });
 
-  const outputTokens = snapshots.map(s => {
+  const outputTokens = snapshots.map((s) => {
     const costs = s.data.costs || {};
     return Object.values(costs).reduce((sum, c) => sum + (c.outputTokens || 0), 0);
   });
