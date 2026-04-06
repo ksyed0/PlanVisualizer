@@ -47,11 +47,6 @@ function buildAgentStatus(agentName, role) {
 function main() {
   const force = process.argv.includes('--force');
 
-  if (fs.existsSync(STATUS_PATH) && !force) {
-    console.log('[init-sdlc-status] docs/sdlc-status.json already exists. Use --force to overwrite.');
-    return;
-  }
-
   const config = loadConfig();
   const agentNames = Object.keys(config.agents || {});
 
@@ -91,8 +86,26 @@ function main() {
     log: [],
   };
 
+  const content = JSON.stringify(status, null, 2) + '\n';
   fs.mkdirSync(path.dirname(STATUS_PATH), { recursive: true });
-  fs.writeFileSync(STATUS_PATH, JSON.stringify(status, null, 2) + '\n', 'utf8');
+
+  if (force) {
+    fs.writeFileSync(STATUS_PATH, content, 'utf8');
+  } else {
+    // Use exclusive-create flag (wx) to atomically check+write — avoids TOCTOU.
+    // Fails with EEXIST if the file already exists, which is the desired behaviour
+    // when --force is not passed.
+    try {
+      fs.writeFileSync(STATUS_PATH, content, { encoding: 'utf8', flag: 'wx' });
+    } catch (err) {
+      if (err.code === 'EEXIST') {
+        console.log('[init-sdlc-status] docs/sdlc-status.json already exists. Use --force to overwrite.');
+        return;
+      }
+      throw err;
+    }
+  }
+
   console.log(`[init-sdlc-status] Generated docs/sdlc-status.json with ${agentNames.length} agents.`);
 }
 
