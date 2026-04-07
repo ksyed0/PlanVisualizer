@@ -21,3 +21,6 @@ ios/Pods/
 
 # Playwright MCP session files
 .playwright-mcp/
+
+# Trends tab history snapshots (intentionally tracked, not source code)
+.history/
