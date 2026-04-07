@@ -68,16 +68,29 @@ describe('loadSnapshots', () => {
     if (!fs.existsSync(testDir)) {
       fs.mkdirSync(testDir, { recursive: true });
     }
-    fs.writeFileSync(path.join(testDir, '2026-03-01T10-00-00Z.json'), JSON.stringify({
-      generatedAt: '2026-03-01T10:00:00Z',
-      commit: 'aaa',
-      data: { stories: [{ id: 'US-0001', status: 'Done' }], costs: {}, coverage: {} },
-    }));
-    fs.writeFileSync(path.join(testDir, '2026-03-02T10-00-00Z.json'), JSON.stringify({
-      generatedAt: '2026-03-02T10:00:00Z',
-      commit: 'bbb',
-      data: { stories: [{ id: 'US-0001', status: 'Done' }, { id: 'US-0002', status: 'Done' }], costs: {}, coverage: {} },
-    }));
+    fs.writeFileSync(
+      path.join(testDir, '2026-03-01T10-00-00Z.json'),
+      JSON.stringify({
+        generatedAt: '2026-03-01T10:00:00Z',
+        commit: 'aaa',
+        data: { stories: [{ id: 'US-0001', status: 'Done' }], costs: {}, coverage: {} },
+      }),
+    );
+    fs.writeFileSync(
+      path.join(testDir, '2026-03-02T10-00-00Z.json'),
+      JSON.stringify({
+        generatedAt: '2026-03-02T10:00:00Z',
+        commit: 'bbb',
+        data: {
+          stories: [
+            { id: 'US-0001', status: 'Done' },
+            { id: 'US-0002', status: 'Done' },
+          ],
+          costs: {},
+          coverage: {},
+        },
+      }),
+    );
     fs.writeFileSync(path.join(testDir, 'invalid.txt'), 'not a json file');
     fs.writeFileSync(path.join(testDir, 'bad.json'), '{ invalid');
   });
@@ -120,8 +133,14 @@ describe('extractTrends', () => {
 
   it('extracts done story counts', () => {
     const snaps = [
-      { generatedAt: '2026-03-01T10:00:00Z', data: { stories: [{ status: 'Done' }, { status: 'In Progress' }], costs: {}, coverage: {} } },
-      { generatedAt: '2026-03-02T10:00:00Z', data: { stories: [{ status: 'Done' }, { status: 'Done' }], costs: {}, coverage: {} } },
+      {
+        generatedAt: '2026-03-01T10:00:00Z',
+        data: { stories: [{ status: 'Done' }, { status: 'In Progress' }], costs: {}, coverage: {} },
+      },
+      {
+        generatedAt: '2026-03-02T10:00:00Z',
+        data: { stories: [{ status: 'Done' }, { status: 'Done' }], costs: {}, coverage: {} },
+      },
     ];
     const trends = extractTrends(snaps);
     expect(trends.doneCounts).toEqual([1, 2]);
@@ -130,7 +149,10 @@ describe('extractTrends', () => {
   it('extracts total story counts', () => {
     const snaps = [
       { generatedAt: '2026-03-01T10:00:00Z', data: { stories: [{ status: 'Done' }], costs: {}, coverage: {} } },
-      { generatedAt: '2026-03-02T10:00:00Z', data: { stories: [{ status: 'Done' }, { status: 'Planned' }], costs: {}, coverage: {} } },
+      {
+        generatedAt: '2026-03-02T10:00:00Z',
+        data: { stories: [{ status: 'Done' }, { status: 'Planned' }], costs: {}, coverage: {} },
+      },
     ];
     const trends = extractTrends(snaps);
     expect(trends.totalStories).toEqual([1, 2]);
@@ -138,8 +160,14 @@ describe('extractTrends', () => {
 
   it('extracts AI costs', () => {
     const snaps = [
-      { generatedAt: '2026-03-01T10:00:00Z', data: { stories: [], costs: { 'US-0001': { costUsd: 10.5 } }, coverage: {} } },
-      { generatedAt: '2026-03-02T10:00:00Z', data: { stories: [], costs: { 'US-0001': { costUsd: 10.5 }, 'US-0002': { costUsd: 5.25 } }, coverage: {} } },
+      {
+        generatedAt: '2026-03-01T10:00:00Z',
+        data: { stories: [], costs: { 'US-0001': { costUsd: 10.5 } }, coverage: {} },
+      },
+      {
+        generatedAt: '2026-03-02T10:00:00Z',
+        data: { stories: [], costs: { 'US-0001': { costUsd: 10.5 }, 'US-0002': { costUsd: 5.25 } }, coverage: {} },
+      },
     ];
     const trends = extractTrends(snaps);
     expect(trends.aiCosts).toEqual([10.5, 15.75]);
@@ -147,8 +175,14 @@ describe('extractTrends', () => {
 
   it('extracts coverage', () => {
     const snaps = [
-      { generatedAt: '2026-03-01T10:00:00Z', data: { stories: [], costs: {}, coverage: { available: true, overall: 95.5 } } },
-      { generatedAt: '2026-03-02T10:00:00Z', data: { stories: [], costs: {}, coverage: { available: true, overall: 96.0 } } },
+      {
+        generatedAt: '2026-03-01T10:00:00Z',
+        data: { stories: [], costs: {}, coverage: { available: true, overall: 95.5 } },
+      },
+      {
+        generatedAt: '2026-03-02T10:00:00Z',
+        data: { stories: [], costs: {}, coverage: { available: true, overall: 96.0 } },
+      },
     ];
     const trends = extractTrends(snaps);
     expect(trends.coverage).toEqual([95.5, 96.0]);
@@ -157,7 +191,10 @@ describe('extractTrends', () => {
   it('handles missing coverage gracefully', () => {
     const snaps = [
       { generatedAt: '2026-03-01T10:00:00Z', data: { stories: [], costs: {}, coverage: {} } },
-      { generatedAt: '2026-03-02T10:00:00Z', data: { stories: [], costs: {}, coverage: { available: true, overall: 96 } } },
+      {
+        generatedAt: '2026-03-02T10:00:00Z',
+        data: { stories: [], costs: {}, coverage: { available: true, overall: 96 } },
+      },
     ];
     const trends = extractTrends(snaps);
     expect(trends.coverage).toEqual([null, 96]);
@@ -165,8 +202,21 @@ describe('extractTrends', () => {
 
   it('extracts velocity from tshirt estimates', () => {
     const snaps = [
-      { generatedAt: '2026-03-01T10:00:00Z', data: { stories: [{ status: 'Done', estimate: 'M' }], costs: {}, coverage: {} } },
-      { generatedAt: '2026-03-02T10:00:00Z', data: { stories: [{ status: 'Done', estimate: 'M' }, { status: 'Done', estimate: 'L' }], costs: {}, coverage: {} } },
+      {
+        generatedAt: '2026-03-01T10:00:00Z',
+        data: { stories: [{ status: 'Done', estimate: 'M' }], costs: {}, coverage: {} },
+      },
+      {
+        generatedAt: '2026-03-02T10:00:00Z',
+        data: {
+          stories: [
+            { status: 'Done', estimate: 'M' },
+            { status: 'Done', estimate: 'L' },
+          ],
+          costs: {},
+          coverage: {},
+        },
+      },
     ];
     const trends = extractTrends(snaps);
     expect(trends.velocity).toEqual([3, 8]);
@@ -174,8 +224,14 @@ describe('extractTrends', () => {
 
   it('extracts open bugs count', () => {
     const snaps = [
-      { generatedAt: '2026-03-01T10:00:00Z', data: { stories: [], bugs: [{ status: 'Open' }, { status: 'Fixed' }], costs: {}, coverage: {} } },
-      { generatedAt: '2026-03-02T10:00:00Z', data: { stories: [], bugs: [{ status: 'Open' }, { status: 'In Progress' }], costs: {}, coverage: {} } },
+      {
+        generatedAt: '2026-03-01T10:00:00Z',
+        data: { stories: [], bugs: [{ status: 'Open' }, { status: 'Fixed' }], costs: {}, coverage: {} },
+      },
+      {
+        generatedAt: '2026-03-02T10:00:00Z',
+        data: { stories: [], bugs: [{ status: 'Open' }, { status: 'In Progress' }], costs: {}, coverage: {} },
+      },
     ];
     const trends = extractTrends(snaps);
     expect(trends.openBugs).toEqual([1, 2]);
@@ -183,8 +239,14 @@ describe('extractTrends', () => {
 
   it('extracts at-risk stories', () => {
     const snaps = [
-      { generatedAt: '2026-03-01T10:00:00Z', data: { stories: [{ atRisk: true }, { atRisk: false }], bugs: [], costs: {}, coverage: {} } },
-      { generatedAt: '2026-03-02T10:00:00Z', data: { stories: [{ atRisk: true }, { atRisk: true }], bugs: [], costs: {}, coverage: {} } },
+      {
+        generatedAt: '2026-03-01T10:00:00Z',
+        data: { stories: [{ atRisk: true }, { atRisk: false }], bugs: [], costs: {}, coverage: {} },
+      },
+      {
+        generatedAt: '2026-03-02T10:00:00Z',
+        data: { stories: [{ atRisk: true }, { atRisk: true }], bugs: [], costs: {}, coverage: {} },
+      },
     ];
     const trends = extractTrends(snaps);
     expect(trends.atRisk).toEqual([1, 2]);
@@ -192,8 +254,21 @@ describe('extractTrends', () => {
 
   it('extracts token usage', () => {
     const snaps = [
-      { generatedAt: '2026-03-01T10:00:00Z', data: { stories: [], costs: { 'US-0001': { inputTokens: 1000, outputTokens: 500 } }, coverage: {} } },
-      { generatedAt: '2026-03-02T10:00:00Z', data: { stories: [], costs: { 'US-0001': { inputTokens: 1000, outputTokens: 500 }, 'US-0002': { inputTokens: 2000, outputTokens: 800 } }, coverage: {} } },
+      {
+        generatedAt: '2026-03-01T10:00:00Z',
+        data: { stories: [], costs: { 'US-0001': { inputTokens: 1000, outputTokens: 500 } }, coverage: {} },
+      },
+      {
+        generatedAt: '2026-03-02T10:00:00Z',
+        data: {
+          stories: [],
+          costs: {
+            'US-0001': { inputTokens: 1000, outputTokens: 500 },
+            'US-0002': { inputTokens: 2000, outputTokens: 800 },
+          },
+          coverage: {},
+        },
+      },
     ];
     const trends = extractTrends(snaps);
     expect(trends.inputTokens).toEqual([1000, 3000]);

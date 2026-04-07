@@ -3,13 +3,13 @@ const path = require('path');
 const fs = require('fs');
 const { parseBugs } = require('../../tools/lib/parse-bugs');
 
-const fixture = fs.readFileSync(
-  path.join(__dirname, '../fixtures/BUGS.md'), 'utf8'
-);
+const fixture = fs.readFileSync(path.join(__dirname, '../fixtures/BUGS.md'), 'utf8');
 
 describe('parseBugs', () => {
   let result;
-  beforeAll(() => { result = parseBugs(fixture); });
+  beforeAll(() => {
+    result = parseBugs(fixture);
+  });
 
   it('extracts one bug', () => expect(result).toHaveLength(1));
   it('parses id', () => expect(result[0].id).toBe('BUG-0001'));

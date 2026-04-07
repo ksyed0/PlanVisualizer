@@ -48,11 +48,11 @@ The project has an `AGENTS.md` at repo root. Read it at the start of every sessi
 
 ## Active Dependencies
 
-| Package | Version | Purpose |
-|---------|---------|---------|
-| jest | 30.x | Unit test framework |
-| eslint | 9.x | Code quality linting |
-| @eslint/js | latest | ESLint recommended config |
+| Package    | Version | Purpose                   |
+| ---------- | ------- | ------------------------- |
+| jest       | 30.x    | Unit test framework       |
+| eslint     | 9.x     | Code quality linting      |
+| @eslint/js | latest  | ESLint recommended config |
 
 ---
 
@@ -60,14 +60,14 @@ The project has an `AGENTS.md` at repo root. Read it at the start of every sessi
 
 All parsers: `(markdown: string) → Array` — never throw, empty string input returns `[]`.
 
-| Module | Input | Key output fields |
-|--------|-------|------------------|
-| `parse-release-plan.js` | RELEASE_PLAN.md | `epics[]`, `stories[]`, `tasks[]` |
-| `parse-test-cases.js` | TEST_CASES.md | `testCases[{ id, relatedStory, relatedAC, status }]` |
-| `parse-bugs.js` | BUGS.md | `bugs[{ id, severity, relatedStory, status, fixBranch }]` |
-| `parse-cost-log.js` | AI_COST_LOG.md | `rows[{ date, branch, inputTokens, outputTokens, costUsd }]` |
-| `parse-coverage.js` | coverage-summary.json | `{ lines, statements, functions, branches, overall, meetsTarget, available }` — `available: false` when file absent or malformed |
-| `parse-progress.js` | progress.md | `activity[{ date, summary }]` |
+| Module                  | Input                 | Key output fields                                                                                                                |
+| ----------------------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `parse-release-plan.js` | RELEASE_PLAN.md       | `epics[]`, `stories[]`, `tasks[]`                                                                                                |
+| `parse-test-cases.js`   | TEST_CASES.md         | `testCases[{ id, relatedStory, relatedAC, status }]`                                                                             |
+| `parse-bugs.js`         | BUGS.md               | `bugs[{ id, severity, relatedStory, status, fixBranch }]`                                                                        |
+| `parse-cost-log.js`     | AI_COST_LOG.md        | `rows[{ date, branch, inputTokens, outputTokens, costUsd }]`                                                                     |
+| `parse-coverage.js`     | coverage-summary.json | `{ lines, statements, functions, branches, overall, meetsTarget, available }` — `available: false` when file absent or malformed |
+| `parse-progress.js`     | progress.md           | `activity[{ date, summary }]`                                                                                                    |
 
 ---
 
@@ -133,25 +133,25 @@ Current coverage (2026-03-30): 95.74% statements, 86.85% branches, 95.88% functi
 
 ## Key File Paths
 
-| File | Purpose |
-|------|---------|
-| `tools/generate-plan.js` | Main CLI, orchestrates everything |
-| `tools/capture-cost.js` | Claude Code stop hook |
-| `tools/lib/*.js` | Parser and renderer modules |
-| `docs/RELEASE_PLAN.md` | Epics, stories, tasks |
-| `docs/TEST_CASES.md` | Human-readable test cases |
-| `docs/BUGS.md` | Bug register |
-| `docs/AI_COST_LOG.md` | Append-only cost ledger |
-| `docs/index.html` | GitHub Pages redirect to plan-status.html |
-| `docs/plan-status.html` | Generated dashboard (gitignored; deployed by CI) |
-| `progress.md` | Session logs |
-| `MEMORY.md` | This file |
-| `PROMPT_LOG.md` | Session prompt audit trail |
-| `MIGRATION_LOG.md` | Cross-platform change log |
-| `findings.md` | Research and discoveries |
-| `docs/ID_REGISTRY.md` | Next available IDs |
-| `docs/LESSONS.md` | Encoded hard-won lessons |
-| `architecture/ERROR_TAXONOMY.md` | Error classification |
+| File                             | Purpose                                          |
+| -------------------------------- | ------------------------------------------------ |
+| `tools/generate-plan.js`         | Main CLI, orchestrates everything                |
+| `tools/capture-cost.js`          | Claude Code stop hook                            |
+| `tools/lib/*.js`                 | Parser and renderer modules                      |
+| `docs/RELEASE_PLAN.md`           | Epics, stories, tasks                            |
+| `docs/TEST_CASES.md`             | Human-readable test cases                        |
+| `docs/BUGS.md`                   | Bug register                                     |
+| `docs/AI_COST_LOG.md`            | Append-only cost ledger                          |
+| `docs/index.html`                | GitHub Pages redirect to plan-status.html        |
+| `docs/plan-status.html`          | Generated dashboard (gitignored; deployed by CI) |
+| `progress.md`                    | Session logs                                     |
+| `MEMORY.md`                      | This file                                        |
+| `PROMPT_LOG.md`                  | Session prompt audit trail                       |
+| `MIGRATION_LOG.md`               | Cross-platform change log                        |
+| `findings.md`                    | Research and discoveries                         |
+| `docs/ID_REGISTRY.md`            | Next available IDs                               |
+| `docs/LESSONS.md`                | Encoded hard-won lessons                         |
+| `architecture/ERROR_TAXONOMY.md` | Error classification                             |
 
 ---
 

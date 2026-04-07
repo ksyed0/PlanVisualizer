@@ -5,12 +5,27 @@
   "scripts": {
     "test": "jest",
     "test:coverage": "jest --coverage",
-    "lint": "eslint tools/**/*.js",
-    "generate": "node tools/generate-plan.js"
+    "lint": "eslint .",
+    "generate": "node tools/generate-plan.js",
+    "generate:watch": "node tools/generate-plan.js --watch",
+    "dashboard": "node tools/generate-dashboard.js",
+    "dashboard:watch": "node tools/generate-dashboard.js --watch",
+    "init:status": "node tools/init-sdlc-status.js",
+    "build": "npm run generate && npm run init:status && npm run dashboard",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{js,json,md,yml,yaml}": "prettier --write",
+    "*.js": "eslint --fix"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
-    "eslint": "10.0.3",
-    "jest": "^30.3.0"
+    "eslint": "10.2.0",
+    "husky": "^9.1.7",
+    "jest": "^30.3.0",
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.8.1"
   }
 }

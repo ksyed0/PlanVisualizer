@@ -1,0 +1,26 @@
+# Generated output files
+docs/dashboard.html
+docs/plan-status.html
+docs/plan-status.json
+
+# Binary and non-code files
+*.pptx
+*.png
+*.jpg
+*.ico
+
+# Dependencies
+package-lock.json
+node_modules/
+
+# Claude Code internal directories (worktrees, settings)
+.claude/
+
+# iOS native build artifacts (CocoaPods)
+ios/Pods/
+
+# Playwright MCP session files
+.playwright-mcp/
+
+# Trends tab history snapshots (intentionally tracked, not source code)
+.history/

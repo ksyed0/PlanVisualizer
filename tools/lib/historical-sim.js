@@ -17,11 +17,11 @@ function getSnapshotFilename(date) {
 }
 
 function calculateAvgTokensPerEstimate(data) {
-  const doneStories = (data.stories || []).filter(s => s.status === 'Done');
+  const doneStories = (data.stories || []).filter((s) => s.status === 'Done');
   const tshirtPoints = { XS: 0.5, S: 1, M: 3, L: 5, XL: 8 };
-  
+
   const byEstimate = {};
-  doneStories.forEach(story => {
+  doneStories.forEach((story) => {
     const est = story.estimate ? story.estimate.toUpperCase() : null;
     if (!est) return;
     const points = tshirtPoints[est] || 0;
@@ -30,22 +30,22 @@ function calculateAvgTokensPerEstimate(data) {
     }
     byEstimate[est].count += 1;
   });
-  
+
   Object.entries(data.costs || {}).forEach(([storyId, cost]) => {
     if (storyId.startsWith('_')) return;
-    const story = doneStories.find(s => s.id === storyId);
+    const story = doneStories.find((s) => s.id === storyId);
     if (!story || !story.estimate) return;
     const est = story.estimate.toUpperCase();
     if (!byEstimate[est]) return;
     byEstimate[est].totalTokens += (cost.inputTokens || 0) + (cost.outputTokens || 0);
   });
-  
+
   const result = {};
-  Object.keys(byEstimate).forEach(est => {
+  Object.keys(byEstimate).forEach((est) => {
     const data = byEstimate[est];
     result[est] = data.count > 0 ? Math.round(data.totalTokens / data.count) : 0;
   });
-  
+
   return result;
 }
 
@@ -62,53 +62,51 @@ function backfillHistory(options = {}) {
   const days = options.days || 30;
   const estimatePlanned = options.estimatePlanned !== false;
   const historyDir = path.join(root, '.history');
-  
+
   if (!fs.existsSync(historyDir)) {
     fs.mkdirSync(historyDir, { recursive: true });
   }
-  
-  const existingFiles = fs.readdirSync(historyDir).filter(f => SNAPSHOT_REGEX.test(f));
+
+  const existingFiles = fs.readdirSync(historyDir).filter((f) => SNAPSHOT_REGEX.test(f));
   if (existingFiles.length >= 2) {
     console.log('[historical-sim] Found existing snapshots, skipping backfill');
     return { skipped: true, reason: 'existing_snapshots' };
   }
-  
+
   const currentDataPath = path.join(root, 'docs', 'plan-status.json');
   if (!fs.existsSync(currentDataPath)) {
     console.log('[historical-sim] No plan-status.json found, skipping backfill');
     return { skipped: true, reason: 'no_data' };
   }
-  
+
   const currentData = JSON.parse(fs.readFileSync(currentDataPath, 'utf8'));
-  
+
   const avgTokens = calculateAvgTokensPerEstimate(currentData);
-  
-  const totalSpent = currentData.costs && currentData.costs._totals 
-    ? currentData.costs._totals.costUsd || 0 
-    : 0;
-  
+
+  const totalSpent = currentData.costs && currentData.costs._totals ? currentData.costs._totals.costUsd || 0 : 0;
+
   const today = new Date();
   const startDate = new Date(today);
   startDate.setDate(startDate.getDate() - days);
-  
-  const doneStories = (currentData.stories || []).filter(s => s.status === 'Done');
-  const plannedStories = (currentData.stories || []).filter(s => s.status === 'Planned' || s.status === 'To Do');
+
+  const doneStories = (currentData.stories || []).filter((s) => s.status === 'Done');
+  const plannedStories = (currentData.stories || []).filter((s) => s.status === 'Planned' || s.status === 'To Do');
   const currentCoverage = currentData.coverage?.overall || 0;
   const allBugs = currentData.bugs || [];
-  
+
   const generated = [];
-  
+
   for (let i = 0; i < days; i++) {
     const date = new Date(startDate);
     date.setDate(date.getDate() + i);
-    
+
     const progressRatio = (i + 1) / days;
     const simulatedSpent = totalSpent * progressRatio;
     const simulatedDoneCount = Math.round(doneStories.length * progressRatio);
     const simulatedCoverage = Math.round(currentCoverage * progressRatio * 0.7);
-    
+
     const simulatedCosts = {};
-    
+
     doneStories.forEach((story, idx) => {
       const storyDoneRatio = (idx + 1) / doneStories.length;
       const storyProgress = Math.min(1, progressRatio / storyDoneRatio);
@@ -129,7 +127,7 @@ function backfillHistory(options = {}) {
         };
       }
     });
-    
+
     if (estimatePlanned) {
       plannedStories.forEach((story, idx) => {
         const storyStartRatio = 0.3 + (idx / plannedStories.length) * 0.5;
@@ -151,19 +149,19 @@ function backfillHistory(options = {}) {
         }
       });
     }
-    
+
     simulatedCosts._totals = {
       costUsd: simulatedSpent,
       inputTokens: Object.values(simulatedCosts).reduce((sum, c) => sum + (c.inputTokens || 0), 0),
       outputTokens: Object.values(simulatedCosts).reduce((sum, c) => sum + (c.outputTokens || 0), 0),
     };
-    
-    const simulatedStories = (currentData.stories || []).map(story => {
-      const isDone = doneStories.some(ds => ds.id === story.id);
-      const doneIdx = doneStories.findIndex(ds => ds.id === story.id);
-      const isPlanned = plannedStories.some(ps => ps.id === story.id);
-      const plannedIdx = plannedStories.findIndex(ps => ps.id === story.id);
-      
+
+    const simulatedStories = (currentData.stories || []).map((story) => {
+      const isDone = doneStories.some((ds) => ds.id === story.id);
+      const doneIdx = doneStories.findIndex((ds) => ds.id === story.id);
+      const isPlanned = plannedStories.some((ps) => ps.id === story.id);
+      const plannedIdx = plannedStories.findIndex((ps) => ps.id === story.id);
+
       if (isDone && doneIdx >= 0 && doneIdx < simulatedDoneCount) {
         return { ...story };
       } else if (isDone) {
@@ -177,7 +175,7 @@ function backfillHistory(options = {}) {
       }
       return { ...story };
     });
-    
+
     const simulatedBugs = allBugs.map((bug, idx) => {
       const bugFixedRatio = idx / allBugs.length;
       const bugProgress = (bugFixedRatio + 0.2) * progressRatio;
@@ -188,7 +186,7 @@ function backfillHistory(options = {}) {
       }
       return { ...bug };
     });
-    
+
     const snapshot = {
       generatedAt: date.toISOString(),
       commit: null,
@@ -202,14 +200,14 @@ function backfillHistory(options = {}) {
         testCases: currentData.testCases || [],
       },
     };
-    
+
     const filename = getSnapshotFilename(date);
     const filepath = path.join(historyDir, filename);
-    
+
     fs.writeFileSync(filepath, JSON.stringify(snapshot, null, 2), 'utf8');
     generated.push({ filename, filepath, date: date.toISOString() });
   }
-  
+
   console.log(`[historical-sim] Generated ${generated.length} historical snapshots`);
   return { generated, skipped: false };
 }

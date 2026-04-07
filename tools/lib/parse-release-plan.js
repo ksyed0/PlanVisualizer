@@ -17,7 +17,10 @@ function extractCodeBlocks(md) {
  */
 function parseDeps(val) {
   if (!val || val.trim() === 'None' || val.trim() === '') return [];
-  return val.split(',').map(s => s.trim()).filter(Boolean);
+  return val
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
 }
 
 /**
@@ -111,8 +114,12 @@ function parseTaskBlock(text) {
  */
 function parseReleasePlan(markdown) {
   const blocks = extractCodeBlocks(markdown);
-  const epics = [], stories = [], tasks = [];
-  const seenEpics = new Set(), seenStories = new Set(), seenTasks = new Set();
+  const epics = [],
+    stories = [],
+    tasks = [];
+  const seenEpics = new Set(),
+    seenStories = new Set(),
+    seenTasks = new Set();
 
   for (const block of blocks) {
     const chunks = block.split(/\n{2,}/);

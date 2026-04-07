@@ -1,0 +1,76 @@
+{
+  "agents": {
+    "Conductor": {
+      "role": "Delivery Manager",
+      "icon": "🎯",
+      "color": "#D52B1E",
+      "instructionFile": "docs/agents/DM_AGENT.md"
+    },
+    "Compass": {
+      "role": "Product Owner",
+      "icon": "🧭",
+      "color": "#1565C0",
+      "instructionFile": "docs/agents/PO_AGENT.md"
+    },
+    "Keystone": {
+      "role": "Architect",
+      "icon": "🏗️",
+      "color": "#6A1B9A",
+      "instructionFile": "docs/agents/ARCHITECT_AGENT.md"
+    },
+    "Lens": {
+      "role": "Code Reviewer",
+      "icon": "🔍",
+      "color": "#F57C00",
+      "instructionFile": "docs/agents/CODE_REVIEWER_AGENT.md"
+    },
+    "Palette": {
+      "role": "UI Designer",
+      "icon": "🎨",
+      "color": "#00897B",
+      "instructionFile": "docs/agents/UI_DESIGNER_AGENT.md"
+    },
+    "Forge": {
+      "role": "Backend Developer",
+      "icon": "⚒️",
+      "color": "#C62828",
+      "instructionFile": "docs/agents/BE_DEV_AGENT.md"
+    },
+    "Pixel": {
+      "role": "Frontend Developer",
+      "icon": "📱",
+      "color": "#283593",
+      "instructionFile": "docs/agents/FE_DEV_AGENT.md"
+    },
+    "Sentinel": {
+      "role": "Functional Tester",
+      "icon": "🛡️",
+      "color": "#2E7D32",
+      "instructionFile": "docs/agents/FUNCTIONAL_TESTER_AGENT.md"
+    },
+    "Circuit": {
+      "role": "Automation Tester",
+      "icon": "⚡",
+      "color": "#4527A0",
+      "instructionFile": "docs/agents/AUTOMATION_TESTER_AGENT.md"
+    }
+  },
+  "dashboard": {
+    "title": "CTC Mobile Wishlist",
+    "subtitle": "Agentic AI SDLC",
+    "footer": "Claude Code Agentic AI SDLC | Canadian Tire Corporation",
+    "repoUrl": "https://github.com/ksyed0/ctc-mobile-wishlist",
+    "primaryColor": "#D52B1E",
+    "platform": "Claude Code",
+    "author": "Kamal Syed",
+    "authorTitle": "Director of Program Management, EPAM Systems"
+  },
+  "orchestrator": {
+    "dmAgent": "Conductor",
+    "reviewer": "Lens",
+    "avatarGrid": {
+      "topRow": ["Conductor", "Compass", "Keystone", "Lens", "Palette"],
+      "bottomRow": ["Forge", "Pixel", "Sentinel", "Circuit"]
+    }
+  }
+}

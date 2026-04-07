@@ -51,21 +51,21 @@ and prompt for historical data backfill (if project data exists).
 
 After installation, edit `plan-visualizer.config.json` in your project root:
 
-| Key | Default | Description |
-|-----|---------|-------------|
-| `project.name` | `"My Project"` | Display name shown in the dashboard title |
-| `project.tagline` | `"A short description."` | Subtitle shown in the dashboard header |
-| `project.githubUrl` | `""` | GitHub repository URL shown in the About dialog |
-| `docs.releasePlan` | `"docs/RELEASE_PLAN.md"` | Path to release plan (EPICs, stories, tasks) |
-| `docs.testCases` | `"docs/TEST_CASES.md"` | Path to test cases |
-| `docs.bugs` | `"docs/BUGS.md"` | Path to bug log |
-| `docs.costLog` | `"docs/AI_COST_LOG.md"` | Path to AI cost ledger |
-| `docs.lessons` | `"docs/LESSONS.md"` | Path to lessons log (surfaced in Lessons tab) |
-| `docs.outputDir` | `"docs"` | Directory where `plan-status.html` is written |
-| `coverage.summaryPath` | `"docs/coverage/coverage-summary.json"` | Path to Jest `coverage-summary.json` |
-| `progress.path` | `"progress.md"` | Path to session progress log |
-| `costs.hourlyRate` | `100` | Hourly rate (USD) for projected cost estimates |
-| `costs.tshirtHours` | `{XS:2, S:4, M:8, L:16, XL:32}` | Hours per t-shirt size estimate |
+| Key                    | Default                                 | Description                                     |
+| ---------------------- | --------------------------------------- | ----------------------------------------------- |
+| `project.name`         | `"My Project"`                          | Display name shown in the dashboard title       |
+| `project.tagline`      | `"A short description."`                | Subtitle shown in the dashboard header          |
+| `project.githubUrl`    | `""`                                    | GitHub repository URL shown in the About dialog |
+| `docs.releasePlan`     | `"docs/RELEASE_PLAN.md"`                | Path to release plan (EPICs, stories, tasks)    |
+| `docs.testCases`       | `"docs/TEST_CASES.md"`                  | Path to test cases                              |
+| `docs.bugs`            | `"docs/BUGS.md"`                        | Path to bug log                                 |
+| `docs.costLog`         | `"docs/AI_COST_LOG.md"`                 | Path to AI cost ledger                          |
+| `docs.lessons`         | `"docs/LESSONS.md"`                     | Path to lessons log (surfaced in Lessons tab)   |
+| `docs.outputDir`       | `"docs"`                                | Directory where `plan-status.html` is written   |
+| `coverage.summaryPath` | `"docs/coverage/coverage-summary.json"` | Path to Jest `coverage-summary.json`            |
+| `progress.path`        | `"progress.md"`                         | Path to session progress log                    |
+| `costs.hourlyRate`     | `100`                                   | Hourly rate (USD) for projected cost estimates  |
+| `costs.tshirtHours`    | `{XS:2, S:4, M:8, L:16, XL:32}`         | Hours per t-shirt size estimate                 |
 
 All paths are relative to the project root. If no config file is present, built-in defaults are used.
 
