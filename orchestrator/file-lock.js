@@ -78,6 +78,11 @@ function tryAcquire(filePath, _depth = 0) {
       }
       return false;
     }
+    if (err.code === 'ENOENT') {
+      // .locks/ dir was removed between ensureLockDir() and mkdirSync(lp) — recreate and retry
+      ensureLockDir();
+      return tryAcquire(filePath, _depth + 1);
+    }
     throw err;
   }
 }
