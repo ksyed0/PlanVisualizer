@@ -1333,49 +1333,49 @@ Dependencies: EPIC-0010
 US-0069 (EPIC-0011): As a user, I want a global search bar that searches across all content types, so that I can quickly find any story, bug, or lesson.
 Priority: High (P0)
 Estimate: M
-Status: Planned
-Branch:
+Status: Done
+Branch: feature/US-0069-global-search
 Acceptance Criteria:
-  - [ ] AC-0208: A global search input appears in the sidebar (or top bar on mobile) with placeholder "Search stories, bugs, lessons..."
-  - [ ] AC-0209: Search indexes: story ID, title, description; bug ID, title, severity; lesson ID, rule, context
-  - [ ] AC-0210: Results appear in a dropdown as the user types (debounced 200ms); max 10 results shown
-  - [ ] AC-0211: Each result shows: type icon (story/bug/lesson), ID, title, and parent context (e.g., "in EPIC-0003")
-  - [ ] AC-0212: Clicking a result navigates to the relevant tab and scrolls to/expands the item
+  - [x] AC-0208: A global search input appears in the sidebar (or top bar on mobile) with placeholder "Search stories, bugs, lessons..."
+  - [x] AC-0209: Search indexes: story ID, title, description; bug ID, title, severity; lesson ID, rule, context
+  - [x] AC-0210: Results appear in a dropdown as the user types (debounced 200ms); max 10 results shown
+  - [x] AC-0211: Each result shows: type icon (story/bug/lesson), ID, title, and parent context (e.g., "in EPIC-0003")
+  - [x] AC-0212: Clicking a result navigates to the relevant tab and scrolls to/expands the item
 Dependencies: None
 
 US-0070 (EPIC-0011): As a user, I want to jump directly to any item by typing its ID, so that I can quickly access known items without searching.
 Priority: High (P0)
 Estimate: S
-Status: Planned
-Branch:
+Status: Done
+Branch: feature/US-0069-global-search
 Acceptance Criteria:
-  - [ ] AC-0213: Typing a known ID (e.g., "US-0042", "BUG-0015", "TC-0099") in the global search immediately shows that single result
-  - [ ] AC-0214: If the ID exists, the result is highlighted with a "Jump to" label
-  - [ ] AC-0215: Pressing Enter with a valid ID navigates directly to the item
-  - [ ] AC-0216: Invalid IDs show "No results found" rather than an empty dropdown
+  - [x] AC-0213: Typing a known ID (e.g., "US-0042", "BUG-0015", "TC-0099") in the global search immediately shows that single result
+  - [x] AC-0214: If the ID exists, the result is highlighted with a "Jump to" label
+  - [x] AC-0215: Pressing Enter with a valid ID navigates directly to the item
+  - [x] AC-0216: Invalid IDs show "No results found" rather than an empty dropdown
 Dependencies: US-0069
 
 US-0071 (EPIC-0011): As a user, I want search to support fuzzy matching, so that I can find items even with typos or partial matches.
 Priority: Medium (P1)
 Estimate: S
-Status: Planned
-Branch:
+Status: Done
+Branch: feature/US-0069-global-search
 Acceptance Criteria:
-  - [ ] AC-0217: Search uses fuzzy matching (e.g., "stor" matches "story", "bug" matches all bugs)
-  - [ ] AC-0218: Results are sorted by relevance score (exact match > starts with > contains)
-  - [ ] AC-0219: Matched text portions are highlighted in results (e.g., "<strong>stor</strong>y")
+  - [x] AC-0217: Search uses fuzzy matching (e.g., "stor" matches "story", "bug" matches all bugs)
+  - [x] AC-0218: Results are sorted by relevance score (exact match > starts with > contains)
+  - [x] AC-0219: Matched text portions are highlighted in results (e.g., "<strong>stor</strong>y")
 Dependencies: US-0069
 
 US-0072 (EPIC-0011): As a user, I want recent searches to be remembered, so that I can quickly re-run previous searches.
 Priority: Low (P2)
 Estimate: S
-Status: Planned
-Branch:
+Status: Done
+Branch: feature/US-0069-global-search
 Acceptance Criteria:
-  - [ ] AC-0220: The last 5 unique search queries are stored in localStorage under 'recentSearches'
-  - [ ] AC-0221: When the search input is focused but empty, show a "Recent Searches" section with clickable pills
-  - [ ] AC-0222: Clicking a recent search populates the input and runs the search
-  - [ ] AC-0223: A clear (×) button clears the recent searches list
+  - [x] AC-0220: The last 5 unique search queries are stored in localStorage under 'recentSearches'
+  - [x] AC-0221: When the search input is focused but empty, show a "Recent Searches" section with clickable pills
+  - [x] AC-0222: Clicking a recent search populates the input and runs the search
+  - [x] AC-0223: A clear (×) button clears the recent searches list
 Dependencies: US-0069
 ```
 
