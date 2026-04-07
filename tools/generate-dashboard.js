@@ -378,6 +378,7 @@ function generateHTML(status) {
     <div class="subtitle">${DASH_META.platform} | ${DASH_META.agentCount} Specialized Agents | Live Agentic Pipeline Dashboard</div>
   </div>
   <div class="controls">
+    <a href="plan-status.html" class="btn-header" style="text-decoration:none">&#8592; Plan Dashboard</a>
     <button class="btn-header" onclick="document.getElementById('about-modal').classList.add('open')">ℹ️ About</button>
     <button id="notif-btn" class="btn-header" onclick="requestAlerts()">🔔 Alerts</button>
     <button id="theme-toggle" onclick="toggleTheme()">☀️ Light</button>

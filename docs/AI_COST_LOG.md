@@ -126,3 +126,13 @@ Input Tokens column = direct input + cache-write tokens; cost computed with dist
 | 2026-04-01 | f102be3a-dbfa-45ae-a702-d78e28c0cd41 | docs/update-readme-and-progress           | 329418       | 4877          | 1488753           | 1.7530   |
 | 2026-04-01 | f102be3a-dbfa-45ae-a702-d78e28c0cd41 | docs/update-readme-and-progress           | 335561       | 6860          | 2454936           | 2.0956   |
 | 2026-04-01 | f102be3a-dbfa-45ae-a702-d78e28c0cd41 | docs/update-readme-and-progress           | 337600       | 7192          | 2769667           | 2.2027   |
+| 2026-04-01 | f102be3a-dbfa-45ae-a702-d78e28c0cd41 | docs/update-readme-and-progress           | 371855       | 15281         | 6715968           | 3.6363   |
+| 2026-04-01 | f102be3a-dbfa-45ae-a702-d78e28c0cd41 | docs/update-readme-and-progress           | 376746       | 16987         | 7487725           | 3.9118   |
+| 2026-04-01 | f102be3a-dbfa-45ae-a702-d78e28c0cd41 | docs/update-readme-and-progress           | 568175       | 20854         | 10062716          | 5.4601   |
+| 2026-04-01 | f102be3a-dbfa-45ae-a702-d78e28c0cd41 | fix/version-bump-infinite-chain           | 579509       | 23701         | 12218444          | 6.1920   |
+| 2026-04-01 | f102be3a-dbfa-45ae-a702-d78e28c0cd41 | fix/version-bump-infinite-chain           | 585262       | 25536         | 13657982          | 6.6730   |
+| 2026-04-01 | f102be3a-dbfa-45ae-a702-d78e28c0cd41 | fix/version-bump-infinite-chain           | 588522       | 26528         | 14292404          | 6.8904   |
+| 2026-04-01 | f102be3a-dbfa-45ae-a702-d78e28c0cd41 | develop                                   | 596545       | 29064         | 16816669          | 7.7158   |
+| 2026-04-01 | f102be3a-dbfa-45ae-a702-d78e28c0cd41 | develop                                   | 600266       | 29961         | 18180537          | 8.1523   |
+| 2026-04-01 | f102be3a-dbfa-45ae-a702-d78e28c0cd41 | develop                                   | 608754       | 32153         | 20053037          | 8.7788   |
+| 2026-04-07 | 7ac52bfb-cbc3-43db-bf8c-7248628e3416 | develop                                   | 29768        | 658           | 113921            | 0.1557   |

@@ -101,6 +101,7 @@ function renderTopBar(data) {
         <div class="flex items-center gap-2 flex-wrap">
           <h1 class="topbar-title">${esc(data.projectName)}</h1>
           <button onclick="openAbout()" class="topbar-btn">About</button>
+          <a href="dashboard.html" class="topbar-btn" style="text-decoration:none">Agent Dashboard &#8594;</a>
           <button onclick="toggleTheme()" id="theme-toggle" class="topbar-btn" aria-label="Toggle dark/light mode"><span id="theme-icon">&#9788;</span></button>
         </div>
         <p class="topbar-tagline">${esc(data.tagline)}&nbsp;·&nbsp;Updated <span id="gen-time" data-iso="${genAt}"></span>&nbsp;·&nbsp;<code class="font-mono" style="font-size:10px">${esc(data.commitSha)}</code></p>
