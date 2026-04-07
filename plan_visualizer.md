@@ -5,14 +5,14 @@ This file defines the exact document formats that PlanVisualizer parses to gener
 
 **Source files read by `node tools/generate-plan.js`:**
 
-| File | Parser | Dashboard use |
-|------|--------|---------------|
-| `docs/RELEASE_PLAN.md` | `parse-release-plan.js` | Epics, stories, tasks, ACs |
-| `docs/TEST_CASES.md` | `parse-test-cases.js` | Traceability tab, at-risk detection |
-| `docs/BUGS.md` | `parse-bugs.js` | Bugs tab, at-risk detection |
-| `docs/AI_COST_LOG.md` | `parse-cost-log.js` | Costs tab, session timeline |
-| `docs/LESSONS.md` | `parse-lessons.js` | Lessons tab, Bug Ref cross-links |
-| `progress.md` | `parse-progress.js` | Recent activity feed (with session number) |
+| File                   | Parser                  | Dashboard use                              |
+| ---------------------- | ----------------------- | ------------------------------------------ |
+| `docs/RELEASE_PLAN.md` | `parse-release-plan.js` | Epics, stories, tasks, ACs                 |
+| `docs/TEST_CASES.md`   | `parse-test-cases.js`   | Traceability tab, at-risk detection        |
+| `docs/BUGS.md`         | `parse-bugs.js`         | Bugs tab, at-risk detection                |
+| `docs/AI_COST_LOG.md`  | `parse-cost-log.js`     | Costs tab, session timeline                |
+| `docs/LESSONS.md`      | `parse-lessons.js`      | Lessons tab, Bug Ref cross-links           |
+| `progress.md`          | `parse-progress.js`     | Recent activity feed (with session number) |
 
 All paths are relative to the project root and can be overridden in `plan-visualizer.config.json`.
 Files that are missing or empty produce empty sections — the generator will not fail.
@@ -126,8 +126,9 @@ card views. Bug Ref cross-links are generated automatically when a `BUG-XXXX` en
 
 ```markdown
 ## L-0001 — Short lesson title
+
 **Rule:** The actionable rule derived from the lesson.
-*Context paragraph describing when this lesson was learned.*
+_Context paragraph describing when this lesson was learned._
 **Date:** 2026-03-18
 ```
 
@@ -145,11 +146,12 @@ The hook reads token counts from the JSONL transcript and computes cost using pe
 
 ```markdown
 | Date       | Session ID | Branch | Input Tokens | Output Tokens | Cache Read Tokens | Cost USD |
-|------------|------------|--------|--------------|---------------|-------------------|----------|
+| ---------- | ---------- | ------ | ------------ | ------------- | ----------------- | -------- |
 | 2026-03-18 | abc123def  | main   | 1000         | 500           | 200               | 0.0150   |
 ```
 
 Columns (positional, all required):
+
 1. `Date` — `YYYY-MM-DD`
 2. `Session ID` — short alphanumeric identifier (no spaces)
 3. `Branch` — current git branch at session end
@@ -168,7 +170,9 @@ Prepend new sessions at the **top** of the file (newest-first). The parser looks
 
 ```markdown
 ## Session 2 — 2026-03-18
+
 ### What Was Done
+
 - Implemented the feature
 - Fixed the bug
 - Updated tests
@@ -176,7 +180,9 @@ Prepend new sessions at the **top** of the file (newest-first). The parser looks
 ---
 
 ## Session 1 — 2026-03-17
+
 ### What Was Done
+
 - Initial scaffold
 ```
 
@@ -191,7 +197,7 @@ manually — update it immediately whenever a new artefact is created.
 # ID Registry
 
 | Sequence | Next Available ID | Last Assigned |
-|----------|-------------------|---------------|
+| -------- | ----------------- | ------------- |
 | EPIC     | EPIC-0002         | EPIC-0001     |
 | US       | US-0002           | US-0001       |
 | TASK     | TASK-0002         | TASK-0001     |
@@ -214,11 +220,11 @@ Override default file paths in `plan-visualizer.config.json` at the project root
   "project": { "name": "My Project", "tagline": "A short description.", "githubUrl": "" },
   "docs": {
     "releasePlan": "docs/RELEASE_PLAN.md",
-    "testCases":   "docs/TEST_CASES.md",
-    "bugs":        "docs/BUGS.md",
-    "costLog":     "docs/AI_COST_LOG.md",
-    "lessons":     "docs/LESSONS.md",
-    "outputDir":   "docs"
+    "testCases": "docs/TEST_CASES.md",
+    "bugs": "docs/BUGS.md",
+    "costLog": "docs/AI_COST_LOG.md",
+    "lessons": "docs/LESSONS.md",
+    "outputDir": "docs"
   },
   "coverage": { "summaryPath": "docs/coverage/coverage-summary.json" },
   "progress": { "path": "progress.md" },

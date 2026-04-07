@@ -3,8 +3,11 @@ const { detectAtRisk } = require('../../tools/lib/detect-at-risk');
 
 describe('detectAtRisk', () => {
   const makeStory = (overrides) => ({
-    id: 'US-0001', status: 'In Progress', branch: 'feature/US-0001',
-    acs: [{ id: 'AC-0001', done: false }], ...overrides,
+    id: 'US-0001',
+    status: 'In Progress',
+    branch: 'feature/US-0001',
+    acs: [{ id: 'AC-0001', done: false }],
+    ...overrides,
   });
 
   it('flags story with ACs but no linked TCs', () => {

@@ -42,15 +42,15 @@
 
 All parsers: `(markdown: string) → Array` — never throw; empty string returns `[]`.
 
-| Parser | Key fields returned |
-|--------|-------------------|
-| `parse-release-plan.js` | `epics[]`, `stories[]`, `tasks[]` |
-| `parse-test-cases.js` | `testCases[{ id, relatedStory, relatedAC, status, defect, title, type }]` |
-| `parse-bugs.js` | `bugs[{ id, title, severity, status, relatedStory, fixBranch, lessonEncoded }]` |
-| `parse-cost-log.js` | `rows[{ date, branch, inputTokens, outputTokens, costUsd }]` |
-| `parse-coverage.js` | `{ lines, statements, functions, branches, overall, meetsTarget }` |
-| `parse-lessons.js` | `lessons[{ id, title, rule, context, date }]` |
-| `parse-progress.js` | `activity[{ sessionNum, date, summary }]` |
+| Parser                  | Key fields returned                                                             |
+| ----------------------- | ------------------------------------------------------------------------------- |
+| `parse-release-plan.js` | `epics[]`, `stories[]`, `tasks[]`                                               |
+| `parse-test-cases.js`   | `testCases[{ id, relatedStory, relatedAC, status, defect, title, type }]`       |
+| `parse-bugs.js`         | `bugs[{ id, title, severity, status, relatedStory, fixBranch, lessonEncoded }]` |
+| `parse-cost-log.js`     | `rows[{ date, branch, inputTokens, outputTokens, costUsd }]`                    |
+| `parse-coverage.js`     | `{ lines, statements, functions, branches, overall, meetsTarget }`              |
+| `parse-lessons.js`      | `lessons[{ id, title, rule, context, date }]`                                   |
+| `parse-progress.js`     | `activity[{ sessionNum, date, summary }]`                                       |
 
 ### compute-costs.js Output
 
@@ -107,16 +107,16 @@ All parsers: `(markdown: string) → Array` — never throw; empty string return
 
 **Colour tokens:**
 
-| Token | Value | Usage |
-|-------|-------|-------|
-| Tab bar background | `bg-slate-800` | Navigation tab bar |
-| Tab active text | `text-blue-300` / `border-blue-400` | Active tab indicator |
-| Tab inactive text | `text-slate-400` | Inactive tabs |
-| At-risk badge | `bg-amber-100 text-amber-800` | Risk warnings |
-| Done badge | `bg-green-100 text-green-800` | Completed status |
-| In Progress badge | `bg-blue-100 text-blue-800` | Active status |
-| Planned badge | `bg-purple-100 text-purple-700` | Planned status |
-| Blocked badge | `bg-red-100 text-red-800` | Blocked status |
+| Token              | Value                               | Usage                |
+| ------------------ | ----------------------------------- | -------------------- |
+| Tab bar background | `bg-slate-800`                      | Navigation tab bar   |
+| Tab active text    | `text-blue-300` / `border-blue-400` | Active tab indicator |
+| Tab inactive text  | `text-slate-400`                    | Inactive tabs        |
+| At-risk badge      | `bg-amber-100 text-amber-800`       | Risk warnings        |
+| Done badge         | `bg-green-100 text-green-800`       | Completed status     |
+| In Progress badge  | `bg-blue-100 text-blue-800`         | Active status        |
+| Planned badge      | `bg-purple-100 text-purple-700`     | Planned status       |
+| Blocked badge      | `bg-red-100 text-red-800`           | Blocked status       |
 
 **Charts:** Chart.js v4 (CDN). All charts render at 300 px height (`maintainAspectRatio:false`). Coverage: doughnut. AI Costs: bar. Story status: doughnut.
 
@@ -126,7 +126,7 @@ All parsers: `(markdown: string) → Array` — never throw; empty string return
 
 ## §7 Maintenance Log
 
-| Date | Change | Who |
-|------|--------|-----|
-| 2026-03-10 | Initial constitution created | Claude Sonnet 4.6 |
+| Date       | Change                                                                                                                                                                                                                                                                                 | Who               |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
+| 2026-03-10 | Initial constitution created                                                                                                                                                                                                                                                           | Claude Sonnet 4.6 |
 | 2026-03-18 | Added parse-lessons.js; sessionNum to parse-progress output; per-tab filter bar; Hierarchy card view; Bug tab filtering; CSS theme tokens; at-risk Done exclusion; Lessons tab; uniform chart heights; viewport-fill tabs; Bug Fix Costs totals row; session number in Recent Activity | Claude Sonnet 4.6 |

@@ -24,10 +24,10 @@ const DEFAULTS = {
 
 // Pricing per million tokens (Claude Sonnet 4.6)
 const RATES = {
-  input:       3.00,
-  cacheWrite:  3.75,
-  output:     15.00,
-  cacheRead:   0.30,
+  input: 3.0,
+  cacheWrite: 3.75,
+  output: 15.0,
+  cacheRead: 0.3,
 };
 
 function loadConfig() {
@@ -36,7 +36,9 @@ function loadConfig() {
   try {
     const raw = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
     return { docs: { ...DEFAULTS.docs, ...raw.docs } };
-  } catch { return DEFAULTS; }
+  } catch {
+    return DEFAULTS;
+  }
 }
 
 const HEADER =
@@ -47,7 +49,7 @@ const HEADER =
   'Pricing basis: Claude Sonnet 4.6 — Input $3/MTok · Output $15/MTok · Cache Read $0.30/MTok\n\n' +
   '---\n\n' +
   '## Keeping Costs Accurate\n\n' +
-  '**If the AI Cost column in the dashboard is blank or zero for a story**, it means no cost log row has a `Branch` value matching that story\'s `Branch:` field exactly. Two common causes:\n\n' +
+  "**If the AI Cost column in the dashboard is blank or zero for a story**, it means no cost log row has a `Branch` value matching that story's `Branch:` field exactly. Two common causes:\n\n" +
   '1. **Sessions predating the capture-cost hook** — add estimated rows manually using the `-est` suffix convention (e.g. `sess_NNNN-est`).\n' +
   '2. **Branch name mismatch** — the branch in the cost log row must exactly match the `Branch:` field in RELEASE_PLAN.md (case-sensitive).\n\n' +
   '**To estimate and backfill costs**, ask your AI assistant:\n\n' +
@@ -71,7 +73,11 @@ async function sumTokensFromTranscript(transcriptPath) {
 
   for await (const line of rl) {
     let d;
-    try { d = JSON.parse(line); } catch { continue; }
+    try {
+      d = JSON.parse(line);
+    } catch {
+      continue;
+    }
     if (d.type !== 'assistant') continue;
 
     const uid = d.uuid;
@@ -79,12 +85,12 @@ async function sumTokensFromTranscript(transcriptPath) {
     if (uid) seen.add(uid);
 
     const usage = d.message && d.message.usage;
-    if (!usage || !usage.output_tokens) continue;   // skip streaming partial entries
+    if (!usage || !usage.output_tokens) continue; // skip streaming partial entries
 
-    totals.inputTokens      += usage.input_tokens || 0;
+    totals.inputTokens += usage.input_tokens || 0;
     totals.cacheWriteTokens += usage.cache_creation_input_tokens || 0;
-    totals.cacheReadTokens  += usage.cache_read_input_tokens || 0;
-    totals.outputTokens     += usage.output_tokens;
+    totals.cacheReadTokens += usage.cache_read_input_tokens || 0;
+    totals.outputTokens += usage.output_tokens;
   }
 
   return totals;
@@ -98,7 +104,11 @@ async function main() {
   for await (const chunk of process.stdin) raw += chunk;
 
   let data = {};
-  try { data = JSON.parse(raw); } catch { /* stdin may be empty */ }
+  try {
+    data = JSON.parse(raw);
+  } catch {
+    /* stdin may be empty */
+  }
 
   const date = new Date().toISOString().slice(0, 10);
   const sessionId = data.session_id || `sess_${Date.now()}`;
@@ -125,19 +135,22 @@ async function main() {
     }
   }
 
-  const { inputTokens, cacheWriteTokens, cacheReadTokens, outputTokens } =
-    await sumTokensFromTranscript(transcriptPath || '');
+  const { inputTokens, cacheWriteTokens, cacheReadTokens, outputTokens } = await sumTokensFromTranscript(
+    transcriptPath || '',
+  );
 
   if (!transcriptPath || (inputTokens === 0 && outputTokens === 0)) {
-    process.stderr.write(`[capture-cost] Warning: No transcript found for session ${sessionId}; costs will be zeroed\n`);
+    process.stderr.write(
+      `[capture-cost] Warning: No transcript found for session ${sessionId}; costs will be zeroed\n`,
+    );
   }
 
   // Cost: input and cache-write at their respective rates; fold into displayed "Input Tokens"
   const costUsd = (
-    inputTokens      * RATES.input      / 1_000_000 +
-    cacheWriteTokens * RATES.cacheWrite / 1_000_000 +
-    cacheReadTokens  * RATES.cacheRead  / 1_000_000 +
-    outputTokens     * RATES.output     / 1_000_000
+    (inputTokens * RATES.input) / 1_000_000 +
+    (cacheWriteTokens * RATES.cacheWrite) / 1_000_000 +
+    (cacheReadTokens * RATES.cacheRead) / 1_000_000 +
+    (outputTokens * RATES.output) / 1_000_000
   ).toFixed(4);
 
   // Input Tokens column = direct input + cache-write (both are "input-side" tokens)
@@ -148,7 +161,9 @@ async function main() {
   if (!gitBranch) {
     try {
       branch = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf8' }).trim();
-    } catch { /* ignore - use default branch value */ }
+    } catch {
+      /* ignore - use default branch value */
+    }
   }
 
   const row = `| ${date} | ${sessionId} | ${branch} | ${displayInput} | ${outputTokens} | ${cacheReadTokens} | ${costUsd} |\n`;
@@ -161,7 +176,9 @@ async function main() {
     fs.closeSync(fd);
   }
 
-  process.stderr.write(`[capture-cost] $${costUsd} | in=${displayInput} out=${outputTokens} cacheR=${cacheReadTokens} | branch=${branch}\n`);
+  process.stderr.write(
+    `[capture-cost] $${costUsd} | in=${displayInput} out=${outputTokens} cacheR=${cacheReadTokens} | branch=${branch}\n`,
+  );
 }
 
-main().catch(err => process.stderr.write(`[capture-cost] Error: ${err.message}\n`));
+main().catch((err) => process.stderr.write(`[capture-cost] Error: ${err.message}\n`));

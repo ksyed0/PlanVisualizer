@@ -13,6 +13,7 @@ Before any code is written or tools are built:
 1. **Verify all project files exist** — Create any that are missing. The full file list and purpose of each is defined in the 📂 File & Deliverable Structure table at the end of this document.
 2. **Initialize `PROJECT.md`** — Ensure the Project Constitution is populated with data schemas, behavioral rules, architectural invariants, user profile (§5), and design system (§6).
 3. **Halt Execution** — No code or scripts may be written until:
+
 - All Discovery Questions in `PROJECT.md` are answered (see Phase 1)
 - The Data Schema in `PROJECT.md` is confirmed
 - `task_plan.md` has an approved Blueprint
@@ -187,7 +188,7 @@ Every new view must match existing ones automatically. Use the design system as 
 
 When a bug is resolved after significant debugging, encode the fix as a permanent rule here or in `docs/LESSONS.md`. Format:
 
-> **”[Never/Always] [specific behaviour].** *Learned when [brief description of failure].*”
+> **”[Never/Always] [specific behaviour].** _Learned when [brief description of failure]._”
 
 At the end of every session, record new learnings. Apply the Self-Annealing loop for all tool failures:
 
@@ -334,10 +335,10 @@ All code must be managed under Git version control, either locally or via GitHub
 ```other
 main          → Production-ready code only. Never commit directly.
 develop       → Integration branch. All feature branches merge here first.
-feature/*     → One branch per user story. e.g., feature/US-0003-user-login
-bugfix/*      → One branch per bug fix. e.g., bugfix/BUG-0007-auth-token-null
+feature/*     → One branch per user story. e.g., feature/US-XXXX-feature-name
+bugfix/*      → One branch per bug fix. e.g., bugfix/BUG-XXXX-fix-description
 release/*     → Staging branch cut from develop before production deploy. e.g., release/1.0.0
-hotfix/*      → Emergency fixes branched from main. e.g., hotfix/BUG-0012-critical-auth-fix
+hotfix/*      → Emergency fixes branched from main. e.g., hotfix/BUG-XXXX-critical-fix
 ```
 
 **Commit Message Format:**
@@ -376,7 +377,89 @@ Types: `feat`, `fix`, `test`, `docs`, `refactor`, `chore`, `style`, `perf`
 - Enable branch protection on `main` and `develop` — direct pushes forbidden.
 - Use GitHub Actions for CI: run tests and coverage checks on every PR automatically.
 
+**Pull Request Creation Protocol:**
+
+In the agentic SDLC, **Conductor (Delivery Manager)** owns the PR lifecycle. Individual dev agents (Forge, Pixel, Keystone) commit and push to feature branches but do NOT create PRs.
+
+| Step                | Who                              | Action                                                                                                                              |
+| ------------------- | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| 1. Code complete    | Dev agent (Forge/Pixel/Keystone) | Commits to feature branch, pushes to remote, reports completion to Conductor                                                        |
+| 2. Create PR        | **Conductor**                    | Creates PR targeting `develop`, assigns Lens as reviewer                                                                            |
+| 3. Code review      | **Lens** (Code Reviewer)         | Reviews PR using verdict criteria from `CODE_REVIEWER_AGENT.md`                                                                     |
+| 4a. APPROVE         | Lens → Conductor                 | Conductor verifies CI checks pass, then merges (squash and merge)                                                                   |
+| 4b. REQUEST CHANGES | Lens → Conductor                 | Conductor re-spawns the original dev agent with Lens’s feedback; agent fixes and pushes; Conductor re-requests Lens review          |
+| 4c. BLOCK           | Lens → Conductor                 | Conductor halts orchestration, sets phase to `blocked`, escalates to human. See BLOCK Recovery Protocol in `DM_AGENT.md`            |
+| 5. CI verification  | **Conductor**                    | After merge, checks all CI jobs pass (lint, test, build, format, audit, orchestrator). If any fail, spawns appropriate agent to fix |
+| 6. Merge            | **Conductor**                    | Squash and merge to `develop`. Delete feature branch                                                                                |
+
+**Verdict Criteria (Lens):**
+
+- **BLOCK** — Security vulnerabilities, fundamental type-safety violations, all tests failing, wrong architecture layer, data loss risk. Requires human intervention.
+- **REQUEST CHANGES** — Missing error states, hardcoded values, test coverage gaps, minor architecture deviations, naming issues, accessibility gaps, scope mismatches. Dev agent can fix.
+- **APPROVE** — All blockers resolved, no majors remain, tests pass, architecture followed, design system compliant.
+
+**CI Pipeline (6 Jobs):**
+
+All PRs to `main` and `develop` must pass these checks before merge:
+
+| Job             | Command                                       | Purpose                                      |
+| --------------- | --------------------------------------------- | -------------------------------------------- |
+| Lint            | `npx eslint .`                                | Code quality (tools/, orchestrator/, tests/) |
+| Test & Coverage | `npm run test:coverage`                       | Unit tests + 80% coverage threshold          |
+| Build           | `npm run build`                               | Full pipeline (avatars → plan → dashboard)   |
+| Orchestrator    | `node orchestrator/spawn.js --list-platforms` | Smoke test spawn abstraction + adapters      |
+| Format          | `npm run format:check`                        | Prettier formatting consistency              |
+| Audit           | `npm audit --audit-level=high`                | Dependency vulnerability scan                |
+
 > **Rule:** If it isn’t in version control, it doesn’t exist. If it isn’t on a branch, it isn’t safe.
+
+---
+
+### Concurrency Safety
+
+When agents run in parallel (Phase 3: Forge + Pixel), shared state files must be accessed through concurrency-safe utilities to prevent race conditions, data corruption, and lost writes.
+
+**Concurrency utilities** (in `orchestrator/`):
+
+| Module            | Purpose                                                      | Key Functions                                                  |
+| ----------------- | ------------------------------------------------------------ | -------------------------------------------------------------- |
+| `file-lock.js`    | mkdir-based file locking with stale detection                | `withLock()`, `withLockSync()`                                 |
+| `atomic-write.js` | Atomic JSON read-modify-write, locked append, ID reservation | `atomicReadModifyWriteJson()`, `atomicAppend()`, `reserveId()` |
+| `git-safe.js`     | Retry-safe push, conflict detection, overlap checking        | `safePush()`, `detectConflicts()`, `checkOverlap()`            |
+
+**Protected shared files:** `docs/sdlc-status.json`, `progress.md`, `docs/BUGS.md`, `docs/ID_REGISTRY.md`, `docs/AI_COST_LOG.md`
+
+**Rules:**
+
+- Never write directly to shared files during parallel execution — always use the concurrency utilities
+- Never manually increment IDs in `ID_REGISTRY.md` — use `reserveId(sequence)` to atomically allocate
+- Always use `safePush()` instead of raw `git push` — it retries on network errors and auto-pulls on rejection
+- Before merging parallel branches, run `checkOverlap()` to identify conflicting file edits
+
+### Pre-Commit Hooks
+
+A husky pre-commit hook runs lint-staged on every `git commit`:
+
+- `*.{js,json,md,yml,yaml}` — auto-formatted with Prettier
+- `*.js` — auto-fixed with ESLint
+
+This prevents unformatted code from reaching CI. The hook activates automatically via `npm install` (`"prepare": "husky"` in `package.json`).
+
+### Config-Driven Agent Registry
+
+All agent definitions (names, roles, icons, colors, instruction files) are centralized in `agents.config.json`. This file is the single source of truth consumed by:
+
+- `orchestrator/spawn.js` — agent spawning and CLI help
+- `tools/generate-dashboard.js` — agent colors, icons, and roles on the dashboard
+- `tools/process-avatars.js` — avatar grid layout and extraction order
+- `tools/init-sdlc-status.js` — generates `docs/sdlc-status.json` with correct agent entries
+
+**Rules:**
+
+- Never hardcode agent names, roles, or colors in code — always read from `agents.config.json`
+- When adding a new agent, add it to `agents.config.json` first, then create the instruction file
+- Run `npm run init:status -- --force` to regenerate `sdlc-status.json` after config changes
+- The `orchestrator.dmAgent` and `orchestrator.reviewer` fields identify the DM and reviewer agents
 
 ---
 
@@ -465,7 +548,7 @@ All APIs exposed or consumed by this project must follow consistent design and v
 ```json
 {
   "success": true,
-  "data": { },
+  "data": {},
   "error": null,
   "meta": { "version": "1.0", "timestamp": "ISO8601" }
 }
@@ -594,7 +677,7 @@ Steps:
 Post-rollback:
 
 - Log incident in progress.md with timeline, root cause, and resolution.
-- Open a bugfix/* branch to address the root cause before re-attempting deployment.
+- Open a bugfix/\* branch to address the root cause before re-attempting deployment.
 
 ```other
 

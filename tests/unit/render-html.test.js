@@ -3,12 +3,27 @@ const { renderHtml } = require('../../tools/lib/render-html');
 
 const sampleData = {
   epics: [{ id: 'EPIC-0001', title: 'Code Editing', status: 'In Progress', releaseTarget: 'MVP', dependencies: [] }],
-  stories: [{ id: 'US-0001', epicId: 'EPIC-0001', title: 'Open a file', priority: 'P0', estimate: 'M', status: 'In Progress', branch: 'feature/US-0001', acs: [], dependencies: [] }],
+  stories: [
+    {
+      id: 'US-0001',
+      epicId: 'EPIC-0001',
+      title: 'Open a file',
+      priority: 'P0',
+      estimate: 'M',
+      status: 'In Progress',
+      branch: 'feature/US-0001',
+      acs: [],
+      dependencies: [],
+    },
+  ],
   tasks: [],
   testCases: [],
   bugs: [],
   lessons: [],
-  costs: { 'US-0001': { projectedUsd: 800, aiCostUsd: 0.47, inputTokens: 50000, outputTokens: 14000 }, _totals: { costUsd: 0.89, inputTokens: 95000, outputTokens: 26000 } },
+  costs: {
+    'US-0001': { projectedUsd: 800, aiCostUsd: 0.47, inputTokens: 50000, outputTokens: 14000 },
+    _totals: { costUsd: 0.89, inputTokens: 95000, outputTokens: 26000 },
+  },
   atRisk: { 'US-0001': { missingTCs: true, noBranch: false, failedTCNoBug: false, isAtRisk: true } },
   coverage: { lines: 84.5, overall: 81.0, meetsTarget: true },
   recentActivity: [{ date: '2026-03-10', summary: 'Implemented FileSystemBridge' }],
@@ -20,7 +35,9 @@ const sampleData = {
 
 describe('renderHtml', () => {
   let html;
-  beforeAll(() => { html = renderHtml(sampleData); });
+  beforeAll(() => {
+    html = renderHtml(sampleData);
+  });
 
   it('returns a string', () => expect(typeof html).toBe('string'));
   it('includes DOCTYPE', () => expect(html).toMatch(/<!DOCTYPE html>/));
@@ -46,7 +63,20 @@ describe('renderHtml', () => {
 
 describe('renderHtml — bugs tab', () => {
   it('renders bug rows when bugs present', () => {
-    const dataWithBug = { ...sampleData, bugs: [{ id: 'BUG-0001', title: 'Crash', severity: 'High', status: 'Open', relatedStory: 'US-0001', fixBranch: 'bugfix/BUG-0001', lessonEncoded: 'Yes' }] };
+    const dataWithBug = {
+      ...sampleData,
+      bugs: [
+        {
+          id: 'BUG-0001',
+          title: 'Crash',
+          severity: 'High',
+          status: 'Open',
+          relatedStory: 'US-0001',
+          fixBranch: 'bugfix/BUG-0001',
+          lessonEncoded: 'Yes',
+        },
+      ],
+    };
     const html = renderHtml(dataWithBug);
     expect(html).toMatch(/BUG-0001/);
     expect(html).toMatch(/Crash/);
@@ -55,7 +85,20 @@ describe('renderHtml — bugs tab', () => {
 
 describe('renderHtml — traceability tab', () => {
   it('renders matrix when test cases present', () => {
-    const dataWithTCs = { ...sampleData, testCases: [{ id: 'TC-0001', relatedStory: 'US-0001', relatedAC: 'AC-0001', status: 'Pass', defect: 'None', title: 'Test', type: 'Functional' }] };
+    const dataWithTCs = {
+      ...sampleData,
+      testCases: [
+        {
+          id: 'TC-0001',
+          relatedStory: 'US-0001',
+          relatedAC: 'AC-0001',
+          status: 'Pass',
+          defect: 'None',
+          title: 'Test',
+          type: 'Functional',
+        },
+      ],
+    };
     const html = renderHtml(dataWithTCs);
     expect(html).toMatch(/TC-0001/);
     expect(html).toMatch(/Not linked/);
@@ -121,7 +164,17 @@ describe('renderHtml — story with ACs', () => {
     const dataWithACs = {
       ...sampleData,
       stories: [{ ...sampleData.stories[0], acs: [{ id: 'AC-0001', text: 'File picker opens', done: false }] }],
-      testCases: [{ id: 'TC-0001', relatedStory: 'US-0001', relatedAC: 'AC-0001', status: 'Pass', defect: 'None', title: 'Test', type: 'Functional' }],
+      testCases: [
+        {
+          id: 'TC-0001',
+          relatedStory: 'US-0001',
+          relatedAC: 'AC-0001',
+          status: 'Pass',
+          defect: 'None',
+          title: 'Test',
+          type: 'Functional',
+        },
+      ],
     };
     const html = renderHtml(dataWithACs);
     expect(html).toMatch(/AC-0001/);
@@ -190,7 +243,17 @@ describe('renderHtml — traceability with Fail TC', () => {
   it('renders Fail cell in traceability matrix', () => {
     const dataFailTC = {
       ...sampleData,
-      testCases: [{ id: 'TC-0002', relatedStory: 'US-0001', relatedAC: 'AC-0001', status: 'Fail', defect: 'BUG-0001', title: 'Fail test', type: 'Functional' }],
+      testCases: [
+        {
+          id: 'TC-0002',
+          relatedStory: 'US-0001',
+          relatedAC: 'AC-0001',
+          status: 'Fail',
+          defect: 'BUG-0001',
+          title: 'Fail test',
+          type: 'Functional',
+        },
+      ],
     };
     const html = renderHtml(dataFailTC);
     expect(html).toMatch(/bg-red-100/);
@@ -238,7 +301,17 @@ describe('renderHtml — bugs with lessonEncoded No', () => {
   it('renders ○ for lesson not encoded', () => {
     const dataWithBug = {
       ...sampleData,
-      bugs: [{ id: 'BUG-0002', title: 'Some bug', severity: 'Medium', status: 'Fixed', relatedStory: 'US-0001', fixBranch: '', lessonEncoded: 'No' }],
+      bugs: [
+        {
+          id: 'BUG-0002',
+          title: 'Some bug',
+          severity: 'Medium',
+          status: 'Fixed',
+          relatedStory: 'US-0001',
+          fixBranch: '',
+          lessonEncoded: 'No',
+        },
+      ],
     };
     const html = renderHtml(dataWithBug);
     expect(html).toMatch(/BUG-0002/);
@@ -263,7 +336,17 @@ describe('renderHtml — traceability with Not Run TC', () => {
   it('renders Not Run cell in traceability matrix', () => {
     const dataNotRunTC = {
       ...sampleData,
-      testCases: [{ id: 'TC-0003', relatedStory: 'US-0001', relatedAC: 'AC-0001', status: 'Not Run', defect: 'None', title: 'Not run test', type: 'Functional' }],
+      testCases: [
+        {
+          id: 'TC-0003',
+          relatedStory: 'US-0001',
+          relatedAC: 'AC-0001',
+          status: 'Not Run',
+          defect: 'None',
+          title: 'Not run test',
+          type: 'Functional',
+        },
+      ],
     };
     const html = renderHtml(dataNotRunTC);
     expect(html).toMatch(/TC-0003/);
@@ -289,14 +372,30 @@ describe('renderHtml — filter bar (BUG-0009)', () => {
     expect(renderHtml(sampleData)).toContain('id="f-bug-status"');
   });
   it('assigns bug-row class to bug table rows', () => {
-    const dataWithBug = { ...sampleData, bugs: [{ id: 'BUG-0001', title: 'Crash', severity: 'High', status: 'Open', relatedStory: 'US-0001', fixBranch: 'bugfix/BUG-0001', lessonEncoded: 'No' }] };
+    const dataWithBug = {
+      ...sampleData,
+      bugs: [
+        {
+          id: 'BUG-0001',
+          title: 'Crash',
+          severity: 'High',
+          status: 'Open',
+          relatedStory: 'US-0001',
+          fixBranch: 'bugfix/BUG-0001',
+          lessonEncoded: 'No',
+        },
+      ],
+    };
     expect(renderHtml(dataWithBug)).toContain('bug-row');
   });
 });
 
 describe('renderHtml — coverage available false shows N/A (BUG-0010)', () => {
   it('shows N/A when coverage not available', () => {
-    const noFile = { ...sampleData, coverage: { lines: 0, overall: 0, branches: 0, meetsTarget: false, available: false } };
+    const noFile = {
+      ...sampleData,
+      coverage: { lines: 0, overall: 0, branches: 0, meetsTarget: false, available: false },
+    };
     const html = renderHtml(noFile);
     expect(html).toMatch(/N\/A/);
   });
@@ -304,11 +403,37 @@ describe('renderHtml — coverage available false shows N/A (BUG-0010)', () => {
 
 describe('renderHtml — lessonEncoded startsWith fix (BUG-0038)', () => {
   it('renders ✓ for lessonEncoded starting with Yes', () => {
-    const d = { ...sampleData, bugs: [{ id: 'BUG-0001', title: 'Crash', severity: 'High', status: 'Fixed', relatedStory: 'US-0001', fixBranch: 'bugfix/BUG-0001', lessonEncoded: 'Yes — see docs/LESSONS.md' }] };
+    const d = {
+      ...sampleData,
+      bugs: [
+        {
+          id: 'BUG-0001',
+          title: 'Crash',
+          severity: 'High',
+          status: 'Fixed',
+          relatedStory: 'US-0001',
+          fixBranch: 'bugfix/BUG-0001',
+          lessonEncoded: 'Yes — see docs/LESSONS.md',
+        },
+      ],
+    };
     expect(renderHtml(d)).toContain('✓');
   });
   it('renders ○ for lessonEncoded No', () => {
-    const d = { ...sampleData, bugs: [{ id: 'BUG-0002', title: 'Other', severity: 'Low', status: 'Fixed', relatedStory: 'US-0001', fixBranch: '', lessonEncoded: 'No' }] };
+    const d = {
+      ...sampleData,
+      bugs: [
+        {
+          id: 'BUG-0002',
+          title: 'Other',
+          severity: 'Low',
+          status: 'Fixed',
+          relatedStory: 'US-0001',
+          fixBranch: '',
+          lessonEncoded: 'No',
+        },
+      ],
+    };
     expect(renderHtml(d)).toContain('○');
   });
 });
@@ -317,8 +442,21 @@ describe('renderHtml — bug token dash for estimated costs (BUG-0037)', () => {
   it('shows — for token count when bug cost is estimated', () => {
     const d = {
       ...sampleData,
-      bugs: [{ id: 'BUG-0001', title: 'Crash', severity: 'High', status: 'Fixed', relatedStory: 'US-0001', fixBranch: '', lessonEncoded: 'No' }],
-      costs: { ...sampleData.costs, _bugs: { 'BUG-0001': { costUsd: 0.50, inputTokens: 0, outputTokens: 0, isEstimated: true } } },
+      bugs: [
+        {
+          id: 'BUG-0001',
+          title: 'Crash',
+          severity: 'High',
+          status: 'Fixed',
+          relatedStory: 'US-0001',
+          fixBranch: '',
+          lessonEncoded: 'No',
+        },
+      ],
+      costs: {
+        ...sampleData.costs,
+        _bugs: { 'BUG-0001': { costUsd: 0.5, inputTokens: 0, outputTokens: 0, isEstimated: true } },
+      },
     };
     expect(renderHtml(d)).toContain('—');
   });
@@ -331,7 +469,13 @@ describe('renderHtml — AI cost column colour (BUG-0036)', () => {
 });
 
 describe('renderHtml — Lessons tab (US-0032)', () => {
-  const sampleLesson = { id: 'L-0010', title: 'Update TC statuses', rule: 'Always update TCs when story is Done.', context: 'BUG-0003 caused 23 TCs to show Not Run.', date: '2026-03-10' };
+  const sampleLesson = {
+    id: 'L-0010',
+    title: 'Update TC statuses',
+    rule: 'Always update TCs when story is Done.',
+    context: 'BUG-0003 caused 23 TCs to show Not Run.',
+    date: '2026-03-10',
+  };
 
   it('renders Lessons tab when lessons present', () => {
     const d = { ...sampleData, lessons: [sampleLesson] };
@@ -371,9 +515,33 @@ describe('renderHtml — Lessons tab (US-0032)', () => {
 });
 
 describe('renderHtml — Bugs tab lesson hyperlink (US-0032)', () => {
-  const bugWithLessonId = { id: 'BUG-0001', title: 'Crash', severity: 'High', status: 'Fixed', relatedStory: 'US-0001', fixBranch: '', lessonEncoded: 'Yes — see docs/LESSONS.md (L-0010)' };
-  const bugWithYesNoId  = { id: 'BUG-0002', title: 'Other', severity: 'Low',  status: 'Fixed', relatedStory: 'US-0001', fixBranch: '', lessonEncoded: 'Yes — see docs/LESSONS.md' };
-  const bugNoLesson     = { id: 'BUG-0003', title: 'Minor', severity: 'Low',  status: 'Open',  relatedStory: 'US-0001', fixBranch: '', lessonEncoded: 'No' };
+  const bugWithLessonId = {
+    id: 'BUG-0001',
+    title: 'Crash',
+    severity: 'High',
+    status: 'Fixed',
+    relatedStory: 'US-0001',
+    fixBranch: '',
+    lessonEncoded: 'Yes — see docs/LESSONS.md (L-0010)',
+  };
+  const bugWithYesNoId = {
+    id: 'BUG-0002',
+    title: 'Other',
+    severity: 'Low',
+    status: 'Fixed',
+    relatedStory: 'US-0001',
+    fixBranch: '',
+    lessonEncoded: 'Yes — see docs/LESSONS.md',
+  };
+  const bugNoLesson = {
+    id: 'BUG-0003',
+    title: 'Minor',
+    severity: 'Low',
+    status: 'Open',
+    relatedStory: 'US-0001',
+    fixBranch: '',
+    lessonEncoded: 'No',
+  };
 
   it('renders ✓ L-0010 ↗ as link when lesson ID present', () => {
     const d = { ...sampleData, bugs: [bugWithLessonId] };
@@ -410,18 +578,62 @@ describe('renderHtml — multi-epic bug grouping sort (BUG-0093)', () => {
       { id: 'EPIC-0002', title: 'Navigation', status: 'In Progress', releaseTarget: 'MVP', dependencies: [] },
     ],
     stories: [
-      { id: 'US-0001', epicId: 'EPIC-0001', title: 'Open a file', priority: 'P0', estimate: 'M', status: 'Done', branch: 'feature/US-0001', acs: [], dependencies: [] },
-      { id: 'US-0002', epicId: 'EPIC-0002', title: 'Navigate', priority: 'P1', estimate: 'S', status: 'In Progress', branch: 'feature/US-0002', acs: [], dependencies: [] },
+      {
+        id: 'US-0001',
+        epicId: 'EPIC-0001',
+        title: 'Open a file',
+        priority: 'P0',
+        estimate: 'M',
+        status: 'Done',
+        branch: 'feature/US-0001',
+        acs: [],
+        dependencies: [],
+      },
+      {
+        id: 'US-0002',
+        epicId: 'EPIC-0002',
+        title: 'Navigate',
+        priority: 'P1',
+        estimate: 'S',
+        status: 'In Progress',
+        branch: 'feature/US-0002',
+        acs: [],
+        dependencies: [],
+      },
     ],
     bugs: [
-      { id: 'BUG-0001', title: 'Alpha bug', severity: 'High', status: 'Fixed', relatedStory: 'US-0001', fixBranch: 'bugfix/BUG-0001', lessonEncoded: 'No' },
-      { id: 'BUG-0002', title: 'Beta bug', severity: 'Medium', status: 'Fixed', relatedStory: 'US-0002', fixBranch: 'bugfix/BUG-0002', lessonEncoded: 'No' },
-      { id: 'BUG-0003', title: 'Orphan bug', severity: 'Low', status: 'Open', relatedStory: '', fixBranch: '', lessonEncoded: 'No' },
+      {
+        id: 'BUG-0001',
+        title: 'Alpha bug',
+        severity: 'High',
+        status: 'Fixed',
+        relatedStory: 'US-0001',
+        fixBranch: 'bugfix/BUG-0001',
+        lessonEncoded: 'No',
+      },
+      {
+        id: 'BUG-0002',
+        title: 'Beta bug',
+        severity: 'Medium',
+        status: 'Fixed',
+        relatedStory: 'US-0002',
+        fixBranch: 'bugfix/BUG-0002',
+        lessonEncoded: 'No',
+      },
+      {
+        id: 'BUG-0003',
+        title: 'Orphan bug',
+        severity: 'Low',
+        status: 'Open',
+        relatedStory: '',
+        fixBranch: '',
+        lessonEncoded: 'No',
+      },
     ],
     costs: {
       ...sampleData.costs,
       _bugs: {
-        'BUG-0001': { costUsd: 0.10, inputTokens: 1000, outputTokens: 300, projectedUsd: 400 },
+        'BUG-0001': { costUsd: 0.1, inputTokens: 1000, outputTokens: 300, projectedUsd: 400 },
         'BUG-0002': { costUsd: 0.05, inputTokens: 500, outputTokens: 100, projectedUsd: 200 },
         'BUG-0003': { costUsd: 0, inputTokens: 0, outputTokens: 0, projectedUsd: 200, isEstimated: true },
       },
