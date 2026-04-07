@@ -20,17 +20,17 @@ describe('attributeAICosts', () => {
   ];
   const costByBranch = {
     'feature/US-0001-open-file': { costUsd: 0.47, inputTokens: 50000, outputTokens: 14000, sessions: 2 },
-    'main': { costUsd: 0.42, inputTokens: 45000, outputTokens: 12000, sessions: 1 },
+    main: { costUsd: 0.42, inputTokens: 45000, outputTokens: 12000, sessions: 1 },
   };
 
   it('attributes cost to matching story by branch', () => {
     const result = attributeAICosts(stories, costByBranch);
-    expect(result['US-0001'].costUsd).toBeCloseTo(0.47);
+    expect(result['US-0001'].costUsd).toBeCloseTo(0.68);
   });
 
-  it('story with no branch gets 0 cost', () => {
+  it('story with no branch gets share of unattributed cost', () => {
     const result = attributeAICosts(stories, costByBranch);
-    expect(result['US-0002'].costUsd).toBe(0);
+    expect(result['US-0002'].costUsd).toBeCloseTo(0.21);
   });
 
   it('returns totalAiCost across all branches', () => {
@@ -47,7 +47,7 @@ describe('attributeBugCosts', () => {
   ];
   const costByBranch = {
     'bugfix/BUG-0001-crash': { costUsd: 0.25, inputTokens: 30000, outputTokens: 8000, sessions: 3 },
-    'main': { costUsd: 0.10, inputTokens: 10000, outputTokens: 3000, sessions: 1 },
+    main: { costUsd: 0.1, inputTokens: 10000, outputTokens: 3000, sessions: 1 },
   };
 
   it('attributes cost to bug by fixBranch', () => {
@@ -87,11 +87,11 @@ describe('attributeBugCosts', () => {
   });
 
   it('uses estimatedCostUsd fallback when branch has no cost log entry', () => {
-    const bugsWithEstimate = [{ id: 'BUG-0003', fixBranch: 'bugfix/BUG-0003-no-match', estimatedCostUsd: 0.30 }];
+    const bugsWithEstimate = [{ id: 'BUG-0003', fixBranch: 'bugfix/BUG-0003-no-match', estimatedCostUsd: 0.3 }];
     const result = attributeBugCosts(bugsWithEstimate, costByBranch);
-    expect(result['BUG-0003'].costUsd).toBeCloseTo(0.30);
+    expect(result['BUG-0003'].costUsd).toBeCloseTo(0.3);
     expect(result['BUG-0003'].isEstimated).toBe(true);
-    expect(result._totals.costUsd).toBeCloseTo(0.30);
+    expect(result._totals.costUsd).toBeCloseTo(0.3);
   });
 
   it('does not set isEstimated when estimatedCostUsd is 0', () => {

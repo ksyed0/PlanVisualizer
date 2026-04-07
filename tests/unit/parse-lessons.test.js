@@ -28,7 +28,9 @@ const sample = `
 
 describe('parseLessons', () => {
   let lessons;
-  beforeAll(() => { lessons = parseLessons(sample); });
+  beforeAll(() => {
+    lessons = parseLessons(sample);
+  });
 
   it('returns an array', () => expect(Array.isArray(lessons)).toBe(true));
   it('parses all lesson entries', () => expect(lessons).toHaveLength(3));
@@ -39,7 +41,7 @@ describe('parseLessons', () => {
   it('parses context text', () => expect(lessons[0].context).toMatch(/inflight/));
   it('parses date', () => expect(lessons[0].date).toBe('2026-03-10'));
   it('preserves document order (non-sequential IDs)', () => {
-    expect(lessons.map(l => l.id)).toEqual(['L-0001', 'L-0007', 'L-0011']);
+    expect(lessons.map((l) => l.id)).toEqual(['L-0001', 'L-0007', 'L-0011']);
   });
   it('handles empty markdown', () => expect(parseLessons('')).toEqual([]));
   it('handles markdown with no lessons', () => expect(parseLessons('# Title\nSome text\n')).toEqual([]));

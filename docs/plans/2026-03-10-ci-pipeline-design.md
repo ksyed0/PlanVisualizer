@@ -1,4 +1,5 @@
 # CI Pipeline Design
+
 **Date:** 2026-03-10
 **Status:** Approved
 
@@ -18,16 +19,17 @@ Dependabot for automated dependency updates.
 
 ## Trigger Strategy
 
-| Job        | All branch push | PR  | Push to main | Weekly schedule |
-|------------|-----------------|-----|--------------|-----------------|
-| lint       | ✓               | ✓   | ✓            |                 |
-| test       | ✓               | ✓   | ✓            |                 |
-| npm audit  | ✓               | ✓   | ✓            |                 |
-| CodeQL     |                 | ✓   | ✓            | ✓               |
+| Job       | All branch push | PR  | Push to main | Weekly schedule |
+| --------- | --------------- | --- | ------------ | --------------- |
+| lint      | ✓               | ✓   | ✓            |                 |
+| test      | ✓               | ✓   | ✓            |                 |
+| npm audit | ✓               | ✓   | ✓            |                 |
+| CodeQL    |                 | ✓   | ✓            | ✓               |
 
 ## Job Designs
 
 ### lint
+
 - Runner: `ubuntu-latest`, Node 20
 - Install: `npm ci`
 - Tool: ESLint with `eslint:recommended` + explicit rules:
@@ -40,6 +42,7 @@ Dependabot for automated dependency updates.
 - Fails PR if any ESLint error (warnings allowed)
 
 ### test
+
 - Runner: `ubuntu-latest`, Node 20
 - Install: `npm ci`
 - Command: `npm run test:coverage -- --ci`
@@ -48,12 +51,14 @@ Dependabot for automated dependency updates.
 - Fails PR if any threshold not met
 
 ### security (npm audit)
+
 - Runner: `ubuntu-latest`, Node 20
 - Install: `npm ci`
 - Command: `npm audit --audit-level=moderate`
 - Fails on moderate, high, or critical vulnerabilities
 
 ### codeql
+
 - Runner: `ubuntu-latest`
 - Language: javascript
 - Triggers: PR, push to main, weekly Monday 08:00 UTC
@@ -62,13 +67,13 @@ Dependabot for automated dependency updates.
 
 ## Supporting Files
 
-| File | Change |
-|------|--------|
+| File                       | Change                                            |
+| -------------------------- | ------------------------------------------------- |
 | `.github/workflows/ci.yml` | Replace existing with consolidated 4-job workflow |
-| `.github/dependabot.yml` | New — weekly npm + Actions updates |
-| `.eslintrc.js` | New — ESLint config |
-| `jest.config.js` | Add `coverageThreshold` block |
-| `package.json` | Add `eslint` devDependency + `lint` script |
+| `.github/dependabot.yml`   | New — weekly npm + Actions updates                |
+| `.eslintrc.js`             | New — ESLint config                               |
+| `jest.config.js`           | Add `coverageThreshold` block                     |
+| `package.json`             | Add `eslint` devDependency + `lint` script        |
 
 ## What Is Not Changed
 
@@ -78,8 +83,8 @@ Dependabot for automated dependency updates.
 
 ## Risks & Mitigations
 
-| Risk | Mitigation |
-|------|-----------|
-| ESLint errors in existing code | Run lint locally first; fix before committing |
-| Coverage currently below 80% | Run `npm run test:coverage` to verify current state before adding gate |
-| CodeQL false positives | Review SARIF output; suppress with inline comments if needed |
+| Risk                           | Mitigation                                                             |
+| ------------------------------ | ---------------------------------------------------------------------- |
+| ESLint errors in existing code | Run lint locally first; fix before committing                          |
+| Coverage currently below 80%   | Run `npm run test:coverage` to verify current state before adding gate |
+| CodeQL false positives         | Review SARIF output; suppress with inline comments if needed           |

@@ -3,13 +3,13 @@ const path = require('path');
 const fs = require('fs');
 const { parseCostLog, deduplicateSessions, aggregateCostByBranch } = require('../../tools/lib/parse-cost-log');
 
-const fixture = fs.readFileSync(
-  path.join(__dirname, '../fixtures/AI_COST_LOG.md'), 'utf8'
-);
+const fixture = fs.readFileSync(path.join(__dirname, '../fixtures/AI_COST_LOG.md'), 'utf8');
 
 describe('parseCostLog', () => {
   let rows;
-  beforeAll(() => { rows = parseCostLog(fixture); });
+  beforeAll(() => {
+    rows = parseCostLog(fixture);
+  });
 
   it('parses 3 rows', () => expect(rows).toHaveLength(3));
   it('parses date', () => expect(rows[0].date).toBe('2026-03-09'));
@@ -24,13 +24,13 @@ describe('parseCostLog', () => {
 describe('deduplicateSessions', () => {
   it('keeps only the last row per session_id', () => {
     const rows = [
-      { sessionId: 'abc', branch: 'main', inputTokens: 100, outputTokens: 10, cacheReadTokens: 5, costUsd: 0.10 },
-      { sessionId: 'abc', branch: 'main', inputTokens: 200, outputTokens: 20, cacheReadTokens: 10, costUsd: 0.20 },
-      { sessionId: 'xyz', branch: 'main', inputTokens: 50,  outputTokens: 5,  cacheReadTokens: 2,  costUsd: 0.05 },
+      { sessionId: 'abc', branch: 'main', inputTokens: 100, outputTokens: 10, cacheReadTokens: 5, costUsd: 0.1 },
+      { sessionId: 'abc', branch: 'main', inputTokens: 200, outputTokens: 20, cacheReadTokens: 10, costUsd: 0.2 },
+      { sessionId: 'xyz', branch: 'main', inputTokens: 50, outputTokens: 5, cacheReadTokens: 2, costUsd: 0.05 },
     ];
     const deduped = deduplicateSessions(rows);
     expect(deduped).toHaveLength(2);
-    expect(deduped.find(r => r.sessionId === 'abc').costUsd).toBe(0.20);
+    expect(deduped.find((r) => r.sessionId === 'abc').costUsd).toBe(0.2);
   });
 
   it('returns all rows when all session_ids are unique', () => {
@@ -44,7 +44,9 @@ describe('deduplicateSessions', () => {
 
 describe('aggregateCostByBranch', () => {
   let agg;
-  beforeAll(() => { agg = aggregateCostByBranch(parseCostLog(fixture)); });
+  beforeAll(() => {
+    agg = aggregateCostByBranch(parseCostLog(fixture));
+  });
 
   it('sums two sessions on same branch', () => {
     expect(agg['feature/US-0001-open-file'].costUsd).toBeCloseTo(0.47);
@@ -58,11 +60,18 @@ describe('aggregateCostByBranch', () => {
 
   it('deduplicates same session_id — counts session once, using last row', () => {
     const rows = parseCostLog(fixture).concat([
-      { sessionId: 'sess_001', branch: 'main', inputTokens: 50000, outputTokens: 13000, cacheReadTokens: 9000, costUsd: 0.50 },
+      {
+        sessionId: 'sess_001',
+        branch: 'main',
+        inputTokens: 50000,
+        outputTokens: 13000,
+        cacheReadTokens: 9000,
+        costUsd: 0.5,
+      },
     ]);
     const a = aggregateCostByBranch(rows);
     // sess_001 appears twice — only the last (0.50) should be counted, not 0.42 + 0.50
-    expect(a['main'].costUsd).toBeCloseTo(0.50);
+    expect(a['main'].costUsd).toBeCloseTo(0.5);
     expect(a['main'].sessions).toBe(1);
   });
 });

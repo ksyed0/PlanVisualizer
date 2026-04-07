@@ -2,7 +2,8 @@
 
 function parseLessons(markdown) {
   const results = [];
-  const re = /^## (L-\d{4}) — (.+)$/gm;
+  // Match both "## L-0001 — title" and "## L-0001: title" formats
+  const re = /^## (L-\d{4})\s*[—:]\s*(.+)$/gm;
   let match;
   while ((match = re.exec(markdown)) !== null) {
     const id = match[1];
@@ -12,16 +13,20 @@ function parseLessons(markdown) {
     nextRe.lastIndex = startIdx + 1;
     const next = nextRe.exec(markdown);
     const block = markdown.slice(startIdx, next ? next.index : undefined);
-    const ruleM = block.match(/\*\*Rule:\*\*\s*(.+?)(?=\n\*|\n\*\*Date|\n---|\n## |$)/s);
+    // Extract rule from **Rule:** or **Lesson:** or **Pattern:**/**Lesson:** block
+    const ruleM = block.match(/\*\*(?:Rule|Lesson):\*\*\s*(.+?)(?=\n\*|\n\*\*Date|\n\*\*Bugs|\n---|\n## |$)/s);
     const ctxMatches = [...block.matchAll(/\n\*([^*]+)\*/g)];
-    const context = ctxMatches.map(m => m[1].trim()).join(' ');
+    const context = ctxMatches.map((m) => m[1].trim()).join(' ');
     const dateM = block.match(/\*\*Date:\*\*\s*(\S+)/);
+    const bugsM = block.match(/\*\*Bugs:\*\*\s*(.+)/);
+    const bugIds = bugsM ? bugsM[1].match(/BUG-\d{4}/g) || [] : [];
     results.push({
       id,
       title,
       rule: ruleM ? ruleM[1].trim() : '',
       context,
       date: dateM ? dateM[1].trim() : '',
+      bugIds,
     });
   }
   return results;

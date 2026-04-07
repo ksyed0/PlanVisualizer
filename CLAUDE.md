@@ -25,13 +25,13 @@
 
 ## Key Protocols (from AGENTS.md)
 
-| Protocol | Rule |
-|----------|------|
-| §1 Sequential Execution | **Disabled** — parallel agents permitted |
-| §4 Prompt Logging | Log every user prompt to `PROMPT_LOG.md` with timestamp |
-| §8 Unit Testing | ≥80% coverage; all tests pass before any commit |
-| §11 Git Workflow | `feature/*` → `develop` (PR) → `main` (PR). Never push directly to `main` or `develop` |
-| §14 Session Close | Update `progress.md`, `MEMORY.md`, `PROMPT_LOG.md`, `LESSONS.md`, `MIGRATION_LOG.md` before ending |
+| Protocol                | Rule                                                                                               |
+| ----------------------- | -------------------------------------------------------------------------------------------------- |
+| §1 Sequential Execution | **Disabled** — parallel agents permitted                                                           |
+| §4 Prompt Logging       | Log every user prompt to `PROMPT_LOG.md` with timestamp                                            |
+| §8 Unit Testing         | ≥80% coverage; all tests pass before any commit                                                    |
+| §11 Git Workflow        | `feature/*` → `develop` (PR) → `main` (PR). Never push directly to `main` or `develop`             |
+| §14 Session Close       | Update `progress.md`, `MEMORY.md`, `PROMPT_LOG.md`, `LESSONS.md`, `MIGRATION_LOG.md` before ending |
 
 ---
 

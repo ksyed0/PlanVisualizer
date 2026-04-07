@@ -3,13 +3,13 @@ const path = require('path');
 const fs = require('fs');
 const { parseTestCases } = require('../../tools/lib/parse-test-cases');
 
-const fixture = fs.readFileSync(
-  path.join(__dirname, '../fixtures/TEST_CASES.md'), 'utf8'
-);
+const fixture = fs.readFileSync(path.join(__dirname, '../fixtures/TEST_CASES.md'), 'utf8');
 
 describe('parseTestCases', () => {
   let result;
-  beforeAll(() => { result = parseTestCases(fixture); });
+  beforeAll(() => {
+    result = parseTestCases(fixture);
+  });
 
   it('extracts one test case', () => expect(result).toHaveLength(1));
   it('parses TC id', () => expect(result[0].id).toBe('TC-0001'));

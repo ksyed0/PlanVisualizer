@@ -13,16 +13,16 @@ PlanVisualizer is a Node.js CLI tool with no production runtime dependencies. It
 
 ## 2. Technology Stack
 
-| Layer | Technology | Version | Justification |
-|-------|-----------|---------|---------------|
-| Runtime | Node.js | 18+ | LTS, available everywhere; `fs` and `path` are sufficient |
-| Test framework | Jest | 30.x | Industry standard; supports coverage reporting |
-| Linter | ESLint | 9.x | Flat config; `eslint:recommended` + security rules |
-| CSS | Tailwind CSS | CDN | Zero build step; utility-first for rapid UI |
-| Charts | Chart.js | 4.x CDN | Zero build step; covers all required chart types |
-| Fonts | Google Fonts | CDN | Inter + JetBrains Mono |
-| CI | GitHub Actions | — | Native to repo; free for public repos |
-| Hosting | GitHub Pages | — | Zero-config static hosting |
+| Layer          | Technology     | Version | Justification                                             |
+| -------------- | -------------- | ------- | --------------------------------------------------------- |
+| Runtime        | Node.js        | 18+     | LTS, available everywhere; `fs` and `path` are sufficient |
+| Test framework | Jest           | 30.x    | Industry standard; supports coverage reporting            |
+| Linter         | ESLint         | 9.x     | Flat config; `eslint:recommended` + security rules        |
+| CSS            | Tailwind CSS   | CDN     | Zero build step; utility-first for rapid UI               |
+| Charts         | Chart.js       | 4.x CDN | Zero build step; covers all required chart types          |
+| Fonts          | Google Fonts   | CDN     | Inter + JetBrains Mono                                    |
+| CI             | GitHub Actions | —       | Native to repo; free for public repos                     |
+| Hosting        | GitHub Pages   | —       | Zero-config static hosting                                |
 
 ---
 
@@ -101,6 +101,7 @@ function parseXxx(markdown) { ... }
 ```
 
 **Key design decisions:**
+
 - **Regex, not a markdown parser.** No dependencies. Parsers target the specific format defined in `plan_visualizer.md` (the canonical format reference distributed to target projects).
 - **Never throw.** Missing fields default to empty string or zero. The renderer handles absent data gracefully.
 - **Fenced code block extraction** (`parse-release-plan.js` only). Epic/story/task definitions must live inside triple-backtick fences to support narrative commentary outside the parseable content.
@@ -112,20 +113,20 @@ function parseXxx(markdown) { ... }
 
 `renderHtml(data)` in `render-html.js` orchestrates 12 sub-renderers, each returning an HTML string:
 
-| Function | Output |
-|----------|--------|
-| `renderTopBar(data)` | Project name, progress bar, 6 stat tiles |
-| `renderFilterBar(data)` | Per-tab contextual filter groups (fgrp-story / fgrp-bug); hidden when no filters apply |
-| `renderTabs()` | 7 tab buttons (Hierarchy, Kanban, Traceability, Charts, Costs, Bugs, Lessons) |
-| `renderHierarchyTab(data)` | Collapsible epic → story → AC tree (column view) + story card grid (card view); toggle persists to localStorage |
-| `renderKanbanTab(data)` | 5-column kanban board; each column scrolls independently so headers never leave view |
-| `renderTraceabilityTab(data)` | Story × TC matrix |
-| `renderChartsTab(data)` | 6 Chart.js canvases at uniform 300 px height (`maintainAspectRatio:false`) + inline `<script>` |
-| `renderCostsTab(data)` | Per-story cost table with totals + Bug Fix Costs sub-table with totals row |
-| `renderBugsTab(data)` | Bug register table; rows carry `data-status` and `class="bug-row"` for filtering |
-| `renderLessonsTab(data)` | Lessons column/card view with Bug Ref cross-links; toggle persists to localStorage |
-| `renderRecentActivity(data)` | Floating activity panel; shows "Session N · YYYY-MM-DD" per entry |
-| `renderScripts(data)` | Tab switching (`showTab` → `updateFilterBar`), filter logic (`applyFilters`), view toggles |
+| Function                      | Output                                                                                                          |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `renderTopBar(data)`          | Project name, progress bar, 6 stat tiles                                                                        |
+| `renderFilterBar(data)`       | Per-tab contextual filter groups (fgrp-story / fgrp-bug); hidden when no filters apply                          |
+| `renderTabs()`                | 7 tab buttons (Hierarchy, Kanban, Traceability, Charts, Costs, Bugs, Lessons)                                   |
+| `renderHierarchyTab(data)`    | Collapsible epic → story → AC tree (column view) + story card grid (card view); toggle persists to localStorage |
+| `renderKanbanTab(data)`       | 5-column kanban board; each column scrolls independently so headers never leave view                            |
+| `renderTraceabilityTab(data)` | Story × TC matrix                                                                                               |
+| `renderChartsTab(data)`       | 6 Chart.js canvases at uniform 300 px height (`maintainAspectRatio:false`) + inline `<script>`                  |
+| `renderCostsTab(data)`        | Per-story cost table with totals + Bug Fix Costs sub-table with totals row                                      |
+| `renderBugsTab(data)`         | Bug register table; rows carry `data-status` and `class="bug-row"` for filtering                                |
+| `renderLessonsTab(data)`      | Lessons column/card view with Bug Ref cross-links; toggle persists to localStorage                              |
+| `renderRecentActivity(data)`  | Floating activity panel; shows "Session N · YYYY-MM-DD" per entry                                               |
+| `renderScripts(data)`         | Tab switching (`showTab` → `updateFilterBar`), filter logic (`applyFilters`), view toggles                      |
 
 **Inline JavaScript** handles all interactivity. No frameworks. Tab switching, filter application, and chart initialisation are implemented as plain functions serialised into the HTML output.
 
@@ -142,7 +143,7 @@ function parseXxx(markdown) { ... }
 ```js
 const config = {
   project: { ...DEFAULTS.project, ...raw.project },
-  docs:    { ...DEFAULTS.docs,    ...raw.docs    },
+  docs: { ...DEFAULTS.docs, ...raw.docs },
   // ...
 };
 ```
@@ -154,12 +155,14 @@ The `plan-visualizer.config.json` is gitignored by default so target projects ke
 ## 8. Cost Attribution System
 
 **Capture** (`capture-cost.js`):
+
 1. Claude Code invokes the stop hook, passing session data as JSON via stdin.
 2. The hook reads `cost_usd`, `usage.input_tokens`, `usage.output_tokens`, `usage.cache_read_input_tokens`, and `session_id` from stdin.
 3. The current git branch is resolved via `git rev-parse --abbrev-ref HEAD`.
 4. A pipe-delimited row is appended to `AI_COST_LOG.md` using `fs.openSync` with the `'a'` flag (append-safe; never overwrites).
 
 **Attribution** (`compute-costs.js`):
+
 1. `parseCostLog()` parses all rows from the log.
 2. `aggregateCostByBranch()` sums tokens and cost per branch name.
 3. `attributeAICosts()` matches `story.branch` to the aggregated branch map — returning `{ costUsd, inputTokens, outputTokens, sessions }` per story, and `_totals` across all branches.
@@ -171,11 +174,11 @@ The `plan-visualizer.config.json` is gitignored by default so target projects ke
 
 `detectAtRisk(stories, testCases, bugs)` evaluates four signals per story:
 
-| Signal | Condition | Meaning |
-|--------|-----------|---------|
-| `missingTCs` | Story has ≥1 AC but zero linked TCs | Story lacks test coverage |
-| `noBranch` | `status === 'In Progress'` AND `branch === ''` | Active story has no git branch |
-| `failedTCNoBug` | A linked TC has `status === 'Fail'` AND `defect === 'None'` | Known failure not tracked as a bug |
+| Signal            | Condition                                                                                     | Meaning                              |
+| ----------------- | --------------------------------------------------------------------------------------------- | ------------------------------------ |
+| `missingTCs`      | Story has ≥1 AC but zero linked TCs                                                           | Story lacks test coverage            |
+| `noBranch`        | `status === 'In Progress'` AND `branch === ''`                                                | Active story has no git branch       |
+| `failedTCNoBug`   | A linked TC has `status === 'Fail'` AND `defect === 'None'`                                   | Known failure not tracked as a bug   |
 | `openCriticalBug` | A linked bug has `severity === 'Critical' \| 'High'` AND `status === 'Open' \| 'In Progress'` | Unresolved defect blocking the story |
 
 A story is `isAtRisk` if **any signal is true AND the story status is not `Done`**. Done stories are always `isAtRisk: false` regardless of missing TCs or other signals. The ⚠ badge and tooltip are rendered in the Hierarchy tab.
@@ -185,21 +188,26 @@ A story is `isAtRisk` if **any signal is true AND the story status is not `Done`
 ## 10. CI/CD Architecture
 
 ### ci.yml (all branches + PRs)
+
 Three parallel jobs, all required:
+
 - **lint** — ESLint with `eslint:recommended` + security rules on `tools/**/*.js`
 - **test** — Jest with `--coverage`, 80% threshold enforced via `jest.config.js`
 - **audit** — `npm audit --audit-level=moderate`
 
 ### codeql.yml (PRs + main + weekly)
+
 - GitHub CodeQL JavaScript analysis with `security-extended` query pack
 - Results uploaded to GitHub Security tab as SARIF
 - Runs on a Monday schedule to avoid burning minutes on every feature branch
 
 ### plan-visualizer.yml (docs file changes on main/develop)
+
 - Triggers when `RELEASE_PLAN.md`, `TEST_CASES.md`, `BUGS.md`, `AI_COST_LOG.md`, or `progress.md` change
 - Runs `node tools/generate-plan.js`, commits the output, and deploys to GitHub Pages
 
 ### dependabot.yml
+
 - Weekly npm updates (Monday 09:00 UTC)
 - Weekly GitHub Actions updates (Monday 09:00 UTC)
 - Max 5 open PRs per ecosystem
@@ -220,11 +228,11 @@ The `plan-visualizer.yml` workflow uses the official `actions/upload-pages-artif
 
 ## 12. Performance Characteristics
 
-| Operation | Typical time | Notes |
-|-----------|-------------|-------|
-| `generate-plan.js` full run | < 200ms | Pure Node.js I/O + regex |
-| Jest test suite (153+ tests) | < 1s | No I/O mocking needed |
-| ESLint on `tools/**/*.js` | < 2s | ~11 source files |
-| `npm audit` | < 10s | Network call to npm registry |
-| CodeQL analysis | 3–5 min | Depends on codebase size |
-| GitHub Pages deploy | 1–2 min | upload-pages-artifact + deploy-pages |
+| Operation                    | Typical time | Notes                                |
+| ---------------------------- | ------------ | ------------------------------------ |
+| `generate-plan.js` full run  | < 200ms      | Pure Node.js I/O + regex             |
+| Jest test suite (153+ tests) | < 1s         | No I/O mocking needed                |
+| ESLint on `tools/**/*.js`    | < 2s         | ~11 source files                     |
+| `npm audit`                  | < 10s        | Network call to npm registry         |
+| CodeQL analysis              | 3–5 min      | Depends on codebase size             |
+| GitHub Pages deploy          | 1–2 min      | upload-pages-artifact + deploy-pages |

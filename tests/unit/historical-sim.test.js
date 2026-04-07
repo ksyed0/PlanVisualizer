@@ -66,7 +66,12 @@ describe('historical-sim', () => {
         stories: [
           { id: 'US-0001', status: 'Done', estimate: 'M', epicId: 'EPIC-0001' },
           { id: 'US-0002', status: 'Done', estimate: 'S', epicId: 'EPIC-0001' },
-          { id: 'US-0003', status: 'Planned', estimate: 'M', epicId: 'EPIC-0002' },
+          {
+            id: 'US-0003',
+            status: 'Planned',
+            estimate: 'M',
+            epicId: 'EPIC-0002',
+          },
         ],
         costs: {
           _totals: { costUsd: 100, inputTokens: 50000, outputTokens: 25000 },
