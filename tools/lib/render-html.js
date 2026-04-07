@@ -1,5 +1,7 @@
 'use strict';
 
+const { buildSearchIndex } = require('./search-index');
+
 const esc = (s) =>
   String(s ?? '')
     .replace(/&/g, '&amp;')
@@ -100,6 +102,7 @@ function renderTopBar(data) {
       <div class="topbar-project">
         <div class="flex items-center gap-2 flex-wrap">
           <h1 class="topbar-title">${esc(data.projectName)}</h1>
+          <button onclick="openSearch()" id="search-pill" class="topbar-btn" aria-label="Open search (⌘K)">🔍 <span id="search-pill-shortcut">⌘K</span></button>
           <button onclick="openAbout()" class="topbar-btn">About</button>
           <a href="dashboard.html" class="topbar-btn" style="text-decoration:none">Agent Dashboard &#8594;</a>
           <button onclick="toggleTheme()" id="theme-toggle" class="topbar-btn" aria-label="Toggle dark/light mode"><span id="theme-icon">&#9788;</span></button>
@@ -281,7 +284,7 @@ function renderHierarchyTab(data) {
           })
           .join('');
         return `
-      <div class="story-row ml-6 border-l-2 border-slate-200 dark:border-slate-600 pl-4 py-2"
+      <div id="story-${esc(story.id)}" class="story-row ml-6 border-l-2 border-slate-200 dark:border-slate-600 pl-4 py-2"
            data-epic="${esc(story.epicId)}" data-status="${esc(story.status)}" data-priority="${esc(story.priority)}">
         <div class="flex flex-wrap items-center gap-2 cursor-pointer" onclick="toggleACs('${jsEsc(story.id)}')">
           <span class="font-mono text-xs text-slate-500 whitespace-nowrap">${story.id}</span>
@@ -1674,6 +1677,7 @@ function renderScripts(data, options = {}) {
   return `
   <script>
   const ALL_DATA = ${allData};
+  const SEARCH_INDEX = ${JSON.stringify(buildSearchIndex(data)).replace(/<\/script>/gi, '<\\/script>')};
 
   const VALID_TABS = ['hierarchy','kanban','traceability','charts','trends','costs','bugs','lessons'];
 
@@ -2093,6 +2097,25 @@ function renderHtml(data, options = {}) {
     .topbar-tagline { font-size: 11px; color: rgba(255,255,255,0.72); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 1px; }
     .topbar-btn { background: none; border: 1px solid rgba(255,255,255,0.35); color: rgba(255,255,255,0.8); border-radius: 4px; padding: 2px 8px; font-size: 11px; cursor: pointer; transition: color 150ms, border-color 150ms; }
     .topbar-btn:hover { color: #ffffff; border-color: rgba(255,255,255,0.65); }
+    /* Search pill — hide shortcut hint on mobile */
+    @media (max-width: 640px) { #search-pill-shortcut { display: none; } }
+
+    /* === Search modal === */
+    .search-section-header { padding:6px 16px 4px; font-size:10px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--clr-text-muted); background:var(--clr-surface-raised); border-bottom:1px solid var(--clr-border); }
+    .search-result { display:flex; align-items:center; gap:10px; padding:9px 16px; cursor:pointer; border-bottom:1px solid var(--clr-border); }
+    .search-result:last-child { border-bottom:none; }
+    .search-result:hover, .search-result.search-cursor { background:rgba(139,92,246,0.08); }
+    .search-result-icon { flex-shrink:0; font-size:13px; }
+    .search-result-title { flex:1; font-size:13px; color:var(--clr-text-primary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .search-result-title strong { color:var(--clr-accent); font-weight:600; }
+    .search-result-sub { font-size:11px; color:var(--clr-text-muted); white-space:nowrap; }
+    .search-no-results { padding:20px; text-align:center; color:var(--clr-text-muted); font-size:13px; }
+    .search-recent-header { display:flex; align-items:center; justify-content:space-between; padding:8px 16px 4px; }
+    .search-recent-pills { display:flex; flex-wrap:wrap; gap:6px; padding:4px 16px 12px; }
+    .search-recent-pill { background:var(--clr-surface-raised); border:1px solid var(--clr-border); border-radius:12px; padding:3px 10px; font-size:12px; color:var(--clr-text-secondary); cursor:pointer; }
+    .search-recent-pill:hover { background:rgba(139,92,246,0.08); }
+    @keyframes search-fade { from { outline:2px solid rgba(96,165,250,.7); } to { outline:2px solid rgba(96,165,250,0); } }
+    .search-highlight { animation:search-fade 1.5s ease-out forwards; border-radius:4px; }
 
     /* Glassmorphic stat tiles */
     .topbar-tiles { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
@@ -2210,6 +2233,16 @@ function renderHtml(data, options = {}) {
   </div>
   ${renderRecentActivity(data)}
   ${renderScripts(data, options)}
+  <div id="search-backdrop" onclick="closeSearch()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(2px);z-index:200"></div>
+  <div id="search-modal" role="dialog" aria-label="Search" aria-modal="true" style="display:none;position:fixed;top:20vh;left:50%;transform:translateX(-50%);width:min(560px,92vw);z-index:201;border-radius:12px;overflow:hidden;box-shadow:0 16px 48px rgba(0,0,0,.4);background:var(--clr-panel-bg);border:1px solid var(--clr-border);">
+    <div style="position:relative">
+      <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);opacity:.45;font-size:16px;pointer-events:none">🔍</span>
+      <input id="search-input" type="search" placeholder="Search stories, bugs, lessons…" autocomplete="off" spellcheck="false"
+        style="width:100%;padding:13px 16px 13px 42px;border:none;border-bottom:1px solid var(--clr-border);background:transparent;color:var(--clr-text-primary);font-size:15px;font-family:inherit;outline:none;box-sizing:border-box" />
+    </div>
+    <div id="search-body" style="max-height:360px;overflow-y:auto"></div>
+    <div style="padding:7px 16px;font-size:11px;color:var(--clr-text-muted);text-align:center;border-top:1px solid var(--clr-border);background:var(--clr-surface-raised)">↑↓ navigate &nbsp;·&nbsp; ↵ jump &nbsp;·&nbsp; ESC close</div>
+  </div>
   <div id="aboutModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
     <div onclick="closeAbout()" class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
     <div class="relative z-10 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl shadow-2xl w-full max-w-sm p-6 text-center">
