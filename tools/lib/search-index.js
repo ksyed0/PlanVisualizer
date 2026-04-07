@@ -23,4 +23,56 @@ function scoreMatch(entry, query) {
   return i === q.length ? 1 : 0;
 }
 
-module.exports = { scoreMatch };
+/**
+ * Escape </script> sequences so index entries are safe to embed inside a <script> block.
+ */
+function _safeStr(s) {
+  return (s || '').replace(/<\/script>/gi, '<\\/script>');
+}
+
+/**
+ * Build a search index array from dashboard data.
+ * String values are sanitized so the index is safe to JSON.stringify inside a <script> block.
+ */
+function buildSearchIndex(data) {
+  var index = [];
+
+  (data.stories || []).forEach(function (story) {
+    index.push({
+      type: 'story',
+      id: _safeStr(story.id),
+      title: _safeStr(story.title),
+      epicId: _safeStr(story.epicId),
+      status: _safeStr(story.status),
+      tabName: 'hierarchy',
+      domId: 'story-' + _safeStr(story.id),
+    });
+  });
+
+  (data.bugs || []).forEach(function (bug) {
+    index.push({
+      type: 'bug',
+      id: _safeStr(bug.id),
+      title: _safeStr(bug.title),
+      severity: _safeStr(bug.severity),
+      status: _safeStr(bug.status),
+      tabName: 'bugs',
+      domId: 'bug-row-' + _safeStr(bug.id),
+    });
+  });
+
+  (data.lessons || []).forEach(function (lesson) {
+    index.push({
+      type: 'lesson',
+      id: _safeStr(lesson.id),
+      rule: _safeStr(lesson.rule),
+      tabName: 'lessons',
+      domIdCol: 'lesson-col-' + _safeStr(lesson.id),
+      domIdCard: 'lesson-card-' + _safeStr(lesson.id),
+    });
+  });
+
+  return index;
+}
+
+module.exports = { scoreMatch, buildSearchIndex };
