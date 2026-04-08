@@ -2,7 +2,7 @@
 
 **Date:** 2026-04-07  
 **Stories:** US-0069, US-0070, US-0071, US-0072  
-**Status:** Approved
+**Status:** Approved  
 
 ---
 
@@ -15,18 +15,14 @@ The PlanVisualizer dashboard is a single-page static HTML file with multiple tab
 ## Entry Point & Trigger
 
 ### Desktop
-
 An **adaptive pill button** sits in the topbar between the project title and the About button, displaying `🔍 ⌘K`. Two ways to open the modal:
-
 - Press `⌘K` (Mac) / `Ctrl+K` (Windows/Linux)
 - Click the pill button
 
 ### Mobile (`< 640px`)
-
 The pill collapses to a `🔍` icon-only. Tapping it opens the same modal. No floating action button or separate mobile UI.
 
 ### Modal behaviour
-
 - Opens with the search input auto-focused
 - `Escape` or clicking the backdrop closes it with no navigation
 - Reopening the modal clears the previous query and restores the recent searches state
@@ -38,7 +34,6 @@ The pill collapses to a `🔍` icon-only. Tapping it opens the same modal. No fl
 **Size:** `560px` wide on desktop, `92vw` on mobile. Anchored at `top: 20vh`, centered horizontally, with a dark semi-transparent backdrop.
 
 **Structure:**
-
 ```
 ┌──────────────────────────────────────────────┐
 │  🔍  [search input]              ESC to close │
@@ -75,11 +70,11 @@ The pill collapses to a `🔍` icon-only. Tapping it opens the same modal. No fl
 
 ## Keyboard Navigation
 
-| Key       | Action                                                      |
-| --------- | ----------------------------------------------------------- |
+| Key | Action |
+|-----|--------|
 | `↑` / `↓` | Move highlight cursor through results (wraps across groups) |
-| `Enter`   | Navigate to the highlighted result                          |
-| `Escape`  | Close modal, no navigation                                  |
+| `Enter` | Navigate to the highlighted result |
+| `Escape` | Close modal, no navigation |
 
 The first result row is auto-highlighted when results appear, so `Enter` always works immediately.
 
@@ -134,13 +129,13 @@ All strings pass through `esc()` before JSON embedding to prevent XSS.
 
 No external libraries. Pure client-side JS, runs against `window.SEARCH_INDEX` on each debounced input (200ms).
 
-| Score | Condition                                                 |
-| ----- | --------------------------------------------------------- |
-| 4     | Exact ID match (`entry.id.toLowerCase() === query`)       |
-| 3     | Any indexed field starts with query                       |
-| 2     | Any indexed field contains query (substring)              |
-| 1     | Fuzzy character-sequence match across concatenated fields |
-| 0     | No match — excluded from results                          |
+| Score | Condition |
+|-------|-----------|
+| 4 | Exact ID match (`entry.id.toLowerCase() === query`) |
+| 3 | Any indexed field starts with query |
+| 2 | Any indexed field contains query (substring) |
+| 1 | Fuzzy character-sequence match across concatenated fields |
+| 0 | No match — excluded from results |
 
 Results within each group sorted by score descending. Groups with all-zero scores are hidden.
 
@@ -167,19 +162,19 @@ Results within each group sorted by score descending. Groups with all-zero score
 
 **New file:** `tools/lib/__tests__/search-index.test.js` — tests `buildSearchIndex` and `scoreMatch` imported from `tools/lib/search-index.js`
 
-| Test                                                                | Covers   |
-| ------------------------------------------------------------------- | -------- |
-| `buildSearchIndex` returns entries for all stories, bugs, lessons   | US-0069  |
-| Story entry has correct `type`, `id`, `epicId`, `tabName`, `domId`  | US-0069  |
-| Bug entry has correct `severity`, `domId` format `bug-row-BUG-XXXX` | US-0069  |
-| Lesson entry has correct `domIdCol` and `domIdCard`                 | US-0069  |
-| Titles containing `<script>` are HTML-escaped                       | Security |
-| `scoreMatch` exact ID → 4                                           | US-0070  |
-| `scoreMatch` starts-with → 3                                        | US-0071  |
-| `scoreMatch` substring → 2                                          | US-0071  |
-| `scoreMatch` fuzzy → 1                                              | US-0071  |
-| `scoreMatch` no match → 0                                           | US-0071  |
-| `scoreMatch` empty query → -1                                       | US-0069  |
+| Test | Covers |
+|------|--------|
+| `buildSearchIndex` returns entries for all stories, bugs, lessons | US-0069 |
+| Story entry has correct `type`, `id`, `epicId`, `tabName`, `domId` | US-0069 |
+| Bug entry has correct `severity`, `domId` format `bug-row-BUG-XXXX` | US-0069 |
+| Lesson entry has correct `domIdCol` and `domIdCard` | US-0069 |
+| Titles containing `<script>` are HTML-escaped | Security |
+| `scoreMatch` exact ID → 4 | US-0070 |
+| `scoreMatch` starts-with → 3 | US-0071 |
+| `scoreMatch` substring → 2 | US-0071 |
+| `scoreMatch` fuzzy → 1 | US-0071 |
+| `scoreMatch` no match → 0 | US-0071 |
+| `scoreMatch` empty query → -1 | US-0069 |
 
 Coverage gate: overall ≥ 80%.
 
