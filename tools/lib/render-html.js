@@ -1,5 +1,7 @@
 'use strict';
 
+const { buildSearchIndex } = require('./search-index');
+
 const esc = (s) =>
   String(s ?? '')
     .replace(/&/g, '&amp;')
@@ -100,6 +102,7 @@ function renderTopBar(data) {
       <div class="topbar-project">
         <div class="flex items-center gap-2 flex-wrap">
           <h1 class="topbar-title">${esc(data.projectName)}</h1>
+          <button onclick="openSearch()" id="search-pill" class="topbar-btn" aria-label="Open search (⌘K)">🔍 <span id="search-pill-shortcut">⌘K</span></button>
           <button onclick="openAbout()" class="topbar-btn">About</button>
           <a href="dashboard.html" class="topbar-btn" style="text-decoration:none">Agent Dashboard &#8594;</a>
           <button onclick="toggleTheme()" id="theme-toggle" class="topbar-btn" aria-label="Toggle dark/light mode"><span id="theme-icon">&#9788;</span></button>
@@ -281,7 +284,7 @@ function renderHierarchyTab(data) {
           })
           .join('');
         return `
-      <div class="story-row ml-6 border-l-2 border-slate-200 dark:border-slate-600 pl-4 py-2"
+      <div id="story-${esc(story.id)}" class="story-row ml-6 border-l-2 border-slate-200 dark:border-slate-600 pl-4 py-2"
            data-epic="${esc(story.epicId)}" data-status="${esc(story.status)}" data-priority="${esc(story.priority)}">
         <div class="flex flex-wrap items-center gap-2 cursor-pointer" onclick="toggleACs('${jsEsc(story.id)}')">
           <span class="font-mono text-xs text-slate-500 whitespace-nowrap">${story.id}</span>
@@ -1674,6 +1677,7 @@ function renderScripts(data, options = {}) {
   return `
   <script>
   const ALL_DATA = ${allData};
+  const SEARCH_INDEX = ${JSON.stringify(buildSearchIndex(data)).replace(/<\/script>/gi, '<\\/script>')};
 
   const VALID_TABS = ['hierarchy','kanban','traceability','charts','trends','costs','bugs','lessons'];
 
@@ -1952,6 +1956,222 @@ function renderScripts(data, options = {}) {
     document.body.style.overflow = '';
   }
   document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeAbout(); });
+
+  // ── Global Search ──────────────────────────────────────────────────────
+  var _searchDebounce;
+  var _searchCursor = -1;
+  var _searchResults = [];
+  var _searchQuery = '';
+
+  function _escHtml(s) {
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function _highlightMatch(text, query) {
+    if (!query || !text) return _escHtml(text || '');
+    var lo = text.toLowerCase(), q = query.toLowerCase();
+    var idx = lo.indexOf(q);
+    if (idx === -1) return _escHtml(text);
+    return _escHtml(text.slice(0, idx)) + '<strong>' + _escHtml(text.slice(idx, idx + q.length)) + '</strong>' + _escHtml(text.slice(idx + q.length));
+  }
+
+  function _scoreMatch(entry, query) {
+    var q = (query || '').toLowerCase().trim();
+    if (!q) return -1;
+    var fields = [entry.id || '', entry.title || '', entry.rule || ''];
+    var haystack = fields.join(' ').toLowerCase();
+    if ((entry.id || '').toLowerCase() === q) return 4;
+    if (fields.some(function(f){ return f.toLowerCase().startsWith(q); })) return 3;
+    if (haystack.includes(q)) return 2;
+    var i = 0;
+    for (var j = 0; j < haystack.length && i < q.length; j++) { if (haystack[j] === q[i]) i++; }
+    return i === q.length ? 1 : 0;
+  }
+
+  function openSearch() {
+    document.getElementById('search-backdrop').style.display = 'block';
+    document.getElementById('search-modal').style.display = 'block';
+    var input = document.getElementById('search-input');
+    input.value = ''; _searchCursor = -1; _searchResults = []; _searchQuery = '';
+    _renderSearchBody('');
+    input.focus();
+  }
+
+  function closeSearch() {
+    document.getElementById('search-backdrop').style.display = 'none';
+    document.getElementById('search-modal').style.display = 'none';
+    _searchCursor = -1; _searchResults = [];
+  }
+
+  function _updateCursor() {
+    document.querySelectorAll('#search-body .search-result').forEach(function(el) {
+      el.classList.toggle('search-cursor', parseInt(el.dataset.idx) === _searchCursor);
+    });
+    var active = document.querySelector('#search-body .search-result.search-cursor');
+    if (active) active.scrollIntoView({ block: 'nearest' });
+  }
+
+  function _runSearch(q) {
+    _searchCursor = -1; _searchResults = []; _searchQuery = q;
+    if (!q.trim()) { _renderSearchBody(''); return; }
+
+    var scored = [];
+    SEARCH_INDEX.forEach(function(entry) {
+      var s = _scoreMatch(entry, q);
+      if (s > 0) scored.push({ entry: entry, score: s });
+    });
+    scored.sort(function(a, b) { return b.score - a.score; });
+
+    var stories = scored.filter(function(r){ return r.entry.type === 'story'; }).slice(0,4).map(function(r){ return r.entry; });
+    var bugs    = scored.filter(function(r){ return r.entry.type === 'bug';   }).slice(0,4).map(function(r){ return r.entry; });
+    var lessons = scored.filter(function(r){ return r.entry.type === 'lesson';}).slice(0,3).map(function(r){ return r.entry; });
+    _searchResults = stories.concat(bugs).concat(lessons);
+
+    if (_searchResults.length === 0) {
+      document.getElementById('search-body').innerHTML = '<div class="search-no-results">No results for &ldquo;' + _escHtml(q) + '&rdquo;</div>';
+      return;
+    }
+
+    var icons = { story:'📋', bug:'🐛', lesson:'💡' };
+
+    function _renderGroup(group, label) {
+      if (!group.length) return '';
+      var rows = group.map(function(entry) {
+        var idx = _searchResults.indexOf(entry);
+        var mainText = entry.title || entry.rule || entry.id;
+        var sub = entry.type === 'story' ? entry.epicId : entry.type === 'bug' ? entry.severity : entry.id;
+        return '<div class="search-result" data-idx="' + idx + '">' +
+          '<span class="search-result-icon">' + icons[entry.type] + '</span>' +
+          '<span class="search-result-title">' + _highlightMatch(mainText, q) + '</span>' +
+          '<span class="search-result-sub">' + _escHtml(sub) + '</span>' +
+          '</div>';
+      }).join('');
+      return '<div class="search-section-header">' + label + '</div>' + rows;
+    }
+
+    document.getElementById('search-body').innerHTML =
+      _renderGroup(stories, 'Stories') +
+      _renderGroup(bugs,    'Bugs') +
+      _renderGroup(lessons, 'Lessons');
+
+    if (_searchResults.length > 0) { _searchCursor = 0; _updateCursor(); }
+  }
+
+  function navigateTo(idx) {
+    var entry = _searchResults[idx];
+    if (!entry) return;
+    var q = _searchQuery;
+    if (q) _saveRecent(q);
+    closeSearch();
+    showTab(entry.tabName);
+    // Stories only have a DOM ID on the column-view row — switch to column view first
+    if (entry.type === 'story') setHierarchyView('column');
+    setTimeout(function() {
+      if (entry.type === 'story' && entry.epicId) {
+        var sec = document.getElementById('epic-stories-' + entry.epicId);
+        if (sec && sec.classList.contains('hidden')) {
+          var arrow = document.getElementById('epic-arrow-' + entry.epicId);
+          toggleSection(sec.id, arrow && arrow.id);
+        }
+      }
+      var domId = entry.domId || entry.domIdCol || entry.domIdCard;
+      var el = document.getElementById(domId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add('search-highlight');
+        el.addEventListener('animationend', function() { el.classList.remove('search-highlight'); }, { once: true });
+      }
+    }, 50);
+  }
+
+  function _renderSearchBody(q) {
+    if (!q) { _renderRecentSearches(); return; }
+    _runSearch(q);
+  }
+
+  // Event delegation for result clicks
+  document.getElementById('search-body').addEventListener('click', function(e) {
+    var el = e.target.closest('.search-result');
+    if (el) navigateTo(parseInt(el.dataset.idx, 10));
+  });
+
+  document.getElementById('search-input').addEventListener('input', function() {
+    clearTimeout(_searchDebounce);
+    var q = this.value;
+    _searchDebounce = setTimeout(function() { _renderSearchBody(q); }, 200);
+  });
+
+  document.getElementById('search-input').addEventListener('focus', function() {
+    if (!this.value) _renderRecentSearches();
+  });
+
+  // Keyboard navigation: ↑↓↵ ESC
+  document.getElementById('search-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') { e.preventDefault(); closeSearch(); return; }
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      _searchCursor = Math.min(_searchCursor + 1, _searchResults.length - 1);
+      _updateCursor();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      _searchCursor = Math.max(_searchCursor - 1, 0);
+      _updateCursor();
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (_searchCursor >= 0 && _searchResults[_searchCursor]) navigateTo(_searchCursor);
+    }
+  });
+
+  // Global ⌘K / Ctrl+K shortcut
+  document.addEventListener('keydown', function(e) {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      document.getElementById('search-modal').style.display === 'block' ? closeSearch() : openSearch();
+    }
+  });
+
+  // Recent searches
+  function _loadRecent() {
+    try { return JSON.parse(localStorage.getItem('recentSearches') || '[]'); } catch(e) { return []; }
+  }
+
+  function _saveRecent(q) {
+    if (!q) return;
+    var list = _loadRecent().filter(function(x) { return x !== q; });
+    list.unshift(q);
+    localStorage.setItem('recentSearches', JSON.stringify(list.slice(0, 5)));
+  }
+
+  function _renderRecentSearches() {
+    var list = _loadRecent();
+    var body = document.getElementById('search-body');
+    if (!list.length) { body.innerHTML = ''; return; }
+    body.innerHTML =
+      '<div class="search-recent-header">' +
+        '<span style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--clr-text-muted)">Recent Searches</span>' +
+        '<button onclick="_clearRecent()" style="font-size:11px;color:var(--clr-text-muted);background:none;border:none;cursor:pointer;padding:0">× Clear</button>' +
+      '</div>' +
+      '<div class="search-recent-pills">' +
+        list.map(function(q) {
+          return '<span class="search-recent-pill" data-recent="' + _escHtml(q) + '">' + _escHtml(q) + '</span>';
+        }).join('') +
+      '</div>';
+  }
+
+  function _clearRecent() {
+    localStorage.removeItem('recentSearches');
+    document.getElementById('search-body').innerHTML = '';
+  }
+
+  // Pill click via event delegation on search-body (second listener — merged with result clicks)
+  document.getElementById('search-body').addEventListener('click', function(e) {
+    var pill = e.target.closest('.search-recent-pill');
+    if (pill) {
+      var q = pill.dataset.recent || '';
+      document.getElementById('search-input').value = q;
+      _runSearch(q);
+    }
+  });
   </script>`;
 }
 
@@ -2093,6 +2313,25 @@ function renderHtml(data, options = {}) {
     .topbar-tagline { font-size: 11px; color: rgba(255,255,255,0.72); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 1px; }
     .topbar-btn { background: none; border: 1px solid rgba(255,255,255,0.35); color: rgba(255,255,255,0.8); border-radius: 4px; padding: 2px 8px; font-size: 11px; cursor: pointer; transition: color 150ms, border-color 150ms; }
     .topbar-btn:hover { color: #ffffff; border-color: rgba(255,255,255,0.65); }
+    /* Search pill — hide shortcut hint on mobile */
+    @media (max-width: 640px) { #search-pill-shortcut { display: none; } }
+
+    /* === Search modal === */
+    .search-section-header { padding:6px 16px 4px; font-size:10px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--clr-text-muted); background:var(--clr-surface-raised); border-bottom:1px solid var(--clr-border); }
+    .search-result { display:flex; align-items:center; gap:10px; padding:9px 16px; cursor:pointer; border-bottom:1px solid var(--clr-border); }
+    .search-result:last-child { border-bottom:none; }
+    .search-result:hover, .search-result.search-cursor { background:rgba(139,92,246,0.08); }
+    .search-result-icon { flex-shrink:0; font-size:13px; }
+    .search-result-title { flex:1; font-size:13px; color:var(--clr-text-primary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .search-result-title strong { color:var(--clr-accent); font-weight:600; }
+    .search-result-sub { font-size:11px; color:var(--clr-text-muted); white-space:nowrap; }
+    .search-no-results { padding:20px; text-align:center; color:var(--clr-text-muted); font-size:13px; }
+    .search-recent-header { display:flex; align-items:center; justify-content:space-between; padding:8px 16px 4px; }
+    .search-recent-pills { display:flex; flex-wrap:wrap; gap:6px; padding:4px 16px 12px; }
+    .search-recent-pill { background:var(--clr-surface-raised); border:1px solid var(--clr-border); border-radius:12px; padding:3px 10px; font-size:12px; color:var(--clr-text-secondary); cursor:pointer; }
+    .search-recent-pill:hover { background:rgba(139,92,246,0.08); }
+    @keyframes search-fade { from { outline:2px solid rgba(96,165,250,.7); } to { outline:2px solid rgba(96,165,250,0); } }
+    .search-highlight { animation:search-fade 1.5s ease-out forwards; border-radius:4px; }
 
     /* Glassmorphic stat tiles */
     .topbar-tiles { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
@@ -2210,6 +2449,16 @@ function renderHtml(data, options = {}) {
   </div>
   ${renderRecentActivity(data)}
   ${renderScripts(data, options)}
+  <div id="search-backdrop" onclick="closeSearch()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(2px);z-index:200"></div>
+  <div id="search-modal" role="dialog" aria-label="Search" aria-modal="true" style="display:none;position:fixed;top:20vh;left:50%;transform:translateX(-50%);width:min(560px,92vw);z-index:201;border-radius:12px;overflow:hidden;box-shadow:0 16px 48px rgba(0,0,0,.4);background:var(--clr-panel-bg);border:1px solid var(--clr-border);">
+    <div style="position:relative">
+      <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);opacity:.45;font-size:16px;pointer-events:none">🔍</span>
+      <input id="search-input" type="search" placeholder="Search stories, bugs, lessons…" autocomplete="off" spellcheck="false"
+        style="width:100%;padding:13px 16px 13px 42px;border:none;border-bottom:1px solid var(--clr-border);background:transparent;color:var(--clr-text-primary);font-size:15px;font-family:inherit;outline:none;box-sizing:border-box" />
+    </div>
+    <div id="search-body" style="max-height:360px;overflow-y:auto"></div>
+    <div style="padding:7px 16px;font-size:11px;color:var(--clr-text-muted);text-align:center;border-top:1px solid var(--clr-border);background:var(--clr-surface-raised)">↑↓ navigate &nbsp;·&nbsp; ↵ jump &nbsp;·&nbsp; ESC close</div>
+  </div>
   <div id="aboutModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
     <div onclick="closeAbout()" class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
     <div class="relative z-10 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl shadow-2xl w-full max-w-sm p-6 text-center">
