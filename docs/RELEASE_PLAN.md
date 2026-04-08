@@ -1592,3 +1592,36 @@ Acceptance Criteria:
 ```
 
 ```
+
+US-0086: As a user, I want the Bugs, Traceability, and Lessons tabs to have a search/filter bar so I can quickly find entries without scrolling through all items.
+Priority: Medium (P1)
+Estimate: S
+Status: Done
+Branch: develop
+Acceptance Criteria:
+
+- [x] AC-0270: Bugs tab filter bar shows Epic, Status, and Severity dropdowns plus text search
+- [x] AC-0271: Traceability and Lessons tabs show the shared text search box in the filter bar
+- [x] AC-0272: Filter bar Clear button resets all filters including the new bug epic/severity dropdowns
+- [x] AC-0273: Bug cards and lesson cards include data-severity attribute enabling severity filter to work on card view
+      Dependencies: US-0069
+
+```
+
+```
+
+US-0087: As a user, I want the Plan Visualizer topbar buttons to use the same pill style as the Agentic Dashboard so both pages feel visually consistent.
+Priority: Low (P2)
+Estimate: XS
+Status: Done
+Branch: develop
+Acceptance Criteria:
+
+- [x] AC-0274: Topbar buttons use rounded pill shape (border-radius: 20px) with semitransparent fill matching Agentic Dashboard btn-header style
+- [x] AC-0275: About button shows ℹ️ icon prefix; Agent Dashboard link shows ← Agentic Dashboard
+- [x] AC-0276: Theme toggle shows "☀️ Light" or "🌙 Dark" text instead of a bare symbol
+      Dependencies: US-0085
+
+```
+
+```

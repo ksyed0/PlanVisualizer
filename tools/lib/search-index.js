@@ -77,6 +77,17 @@ function buildSearchIndex(data) {
     });
   });
 
+  (data.epics || []).forEach(function (epic) {
+    index.push({
+      type: 'epic',
+      id: _safeStr(epic.id),
+      title: _safeStr(epic.title),
+      status: _safeStr(epic.status),
+      tabName: 'hierarchy',
+      domId: 'epic-arrow-' + _safeStr(epic.id),
+    });
+  });
+
   return index;
 }
 

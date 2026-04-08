@@ -69,7 +69,7 @@ function computeBudgetMetrics(data, config, snapshots) {
       const explicitEpicBudget = byEpic[epic.id];
       const epicBudget = explicitEpicBudget !== undefined ? explicitEpicBudget : spent + plannedProjected;
       const remaining = epicBudget !== undefined ? epicBudget - spent : null;
-      const pctUsed = epicBudget !== undefined ? Math.round((spent / epicBudget) * 100) : null;
+      const pctUsed = epicBudget !== undefined && epicBudget > 0 ? Math.round((spent / epicBudget) * 100) : null;
       return {
         id: epic.id,
         title: epic.title,

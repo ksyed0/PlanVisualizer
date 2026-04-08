@@ -100,7 +100,6 @@ function generateHTML(status) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${DASH_META.title} — SDLC Live Dashboard</title>
-<meta http-equiv="refresh" content="5">
 <style>
   :root {
     --brand-primary: ${DASH_META.primaryColor};
@@ -213,8 +212,10 @@ function generateHTML(status) {
 
   /* Agent grid (Option 1: avatar images) */
   .agent-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-  .agent-card { background: var(--bg-card-inner); border-radius: 8px; padding: 10px; border-left: 4px solid; transition: all 0.3s; display: flex; gap: 10px; align-items: flex-start; }
-  .agent-card:hover { filter: brightness(1.1); }
+  .agent-card { background: var(--bg-card-inner); border-radius: 8px; padding: 10px; border-left: 4px solid; transition: transform 150ms ease, box-shadow 150ms ease, filter 0.2s; display: flex; gap: 10px; align-items: flex-start; cursor: pointer; }
+  .agent-card:hover { transform: scale(1.02); box-shadow: 0 6px 24px rgba(0,0,0,0.5); filter: brightness(1.12); }
+  #agent-portrait-popup { position: fixed; z-index: 999; width: 200px; border-radius: 14px; overflow: hidden; box-shadow: 0 12px 40px rgba(0,0,0,0.7); pointer-events: none; display: none; transition: opacity 0.15s; border: 2px solid rgba(255,255,255,0.12); }
+  #agent-portrait-popup img { width: 100%; display: block; }
   .agent-card.active { animation: pulse-agent 1.5s infinite; }
   @keyframes pulse-agent { 0%, 100% { opacity: 1; } 50% { opacity: 0.85; } }
   .agent-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid; flex-shrink: 0; }
@@ -525,7 +526,9 @@ ${Object.entries(agents)
     const roles = agentRoles;
     // Option 1: Avatar headshot (extracted from team-grid) with fallback to full image, then emoji
     const avatarImg = `<img class="agent-avatar" src="${imgBase}/headshots/${name.toLowerCase()}.png" alt="${name}" style="border-color: ${color}" onerror="this.onerror=function(){this.outerHTML='<div class=\\'agent-avatar-fallback\\' style=\\'border-color: ${color}\\'>${icon}</div>'};this.src='${imgBase}/${name.toLowerCase()}.png'">`;
-    return `      <div class="agent-card ${agent.status === 'active' ? 'active' : ''}" style="border-left-color: ${color}">
+    const fullPortrait = `${imgBase}/${name.toLowerCase()}.png`;
+    return `      <div class="agent-card ${agent.status === 'active' ? 'active' : ''}" style="border-left-color: ${color}"
+        onmouseenter="showAgentPortrait(this,'${fullPortrait}')" onmouseleave="hideAgentPortrait()">
         ${avatarImg}
         <div class="agent-info">
           <div class="agent-name" style="color: ${color}">${name}</div>
@@ -631,7 +634,6 @@ ${
 
 <div class="footer">
   ${DASH_META.footer} | Last refreshed: ${now}
-  <br><a href="plan-status.html">📊 Open Plan Visualizer →</a>
 </div>
 
 <script>
@@ -697,36 +699,66 @@ function playBeep(frequency, duration, type) {
 }
 
 function sendNotification(title, body) {
+  if (localStorage.getItem('dashboard-alerts-enabled') !== 'true') return;
   if (Notification && Notification.permission === 'granted') {
     new Notification(title, { body: body, icon: '' });
   }
 }
 
+function _updateAlertBtn(enabled) {
+  var btn = document.getElementById('notif-btn');
+  if (!btn) return;
+  if (enabled) {
+    btn.textContent = '🔔 On';
+    btn.style.background = 'rgba(52,168,83,0.25)';
+  } else {
+    btn.textContent = '🔕 Off';
+    btn.style.background = '';
+  }
+}
+
 function requestAlerts() {
   if (!('Notification' in window)) {
-    alert('Browser notifications not supported. Audio alerts will still play.');
+    alert('Browser notifications not supported.');
     return;
   }
-  Notification.requestPermission().then(function(perm) {
-    var btn = document.getElementById('notif-btn');
-    if (perm === 'granted') {
-      if (btn) { btn.textContent = '🔔 On'; btn.style.borderColor = '#34A853'; }
-      localStorage.setItem('dashboard-notif', 'granted');
-      playBeep(660, 0.2);
-      setTimeout(function() { playBeep(880, 0.3); }, 220);
-    } else {
-      if (btn) { btn.textContent = '🔕 Denied'; }
-      localStorage.setItem('dashboard-notif', 'denied');
-    }
-  });
+  var currentlyEnabled = localStorage.getItem('dashboard-alerts-enabled') === 'true';
+  var perm = Notification.permission;
+
+  // If already enabled → turn off
+  if (currentlyEnabled) {
+    localStorage.setItem('dashboard-alerts-enabled', 'false');
+    _updateAlertBtn(false);
+    return;
+  }
+
+  // If permission denied by browser → inform user
+  if (perm === 'denied') {
+    alert('Notifications are blocked by your browser. Enable them in browser settings, then try again.');
+    return;
+  }
+
+  // Request permission if needed, then enable
+  function enable() {
+    localStorage.setItem('dashboard-alerts-enabled', 'true');
+    _updateAlertBtn(true);
+    playBeep(660, 0.2);
+    setTimeout(function() { playBeep(880, 0.3); }, 220);
+  }
+
+  if (perm === 'granted') {
+    enable();
+  } else {
+    Notification.requestPermission().then(function(p) {
+      if (p === 'granted') { enable(); }
+      else { alert('Notification permission denied.'); }
+    });
+  }
 }
 
 (function() {
-  // Restore button state
-  var perm = localStorage.getItem('dashboard-notif');
-  var btn = document.getElementById('notif-btn');
-  if (perm === 'granted' && btn) { btn.textContent = '🔔 On'; btn.style.borderColor = '#34A853'; }
-  if (perm === 'denied' && btn) { btn.textContent = '🔕 Off'; }
+  // Restore alert button state
+  _updateAlertBtn(localStorage.getItem('dashboard-alerts-enabled') === 'true');
 
   var prevRaw = localStorage.getItem('dashboard-prev-snapshot');
   var curr = DASH_SNAPSHOT;
@@ -790,7 +822,40 @@ function requestAlerts() {
   alerts.forEach(function(a) { sendNotification(a.title, a.body); });
 })();
 // ─────────────────────────────────────────────────────────────────────────────
+
+// Agent portrait popup
+var _portraitPopup = document.getElementById('agent-portrait-popup');
+var _portraitImg = _portraitPopup ? _portraitPopup.querySelector('img') : null;
+
+function showAgentPortrait(cardEl, imgSrc) {
+  if (!_portraitPopup || !_portraitImg) return;
+  _portraitImg.src = imgSrc;
+  _portraitPopup.style.display = 'block';
+  var rect = cardEl.getBoundingClientRect();
+  var popupW = 200;
+  var left = rect.right + 14;
+  if (left + popupW > window.innerWidth - 8) left = rect.left - popupW - 14;
+  var top = rect.top;
+  if (top + 200 > window.innerHeight - 8) top = window.innerHeight - 208;
+  _portraitPopup.style.left = left + 'px';
+  _portraitPopup.style.top = top + 'px';
+}
+
+function hideAgentPortrait() {
+  if (_portraitPopup) _portraitPopup.style.display = 'none';
+}
+
+// Auto-refresh: reload every 30s, but only when the About modal is not open
+// so the modal doesn't disappear mid-read, and portraits don't blink constantly.
+setInterval(function() {
+  var modal = document.getElementById('about-modal');
+  if (!modal || !modal.classList.contains('open')) {
+    location.reload();
+  }
+}, 30000);
 </script>
+
+<div id="agent-portrait-popup"><img src="" alt="Agent portrait" onerror="this.style.display='none'"></div>
 
 </body>
 </html>`;
