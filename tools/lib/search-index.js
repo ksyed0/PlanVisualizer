@@ -12,7 +12,12 @@ function scoreMatch(entry, query) {
   var haystack = fields.join(' ').toLowerCase();
 
   if ((entry.id || '').toLowerCase() === q) return 4;
-  if (fields.some(function (f) { return f.toLowerCase().startsWith(q); })) return 3;
+  if (
+    fields.some(function (f) {
+      return f.toLowerCase().startsWith(q);
+    })
+  )
+    return 3;
   if (haystack.includes(q)) return 2;
 
   // Fuzzy: all chars of query appear in order within haystack

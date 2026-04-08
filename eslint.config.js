@@ -43,6 +43,7 @@ module.exports = [
       globals: {
         ...commonGlobals,
         describe: 'readonly',
+        test: 'readonly',
         it: 'readonly',
         expect: 'readonly',
         beforeAll: 'readonly',
