@@ -668,7 +668,7 @@ function renderTrendsTab(data, options = {}) {
           { label: 'Done', data: ${doneJson}, borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,0.1)', fill: true, tension: 0.3 },
           { label: 'Total', data: ${totalJson}, borderColor: '#64748b', backgroundColor: 'transparent', borderDash: [5,5], tension: 0.3 }
         ]},
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc }}}, scales: { x: { ticks: { color: tc }, grid: { color: '#e2e8f0' }}, y: { ticks: { color: tc }, grid: { color: '#e2e8f0' }, beginAtZero: true }}}
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc }}}, scales: { x: { ticks: { color: tc, maxTicksLimit: 8, callback: function(val, i, ticks) { var d = new Date(this.getLabelForValue(val)); return isNaN(d) ? val : (d.getMonth()+1) + '/' + d.getDate(); } }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }}, y: { ticks: { color: tc }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }, beginAtZero: true }}}
       });
     }
 
@@ -678,7 +678,7 @@ function renderTrendsTab(data, options = {}) {
         data: { labels: labels, datasets: [
           { label: 'Total Cost ($)', data: ${costJson}, borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.1)', fill: true, tension: 0.3 }
         ]},
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc }}}, scales: { x: { ticks: { color: tc }, grid: { color: '#e2e8f0' }}, y: { ticks: { color: tc }, grid: { color: '#e2e8f0' }, beginAtZero: true }}}
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc }}}, scales: { x: { ticks: { color: tc, maxTicksLimit: 8, callback: function(val, i, ticks) { var d = new Date(this.getLabelForValue(val)); return isNaN(d) ? val : (d.getMonth()+1) + '/' + d.getDate(); } }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }}, y: { ticks: { color: tc }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }, beginAtZero: true }}}
       });
     }
 
@@ -688,7 +688,7 @@ function renderTrendsTab(data, options = {}) {
         data: { labels: labels, datasets: [
           { label: 'Coverage %', data: ${coverageJson}, borderColor: '#8b5cf6', backgroundColor: 'rgba(139,92,246,0.1)', fill: true, tension: 0.3 }
         ]},
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc }}}, scales: { x: { ticks: { color: tc }, grid: { color: '#e2e8f0' }}, y: { min: 0, max: 100, ticks: { color: tc }, grid: { color: '#e2e8f0' }}}}
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc }}}, scales: { x: { ticks: { color: tc, maxTicksLimit: 8, callback: function(val, i, ticks) { var d = new Date(this.getLabelForValue(val)); return isNaN(d) ? val : (d.getMonth()+1) + '/' + d.getDate(); } }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }}, y: { min: 0, max: 100, ticks: { color: tc }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }}}}
       });
     }
 
@@ -698,7 +698,7 @@ function renderTrendsTab(data, options = {}) {
         data: { labels: labels, datasets: [
           { label: 'Story Points', data: ${velocityJson}, backgroundColor: '#3b82f6' }
         ]},
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc }}}, scales: { x: { ticks: { color: tc }, grid: { color: '#e2e8f0' }}, y: { ticks: { color: tc }, grid: { color: '#e2e8f0' }, beginAtZero: true }}}
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc }}}, scales: { x: { ticks: { color: tc, maxTicksLimit: 8, callback: function(val, i, ticks) { var d = new Date(this.getLabelForValue(val)); return isNaN(d) ? val : (d.getMonth()+1) + '/' + d.getDate(); } }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }}, y: { ticks: { color: tc }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }, beginAtZero: true }}}
       });
     }
 
@@ -708,7 +708,7 @@ function renderTrendsTab(data, options = {}) {
         data: { labels: labels, datasets: [
           { label: 'Open Bugs', data: ${bugsJson}, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)', fill: true, tension: 0.3 }
         ]},
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc }}}, scales: { x: { ticks: { color: tc }, grid: { color: '#e2e8f0' }}, y: { ticks: { color: tc }, grid: { color: '#e2e8f0' }, beginAtZero: true }}}
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc }}}, scales: { x: { ticks: { color: tc, maxTicksLimit: 8, callback: function(val, i, ticks) { var d = new Date(this.getLabelForValue(val)); return isNaN(d) ? val : (d.getMonth()+1) + '/' + d.getDate(); } }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }}, y: { ticks: { color: tc }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }, beginAtZero: true }}}
       });
     }
 
@@ -718,7 +718,7 @@ function renderTrendsTab(data, options = {}) {
         data: { labels: labels, datasets: [
           { label: 'At-Risk Stories', data: ${riskJson}, borderColor: '#f97316', backgroundColor: 'rgba(249,115,22,0.1)', fill: true, tension: 0.3 }
         ]},
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc }}}, scales: { x: { ticks: { color: tc }, grid: { color: '#e2e8f0' }}, y: { ticks: { color: tc }, grid: { color: '#e2e8f0' }, beginAtZero: true }}}
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc }}}, scales: { x: { ticks: { color: tc, maxTicksLimit: 8, callback: function(val, i, ticks) { var d = new Date(this.getLabelForValue(val)); return isNaN(d) ? val : (d.getMonth()+1) + '/' + d.getDate(); } }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }}, y: { ticks: { color: tc }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }, beginAtZero: true, suggestedMax: 5 }}}
       });
     }
 
@@ -729,7 +729,7 @@ function renderTrendsTab(data, options = {}) {
           { label: 'Input', data: ${inputTokensJson}, borderColor: '#06b6d4', backgroundColor: 'rgba(6,182,212,0.2)', fill: true },
           { label: 'Output', data: ${outputTokensJson}, borderColor: '#ec4899', backgroundColor: 'rgba(236,72,153,0.2)', fill: true }
         ]},
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc }}}, scales: { x: { ticks: { color: tc }, grid: { color: '#e2e8f0' }}, y: { ticks: { color: tc }, grid: { color: '#e2e8f0' }, beginAtZero: true }}}
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc }}}, scales: { x: { ticks: { color: tc, maxTicksLimit: 8, callback: function(val, i, ticks) { var d = new Date(this.getLabelForValue(val)); return isNaN(d) ? val : (d.getMonth()+1) + '/' + d.getDate(); } }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }}, y: { ticks: { color: tc, callback: function(v) { if (v >= 1e6) return (v/1e6).toFixed(0) + 'M'; if (v >= 1e3) return (v/1e3).toFixed(0) + 'K'; return v; } }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }, beginAtZero: true }}}
       });
     }
   }

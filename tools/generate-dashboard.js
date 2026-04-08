@@ -62,11 +62,13 @@ function readJSON(filePath) {
 }
 
 function generateHTML(status) {
-  const now = new Date().toLocaleTimeString('en-US', {
-    hour12: true,
+  const now = new Date().toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
-    second: '2-digit',
+    hour12: true,
   });
   const agents = status.agents;
   const phases = status.phases;
@@ -628,7 +630,7 @@ ${
 </div>
 
 <div class="footer">
-  ${DASH_META.footer} | Auto-refreshes every 5 seconds
+  ${DASH_META.footer} | Last refreshed: ${now}
   <br><a href="plan-status.html">📊 Open Plan Visualizer →</a>
 </div>
 
