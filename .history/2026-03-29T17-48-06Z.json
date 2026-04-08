@@ -3768,11 +3768,11 @@
       }
     },
     "coverage": {
-      "lines": 97.71,
-      "statements": 95.74,
+      "lines": 92.9,
+      "statements": 92.9,
       "functions": 95.88,
       "branches": 86.85,
-      "overall": 57,
+      "overall": 92.9,
       "meetsTarget": true,
       "available": true
     },

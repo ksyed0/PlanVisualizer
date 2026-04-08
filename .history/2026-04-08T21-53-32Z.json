@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-03-31T17:48:06.133Z",
-  "commit": null,
+  "generatedAt": "2026-04-08T21:53:32.090Z",
+  "commit": "0330ea3",
   "data": {
     "epics": [
       {
@@ -85,7 +85,7 @@
         "title": "Budget Forecasting",
         "description": "Track burn rate and predict when budget exhausts. Alert when projected costs exceed thresholds. Help teams stay on budget by visualising spend velocity and forecasting future costs.",
         "releaseTarget": "Release 1.5",
-        "status": "Planned",
+        "status": "Done",
         "dependencies": [
           "EPIC-0008"
         ]
@@ -517,6 +517,40 @@
         ]
       },
       {
+        "id": "US-0082",
+        "epicId": "EPIC-0003",
+        "title": "As a developer, I want the source code and npm packages to be cleanly separated in the install script, so that the target project only gets runtime dependencies and not development tools.",
+        "priority": "P1",
+        "estimate": "S",
+        "status": "Done",
+        "branch": "feature/EPIC-0009-budget-forecasting",
+        "acs": [
+          {
+            "id": "AC-0258",
+            "text": "The install script copies only the generated output files (tools/lib/*.js, scripts/, .github/workflows/) to the target project",
+            "done": true
+          },
+          {
+            "id": "AC-0259",
+            "text": "DevDependencies (jest, eslint) remain in the PlanVisualizer repo and are NOT copied to target projects",
+            "done": true
+          },
+          {
+            "id": "AC-0260",
+            "text": "The target project's package.json receives only runtime scripts (plan:test, plan:generate)",
+            "done": true
+          },
+          {
+            "id": "AC-0261",
+            "text": "Users installing PlanVisualizer do not need to run npm install for devDependencies",
+            "done": true
+          }
+        ],
+        "dependencies": [
+          "US-0011"
+        ]
+      },
+      {
         "id": "US-0014",
         "epicId": "EPIC-0004",
         "title": "As a developer, I want ESLint to run on every push and PR, so that code quality issues are caught before merge.",
@@ -637,6 +671,28 @@
             "id": "AC-0044",
             "text": "GitHub Actions dependencies are also monitored weekly",
             "done": true
+          }
+        ],
+        "dependencies": []
+      },
+      {
+        "id": "US-0083",
+        "epicId": "EPIC-0004",
+        "title": "As a developer, I want all GitHub Actions steps to use Node.js 24-compatible action versions, so that no deprecation warnings appear in CI runs after June 2, 2026.",
+        "priority": "P1",
+        "estimate": "S",
+        "status": "Planned",
+        "branch": "feature/US-0083-actions-node24-upgrade",
+        "acs": [
+          {
+            "id": "AC-0262",
+            "text": "actions/checkout updated to v5 (or later) in plan-visualizer.yml",
+            "done": false
+          },
+          {
+            "id": "AC-0263",
+            "text": "actions/setup-node updated to v5 (or later) in plan-visualizer.yml",
+            "done": false
           }
         ],
         "dependencies": []
@@ -1577,7 +1633,7 @@
         "title": "As a developer, I want the render-html.js module to be split into smaller focused files, so that the codebase is easier to maintain and debug.",
         "priority": "P3",
         "estimate": "M",
-        "status": "In Progress",
+        "status": "Planned",
         "branch": "",
         "acs": [
           {
@@ -1609,28 +1665,28 @@
         "title": "As a user, I want the dashboard to store a JSON snapshot on each generation, so that historical data can be analysed over time.",
         "priority": "P0",
         "estimate": "S",
-        "status": "In Progress",
-        "branch": "",
+        "status": "Done",
+        "branch": "feature/EPIC-0008-trends-snapshots",
         "acs": [
           {
             "id": "AC-0150",
             "text": "A .history/ directory is created in the project root (gitignored) if it does not exist",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0151",
             "text": "On each generate-plan.js run, a timestamped JSON file (e.g., 2026-03-30T14-00-00Z.json) is saved to .history/ containing all parsed dashboard data (epics, stories, bugs, costs, coverage, lessons, progress)",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0152",
             "text": "The snapshot includes a generation timestamp, Git commit SHA (if available), and all data sections that would otherwise be rendered to HTML",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0153",
             "text": "Invalid or corrupt JSON files in .history/ are gracefully skipped without crashing",
-            "done": false
+            "done": true
           }
         ],
         "dependencies": []
@@ -1641,28 +1697,28 @@
         "title": "As a user, I want to view a progress trend chart showing story completion over time, so that I can see whether the project is accelerating or decelerating.",
         "priority": "P0",
         "estimate": "S",
-        "status": "In Progress",
-        "branch": "",
+        "status": "Done",
+        "branch": "feature/EPIC-0008-trends-snapshots",
         "acs": [
           {
             "id": "AC-0154",
             "text": "The Charts tab displays a new \"Progress Over Time\" line chart with dates on X-axis and cumulative Done story count on Y-axis",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0155",
             "text": "Data is sourced from .history/ snapshots; each point represents a generation timestamp",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0156",
             "text": "If fewer than 2 snapshots exist, the chart shows a placeholder message \"Generate the dashboard at least twice to see trends\"",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0157",
             "text": "Hovering a data point shows a tooltip with the date and Done/Total story count",
-            "done": false
+            "done": true
           }
         ],
         "dependencies": [
@@ -1675,28 +1731,28 @@
         "title": "As a user, I want to view a cost trend chart showing AI spend over time, so that I can track budget burn rate.",
         "priority": "P1",
         "estimate": "S",
-        "status": "In Progress",
-        "branch": "",
+        "status": "Done",
+        "branch": "feature/EPIC-0008-trends-snapshots",
         "acs": [
           {
             "id": "AC-0158",
             "text": "The Charts tab displays a new \"AI Cost Over Time\" line chart with dates on X-axis and cumulative AI spend ($) on Y-axis",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0159",
             "text": "Data is sourced from .history/ snapshots; the line shows total spend to date",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0160",
             "text": "If fewer than 2 snapshots exist, the chart shows the same placeholder as AC-0156",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0161",
             "text": "Hovering a data point shows a tooltip with the date and total spend",
-            "done": false
+            "done": true
           }
         ],
         "dependencies": [
@@ -1709,28 +1765,28 @@
         "title": "As a user, I want to view a coverage trend chart showing test coverage over time, so that I can verify coverage improvements are sustained.",
         "priority": "P1",
         "estimate": "S",
-        "status": "In Progress",
-        "branch": "",
+        "status": "Done",
+        "branch": "feature/EPIC-0008-trends-snapshots",
         "acs": [
           {
             "id": "AC-0162",
             "text": "The Charts tab displays a new \"Coverage Over Time\" line chart with dates on X-axis and overall coverage % on Y-axis",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0163",
             "text": "Data is sourced from .history/ snapshots; each point shows the overall coverage percentage from that snapshot",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0164",
             "text": "A horizontal reference line at 80% is drawn to visualise the coverage target",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0165",
             "text": "If fewer than 2 snapshots exist, the chart shows the placeholder message",
-            "done": false
+            "done": true
           }
         ],
         "dependencies": [
@@ -1743,23 +1799,23 @@
         "title": "As a user, I want to view a velocity chart showing story points completed per release, so that I can predict future delivery dates.",
         "priority": "P1",
         "estimate": "S",
-        "status": "Planned",
-        "branch": "",
+        "status": "Done",
+        "branch": "feature/EPIC-0008-trends-snapshots",
         "acs": [
           {
             "id": "AC-0166",
             "text": "The Charts tab displays a new \"Velocity\" bar chart with release names on X-axis and total completed story points (Done) on Y-axis",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0167",
             "text": "Points are summed from story estimates (L=5, M=3, S=1, XS=0.5) where status is Done",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0168",
             "text": "If no stories have estimates, the chart shows a placeholder \"Add estimates to stories to see velocity\"",
-            "done": false
+            "done": true
           }
         ],
         "dependencies": [
@@ -1772,28 +1828,28 @@
         "title": "As a user, I want to backfill historical trend data when no real snapshots exist, so that the Trends charts are useful from the first generation.",
         "priority": "P0",
         "estimate": "S",
-        "status": "Planned",
-        "branch": "",
+        "status": "Done",
+        "branch": "feature/EPIC-0009-budget-forecasting",
         "acs": [
           {
             "id": "AC-0247",
             "text": "A backfillHistory(options) function in tools/lib/historical-sim.js generates synthetic snapshots going back ~30 days from project start",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0248",
             "text": "Backfill distributes actual costs proportionally across simulated time periods using average tokens per story estimate from Done stories",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0249",
             "text": "The function is exported as a module and can be called programmatically",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0250",
             "text": "The install.sh script prompts users \"Would you like to estimate historical data? (y/n)\" and runs backfillHistory() if yes",
-            "done": false
+            "done": true
           }
         ],
         "dependencies": [
@@ -1806,23 +1862,57 @@
         "title": "As a user, I want the Trends charts to show bug count and risk trends over time, so that I can visualise defect and at-risk story trends.",
         "priority": "P2",
         "estimate": "S",
-        "status": "Planned",
-        "branch": "",
+        "status": "Done",
+        "branch": "feature/EPIC-0008-trends-snapshots",
         "acs": [
           {
             "id": "AC-0251",
             "text": "Trends tab displays an \"Open Bugs Over Time\" line chart sourced from .history/ snapshots",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0252",
             "text": "Trends tab displays an \"At-Risk Stories Over Time\" line chart sourced from .history/ snapshots",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0253",
             "text": "Trends tab displays a \"Token Usage Over Time\" stacked area chart showing input/output tokens over time",
-            "done": false
+            "done": true
+          }
+        ],
+        "dependencies": [
+          "US-0054"
+        ]
+      },
+      {
+        "id": "US-0084",
+        "epicId": "EPIC-0008",
+        "title": "As a user, I want the Trends charts to be visually polished, so that x-axis labels are readable, token values are abbreviated, grid lines work in dark mode, and the At-Risk chart is not misleadingly scaled.",
+        "priority": "P1",
+        "estimate": "S",
+        "status": "Done",
+        "branch": "feature/US-0084-trends-ui-polish",
+        "acs": [
+          {
+            "id": "AC-0264",
+            "text": "X-axis shows ≤8 short date labels (M/D format) with no overlap across all 7 Trends charts",
+            "done": true
+          },
+          {
+            "id": "AC-0265",
+            "text": "Token chart y-axis shows abbreviated numbers (e.g., 45M not 45,000,000)",
+            "done": true
+          },
+          {
+            "id": "AC-0266",
+            "text": "Grid lines are subtle in dark mode (rgba(255,255,255,0.07)) and standard in light mode (#e2e8f0)",
+            "done": true
+          },
+          {
+            "id": "AC-0267",
+            "text": "At-Risk chart y-axis uses suggestedMax: 5 — never collapses to 0–1.0 scale",
+            "done": true
           }
         ],
         "dependencies": [
@@ -1835,28 +1925,28 @@
         "title": "As a project manager, I want to set a total budget ceiling and per-epic budget limits, so that I can track spend against defined limits.",
         "priority": "P0",
         "estimate": "S",
-        "status": "Planned",
-        "branch": "",
+        "status": "Done",
+        "branch": "feature/EPIC-0009-budget-forecasting",
         "acs": [
           {
             "id": "AC-0169",
             "text": "plan-visualizer.config.json accepts a \"budget\" object with \"totalUsd\" (number) and \"byEpic\" (object mapping epicId to budget amounts)",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0170",
             "text": "The dashboard displays a budget progress bar in the top bar showing \"Spent $X / $Y Budget\" with a percentage",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0171",
             "text": "If total spend exceeds budget, the progress bar turns red and shows an warning icon",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0172",
             "text": "Config validation warns if budget values are not positive numbers",
-            "done": false
+            "done": true
           }
         ],
         "dependencies": []
@@ -1867,28 +1957,28 @@
         "title": "As a project manager, I want to see a burn rate calculation (daily/weekly spend), so that I can predict when the budget will be exhausted.",
         "priority": "P0",
         "estimate": "M",
-        "status": "Planned",
-        "branch": "",
+        "status": "Done",
+        "branch": "feature/EPIC-0009-budget-forecasting",
         "acs": [
           {
             "id": "AC-0173",
             "text": "Using .history/ snapshots, calculate the average daily spend over the last 30 days (or available history)",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0174",
             "text": "The Costs tab displays \"Burn Rate: $X/day\" and \"Projected Exhaustion: Y days remaining\" based on current spend velocity",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0175",
             "text": "If burn rate is zero or negative (no recent spend), show \"No recent spend data\" instead of a projection",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0176",
             "text": "A line on the Cost Trend chart extrapolates forward using the calculated burn rate, shown as a dotted line",
-            "done": false
+            "done": true
           }
         ],
         "dependencies": [
@@ -1902,28 +1992,28 @@
         "title": "As a project manager, I want to receive alerts when projected costs exceed configurable thresholds, so that I can take action before going over budget.",
         "priority": "P1",
         "estimate": "S",
-        "status": "Planned",
-        "branch": "",
+        "status": "Done",
+        "branch": "feature/EPIC-0009-budget-forecasting",
         "acs": [
           {
             "id": "AC-0177",
             "text": "Config accepts \"budget.thresholds\" as an array of percentage triggers (e.g., [50, 75, 90, 100])",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0178",
             "text": "When spend crosses a threshold, a dismissible alert banner appears at the top of the dashboard: \"Budget Alert: X% of budget consumed\"",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0179",
             "text": "Alert state is stored in localStorage so it doesn't reappear after being dismissed for the current generation",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0180",
             "text": "Alerts are colour-coded: green (50%), amber (75%), red (90%+)",
-            "done": false
+            "done": true
           }
         ],
         "dependencies": [
@@ -1937,18 +2027,23 @@
         "title": "As a project manager, I want to see per-epic budget breakdown and remaining amounts, so that I can identify which epics are over/under budget.",
         "priority": "P1",
         "estimate": "S",
-        "status": "Planned",
-        "branch": "",
+        "status": "Done",
+        "branch": "feature/EPIC-0009-budget-forecasting",
         "acs": [
           {
             "id": "AC-0181",
             "text": "The Costs tab displays a per-epic budget table with columns: Epic ID, Budget, Spent, Remaining, % Used",
-            "done": false
+            "done": true
+          },
+          {
+            "id": "AC-0182",
+            "text": "Rows are sorted by % Used descending (most over-budget first); epics without defined budgets are shown at the bottom with \"—\"",
+            "done": true
           },
           {
             "id": "AC-0183",
             "text": "Per-epic budget rows use the same accent colours as the epic swimlanes for visual consistency",
-            "done": false
+            "done": true
           }
         ],
         "dependencies": [
@@ -1961,23 +2056,23 @@
         "title": "As a developer, I want to export a budget report as CSV, so that I can share financial status with stakeholders who don't use the dashboard.",
         "priority": "P2",
         "estimate": "S",
-        "status": "Planned",
-        "branch": "",
+        "status": "Done",
+        "branch": "feature/EPIC-0009-budget-forecasting",
         "acs": [
           {
             "id": "AC-0184",
             "text": "A \"Export Budget CSV\" button appears on the Costs tab",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0185",
             "text": "Clicking downloads a CSV with columns: Date, Epic ID, Epic Title, Budget, Spent, Remaining, % Used, Burn Rate, Projected Exhaustion",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0186",
             "text": "CSV includes all historical snapshots as rows for trend analysis in external tools",
-            "done": false
+            "done": true
           }
         ],
         "dependencies": [
@@ -1990,28 +2085,28 @@
         "title": "As a project manager, I want the budget to automatically estimate Planned story costs and set total budget to actuals plus estimated, so that I don't have to manually configure budgets.",
         "priority": "P0",
         "estimate": "S",
-        "status": "Planned",
-        "branch": "",
+        "status": "Done",
+        "branch": "feature/EPIC-0009-budget-forecasting",
         "acs": [
           {
             "id": "AC-0254",
             "text": "computeBudgetMetrics() calculates average tokens per story estimate (XS, S, M, L, XL) from Done stories",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0255",
             "text": "For each Planned story, estimated cost is calculated using average tokens × rates ($3/M input, $15/M output tokens)",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0256",
             "text": "Total budget = actual spent + sum of estimated Planned story costs (auto-calculated if not manually configured)",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0257",
             "text": "Per-epic budgets are estimated proportionally if not manually configured",
-            "done": false
+            "done": true
           }
         ],
         "dependencies": [
@@ -2200,33 +2295,33 @@
         "title": "As a user, I want a global search bar that searches across all content types, so that I can quickly find any story, bug, or lesson.",
         "priority": "P0",
         "estimate": "M",
-        "status": "Planned",
-        "branch": "",
+        "status": "Done",
+        "branch": "feature/US-0069-global-search",
         "acs": [
           {
             "id": "AC-0208",
             "text": "A global search input appears in the sidebar (or top bar on mobile) with placeholder \"Search stories, bugs, lessons...\"",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0209",
             "text": "Search indexes: story ID, title, description; bug ID, title, severity; lesson ID, rule, context",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0210",
             "text": "Results appear in a dropdown as the user types (debounced 200ms); max 10 results shown",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0211",
             "text": "Each result shows: type icon (story/bug/lesson), ID, title, and parent context (e.g., \"in EPIC-0003\")",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0212",
             "text": "Clicking a result navigates to the relevant tab and scrolls to/expands the item",
-            "done": false
+            "done": true
           }
         ],
         "dependencies": []
@@ -2237,28 +2332,28 @@
         "title": "As a user, I want to jump directly to any item by typing its ID, so that I can quickly access known items without searching.",
         "priority": "P0",
         "estimate": "S",
-        "status": "Planned",
-        "branch": "",
+        "status": "Done",
+        "branch": "feature/US-0069-global-search",
         "acs": [
           {
             "id": "AC-0213",
             "text": "Typing a known ID (e.g., \"US-0042\", \"BUG-0015\", \"TC-0099\") in the global search immediately shows that single result",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0214",
             "text": "If the ID exists, the result is highlighted with a \"Jump to\" label",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0215",
             "text": "Pressing Enter with a valid ID navigates directly to the item",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0216",
             "text": "Invalid IDs show \"No results found\" rather than an empty dropdown",
-            "done": false
+            "done": true
           }
         ],
         "dependencies": [
@@ -2271,23 +2366,23 @@
         "title": "As a user, I want search to support fuzzy matching, so that I can find items even with typos or partial matches.",
         "priority": "P1",
         "estimate": "S",
-        "status": "Planned",
-        "branch": "",
+        "status": "Done",
+        "branch": "feature/US-0069-global-search",
         "acs": [
           {
             "id": "AC-0217",
             "text": "Search uses fuzzy matching (e.g., \"stor\" matches \"story\", \"bug\" matches all bugs)",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0218",
             "text": "Results are sorted by relevance score (exact match > starts with > contains)",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0219",
             "text": "Matched text portions are highlighted in results (e.g., \"<strong>stor</strong>y\")",
-            "done": false
+            "done": true
           }
         ],
         "dependencies": [
@@ -2300,28 +2395,28 @@
         "title": "As a user, I want recent searches to be remembered, so that I can quickly re-run previous searches.",
         "priority": "P2",
         "estimate": "S",
-        "status": "Planned",
-        "branch": "",
+        "status": "Done",
+        "branch": "feature/US-0069-global-search",
         "acs": [
           {
             "id": "AC-0220",
             "text": "The last 5 unique search queries are stored in localStorage under 'recentSearches'",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0221",
             "text": "When the search input is focused but empty, show a \"Recent Searches\" section with clickable pills",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0222",
             "text": "Clicking a recent search populates the input and runs the search",
-            "done": false
+            "done": true
           },
           {
             "id": "AC-0223",
             "text": "A clear (×) button clears the recent searches list",
-            "done": false
+            "done": true
           }
         ],
         "dependencies": [
@@ -2537,10 +2632,10 @@
         "severity": "Medium",
         "relatedStory": "US-0012 (capture-cost)",
         "relatedTask": "",
-        "status": "Open",
-        "fixBranch": "chore/fix-version-workflows",
+        "status": "",
+        "fixBranch": "",
         "lessonEncoded": "",
-        "estimatedCostUsd": 0.1
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0001",
@@ -2548,10 +2643,10 @@
         "severity": "High",
         "relatedStory": "US-0016",
         "relatedTask": "TASK-0006",
-        "status": "Open",
-        "fixBranch": "bugfix/BUG-0001-coverage-na",
-        "lessonEncoded": "Yes — see docs/LESSONS.md",
-        "estimatedCostUsd": 0.5
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0002",
@@ -2559,10 +2654,10 @@
         "severity": "High",
         "relatedStory": "US-0016",
         "relatedTask": "TASK-0006",
-        "status": "Open",
-        "fixBranch": "bugfix/BUG-0001-coverage-na",
-        "lessonEncoded": "Yes — see docs/LESSONS.md",
-        "estimatedCostUsd": 0.5
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0003",
@@ -2570,10 +2665,10 @@
         "severity": "Medium",
         "relatedStory": "US-0021",
         "relatedTask": "TASK-0019",
-        "status": "Open",
-        "fixBranch": "bugfix/BUG-0003-tc-statuses",
-        "lessonEncoded": "Yes — see docs/LESSONS.md (L-0010)",
-        "estimatedCostUsd": 0.25
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0004",
@@ -2581,10 +2676,10 @@
         "severity": "Medium",
         "relatedStory": "US-0011",
         "relatedTask": "TASK-0001",
-        "status": "Open",
-        "fixBranch": "bugfix/BUG-0004-sticky-header",
-        "lessonEncoded": "Yes — see docs/LESSONS.md (L-0009)",
-        "estimatedCostUsd": 0.25
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0005",
@@ -2592,10 +2687,10 @@
         "severity": "Critical",
         "relatedStory": "US-0009",
         "relatedTask": "TASK-0001",
-        "status": "Open",
-        "fixBranch": "bugfix/BUG-0005-xss-escape-html",
-        "lessonEncoded": "No",
-        "estimatedCostUsd": 0.5
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0006",
@@ -2603,10 +2698,10 @@
         "severity": "High",
         "relatedStory": "US-0009",
         "relatedTask": "TASK-0001",
-        "status": "Open",
-        "fixBranch": "bugfix/BUG-0006-0009-0010-render-html",
-        "lessonEncoded": "No",
-        "estimatedCostUsd": 0.45
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0007",
@@ -2614,10 +2709,10 @@
         "severity": "High",
         "relatedStory": "US-0005",
         "relatedTask": "TASK-0001",
-        "status": "Open",
-        "fixBranch": "bugfix/BUG-0007-0011-parser-fixes",
-        "lessonEncoded": "No",
-        "estimatedCostUsd": 0.45
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0008",
@@ -2625,10 +2720,10 @@
         "severity": "High",
         "relatedStory": "US-0013",
         "relatedTask": "TASK-0001",
-        "status": "Open",
-        "fixBranch": "bugfix/BUG-0008-0014-0015-0016-misc",
-        "lessonEncoded": "No",
-        "estimatedCostUsd": 0.45
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0009",
@@ -2636,10 +2731,10 @@
         "severity": "Medium",
         "relatedStory": "US-0010",
         "relatedTask": "TASK-0001",
-        "status": "Open",
-        "fixBranch": "bugfix/BUG-0006-0009-0010-render-html",
-        "lessonEncoded": "No",
-        "estimatedCostUsd": 0.25
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0010",
@@ -2647,10 +2742,10 @@
         "severity": "Medium",
         "relatedStory": "US-0009",
         "relatedTask": "TASK-0001",
-        "status": "Open",
-        "fixBranch": "bugfix/BUG-0006-0009-0010-render-html",
-        "lessonEncoded": "No",
-        "estimatedCostUsd": 0.25
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0011",
@@ -2658,10 +2753,10 @@
         "severity": "Medium",
         "relatedStory": "US-0006",
         "relatedTask": "TASK-0001",
-        "status": "Fixed (false positive — progress.md is written newest-first; regression test added)",
-        "fixBranch": "bugfix/BUG-0007-0011-parser-fixes",
-        "lessonEncoded": "No",
-        "estimatedCostUsd": 0.25
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0012",
@@ -2669,10 +2764,10 @@
         "severity": "High",
         "relatedStory": "US-0016",
         "relatedTask": "TASK-0009",
-        "status": "Open",
-        "fixBranch": "bugfix/BUG-0012-0013-0017-ci-config-fixes",
-        "lessonEncoded": "No",
-        "estimatedCostUsd": 0.45
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0013",
@@ -2680,10 +2775,10 @@
         "severity": "Low",
         "relatedStory": "US-0016",
         "relatedTask": "TASK-0008",
-        "status": "Open",
-        "fixBranch": "bugfix/BUG-0012-0013-0017-ci-config-fixes",
-        "lessonEncoded": "No",
-        "estimatedCostUsd": 0.2
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0014",
@@ -2691,10 +2786,10 @@
         "severity": "Low",
         "relatedStory": "US-0008",
         "relatedTask": "TASK-0001",
-        "status": "Open",
-        "fixBranch": "bugfix/BUG-0008-0014-0015-0016-misc",
-        "lessonEncoded": "No",
-        "estimatedCostUsd": 0.2
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0015",
@@ -2702,10 +2797,10 @@
         "severity": "Low",
         "relatedStory": "US-0013",
         "relatedTask": "TASK-0001",
-        "status": "Open",
-        "fixBranch": "bugfix/BUG-0008-0014-0015-0016-misc",
-        "lessonEncoded": "No",
-        "estimatedCostUsd": 0.2
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0016",
@@ -2713,10 +2808,10 @@
         "severity": "Low",
         "relatedStory": "US-0009",
         "relatedTask": "TASK-0001",
-        "status": "Open",
-        "fixBranch": "bugfix/BUG-0008-0014-0015-0016-misc",
-        "lessonEncoded": "No",
-        "estimatedCostUsd": 0.2
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0017",
@@ -2724,10 +2819,10 @@
         "severity": "Medium",
         "relatedStory": "US-0019",
         "relatedTask": "TASK-0016",
-        "status": "Open",
-        "fixBranch": "bugfix/BUG-0012-0013-0017-ci-config-fixes",
-        "lessonEncoded": "No",
-        "estimatedCostUsd": 0.25
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0018",
@@ -2735,10 +2830,10 @@
         "severity": "High",
         "relatedStory": "US-0019",
         "relatedTask": "TASK-0016",
-        "status": "Open",
-        "fixBranch": "n/a — fixed via repo Settings → Environments → github-pages → add develop to allowed branches",
-        "lessonEncoded": "No",
-        "estimatedCostUsd": 0.2
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0019",
@@ -2746,10 +2841,10 @@
         "severity": "Medium",
         "relatedStory": "US-0019",
         "relatedTask": "TASK-0016",
-        "status": "Open",
-        "fixBranch": "bugfix/BUG-0019-node24-actions",
-        "lessonEncoded": "No",
-        "estimatedCostUsd": 0.25
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0020",
@@ -2757,10 +2852,10 @@
         "severity": "Medium",
         "relatedStory": "US-0001",
         "relatedTask": "n/a",
-        "status": "Open",
-        "fixBranch": "claude/fix-mobile-top-area-C7evU",
-        "lessonEncoded": "No",
-        "estimatedCostUsd": 0.25
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0021",
@@ -2768,10 +2863,10 @@
         "severity": "Low",
         "relatedStory": "US-0021",
         "relatedTask": "n/a",
-        "status": "Open",
-        "fixBranch": "claude/fix-mobile-top-area-C7evU",
-        "lessonEncoded": "No",
-        "estimatedCostUsd": 0.2
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0022",
@@ -2779,10 +2874,10 @@
         "severity": "Medium",
         "relatedStory": "n/a",
         "relatedTask": "n/a",
-        "status": "Open",
-        "fixBranch": "claude/fix-mobile-top-area-C7evU",
-        "lessonEncoded": "No",
-        "estimatedCostUsd": 0.25
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0023",
@@ -2790,10 +2885,10 @@
         "severity": "High",
         "relatedStory": "US-0007",
         "relatedTask": "n/a",
-        "status": "Open",
-        "fixBranch": "claude/fix-mobile-top-area-C7evU",
-        "lessonEncoded": "No",
-        "estimatedCostUsd": 0.45
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0024",
@@ -2801,10 +2896,10 @@
         "severity": "Medium",
         "relatedStory": "US-0007",
         "relatedTask": "n/a",
-        "status": "Open",
-        "fixBranch": "claude/fix-mobile-top-area-C7evU",
-        "lessonEncoded": "No",
-        "estimatedCostUsd": 0.25
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0025",
@@ -2812,10 +2907,10 @@
         "severity": "Low",
         "relatedStory": "US-0021",
         "relatedTask": "n/a",
-        "status": "Open",
-        "fixBranch": "claude/fix-mobile-top-area-C7evU",
-        "lessonEncoded": "No",
-        "estimatedCostUsd": 0.2
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0026",
@@ -2823,10 +2918,10 @@
         "severity": "High",
         "relatedStory": "US-0029",
         "relatedTask": "TASK-TBD",
-        "status": "Open",
-        "fixBranch": "feature/docs-update-readme-update-prompt",
-        "lessonEncoded": "No",
-        "estimatedCostUsd": 0.35
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0027",
@@ -2834,10 +2929,10 @@
         "severity": "Medium",
         "relatedStory": "US-0029",
         "relatedTask": "TASK-TBD",
-        "status": "Open",
-        "fixBranch": "feature/docs-update-readme-update-prompt",
-        "lessonEncoded": "No",
-        "estimatedCostUsd": 0.25
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0028",
@@ -2845,10 +2940,10 @@
         "severity": "Medium",
         "relatedStory": "US-0029",
         "relatedTask": "TASK-TBD",
-        "status": "Open",
-        "fixBranch": "feature/docs-update-readme-update-prompt",
-        "lessonEncoded": "No",
-        "estimatedCostUsd": 0.2
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0029",
@@ -2856,10 +2951,10 @@
         "severity": "Medium",
         "relatedStory": "US-0029",
         "relatedTask": "TASK-TBD",
-        "status": "Open",
-        "fixBranch": "feature/docs-update-readme-update-prompt",
-        "lessonEncoded": "No",
-        "estimatedCostUsd": 0.25
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0030",
@@ -2867,10 +2962,10 @@
         "severity": "Low",
         "relatedStory": "US-0029",
         "relatedTask": "TASK-TBD",
-        "status": "Open",
-        "fixBranch": "feature/docs-update-readme-update-prompt",
-        "lessonEncoded": "No",
-        "estimatedCostUsd": 0.2
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0031",
@@ -2878,21 +2973,21 @@
         "severity": "Low",
         "relatedStory": "US-0030",
         "relatedTask": "TASK-0027",
-        "status": "Open",
-        "fixBranch": "feature/US-0030-bug-fix-costs-tab",
-        "lessonEncoded": "No",
-        "estimatedCostUsd": 0.2
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0032",
-        "title": "attributeBugCosts() returns no _totals key — asymmetric with attributeAICosts() which returns result._totals",
+        "title": "attributeBugCosts() returns no \\_totals key — asymmetric with attributeAICosts() which returns result.\\_totals",
         "severity": "Low",
         "relatedStory": "US-0030",
         "relatedTask": "TASK-0027",
-        "status": "Open",
-        "fixBranch": "feature/US-0030-bug-fix-costs-tab",
-        "lessonEncoded": "No",
-        "estimatedCostUsd": 0.2
+        "status": "Open | In Progress | Fixed | Verified | Closed",
+        "fixBranch": "bugfix/BUG-XXXX-short-description",
+        "lessonEncoded": "Yes — see docs/LESSONS.md | No",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0033",
@@ -2900,9 +2995,9 @@
         "severity": "Low",
         "relatedStory": "US-0031",
         "relatedTask": "n/a",
-        "status": "Open",
-        "fixBranch": "feature/US-0031-dashboard-ux-fixes",
-        "lessonEncoded": "No",
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
         "estimatedCostUsd": 0
       },
       {
@@ -2911,9 +3006,9 @@
         "severity": "Low",
         "relatedStory": "US-0028",
         "relatedTask": "TASK-0026",
-        "status": "Open",
-        "fixBranch": "feature/dark-mode-readability",
-        "lessonEncoded": "No",
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
         "estimatedCostUsd": 0
       },
       {
@@ -2922,9 +3017,9 @@
         "severity": "Medium",
         "relatedStory": "US-0031",
         "relatedTask": "TASK-0030",
-        "status": "Open",
-        "fixBranch": "feature/dark-mode-readability",
-        "lessonEncoded": "Yes — see docs/LESSONS.md",
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
         "estimatedCostUsd": 0
       },
       {
@@ -2933,9 +3028,9 @@
         "severity": "Medium",
         "relatedStory": "US-0031",
         "relatedTask": "TASK-0030",
-        "status": "Open",
-        "fixBranch": "feature/dark-mode-readability",
-        "lessonEncoded": "Yes — see docs/LESSONS.md",
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
         "estimatedCostUsd": 0
       },
       {
@@ -2944,9 +3039,9 @@
         "severity": "Low",
         "relatedStory": "US-0031",
         "relatedTask": "TASK-0030",
-        "status": "Open",
-        "fixBranch": "feature/dark-mode-readability",
-        "lessonEncoded": "Yes — see docs/LESSONS.md",
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
         "estimatedCostUsd": 0
       },
       {
@@ -2955,9 +3050,9 @@
         "severity": "Low",
         "relatedStory": "US-0031",
         "relatedTask": "TASK-0030",
-        "status": "Open",
-        "fixBranch": "feature/dark-mode-readability",
-        "lessonEncoded": "Yes — see docs/LESSONS.md",
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
         "estimatedCostUsd": 0
       },
       {
@@ -2966,9 +3061,9 @@
         "severity": "Low",
         "relatedStory": "US-0031",
         "relatedTask": "n/a",
-        "status": "Open",
-        "fixBranch": "feature/dark-mode-readability",
-        "lessonEncoded": "No",
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
         "estimatedCostUsd": 0
       },
       {
@@ -2977,9 +3072,9 @@
         "severity": "High",
         "relatedStory": "US-0031",
         "relatedTask": "TASK-0030",
-        "status": "Open",
-        "fixBranch": "feature/dark-mode-readability",
-        "lessonEncoded": "Yes — see docs/LESSONS.md",
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
         "estimatedCostUsd": 0
       },
       {
@@ -2988,20 +3083,20 @@
         "severity": "Low",
         "relatedStory": "US-0031",
         "relatedTask": "n/a",
-        "status": "Fixed",
-        "fixBranch": "feature/dark-mode-readability",
-        "lessonEncoded": "Yes — see docs/LESSONS.md",
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
         "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0042",
-        "title": "dark:* Tailwind variants not applied — dark mode toggle has no effect on page text/backgrounds",
+        "title": "dark:\\* Tailwind variants not applied — dark mode toggle has no effect on page text/backgrounds",
         "severity": "High",
         "relatedStory": "US-0031",
         "relatedTask": "TASK-0030",
-        "status": "Fixed",
-        "fixBranch": "feature/dark-mode-readability",
-        "lessonEncoded": "Yes — see docs/LESSONS.md",
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
         "estimatedCostUsd": 0
       },
       {
@@ -3010,9 +3105,9 @@
         "severity": "Medium",
         "relatedStory": "US-0031",
         "relatedTask": "TASK-0030",
-        "status": "Fixed",
-        "fixBranch": "feature/dark-mode-readability",
-        "lessonEncoded": "Yes — see docs/LESSONS.md",
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
         "estimatedCostUsd": 0
       },
       {
@@ -3021,9 +3116,9 @@
         "severity": "Medium",
         "relatedStory": "US-0032",
         "relatedTask": "n/a",
-        "status": "Fixed",
-        "fixBranch": "feature/US-0032-lessons-tab",
-        "lessonEncoded": "No",
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
         "estimatedCostUsd": 0
       },
       {
@@ -3032,9 +3127,9 @@
         "severity": "Low",
         "relatedStory": "US-0030",
         "relatedTask": "TASK-0028",
-        "status": "Fixed",
-        "fixBranch": "feature/US-0032-lessons-tab",
-        "lessonEncoded": "No",
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
         "estimatedCostUsd": 0
       },
       {
@@ -3043,9 +3138,9 @@
         "severity": "Low",
         "relatedStory": "US-0032",
         "relatedTask": "n/a",
-        "status": "Fixed",
-        "fixBranch": "feature/US-0032-lessons-tab",
-        "lessonEncoded": "No",
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
         "estimatedCostUsd": 0
       },
       {
@@ -3054,9 +3149,9 @@
         "severity": "Medium",
         "relatedStory": "US-0032",
         "relatedTask": "n/a",
-        "status": "Fixed",
-        "fixBranch": "feature/US-0032-lessons-tab",
-        "lessonEncoded": "No",
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
         "estimatedCostUsd": 0
       },
       {
@@ -3065,9 +3160,9 @@
         "severity": "Low",
         "relatedStory": "US-0031",
         "relatedTask": "TASK-0030",
-        "status": "Fixed",
-        "fixBranch": "feature/US-0032-lessons-tab",
-        "lessonEncoded": "No",
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
         "estimatedCostUsd": 0
       },
       {
@@ -3076,9 +3171,9 @@
         "severity": "Low",
         "relatedStory": "US-0025",
         "relatedTask": "TASK-0025",
-        "status": "Fixed",
-        "fixBranch": "feature/US-0032-lessons-tab",
-        "lessonEncoded": "No",
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
         "estimatedCostUsd": 0
       },
       {
@@ -3087,9 +3182,9 @@
         "severity": "Low",
         "relatedStory": "US-0025",
         "relatedTask": "TASK-0025",
-        "status": "Fixed",
-        "fixBranch": "feature/US-0032-lessons-tab",
-        "lessonEncoded": "No",
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
         "estimatedCostUsd": 0
       },
       {
@@ -3098,9 +3193,9 @@
         "severity": "Low",
         "relatedStory": "US-0032",
         "relatedTask": "TASK-0033",
-        "status": "Fixed",
-        "fixBranch": "feature/US-0032-lessons-tab",
-        "lessonEncoded": "No",
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
         "estimatedCostUsd": 0
       },
       {
@@ -3109,9 +3204,9 @@
         "severity": "Low",
         "relatedStory": "US-0032",
         "relatedTask": "TASK-0033",
-        "status": "Fixed",
-        "fixBranch": "feature/US-0032-lessons-tab",
-        "lessonEncoded": "No",
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
         "estimatedCostUsd": 0
       },
       {
@@ -3120,10 +3215,10 @@
         "severity": "Medium",
         "relatedStory": "US-0025",
         "relatedTask": "TASK-0023",
-        "status": "Fixed",
-        "fixBranch": "feature/US-0032-lessons-tab",
-        "lessonEncoded": "No",
-        "estimatedCostUsd": 0.25
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0054",
@@ -3131,10 +3226,10 @@
         "severity": "Medium",
         "relatedStory": "US-0025",
         "relatedTask": "TASK-0023",
-        "status": "Fixed",
-        "fixBranch": "feature/US-0032-lessons-tab",
-        "lessonEncoded": "No",
-        "estimatedCostUsd": 0.25
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0055",
@@ -3142,10 +3237,10 @@
         "severity": "Medium",
         "relatedStory": "US-0025",
         "relatedTask": "TASK-0023",
-        "status": "Fixed",
-        "fixBranch": "feature/US-0032-lessons-tab",
-        "lessonEncoded": "No",
-        "estimatedCostUsd": 0.25
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0075",
@@ -3153,10 +3248,10 @@
         "severity": "High",
         "relatedStory": "US-0012",
         "relatedTask": "TASK-0009",
-        "status": "Fixed",
-        "fixBranch": "fix/parse-cost-log-session-dedup",
-        "lessonEncoded": "No",
-        "estimatedCostUsd": 0.1
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0076",
@@ -3164,10 +3259,10 @@
         "severity": "High",
         "relatedStory": "US-0005",
         "relatedTask": "TASK-0004",
-        "status": "Fixed",
-        "fixBranch": "feature/US-0048-ui-redesign-sidebar",
-        "lessonEncoded": "No",
-        "estimatedCostUsd": 0.02
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0094",
@@ -3175,10 +3270,10 @@
         "severity": "High",
         "relatedStory": "US-0009",
         "relatedTask": "",
-        "status": "Fixed",
-        "fixBranch": "feature/US-0048-ui-redesign-sidebar",
-        "lessonEncoded": "No",
-        "estimatedCostUsd": 0.15
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0095",
@@ -3186,10 +3281,10 @@
         "severity": "Medium",
         "relatedStory": "US-0009",
         "relatedTask": "",
-        "status": "Fixed",
-        "fixBranch": "feature/US-0048-ui-redesign-sidebar",
-        "lessonEncoded": "No",
-        "estimatedCostUsd": 0.1
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0096",
@@ -3197,10 +3292,10 @@
         "severity": "Medium",
         "relatedStory": "US-0001",
         "relatedTask": "",
-        "status": "Fixed",
-        "fixBranch": "feature/US-0048-ui-redesign-sidebar",
-        "lessonEncoded": "No",
-        "estimatedCostUsd": 0.05
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0097",
@@ -3208,9 +3303,9 @@
         "severity": "Low",
         "relatedStory": "US-0053",
         "relatedTask": "",
-        "status": "Retired",
+        "status": "",
         "fixBranch": "",
-        "lessonEncoded": "No",
+        "lessonEncoded": "",
         "estimatedCostUsd": 0
       },
       {
@@ -3219,10 +3314,10 @@
         "severity": "Low",
         "relatedStory": "US-0004",
         "relatedTask": "",
-        "status": "Fixed",
-        "fixBranch": "feature/US-0048-ui-redesign-sidebar",
-        "lessonEncoded": "No",
-        "estimatedCostUsd": 0.05
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0099",
@@ -3230,10 +3325,10 @@
         "severity": "Low",
         "relatedStory": "US-0008",
         "relatedTask": "",
-        "status": "Fixed",
-        "fixBranch": "feature/US-0048-ui-redesign-sidebar",
-        "lessonEncoded": "No",
-        "estimatedCostUsd": 0.02
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0100",
@@ -3241,10 +3336,10 @@
         "severity": "Low",
         "relatedStory": "US-0012",
         "relatedTask": "",
-        "status": "Fixed",
-        "fixBranch": "feature/US-0048-ui-redesign-sidebar",
-        "lessonEncoded": "No",
-        "estimatedCostUsd": 0.05
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0091",
@@ -3252,10 +3347,10 @@
         "severity": "Medium",
         "relatedStory": "US-0048",
         "relatedTask": "TASK-0041",
-        "status": "Fixed",
-        "fixBranch": "feature/US-0048-ui-redesign-sidebar",
-        "lessonEncoded": "No",
-        "estimatedCostUsd": 0.02
+        "status": "",
+        "fixBranch": "",
+        "lessonEncoded": "",
+        "estimatedCostUsd": 0
       },
       {
         "id": "BUG-0098",
@@ -3263,9 +3358,9 @@
         "severity": "Medium",
         "relatedStory": "US-0036",
         "relatedTask": "",
-        "status": "Open",
+        "status": "",
         "fixBranch": "",
-        "lessonEncoded": "No",
+        "lessonEncoded": "",
         "estimatedCostUsd": 0
       },
       {
@@ -3274,505 +3369,1064 @@
         "severity": "Medium",
         "relatedStory": "US-0010",
         "relatedTask": "",
-        "status": "Open",
+        "status": "",
         "fixBranch": "",
-        "lessonEncoded": "No",
+        "lessonEncoded": "",
         "estimatedCostUsd": 0
       }
     ],
     "costs": {
       "US-0001": {
         "projectedUsd": 1600,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 56000,
-        "outputTokens": 56000
+        "costUsd": 0.6135,
+        "inputTokens": 90000,
+        "outputTokens": 22000
       },
       "US-0002": {
         "projectedUsd": 800,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 167364,
-        "outputTokens": 167364
+        "costUsd": 0.4455,
+        "inputTokens": 65000,
+        "outputTokens": 16000
       },
       "US-0003": {
         "projectedUsd": 400,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 227156,
-        "outputTokens": 227156
+        "costUsd": 0.369,
+        "inputTokens": 55000,
+        "outputTokens": 13000
       },
       "US-0004": {
         "projectedUsd": 800,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 167364,
-        "outputTokens": 167364
+        "costUsd": 0.4005,
+        "inputTokens": 60000,
+        "outputTokens": 14000
       },
       "US-0005": {
         "projectedUsd": 400,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 227156,
-        "outputTokens": 227156
+        "costUsd": 0.2925,
+        "inputTokens": 45000,
+        "outputTokens": 10000
       },
       "US-0006": {
         "projectedUsd": 400,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 227156,
-        "outputTokens": 227156
+        "costUsd": 0.369,
+        "inputTokens": 55000,
+        "outputTokens": 13000
       },
       "US-0007": {
         "projectedUsd": 400,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 227156,
-        "outputTokens": 227156
+        "costUsd": 0.3525,
+        "inputTokens": 55000,
+        "outputTokens": 12000
       },
       "US-0008": {
         "projectedUsd": 400,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 227156,
-        "outputTokens": 227156
+        "costUsd": 0.3525,
+        "inputTokens": 55000,
+        "outputTokens": 12000
       },
       "US-0009": {
         "projectedUsd": 3200,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 551000,
-        "outputTokens": 551000
+        "costUsd": 3.099,
+        "inputTokens": 440000,
+        "outputTokens": 111000
       },
       "US-0010": {
         "projectedUsd": 800,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 167364,
-        "outputTokens": 167364
+        "costUsd": 3.099,
+        "inputTokens": 440000,
+        "outputTokens": 111000
       },
       "US-0011": {
         "projectedUsd": 800,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 167364,
-        "outputTokens": 167364
+        "costUsd": 0.447,
+        "inputTokens": 65000,
+        "outputTokens": 16000
       },
       "US-0012": {
         "projectedUsd": 400,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 227156,
-        "outputTokens": 227156
+        "costUsd": 0.369,
+        "inputTokens": 55000,
+        "outputTokens": 13000
       },
       "US-0013": {
         "projectedUsd": 400,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 227156,
-        "outputTokens": 227156
+        "costUsd": 0.3375,
+        "inputTokens": 50000,
+        "outputTokens": 12000
       },
       "US-0029": {
         "projectedUsd": 400,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 227156,
-        "outputTokens": 227156
+        "costUsd": 1.5179999999999998,
+        "inputTokens": 220000,
+        "outputTokens": 55000
       },
       "US-0030": {
         "projectedUsd": 400,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 227156,
-        "outputTokens": 227156
+        "costUsd": 1.4369999999999998,
+        "inputTokens": 210000,
+        "outputTokens": 52000
+      },
+      "US-0082": {
+        "projectedUsd": 400,
+        "costUsd": 0,
+        "inputTokens": 0,
+        "outputTokens": 0
       },
       "US-0014": {
         "projectedUsd": 400,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 227156,
-        "outputTokens": 227156
+        "costUsd": 10.1003,
+        "inputTokens": 803754,
+        "outputTokens": 79153
       },
       "US-0015": {
         "projectedUsd": 400,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 227156,
-        "outputTokens": 227156
+        "costUsd": 10.1003,
+        "inputTokens": 803754,
+        "outputTokens": 79153
       },
       "US-0016": {
         "projectedUsd": 400,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 227156,
-        "outputTokens": 227156
+        "costUsd": 10.1003,
+        "inputTokens": 803754,
+        "outputTokens": 79153
       },
       "US-0017": {
         "projectedUsd": 800,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 167364,
-        "outputTokens": 167364
+        "costUsd": 10.1003,
+        "inputTokens": 803754,
+        "outputTokens": 79153
       },
       "US-0018": {
         "projectedUsd": 400,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 227156,
-        "outputTokens": 227156
+        "costUsd": 10.1003,
+        "inputTokens": 803754,
+        "outputTokens": 79153
+      },
+      "US-0083": {
+        "projectedUsd": 7.362684000000001,
+        "costUsd": 0,
+        "inputTokens": 0,
+        "outputTokens": 0
       },
       "US-0019": {
         "projectedUsd": 800,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 167364,
-        "outputTokens": 167364
+        "costUsd": 0.537,
+        "inputTokens": 75000,
+        "outputTokens": 20000
       },
       "US-0020": {
         "projectedUsd": 800,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 167364,
-        "outputTokens": 167364
+        "costUsd": 0.5835,
+        "inputTokens": 80000,
+        "outputTokens": 22000
       },
       "US-0021": {
         "projectedUsd": 800,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 167364,
-        "outputTokens": 167364
+        "costUsd": 0.597,
+        "inputTokens": 70000,
+        "outputTokens": 25000
       },
       "US-0022": {
         "projectedUsd": 800,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 167364,
-        "outputTokens": 167364
+        "costUsd": 0.9675,
+        "inputTokens": 140000,
+        "outputTokens": 35000
       },
       "US-0023": {
         "projectedUsd": 800,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 167364,
-        "outputTokens": 167364
+        "costUsd": 1.977,
+        "inputTokens": 270000,
+        "outputTokens": 75000
       },
       "US-0024": {
         "projectedUsd": 400,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 227156,
-        "outputTokens": 227156
+        "costUsd": 1.977,
+        "inputTokens": 270000,
+        "outputTokens": 75000
       },
       "US-0025": {
         "projectedUsd": 400,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 227156,
-        "outputTokens": 227156
+        "costUsd": 3.396,
+        "inputTokens": 480000,
+        "outputTokens": 125000
       },
       "US-0026": {
         "projectedUsd": 400,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 227156,
-        "outputTokens": 227156
+        "costUsd": 3.396,
+        "inputTokens": 480000,
+        "outputTokens": 125000
       },
       "US-0028": {
         "projectedUsd": 400,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 227156,
-        "outputTokens": 227156
+        "costUsd": 2.2575000000000003,
+        "inputTokens": 330000,
+        "outputTokens": 82000
       },
       "US-0027": {
         "projectedUsd": 400,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 227156,
-        "outputTokens": 227156
+        "costUsd": 3.396,
+        "inputTokens": 480000,
+        "outputTokens": 125000
       },
       "US-0031": {
         "projectedUsd": 400,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 227156,
-        "outputTokens": 227156
+        "costUsd": 3.9404999999999997,
+        "inputTokens": 570000,
+        "outputTokens": 143000
       },
       "US-0032": {
         "projectedUsd": 400,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 227156,
-        "outputTokens": 227156
+        "costUsd": 0,
+        "inputTokens": 0,
+        "outputTokens": 0
       },
       "US-0033": {
         "projectedUsd": 400,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 227156,
-        "outputTokens": 227156
+        "costUsd": 0,
+        "inputTokens": 0,
+        "outputTokens": 0
       },
       "US-0034": {
         "projectedUsd": 400,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 227156,
-        "outputTokens": 227156
+        "costUsd": 0,
+        "inputTokens": 0,
+        "outputTokens": 0
       },
       "US-0035": {
         "projectedUsd": 400,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 227156,
-        "outputTokens": 227156
+        "costUsd": 0,
+        "inputTokens": 0,
+        "outputTokens": 0
       },
       "US-0036": {
         "projectedUsd": 400,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 227156,
-        "outputTokens": 227156
+        "costUsd": 0,
+        "inputTokens": 0,
+        "outputTokens": 0
       },
       "US-0037": {
         "projectedUsd": 200,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 404800,
-        "outputTokens": 404800
+        "costUsd": 0,
+        "inputTokens": 0,
+        "outputTokens": 0
       },
       "US-0038": {
         "projectedUsd": 400,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 227156,
-        "outputTokens": 227156
+        "costUsd": 0,
+        "inputTokens": 0,
+        "outputTokens": 0
       },
       "US-0039": {
         "projectedUsd": 400,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 227156,
-        "outputTokens": 227156
+        "costUsd": 0,
+        "inputTokens": 0,
+        "outputTokens": 0
       },
       "US-0040": {
         "projectedUsd": 400,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 227156,
-        "outputTokens": 227156
+        "costUsd": 2.895,
+        "inputTokens": 400000,
+        "outputTokens": 106000
       },
       "US-0041": {
         "projectedUsd": 400,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 227156,
-        "outputTokens": 227156
+        "costUsd": 2.895,
+        "inputTokens": 400000,
+        "outputTokens": 106000
       },
       "US-0042": {
         "projectedUsd": 400,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 227156,
-        "outputTokens": 227156
+        "costUsd": 2.895,
+        "inputTokens": 400000,
+        "outputTokens": 106000
       },
       "US-0043": {
         "projectedUsd": 200,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 404800,
-        "outputTokens": 404800
+        "costUsd": 2.895,
+        "inputTokens": 400000,
+        "outputTokens": 106000
       },
       "US-0044": {
         "projectedUsd": 200,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 404800,
-        "outputTokens": 404800
+        "costUsd": 2.895,
+        "inputTokens": 400000,
+        "outputTokens": 106000
       },
       "US-0045": {
         "projectedUsd": 200,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 404800,
-        "outputTokens": 404800
+        "costUsd": 2.895,
+        "inputTokens": 400000,
+        "outputTokens": 106000
       },
       "US-0046": {
         "projectedUsd": 200,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 404800,
-        "outputTokens": 404800
+        "costUsd": 2.895,
+        "inputTokens": 400000,
+        "outputTokens": 106000
       },
       "US-0047": {
         "projectedUsd": 400,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 227156,
-        "outputTokens": 227156
+        "costUsd": 2.895,
+        "inputTokens": 400000,
+        "outputTokens": 106000
       },
       "US-0048": {
         "projectedUsd": 1600,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 56000,
-        "outputTokens": 56000
+        "costUsd": 58.4156,
+        "inputTokens": 3568348,
+        "outputTokens": 340311
+      },
+      "US-0049": {
+        "projectedUsd": 7.362684000000001,
+        "costUsd": 58.4156,
+        "inputTokens": 3568348,
+        "outputTokens": 340311
       },
       "US-0050": {
         "projectedUsd": 800,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 167364,
-        "outputTokens": 167364
+        "costUsd": 58.4156,
+        "inputTokens": 3568348,
+        "outputTokens": 340311
       },
       "US-0051": {
         "projectedUsd": 400,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 227156,
-        "outputTokens": 227156
+        "costUsd": 58.4156,
+        "inputTokens": 3568348,
+        "outputTokens": 340311
       },
       "US-0052": {
         "projectedUsd": 400,
-        "costUsd": 2.0318980392156862,
-        "inputTokens": 227156,
-        "outputTokens": 227156
+        "costUsd": 58.4156,
+        "inputTokens": 3568348,
+        "outputTokens": 340311
       },
       "US-0053": {
-        "projectedUsd": 3.0125520000000003,
+        "projectedUsd": 8.848476,
         "costUsd": 0,
         "inputTokens": 0,
         "outputTokens": 0
       },
       "US-0054": {
-        "projectedUsd": 4.088808,
+        "projectedUsd": 400,
         "costUsd": 0,
         "inputTokens": 0,
         "outputTokens": 0
       },
       "US-0055": {
-        "projectedUsd": 4.088808,
+        "projectedUsd": 400,
         "costUsd": 0,
         "inputTokens": 0,
         "outputTokens": 0
       },
       "US-0056": {
-        "projectedUsd": 4.088808,
+        "projectedUsd": 400,
         "costUsd": 0,
         "inputTokens": 0,
         "outputTokens": 0
       },
       "US-0057": {
-        "projectedUsd": 4.088808,
+        "projectedUsd": 400,
         "costUsd": 0,
         "inputTokens": 0,
         "outputTokens": 0
       },
       "US-0058": {
-        "projectedUsd": 4.088808,
+        "projectedUsd": 400,
         "costUsd": 0,
         "inputTokens": 0,
         "outputTokens": 0
       },
       "US-0079": {
-        "projectedUsd": 4.088808,
+        "projectedUsd": 400,
         "costUsd": 0,
         "inputTokens": 0,
         "outputTokens": 0
       },
       "US-0080": {
-        "projectedUsd": 4.088808,
+        "projectedUsd": 400,
         "costUsd": 0,
         "inputTokens": 0,
         "outputTokens": 0
       },
+      "US-0084": {
+        "projectedUsd": 400,
+        "costUsd": 36.2198,
+        "inputTokens": 2153434,
+        "outputTokens": 239461
+      },
       "US-0059": {
-        "projectedUsd": 4.088808,
+        "projectedUsd": 400,
         "costUsd": 0,
         "inputTokens": 0,
         "outputTokens": 0
       },
       "US-0060": {
-        "projectedUsd": 3.0125520000000003,
+        "projectedUsd": 800,
         "costUsd": 0,
         "inputTokens": 0,
         "outputTokens": 0
       },
       "US-0061": {
-        "projectedUsd": 4.088808,
+        "projectedUsd": 400,
         "costUsd": 0,
         "inputTokens": 0,
         "outputTokens": 0
       },
       "US-0062": {
-        "projectedUsd": 4.088808,
+        "projectedUsd": 400,
         "costUsd": 0,
         "inputTokens": 0,
         "outputTokens": 0
       },
       "US-0063": {
-        "projectedUsd": 4.088808,
+        "projectedUsd": 400,
         "costUsd": 0,
         "inputTokens": 0,
         "outputTokens": 0
       },
       "US-0081": {
-        "projectedUsd": 4.088808,
+        "projectedUsd": 400,
         "costUsd": 0,
         "inputTokens": 0,
         "outputTokens": 0
       },
       "US-0064": {
-        "projectedUsd": 3.0125520000000003,
+        "projectedUsd": 8.848476,
         "costUsd": 0,
         "inputTokens": 0,
         "outputTokens": 0
       },
       "US-0065": {
-        "projectedUsd": 4.088808,
+        "projectedUsd": 7.362684000000001,
         "costUsd": 0,
         "inputTokens": 0,
         "outputTokens": 0
       },
       "US-0066": {
-        "projectedUsd": 3.0125520000000003,
+        "projectedUsd": 8.848476,
         "costUsd": 0,
         "inputTokens": 0,
         "outputTokens": 0
       },
       "US-0067": {
-        "projectedUsd": 4.088808,
+        "projectedUsd": 7.362684000000001,
         "costUsd": 0,
         "inputTokens": 0,
         "outputTokens": 0
       },
       "US-0068": {
-        "projectedUsd": 1.008,
+        "projectedUsd": 36.18594,
         "costUsd": 0,
         "inputTokens": 0,
         "outputTokens": 0
       },
       "US-0069": {
-        "projectedUsd": 3.0125520000000003,
+        "projectedUsd": 800,
         "costUsd": 0,
         "inputTokens": 0,
         "outputTokens": 0
       },
       "US-0070": {
-        "projectedUsd": 4.088808,
+        "projectedUsd": 400,
         "costUsd": 0,
         "inputTokens": 0,
         "outputTokens": 0
       },
       "US-0071": {
-        "projectedUsd": 4.088808,
+        "projectedUsd": 400,
         "costUsd": 0,
         "inputTokens": 0,
         "outputTokens": 0
       },
       "US-0072": {
-        "projectedUsd": 4.088808,
+        "projectedUsd": 400,
         "costUsd": 0,
         "inputTokens": 0,
         "outputTokens": 0
       },
       "US-0073": {
-        "projectedUsd": 3.0125520000000003,
+        "projectedUsd": 8.848476,
         "costUsd": 0,
         "inputTokens": 0,
         "outputTokens": 0
       },
       "US-0074": {
-        "projectedUsd": 4.088808,
+        "projectedUsd": 7.362684000000001,
         "costUsd": 0,
         "inputTokens": 0,
         "outputTokens": 0
       },
       "US-0075": {
-        "projectedUsd": 4.088808,
+        "projectedUsd": 7.362684000000001,
         "costUsd": 0,
         "inputTokens": 0,
         "outputTokens": 0
       },
       "US-0076": {
-        "projectedUsd": 3.0125520000000003,
+        "projectedUsd": 8.848476,
         "costUsd": 0,
         "inputTokens": 0,
         "outputTokens": 0
       },
       "US-0077": {
-        "projectedUsd": 1.008,
+        "projectedUsd": 36.18594,
         "costUsd": 0,
         "inputTokens": 0,
         "outputTokens": 0
       },
       "US-0078": {
-        "projectedUsd": 4.088808,
+        "projectedUsd": 7.362684000000001,
         "costUsd": 0,
         "inputTokens": 0,
         "outputTokens": 0
       },
       "_totals": {
-        "costUsd": 103.6268,
-        "inputTokens": 11796996,
-        "outputTokens": 11796996
+        "costUsd": 142.6047,
+        "inputTokens": 11773037,
+        "outputTokens": 2062925
+      },
+      "_bugs": {
+        "BUG-0056": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0001": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 800
+        },
+        "BUG-0002": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 800
+        },
+        "BUG-0003": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0004": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0005": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 1600
+        },
+        "BUG-0006": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 800
+        },
+        "BUG-0007": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 800
+        },
+        "BUG-0008": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 800
+        },
+        "BUG-0009": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0010": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0011": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0012": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 800
+        },
+        "BUG-0013": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0014": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0015": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0016": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0017": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0018": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 800
+        },
+        "BUG-0019": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0020": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0021": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0022": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0023": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 800
+        },
+        "BUG-0024": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0025": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0026": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 800
+        },
+        "BUG-0027": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0028": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0029": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0030": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0031": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0032": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0033": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0034": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0035": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0036": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0037": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0038": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0039": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0040": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 800
+        },
+        "BUG-0041": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0042": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 800
+        },
+        "BUG-0043": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0044": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0045": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0046": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0047": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0048": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0049": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0050": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0051": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0052": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0053": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0054": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0055": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0075": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 800
+        },
+        "BUG-0076": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 800
+        },
+        "BUG-0094": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 800
+        },
+        "BUG-0095": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0096": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0097": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0098": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0099": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0100": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "BUG-0091": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "sessions": 0,
+          "isEstimated": false,
+          "projectedUsd": 400
+        },
+        "_totals": {
+          "costUsd": 0,
+          "inputTokens": 0,
+          "outputTokens": 0
+        }
       }
     },
     "coverage": {
-      "lines": 95.7,
-      "statements": 95.7,
-      "functions": 95.88,
-      "branches": 86.85,
-      "overall": 95.7,
+      "lines": 93.02,
+      "statements": 90.79,
+      "functions": 93.11,
+      "branches": 74.09,
+      "overall": 93.02,
       "meetsTarget": true,
       "available": true
     },
@@ -3780,149 +4434,170 @@
       {
         "id": "L-0001",
         "title": "Jest upgrade eliminates transitive deprecation warnings",
-        "rule": "Always upgrade Jest to the latest stable major when transitive dependencies emit deprecation warnings — do not attempt to override or suppress them with resolutions.",
-        "context": "Learned when `inflight@1.0.6` and `glob@7` deprecation warnings appeared after `npm install`. Both are transitive dependencies of `jest@29` and could not be directly overridden. Upgrading to `jest@30` eliminated both with zero test changes.",
-        "date": "2026-03-10"
+        "rule": "Always upgrade Jest to the latest stable major when transitive dependencies emit deprecation warnings — do not attempt to override or suppress them with resolutions.\n_Learned when `inflight@1.0.6` and `glob@7` deprecation warnings appeared after `npm install`. Both are transitive dependencies of `jest@29` and could not be directly overridden. Upgrading to `jest@30` eliminated both with zero test changes._",
+        "context": "",
+        "date": "2026-03-10",
+        "bugIds": []
       },
       {
         "id": "L-0002",
         "title": "CodeQL requires its own workflow file for custom triggers",
-        "rule": "Never place CodeQL in the same workflow file as other CI jobs if you need to restrict its triggers. GitHub Actions does not support per-job `on:` conditions — the trigger applies to the entire workflow.",
-        "context": "Learned when designing the CI pipeline. A single ci.yml with CodeQL would run CodeQL on every branch push, burning CI minutes unnecessarily. The fix was a separate codeql.yml with its own `on:` block.",
-        "date": "2026-03-10"
+        "rule": "Never place CodeQL in the same workflow file as other CI jobs if you need to restrict its triggers. GitHub Actions does not support per-job `on:` conditions — the trigger applies to the entire workflow.\n_Learned when designing the CI pipeline. A single ci.yml with CodeQL would run CodeQL on every branch push, burning CI minutes unnecessarily. The fix was a separate codeql.yml with its own `on:` block._",
+        "context": "",
+        "date": "2026-03-10",
+        "bugIds": []
       },
       {
         "id": "L-0007",
         "title": "All config paths must use lowercase to match Linux filesystem",
-        "rule": "Every path in `plan-visualizer.config.json` must match the actual directory casing on Linux (lowercase `docs/`). macOS is case-insensitive so `docs/` and `docs/` silently resolve to the same place; Linux treats them as separate directories. Always verify all config paths are lowercase-consistent with the workflow's `publish_dir`.",
-        "context": "Learned when the workflow deployed `./docs` but the generator wrote to `docs/` (from `outputDir: \"docs\"` in config), so `plan-status.html` never appeared in the deployed gh-pages branch.",
-        "date": "2026-03-10"
+        "rule": "Every path in `plan-visualizer.config.json` must match the actual directory casing on Linux (lowercase `docs/`). macOS is case-insensitive so `docs/` and `docs/` silently resolve to the same place; Linux treats them as separate directories. Always verify all config paths are lowercase-consistent with the workflow's `publish_dir`.\n_Learned when the workflow deployed `./docs` but the generator wrote to `docs/` (from `outputDir: \"docs\"` in config), so `plan-status.html` never appeared in the deployed gh-pages branch._",
+        "context": "",
+        "date": "2026-03-10",
+        "bugIds": []
       },
       {
         "id": "L-0004",
         "title": "GitHub Actions: gitignored files cannot be committed back from a workflow",
-        "rule": "Never add a `git add / git commit` step for files listed in `.gitignore`. The deployment artifact (`plan-status.html`) is gitignored by design; `peaceiris/actions-gh-pages` deploys the entire `publish_dir` directly from the filesystem — no commit-back step is needed or possible.",
-        "context": "Learned when plan-visualizer.yml failed with `fatal: pathspec 'docs/plan-status.html' did not match any files`. The file is generated by the workflow but gitignored in the repo, so `git add` silently ignores it, causing a non-zero exit. Removing the commit step entirely fixed the workflow.",
-        "date": "2026-03-10"
+        "rule": "Never add a `git add / git commit` step for files listed in `.gitignore`. The deployment artifact (`plan-status.html`) is gitignored by design; `peaceiris/actions-gh-pages` deploys the entire `publish_dir` directly from the filesystem — no commit-back step is needed or possible.\n_Learned when plan-visualizer.yml failed with `fatal: pathspec 'docs/plan-status.html' did not match any files`. The file is generated by the workflow but gitignored in the repo, so `git add` silently ignores it, causing a non-zero exit. Removing the commit step entirely fixed the workflow._",
+        "context": "",
+        "date": "2026-03-10",
+        "bugIds": []
       },
       {
         "id": "L-0005",
         "title": "GitHub Pages falls back to README.md when no index.html exists",
-        "rule": "Always include an `index.html` in the `publish_dir` for GitHub Pages. Without it, Pages serves the first alphabetically-matching fallback — usually `README.md`. Use a `<meta http-equiv=\"refresh\">` redirect when the real entry point has a different filename.",
-        "context": "Learned when the Pages site showed README.md instead of the dashboard. Adding `docs/index.html` with a redirect to `plan-status.html` fixed it.",
-        "date": "2026-03-10"
+        "rule": "Always include an `index.html` in the `publish_dir` for GitHub Pages. Without it, Pages serves the first alphabetically-matching fallback — usually `README.md`. Use a `<meta http-equiv=\"refresh\">` redirect when the real entry point has a different filename.\n_Learned when the Pages site showed README.md instead of the dashboard. Adding `docs/index.html` with a redirect to `plan-status.html` fixed it._",
+        "context": "",
+        "date": "2026-03-10",
+        "bugIds": []
       },
       {
         "id": "L-0006",
         "title": "Add workflow_dispatch to any workflow that uses path filters",
-        "rule": "Any workflow with a `paths:` filter must also include a `workflow_dispatch:` trigger. When the workflow itself changes (or a file not in the path list changes), there is no other way to trigger a run manually via `gh workflow run` or the GitHub UI.",
-        "context": "Learned when docs/index.html and the workflow file edits didn't match the path filter, making `gh workflow run plan-visualizer.yml` fail with \"no workflow_dispatch event trigger\".",
-        "date": "2026-03-10"
+        "rule": "Any workflow with a `paths:` filter must also include a `workflow_dispatch:` trigger. When the workflow itself changes (or a file not in the path list changes), there is no other way to trigger a run manually via `gh workflow run` or the GitHub UI.\n_Learned when docs/index.html and the workflow file edits didn't match the path filter, making `gh workflow run plan-visualizer.yml` fail with \"no workflow_dispatch event trigger\"._",
+        "context": "",
+        "date": "2026-03-10",
+        "bugIds": []
       },
       {
         "id": "L-0008",
         "title": "Always run test:coverage before generate-plan.js in the Pages workflow",
-        "rule": "Always run `npm ci` and `npm run test:coverage` as steps before `node tools/generate-plan.js` in any CI workflow that deploys the dashboard. The `coverage/coverage-summary.json` file is gitignored and must be regenerated in CI on every deploy.",
-        "context": "Learned when coverage badges showed N/A in the deployed dashboard because `coverage-summary.json` was absent at generation time. Without the file, `parseCoverage()` returns the `{ overall: 0 }` fallback, causing both the header badges and the Charts tab doughnut to show zero.",
-        "date": "2026-03-10"
+        "rule": "Always run `npm ci` and `npm run test:coverage` as steps before `node tools/generate-plan.js` in any CI workflow that deploys the dashboard. The `coverage/coverage-summary.json` file is gitignored and must be regenerated in CI on every deploy.\n_Learned when coverage badges showed N/A in the deployed dashboard because `coverage-summary.json` was absent at generation time. Without the file, `parseCoverage()` returns the `{ overall: 0 }` fallback, causing both the header badges and the Charts tab doughnut to show zero._",
+        "context": "",
+        "date": "2026-03-10",
+        "bugIds": []
       },
       {
         "id": "L-0009",
         "title": "Use position:sticky on a shared wrapper div for multi-section headers",
-        "rule": "When a header area is composed of multiple stacked components (top bar, filter bar, tab bar), wrap them all in a single `<div style=\"position:sticky;top:0;z-index:40\">` rather than applying sticky to each element individually. A single sticky wrapper is simpler and avoids z-index conflicts.",
-        "context": "Learned when the top bar, filter bar, and tab bar all scrolled off-screen on content-heavy tabs. A single sticky wrapper fixed all three in one change. The activity panel at z-index:50 naturally overlays it.",
-        "date": "2026-03-10"
+        "rule": "When a header area is composed of multiple stacked components (top bar, filter bar, tab bar), wrap them all in a single `<div style=\"position:sticky;top:0;z-index:40\">` rather than applying sticky to each element individually. A single sticky wrapper is simpler and avoids z-index conflicts.\n_Learned when the top bar, filter bar, and tab bar all scrolled off-screen on content-heavy tabs. A single sticky wrapper fixed all three in one change. The activity panel at z-index:50 naturally overlays it._",
+        "context": "",
+        "date": "2026-03-10",
+        "bugIds": []
       },
       {
         "id": "L-0010",
         "title": "Always update TEST_CASES.md Status fields when a story is marked Done",
-        "rule": "Whenever a user story is marked Done, immediately update the Status field of all linked test cases in `docs/TEST_CASES.md` from `[ ] Not Run` to `[x] Pass` (or `[x] Fail` if any test actually failed). Never leave TC statuses stale when stories are complete.",
-        "context": "Learned when BUG-0003 caused all 23 TCs to show \"Not Run\" in the Traceability tab despite all linked stories being complete. The parser was always correct — the data was simply never updated.",
-        "date": "2026-03-10"
+        "rule": "Whenever a user story is marked Done, immediately update the Status field of all linked test cases in `docs/TEST_CASES.md` from `[ ] Not Run` to `[x] Pass` (or `[x] Fail` if any test actually failed). Never leave TC statuses stale when stories are complete.\n_Learned when BUG-0003 caused all 23 TCs to show \"Not Run\" in the Traceability tab despite all linked stories being complete. The parser was always correct — the data was simply never updated._",
+        "context": "",
+        "date": "2026-03-10",
+        "bugIds": []
       },
       {
         "id": "L-0011",
         "title": "HTML-escape all user-supplied strings before DOM injection",
-        "rule": "Every field sourced from user-controlled markdown files (story titles, epic titles, AC text, bug titles, branch names, project name, tagline) must be run through an HTML-escape helper before being interpolated into template literals that produce HTML. Add a single `esc()` helper at the top of any renderer. Internally-generated fields (commit SHA, ISO timestamps) do not need escaping.",
-        "context": "Learned when BUG-0005 showed that unescaped `<script>alert(1)</script>` in a story title was injected verbatim into `plan-status.html`, executing on load.",
-        "date": "2026-03-10"
+        "rule": "Every field sourced from user-controlled markdown files (story titles, epic titles, AC text, bug titles, branch names, project name, tagline) must be run through an HTML-escape helper before being interpolated into template literals that produce HTML. Add a single `esc()` helper at the top of any renderer. Internally-generated fields (commit SHA, ISO timestamps) do not need escaping.\n_Learned when BUG-0005 showed that unescaped `<script>alert(1)</script>` in a story title was injected verbatim into `plan-status.html`, executing on load._",
+        "context": "",
+        "date": "2026-03-10",
+        "bugIds": []
       },
       {
         "id": "L-0012",
         "title": "Use a boolean `available` flag to distinguish \"no coverage file\" from genuine 0%",
-        "rule": "Never use `value > 0` to test whether coverage data is present. Instead, return `available: false` in all FALLBACK/fallback paths and `available: true` on valid data. The heuristic `> 0` conflates \"coverage file absent\" with \"all code paths untested\", causing N/A to incorrectly appear when coverage is genuinely 0%. Both `parseCoverage()` and any inline fallback in `main()` must set `available: false`.",
-        "context": "Learned when BUG-0010 was found: `cov.overall > 0` returned false for both missing file and genuine 0%, making it impossible to tell the difference.",
-        "date": "2026-03-10"
+        "rule": "Never use `value > 0` to test whether coverage data is present. Instead, return `available: false` in all FALLBACK/fallback paths and `available: true` on valid data. The heuristic `> 0` conflates \"coverage file absent\" with \"all code paths untested\", causing N/A to incorrectly appear when coverage is genuinely 0%. Both `parseCoverage()` and any inline fallback in `main()` must set `available: false`.\n_Learned when BUG-0010 was found: `cov.overall > 0` returned false for both missing file and genuine 0%, making it impossible to tell the difference._",
+        "context": "",
+        "date": "2026-03-10",
+        "bugIds": []
       },
       {
         "id": "L-0013",
         "title": "progress.md is written newest-first; do not reverse or sort",
-        "rule": "`parseRecentActivity()` should return sessions in document order. The convention for `progress.md` is that the most recent session is always prepended at the top. Adding `.reverse()` before `.slice()` would invert correct output into oldest-first. If AC requires newest-first, add a regression test asserting descending dates — do not change the parser.",
-        "context": "Learned when BUG-0011 proposed `.reverse()` to fix sort order, but existing tests broke because the fixture (and real file) are already newest-first. BUG-0011 was a false positive.",
-        "date": "2026-03-10"
+        "rule": "`parseRecentActivity()` should return sessions in document order. The convention for `progress.md` is that the most recent session is always prepended at the top. Adding `.reverse()` before `.slice()` would invert correct output into oldest-first. If AC requires newest-first, add a regression test asserting descending dates — do not change the parser.\n_Learned when BUG-0011 proposed `.reverse()` to fix sort order, but existing tests broke because the fixture (and real file) are already newest-first. BUG-0011 was a false positive._",
+        "context": "",
+        "date": "2026-03-10",
+        "bugIds": []
       },
       {
         "id": "L-0003",
         "title": "Release plan artifacts must be inside fenced code blocks",
-        "rule": "Never place EPIC/US/TASK definitions outside of triple-backtick fenced code blocks in RELEASE_PLAN.md. The parser (`parse-release-plan.js`) only reads content inside fenced blocks — narrative prose outside is silently ignored.",
-        "context": "Learned when writing the first version of RELEASE_PLAN.md. Artifacts outside code blocks produced zero parsed results.",
-        "date": "2026-03-10"
+        "rule": "Never place EPIC/US/TASK definitions outside of triple-backtick fenced code blocks in RELEASE*PLAN.md. The parser (`parse-release-plan.js`) only reads content inside fenced blocks — narrative prose outside is silently ignored.\n\\_Learned when writing the first version of RELEASE_PLAN.md. Artifacts outside code blocks produced zero parsed results.*",
+        "context": "",
+        "date": "2026-03-10",
+        "bugIds": []
       },
       {
         "id": "L-0014",
         "title": "generate-plan.js and render-html.js must use identical key names for cost data",
-        "rule": "Any field written into the `costs[storyId]` object in `generate-plan.js` must be read using the same key name in `render-html.js`. The data passes through a JSON file with no runtime type checking, so a key mismatch silently evaluates to `undefined → 0` with no error. The totals row reads `costs._totals.costUsd` directly and so is unaffected — making the bug appear as \"stories show $0 but total is correct.\"",
-        "context": "Learned when BUG-0023 was found: generate-plan.js stored `aiCostUsd` but render-html.js read `costUsd`. Renamed to `costUsd` throughout.",
-        "date": "2026-03-16"
+        "rule": "Any field written into the `costs[storyId]` object in `generate-plan.js` must be read using the same key name in `render-html.js`. The data passes through a JSON file with no runtime type checking, so a key mismatch silently evaluates to `undefined → 0` with no error. The totals row reads `costs._totals.costUsd` directly and so is unaffected — making the bug appear as \"stories show $0 but total is correct.\"\n_Learned when BUG-0023 was found: generate-plan.js stored `aiCostUsd` but render-html.js read `costUsd`. Renamed to `costUsd` throughout._",
+        "context": "",
+        "date": "2026-03-16",
+        "bugIds": []
       },
       {
         "id": "L-0015",
         "title": "Use dual y-axes when Chart.js datasets differ by 3+ orders of magnitude",
-        "rule": "When two datasets on the same bar chart differ by roughly 1,000× or more, sharing a single y-axis makes the smaller series render at sub-pixel height and become invisible. Use `yAxisID` on each dataset and define two `scales` entries (`position: 'left'` and `position: 'right'`). Set `grid.drawOnChartArea: false` on the secondary axis to avoid double grid lines.",
-        "context": "Learned when BUG-0024 showed projected costs ($1,600–$4,000/epic) and AI costs ($1–$7/epic) on the same axis, making AI bars invisible.",
-        "date": "2026-03-16"
+        "rule": "When two datasets on the same bar chart differ by roughly 1,000× or more, sharing a single y-axis makes the smaller series render at sub-pixel height and become invisible. Use `yAxisID` on each dataset and define two `scales` entries (`position: 'left'` and `position: 'right'`). Set `grid.drawOnChartArea: false` on the secondary axis to avoid double grid lines.\n_Learned when BUG-0024 showed projected costs ($1,600–$4,000/epic) and AI costs ($1–$7/epic) on the same axis, making AI bars invisible._",
+        "context": "",
+        "date": "2026-03-16",
+        "bugIds": []
       },
       {
         "id": "L-0016",
         "title": "Override Tailwind CDN utilities with !important in a <style> block for mobile",
-        "rule": "Tailwind CSS loaded via CDN generates utility classes at runtime with standard specificity. To override them in a `@media` block inside a `<style>` tag, append `!important` to each property. Without `!important`, the CDN-generated utilities (which are injected after the static `<style>` tag) will win the specificity race.",
-        "context": "Learned when BUG-0020 mobile CSS fixes had no effect until `!important` was added to every property in the `@media (max-width: 767px)` block.",
-        "date": "2026-03-16"
+        "rule": "Tailwind CSS loaded via CDN generates utility classes at runtime with standard specificity. To override them in a `@media` block inside a `<style>` tag, append `!important` to each property. Without `!important`, the CDN-generated utilities (which are injected after the static `<style>` tag) will win the specificity race.\n_Learned when BUG-0020 mobile CSS fixes had no effect until `!important` was added to every property in the `@media (max-width: 767px)` block._",
+        "context": "",
+        "date": "2026-03-16",
+        "bugIds": []
       },
       {
         "id": "L-0018",
         "title": "GitHub Actions cannot push directly to a protected branch; use an auto-merge PR instead",
-        "rule": "If a branch requires PRs and status checks, a GitHub Actions workflow using `GITHUB_TOKEN` cannot push commits directly to it — the push is rejected with `GH006: Protected branch update failed`. The correct pattern is: create a short-lived branch, push the commit there, open a PR to the protected branch, and call `gh pr merge --auto` so it merges as soon as CI passes. Also add `pull-requests: write` to the job's `permissions` block, and ensure the repo has \"Allow auto-merge\" enabled (Settings → General).",
-        "context": "Learned when version-bump.yml failed with GH006 trying to push `chore: bump patch version` directly to `develop`.",
-        "date": "2026-03-16"
+        "rule": "If a branch requires PRs and status checks, a GitHub Actions workflow using `GITHUB_TOKEN` cannot push commits directly to it — the push is rejected with `GH006: Protected branch update failed`. The correct pattern is: create a short-lived branch, push the commit there, open a PR to the protected branch, and call `gh pr merge --auto` so it merges as soon as CI passes. Also add `pull-requests: write` to the job's `permissions` block, and ensure the repo has \"Allow auto-merge\" enabled (Settings → General).\n_Learned when version-bump.yml failed with GH006 trying to push `chore: bump patch version` directly to `develop`._",
+        "context": "",
+        "date": "2026-03-16",
+        "bugIds": []
       },
       {
         "id": "L-0019",
         "title": "Separate format specifications from operating protocols in AGENTS.md",
-        "rule": "Never bundle tool-specific document format requirements into the project's general `AGENTS.md`. Operating protocols (session startup, git workflow, testing standards) belong in `AGENTS.md`. Parser-level format requirements (what fields a specific tool expects, what regex a parser uses) belong in a dedicated format spec file (e.g., `plan_visualizer.md`). Reference the spec file from `AGENTS.md` with a single line. This makes installs non-destructive, keeps AGENTS.md portable, and ensures AI agents consult the correct source for format decisions.",
-        "context": "Learned when the install script's AGENTS.md overwrite/prompt caused friction for users with existing agent standards. The solution — a standalone `plan_visualizer.md` auto-referenced from AGENTS.md — eliminated the conflict entirely.",
-        "date": "2026-03-18"
+        "rule": "Never bundle tool-specific document format requirements into the project's general `AGENTS.md`. Operating protocols (session startup, git workflow, testing standards) belong in `AGENTS.md`. Parser-level format requirements (what fields a specific tool expects, what regex a parser uses) belong in a dedicated format spec file (e.g., `plan_visualizer.md`). Reference the spec file from `AGENTS.md` with a single line. This makes installs non-destructive, keeps AGENTS.md portable, and ensures AI agents consult the correct source for format decisions.\n_Learned when the install script's AGENTS.md overwrite/prompt caused friction for users with existing agent standards. The solution — a standalone `plan_visualizer.md` auto-referenced from AGENTS.md — eliminated the conflict entirely._",
+        "context": "",
+        "date": "2026-03-18",
+        "bugIds": []
       },
       {
         "id": "L-0017",
         "title": "Place a panel's close button inside the panel, not outside it",
-        "rule": "When a panel overlays part of the screen (e.g. `position:fixed; top:0; right:0; width:280px`), any close button positioned at the same coordinates outside the panel will be covered by the panel once it opens. Always place the close button as a child element inside the panel header so it is never obscured. For desktop-only toggle buttons outside the panel, verify the panel dimensions do not reach that coordinate.",
-        "context": "Learned when BUG-0022 showed the `≡ Activity` toggle at `fixed top-4 right-4` was covered by the panel (`fixed top-0 right-0 width:280px`) after opening, making it impossible to close. Fixed by adding a `×` button inside the panel with `md:hidden`.",
-        "date": "2026-03-16"
+        "rule": "When a panel overlays part of the screen (e.g. `position:fixed; top:0; right:0; width:280px`), any close button positioned at the same coordinates outside the panel will be covered by the panel once it opens. Always place the close button as a child element inside the panel header so it is never obscured. For desktop-only toggle buttons outside the panel, verify the panel dimensions do not reach that coordinate.\n_Learned when BUG-0022 showed the `≡ Activity` toggle at `fixed top-4 right-4` was covered by the panel (`fixed top-0 right-0 width:280px`) after opening, making it impossible to close. Fixed by adding a `×` button inside the panel with `md:hidden`._",
+        "context": "",
+        "date": "2026-03-16",
+        "bugIds": []
       },
       {
         "id": "L-0020",
         "title": "`position:fixed` topbar with auto-height breaks on phone portrait",
-        "rule": "A `position:fixed` topbar with `height:auto` and wrapping content (e.g. stat chips on 2 rows) doesn't scroll with the page, leaving content hidden under it. For <480px phone portrait where the topbar height is variable, switch to `position:relative` so the topbar flows in the document — then `body { padding-top: 0 }` and sidebar `top: 0`. This means the topbar scrolls away on small screens, which is acceptable trade-off over unreachable content.",
-        "context": "Learned during US-0048 responsive layout design — fixed-height topbar assumption broke when chips wrapped to 2 rows on narrow screens.",
-        "date": "2026-03-29"
+        "rule": "A `position:fixed` topbar with `height:auto` and wrapping content (e.g. stat chips on 2 rows) doesn't scroll with the page, leaving content hidden under it. For <480px phone portrait where the topbar height is variable, switch to `position:relative` so the topbar flows in the document — then `body { padding-top: 0 }` and sidebar `top: 0`. This means the topbar scrolls away on small screens, which is acceptable trade-off over unreachable content.\n_Learned during US-0048 responsive layout design — fixed-height topbar assumption broke when chips wrapped to 2 rows on narrow screens._",
+        "context": "",
+        "date": "2026-03-29",
+        "bugIds": []
       },
       {
         "id": "L-0021",
         "title": "Hover doesn't exist on touch devices; mobile nav patterns must use tap",
-        "rule": "When designing icon-only sidebars or collapsed nav for mobile, never rely on `:hover` to reveal labels — touch screens have no hover state. The three valid patterns are: (a) tap icon = navigate directly, (b) tap icon = open a drawer, (c) long-press = show tooltip. \"Tap to navigate\" is the simplest and requires no extra UI state; use it as the default for utility dashboards.",
-        "context": "Learned during US-0048 brainstorm when user asked \"how does hover work on tablets and phones\" — the answer was it doesn't, and the design was corrected.",
-        "date": "2026-03-29"
+        "rule": "When designing icon-only sidebars or collapsed nav for mobile, never rely on `:hover` to reveal labels — touch screens have no hover state. The three valid patterns are: (a) tap icon = navigate directly, (b) tap icon = open a drawer, (c) long-press = show tooltip. \"Tap to navigate\" is the simplest and requires no extra UI state; use it as the default for utility dashboards.\n_Learned during US-0048 brainstorm when user asked \"how does hover work on tablets and phones\" — the answer was it doesn't, and the design was corrected._",
+        "context": "",
+        "date": "2026-03-29",
+        "bugIds": []
       }
     ],
     "testCases": [
@@ -3933,7 +4608,7 @@
         "relatedTask": "TASK-0001",
         "relatedAC": "AC-0001",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -3943,7 +4618,7 @@
         "relatedTask": "TASK-0001",
         "relatedAC": "AC-0001",
         "type": "Edge Case",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -3953,7 +4628,7 @@
         "relatedTask": "TASK-0001",
         "relatedAC": "AC-0003",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -3963,7 +4638,7 @@
         "relatedTask": "TASK-0015",
         "relatedAC": "AC-0004",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -3973,7 +4648,7 @@
         "relatedTask": "TASK-0015",
         "relatedAC": "AC-0005",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -3983,7 +4658,7 @@
         "relatedTask": "TASK-0001",
         "relatedAC": "AC-0006",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -3993,7 +4668,7 @@
         "relatedTask": "TASK-0001",
         "relatedAC": "AC-0008",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4003,7 +4678,7 @@
         "relatedTask": "TASK-0001",
         "relatedAC": "AC-0016",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4013,7 +4688,7 @@
         "relatedTask": "TASK-0001",
         "relatedAC": "AC-0011",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4023,7 +4698,7 @@
         "relatedTask": "TASK-0001",
         "relatedAC": "AC-0017",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4033,7 +4708,7 @@
         "relatedTask": "TASK-0001",
         "relatedAC": "AC-0018",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4043,7 +4718,7 @@
         "relatedTask": "TASK-0001",
         "relatedAC": "AC-0019",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4053,7 +4728,7 @@
         "relatedTask": "TASK-0001",
         "relatedAC": "AC-0020",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4063,7 +4738,7 @@
         "relatedTask": "TASK-0001",
         "relatedAC": "AC-0022",
         "type": "Edge Case",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4073,7 +4748,7 @@
         "relatedTask": "TASK-0001",
         "relatedAC": "AC-0023",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4083,7 +4758,7 @@
         "relatedTask": "TASK-0001",
         "relatedAC": "AC-0024",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4093,7 +4768,7 @@
         "relatedTask": "TASK-0001",
         "relatedAC": "AC-0025",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4103,7 +4778,7 @@
         "relatedTask": "TASK-0001",
         "relatedAC": "AC-0027",
         "type": "Regression",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4113,7 +4788,7 @@
         "relatedTask": "TASK-0001",
         "relatedAC": "AC-0028",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4123,17 +4798,17 @@
         "relatedTask": "TASK-0001",
         "relatedAC": "AC-0031",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
         "id": "TC-0021",
-        "title": "ESLint passes on all tools/**/*.js files",
+        "title": "ESLint passes on all tools/\\*_/_.js files",
         "relatedStory": "US-0014",
         "relatedTask": "TASK-0003",
         "relatedAC": "AC-0033",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4143,7 +4818,7 @@
         "relatedTask": "TASK-0005",
         "relatedAC": "AC-0035",
         "type": "Negative",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4153,7 +4828,7 @@
         "relatedTask": "TASK-0008",
         "relatedAC": "AC-0038",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4163,7 +4838,7 @@
         "relatedTask": "TASK-0001",
         "relatedAC": "AC-0002",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4173,7 +4848,7 @@
         "relatedTask": "TASK-0001",
         "relatedAC": "AC-0007",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4183,7 +4858,7 @@
         "relatedTask": "TASK-0001",
         "relatedAC": "AC-0009",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4193,7 +4868,7 @@
         "relatedTask": "TASK-0001",
         "relatedAC": "AC-0010",
         "type": "Regression",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4203,7 +4878,7 @@
         "relatedTask": "TASK-0001",
         "relatedAC": "AC-0012",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4213,7 +4888,7 @@
         "relatedTask": "TASK-0001",
         "relatedAC": "AC-0013",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4223,7 +4898,7 @@
         "relatedTask": "TASK-0001",
         "relatedAC": "AC-0014",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4233,7 +4908,7 @@
         "relatedTask": "TASK-0001",
         "relatedAC": "AC-0015",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4243,7 +4918,7 @@
         "relatedTask": "TASK-0001",
         "relatedAC": "AC-0021",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4253,7 +4928,7 @@
         "relatedTask": "TASK-0003",
         "relatedAC": "AC-0026",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4263,7 +4938,7 @@
         "relatedTask": "TASK-0001",
         "relatedAC": "AC-0029",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4273,7 +4948,7 @@
         "relatedTask": "TASK-0001",
         "relatedAC": "AC-0030",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4283,7 +4958,7 @@
         "relatedTask": "TASK-0002",
         "relatedAC": "AC-0032",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4293,7 +4968,7 @@
         "relatedTask": "TASK-0004",
         "relatedAC": "AC-0034",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4303,7 +4978,7 @@
         "relatedTask": "TASK-0006",
         "relatedAC": "AC-0036",
         "type": "Negative",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4313,7 +4988,7 @@
         "relatedTask": "TASK-0007",
         "relatedAC": "AC-0037",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4323,7 +4998,7 @@
         "relatedTask": "TASK-0008",
         "relatedAC": "AC-0039",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4333,7 +5008,7 @@
         "relatedTask": "TASK-0009",
         "relatedAC": "AC-0040",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4343,7 +5018,7 @@
         "relatedTask": "TASK-0009",
         "relatedAC": "AC-0041",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4353,7 +5028,7 @@
         "relatedTask": "TASK-0009",
         "relatedAC": "AC-0042",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4363,7 +5038,7 @@
         "relatedTask": "TASK-0010",
         "relatedAC": "AC-0043",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4373,7 +5048,7 @@
         "relatedTask": "TASK-0010",
         "relatedAC": "AC-0044",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4383,7 +5058,7 @@
         "relatedTask": "TASK-0011",
         "relatedAC": "AC-0045",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4393,7 +5068,7 @@
         "relatedTask": "TASK-0012",
         "relatedAC": "AC-0046",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4403,7 +5078,7 @@
         "relatedTask": "TASK-0012",
         "relatedAC": "AC-0047",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4413,7 +5088,7 @@
         "relatedTask": "TASK-0013",
         "relatedAC": "AC-0048",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4423,7 +5098,7 @@
         "relatedTask": "TASK-0013",
         "relatedAC": "AC-0049",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4433,7 +5108,7 @@
         "relatedTask": "TASK-0014",
         "relatedAC": "AC-0050",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4443,7 +5118,7 @@
         "relatedTask": "TASK-0015",
         "relatedAC": "AC-0051",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4453,7 +5128,7 @@
         "relatedTask": "TASK-0015",
         "relatedAC": "AC-0052",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4463,7 +5138,7 @@
         "relatedTask": "TASK-0015",
         "relatedAC": "AC-0053",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4473,7 +5148,7 @@
         "relatedTask": "TASK-0017",
         "relatedAC": "AC-0054",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4483,7 +5158,7 @@
         "relatedTask": "TASK-0018",
         "relatedAC": "AC-0055",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4493,7 +5168,7 @@
         "relatedTask": "TASK-0020",
         "relatedAC": "AC-0056",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4503,8 +5178,8 @@
         "relatedTask": "TASK-0021",
         "relatedAC": "AC-0057",
         "type": "Functional",
-        "status": "Pass",
-        "defect": "BUG-0020 (Fixed)"
+        "status": "Not Run",
+        "defect": "None"
       },
       {
         "id": "TC-0059",
@@ -4513,8 +5188,8 @@
         "relatedTask": "TASK-0021",
         "relatedAC": "AC-0058",
         "type": "Functional",
-        "status": "Pass",
-        "defect": "BUG-0021 (Fixed)"
+        "status": "Not Run",
+        "defect": "None"
       },
       {
         "id": "TC-0060",
@@ -4523,8 +5198,8 @@
         "relatedTask": "TASK-0021",
         "relatedAC": "AC-0059",
         "type": "Functional",
-        "status": "Pass",
-        "defect": "BUG-0022 (Fixed)"
+        "status": "Not Run",
+        "defect": "None"
       },
       {
         "id": "TC-0061",
@@ -4533,8 +5208,8 @@
         "relatedTask": "TASK-0021",
         "relatedAC": "AC-0060",
         "type": "Functional",
-        "status": "Pass",
-        "defect": "BUG-0025 (Fixed)"
+        "status": "Not Run",
+        "defect": "None"
       },
       {
         "id": "TC-0062",
@@ -4543,7 +5218,7 @@
         "relatedTask": "TASK-0021",
         "relatedAC": "AC-0061",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4553,8 +5228,8 @@
         "relatedTask": "TASK-0022",
         "relatedAC": "AC-0062",
         "type": "Functional",
-        "status": "Pass",
-        "defect": "BUG-0023 (Fixed)"
+        "status": "Not Run",
+        "defect": "None"
       },
       {
         "id": "TC-0064",
@@ -4563,8 +5238,8 @@
         "relatedTask": "TASK-0022",
         "relatedAC": "AC-0063",
         "type": "Functional",
-        "status": "Pass",
-        "defect": "BUG-0024 (Fixed)"
+        "status": "Not Run",
+        "defect": "None"
       },
       {
         "id": "TC-0065",
@@ -4573,7 +5248,7 @@
         "relatedTask": "TASK-0023",
         "relatedAC": "AC-0064",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4583,7 +5258,7 @@
         "relatedTask": "TASK-0023",
         "relatedAC": "AC-0065",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4593,7 +5268,7 @@
         "relatedTask": "TASK-0023",
         "relatedAC": "AC-0066",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4603,7 +5278,7 @@
         "relatedTask": "TASK-0024",
         "relatedAC": "AC-0067",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4613,7 +5288,7 @@
         "relatedTask": "TASK-0024",
         "relatedAC": "AC-0068",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4623,7 +5298,7 @@
         "relatedTask": "TASK-0025",
         "relatedAC": "AC-0069",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4633,7 +5308,7 @@
         "relatedTask": "TASK-0025",
         "relatedAC": "AC-0070",
         "type": "Negative",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4643,7 +5318,7 @@
         "relatedTask": "TASK-0025",
         "relatedAC": "AC-0071",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4653,7 +5328,7 @@
         "relatedTask": "TASK-0025",
         "relatedAC": "AC-0072",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4663,7 +5338,7 @@
         "relatedTask": "TASK-0026",
         "relatedAC": "AC-0073",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4673,7 +5348,7 @@
         "relatedTask": "TASK-0026",
         "relatedAC": "AC-0074",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4683,7 +5358,7 @@
         "relatedTask": "TASK-0026",
         "relatedAC": "AC-0075",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4693,7 +5368,7 @@
         "relatedTask": "TASK-0026",
         "relatedAC": "AC-0076",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4703,7 +5378,7 @@
         "relatedTask": "TASK-0028",
         "relatedAC": "AC-0082",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4713,7 +5388,7 @@
         "relatedTask": "TASK-0028",
         "relatedAC": "AC-0083",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4723,7 +5398,7 @@
         "relatedTask": "TASK-0028",
         "relatedAC": "AC-0085",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4733,7 +5408,7 @@
         "relatedTask": "TASK-0026",
         "relatedAC": "AC-0077",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4743,7 +5418,7 @@
         "relatedTask": "TASK-0027",
         "relatedAC": "AC-0078",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4753,7 +5428,7 @@
         "relatedTask": "TASK-0027",
         "relatedAC": "AC-0079",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4763,7 +5438,7 @@
         "relatedTask": "TASK-0027",
         "relatedAC": "AC-0080",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4773,7 +5448,7 @@
         "relatedTask": "TASK-0027",
         "relatedAC": "AC-0081",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4783,7 +5458,7 @@
         "relatedTask": "TASK-0030",
         "relatedAC": "AC-0086",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4793,7 +5468,7 @@
         "relatedTask": "TASK-0030",
         "relatedAC": "AC-0087",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4803,7 +5478,7 @@
         "relatedTask": "TASK-0030",
         "relatedAC": "AC-0088",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4813,7 +5488,7 @@
         "relatedTask": "TASK-0030",
         "relatedAC": "AC-0089",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4823,7 +5498,7 @@
         "relatedTask": "TASK-0030",
         "relatedAC": "AC-0090",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4833,7 +5508,7 @@
         "relatedTask": "TASK-0033",
         "relatedAC": "AC-0091",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4843,7 +5518,7 @@
         "relatedTask": "TASK-0033",
         "relatedAC": "AC-0092",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4853,7 +5528,7 @@
         "relatedTask": "TASK-0033",
         "relatedAC": "AC-0093",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4863,7 +5538,7 @@
         "relatedTask": "TASK-0033",
         "relatedAC": "AC-0094",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4873,7 +5548,7 @@
         "relatedTask": "TASK-0033",
         "relatedAC": "AC-0095",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4883,7 +5558,7 @@
         "relatedTask": "TASK-0033",
         "relatedAC": "AC-0096",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4893,7 +5568,7 @@
         "relatedTask": "TASK-0035",
         "relatedAC": "AC-0097",
         "type": "Unit",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4903,7 +5578,7 @@
         "relatedTask": "TASK-0035",
         "relatedAC": "AC-0098",
         "type": "Unit",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4913,7 +5588,7 @@
         "relatedTask": "TASK-0035",
         "relatedAC": "AC-0097",
         "type": "Unit",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4923,7 +5598,7 @@
         "relatedTask": "TASK-0036",
         "relatedAC": "AC-0101",
         "type": "Unit",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4933,7 +5608,7 @@
         "relatedTask": "TASK-0036",
         "relatedAC": "AC-0103",
         "type": "Unit",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4943,7 +5618,7 @@
         "relatedTask": "TASK-0036",
         "relatedAC": "AC-0100",
         "type": "Unit",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4953,7 +5628,7 @@
         "relatedTask": "TASK-0037",
         "relatedAC": "AC-0105",
         "type": "Unit",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4963,7 +5638,7 @@
         "relatedTask": "TASK-0037",
         "relatedAC": "AC-0106",
         "type": "Unit",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4973,7 +5648,7 @@
         "relatedTask": "TASK-0037",
         "relatedAC": "AC-0107",
         "type": "Unit",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4983,7 +5658,7 @@
         "relatedTask": "TASK-0038",
         "relatedAC": "AC-0109",
         "type": "Unit",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -4993,7 +5668,7 @@
         "relatedTask": "TASK-0038",
         "relatedAC": "AC-0108",
         "type": "Unit",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -5003,7 +5678,7 @@
         "relatedTask": "TASK-0038",
         "relatedAC": "AC-0110",
         "type": "Unit",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -5013,7 +5688,7 @@
         "relatedTask": "TASK-0039",
         "relatedAC": "AC-0112",
         "type": "Unit",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -5023,7 +5698,7 @@
         "relatedTask": "TASK-0039",
         "relatedAC": "AC-0111",
         "type": "Unit",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -5033,7 +5708,7 @@
         "relatedTask": "n/a",
         "relatedAC": "n/a",
         "type": "Unit",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -5043,7 +5718,7 @@
         "relatedTask": "TASK-0028",
         "relatedAC": "AC-0084",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -5053,7 +5728,7 @@
         "relatedTask": "TASK-0035",
         "relatedAC": "AC-0099",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -5063,7 +5738,7 @@
         "relatedTask": "TASK-0036",
         "relatedAC": "AC-0102",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -5073,7 +5748,7 @@
         "relatedTask": "TASK-0037",
         "relatedAC": "AC-0104",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -5083,7 +5758,7 @@
         "relatedTask": "TASK-0039",
         "relatedAC": "AC-0113",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -5093,7 +5768,7 @@
         "relatedTask": "TASK-0040",
         "relatedAC": "AC-0114",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -5103,7 +5778,7 @@
         "relatedTask": "TASK-0040",
         "relatedAC": "AC-0115",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -5113,7 +5788,7 @@
         "relatedTask": "TASK-0040",
         "relatedAC": "AC-0116",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -5123,7 +5798,7 @@
         "relatedTask": "TASK-0041",
         "relatedAC": "AC-0117",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -5133,7 +5808,7 @@
         "relatedTask": "TASK-0041",
         "relatedAC": "AC-0118",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -5143,7 +5818,7 @@
         "relatedTask": "TASK-0041",
         "relatedAC": "AC-0119",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -5153,7 +5828,7 @@
         "relatedTask": "",
         "relatedAC": "AC-0120",
         "type": "Visual",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -5163,7 +5838,7 @@
         "relatedTask": "",
         "relatedAC": "AC-0121",
         "type": "Visual",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -5173,7 +5848,7 @@
         "relatedTask": "",
         "relatedAC": "AC-0122",
         "type": "Regression",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -5183,7 +5858,7 @@
         "relatedTask": "",
         "relatedAC": "AC-0123",
         "type": "Visual",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -5193,7 +5868,7 @@
         "relatedTask": "",
         "relatedAC": "AC-0124",
         "type": "Visual",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -5203,17 +5878,17 @@
         "relatedTask": "",
         "relatedAC": "AC-0125",
         "type": "Visual",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
         "id": "TC-0129",
-        "title": "All badge variants have distinct outlined dark styles — no pastel bg-*-100 classes remain",
+        "title": "All badge variants have distinct outlined dark styles — no pastel bg-\\*-100 classes remain",
         "relatedStory": "US-0042",
         "relatedTask": "",
         "relatedAC": "AC-0126",
         "type": "Visual",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -5223,7 +5898,7 @@
         "relatedTask": "",
         "relatedAC": "AC-0127",
         "type": "Visual",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -5233,7 +5908,7 @@
         "relatedTask": "",
         "relatedAC": "AC-0128",
         "type": "Functional",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -5243,7 +5918,7 @@
         "relatedTask": "",
         "relatedAC": "AC-0129",
         "type": "Visual / Interactive",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -5253,7 +5928,7 @@
         "relatedTask": "",
         "relatedAC": "AC-0130",
         "type": "Visual / Interactive",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -5263,7 +5938,7 @@
         "relatedTask": "",
         "relatedAC": "AC-0131",
         "type": "Visual",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -5273,7 +5948,7 @@
         "relatedTask": "",
         "relatedAC": "AC-0132",
         "type": "Visual",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -5283,7 +5958,7 @@
         "relatedTask": "",
         "relatedAC": "AC-0133",
         "type": "Visual",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -5293,7 +5968,7 @@
         "relatedTask": "",
         "relatedAC": "AC-0134",
         "type": "Visual / Print",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -5303,7 +5978,7 @@
         "relatedTask": "",
         "relatedAC": "AC-0135",
         "type": "Visual",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       },
       {
@@ -5313,7 +5988,7 @@
         "relatedTask": "",
         "relatedAC": "AC-0136",
         "type": "Visual",
-        "status": "Pass",
+        "status": "Not Run",
         "defect": "None"
       }
     ]

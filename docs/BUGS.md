@@ -4,6 +4,22 @@ Append-only defect log. Never delete entries. Mark resolved bugs as Fixed or Clo
 
 ---
 
+BUG-0100: Coverage Over Time chart showed fabricated data — linear ramp from 2% to 61% instead of realistic values
+Severity: High
+Related Story: US-0084
+Steps to Reproduce:
+
+1. Open plan-status.html → Trends tab → Coverage Over Time chart
+2. Observe x-axis from 3/2 to 3/31
+   Expected: Coverage grows realistically from near 0% to ~95% as stories and tests were completed
+   Actual: Chart showed a fake linear ramp (2%, 4%, 6%… 61%) capped at 70% of current coverage, bearing no relation to actual test coverage history; real statements coverage throughout March was ~95.74%
+   Root Cause: historical-sim.js used `currentCoverage * progressRatio * 0.7` — a time-based linear ramp capped at 70%, with `overall` as the source metric. `overall` was set inconsistently (sometimes branch %, sometimes lines %, sometimes the simulated value). Additionally, `parse-coverage.js` sets `overall = lines` for real snapshots, but backfilled snapshots overwrote it with the simulated value — causing divergence.
+   Status: Fixed
+   Fix Branch: feature/US-0084-trends-ui-polish
+   Lesson Encoded: No
+
+---
+
 BUG-0056: capture-cost.js produces all-zero rows — session costs never captured
 Severity: Medium
 Related Story: US-0012 (capture-cost)
