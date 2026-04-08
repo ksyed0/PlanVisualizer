@@ -316,6 +316,16 @@ Acceptance Criteria:
   - [x] AC-0043: dependabot.yml configures weekly npm updates with a 5-PR limit
   - [x] AC-0044: GitHub Actions dependencies are also monitored weekly
 Dependencies: None
+
+US-0083 (EPIC-0004): As a developer, I want all GitHub Actions steps to use Node.js 24-compatible action versions, so that no deprecation warnings appear in CI runs after June 2, 2026.
+Priority: Medium (P1)
+Estimate: S
+Status: Planned
+Branch: feature/US-0083-actions-node24-upgrade
+Acceptance Criteria:
+  - [ ] AC-0262: actions/checkout updated to v5 (or later) in plan-visualizer.yml
+  - [ ] AC-0263: actions/setup-node updated to v5 (or later) in plan-visualizer.yml
+Dependencies: None
 ```
 
 ---
@@ -1144,6 +1154,20 @@ Acceptance Criteria:
   - [x] AC-0252: Trends tab displays an "At-Risk Stories Over Time" line chart sourced from .history/ snapshots
   - [x] AC-0253: Trends tab displays a "Token Usage Over Time" stacked area chart showing input/output tokens over time
 Dependencies: US-0054
+
+US-0084 (EPIC-0008): As a user, I want the Trends charts to be visually polished, so that x-axis labels are readable, token values are abbreviated, grid lines work in dark mode, and the At-Risk chart is not misleadingly scaled.
+Priority: Medium (P1)
+Estimate: S
+Status: Done
+Branch: feature/US-0084-trends-ui-polish
+Spec: docs/superpowers/specs/2026-04-08-trends-ui-dashboard-date-design.md
+Plan: docs/superpowers/plans/2026-04-08-trends-ui-dashboard-date.md
+Acceptance Criteria:
+  - [x] AC-0264: X-axis shows ≤8 short date labels (M/D format) with no overlap across all 7 Trends charts
+  - [x] AC-0265: Token chart y-axis shows abbreviated numbers (e.g., 45M not 45,000,000)
+  - [x] AC-0266: Grid lines are subtle in dark mode (rgba(255,255,255,0.07)) and standard in light mode (#e2e8f0)
+  - [x] AC-0267: At-Risk chart y-axis uses suggestedMax: 5 — never collapses to 0–1.0 scale
+Dependencies: US-0054
 ```
 
 ---
@@ -1543,6 +1567,27 @@ Acceptance Criteria:
 - [ ] AC-0172: Config option snapshots.maxCount (default: 100) limits total snapshot count, keeping most recent
 - [ ] AC-0173: Cleanup runs on each generate-plan.js execution
       Dependencies: US-0054
+
+```
+
+---
+
+## Standalone Stories
+
+```
+
+US-0085: As a user, I want the agentic dashboard footer to show the full date and time of the last generation, so that I know how fresh the data is.
+Priority: Medium (P1)
+Estimate: XS
+Status: Done
+Branch: feature/US-0084-trends-ui-polish
+Spec: docs/superpowers/specs/2026-04-08-trends-ui-dashboard-date-design.md
+Plan: docs/superpowers/plans/2026-04-08-trends-ui-dashboard-date.md
+Acceptance Criteria:
+
+- [x] AC-0268: Footer shows "Last refreshed: [date and time]", e.g. "Last refreshed: Apr 8, 2026, 04:32 PM"
+- [x] AC-0269: Date/time uses en-US locale with month (short), day, year, hour, minute, hour12 format
+      Dependencies: None
 
 ```
 
