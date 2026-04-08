@@ -2,7 +2,9 @@
 
 A self-contained project dashboard for Claude Code projects. Parses your `RELEASE_PLAN.md`, `TEST_CASES.md`, `BUGS.md`, `AI_COST_LOG.md`, `LESSONS.md`, coverage JSON, and `progress.md` into a static `plan-status.html` with seven tabs:
 
-**Hierarchy · Kanban · Traceability · Charts · Costs · Bugs · Lessons**
+**Hierarchy · Kanban · Traceability · Charts · Trends · Costs · Bugs · Lessons**
+
+Press `⌘K` / `Ctrl+K` to open the global search modal and jump to any story, bug, or lesson by ID or keyword.
 
 No runtime dependencies — Node.js and git only.
 
