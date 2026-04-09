@@ -91,7 +91,8 @@ function backfillHistory(options = {}) {
 
   const doneStories = (currentData.stories || []).filter((s) => s.status === 'Done');
   const plannedStories = (currentData.stories || []).filter((s) => s.status === 'Planned' || s.status === 'To Do');
-  const currentCoverage = currentData.coverage?.overall || 0;
+  // Use statements as the canonical coverage metric — consistent and never simulated
+  const currentCoverage = currentData.coverage?.statements || currentData.coverage?.lines || 0;
   const allBugs = currentData.bugs || [];
 
   const generated = [];
@@ -103,7 +104,10 @@ function backfillHistory(options = {}) {
     const progressRatio = (i + 1) / days;
     const simulatedSpent = totalSpent * progressRatio;
     const simulatedDoneCount = Math.round(doneStories.length * progressRatio);
-    const simulatedCoverage = Math.round(currentCoverage * progressRatio * 0.7);
+    // Coverage grows with story completion: sqrt gives realistic fast-early-then-plateau shape.
+    // Ties to done ratio so coverage tracks test authorship alongside feature work.
+    const doneRatio = simulatedDoneCount / Math.max(doneStories.length, 1);
+    const simulatedCoverage = parseFloat((currentCoverage * Math.sqrt(doneRatio)).toFixed(1));
 
     const simulatedCosts = {};
 
@@ -195,7 +199,13 @@ function backfillHistory(options = {}) {
         stories: simulatedStories,
         bugs: simulatedBugs,
         costs: simulatedCosts,
-        coverage: { ...currentData.coverage, overall: simulatedCoverage, available: true },
+        coverage: {
+          ...currentData.coverage,
+          overall: simulatedCoverage,
+          lines: simulatedCoverage,
+          statements: simulatedCoverage,
+          available: true,
+        },
         lessons: currentData.lessons || [],
         testCases: currentData.testCases || [],
       },

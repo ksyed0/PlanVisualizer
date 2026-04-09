@@ -4,6 +4,22 @@ Append-only defect log. Never delete entries. Mark resolved bugs as Fixed or Clo
 
 ---
 
+BUG-0100: Coverage Over Time chart showed fabricated data — linear ramp from 2% to 61% instead of realistic values
+Severity: High
+Related Story: US-0084
+Steps to Reproduce:
+
+1. Open plan-status.html → Trends tab → Coverage Over Time chart
+2. Observe x-axis from 3/2 to 3/31
+   Expected: Coverage grows realistically from near 0% to ~95% as stories and tests were completed
+   Actual: Chart showed a fake linear ramp (2%, 4%, 6%… 61%) capped at 70% of current coverage, bearing no relation to actual test coverage history; real statements coverage throughout March was ~95.74%
+   Root Cause: historical-sim.js used `currentCoverage * progressRatio * 0.7` — a time-based linear ramp capped at 70%, with `overall` as the source metric. `overall` was set inconsistently (sometimes branch %, sometimes lines %, sometimes the simulated value). Additionally, `parse-coverage.js` sets `overall = lines` for real snapshots, but backfilled snapshots overwrote it with the simulated value — causing divergence.
+   Status: Fixed
+   Fix Branch: feature/US-0084-trends-ui-polish
+   Lesson Encoded: No
+
+---
+
 BUG-0056: capture-cost.js produces all-zero rows — session costs never captured
 Severity: Medium
 Related Story: US-0012 (capture-cost)
@@ -1109,3 +1125,115 @@ Steps to Reproduce:
    Status: Open
    Fix Branch:
    Lesson Encoded: No
+
+---
+
+BUG-0101: Costs tab confined to viewport height — page does not scroll
+Severity: Medium
+Related Story: US-0084
+Steps to Reproduce:
+
+1. Open plan-status.html → Costs tab
+2. Observe the Per-Epic Budget table and the Stories/Bug Fix Cost tables below
+   Expected: Tab scrolls normally as a page; all sections visible by scrolling
+   Actual: Tab uses fixed viewport height (tab-fill class); budget table and stories table are cramped and neither the page nor the sections scroll usably
+   Status: Fixed
+   Fix Branch: develop
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+
+---
+
+BUG-0102: NaN% shown in Per-Epic Budget % Used column when budget and spend are both $0
+Severity: Low
+Related Story: US-0084
+Steps to Reproduce:
+
+1. Open plan-status.html → Costs tab → Per-Epic Budget table
+2. Observe epics where Budget = $0.00 and Spent = $0.00
+   Expected: % Used column shows — (dash) when no budget has been set
+   Actual: % Used shows NaN% with a green progress bar
+   Status: Fixed
+   Fix Branch: develop
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+
+---
+
+BUG-0103: Search modal returns no results for epics — epics not in search index
+Severity: Medium
+Related Story: US-0069
+Steps to Reproduce:
+
+1. Open plan-status.html → press ⌘K to open search
+2. Type "EPIC-0001"
+   Expected: Epic shown in results with title and status
+   Actual: No results shown; epics were never added to buildSearchIndex()
+   Status: Fixed
+   Fix Branch: develop
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+
+---
+
+BUG-0104: Agentic Dashboard About modal auto-closes every 5 seconds
+Severity: Medium
+Related Story: US-0085
+Steps to Reproduce:
+
+1. Open dashboard.html → click ℹ️ About
+2. Wait 5 seconds without interacting
+   Expected: Modal remains open until user closes it
+   Actual: meta http-equiv="refresh" content="5" reloads the entire page, dismissing the modal
+   Status: Fixed
+   Fix Branch: develop
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+
+---
+
+BUG-0105: Agent portraits blink every 5 seconds on Agentic Dashboard
+Severity: Low
+Related Story: US-0085
+Steps to Reproduce:
+
+1. Open dashboard.html
+2. Watch agent portrait images over 10 seconds
+   Expected: Portraits are stable; only animate on meaningful state change
+   Actual: All images blink/reload every 5 seconds due to full page meta-refresh
+   Status: Fixed
+   Fix Branch: develop
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+
+---
+
+BUG-0106: Bug and Lesson cards missing 3D hover effect present on other card views
+Severity: Low
+Related Story: US-0084
+Steps to Reproduce:
+
+1. Open plan-status.html → Hierarchy tab → card view → hover a story card (scale + shadow)
+2. Switch to Bugs tab → card view → hover a bug card
+   Expected: Same scale + shadow hover effect as story cards
+   Actual: No hover effect; bug and lesson cards lack the story-card-hover class
+   Status: Fixed
+   Fix Branch: develop
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+
+---
+
+BUG-0107: Alerts button on Agentic Dashboard is one-way — cannot be toggled off
+Severity: Low
+Related Story: US-0085
+Steps to Reproduce:
+
+1. Open dashboard.html → click 🔔 Alerts → grant notification permission
+2. Button shows "🔔 On" — click it again
+   Expected: Button toggles to 🔕 Off and stops sending notifications
+   Actual: requestAlerts() calls Notification.requestPermission() again which returns 'granted' instantly; button stays "🔔 On"
+   Status: Fixed
+   Fix Branch: develop
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00

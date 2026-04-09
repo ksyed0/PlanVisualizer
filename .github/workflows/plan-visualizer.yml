@@ -47,6 +47,9 @@ jobs:
       - name: Generate plan-status.html
         run: node tools/generate-plan.js
 
+      - name: Initialize sdlc-status.json
+        run: node tools/init-sdlc-status.js
+
       - name: Generate dashboard.html
         run: node tools/generate-dashboard.js
 

@@ -1,6 +1,29 @@
 # progress.md — Session Log
 
-Running log of session activity, errors, test results, and blockers.
+Running log of session activity, errors, session activity, errors, test results, and blockers.
+
+---
+
+## Session 15 — 2026-04-08
+
+### What Was Done
+
+- **EPIC-0011 (Global Search)**: Implemented full ⌘K search modal across stories, bugs, lessons
+  - New `tools/lib/search-index.js` — `scoreMatch` (4-tier scoring) and `buildSearchIndex` (XSS-safe)
+  - New `tests/unit/search-index.test.js` — 14 unit tests; 260 total tests pass
+  - `tools/lib/render-html.js` — story DOM IDs, SEARCH_INDEX embed, pill button, modal HTML/CSS, all search JS (open/close/run/navigate, keyboard nav ⌘K/↑↓↵/ESC, recent searches)
+  - Fixed ESLint config missing `test` global; Prettier-formatted new files
+  - PR #272 merged to develop; GitHub Pages redeployed
+- **RELEASE_PLAN.md**: Marked EPIC-0008 (US-0054–US-0058, US-0079–US-0080) and EPIC-0009 (US-0059–US-0063, US-0081) Done with correct branch references
+- **README.md**: Added Trends tab and ⌘K global search mention
+
+### Test Results
+
+- 260 tests pass, statement coverage 90.78%, branch 74.09% (gate: 80% lines/statements)
+
+### Blockers / Notes
+
+- None. `docs/plan-status.html` and `docs/plan-status.json` are gitignored; GitHub Pages regenerates them via `plan-visualizer.yml` workflow on push to develop/main.
 
 ---
 
