@@ -20,7 +20,7 @@ function parseTestCases(markdown) {
     const block = markdown.slice(startIdx, nextResult ? nextResult.index : undefined);
 
     const get = (key) => {
-      const m = block.match(new RegExp(`^${key}:[ \\t]*(.+)`, 'm'));
+      const m = block.match(new RegExp(`^[ \\t]*${key}:[ \\t]*(.+)`, 'm'));
       return m ? m[1].trim() : '';
     };
 
