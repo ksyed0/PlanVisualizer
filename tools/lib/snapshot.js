@@ -96,10 +96,17 @@ function extractTrends(snapshots) {
 
   const totalStories = snapshots.map((s) => (s.data.stories || []).length);
 
-  const aiCosts = snapshots.map((s) => {
+  const rawAiCosts = snapshots.map((s) => {
     const costs = s.data.costs || {};
     return Object.values(costs).reduce((sum, c) => sum + (c.costUsd || 0), 0);
   });
+  // Cumulative costs must never decrease — enforce monotonicity
+  const aiCosts = [];
+  let maxCost = 0;
+  for (const c of rawAiCosts) {
+    maxCost = Math.max(maxCost, c);
+    aiCosts.push(maxCost);
+  }
 
   const coverage = snapshots.map((s) => {
     const cov = s.data.coverage;
