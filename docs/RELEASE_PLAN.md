@@ -66,8 +66,38 @@ Dependencies: EPIC-0006
 EPIC-0008: Trend Analysis & Historical Tracking
 Description: Capture and visualise project metrics over time. Store snapshots of dashboard data on each generation and display trend charts showing progress, costs, coverage, and velocity.
 Release Target: Release 1.4
-Status: Planned
+Status: Done
 Dependencies: EPIC-0007
+
+EPIC-0009: Budget Forecasting
+Description: Track burn rate and predict when budget exhausts. Alert when projected costs exceed thresholds. Help teams stay on budget by visualising spend velocity and forecasting future costs.
+Release Target: Release 1.5
+Status: Done
+Dependencies: EPIC-0008
+
+EPIC-0010: Risk Analytics
+Description: Composite risk scoring per story, risk trend charts, velocity-based completion prediction, at-risk epic summary, and Monte Carlo delivery simulation.
+Release Target: Release 1.6
+Status: Planned
+Dependencies: EPIC-0009
+
+EPIC-0011: Search
+Description: Global search across all stories, bugs, and lessons. Quick jump to any item by ID.
+Release Target: Release 1.7
+Status: In Progress
+Dependencies: EPIC-0010
+
+EPIC-0012: Stakeholder View
+Description: Non-technical stakeholder dashboard with milestone progress, budget traffic lights, PDF export, email digests, and password protection.
+Release Target: Release 1.8
+Status: Planned
+Dependencies: EPIC-0011
+
+EPIC-0013: Agentic SDLC Dashboard
+Description: Secondary dashboard visualising the multi-agent orchestration layer — agent roles, delegation flow, session timeline, and SDLC metrics.
+Release Target: Release 1.5
+Status: Done
+Dependencies: EPIC-0002
 ```
 
 ---
@@ -1345,7 +1375,7 @@ Dependencies: US-0066
 EPIC-0011: Search
 Description: Global search across all stories, bugs, and lessons. Quick jump to any item by ID.
 Release Target: Release 1.7
-Status: Planned
+Status: In Progress
 Dependencies: EPIC-0010
 ```
 

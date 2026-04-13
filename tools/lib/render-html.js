@@ -102,10 +102,12 @@ function renderTopBar(data) {
       <div class="topbar-project">
         <div class="flex items-center gap-2 flex-wrap">
           <h1 class="topbar-title">${esc(data.projectName)}</h1>
-          <button onclick="openSearch()" id="search-pill" class="topbar-btn" aria-label="Open search (⌘K)">🔍 <span id="search-pill-shortcut">⌘K</span></button>
-          <button onclick="openAbout()" class="topbar-btn">ℹ️ About</button>
-          <a href="dashboard.html" class="topbar-btn">&#8592; Agentic Dashboard</a>
-          <button onclick="toggleTheme()" id="theme-toggle" class="topbar-btn" aria-label="Toggle dark/light mode">☀️ Light</button>
+          <span class="topbar-btn-group">
+            <button onclick="openSearch()" id="search-pill" class="topbar-btn" aria-label="Open search (⌘K)">🔍 <span id="search-pill-shortcut">⌘K</span></button>
+            <button onclick="openAbout()" class="topbar-btn">ℹ️ About</button>
+            <a href="dashboard.html" class="topbar-btn">&#8592; Agentic Dashboard</a>
+            <button onclick="toggleTheme()" id="theme-toggle" class="topbar-btn" aria-label="Toggle dark/light mode">☀️ Light</button>
+          </span>
         </div>
         <p class="topbar-tagline">${esc(data.tagline)}&nbsp;·&nbsp;Updated <span id="gen-time" data-iso="${genAt}"></span>&nbsp;·&nbsp;<code class="font-mono" style="font-size:10px">${esc(data.commitSha)}</code></p>
       </div>
@@ -2339,6 +2341,7 @@ function renderHtml(data, options = {}) {
     .topbar-tagline { font-size: 11px; color: rgba(255,255,255,0.72); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 1px; }
     .topbar-btn { background: rgba(255,255,255,0.18); border: none; color: #ffffff; border-radius: 20px; padding: 5px 14px; font-size: 13px; cursor: pointer; transition: background 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
     .topbar-btn:hover { background: rgba(255,255,255,0.30); color: #ffffff; }
+    .topbar-btn-group { margin-left: auto; display: inline-flex; gap: 6px; flex-shrink: 0; }
     /* Search pill — hide shortcut hint on mobile */
     @media (max-width: 640px) { #search-pill-shortcut { display: none; } }
 
