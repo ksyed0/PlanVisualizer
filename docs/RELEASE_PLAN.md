@@ -98,6 +98,12 @@ Description: Secondary dashboard visualising the multi-agent orchestration layer
 Release Target: Release 1.5
 Status: Done
 Dependencies: EPIC-0002
+
+EPIC-0014: Follow-Up Changes
+Description: Planned and in-progress work that was added after its original epic was marked Done. Collects follow-up stories to preserve the integrity of completed epics.
+Release Target: Backlog
+Status: Planned
+Dependencies: None
 ```
 
 ---
@@ -347,7 +353,7 @@ Acceptance Criteria:
   - [x] AC-0044: GitHub Actions dependencies are also monitored weekly
 Dependencies: None
 
-US-0083 (EPIC-0004): As a developer, I want all GitHub Actions steps to use Node.js 24-compatible action versions, so that no deprecation warnings appear in CI runs after June 2, 2026.
+US-0083 (EPIC-0014): As a developer, I want all GitHub Actions steps to use Node.js 24-compatible action versions, so that no deprecation warnings appear in CI runs after June 2, 2026.
 Priority: Medium (P1)
 Estimate: S
 Status: Planned
@@ -1073,7 +1079,7 @@ Dependencies: US-0051
 ## Technical Debt
 
 ```
-US-0053 (EPIC-0007): As a developer, I want the render-html.js module to be split into smaller focused files, so that the codebase is easier to maintain and debug.
+US-0053 (EPIC-0014): As a developer, I want the render-html.js module to be split into smaller focused files, so that the codebase is easier to maintain and debug.
 Priority: Low (P3)
 Estimate: M
 Status: Planned
@@ -1872,4 +1878,46 @@ Assignee: Agent
 Status: Done
 Branch: develop
 Notes: tools/lib/parse-release-plan.js handles markdown parsing; requires (EPIC-XXXX) in US headers to associate stories; stories without an epic tag are excluded from grouping
+```
+
+---
+
+## Epic — EPIC-0014: Follow-Up Changes
+
+```
+EPIC-0014: Follow-Up Changes
+Description: Planned and in-progress work that was added after its original epic was marked Done. Collects follow-up stories to preserve the integrity of completed epics.
+Release Target: Backlog
+Status: Planned
+Dependencies: None
+```
+
+---
+
+## User Stories — EPIC-0014: Follow-Up Changes
+
+```
+US-0083 (EPIC-0014): As a developer, I want all GitHub Actions steps to use Node.js 24-compatible action versions, so that no deprecation warnings appear in CI runs after June 2, 2026.
+Priority: Medium (P1)
+Estimate: S
+Status: Planned
+Branch: feature/US-0083-actions-node24-upgrade
+Acceptance Criteria:
+  - [ ] AC-0262: actions/checkout updated to v5 (or later) in plan-visualizer.yml
+  - [ ] AC-0263: actions/setup-node updated to v5 (or later) in plan-visualizer.yml
+Dependencies: None
+```
+
+```
+US-0053 (EPIC-0014): As a developer, I want the render-html.js module to be split into smaller focused files, so that the codebase is easier to maintain and debug.
+Priority: Low (P3)
+Estimate: M
+Status: Planned
+Branch:
+Acceptance Criteria:
+  - [ ] AC-0150: render-html.js is refactored into separate modules (e.g., render-header.js, render-tabs.js, render-charts.js, render-scripts.js)
+  - [ ] AC-0151: Each module exports a single render function that follows the existing contract
+  - [ ] AC-0152: All existing tests pass after refactoring
+  - [ ] AC-0153: The generate-plan.js orchestrator imports from the new module files
+Dependencies: None
 ```
