@@ -1655,3 +1655,221 @@ Acceptance Criteria:
 ```
 
 ```
+
+---
+
+### Epic 13: Agentic SDLC Pipeline & Live Dashboard
+
+```
+EPIC-0013: Agentic SDLC Pipeline & Live Dashboard
+Description: The orchestration framework, agent roster, multi-platform spawn helper, concurrency safety utilities, live HTML dashboard, sdlc-status schema, and plan visualizer that powered the agentic build of the CTC-Mobile-Wishlist POC and now ship as features of PlanVisualizer.
+Release Target: Tooling (internal)
+Status: Done
+Dependencies: None
+```
+
+```
+US-0088 (EPIC-0013): As a pipeline engineer, I want a documented agent roster and orchestration framework with named roles, icons, and prompt templates, so that any team member can understand and extend the agentic pipeline.
+Priority: High
+Estimate: M
+Status: Done
+Branch: develop
+Dependencies: None
+Acceptance Criteria:
+  - [x] AC-0277: agents.config.json exists as the single source of truth, defining name, role, icon, color, and instructionFile for each agent
+  - [x] AC-0278: Nine agent roles are defined — Conductor (DM), Compass (PO), Keystone (Architect), Lens (Reviewer), Palette (UI Designer), Forge (BE Dev), Pixel (FE Dev), Sentinel (Functional Tester), Circuit (Automation Tester)
+  - [x] AC-0279: Each agent has a dedicated instruction file in docs/agents/ with mandatory startup steps, responsibilities, and tool instructions
+  - [x] AC-0280: docs/AGENT_PLAN.md documents the full 6-phase pipeline (Blueprint → Architect → Build → Integration → Test → Polish) with phase entry/exit criteria, the PR review lifecycle, BLOCK recovery protocol, and execution mode options
+```
+
+```
+TASK-0042 (US-0088): Create agents.config.json with 9 agent definitions and dashboard/orchestrator metadata
+Type: Dev
+Assignee: Agent
+Status: Done
+Branch: develop
+Notes: Single JSON file; agents map, dashboard branding block, orchestrator.dmAgent/reviewer/avatarGrid; loaded by spawn.js, generate-dashboard.js, process-avatars.js, and init-sdlc-status.js
+```
+
+```
+TASK-0043 (US-0088): Write 9 agent instruction files in docs/agents/ with roles, responsibilities, and prompt templates
+Type: Dev
+Assignee: Agent
+Status: Done
+Branch: develop
+Notes: DM_AGENT.md, PO_AGENT.md, ARCHITECT_AGENT.md, CODE_REVIEWER_AGENT.md, UI_DESIGNER_AGENT.md, BE_DEV_AGENT.md, FE_DEV_AGENT.md, FUNCTIONAL_TESTER_AGENT.md, AUTOMATION_TESTER_AGENT.md
+```
+
+```
+TASK-0044 (US-0088): Write docs/AGENT_PLAN.md — 6-phase pipeline, PR/review flow, BLOCK recovery, execution modes, concurrency safety rules, and config-driven setup guide
+Type: Dev
+Assignee: Agent
+Status: Done
+Branch: develop
+Notes: Covers sequential, parallel, Agent-tool delegation, and spawn helper execution modes; references all concurrency utilities
+```
+
+```
+US-0089 (EPIC-0013): As a pipeline engineer, I want a CLI spawn helper that generates correct launch commands for any supported AI coding platform, so that agents can be started consistently across environments without manual prompt assembly.
+Priority: High
+Estimate: M
+Status: Done
+Branch: develop
+Dependencies: US-0088
+Acceptance Criteria:
+  - [x] AC-0281: orchestrator/spawn.js supports --list-platforms, --list-agents, --agent <name>, and --print-all flags
+  - [x] AC-0282: Seven platform adapters exist for claude-code, codex-cli, gemini-cli, aider, codemie, elitea, and opencode
+  - [x] AC-0283: spawn.js loads all agent definitions from agents.config.json — no hardcoded agent data in the script
+  - [x] AC-0284: Running --print-all outputs a complete prompt block for every agent on the detected platform
+  - [x] AC-0285: Running --agent <name> outputs a ready-to-paste launch command with the agent's instruction file path resolved
+```
+
+```
+TASK-0045 (US-0089): Implement orchestrator/spawn.js with CLI flag parsing and dynamic agent/platform resolution from agents.config.json
+Type: Dev
+Assignee: Agent
+Status: Done
+Branch: develop
+Notes: Reads agents.config.json; delegates to adapter modules; supports all 4 CLI flags; prints platform-specific spawn syntax
+```
+
+```
+TASK-0046 (US-0089): Implement 7 platform adapter modules in orchestrator/adapters/ (claude-code.js, codex-cli.js, gemini-cli.js, aider.js, codemie.js, elitea.js, opencode.js)
+Type: Dev
+Assignee: Agent
+Status: Done
+Branch: develop
+Notes: Each adapter exports formatSpawnCommand(agent, config); adapters differ in flag syntax and instruction file handling
+```
+
+```
+US-0090 (EPIC-0013): As a pipeline engineer, I want atomic file utilities for shared state during parallel agent execution, so that simultaneous agents cannot corrupt shared pipeline files.
+Priority: High
+Estimate: M
+Status: Done
+Branch: develop
+Dependencies: US-0088
+Acceptance Criteria:
+  - [x] AC-0286: orchestrator/file-lock.js provides withLock() and withLockSync() using mkdir-based locking with configurable stale timeout
+  - [x] AC-0287: orchestrator/atomic-write.js provides atomicReadModifyWriteJson() for safe concurrent JSON mutation, atomicAppend() for locked log appends, and reserveId() for race-free ID allocation
+  - [x] AC-0288: orchestrator/git-safe.js provides safePush() with exponential backoff (4 retries) and checkOverlap() to detect conflicting file edits across parallel branches before merging
+  - [x] AC-0289: All shared pipeline files (sdlc-status.json, progress.md, BUGS.md, ID_REGISTRY.md, AI_COST_LOG.md) are protected by these utilities in agent instruction files
+```
+
+```
+TASK-0047 (US-0090): Implement orchestrator/file-lock.js — mkdir-based mutual exclusion with stale lock detection and configurable retry backoff
+Type: Dev
+Assignee: Agent
+Status: Done
+Branch: develop
+Notes: Uses fs.mkdirSync as atomic lock primitive; stale detection via mtime; exposes withLock(path, fn) and withLockSync(path, fn)
+```
+
+```
+TASK-0048 (US-0090): Implement orchestrator/atomic-write.js — atomicReadModifyWriteJson, atomicAppend, reserveId backed by file-lock.js
+Type: Dev
+Assignee: Agent
+Status: Done
+Branch: develop
+Notes: atomicReadModifyWriteJson parses, calls transform fn, writes back atomically; reserveId reads ID_REGISTRY, increments, writes back; atomicAppend acquires lock before fs.appendFileSync
+```
+
+```
+TASK-0049 (US-0090): Implement orchestrator/git-safe.js — safePush with retry/backoff and checkOverlap for parallel branch conflict detection
+Type: Dev
+Assignee: Agent
+Status: Done
+Branch: develop
+Notes: safePush wraps git push; retries on exit code 1 with pull-rebase; checkOverlap diffs two branches and reports overlapping file paths
+```
+
+```
+US-0091 (EPIC-0013): As a pipeline engineer, I want a self-contained HTML dashboard that visualises real-time phase progress, agent statuses, and delivery metrics, so that I can monitor the agentic build at a glance without reading JSON.
+Priority: High
+Estimate: L
+Status: Done
+Branch: develop
+Dependencies: US-0088, US-0092
+Acceptance Criteria:
+  - [x] AC-0290: tools/generate-dashboard.js reads sdlc-status.json and agents.config.json and emits a self-contained docs/dashboard.html with no external dependencies
+  - [x] AC-0291: Dashboard displays the 6-phase pipeline as a visual flow with per-phase completion status (planned/in-progress/done/blocked)
+  - [x] AC-0292: Dashboard shows a status card per agent with icon, role, current status (idle/active/done/blocked), and active task label; icons and colours are driven by agents.config.json
+  - [x] AC-0293: Dashboard shows a metrics panel: stories done/total, tasks done/total, tests passed, code coverage percentage, and open bug count
+  - [x] AC-0294: Dashboard auto-refreshes every 30 seconds via JS interval; skips reload when a modal is open
+  - [x] AC-0295: Dashboard plays distinct audio tones and surfaces browser notifications when a phase completes, an agent transitions to blocked, or a new critical bug is opened; alert toggle persists via localStorage
+  - [x] AC-0296: All dashboard branding (title, subtitle, footer, primary colour, author, repo URL) is driven by the dashboard section of agents.config.json — no hardcoded project values in the generator
+  - [x] AC-0297: npm run dashboard runs a one-shot generation; npm run dashboard:watch re-generates on every sdlc-status.json change
+```
+
+```
+TASK-0050 (US-0091): Implement tools/generate-dashboard.js — reads sdlc-status.json + agents.config.json, renders phase pipeline, agent cards, metrics panel, and alert triggers into a single self-contained HTML file
+Type: Dev
+Assignee: Agent
+Status: Done
+Branch: develop
+Notes: Generator; getDashboardMeta() reads branding from config; 30s JS-based reload (skips when modal open); all CSS/JS inlined; audio context for tone alerts
+```
+
+```
+TASK-0051 (US-0091): Add config-driven branding layer to generate-dashboard.js — title, subtitle, footer, primaryColor, author, authorTitle, repoUrl all sourced from agents.config.json dashboard block
+Type: Dev
+Assignee: Agent
+Status: Done
+Branch: develop
+Notes: getDashboardMeta() falls back to package.json name only when config is absent
+```
+
+```
+TASK-0052 (US-0091): Add audio alert and browser notification system to generated dashboard — distinct tones for phase-complete, agent-blocked, and bug-opened events
+Type: Dev
+Assignee: Agent
+Status: Done
+Branch: develop
+Notes: Web Audio API oscillator tones; Notification API with on/off toggle persisted in localStorage; event detection compares previous vs current sdlc-status.json on each poll cycle; tested via docs/alert-test.html
+```
+
+```
+US-0092 (EPIC-0013): As a pipeline engineer, I want a typed sdlc-status.json schema and an initialiser script, so that any new project can bootstrap a clean dashboard state from agents.config.json in a single command.
+Priority: Medium
+Estimate: S
+Status: Done
+Branch: develop
+Dependencies: US-0088
+Acceptance Criteria:
+  - [x] AC-0298: docs/sdlc-status.json schema captures currentPhase, phases array (each with id, name, status, stories), agents map (each with status, currentTask), and metrics (storiesDone, tasksTotal, testsPassed, coveragePercent, bugsOpen)
+  - [x] AC-0299: tools/init-sdlc-status.js generates a valid sdlc-status.json from agents.config.json with all agents initialised to idle and all phases to planned
+  - [x] AC-0300: npm run init:status runs the initialiser; subsequent npm run dashboard immediately renders a blank but valid dashboard
+```
+
+```
+TASK-0053 (US-0092): Implement tools/init-sdlc-status.js — generates docs/sdlc-status.json from agents.config.json, producing all phases planned and all agents idle
+Type: Dev
+Assignee: Agent
+Status: Done
+Branch: develop
+Notes: Reads agents.config.json; writes sdlc-status.json; idempotent — safe to re-run; does not overwrite if --no-overwrite flag is passed
+```
+
+```
+US-0093 (EPIC-0013): As a pipeline engineer, I want a plan visualizer that renders epic and story progress from RELEASE_PLAN.md as a navigable HTML page, so that stakeholders can track delivery status without reading raw markdown.
+Priority: Medium
+Estimate: M
+Status: Done
+Branch: develop
+Dependencies: None
+Acceptance Criteria:
+  - [x] AC-0301: tools/generate-plan.js parses RELEASE_PLAN.md and emits a self-contained docs/plan-status.html
+  - [x] AC-0302: Plan visualizer shows all epics with story and task counts, grouped by Done / In Progress / To Do
+  - [x] AC-0303: Each story row shows its ID, title, status badge, estimate, and linked acceptance criteria completion ratio
+  - [x] AC-0304: npm run plan:generate runs a one-shot generation; npm run plan:watch re-generates on RELEASE_PLAN.md changes
+  - [x] AC-0305: plan-status.html is fully self-contained — no external CSS, JS, or font dependencies
+```
+
+```
+TASK-0054 (US-0093): Implement tools/generate-plan.js — parses RELEASE_PLAN.md fenced blocks, extracts epics/stories/tasks/ACs, and renders docs/plan-status.html with status grouping and progress bars
+Type: Dev
+Assignee: Agent
+Status: Done
+Branch: develop
+Notes: tools/lib/parse-release-plan.js handles markdown parsing; requires (EPIC-XXXX) in US headers to associate stories; stories without an epic tag are excluded from grouping
+```
