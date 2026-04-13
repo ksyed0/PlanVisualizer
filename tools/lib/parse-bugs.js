@@ -17,8 +17,8 @@ function parseBugs(markdown) {
     const get = (key) => {
       // Match both "Key: value" and "- **Key:** value" formats
       const m =
-        block.match(new RegExp(`^-\\s*\\*\\*${key}:\\*\\*\\s*(.+)`, 'm')) ||
-        block.match(new RegExp(`^${key}:[ \\t]*(.+)`, 'm'));
+        block.match(new RegExp(`^[ \\t]*-\\s*\\*\\*${key}:\\*\\*\\s*(.+)`, 'm')) ||
+        block.match(new RegExp(`^[ \\t]*${key}:[ \\t]*(.+)`, 'm'));
       return m ? m[1].trim() : '';
     };
 
