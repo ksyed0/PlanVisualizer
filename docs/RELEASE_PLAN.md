@@ -84,7 +84,7 @@ Dependencies: EPIC-0009
 EPIC-0011: Search
 Description: Global search across all stories, bugs, and lessons. Quick jump to any item by ID.
 Release Target: Release 1.7
-Status: In Progress
+Status: Done
 Dependencies: EPIC-0010
 
 EPIC-0012: Stakeholder View
@@ -1375,7 +1375,7 @@ Dependencies: US-0066
 EPIC-0011: Search
 Description: Global search across all stories, bugs, and lessons. Quick jump to any item by ID.
 Release Target: Release 1.7
-Status: In Progress
+Status: Done
 Dependencies: EPIC-0010
 ```
 
