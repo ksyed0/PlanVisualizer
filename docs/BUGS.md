@@ -1265,7 +1265,7 @@ Steps to Reproduce:
 2. Observe the bg/border class list on each card
    Expected: All card containers use the --clr-panel-bg / --clr-border token system consistently
    Actual: Cards mix `bg-white dark:bg-slate-800` + `border border-slate-200 dark:border-slate-700` — bypasses the token system and complicates theme swaps or future refactors
-   Status: Open
+   Status: Fixed
    Fix Branch: feature/US-0095-shadow-cards
    Lesson Encoded: No
    Estimated Cost USD: 0.00

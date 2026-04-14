@@ -1962,12 +1962,12 @@ Dependencies: None
 US-0095 (EPIC-0015): As a user, I want cards to use layered shadows instead of hard 1px borders, so that the interface feels refined and depth-aware.
 Priority: Medium (P1)
 Estimate: S
-Status: Planned
+Status: Done
 Branch: feature/US-0095-shadow-cards
 Acceptance Criteria:
-  - [ ] AC-0310: A --shadow-card token exists with light and dark mode variants
-  - [ ] AC-0311: All chart/story/bug/lesson card containers use box-shadow instead of 1px borders
-  - [ ] AC-0312: BUG-0111 (mixed bg-white/slate-800 tokens) is resolved
+  - [x] AC-0310: A --shadow-card token exists with light and dark mode variants
+  - [x] AC-0311: All chart/story/bug/lesson card containers use box-shadow instead of 1px borders
+  - [x] AC-0312: BUG-0111 (mixed bg-white/slate-800 tokens) is resolved
 Dependencies: None
 ```
 

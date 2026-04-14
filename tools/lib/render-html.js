@@ -646,37 +646,37 @@ function renderTrendsTab(data, options = {}) {
       ${
         hasData
           ? `
-      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+      <div class="card-elev rounded-lg p-4">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Done Stories Over Time</h3>
         <div style="height:250px;position:relative"><canvas id="chart-trends-progress"></canvas></div>
       </div>
 
-      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+      <div class="card-elev rounded-lg p-4">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">AI Cost Over Time</h3>
         <div style="height:250px;position:relative"><canvas id="chart-trends-cost"></canvas></div>
       </div>
 
-      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+      <div class="card-elev rounded-lg p-4">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Coverage Over Time</h3>
         <div style="height:250px;position:relative"><canvas id="chart-trends-coverage"></canvas></div>
       </div>
 
-      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+      <div class="card-elev rounded-lg p-4">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Velocity (Story Points)</h3>
         <div style="height:250px;position:relative"><canvas id="chart-trends-velocity"></canvas></div>
       </div>
 
-      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+      <div class="card-elev rounded-lg p-4">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Open Bugs Over Time</h3>
         <div style="height:250px;position:relative"><canvas id="chart-trends-bugs"></canvas></div>
       </div>
 
-      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+      <div class="card-elev rounded-lg p-4">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">At-Risk Stories Over Time</h3>
         <div style="height:250px;position:relative"><canvas id="chart-trends-risk"></canvas></div>
       </div>
 
-      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 col-span-full">
+      <div class="card-elev rounded-lg p-4 col-span-full">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Token Usage Over Time</h3>
         <div style="height:250px;position:relative"><canvas id="chart-trends-tokens"></canvas></div>
       </div>
@@ -811,17 +811,17 @@ function renderChartsTab(data) {
   <div id="tab-charts" class="p-6 hidden" role="tabpanel" aria-labelledby="tab-btn-charts">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+      <div class="card-elev rounded-lg p-4">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Epic Progress</h3>
         <div style="height:${Math.max(300, data.epics.length * 36)}px;position:relative"><canvas id="chart-epic-progress"></canvas></div>
       </div>
 
-      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+      <div class="card-elev rounded-lg p-4">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Cost Breakdown (Projected vs AI)</h3>
         <div style="height:300px;position:relative"><canvas id="chart-cost-breakdown"></canvas></div>
       </div>
 
-      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+      <div class="card-elev rounded-lg p-4">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Test Coverage</h3>
         <div style="height:300px;position:relative">
           <canvas id="chart-coverage"></canvas>
@@ -834,17 +834,17 @@ function renderChartsTab(data) {
         </div>
       </div>
 
-      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+      <div class="card-elev rounded-lg p-4">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">AI Cost Timeline</h3>
         <div style="height:300px;position:relative"><canvas id="chart-ai-timeline"></canvas></div>
       </div>
 
-      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+      <div class="card-elev rounded-lg p-4">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Story Status Distribution</h3>
         <div style="height:300px;position:relative"><canvas id="chart-burndown"></canvas></div>
       </div>
 
-      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+      <div class="card-elev rounded-lg p-4">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Budget Burn Rate</h3>
         <div style="height:300px;position:relative"><canvas id="chart-burn-rate"></canvas></div>
       </div>
@@ -966,7 +966,7 @@ function renderCostsTab(data, options = {}) {
 
     const csvDownload = options.budgetCSV ? `onclick="downloadBudgetCSV()"` : '';
     budgetSection = `
-    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 mb-4">
+    <div class="card-elev rounded-lg p-4 mb-4">
       <div class="flex flex-wrap items-center gap-6 mb-4">
         <div>
           <span class="text-xs text-slate-500 uppercase">${brDisplay}</span>
@@ -1146,7 +1146,7 @@ function renderCostsTab(data, options = {}) {
         .map((story) => {
           const ai = data.costs[story.id] || {};
           const projected = ai.projectedUsd || 0;
-          return `<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 flex flex-col gap-2">
+          return `<div class="card-elev rounded-lg p-4 flex flex-col gap-2">
         <div class="flex items-center gap-2 flex-wrap">
           <span class="font-mono text-xs text-slate-500 whitespace-nowrap">${story.id}</span>
           ${badge(story.status)}
@@ -1212,7 +1212,7 @@ function renderCostsTab(data, options = {}) {
       const bugCardItems = bugs
         .map((bug) => {
           const bc = (data.costs._bugs && data.costs._bugs[bug.id]) || {};
-          return `<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 flex flex-col gap-2">
+          return `<div class="card-elev rounded-lg p-4 flex flex-col gap-2">
         <div class="flex items-center gap-2 flex-wrap">
           <span class="font-mono text-xs text-slate-500 whitespace-nowrap">${esc(bug.id)}</span>
           ${badge(bug.severity)} ${badge(bug.status)}
@@ -1396,7 +1396,7 @@ function renderBugsTab(data) {
   const renderBugCard = (bug) => {
     const epicId = storyEpicMap[bug.relatedStory] || '_ungrouped';
     return `
-    <div id="bug-card-${esc(bug.id)}" class="bug-row story-card-hover bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 flex flex-col gap-2" data-status="${esc(bug.status)}" data-epic="${esc(epicId)}" data-severity="${esc(bug.severity)}">
+    <div id="bug-card-${esc(bug.id)}" class="bug-row story-card-hover card-elev rounded-lg p-4 flex flex-col gap-2" data-status="${esc(bug.status)}" data-epic="${esc(epicId)}" data-severity="${esc(bug.severity)}">
       <div class="flex items-center gap-2 flex-wrap">
         <span class="font-mono text-xs text-slate-500 whitespace-nowrap">${bug.id}</span>
         ${badge(bug.severity)} ${badge(bug.status)}
@@ -1557,7 +1557,7 @@ function renderLessonsTab(data) {
   </tr>`;
 
   const renderLessonCard = (l) => `
-  <div id="lesson-card-${l.id}" class="lesson-row story-card-hover bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 flex flex-col gap-2">
+  <div id="lesson-card-${l.id}" class="lesson-row story-card-hover card-elev rounded-lg p-4 flex flex-col gap-2">
     <div class="flex items-center gap-2">
       <span class="font-mono text-xs font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap flex-shrink-0">${l.id}</span>
       <span class="text-sm font-semibold text-slate-700 dark:text-slate-200">${esc(l.title)}</span>
@@ -2248,6 +2248,9 @@ function renderPrintCSS() {
     --clr-input-text:    #1e293b;
     --clr-chart-text:    #475569;
     --clr-accent:        #7c3aed;
+    /* US-0095 — card depth via layered shadow instead of hard border */
+    --shadow-card:       0 1px 2px rgba(15,23,42,0.04), 0 4px 16px rgba(15,23,42,0.05);
+    --shadow-card-hover: 0 2px 4px rgba(15,23,42,0.06), 0 8px 24px rgba(15,23,42,0.08);
   }
   html.dark {
     --clr-body-bg:       #0b0d12;
@@ -2267,6 +2270,8 @@ function renderPrintCSS() {
     --clr-input-text:    #dde1ea;
     --clr-chart-text:    #a0a8b8;
     --clr-accent:        #8b5cf6;
+    --shadow-card:       0 1px 2px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3);
+    --shadow-card-hover: 0 2px 6px rgba(0,0,0,0.5), 0 12px 32px rgba(0,0,0,0.4);
   }
   /* === Dark mode fallbacks === */
   html.dark body {
@@ -2362,6 +2367,10 @@ function renderHtml(data, options = {}) {
     td.num, td.cost, .topbar-tile .tile-value, .hero-num,
     .scroll-table td, .scroll-table th, .font-mono, code,
     .budget-stat, #tab-costs td, #tab-bugs td { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1, "ss01" 1; }
+
+    /* === Card elevation (US-0095) — shadow-based cards, no hard border === */
+    .card-elev { background-color: var(--clr-panel-bg); box-shadow: var(--shadow-card); transition: box-shadow 180ms ease; padding: 1rem; }
+    .card-elev:hover { box-shadow: var(--shadow-card-hover); }
 
     /* === Topbar (fixed, gradient) === */
     #topbar-fixed {
