@@ -4,7 +4,8 @@
  * file-lock.js — Simple File Locking for Shared State
  *
  * Prevents race conditions when multiple agents write to shared files
- * (sdlc-status.json, progress.md, BUGS.md, ID_REGISTRY.md, AI_COST_LOG.md).
+ * (sdlc-status.json, progress.md, docs/BUGS.md, docs/ID_REGISTRY.md,
+ *  docs/AI_COST_LOG.md).
  *
  * Uses mkdir-based locking (atomic on all platforms) with stale lock detection.
  * NOT a distributed lock — designed for local multi-process agent orchestration.

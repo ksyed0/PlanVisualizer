@@ -192,3 +192,4 @@ Input Tokens column = direct input + cache-write tokens; cost computed with dist
 | 2026-04-14 | e7bf5b24-d1e5-46e0-b4fa-8a000b5b2199 | main | 1511354 | 194287 | 76240627 | 31.4535 |
 | 2026-04-14 | e7bf5b24-d1e5-46e0-b4fa-8a000b5b2199 | main | 1612234 | 261952 | 91058553 | 37.2921 |
 | 2026-04-14 | e7bf5b24-d1e5-46e0-b4fa-8a000b5b2199 | main | 1612978 | 265022 | 91796009 | 37.5622 |
+| 2026-04-14 | e7bf5b24-d1e5-46e0-b4fa-8a000b5b2199 | develop | 1691180 | 299943 | 122121373 | 47.4768 |
