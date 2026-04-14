@@ -730,3 +730,49 @@ describe('renderHtml — multi-epic bug grouping sort (BUG-0093)', () => {
     expect(pos2).toBeLessThan(posU);
   });
 });
+
+describe('renderHtml — CSS tokens (US-0096 zebra striping)', () => {
+  let html;
+  beforeAll(() => {
+    html = renderHtml(sampleData);
+  });
+
+  // Extract :root { ... } block (stops at closing brace of root block, before html.dark)
+  const rootBlock = () => {
+    const m = html.match(/:root\s*\{([\s\S]*?)\n\s{2}\}/);
+    return m ? m[1] : '';
+  };
+  // Extract html.dark { ... } block
+  const darkBlock = () => {
+    const m = html.match(/html\.dark\s*\{([\s\S]*?)\n\s{2}\}/);
+    return m ? m[1] : '';
+  };
+
+  it('declares --clr-row-alt in :root (light mode)', () => {
+    expect(rootBlock()).toMatch(/--clr-row-alt:\s*rgba\(148,163,184,0\.04\)/);
+  });
+
+  it('declares --clr-row-hover in :root (light mode)', () => {
+    expect(rootBlock()).toMatch(/--clr-row-hover:\s*rgba\(148,163,184,0\.09\)/);
+  });
+
+  it('declares --clr-row-alt in html.dark (dark mode)', () => {
+    expect(darkBlock()).toMatch(/--clr-row-alt:\s*rgba\(255,255,255,0\.02\)/);
+  });
+
+  it('declares --clr-row-hover in html.dark (dark mode)', () => {
+    expect(darkBlock()).toMatch(/--clr-row-hover:\s*rgba\(255,255,255,0\.05\)/);
+  });
+
+  it('emits .scroll-table tbody tr:nth-child(even) rule using --clr-row-alt', () => {
+    expect(html).toMatch(
+      /\.scroll-table tbody tr:nth-child\(even\)\s*\{\s*background-color:\s*var\(--clr-row-alt\)/
+    );
+  });
+
+  it('emits .scroll-table tbody tr:hover rule using --clr-row-hover', () => {
+    expect(html).toMatch(
+      /\.scroll-table tbody tr:hover\s*\{\s*background-color:\s*var\(--clr-row-hover\)/
+    );
+  });
+});
