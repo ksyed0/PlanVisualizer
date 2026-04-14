@@ -4,6 +4,58 @@ Timestamped log of every user prompt across all sessions. Append-only. Never edi
 
 ---
 
+## Session 17 — 2026-04-13/14
+
+| #   | Timestamp            | Prompt                                                                                                                                             |
+| --- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | 2026-04-13T17:00:00Z | can you regenerate the plan visualizer and agentic dashboards on github pages                                                                      |
+| 2   | 2026-04-13T17:20:00Z | this doesn't look like its up to date... is main behind develop?                                                                                   |
+| 3   | 2026-04-13T17:25:00Z | lets do #2 first and then do #1; also merge the chore PRs                                                                                          |
+| 4   | 2026-04-13T17:50:00Z | then cleanup any leftover branches                                                                                                                 |
+| 5   | 2026-04-13T18:00:00Z | this deployed plan status still seems out of date compared to what we fixed                                                                        |
+| 6   | 2026-04-13T18:10:00Z | can you check docs/RELEASE_PLAN.md to see if the story status is correct                                                                           |
+| 7   | 2026-04-13T18:30:00Z | how is epic-0011 In Progress when all stories are Done [screenshot]                                                                                |
+| 8   | 2026-04-13T18:45:00Z | more of the traceability is showing not run [screenshot]                                                                                           |
+| 9   | 2026-04-13T19:00:00Z | there are some stories that are not in Done status under Epics that are marked done... recommended behaviour?                                      |
+| 10  | 2026-04-13T19:10:00Z | I prefer Option 1, lets create a rule that locks an Epic from any changes once in Done status                                                      |
+| 11  | 2026-04-13T19:15:00Z | lets move any stories that are not Done, but inside a Done Epic, to new Epic called "Follow-Up Changes"                                            |
+| 12  | 2026-04-13T19:25:00Z | how is it possible for docs/AI_COST_LOG.md totals to go down over time? is this an error [screenshot]                                              |
+| 13  | 2026-04-13T19:40:00Z | the docs/AI_COST_LOG.md for BUGS.md is zero again, I thought we fixed this several times                                                           |
+| 14  | 2026-04-13T19:45:00Z | why is the Bugs cost page not sorted or grouped by epic?                                                                                           |
+| 15  | 2026-04-13T20:00:00Z | this should be resized to fit all epics and all epics labelled [Epic Progress chart]                                                               |
+| 16  | 2026-04-13T20:15:00Z | the kanban view doesn't allow cards to be clicked to show details as they can in hierarchy view                                                    |
+| 17  | 2026-04-13T20:30:00Z | is this showing the Plan Visualizer (the app) version and build or the underlying project?                                                         |
+| 18  | 2026-04-13T20:45:00Z | is the build, branch, updated for the users current project or for the plan visualizer tool?                                                       |
+| 19  | 2026-04-13T21:00:00Z | list all available skills                                                                                                                          |
+| 20  | 2026-04-13T21:15:00Z | using the /frontend-design skill, lets review each tab of the plan status dashboard (plan mode)                                                    |
+| 21  | 2026-04-13T21:50:00Z | First update the Bugs file and Release Plan for each modification, add enhancements to a new UI Review and Redesign Epic, then proceed             |
+| 22  | 2026-04-13T22:10:00Z | can we use the UI Designer skill in plan mode to review the agentic dashboard                                                                      |
+| 23  | 2026-04-13T22:40:00Z | each agent should have its own portrait... how can we conceptually depict the iterative nature of development?                                     |
+| 24  | 2026-04-13T22:55:00Z | can you optimize the image files by creating a smaller image in the right size as a copy and leave the originals                                   |
+| 25  | 2026-04-14T01:00:00Z | whats outstanding                                                                                                                                  |
+| 26  | 2026-04-14T01:05:00Z | lets commit item 2 above, and use the docs/agents/DM_AGENT.md to implement the plan for EPIC-0015                                                  |
+| 27  | 2026-04-14T01:30:00Z | whats the difference in usage for BUGS.md and docs/BUGS.md                                                                                         |
+| 28  | 2026-04-14T13:20:00Z | how do we resolve the issue of merge conflicts above, what is your recommendation                                                                  |
+| 29  | 2026-04-14T13:30:00Z | can I close the chrome window now                                                                                                                  |
+| 30  | 2026-04-14T13:35:00Z | why can't we implement #4 squash-merge now, does it add serious risk or effort?                                                                    |
+| 31  | 2026-04-14T13:45:00Z | Would switching to a PR based workflow be better overall than this approach?                                                                       |
+| 32  | 2026-04-14T14:00:00Z | yes lets implement your recommended changes                                                                                                        |
+| 33  | 2026-04-14T14:45:00Z | is the "Build" phase status correct? All work should now be done for this run? [screenshot]                                                        |
+| 34  | 2026-04-14T15:00:00Z | can you rebuild plan visualizer dashboard?                                                                                                         |
+| 35  | 2026-04-14T15:30:00Z | this and other graphs should be vertically centered in their panel [chart screenshot]                                                              |
+| 36  | 2026-04-14T15:45:00Z | bug grouping by Epic on the costs tab keeps breaking [screenshot]                                                                                  |
+| 37  | 2026-04-14T15:55:00Z | The epic view formatting and spacing on the hierarchy and traceability are different, can we match traceability and reduce vertical spacing        |
+| 38  | 2026-04-14T16:05:00Z | can we make the agentic pipeline dashboard about box have the same layout as the plan visualizer other than indicating it is the agentic dashboard |
+| 39  | 2026-04-14T19:00:00Z | lets update all documentation and prepare to close this session                                                                                    |
+
+---
+
+## Session 16 — 2026-04-09
+
+_(Bug sweep session — see progress.md Session 16 entry. Was primarily spent fixing BUG-0044 through BUG-0109.)_
+
+---
+
 ## Session 15 — 2026-04-07/08
 
 | #   | Timestamp            | Prompt                                                                                                 |
