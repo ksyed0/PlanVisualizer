@@ -133,15 +133,15 @@ function renderTopBar(data) {
           <span class="tile-label">In Progress</span>
         </div>
         <div class="topbar-tile">
-          <span class="tile-value tile-bugs${bugValueCls}">&#128027; ${openBugs.length}</span>
+          <span class="tile-value hero-num hero-num-sm tile-bugs${bugValueCls}">&#128027; ${openBugs.length}</span>
           <span class="tile-label">Bugs Open</span>
         </div>
         <div class="topbar-tile tile-coverage">
-          <span class="tile-value tile-cov${covValueCls}">${covLabel}</span>
+          <span class="tile-value hero-num hero-num-sm tile-cov${covValueCls}">${covLabel}</span>
           <span class="tile-label">Coverage</span>
         </div>
         <div class="topbar-tile tile-ai-cost">
-          <span class="tile-value font-mono">${usd(totalAI)}</span>
+          <span class="tile-value hero-num hero-num-sm">${usd(totalAI)}</span>
           <span class="tile-label">AI Cost</span>
         </div>
         <div class="topbar-tile tile-projected">
@@ -838,7 +838,7 @@ function renderChartsTab(data) {
           <canvas id="chart-coverage"></canvas>
           <div class="absolute inset-0 flex items-center justify-center pointer-events-none" style="padding-bottom:3rem">
             <div class="text-center">
-              <div class="text-2xl font-bold text-slate-700 dark:text-slate-200">${coveragePct !== null ? coveragePct + '%' : 'N/A'}</div>
+              <div class="hero-num text-slate-700 dark:text-slate-200">${coveragePct !== null ? coveragePct + '%' : 'N/A'}</div>
               <div class="text-xs text-slate-500 dark:text-slate-400">overall</div>
             </div>
           </div>
@@ -976,6 +976,8 @@ function renderCostsTab(data, options = {}) {
       .join('');
 
     const csvDownload = options.budgetCSV ? `onclick="downloadBudgetCSV()"` : '';
+    const remaining =
+      budget.totalBudget !== null && budget.totalBudget !== undefined ? budget.totalBudget - budget.totalSpent : null;
     budgetSection = `
     <div class="card-elev rounded-lg p-4 mb-4">
       <div class="flex flex-wrap items-center gap-6 mb-4">
@@ -985,11 +987,19 @@ function renderCostsTab(data, options = {}) {
         <div>
           <span class="text-xs text-slate-500 uppercase">${exDisplay}</span>
         </div>
+      </div>
+      <div class="flex flex-wrap items-end gap-8 mb-4">
         <div>
-          <span class="text-xs text-slate-500 uppercase">Total Budget: ${usd(budget.totalBudget)}</span>
+          <div class="text-xs text-slate-500 uppercase tracking-wide mb-1">Total Budget</div>
+          <div class="hero-num text-slate-800 dark:text-slate-100">${usd(budget.totalBudget)}</div>
         </div>
         <div>
-          <span class="text-xs text-slate-500 uppercase">Spent: ${usd(budget.totalSpent)}</span>
+          <div class="text-xs text-slate-500 uppercase tracking-wide mb-1">Spent</div>
+          <div class="hero-num text-slate-800 dark:text-slate-100">${usd(budget.totalSpent)}</div>
+        </div>
+        <div>
+          <div class="text-xs text-slate-500 uppercase tracking-wide mb-1">Remaining</div>
+          <div class="hero-num text-slate-800 dark:text-slate-100">${remaining !== null ? usd(remaining) : '—'}</div>
         </div>
       </div>
       <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Per-Epic Budget</h3>
@@ -2513,6 +2523,22 @@ function renderHtml(data, options = {}) {
     .tile-label { font-size: 10px; font-weight: 500; color: rgba(255,255,255,0.68); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; white-space: nowrap; }
     .tile-danger { color: #fca5a5 !important; }
     .tile-warn { color: #fde68a !important; }
+
+    /* === Hero numbers (US-0099) === */
+    /* Default hero-num: large display treatment for prominent KPIs (budget totals, coverage %, bug counts). */
+    .hero-num {
+      font-family: 'Instrument Serif', 'Iowan Old Style', Georgia, serif;
+      font-size: clamp(28px, 4vw, 44px);
+      font-weight: 500;
+      letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1, "ss01" 1;
+      line-height: 1;
+    }
+    /* Compact variant for cramped contexts (e.g. topbar tiles). Scales down so it doesn't overflow. */
+    .hero-num.hero-num-sm {
+      font-size: clamp(1rem, 2.5vw, 1.6rem);
+    }
 
     /* === App shell === */
     #app-shell { display: flex; min-height: calc(100vh - 72px); }
