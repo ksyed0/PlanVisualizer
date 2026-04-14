@@ -1256,7 +1256,7 @@ Steps to Reproduce:
 
 ---
 
-BUG-0111: Chart card containers mix Tailwind classes with --clr-* tokens inconsistently
+BUG-0111: Chart card containers mix Tailwind classes with --clr-\* tokens inconsistently
 Severity: Low
 Related Story: US-0095
 Steps to Reproduce:
@@ -2006,7 +2006,7 @@ Steps to Reproduce:
    Expected: Clean console load
    Actual: "TypeError: Cannot read properties of null (reading 'addEventListener')" at plan-status.html:~20215 — search-body element lookup returns null before wire-up runs
    Status: Open
-   Fix Branch: 
+   Fix Branch:
    Lesson Encoded: No
    Estimated Cost USD: 0.00
    Notes: Found by Sentinel during US-0097 Playwright verification. Pre-existing — not introduced by US-0097. Likely in the EPIC-0011 global search module (US-0069); search-body DOM setup runs before the element exists or exists-but-null edge case.

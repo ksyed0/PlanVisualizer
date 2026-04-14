@@ -8,3 +8,5 @@ docs/sdlc-status.json
 # .history/ tracked intentionally for Trends tab persistence
 .DS_Store
 .superpowers/
+.playwright-mcp/
+us0097-*.png

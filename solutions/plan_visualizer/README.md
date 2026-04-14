@@ -31,10 +31,10 @@ A Claude Code Stop hook (`capture-cost.js`) automatically appends session token 
 
 ## AI Tools & Platforms Used
 
-| Tool/Platform | Version / Variant | Purpose in Solution |
-|--------------|-------------------|---------------------|
+| Tool/Platform   | Version / Variant               | Purpose in Solution                                                             |
+| --------------- | ------------------------------- | ------------------------------------------------------------------------------- |
 | Claude Code CLI | Latest (tested with Sonnet 4.6) | Primary development environment; Stop hook captures session costs automatically |
-| Claude Desktop | Optional | Can be used as an alternative interface for querying dashboard data |
+| Claude Desktop  | Optional                        | Can be used as an alternative interface for querying dashboard data             |
 
 ## MCP Servers & Integrations
 
