@@ -792,7 +792,7 @@ function renderChartsTab(data) {
 
       <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Epic Progress</h3>
-        <div style="height:300px;position:relative"><canvas id="chart-epic-progress"></canvas></div>
+        <div style="height:${Math.max(300, data.epics.length * 36)}px;position:relative"><canvas id="chart-epic-progress"></canvas></div>
       </div>
 
       <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
@@ -846,7 +846,7 @@ function renderChartsTab(data) {
       ]},
       options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
         plugins: { legend: { labels: { color: tc } } },
-        scales: { x: { stacked: true, ticks: { color: tc } }, y: { stacked: true, ticks: { color: tc } } } }
+        scales: { x: { stacked: true, ticks: { color: tc } }, y: { stacked: true, ticks: { color: tc, autoSkip: false } } } }
     });
     _charts.costBreakdown = new Chart(document.getElementById('chart-cost-breakdown'), {
       type: 'bar',
@@ -858,7 +858,7 @@ function renderChartsTab(data) {
         responsive: true, maintainAspectRatio: false,
         plugins: { legend: { labels: { color: tc } } },
         scales: {
-          x: { ticks: { color: tc } },
+          x: { ticks: { color: tc, autoSkip: false, maxRotation: 60, minRotation: 45 } },
           yProjected: { type: 'linear', position: 'left', ticks: { color: tc }, title: { display: true, text: 'Projected ($)', color: tc } },
           yAI: { type: 'linear', position: 'right', ticks: { color: tc }, title: { display: true, text: 'AI Cost ($)', color: tc }, grid: { drawOnChartArea: false } }
         }
