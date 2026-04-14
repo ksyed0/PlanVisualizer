@@ -765,14 +765,10 @@ describe('renderHtml — CSS tokens (US-0096 zebra striping)', () => {
   });
 
   it('emits .scroll-table tbody tr:nth-child(even) rule using --clr-row-alt', () => {
-    expect(html).toMatch(
-      /\.scroll-table tbody tr:nth-child\(even\)\s*\{\s*background-color:\s*var\(--clr-row-alt\)/
-    );
+    expect(html).toMatch(/\.scroll-table tbody tr:nth-child\(even\)\s*\{\s*background-color:\s*var\(--clr-row-alt\)/);
   });
 
   it('emits .scroll-table tbody tr:hover rule using --clr-row-hover', () => {
-    expect(html).toMatch(
-      /\.scroll-table tbody tr:hover\s*\{\s*background-color:\s*var\(--clr-row-hover\)/
-    );
+    expect(html).toMatch(/\.scroll-table tbody tr:hover\s*\{\s*background-color:\s*var\(--clr-row-hover\)/);
   });
 });

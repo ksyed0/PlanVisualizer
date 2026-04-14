@@ -1,0 +1,285 @@
+#!/usr/bin/env node
+'use strict';
+
+/**
+ * update-sdlc-status.js — Event-driven updater for docs/sdlc-status.json
+ *
+ * Called by the Conductor at each DM_AGENT pipeline phase transition to keep
+ * the agentic dashboard (docs/dashboard.html) in sync with real execution state.
+ *
+ * Uses atomicReadModifyWriteJson for safe concurrent updates.
+ *
+ * Usage patterns (all commands mutate sdlc-status.json and append a log entry):
+ *
+ *   # Start a story — mark the primary agent active + currentTask
+ *   node tools/update-sdlc-status.js agent-start \
+ *     --agent Pixel --story US-0096 \
+ *     --task "Implement zebra striping"
+ *
+ *   # Finish an agent's turn — flip to idle, increment tasksCompleted
+ *   node tools/update-sdlc-status.js agent-done \
+ *     --agent Pixel --story US-0096
+ *
+ *   # Record a review verdict
+ *   node tools/update-sdlc-status.js review \
+ *     --agent Lens --story US-0096 --verdict approve
+ *   # verdicts: approve | request-changes | block
+ *
+ *   # Record test results
+ *   node tools/update-sdlc-status.js test-pass \
+ *     --agent Sentinel --story US-0096 --count 1
+ *
+ *   # Record coverage
+ *   node tools/update-sdlc-status.js coverage \
+ *     --agent Circuit --percent 90.82
+ *
+ *   # Mark a story complete (increments metrics + updates stories[id])
+ *   node tools/update-sdlc-status.js story-complete \
+ *     --story US-0096 --epic EPIC-0015
+ *
+ *   # Mark a story in-progress
+ *   node tools/update-sdlc-status.js story-start \
+ *     --story US-0096 --epic EPIC-0015
+ *
+ *   # Set the current phase (1-6)
+ *   node tools/update-sdlc-status.js phase \
+ *     --number 3 --status in-progress
+ *
+ *   # Generic log entry (no state patch beyond the log)
+ *   node tools/update-sdlc-status.js log \
+ *     --agent Conductor --message "Spawned Sentinel + Circuit in parallel"
+ */
+
+const path = require('path');
+const fs = require('fs');
+const { atomicReadModifyWriteJson, atomicWriteJson } = require('../orchestrator/atomic-write');
+
+const STATUS_PATH = path.join(__dirname, '..', 'docs', 'sdlc-status.json');
+
+function parseArgs(argv) {
+  const cmd = argv[2];
+  const opts = {};
+  for (let i = 3; i < argv.length; i += 2) {
+    const key = argv[i];
+    const val = argv[i + 1];
+    if (!key || !key.startsWith('--')) continue;
+    opts[key.slice(2)] = val;
+  }
+  return { cmd, opts };
+}
+
+function nowLocalHHMM() {
+  const d = new Date();
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  return `${hh}:${mm}`;
+}
+
+function nowISO() {
+  return new Date().toISOString();
+}
+
+function appendLog(data, agent, message) {
+  data.log = data.log || [];
+  data.log.push({ time: nowLocalHHMM(), agent: agent || 'Conductor', message });
+  // Keep log bounded at last 200 entries
+  if (data.log.length > 200) data.log = data.log.slice(-200);
+  return data;
+}
+
+function ensureAgent(data, name) {
+  if (!data.agents) data.agents = {};
+  if (!data.agents[name]) {
+    data.agents[name] = { status: 'idle', currentTask: null, tasksCompleted: 0 };
+  }
+  return data.agents[name];
+}
+
+function ensureStory(data, id) {
+  if (!data.stories) data.stories = {};
+  if (!data.stories[id]) {
+    data.stories[id] = { status: 'ToDo', epic: null, assignedAgent: null, startedAt: null, completedAt: null };
+  }
+  return data.stories[id];
+}
+
+const HANDLERS = {
+  'agent-start': (data, opts) => {
+    const agent = ensureAgent(data, opts.agent);
+    agent.status = 'active';
+    agent.currentTask = opts.task || `Working on ${opts.story || 'task'}`;
+    if (opts.story) {
+      const story = ensureStory(data, opts.story);
+      story.assignedAgent = opts.agent;
+      if (story.status === 'ToDo' || !story.startedAt) {
+        story.status = 'InProgress';
+        story.startedAt = nowISO();
+      }
+    }
+    appendLog(data, opts.agent, `started ${opts.story ? opts.story + ': ' : ''}${opts.task || 'task'}`);
+    return data;
+  },
+
+  'agent-done': (data, opts) => {
+    const agent = ensureAgent(data, opts.agent);
+    agent.status = 'idle';
+    agent.currentTask = null;
+    agent.tasksCompleted = (agent.tasksCompleted || 0) + 1;
+    data.metrics = data.metrics || {};
+    data.metrics.tasksCompleted = (data.metrics.tasksCompleted || 0) + 1;
+    appendLog(data, opts.agent, `finished ${opts.story || 'task'}`);
+    return data;
+  },
+
+  review: (data, opts) => {
+    const agent = ensureAgent(data, opts.agent || 'Lens');
+    agent.reviewsCompleted = (agent.reviewsCompleted || 0) + 1;
+    data.metrics = data.metrics || {};
+    const verdict = (opts.verdict || 'approve').toLowerCase();
+    if (verdict === 'approve') {
+      data.metrics.reviewsApproved = (data.metrics.reviewsApproved || 0) + 1;
+    } else if (verdict === 'block') {
+      data.metrics.reviewsBlocked = (data.metrics.reviewsBlocked || 0) + 1;
+      agent.blockers = (agent.blockers || 0) + 1;
+      if (opts.story) {
+        const story = ensureStory(data, opts.story);
+        story.status = 'Blocked';
+      }
+    }
+    appendLog(data, opts.agent || 'Lens', `${verdict} review of ${opts.story || 'branch'}`);
+    return data;
+  },
+
+  'test-pass': (data, opts) => {
+    const agent = ensureAgent(data, opts.agent || 'Sentinel');
+    const n = parseInt(opts.count || '1', 10);
+    agent.testsPassed = (agent.testsPassed || 0) + n;
+    data.metrics = data.metrics || {};
+    data.metrics.testsPassed = (data.metrics.testsPassed || 0) + n;
+    data.metrics.testsTotal = (data.metrics.testsTotal || 0) + n;
+    appendLog(data, opts.agent || 'Sentinel', `${n} tests passed on ${opts.story || 'branch'}`);
+    return data;
+  },
+
+  'test-fail': (data, opts) => {
+    const agent = ensureAgent(data, opts.agent || 'Sentinel');
+    const n = parseInt(opts.count || '1', 10);
+    agent.testsFailed = (agent.testsFailed || 0) + n;
+    data.metrics = data.metrics || {};
+    data.metrics.testsFailed = (data.metrics.testsFailed || 0) + n;
+    data.metrics.testsTotal = (data.metrics.testsTotal || 0) + n;
+    appendLog(data, opts.agent || 'Sentinel', `${n} tests FAILED on ${opts.story || 'branch'}`);
+    return data;
+  },
+
+  coverage: (data, opts) => {
+    const agent = ensureAgent(data, opts.agent || 'Circuit');
+    const pct = parseFloat(opts.percent || '0');
+    agent.coveragePercent = pct;
+    data.metrics = data.metrics || {};
+    data.metrics.coveragePercent = pct;
+    appendLog(data, opts.agent || 'Circuit', `coverage at ${pct.toFixed(2)}%`);
+    return data;
+  },
+
+  'story-start': (data, opts) => {
+    const story = ensureStory(data, opts.story);
+    story.status = 'InProgress';
+    story.epic = opts.epic || story.epic;
+    story.startedAt = nowISO();
+    data.metrics = data.metrics || {};
+    data.metrics.storiesTotal = Math.max(data.metrics.storiesTotal || 0, Object.keys(data.stories).length);
+    appendLog(data, 'Conductor', `started ${opts.story}${opts.epic ? ' (' + opts.epic + ')' : ''}`);
+    return data;
+  },
+
+  'story-complete': (data, opts) => {
+    const story = ensureStory(data, opts.story);
+    story.status = 'Complete';
+    story.epic = opts.epic || story.epic;
+    story.completedAt = nowISO();
+    data.metrics = data.metrics || {};
+    data.metrics.storiesCompleted = (data.metrics.storiesCompleted || 0) + 1;
+    data.metrics.storiesTotal = Math.max(data.metrics.storiesTotal || 0, Object.keys(data.stories).length);
+    appendLog(data, 'Conductor', `completed ${opts.story}${opts.epic ? ' (' + opts.epic + ')' : ''}`);
+    return data;
+  },
+
+  phase: (data, opts) => {
+    // Canonical DM_AGENT.md phase definitions
+    const PHASE_DEFS = [
+      { name: 'Blueprint', agents: ['Compass'], deliverables: ['refined ACs', 'priority list'] },
+      { name: 'Architect', agents: ['Keystone'], deliverables: ['scaffold', 'types', 'service stubs'] },
+      { name: 'Build', agents: ['Pixel', 'Forge', 'Palette'], deliverables: ['implementation', 'unit tests'] },
+      { name: 'Integration', agents: ['Pixel'], deliverables: ['wired services', 'e2e flows'] },
+      { name: 'Test', agents: ['Sentinel', 'Circuit'], deliverables: ['test report', 'coverage'] },
+      { name: 'Polish', agents: ['Pixel', 'Forge'], deliverables: ['bug fixes', 'demo prep'] },
+    ];
+    const n = parseInt(opts.number, 10);
+    const status = opts.status || 'in-progress';
+    data.currentPhase = n;
+    data.phases = data.phases || [];
+    // Auto-expand phases up to n, seeding with canonical name+agents
+    while (data.phases.length < n) {
+      const i = data.phases.length;
+      const def = PHASE_DEFS[i] || { name: `Phase ${i + 1}`, agents: [], deliverables: [] };
+      data.phases.push({
+        status: 'pending',
+        name: def.name,
+        agents: def.agents.slice(),
+        deliverables: def.deliverables.slice(),
+      });
+    }
+    const phase = data.phases[n - 1];
+    phase.status = status;
+    // Ensure name/agents/deliverables are populated on the active phase
+    if (!phase.name && PHASE_DEFS[n - 1]) phase.name = PHASE_DEFS[n - 1].name;
+    if (!phase.agents && PHASE_DEFS[n - 1]) phase.agents = PHASE_DEFS[n - 1].agents.slice();
+    if (!phase.deliverables && PHASE_DEFS[n - 1]) phase.deliverables = PHASE_DEFS[n - 1].deliverables.slice();
+    if (status === 'in-progress' && !phase.startedAt) phase.startedAt = nowISO();
+    if (status === 'complete' && !phase.completedAt) phase.completedAt = nowISO();
+    appendLog(data, 'Conductor', `Phase ${n} (${phase.name}) → ${status}`);
+    return data;
+  },
+
+  log: (data, opts) => {
+    appendLog(data, opts.agent || 'Conductor', opts.message || '(no message)');
+    return data;
+  },
+};
+
+async function main() {
+  const { cmd, opts } = parseArgs(process.argv);
+
+  if (!cmd || cmd === '--help' || cmd === '-h') {
+    const help = fs.readFileSync(__filename, 'utf8').match(/\/\*\*[\s\S]*?\*\//)[0];
+    console.log(help);
+    process.exit(cmd ? 0 : 1);
+  }
+
+  const handler = HANDLERS[cmd];
+  if (!handler) {
+    console.error(`Unknown command: ${cmd}`);
+    console.error(`Available: ${Object.keys(HANDLERS).join(', ')}`);
+    process.exit(1);
+  }
+
+  if (!fs.existsSync(STATUS_PATH)) {
+    console.error(`${STATUS_PATH} not found. Run tools/init-sdlc-status.js first.`);
+    process.exit(1);
+  }
+
+  try {
+    await atomicReadModifyWriteJson(STATUS_PATH, (data) => handler(data, opts));
+    console.log(`[update-sdlc-status] ${cmd} ${JSON.stringify(opts)}`);
+  } catch (err) {
+    console.error(`[update-sdlc-status] failed:`, err.message);
+    process.exit(1);
+  }
+}
+
+if (require.main === module) {
+  main();
+}
+
+module.exports = { HANDLERS, parseArgs };

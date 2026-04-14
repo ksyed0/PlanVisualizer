@@ -234,16 +234,29 @@ npm run dashboard:watch
 # Then open docs/dashboard.html in a browser
 ```
 
-**After each phase,** update `docs/sdlc-status.json`:
+**After each phase transition, use `tools/update-sdlc-status.js`** to update `docs/sdlc-status.json`. This helper ensures the agentic dashboard stays live without manual JSON editing.
 
-1. Set the current phase status to `"complete"` and add `completedAt` timestamp
-2. Set the next phase status to `"in-progress"` and add `startedAt` timestamp
-3. Update agent statuses (`"active"`, `"idle"`, `"complete"`)
-4. Update agent `currentTask` with what they're working on
-5. Update `metrics` (storiesCompleted, tasksCompleted, testsPassed, etc.)
-6. Update `stories` statuses as they're completed
-7. Append to the `log` array with `{ "time": "HH:MM", "agent": "Name", "message": "What happened" }`
-8. Run `npm run dashboard` (or let --watch mode auto-regenerate)
+Common events (all append a log entry and mutate relevant state):
+
+| When                 | Command                                                                                                          |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Starting a story     | `node tools/update-sdlc-status.js story-start --story US-XXXX --epic EPIC-YYYY`                                  |
+| Spawning Pixel/Forge | `node tools/update-sdlc-status.js agent-start --agent Pixel --story US-XXXX --task "<brief>"`                    |
+| Agent finishes       | `node tools/update-sdlc-status.js agent-done --agent Pixel --story US-XXXX`                                      |
+| Review verdict       | `node tools/update-sdlc-status.js review --agent Lens --story US-XXXX --verdict approve\|request-changes\|block` |
+| Test results         | `node tools/update-sdlc-status.js test-pass --agent Sentinel --story US-XXXX --count N`                          |
+| Coverage             | `node tools/update-sdlc-status.js coverage --agent Circuit --percent 90.82`                                      |
+| Story complete       | `node tools/update-sdlc-status.js story-complete --story US-XXXX --epic EPIC-YYYY`                               |
+| Phase transition     | `node tools/update-sdlc-status.js phase --number 3 --status in-progress\|complete`                               |
+| Generic log          | `node tools/update-sdlc-status.js log --agent Conductor --message "..."`                                         |
+
+After any state change, regenerate the dashboard so it reflects the new state:
+
+```bash
+node tools/generate-dashboard.js
+```
+
+The tool uses `atomicReadModifyWriteJson` for safe concurrent updates — it's safe to call from parallel worktree agents. Run `--help` to see all options.
 
 ---
 
