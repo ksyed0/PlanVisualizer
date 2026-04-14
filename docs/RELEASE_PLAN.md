@@ -1948,13 +1948,13 @@ Dependencies: EPIC-0007
 US-0094 (EPIC-0015): As a user, I want distinctive display typography for section headers and KPIs, so that the dashboard has a clear editorial voice and tabular numeric data aligns cleanly.
 Priority: Medium (P1)
 Estimate: S
-Status: Planned
+Status: Done
 Branch: feature/US-0094-typography-upgrade
 Acceptance Criteria:
-  - [ ] AC-0306: A display face (Instrument Serif / Fraunces / Geist) is loaded via Google Fonts with font-display:swap
-  - [ ] AC-0307: Tab supertitles and topbar H1 use the new display face
-  - [ ] AC-0308: All numeric/monetary cells use font-variant-numeric:tabular-nums
-  - [ ] AC-0309: A .display-title utility class exists and is consistently applied
+  - [x] AC-0306: A display face (Instrument Serif / Fraunces / Geist) is loaded via Google Fonts with font-display:swap
+  - [x] AC-0307: Tab supertitles and topbar H1 use the new display face
+  - [x] AC-0308: All numeric/monetary cells use font-variant-numeric:tabular-nums
+  - [x] AC-0309: A .display-title utility class exists and is consistently applied
 Dependencies: None
 ```
 
