@@ -2032,12 +2032,12 @@ Dependencies: None
 US-0099 (EPIC-0015): As a user, I want KPI numbers to be visually prominent, so that my eye lands on the most important metrics first.
 Priority: Medium (P1)
 Estimate: S
-Status: Planned
+Status: Done
 Branch: feature/US-0099-hero-numbers
 Acceptance Criteria:
-  - [ ] AC-0322: A .hero-num class applies display-font sizing with clamp() and tabular figures
-  - [ ] AC-0323: Budget totals, coverage %, and bug count tiles adopt .hero-num
-  - [ ] AC-0324: No more than 3 hero numbers appear per tab
+  - [x] AC-0322: A .hero-num class applies display-font sizing with clamp() and tabular figures
+  - [x] AC-0323: Budget totals, coverage %, and bug count tiles adopt .hero-num
+  - [x] AC-0324: No more than 3 hero numbers appear per tab
 Dependencies: US-0094
 ```
 

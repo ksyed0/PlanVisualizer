@@ -772,3 +772,107 @@ describe('renderHtml — CSS tokens (US-0096 zebra striping)', () => {
     expect(html).toMatch(/\.scroll-table tbody tr:hover\s*\{\s*background-color:\s*var\(--clr-row-hover\)/);
   });
 });
+
+describe('renderHtml — hero numbers (US-0099)', () => {
+  let html;
+  beforeAll(() => {
+    html = renderHtml(sampleData);
+  });
+
+  // Extract the .hero-num rule body (default variant). Stops at the next closing brace.
+  const heroNumBlock = () => {
+    const m = html.match(/\.hero-num\s*\{([\s\S]*?)\}/);
+    return m ? m[1] : '';
+  };
+  // Extract the .hero-num.hero-num-sm rule body.
+  const heroNumSmBlock = () => {
+    const m = html.match(/\.hero-num\.hero-num-sm\s*\{([\s\S]*?)\}/);
+    return m ? m[1] : '';
+  };
+
+  it('declares .hero-num with Instrument Serif font stack', () => {
+    expect(heroNumBlock()).toMatch(/font-family:\s*'Instrument Serif'/);
+  });
+
+  it('declares .hero-num with clamp() responsive font-size', () => {
+    expect(heroNumBlock()).toMatch(/font-size:\s*clamp\(/);
+  });
+
+  it('declares .hero-num with tabular-nums for aligned digits', () => {
+    expect(heroNumBlock()).toMatch(/font-variant-numeric:\s*tabular-nums/);
+  });
+
+  it('declares .hero-num.hero-num-sm variant with smaller clamp()', () => {
+    expect(heroNumSmBlock()).toMatch(/font-size:\s*clamp\(/);
+  });
+
+  it('.hero-num-sm clamp uses rem units (compact topbar scaling)', () => {
+    // Distinguishes sm variant from default (which uses px). Contract: sm scales in rem.
+    expect(heroNumSmBlock()).toMatch(/clamp\([^)]*rem[^)]*\)/);
+  });
+
+  it('applies hero-num hero-num-sm to Bugs Open topbar tile', () => {
+    expect(html).toMatch(/class="tile-value hero-num hero-num-sm tile-bugs[^"]*"[^>]*>[^<]*Bugs|tile-bugs[^"]*"[^>]*>[^<]*\d+<\/span>\s*<span class="tile-label">Bugs Open/);
+    // Precise: the Bugs Open tile-value contains hero-num hero-num-sm
+    const bugsTileMatch = html.match(/<span class="tile-value ([^"]+) tile-bugs[^"]*">[\s\S]*?<\/span>\s*<span class="tile-label">Bugs Open<\/span>/);
+    expect(bugsTileMatch).not.toBeNull();
+    expect(bugsTileMatch[1]).toContain('hero-num');
+    expect(bugsTileMatch[1]).toContain('hero-num-sm');
+  });
+
+  it('applies hero-num hero-num-sm to Coverage topbar tile', () => {
+    const covTileMatch = html.match(/<span class="tile-value ([^"]+) tile-cov[^"]*">[\s\S]*?<\/span>\s*<span class="tile-label">Coverage<\/span>/);
+    expect(covTileMatch).not.toBeNull();
+    expect(covTileMatch[1]).toContain('hero-num');
+    expect(covTileMatch[1]).toContain('hero-num-sm');
+  });
+
+  it('applies hero-num hero-num-sm to AI Cost topbar tile', () => {
+    const aiTileMatch = html.match(/<span class="tile-value ([^"]+)">[\s\S]*?<\/span>\s*<span class="tile-label">AI Cost<\/span>/);
+    expect(aiTileMatch).not.toBeNull();
+    expect(aiTileMatch[1]).toContain('hero-num');
+    expect(aiTileMatch[1]).toContain('hero-num-sm');
+  });
+
+  it('does NOT apply hero-num to Stories tile (treatment is scoped to Bugs/Coverage/AI Cost)', () => {
+    const storiesTileMatch = html.match(/<span class="tile-value[^"]*">[^<]*<\/span>\s*<span class="tile-label">Stories<\/span>/);
+    expect(storiesTileMatch).not.toBeNull();
+    expect(storiesTileMatch[0]).not.toContain('hero-num');
+  });
+
+  it('renders Coverage doughnut overlay using hero-num (default, not sm)', () => {
+    // Inside the Test Coverage card: overlay div wraps the percentage in .hero-num.
+    const covOverlayMatch = html.match(/Test Coverage<\/h3>[\s\S]*?<div class="hero-num [^"]*">([^<]+)<\/div>/);
+    expect(covOverlayMatch).not.toBeNull();
+    // Overlay uses the default (large) variant, not hero-num-sm.
+    expect(covOverlayMatch[0]).not.toMatch(/hero-num-sm/);
+    // And it renders the coverage value (81.0%) from sampleData.
+    expect(covOverlayMatch[1]).toMatch(/81(\.0)?%/);
+  });
+
+  it('renders Total Budget / Spent / Remaining as hero-num when hasBudget=true', () => {
+    const dataWithBudget = {
+      ...sampleData,
+      budget: {
+        hasBudget: true,
+        totalBudget: 10000,
+        totalSpent: 3500,
+        percentUsed: 35,
+        burnRate: 100,
+        daysRemaining: 65,
+        crossedThresholds: [],
+        epicBudgets: [],
+      },
+    };
+    const budgetHtml = renderHtml(dataWithBudget);
+    // Each of the three totals must be wrapped in hero-num.
+    expect(budgetHtml).toMatch(/Total Budget<\/div>\s*<div class="hero-num[^"]*">\$10,000<\/div>/);
+    expect(budgetHtml).toMatch(/Spent<\/div>\s*<div class="hero-num[^"]*">\$3,500<\/div>/);
+    expect(budgetHtml).toMatch(/Remaining<\/div>\s*<div class="hero-num[^"]*">\$6,500<\/div>/);
+  });
+
+  it('omits budget hero-num block when hasBudget=false', () => {
+    // sampleData has no budget key, so hasBudget is falsy → the Total Budget section must not render.
+    expect(html).not.toMatch(/Total Budget<\/div>\s*<div class="hero-num/);
+  });
+});
