@@ -1988,12 +1988,12 @@ Dependencies: None
 US-0097 (EPIC-0015): As a user, I want status/severity/priority badges to adapt to light and dark modes, so that they render correctly regardless of theme.
 Priority: High (P0)
 Estimate: S
-Status: Planned
+Status: Done
 Branch: feature/US-0097-semantic-badges
 Acceptance Criteria:
-  - [ ] AC-0316: The badge() function uses five semantic CSS variable triples (success/warn/danger/info/neutral)
-  - [ ] AC-0317: A .badge-dot variant is available for dense contexts
-  - [ ] AC-0318: BUG-0110 (dark-mode-only badges) is resolved
+  - [x] AC-0316: The badge() function uses five semantic CSS variable triples (success/warn/danger/info/neutral)
+  - [x] AC-0317: A .badge-dot variant is available for dense contexts
+  - [x] AC-0318: BUG-0110 (dark-mode-only badges) is resolved
 Dependencies: None
 ```
 

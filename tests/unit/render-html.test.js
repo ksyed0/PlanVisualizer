@@ -202,14 +202,16 @@ describe('renderHtml — coverage below target', () => {
 });
 
 describe('renderHtml — badge fallback', () => {
-  it('uses grey fallback for unknown status', () => {
+  it('uses neutral semantic token for unknown status', () => {
     const dataUnknown = {
       ...sampleData,
       stories: [{ ...sampleData.stories[0], status: 'UNKNOWN_STATUS', priority: 'P3' }],
       atRisk: { 'US-0001': { missingTCs: false, noBranch: false, failedTCNoBug: false, isAtRisk: false } },
     };
     const html = renderHtml(dataUnknown);
-    expect(html).toMatch(/border-\[#475569\].*bg-\[#0f1520\]/s);
+    // US-0097: unknown text falls through to neutral tone (badge-neutral class)
+    expect(html).toMatch(/class="badge badge-neutral">UNKNOWN_STATUS</);
+    expect(html).toMatch(/class="badge badge-neutral">P3</);
   });
 });
 
