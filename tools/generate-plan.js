@@ -109,6 +109,25 @@ function getBuildNumber() {
   }
 }
 
+function getCurrentBranch() {
+  try {
+    return execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf8' }).trim();
+  } catch {
+    return 'unknown';
+  }
+}
+
+function getAppVersion() {
+  // Read PlanVisualizer tool's own package.json (one level up from tools/)
+  try {
+    const appPkgPath = path.join(__dirname, '..', 'package.json');
+    const appPkg = JSON.parse(fs.readFileSync(appPkgPath, 'utf8'));
+    return { name: appPkg.name || 'plan-visualizer', version: appPkg.version || '0.0.0' };
+  } catch {
+    return { name: 'plan-visualizer', version: '0.0.0' };
+  }
+}
+
 function main() {
   const config = loadConfig();
   const HOURS = config.costs.tshirtHours;
@@ -195,6 +214,8 @@ function main() {
   const generatedAt = new Date().toISOString();
   const commitSha = getCommitSha();
   const buildNumber = getBuildNumber();
+  const branch = getCurrentBranch();
+  const app = getAppVersion();
   let pkg;
   try {
     pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
@@ -230,10 +251,13 @@ function main() {
     generatedAt,
     commitSha,
     buildNumber,
+    branch,
     sessionTimeline,
     projectName: config.project.name,
     tagline: config.project.tagline,
     version: pkg.version,
+    appName: app.name,
+    appVersion: app.version,
     githubUrl: config.project.githubUrl ?? '',
   };
 
