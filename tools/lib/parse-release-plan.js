@@ -5,10 +5,24 @@
  * Returns array of block content strings.
  */
 function extractCodeBlocks(md) {
+  // Line-by-line state machine — correctly handles adjacent fences like
+  // ```\n\n``` which previously broke regex-based pairing and dropped content
+  // between the empty-block pair and the next real block (BUG-0158).
   const blocks = [];
-  const re = /```[^\n]*\n([\s\S]*?)```/g;
-  let m;
-  while ((m = re.exec(md)) !== null) blocks.push(m[1]);
+  const lines = md.split('\n');
+  let inBlock = false;
+  let buf = [];
+  for (const line of lines) {
+    if (/^```/.test(line)) {
+      if (inBlock) {
+        blocks.push(buf.join('\n') + '\n');
+        buf = [];
+      }
+      inBlock = !inBlock;
+    } else if (inBlock) {
+      buf.push(line);
+    }
+  }
   return blocks;
 }
 
@@ -113,7 +127,11 @@ function parseTaskBlock(text) {
  * Main parser. Returns { epics, stories, tasks }.
  */
 function parseReleasePlan(markdown) {
-  const blocks = extractCodeBlocks(markdown);
+  // Structural approach: regardless of code-fence placement, find every line
+  // that looks like an EPIC/US/TASK header and collect the following lines
+  // until the next header or a blank-line-separated delimiter. Robust to
+  // Prettier-added blank lines and adjacent empty-fence pairs that previously
+  // broke code-block based extraction (BUG-0158).
   const epics = [],
     stories = [],
     tasks = [];
@@ -121,29 +139,29 @@ function parseReleasePlan(markdown) {
     seenStories = new Set(),
     seenTasks = new Set();
 
-  for (const block of blocks) {
-    const chunks = block.split(/\n{2,}/);
-    for (const chunk of chunks) {
-      const trimmed = chunk.trim();
-      if (!trimmed) continue;
-      if (/^EPIC-\d{4}:/.test(trimmed)) {
-        const e = parseEpicBlock(trimmed);
-        if (e && !seenEpics.has(e.id)) {
-          seenEpics.add(e.id);
-          epics.push(e);
-        }
-      } else if (/^US-\d{4}\s*\(EPIC-/.test(trimmed)) {
-        const s = parseStoryBlock(trimmed);
-        if (s && !seenStories.has(s.id)) {
-          seenStories.add(s.id);
-          stories.push(s);
-        }
-      } else if (/^TASK-\d{4}\s*\(US-/.test(trimmed)) {
-        const t = parseTaskBlock(trimmed);
-        if (t && !seenTasks.has(t.id)) {
-          seenTasks.add(t.id);
-          tasks.push(t);
-        }
+  // Split the document into chunks by blank lines, ignoring fence markers.
+  const cleaned = markdown.replace(/^```[^\n]*$/gm, '');
+  const chunks = cleaned.split(/\n{2,}/);
+  for (const chunk of chunks) {
+    const trimmed = chunk.trim();
+    if (!trimmed) continue;
+    if (/^EPIC-\d{4}:/.test(trimmed)) {
+      const e = parseEpicBlock(trimmed);
+      if (e && !seenEpics.has(e.id)) {
+        seenEpics.add(e.id);
+        epics.push(e);
+      }
+    } else if (/^US-\d{4}\s*\(EPIC-/.test(trimmed)) {
+      const s = parseStoryBlock(trimmed);
+      if (s && !seenStories.has(s.id)) {
+        seenStories.add(s.id);
+        stories.push(s);
+      }
+    } else if (/^TASK-\d{4}\s*\(US-/.test(trimmed)) {
+      const t = parseTaskBlock(trimmed);
+      if (t && !seenTasks.has(t.id)) {
+        seenTasks.add(t.id);
+        tasks.push(t);
       }
     }
   }

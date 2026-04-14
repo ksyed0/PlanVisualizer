@@ -59,6 +59,16 @@ function fmtNum(n) {
   return Number(n).toLocaleString();
 }
 
+// BUG-0158: normalize relatedStory — bugs in the register sometimes carry
+// extra parenthetical context (e.g. "US-0012 (capture-cost)") or free-form
+// strings ("n/a"). Extract the canonical US-XXXX token if present so epic
+// grouping works regardless of surrounding text.
+function normalizeStoryRef(raw) {
+  if (!raw) return null;
+  const m = String(raw).match(/US-\d{4}/);
+  return m ? m[0] : null;
+}
+
 function renderTopBar(data) {
   const totalAI = data.costs._totals.costUsd || 0;
   const storyProjected = data.stories.reduce(
@@ -372,8 +382,8 @@ function renderHierarchyTab(data) {
   const columnView = epicBlocks
     .map(
       ({ epic, accent, epicProjected, storyRows }) => `
-    <div class="epic-block mb-4 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden" data-epic-status="${esc(epic.status)}" style="border-left:4px solid ${accent.border}">
-      <div class="px-4 py-3 flex flex-wrap items-center gap-3 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('epic-stories-${jsEsc(epic.id)}','epic-arrow-${jsEsc(epic.id)}')">
+    <div class="epic-block mb-2 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden" data-epic-status="${esc(epic.status)}" style="border-left:4px solid ${accent.border}">
+      <div class="px-3 py-2 flex flex-wrap items-center gap-3 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('epic-stories-${jsEsc(epic.id)}','epic-arrow-${jsEsc(epic.id)}')">
         <span id="epic-arrow-${esc(epic.id)}" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9660;</span>
         <span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${epic.id}</span>
         ${badge(epic.status)}
@@ -389,8 +399,8 @@ function renderHierarchyTab(data) {
   const cardView = epicBlocks
     .map(
       ({ epic, accent, epicProjected, storyCards }) => `
-    <div class="mb-8">
-      <div class="epic-block border border-slate-200 dark:border-slate-700 rounded-t-lg px-4 py-3 mb-0 cursor-pointer select-none" style="border-left:4px solid ${accent.border};background:${accent.bg}" onclick="toggleSection('epic-cards-${jsEsc(epic.id)}','epic-card-arrow-${jsEsc(epic.id)}')">
+    <div class="mb-4">
+      <div class="epic-block border border-slate-200 dark:border-slate-700 rounded-t-lg px-3 py-2 mb-0 cursor-pointer select-none" style="border-left:4px solid ${accent.border};background:${accent.bg}" onclick="toggleSection('epic-cards-${jsEsc(epic.id)}','epic-card-arrow-${jsEsc(epic.id)}')">
         <div class="flex flex-wrap items-center gap-3">
           <span id="epic-card-arrow-${esc(epic.id)}" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9660;</span>
           <span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${epic.id}</span>
@@ -1082,7 +1092,7 @@ function renderCostsTab(data, options = {}) {
   const bugCostEpicGroupIds = [];
   const bugsByCostEpic = {};
   data.bugs.forEach((bug) => {
-    const epicId = bugCostStoryEpicMap[bug.relatedStory] || '_ungrouped';
+    const epicId = bugCostStoryEpicMap[normalizeStoryRef(bug.relatedStory)] || '_ungrouped';
     if (!bugsByCostEpic[epicId]) {
       bugsByCostEpic[epicId] = [];
       bugCostEpicGroupIds.push(epicId);
@@ -1196,7 +1206,7 @@ function renderCostsTab(data, options = {}) {
       const cceid = `costs-card-ep-${jsEsc(epic.id)}`;
       const accent2 = EPIC_ACCENT_COLORS[data.epics.indexOf(epic) % EPIC_ACCENT_COLORS.length];
       return `<div class="mb-6 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden" style="border-left:4px solid ${accent2.border}">
-      <div class="flex items-center gap-2 px-4 py-3 flex-wrap cursor-pointer select-none" style="background:${accent2.bg}" onclick="toggleSection('${cceid}','${cceid}-arrow')">
+      <div class="flex items-center gap-2 px-3 py-2 flex-wrap cursor-pointer select-none" style="background:${accent2.bg}" onclick="toggleSection('${cceid}','${cceid}-arrow')">
         <span id="${cceid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9654;</span>
         <span class="font-mono text-xs font-bold" style="color:${accent2.border}">${epic.id}</span>
         <span class="text-sm font-semibold text-slate-700 dark:text-slate-200">${esc(epic.title)}</span>
@@ -1254,7 +1264,7 @@ function renderCostsTab(data, options = {}) {
         })
         .join('');
       return `<div class="mb-6 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden bug-epic-card" data-epic="${esc(epicId)}" style="border-left:4px solid ${accent.border}">
-      <div class="flex items-center gap-2 px-4 py-3 flex-wrap cursor-pointer select-none bug-epic-header" data-epic="${esc(epicId)}" style="background:${accent.bg}" onclick="toggleSection('${jsEsc(bcceid)}','${jsEsc(bcceid)}-arrow')">
+      <div class="flex items-center gap-2 px-3 py-2 flex-wrap cursor-pointer select-none bug-epic-header" data-epic="${esc(epicId)}" style="background:${accent.bg}" onclick="toggleSection('${jsEsc(bcceid)}','${jsEsc(bcceid)}-arrow')">
         <span id="${bcceid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9654;</span>
         <span class="font-mono text-xs font-bold" style="color:${accent.border}">${label}</span>
         <span class="ml-2 text-xs text-slate-500 bug-count">(${bugs.length})</span>
@@ -1387,7 +1397,7 @@ function renderBugsTab(data) {
   const bugEpicIds = [];
   const bugsByEpic = {};
   data.bugs.forEach((bug) => {
-    const epicId = storyEpicMap[bug.relatedStory] || '_ungrouped';
+    const epicId = storyEpicMap[normalizeStoryRef(bug.relatedStory)] || '_ungrouped';
     if (!bugsByEpic[epicId]) {
       bugsByEpic[epicId] = [];
       bugEpicIds.push(epicId);
@@ -1401,7 +1411,7 @@ function renderBugsTab(data) {
   });
 
   const renderBugRow = (bug) => {
-    const epicId = storyEpicMap[bug.relatedStory] || '_ungrouped';
+    const epicId = storyEpicMap[normalizeStoryRef(bug.relatedStory)] || '_ungrouped';
     return `
     <tr id="bug-row-${esc(bug.id)}" class="bug-row border-t border-slate-100 dark:border-slate-700" data-status="${esc(bug.status)}" data-epic="${esc(epicId)}" data-severity="${esc(bug.severity)}">
       <td class="px-3 py-2 font-mono text-xs whitespace-nowrap dark:text-slate-200">${bug.id}</td>
@@ -1415,7 +1425,7 @@ function renderBugsTab(data) {
   };
 
   const renderBugCard = (bug) => {
-    const epicId = storyEpicMap[bug.relatedStory] || '_ungrouped';
+    const epicId = storyEpicMap[normalizeStoryRef(bug.relatedStory)] || '_ungrouped';
     return `
     <div id="bug-card-${esc(bug.id)}" class="bug-row story-card-hover card-elev rounded-lg p-4 flex flex-col gap-2" data-status="${esc(bug.status)}" data-epic="${esc(epicId)}" data-severity="${esc(bug.severity)}">
       <div class="flex items-center gap-2 flex-wrap">
@@ -1461,7 +1471,7 @@ function renderBugsTab(data) {
       const label = epic ? `${epicId}: ${esc(epic.title)}` : epicId === '_ungrouped' ? 'No Epic' : epicId;
       const bceid = `bugs-card-ep-${epicId.replace(/[^a-zA-Z0-9]/g, '-')}`;
       return `<div class="mb-6 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden bug-epic-card" data-epic="${epicId}" style="border-left:4px solid ${accent.border}">
-      <div class="flex items-center gap-2 px-4 py-3 cursor-pointer select-none bug-epic-header" data-epic="${epicId}" style="background:${accent.bg}" onclick="toggleSection('${bceid}','${bceid}-arrow')">
+      <div class="flex items-center gap-2 px-3 py-2 cursor-pointer select-none bug-epic-header" data-epic="${epicId}" style="background:${accent.bg}" onclick="toggleSection('${bceid}','${bceid}-arrow')">
         <span id="${bceid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9654;</span>
         <span class="font-mono text-xs font-bold" style="color:${accent.border}">${label}</span>
         <span class="ml-1 text-xs text-slate-500 bug-count">(${bugs.length})</span>
@@ -1548,7 +1558,7 @@ function renderLessonsTab(data) {
   const lessonStoryMap = {};
   for (const bug of data.bugs) {
     const m = bug.lessonEncoded && bug.lessonEncoded.match(/L-\d{4}/);
-    if (m) lessonStoryMap[m[0]] = bug.relatedStory;
+    if (m) lessonStoryMap[m[0]] = normalizeStoryRef(bug.relatedStory);
   }
   const lessonStoryEpicMap = {};
   data.stories.forEach((s) => {
@@ -1625,7 +1635,7 @@ function renderLessonsTab(data) {
       const label = epic ? `${epicId}: ${esc(epic.title)}` : epicId === '_ungrouped' ? 'No Epic' : epicId;
       const lceid = `lessons-card-ep-${epicId.replace(/[^a-zA-Z0-9]/g, '-')}`;
       return `<div class="mb-6 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden" style="border-left:4px solid ${accent.border}">
-      <div class="flex items-center gap-2 px-4 py-3 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('${lceid}','${lceid}-arrow')">
+      <div class="flex items-center gap-2 px-3 py-2 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('${lceid}','${lceid}-arrow')">
         <span id="${lceid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9654;</span>
         <span class="font-mono text-xs font-bold" style="color:${accent.border}">${label}</span>
         <span class="ml-1 text-xs text-slate-500">(${ls.length})</span>
