@@ -50,22 +50,22 @@ The generators are pure Node.js scripts with no runtime dependencies. They parse
 
 Sixteen focused modules, each with a single responsibility:
 
-| Module | Purpose |
-|--------|---------|
-| `parse-release-plan.js` | Parses `RELEASE_PLAN.md` into epics, stories, tasks, and acceptance criteria |
-| `parse-test-cases.js` | Parses `TEST_CASES.md` into structured test case objects |
-| `parse-bugs.js` | Parses `BUGS.md` into bug records with severity, status, and fix branch |
-| `parse-cost-log.js` | Parses `AI_COST_LOG.md`, deduplicates sessions, aggregates by branch |
-| `parse-coverage.js` | Reads Jest coverage JSON; returns coverage percentages and `available` flag |
-| `parse-progress.js` | Parses `progress.md` (newest-first session log) |
-| `parse-lessons.js` | Parses `LESSONS.md` into structured lesson records |
-| `compute-costs.js` | Attributes AI costs to stories by branch; distributes unattributed costs proportionally |
-| `detect-at-risk.js` | Identifies at-risk stories (missing TCs, no branch, failed TC with no bug, open critical bug) |
-| `snapshot.js` | Saves and loads time-series snapshots in `.history/`; extracts trend data |
-| `historical-sim.js` | Backfills 30 days of simulated history when fewer than 2 real snapshots exist |
-| `budget.js` | Computes per-epic budget allocation, burn rate, and projected exhaustion |
-| `render-html.js` | Renders the complete `plan-status.html` (eight-tab dashboard) |
-| `search-index.js` | Builds the global search index embedded in the HTML |
+| Module                  | Purpose                                                                                       |
+| ----------------------- | --------------------------------------------------------------------------------------------- |
+| `parse-release-plan.js` | Parses `RELEASE_PLAN.md` into epics, stories, tasks, and acceptance criteria                  |
+| `parse-test-cases.js`   | Parses `TEST_CASES.md` into structured test case objects                                      |
+| `parse-bugs.js`         | Parses `BUGS.md` into bug records with severity, status, and fix branch                       |
+| `parse-cost-log.js`     | Parses `AI_COST_LOG.md`, deduplicates sessions, aggregates by branch                          |
+| `parse-coverage.js`     | Reads Jest coverage JSON; returns coverage percentages and `available` flag                   |
+| `parse-progress.js`     | Parses `progress.md` (newest-first session log)                                               |
+| `parse-lessons.js`      | Parses `LESSONS.md` into structured lesson records                                            |
+| `compute-costs.js`      | Attributes AI costs to stories by branch; distributes unattributed costs proportionally       |
+| `detect-at-risk.js`     | Identifies at-risk stories (missing TCs, no branch, failed TC with no bug, open critical bug) |
+| `snapshot.js`           | Saves and loads time-series snapshots in `.history/`; extracts trend data                     |
+| `historical-sim.js`     | Backfills 30 days of simulated history when fewer than 2 real snapshots exist                 |
+| `budget.js`             | Computes per-epic budget allocation, burn rate, and projected exhaustion                      |
+| `render-html.js`        | Renders the complete `plan-status.html` (eight-tab dashboard)                                 |
+| `search-index.js`       | Builds the global search index embedded in the HTML                                           |
 
 ### 5. `plan-visualizer.config.json`
 
@@ -119,8 +119,8 @@ Sixteen focused modules, each with a single responsibility:
 
 ### Skills / Plugins
 
-| Name | Type | Purpose |
-|------|------|---------|
+| Name                     | Type               | Purpose                                                                                       |
+| ------------------------ | ------------------ | --------------------------------------------------------------------------------------------- |
 | Superpowers plugin suite | Claude Code plugin | Provides brainstorming, planning, subagent-driven development, and branch-finishing workflows |
 
 ## MCP Servers

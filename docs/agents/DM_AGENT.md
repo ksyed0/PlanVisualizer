@@ -403,3 +403,104 @@ const { safePush, detectConflicts, checkOverlap } = require('./orchestrator/git-
 - Commit format: `[chore] Conductor: Phase [N] orchestration — [summary]`
 - Keep the project on schedule — timebox each phase per the timeline
 - If a phase runs over, compress the next phase, don't skip it
+
+## Canonical Per-Story Procedure (PR-based merge workflow)
+
+**Adopted 2026-04-14. Supersedes direct-push pattern.**
+
+Every user story flows through this exact sequence. The Conductor enforces the steps; agents never merge themselves.
+
+### Pre-spawn — ensure a fresh baseline
+
+```bash
+# In the main repo checkout (NOT a worktree)
+cd <main-repo>
+git checkout develop
+git pull origin develop
+# Verify CI is green on develop before starting a new story
+gh run list --branch develop --limit 1 --json conclusion --jq '.[].conclusion'  # should return "success"
+```
+
+If develop CI is failing, **fix the baseline first** (via a `chore/*` PR) before starting any new story. A failing baseline means every story PR will be blocked.
+
+### Phase 3 Build — Implementation agent
+
+Spawn Pixel (Frontend Dev), Forge (Backend Dev), or both in parallel with `isolation: "worktree"`. Worktree inherits the fresh develop state because we just pulled.
+
+- Agent creates `feature/US-XXXX-short-name`, implements, commits, pushes
+- Agent does NOT create a PR — Conductor does that after review
+
+### Pre-review sync
+
+```bash
+cd <worktree>
+git fetch origin develop
+git rebase origin/develop
+# If conflict: respawn Pixel with conflict context + "resolve and push --force-with-lease", max 1 retry
+# If clean: git push --force-with-lease origin feature/US-XXXX-short-name
+```
+
+### Phase 3 Build (cont.) — Code review
+
+Spawn Lens with `isolation: "worktree"` pointing at the feature branch. Lens returns:
+
+- **APPROVE** → proceed to testing phase
+- **REQUEST CHANGES** → respawn Pixel with Lens's findings, max 1 retry, then back to pre-review sync
+- **BLOCK** → escalate to human per Escalation Workflow
+
+### Phase 5 Test — Parallel verification
+
+Spawn Sentinel (Functional Tester) and Circuit (Automation Tester) in parallel, each with `isolation: "worktree"`:
+
+- **Sentinel**: Playwright-based visual/behavioral verification; may open a new BUG-XXXX if defects found
+- **Circuit**: test coverage audit + add missing parameterised assertions
+
+Both can commit to the same feature branch — the Conductor merges everything together.
+
+### Phase 6 Polish — Create PR, auto-merge via squash
+
+```bash
+# Still in main repo
+gh pr create \
+  --base develop \
+  --head feature/US-XXXX-short-name \
+  --title "[feat] US-XXXX (EPIC-YYYY): <summary>" \
+  --body "<multi-line body citing Pixel/Lens/Sentinel/Circuit contributions, ACs satisfied, and linking to related bugs>"
+
+# Automatic: CI runs, lens can post review via API
+gh pr review <num> --approve --body "<Lens's verdict summary>"
+
+# Auto-merge when CI goes green (does not block Conductor)
+gh pr merge <num> --auto --squash --delete-branch
+```
+
+Conductor does NOT wait on CI. Move to the next story. If CI fails on the auto-merge, a notification fires and the Conductor re-spawns Pixel with the failure context.
+
+### Post-merge — sync main repo
+
+```bash
+git checkout develop
+git pull origin develop  # gets the squashed commit
+git worktree remove <old-worktree-path> --force
+```
+
+### Hotfix exception
+
+If a production-blocking bug requires immediate patch, direct push with `--admin` to develop is permitted. Must be followed by a retrospective PR to document what happened. Hotfix commits always prefix the message with `[hotfix] BUG-XXXX:`.
+
+### Why PR-based
+
+1. **CI enforcement**: Lint, test, format, audit, SAST, secret scanning all run as required checks. No silent bypass.
+2. **Audit trail**: GitHub PR page shows agent collaboration (Pixel's diff, Lens's review, Sentinel's screenshots as comments).
+3. **Rollback**: One-click revert via `gh pr revert <num>` or GitHub UI.
+4. **Branch protection compliance**: Both `main` and `develop` are protected. PR workflow respects this instead of bypassing it.
+5. **Concurrent safety**: `gh pr merge --auto --squash` handles queue drift automatically.
+
+### What stays the same
+
+- DM_AGENT's 6-phase structure
+- Worktree isolation per agent
+- Concurrency safety utilities for shared files
+- BLOCK recovery protocol
+- Parallel agent failure coordination
+- Hard phase timeout rules

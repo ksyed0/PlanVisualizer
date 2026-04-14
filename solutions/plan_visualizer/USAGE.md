@@ -13,16 +13,16 @@ node tools/generate-plan.js
 
 Open `docs/plan-status.html` in your browser. The dashboard has eight tabs accessible from the left sidebar:
 
-| Tab | What it shows |
-|-----|--------------|
-| **Hierarchy** | Epics → Stories → Tasks with status badges and acceptance criteria |
-| **Kanban** | Stories organised by status column (Planned, In Progress, Done, Retired) |
-| **Traceability** | Each story linked to its test cases and bugs |
-| **Status** | Static snapshot charts — story status by epic, test results, bug severity, coverage, budget |
-| **Trends** | Time-series charts — velocity, AI cost over time, token usage, coverage trajectory, open bugs |
-| **Costs** | AI spend by epic and story, with projected costs for remaining work |
-| **Bugs** | Full bug register with severity, status, fix branch, and linked lessons |
-| **Lessons** | Encoded lessons learned with linked stories and bugs |
+| Tab              | What it shows                                                                                 |
+| ---------------- | --------------------------------------------------------------------------------------------- |
+| **Hierarchy**    | Epics → Stories → Tasks with status badges and acceptance criteria                            |
+| **Kanban**       | Stories organised by status column (Planned, In Progress, Done, Retired)                      |
+| **Traceability** | Each story linked to its test cases and bugs                                                  |
+| **Status**       | Static snapshot charts — story status by epic, test results, bug severity, coverage, budget   |
+| **Trends**       | Time-series charts — velocity, AI cost over time, token usage, coverage trajectory, open bugs |
+| **Costs**        | AI spend by epic and story, with projected costs for remaining work                           |
+| **Bugs**         | Full bug register with severity, status, fix branch, and linked lessons                       |
+| **Lessons**      | Encoded lessons learned with linked stories and bugs                                          |
 
 Press **⌘K** (macOS) or **Ctrl+K** (Windows/Linux) to open global search across all stories, bugs, and test cases.
 
@@ -65,6 +65,7 @@ Generate the plan dashboard
 4. Check the **Trends** tab for the cumulative cost chart and daily burn rate
 
 **What to look for:**
+
 - Epics where `Spent > Projected` signal that work is taking more AI iterations than estimated
 - The burn-rate forecast (visible in the budget banner at the top) shows when the budget will be exhausted at the current rate
 

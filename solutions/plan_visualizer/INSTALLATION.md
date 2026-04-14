@@ -6,12 +6,12 @@
 
 ### Software & Accounts
 
-| Requirement | Version / Details | How to Get It |
-|------------|-------------------|--------------|
-| Node.js | v18 or later | https://nodejs.org |
-| npm | Comes with Node.js | — |
-| Git | Any recent version | https://git-scm.com |
-| Claude Code CLI | Latest version | `npm install -g @anthropic-ai/claude-code` |
+| Requirement     | Version / Details  | How to Get It                              |
+| --------------- | ------------------ | ------------------------------------------ |
+| Node.js         | v18 or later       | https://nodejs.org                         |
+| npm             | Comes with Node.js | —                                          |
+| Git             | Any recent version | https://git-scm.com                        |
+| Claude Code CLI | Latest version     | `npm install -g @anthropic-ai/claude-code` |
 
 No additional accounts, API keys, or cloud services are required. PlanVisualizer is fully self-contained.
 
