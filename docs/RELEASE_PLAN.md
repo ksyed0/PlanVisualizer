@@ -1975,12 +1975,12 @@ Dependencies: None
 US-0096 (EPIC-0015): As a user, I want zebra striping and hover highlighting on all tables, so that rows are easier to scan and track.
 Priority: Medium (P1)
 Estimate: S
-Status: Planned
+Status: Done
 Branch: feature/US-0096-zebra-tables
 Acceptance Criteria:
-  - [ ] AC-0313: A --clr-row-alt token with light/dark variants exists
-  - [ ] AC-0314: All .scroll-table tbody rows alternate background colour
-  - [ ] AC-0315: A --clr-row-hover token drives hover-row highlighting in all tables
+  - [x] AC-0313: A --clr-row-alt token with light/dark variants exists
+  - [x] AC-0314: All .scroll-table tbody rows alternate background colour
+  - [x] AC-0315: A --clr-row-hover token drives hover-row highlighting in all tables
 Dependencies: None
 ```
 

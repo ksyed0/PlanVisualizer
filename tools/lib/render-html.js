@@ -2262,6 +2262,9 @@ function renderPrintCSS() {
     /* US-0095 — card depth via layered shadow instead of hard border */
     --shadow-card:       0 1px 2px rgba(15,23,42,0.04), 0 4px 16px rgba(15,23,42,0.05);
     --shadow-card-hover: 0 2px 4px rgba(15,23,42,0.06), 0 8px 24px rgba(15,23,42,0.08);
+    /* US-0096: Zebra striping + row hover — light mode */
+    --clr-row-alt:       rgba(148,163,184,0.04);
+    --clr-row-hover:     rgba(148,163,184,0.09);
     /* US-0097: Semantic badge tokens — light mode */
     --badge-success-bg:  #dcfce7;
     --badge-success-text:#166534;
@@ -2299,6 +2302,9 @@ function renderPrintCSS() {
     --clr-accent:        #8b5cf6;
     --shadow-card:       0 1px 2px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3);
     --shadow-card-hover: 0 2px 6px rgba(0,0,0,0.5), 0 12px 32px rgba(0,0,0,0.4);
+    /* US-0096: Zebra striping + row hover — dark mode */
+    --clr-row-alt:       rgba(255,255,255,0.02);
+    --clr-row-hover:     rgba(255,255,255,0.05);
     /* US-0097: Semantic badge tokens — dark mode */
     --badge-success-bg:  #031a0e;
     --badge-success-text:#4ade80;
@@ -2386,6 +2392,12 @@ function renderPrintCSS() {
   .tab-fill .scroll-table { flex: 1; min-height: 0; max-height: none; }
   .scroll-table { overflow: auto; max-height: calc(100vh - var(--sticky-top, 100px) - 3rem); }
   .scroll-table thead th { position: sticky; top: 0; z-index: 10; background-color: var(--clr-header-bg); color: var(--clr-header-text); }
+  /* Zebra striping + row hover — nth-child(even) scopes WITHIN each tbody,
+     so Bugs/Costs epic-header tbodies (single row) are unaffected and only
+     data-row tbodies alternate. Epic header rows with inline background styles
+     keep their accent colour. tfoot rows are excluded by the tbody selector. */
+  .scroll-table tbody tr:nth-child(even) { background-color: var(--clr-row-alt); }
+  .scroll-table tbody tr:hover { background-color: var(--clr-row-hover); }
   /* Costs tab: scroll naturally with the page, no viewport-clipped tables */
   #tab-costs .scroll-table { max-height: none; overflow: visible; }
   /* Kanban: Epic swimlane grid */
