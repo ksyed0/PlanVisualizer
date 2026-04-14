@@ -425,13 +425,34 @@ function renderKanbanTab(data) {
   const hasUngrouped = data.stories.some((s) => !s.epicId);
   const SWIM_COLORS = ['#7c3aed', '#0369a1', '#b45309', '#166534', '#9f1239', '#6b21a8', '#0e7490', '#92400e'];
 
-  const renderCard = (s) => `
-    <div class="story-row story-card-hover bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded p-3 mb-2"
-         data-epic="${esc(s.epicId)}" data-status="${esc(s.status)}" data-priority="${esc(s.priority)}">
+  const renderCard = (s) => {
+    const tcs = data.testCases.filter((tc) => tc.relatedStory === s.id);
+    const acDone = s.acs.filter((a) => a.done).length;
+    const acTotal = s.acs.length;
+    const acItems = s.acs
+      .map((ac) => {
+        const linkedTC = tcs.find((tc) => tc.relatedAC === ac.id);
+        return `<li class="flex items-start gap-2 py-0.5">
+          <span class="${ac.done ? 'text-green-500' : 'text-slate-400'}">${ac.done ? '✓' : '○'}</span>
+          <span class="text-xs text-slate-400">${esc(ac.id)}</span>
+          <span class="text-xs dark:text-slate-300">${esc(ac.text)}</span>
+          ${linkedTC ? `<span class="ml-auto shrink-0 text-xs text-slate-400">→ ${linkedTC.id} ${badge(linkedTC.status)}</span>` : ''}
+        </li>`;
+      })
+      .join('');
+    return `
+    <div class="story-row story-card-hover bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded p-3 mb-2 cursor-pointer"
+         data-epic="${esc(s.epicId)}" data-status="${esc(s.status)}" data-priority="${esc(s.priority)}"
+         onclick="toggleKanbanACs('${jsEsc(s.id)}')">
       <div class="flex gap-1 mb-1">${badge(s.priority)} <span class="text-xs text-slate-500 font-mono">${esc(s.id)}</span></div>
       <p class="text-sm dark:text-slate-100">${esc(s.title)}</p>
-      <p class="text-xs text-slate-500 mt-1 font-mono">${esc(s.estimate || '?')}</p>
+      <div class="flex items-center gap-2 mt-1 text-xs text-slate-500">
+        <span class="font-mono">${esc(s.estimate || '?')}</span>
+        ${acTotal ? `<span>${acDone}/${acTotal} ACs ▾</span>` : ''}
+      </div>
+      ${acTotal ? `<ul id="kanban-acs-${esc(s.id)}" class="hidden mt-2 pt-2 border-t border-slate-100 dark:border-slate-600 space-y-0.5">${acItems}</ul>` : ''}
     </div>`;
+  };
 
   // Column header row
   const headerRow = `<div class="ksw-header-row">
@@ -1773,6 +1794,10 @@ function renderScripts(data, options = {}) {
   }
   function toggleCardACs(id) {
     const el = document.getElementById('card-acs-' + id);
+    if (el) el.classList.toggle('hidden');
+  }
+  function toggleKanbanACs(id) {
+    const el = document.getElementById('kanban-acs-' + id);
     if (el) el.classList.toggle('hidden');
   }
 
