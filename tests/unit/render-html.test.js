@@ -812,30 +812,40 @@ describe('renderHtml — hero numbers (US-0099)', () => {
   });
 
   it('applies hero-num hero-num-sm to Bugs Open topbar tile', () => {
-    expect(html).toMatch(/class="tile-value hero-num hero-num-sm tile-bugs[^"]*"[^>]*>[^<]*Bugs|tile-bugs[^"]*"[^>]*>[^<]*\d+<\/span>\s*<span class="tile-label">Bugs Open/);
+    expect(html).toMatch(
+      /class="tile-value hero-num hero-num-sm tile-bugs[^"]*"[^>]*>[^<]*Bugs|tile-bugs[^"]*"[^>]*>[^<]*\d+<\/span>\s*<span class="tile-label">Bugs Open/,
+    );
     // Precise: the Bugs Open tile-value contains hero-num hero-num-sm
-    const bugsTileMatch = html.match(/<span class="tile-value ([^"]+) tile-bugs[^"]*">[\s\S]*?<\/span>\s*<span class="tile-label">Bugs Open<\/span>/);
+    const bugsTileMatch = html.match(
+      /<span class="tile-value ([^"]+) tile-bugs[^"]*">[\s\S]*?<\/span>\s*<span class="tile-label">Bugs Open<\/span>/,
+    );
     expect(bugsTileMatch).not.toBeNull();
     expect(bugsTileMatch[1]).toContain('hero-num');
     expect(bugsTileMatch[1]).toContain('hero-num-sm');
   });
 
   it('applies hero-num hero-num-sm to Coverage topbar tile', () => {
-    const covTileMatch = html.match(/<span class="tile-value ([^"]+) tile-cov[^"]*">[\s\S]*?<\/span>\s*<span class="tile-label">Coverage<\/span>/);
+    const covTileMatch = html.match(
+      /<span class="tile-value ([^"]+) tile-cov[^"]*">[\s\S]*?<\/span>\s*<span class="tile-label">Coverage<\/span>/,
+    );
     expect(covTileMatch).not.toBeNull();
     expect(covTileMatch[1]).toContain('hero-num');
     expect(covTileMatch[1]).toContain('hero-num-sm');
   });
 
   it('applies hero-num hero-num-sm to AI Cost topbar tile', () => {
-    const aiTileMatch = html.match(/<span class="tile-value ([^"]+)">[\s\S]*?<\/span>\s*<span class="tile-label">AI Cost<\/span>/);
+    const aiTileMatch = html.match(
+      /<span class="tile-value ([^"]+)">[\s\S]*?<\/span>\s*<span class="tile-label">AI Cost<\/span>/,
+    );
     expect(aiTileMatch).not.toBeNull();
     expect(aiTileMatch[1]).toContain('hero-num');
     expect(aiTileMatch[1]).toContain('hero-num-sm');
   });
 
   it('does NOT apply hero-num to Stories tile (treatment is scoped to Bugs/Coverage/AI Cost)', () => {
-    const storiesTileMatch = html.match(/<span class="tile-value[^"]*">[^<]*<\/span>\s*<span class="tile-label">Stories<\/span>/);
+    const storiesTileMatch = html.match(
+      /<span class="tile-value[^"]*">[^<]*<\/span>\s*<span class="tile-label">Stories<\/span>/,
+    );
     expect(storiesTileMatch).not.toBeNull();
     expect(storiesTileMatch[0]).not.toContain('hero-num');
   });
