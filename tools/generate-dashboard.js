@@ -10,10 +10,54 @@
 
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..');
 const STATUS_PATH = path.join(ROOT, 'docs', 'sdlc-status.json');
 const OUTPUT_PATH = path.join(ROOT, 'docs', 'dashboard.html');
+
+// Git + version metadata (mirrors tools/generate-plan.js helpers) so the About
+// modal can display "This Project" / "Dashboard Tool" sections with parity
+// to the Plan Visualizer's About modal (US-0109).
+function getCommitSha() {
+  try {
+    return execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim();
+  } catch {
+    return 'unknown';
+  }
+}
+function getBuildNumber() {
+  try {
+    return execSync('git rev-list --count HEAD', { encoding: 'utf8' }).trim();
+  } catch {
+    return '0';
+  }
+}
+function getCurrentBranch() {
+  try {
+    return execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf8' }).trim();
+  } catch {
+    return 'unknown';
+  }
+}
+function getProjectPkg() {
+  try {
+    const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
+    return { name: pkg.name || 'project', version: pkg.version || '0.0.0' };
+  } catch {
+    return { name: 'project', version: '0.0.0' };
+  }
+}
+// The tool (PlanVisualizer) lives in the same repo for self-hosted use.
+// When installed into another project, the tool pkg is one level up from tools/.
+function getToolPkg() {
+  try {
+    const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'));
+    return { name: pkg.name || 'plan-visualizer', version: pkg.version || '0.0.0' };
+  } catch {
+    return { name: 'plan-visualizer', version: '0.0.0' };
+  }
+}
 
 // Load agent config (colors, icons, roles) from agents.config.json
 function loadAgentConfig() {
@@ -53,6 +97,15 @@ function getDashboardMeta() {
 
 const DASH_META = getDashboardMeta();
 
+function esc(s) {
+  return String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function readJSON(filePath) {
   try {
     return JSON.parse(fs.readFileSync(filePath, 'utf8'));
@@ -70,6 +123,12 @@ function generateHTML(status) {
     minute: '2-digit',
     hour12: true,
   });
+  // Build-time metadata for the About modal (US-0109 parity with plan-status.html)
+  const PROJECT_PKG = getProjectPkg();
+  const TOOL_PKG = getToolPkg();
+  const COMMIT_SHA = getCommitSha();
+  const BUILD_NUMBER = getBuildNumber();
+  const GIT_BRANCH = getCurrentBranch();
   const agents = status.agents;
   const phases = status.phases;
   const metrics = status.metrics;
@@ -267,12 +326,20 @@ function generateHTML(status) {
   /* About modal */
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
   .modal-overlay.open { display: flex; }
-  .modal { background: var(--bg-card); border: 1px solid var(--bg-card-border); border-radius: 16px; padding: 32px; max-width: 420px; width: 90%; text-align: center; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
-  .modal h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; color: var(--brand-primary); }
+  .modal { background: var(--bg-card); border: 1px solid var(--bg-card-border); border-radius: 16px; padding: 32px; max-width: 460px; width: 90%; text-align: center; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+  .modal h3 { font-size: 18px; font-weight: 700; margin-bottom: 4px; color: var(--brand-primary); }
   .modal p { font-size: 14px; color: var(--text-secondary); margin-bottom: 6px; }
   .modal .author { font-size: 15px; font-weight: 600; color: var(--text-primary); margin: 16px 0 8px; }
-  .modal .repo-link { display: inline-block; margin-top: 12px; background: var(--brand-primary); color: white; padding: 8px 20px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 600; transition: background 0.2s; }
+  .modal .repo-link { display: inline-block; margin: 12px 0 16px; background: var(--brand-primary); color: white; padding: 8px 20px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 600; transition: background 0.2s; }
   .modal .repo-link:hover { filter: brightness(0.85); text-decoration: none; }
+  .modal .meta-divider { border-top: 1px solid var(--bg-card-border); padding-top: 16px; margin-top: 12px; text-align: left; font-size: 12px; color: var(--text-muted); }
+  .modal .meta-section { margin-bottom: 12px; }
+  .modal .meta-section:last-child { margin-bottom: 0; }
+  .modal .meta-supertitle { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted); margin-bottom: 6px; }
+  .modal .meta-row { padding-left: 8px; margin-bottom: 3px; }
+  .modal .meta-label { color: var(--text-muted); }
+  .modal .meta-value { color: var(--text-primary); font-family: 'JetBrains Mono', 'Menlo', monospace; font-size: 11px; }
+  .modal .meta-attribution { margin-top: 14px; font-size: 11px; color: var(--text-muted); text-align: center; }
   .modal-close { position: absolute; top: 12px; right: 16px; background: none; border: none; color: var(--text-muted); font-size: 22px; cursor: pointer; line-height: 1; padding: 4px 8px; border-radius: 6px; transition: background 0.2s; }
   .modal-close:hover { background: var(--bg-card-inner); color: var(--text-primary); }
 
@@ -619,16 +686,30 @@ ${
 
 </div>
 
-<!-- About Modal -->
+<!-- About Modal — layout mirrors plan-status.html for consistency (US-0109) -->
 <div id="about-modal" class="modal-overlay" onclick="if(event.target===this)this.classList.remove('open')">
   <div class="modal">
     <button class="modal-close" onclick="document.getElementById('about-modal').classList.remove('open')">&times;</button>
     <img src="agents/images/team.png" style="width:100%; border-radius:8px; margin-bottom:12px;" onerror="this.style.display='none'">
-    <h3>AI-SDLC Orchestrator Visualizer</h3>
-    <p>Real-time dashboard for agentic AI software development lifecycle orchestration</p>
-    ${DASH_META.author ? `<div class="author">by ${DASH_META.author}</div>` : ''}
-    ${DASH_META.authorTitle ? `<p style="font-size:12px; color: var(--text-muted)">${DASH_META.authorTitle}</p>` : ''}
-    ${DASH_META.repoUrl ? `<a class="repo-link" href="${DASH_META.repoUrl}" target="_blank" rel="noopener">View on GitHub</a>` : ''}
+    <h3>${esc(DASH_META.title)}</h3>
+    <p>${esc(DASH_META.subtitle)}</p>
+    ${DASH_META.repoUrl ? `<a class="repo-link" href="${esc(DASH_META.repoUrl)}" target="_blank" rel="noopener">View on GitHub</a>` : ''}
+    <div class="meta-divider">
+      <div class="meta-section">
+        <div class="meta-supertitle">This Project</div>
+        <div class="meta-row"><span class="meta-label">Name:</span> <span class="meta-value">${esc(PROJECT_PKG.name)}</span></div>
+        <div class="meta-row"><span class="meta-label">Version:</span> <span class="meta-value">v${esc(PROJECT_PKG.version)}</span></div>
+        <div class="meta-row"><span class="meta-label">Branch:</span> <span class="meta-value">${esc(GIT_BRANCH)}</span></div>
+        <div class="meta-row"><span class="meta-label">Build:</span> <span class="meta-value">#${esc(BUILD_NUMBER)} ${esc(COMMIT_SHA)}</span></div>
+      </div>
+      <div class="meta-section">
+        <div class="meta-supertitle">Dashboard Tool</div>
+        <div class="meta-row"><span class="meta-label">View:</span> <span class="meta-value">Agentic SDLC Dashboard</span></div>
+        <div class="meta-row"><span class="meta-label">Generated by:</span> <span class="meta-value">${esc(TOOL_PKG.name)} v${esc(TOOL_PKG.version)}</span></div>
+        <div class="meta-row"><span class="meta-label">Generated at:</span> <span class="meta-value">${esc(now)}</span></div>
+      </div>
+      ${DASH_META.author ? `<div class="meta-attribution">Implemented by ${esc(DASH_META.author)}${DASH_META.authorTitle ? ', ' + esc(DASH_META.authorTitle) : ''}</div>` : ''}
+    </div>
   </div>
 </div>
 
