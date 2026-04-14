@@ -1624,7 +1624,7 @@ Acceptance Criteria:
 
 ```
 
-US-0085: As a user, I want the agentic dashboard footer to show the full date and time of the last generation, so that I know how fresh the data is.
+US-0085 (EPIC-0013): As a user, I want the agentic dashboard footer to show the full date and time of the last generation, so that I know how fresh the data is.
 Priority: Medium (P1)
 Estimate: XS
 Status: Done
@@ -1641,7 +1641,7 @@ Acceptance Criteria:
 
 ```
 
-US-0086: As a user, I want the Bugs, Traceability, and Lessons tabs to have a search/filter bar so I can quickly find entries without scrolling through all items.
+US-0086 (EPIC-0011): As a user, I want the Bugs, Traceability, and Lessons tabs to have a search/filter bar so I can quickly find entries without scrolling through all items.
 Priority: Medium (P1)
 Estimate: S
 Status: Done
@@ -1658,7 +1658,7 @@ Acceptance Criteria:
 
 ```
 
-US-0087: As a user, I want the Plan Visualizer topbar buttons to use the same pill style as the Agentic Dashboard so both pages feel visually consistent.
+US-0087 (EPIC-0015): As a user, I want the Plan Visualizer topbar buttons to use the same pill style as the Agentic Dashboard so both pages feel visually consistent.
 Priority: Low (P2)
 Estimate: XS
 Status: Done

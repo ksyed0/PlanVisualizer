@@ -2010,3 +2010,24 @@ Steps to Reproduce:
    Lesson Encoded: No
    Estimated Cost USD: 0.00
    Notes: Found by Sentinel during US-0097 Playwright verification. Pre-existing — not introduced by US-0097. Likely in the EPIC-0011 global search module (US-0069); search-body DOM setup runs before the element exists or exists-but-null edge case.
+
+---
+
+BUG-0158: Bug epic grouping broken — 50 bugs in "No Epic" due to relatedStory parsing + release-plan-fence issues
+Severity: High
+Related Story: US-0108
+Steps to Reproduce:
+
+1. Open plan-status.html → Costs tab → scroll to Bug Fix Costs
+2. Observe bugs are not grouped by epic — large "No Epic" pile
+   Expected: Bugs grouped under their epic based on relatedStory
+   Actual: 50 bugs fall into \_ungrouped bucket
+   Root causes (3):
+   a. Parser required exact "US-XXXX" match but some bugs used "US-0012 (capture-cost)" with parenthetical
+   b. US-0085/0086/0087 live inside adjacent code-fence empty blocks in the Standalone Stories section — extractCodeBlocks's regex pairing treated them as outside any block so they never got an epicId
+   c. 44 bugs merged from legacy /BUGS.md have relatedStory="n/a" — no way to retroactively map
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0158-bug-epic-grouping
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fix adds normalizeStoryRef() regex extraction in render-html.js + rewrites parseReleasePlan to scan chunks directly (no fence boundaries). 46 bugs still ungrouped after fix — all with n/a relatedStory from the legacy merge; those are a data concern for EPIC-0017 discovery.
