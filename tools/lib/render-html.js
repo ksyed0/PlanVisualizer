@@ -14,28 +14,39 @@ const jsEsc = (s) =>
     .replace(/'/g, "\\'")
     .replace(/\n/g, '\\n');
 
+// US-0097 (EPIC-0015): Semantic badge token system. Maps 17 known badge labels
+// to 5 semantic tones (success/warn/danger/info/neutral). Colours flow from
+// CSS variables defined in :root and html.dark so badges adapt to theme
+// (fixes BUG-0110 where hardcoded dark hex values rendered as dark rectangles
+// in light mode).
+const BADGE_TONE = {
+  // success
+  Done: 'success',
+  Pass: 'success',
+  Fixed: 'success',
+  // warn
+  'To Do': 'warn',
+  'Not Run': 'warn',
+  Medium: 'warn',
+  P1: 'warn',
+  High: 'warn',
+  // danger
+  Blocked: 'danger',
+  Fail: 'danger',
+  Open: 'danger',
+  Critical: 'danger',
+  P0: 'danger',
+  // info
+  'In Progress': 'info',
+  // neutral
+  Planned: 'neutral',
+  Low: 'neutral',
+  P2: 'neutral',
+};
+
 function badge(text) {
-  const colors = {
-    'In Progress': 'border border-[#1d4ed8] bg-[#0a1628] text-[#93c5fd]',
-    Planned: 'border border-[#475569] bg-[#0f1520] text-[#94a3b8]',
-    Done: 'border border-[#166534] bg-[#031a0e] text-[#4ade80]',
-    Blocked: 'border border-[#991b1b] bg-[#1a0505] text-[#fca5a5]',
-    'To Do': 'border border-[#92400e] bg-[#150b03] text-[#fcd34d]',
-    P0: 'border border-[#991b1b] bg-[#1a0505] text-[#fca5a5]',
-    P1: 'border border-[#9a3412] bg-[#180803] text-[#fdba74]',
-    P2: 'border border-[#475569] bg-[#0f1520] text-[#94a3b8]',
-    Pass: 'border border-[#166534] bg-[#031a0e] text-[#4ade80]',
-    Fail: 'border border-[#991b1b] bg-[#1a0505] text-[#fca5a5]',
-    'Not Run': 'border border-[#92400e] bg-[#150b03] text-[#fcd34d]',
-    Open: 'border border-[#991b1b] bg-[#1a0505] text-[#fca5a5]',
-    Fixed: 'border border-[#166534] bg-[#031a0e] text-[#4ade80]',
-    Critical: 'border border-[#7f1d1d] bg-[#2a0606] text-[#f87171]',
-    High: 'border border-[#991b1b] bg-[#1a0505] text-[#fca5a5]',
-    Medium: 'border border-[#92400e] bg-[#150b03] text-[#fcd34d]',
-    Low: 'border border-[#475569] bg-[#0f1520] text-[#94a3b8]',
-  };
-  const cls = colors[text] || 'border border-[#475569] bg-[#0f1520] text-[#94a3b8]';
-  return `<span class="inline-block px-2 py-0.5 rounded text-xs font-medium ${cls}">${esc(text)}</span>`;
+  const tone = BADGE_TONE[text] || 'neutral';
+  return `<span class="badge badge-${tone}">${esc(text)}</span>`;
 }
 
 function usd(n) {
@@ -2251,6 +2262,22 @@ function renderPrintCSS() {
     /* US-0095 — card depth via layered shadow instead of hard border */
     --shadow-card:       0 1px 2px rgba(15,23,42,0.04), 0 4px 16px rgba(15,23,42,0.05);
     --shadow-card-hover: 0 2px 4px rgba(15,23,42,0.06), 0 8px 24px rgba(15,23,42,0.08);
+    /* US-0097: Semantic badge tokens — light mode */
+    --badge-success-bg:  #dcfce7;
+    --badge-success-text:#166534;
+    --badge-success-border:#86efac;
+    --badge-warn-bg:     #fef3c7;
+    --badge-warn-text:   #92400e;
+    --badge-warn-border: #fcd34d;
+    --badge-danger-bg:   #fee2e2;
+    --badge-danger-text: #991b1b;
+    --badge-danger-border:#fca5a5;
+    --badge-info-bg:     #dbeafe;
+    --badge-info-text:   #1d4ed8;
+    --badge-info-border: #93c5fd;
+    --badge-neutral-bg:  #f1f5f9;
+    --badge-neutral-text:#475569;
+    --badge-neutral-border:#cbd5e1;
   }
   html.dark {
     --clr-body-bg:       #0b0d12;
@@ -2272,7 +2299,68 @@ function renderPrintCSS() {
     --clr-accent:        #8b5cf6;
     --shadow-card:       0 1px 2px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3);
     --shadow-card-hover: 0 2px 6px rgba(0,0,0,0.5), 0 12px 32px rgba(0,0,0,0.4);
+    /* US-0097: Semantic badge tokens — dark mode */
+    --badge-success-bg:  #031a0e;
+    --badge-success-text:#4ade80;
+    --badge-success-border:#166534;
+    --badge-warn-bg:     #150b03;
+    --badge-warn-text:   #fcd34d;
+    --badge-warn-border: #92400e;
+    --badge-danger-bg:   #1a0505;
+    --badge-danger-text: #fca5a5;
+    --badge-danger-border:#991b1b;
+    --badge-info-bg:     #0a1628;
+    --badge-info-text:   #93c5fd;
+    --badge-info-border: #1d4ed8;
+    --badge-neutral-bg:  #0f1520;
+    --badge-neutral-text:#94a3b8;
+    --badge-neutral-border:#475569;
   }
+  /* US-0097: Badge base + semantic classes */
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.4;
+    border: 1px solid var(--badge-neutral-border);
+    background-color: var(--badge-neutral-bg);
+    color: var(--badge-neutral-text);
+    white-space: nowrap;
+  }
+  .badge-success { background-color: var(--badge-success-bg); color: var(--badge-success-text); border-color: var(--badge-success-border); }
+  .badge-warn    { background-color: var(--badge-warn-bg);    color: var(--badge-warn-text);    border-color: var(--badge-warn-border); }
+  .badge-danger  { background-color: var(--badge-danger-bg);  color: var(--badge-danger-text);  border-color: var(--badge-danger-border); }
+  .badge-info    { background-color: var(--badge-info-bg);    color: var(--badge-info-text);    border-color: var(--badge-info-border); }
+  .badge-neutral { background-color: var(--badge-neutral-bg); color: var(--badge-neutral-text); border-color: var(--badge-neutral-border); }
+  /* US-0097 AC-0317: .badge-dot variant — 8px coloured circle + text for dense contexts */
+  .badge-dot {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--clr-text-primary);
+    background: transparent;
+    border: none;
+    padding: 0;
+    white-space: nowrap;
+  }
+  .badge-dot::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--badge-neutral-text);
+    flex-shrink: 0;
+  }
+  .badge-dot.badge-success::before { background-color: var(--badge-success-text); }
+  .badge-dot.badge-warn::before    { background-color: var(--badge-warn-text); }
+  .badge-dot.badge-danger::before  { background-color: var(--badge-danger-text); }
+  .badge-dot.badge-info::before    { background-color: var(--badge-info-text); }
+  .badge-dot.badge-neutral::before { background-color: var(--badge-neutral-text); }
   /* === Dark mode fallbacks === */
   html.dark body {
     background-color: var(--clr-body-bg);
@@ -2571,4 +2659,4 @@ function renderHtml(data, options = {}) {
 </html>`;
 }
 
-module.exports = { renderHtml };
+module.exports = { renderHtml, badge, BADGE_TONE };

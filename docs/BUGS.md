@@ -1249,7 +1249,7 @@ Steps to Reproduce:
 2. Scroll to any status/severity/priority badge (e.g., "Done", "High", "P0")
    Expected: Badges have readable background/text contrast in both light and dark modes
    Actual: All badges use very dark backgrounds (#0a1628, #031a0e) with light text; in light mode they appear as tiny dark rectangles, clashing with the surrounding light UI
-   Status: Open
+   Status: Fixed
    Fix Branch: feature/US-0097-semantic-badges
    Lesson Encoded: No
    Estimated Cost USD: 0.00
