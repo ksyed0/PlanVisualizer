@@ -169,3 +169,93 @@ _Learned during US-0048 responsive layout design — fixed-height topbar assumpt
 **Rule:** When designing icon-only sidebars or collapsed nav for mobile, never rely on `:hover` to reveal labels — touch screens have no hover state. The three valid patterns are: (a) tap icon = navigate directly, (b) tap icon = open a drawer, (c) long-press = show tooltip. "Tap to navigate" is the simplest and requires no extra UI state; use it as the default for utility dashboards.
 _Learned during US-0048 brainstorm when user asked "how does hover work on tablets and phones" — the answer was it doesn't, and the design was corrected._
 **Date:** 2026-03-29
+
+---
+
+## L-0022 — Prettier indents markdown fields under list items; parsers must tolerate leading whitespace
+
+**Rule:** When Prettier formats markdown with numbered-list items and subsequent fields like `Status:`, `Severity:`, `Fix Branch:`, it indents those fields with 3 spaces as list-item continuations. Any regex parser that anchors field matches to column 0 (e.g. `^Status:`) will silently drop those fields after Prettier runs, yielding empty-string values. Fix: use `^[ \t]*${key}:` to tolerate optional leading whitespace. Apply this pattern to every field parser in the project (parse-bugs.js, parse-test-cases.js, and any future parser).
+**Bugs:** BUG-0043
+_Learned when BUG-0043 first surfaced (fixture test break) and re-learned in Session 17 when both parse-bugs.js AND parse-test-cases.js had the same issue — all 139 TCs showed "Not Run" and all bugs had empty fixBranch/relatedStory/severity._
+**Date:** 2026-04-13
+
+---
+
+## L-0023 — Adjacent code-fence pairs break sequential regex extraction
+
+**Rule:** Patterns like ` ```\n\n``` ` (two backtick fences with only a blank line between them) appear in markdown after Prettier reformats certain structures. A `[\s\S]*?`-style sequential regex pairs consecutive backticks, treating each pair as a block. When the file has `...code1 ``` \n\n ``` code2 ``` \n\n ``` code3...`, the regex captures `code1`, the empty block, and the empty block — missing `code2` entirely. Fix: either (a) parse structurally with a line-by-line state machine flipping on each fence, or (b) abandon code-fence extraction altogether and split the full markdown by blank lines, filtering chunks that match header patterns. Option (b) is more robust because it doesn't care about fence balance.
+**Bugs:** BUG-0158
+_Learned when US-0085/0086/0087 in the Standalone Stories section of RELEASE_PLAN.md were silently dropped by `extractCodeBlocks`. Replaced with chunk-based parsing — stories now parse regardless of fence placement._
+**Date:** 2026-04-14
+
+---
+
+## L-0024 — Normalize cross-references with regex extraction, not exact match
+
+**Rule:** When cross-referencing between data files by ID (e.g. bug.relatedStory → story.id), don't assume the reference is in canonical form. Real-world data contains extras: parenthetical context (`"US-0012 (capture-cost)"`), trailing whitespace, stale text ("n/a"), or typos. Use a regex-extract helper that pulls the canonical ID (`US-\d{4}`) out of arbitrary text, returning null if no match. Apply to every map lookup involving user-provided reference fields.
+**Bugs:** BUG-0158
+_Learned when BUG-0056's relatedStory `"US-0012 (capture-cost)"` failed exact-string lookup and the bug fell to `_ungrouped` on Costs tab despite having a valid US reference. Fixed via `normalizeStoryRef()` in render-html.js._
+**Date:** 2026-04-14
+
+---
+
+## L-0025 — Snapshot-based cumulative metrics must enforce monotonicity post-hoc
+
+**Rule:** If a time-series chart plots a cumulative metric (e.g. total AI cost over time) sourced from periodic snapshots of a mutable state file, the raw snapshot values may NOT be monotonically non-decreasing. Reasons: entries get removed or filtered differently between runs, the calculation changes, stop-hook races cause missed data. If the chart title implies monotonicity ("cumulative", "total to date"), enforce it explicitly: carry forward the running maximum when building the series. Never trust raw snapshot values for monotonic display.
+**Bugs:** N/A (fixed inline during Session 17)
+_Learned when the AI Cost Over Time chart on the Trends tab showed costs dropping backward at two points. Root cause: different snapshots stored different totals (est/\* branches filter was added between runs). Fix: `maxCost = Math.max(maxCost, rawCost)` in extractTrends._
+**Date:** 2026-04-14
+
+---
+
+## L-0026 — Worktree `isolation` inherits .claude/settings.local.json permissions
+
+**Rule:** An outdated or incorrect memory claim about Claude Code worktree Bash permissions can gate the entire DM*AGENT pipeline unnecessarily. Before accepting "worktrees don't work" as a persistent constraint, spawn a trivial test agent with `isolation: "worktree"` asking it to run `pwd`, `git branch`, `node --version`, `npx jest --version`. If they all succeed, the constraint is stale. Update the memory. The typical source of worktree-Bash failure is global `.claude/settings.json` having a restrictive allow-list — adding to `.claude/settings.local.json` (dev-local, gitignored) is inherited into worktree sub-agents.
+**Bugs:** N/A (memory correction)
+\_Learned at Session 17 start when MEMORY.md claimed "Bash denied in worktrees" but a test revealed it worked fine. Unlocked the full DM_AGENT pipeline (parallel Pixel/Forge, parallel Sentinel/Circuit).*
+**Date:** 2026-04-14
+
+---
+
+## L-0027 — Worktree spawn uses main-repo HEAD; pull develop before every spawn
+
+**Rule:** When Claude Code provisions a worktree via `isolation: "worktree"`, it branches from the main repo's current HEAD at spawn time. If the main repo is on a stale develop or a feature branch, the worktree inherits that state — so the sub-agent's work will be based on an older codebase, and merging it back will conflict. Always perform `git checkout develop && git pull origin develop` in the main repo immediately before spawning any agent. Additionally, before spawning Lens (reviewer), rebase the returned feature branch onto origin/develop to catch any parallel drift.
+**Bugs:** N/A (process discipline)
+_Learned when Pixel's US-0097 branch was cut from the EPIC-0015 scaffold commit (4 commits behind develop) and merge-conflict bombed on integration. Resolved by adding rebase-before-review to DM_AGENT.md._
+**Date:** 2026-04-14
+
+---
+
+## L-0028 — PR-based merges unlock CI gate enforcement
+
+**Rule:** Direct `git push` to protected branches requires `--admin` override and skips CI. Using `gh pr create → gh pr merge --auto --squash --delete-branch` makes every story commit pass through the full CI suite (Lint, Test, Coverage, Format, Audit, SAST, Secret Scan, etc.) before landing. The ~2 min latency per story is worth it for (a) enforced quality gates, (b) authentic agentic-SDLC demonstration (Lens comments on actual PR pages), (c) one-click rollback via `gh pr revert`, (d) no more fighting branch protection. Precondition: baseline branches must pass CI — fix format/lint drift in a `chore/` PR before switching workflow.
+**Bugs:** N/A (process)
+_Learned when develop baseline had Prettier warnings blocking first PR. Fixed via `chore/prettier-baseline` PR #288, then switched entire EPIC-0015 remaining work to PR-based._
+**Date:** 2026-04-14
+
+---
+
+## L-0029 — Live dashboard sync needs a dedicated CLI tool, not manual JSON edits
+
+**Rule:** When a dashboard reads from a state file (e.g. docs/sdlc-status.json) that updates at pipeline transitions, no one will remember to update the file by hand-editing. Build a thin CLI helper (e.g. `tools/update-sdlc-status.js`) with event-shaped commands (story-start, agent-start, review, test-pass, phase, story-complete, log) that mutates the state atomically. Document the expected call-sites in the pipeline's instruction file so agents (or the orchestrator) invoke them at each transition. Use `atomicReadModifyWriteJson` if parallel agents may write.
+**Bugs:** N/A (tooling)
+_Learned at Session 17 when the agentic dashboard was found frozen on hackathon-era state despite the pipeline running live. Root cause: the DM_AGENT spec said "update sdlc-status.json after each phase" but without a tool, the Conductor silently skipped it. The CLI fixed the gap._
+**Date:** 2026-04-14
+
+---
+
+## L-0030 — Legacy file + canonical file drift: pick one, migrate, delete
+
+**Rule:** When a project has two files with overlapping purposes (e.g. root `/BUGS.md` and `docs/BUGS.md`), they WILL drift. The parser reads only one; the other accumulates stale or parallel data. Don't try to keep them in sync. Pick the canonical file (the one the tool reads), migrate content via title-based dedup + renumber (not ID-based — IDs collide semantically), update any code references, and delete the legacy file. Document the migration in a commit message with the renumbering table so historical cross-references can still be traced.
+**Bugs:** N/A (one-time cleanup)
+_Learned when Session 17 discovered `/BUGS.md` had 44 bugs NOT in `docs/BUGS.md` (parser canonical). ID-dedup was impossible because IDs collided with entirely different content. Title-dedup + renumber to BUG-0113-0156 preserved all content. Root file deleted._
+**Date:** 2026-04-14
+
+---
+
+## L-0031 — Epic is Done → work freezes. New work goes to a different epic.
+
+**Rule:** Once an epic is marked `Status: Done`, no new stories, bugs, or tasks may be added to it. Treat Done epics as immutable. If related work surfaces after the epic closes, file it under (a) the next planned epic in the roadmap, (b) a dedicated Follow-Up Changes epic (EPIC-0014 in this project), or (c) a new purposed epic. This preserves epic-level velocity metrics and keeps "Done" meaningful. Do NOT re-open a Done epic just to add one story; the accounting becomes incoherent.
+**Bugs:** N/A (governance)
+_Learned when Session 17 had to decide where US-0108 (sdlc-status CLI) belonged — EPIC-0013 was Done. Chose EPIC-0014 Follow-Up Changes. Same pattern later applied to US-0083 and US-0053 which had been attached to Done epics 0004 and 0007._
+**Date:** 2026-04-14
