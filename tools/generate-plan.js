@@ -156,7 +156,7 @@ function main() {
   const lessons = parseLessons(readFile(config.docs.lessons));
 
   // Back-fill lessonEncoded on bugs using LESSONS.md **Bugs:** as source of truth.
-  // parse-bugs reads this field from BUGS.md which has no Lesson Encoded entries,
+  // parse-bugs reads this field from docs/BUGS.md which has no Lesson Encoded entries,
   // so we derive it here from the inverse mapping in LESSONS.md.
   const bugToLesson = {};
   for (const lesson of lessons) {

@@ -110,6 +110,12 @@ Description: Editorial Operations Dashboard aesthetic pass. Promotes PlanVisuali
 Release Target: Release 1.9
 Status: In Progress
 Dependencies: EPIC-0007
+
+EPIC-0017: Agentic Dashboard Effectiveness Review
+Description: Discovery / retrospective epic. Review the Agentic SDLC Dashboard (originally built for a hackathon demo, now extracted as a reusable component) and define what it takes to make it genuinely effective as a general-purpose agentic pipeline visualization. Output: a gap analysis and a set of implementation stories in a follow-on epic. Complements EPIC-0016 (Mission Control aesthetic redesign) by focusing on schema, data model, workflow coverage, and integration patterns — not just visual polish.
+Release Target: Release 2.0
+Status: Planned
+Dependencies: EPIC-0013, EPIC-0016
 ```
 
 ---
@@ -1928,9 +1934,21 @@ Acceptance Criteria:
 Dependencies: None
 ```
 
----
-
-## Epic — EPIC-0015: UI Review and Redesign
+```
+US-0108 (EPIC-0014): As a Conductor agent, I want a CLI tool to update docs/sdlc-status.json at each pipeline phase transition, so that the agentic dashboard stays live without manual JSON editing and without each sub-agent needing to understand the file schema.
+Priority: High (P0)
+Estimate: S
+Status: Done
+Branch: feature/US-0108-sdlc-status-updater
+Acceptance Criteria:
+  - [x] AC-0334: `tools/update-sdlc-status.js` exposes 10 commands (agent-start, agent-done, review, test-pass, test-fail, coverage, story-start, story-complete, phase, log) with --flag parsing
+  - [x] AC-0335: Uses `atomicReadModifyWriteJson` from orchestrator/atomic-write for safe concurrent updates
+  - [x] AC-0336: Canonical phase definitions (name, agents, deliverables) auto-seeded when phase handler auto-expands the phases array
+  - [x] AC-0337: Log array is trimmed to last 200 entries to prevent unbounded growth
+  - [x] AC-0338: DM_AGENT.md updated with the command table replacing the manual JSON-edit instructions
+  - [x] AC-0339: Unit tests cover all 10 command handlers (17 tests in tests/unit/update-sdlc-status.test.js)
+Dependencies: EPIC-0013
+```
 
 ```
 EPIC-0015: UI Review and Redesign
@@ -1948,13 +1966,13 @@ Dependencies: EPIC-0007
 US-0094 (EPIC-0015): As a user, I want distinctive display typography for section headers and KPIs, so that the dashboard has a clear editorial voice and tabular numeric data aligns cleanly.
 Priority: Medium (P1)
 Estimate: S
-Status: Planned
+Status: Done
 Branch: feature/US-0094-typography-upgrade
 Acceptance Criteria:
-  - [ ] AC-0306: A display face (Instrument Serif / Fraunces / Geist) is loaded via Google Fonts with font-display:swap
-  - [ ] AC-0307: Tab supertitles and topbar H1 use the new display face
-  - [ ] AC-0308: All numeric/monetary cells use font-variant-numeric:tabular-nums
-  - [ ] AC-0309: A .display-title utility class exists and is consistently applied
+  - [x] AC-0306: A display face (Instrument Serif / Fraunces / Geist) is loaded via Google Fonts with font-display:swap
+  - [x] AC-0307: Tab supertitles and topbar H1 use the new display face
+  - [x] AC-0308: All numeric/monetary cells use font-variant-numeric:tabular-nums
+  - [x] AC-0309: A .display-title utility class exists and is consistently applied
 Dependencies: None
 ```
 
@@ -1962,12 +1980,12 @@ Dependencies: None
 US-0095 (EPIC-0015): As a user, I want cards to use layered shadows instead of hard 1px borders, so that the interface feels refined and depth-aware.
 Priority: Medium (P1)
 Estimate: S
-Status: Planned
+Status: Done
 Branch: feature/US-0095-shadow-cards
 Acceptance Criteria:
-  - [ ] AC-0310: A --shadow-card token exists with light and dark mode variants
-  - [ ] AC-0311: All chart/story/bug/lesson card containers use box-shadow instead of 1px borders
-  - [ ] AC-0312: BUG-0111 (mixed bg-white/slate-800 tokens) is resolved
+  - [x] AC-0310: A --shadow-card token exists with light and dark mode variants
+  - [x] AC-0311: All chart/story/bug/lesson card containers use box-shadow instead of 1px borders
+  - [x] AC-0312: BUG-0111 (mixed bg-white/slate-800 tokens) is resolved
 Dependencies: None
 ```
 
@@ -1975,12 +1993,12 @@ Dependencies: None
 US-0096 (EPIC-0015): As a user, I want zebra striping and hover highlighting on all tables, so that rows are easier to scan and track.
 Priority: Medium (P1)
 Estimate: S
-Status: Planned
+Status: Done
 Branch: feature/US-0096-zebra-tables
 Acceptance Criteria:
-  - [ ] AC-0313: A --clr-row-alt token with light/dark variants exists
-  - [ ] AC-0314: All .scroll-table tbody rows alternate background colour
-  - [ ] AC-0315: A --clr-row-hover token drives hover-row highlighting in all tables
+  - [x] AC-0313: A --clr-row-alt token with light/dark variants exists
+  - [x] AC-0314: All .scroll-table tbody rows alternate background colour
+  - [x] AC-0315: A --clr-row-hover token drives hover-row highlighting in all tables
 Dependencies: None
 ```
 
@@ -1988,12 +2006,12 @@ Dependencies: None
 US-0097 (EPIC-0015): As a user, I want status/severity/priority badges to adapt to light and dark modes, so that they render correctly regardless of theme.
 Priority: High (P0)
 Estimate: S
-Status: Planned
+Status: Done
 Branch: feature/US-0097-semantic-badges
 Acceptance Criteria:
-  - [ ] AC-0316: The badge() function uses five semantic CSS variable triples (success/warn/danger/info/neutral)
-  - [ ] AC-0317: A .badge-dot variant is available for dense contexts
-  - [ ] AC-0318: BUG-0110 (dark-mode-only badges) is resolved
+  - [x] AC-0316: The badge() function uses five semantic CSS variable triples (success/warn/danger/info/neutral)
+  - [x] AC-0317: A .badge-dot variant is available for dense contexts
+  - [x] AC-0318: BUG-0110 (dark-mode-only badges) is resolved
 Dependencies: None
 ```
 
@@ -2014,12 +2032,12 @@ Dependencies: None
 US-0099 (EPIC-0015): As a user, I want KPI numbers to be visually prominent, so that my eye lands on the most important metrics first.
 Priority: Medium (P1)
 Estimate: S
-Status: Planned
+Status: Done
 Branch: feature/US-0099-hero-numbers
 Acceptance Criteria:
-  - [ ] AC-0322: A .hero-num class applies display-font sizing with clamp() and tabular figures
-  - [ ] AC-0323: Budget totals, coverage %, and bug count tiles adopt .hero-num
-  - [ ] AC-0324: No more than 3 hero numbers appear per tab
+  - [x] AC-0322: A .hero-num class applies display-font sizing with clamp() and tabular figures
+  - [x] AC-0323: Budget totals, coverage %, and bug count tiles adopt .hero-num
+  - [x] AC-0324: No more than 3 hero numbers appear per tab
 Dependencies: US-0094
 ```
 
@@ -2136,3 +2154,21 @@ Acceptance Criteria:
   - [ ] AC-0358: Related bugs expand inline with severity dots
 Dependencies: US-0097
 ```
+
+---
+
+## Epic — EPIC-0017: Agentic Dashboard Effectiveness Review
+
+```
+EPIC-0017: Agentic Dashboard Effectiveness Review
+Description: Discovery / retrospective epic. Review the Agentic SDLC Dashboard (originally built for a hackathon demo, now extracted as a reusable component) and define what it takes to make it genuinely effective as a general-purpose agentic pipeline visualization. Output: a gap analysis and a set of implementation stories in a follow-on epic. Complements EPIC-0016 (Mission Control aesthetic redesign) by focusing on schema, data model, workflow coverage, and integration patterns — not just visual polish.
+Release Target: Release 2.0
+Status: Planned
+Dependencies: EPIC-0013, EPIC-0016
+```
+
+---
+
+## User Stories — EPIC-0017: Agentic Dashboard Effectiveness Review
+
+_(No stories yet — this epic starts with a review/gap analysis session. Stories will be added after the review concludes.)_

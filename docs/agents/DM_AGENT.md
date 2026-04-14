@@ -234,16 +234,29 @@ npm run dashboard:watch
 # Then open docs/dashboard.html in a browser
 ```
 
-**After each phase,** update `docs/sdlc-status.json`:
+**After each phase transition, use `tools/update-sdlc-status.js`** to update `docs/sdlc-status.json`. This helper ensures the agentic dashboard stays live without manual JSON editing.
 
-1. Set the current phase status to `"complete"` and add `completedAt` timestamp
-2. Set the next phase status to `"in-progress"` and add `startedAt` timestamp
-3. Update agent statuses (`"active"`, `"idle"`, `"complete"`)
-4. Update agent `currentTask` with what they're working on
-5. Update `metrics` (storiesCompleted, tasksCompleted, testsPassed, etc.)
-6. Update `stories` statuses as they're completed
-7. Append to the `log` array with `{ "time": "HH:MM", "agent": "Name", "message": "What happened" }`
-8. Run `npm run dashboard` (or let --watch mode auto-regenerate)
+Common events (all append a log entry and mutate relevant state):
+
+| When                 | Command                                                                                                          |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Starting a story     | `node tools/update-sdlc-status.js story-start --story US-XXXX --epic EPIC-YYYY`                                  |
+| Spawning Pixel/Forge | `node tools/update-sdlc-status.js agent-start --agent Pixel --story US-XXXX --task "<brief>"`                    |
+| Agent finishes       | `node tools/update-sdlc-status.js agent-done --agent Pixel --story US-XXXX`                                      |
+| Review verdict       | `node tools/update-sdlc-status.js review --agent Lens --story US-XXXX --verdict approve\|request-changes\|block` |
+| Test results         | `node tools/update-sdlc-status.js test-pass --agent Sentinel --story US-XXXX --count N`                          |
+| Coverage             | `node tools/update-sdlc-status.js coverage --agent Circuit --percent 90.82`                                      |
+| Story complete       | `node tools/update-sdlc-status.js story-complete --story US-XXXX --epic EPIC-YYYY`                               |
+| Phase transition     | `node tools/update-sdlc-status.js phase --number 3 --status in-progress\|complete`                               |
+| Generic log          | `node tools/update-sdlc-status.js log --agent Conductor --message "..."`                                         |
+
+After any state change, regenerate the dashboard so it reflects the new state:
+
+```bash
+node tools/generate-dashboard.js
+```
+
+The tool uses `atomicReadModifyWriteJson` for safe concurrent updates — it's safe to call from parallel worktree agents. Run `--help` to see all options.
 
 ---
 
@@ -403,3 +416,104 @@ const { safePush, detectConflicts, checkOverlap } = require('./orchestrator/git-
 - Commit format: `[chore] Conductor: Phase [N] orchestration — [summary]`
 - Keep the project on schedule — timebox each phase per the timeline
 - If a phase runs over, compress the next phase, don't skip it
+
+## Canonical Per-Story Procedure (PR-based merge workflow)
+
+**Adopted 2026-04-14. Supersedes direct-push pattern.**
+
+Every user story flows through this exact sequence. The Conductor enforces the steps; agents never merge themselves.
+
+### Pre-spawn — ensure a fresh baseline
+
+```bash
+# In the main repo checkout (NOT a worktree)
+cd <main-repo>
+git checkout develop
+git pull origin develop
+# Verify CI is green on develop before starting a new story
+gh run list --branch develop --limit 1 --json conclusion --jq '.[].conclusion'  # should return "success"
+```
+
+If develop CI is failing, **fix the baseline first** (via a `chore/*` PR) before starting any new story. A failing baseline means every story PR will be blocked.
+
+### Phase 3 Build — Implementation agent
+
+Spawn Pixel (Frontend Dev), Forge (Backend Dev), or both in parallel with `isolation: "worktree"`. Worktree inherits the fresh develop state because we just pulled.
+
+- Agent creates `feature/US-XXXX-short-name`, implements, commits, pushes
+- Agent does NOT create a PR — Conductor does that after review
+
+### Pre-review sync
+
+```bash
+cd <worktree>
+git fetch origin develop
+git rebase origin/develop
+# If conflict: respawn Pixel with conflict context + "resolve and push --force-with-lease", max 1 retry
+# If clean: git push --force-with-lease origin feature/US-XXXX-short-name
+```
+
+### Phase 3 Build (cont.) — Code review
+
+Spawn Lens with `isolation: "worktree"` pointing at the feature branch. Lens returns:
+
+- **APPROVE** → proceed to testing phase
+- **REQUEST CHANGES** → respawn Pixel with Lens's findings, max 1 retry, then back to pre-review sync
+- **BLOCK** → escalate to human per Escalation Workflow
+
+### Phase 5 Test — Parallel verification
+
+Spawn Sentinel (Functional Tester) and Circuit (Automation Tester) in parallel, each with `isolation: "worktree"`:
+
+- **Sentinel**: Playwright-based visual/behavioral verification; may open a new BUG-XXXX if defects found
+- **Circuit**: test coverage audit + add missing parameterised assertions
+
+Both can commit to the same feature branch — the Conductor merges everything together.
+
+### Phase 6 Polish — Create PR, auto-merge via squash
+
+```bash
+# Still in main repo
+gh pr create \
+  --base develop \
+  --head feature/US-XXXX-short-name \
+  --title "[feat] US-XXXX (EPIC-YYYY): <summary>" \
+  --body "<multi-line body citing Pixel/Lens/Sentinel/Circuit contributions, ACs satisfied, and linking to related bugs>"
+
+# Automatic: CI runs, lens can post review via API
+gh pr review <num> --approve --body "<Lens's verdict summary>"
+
+# Auto-merge when CI goes green (does not block Conductor)
+gh pr merge <num> --auto --squash --delete-branch
+```
+
+Conductor does NOT wait on CI. Move to the next story. If CI fails on the auto-merge, a notification fires and the Conductor re-spawns Pixel with the failure context.
+
+### Post-merge — sync main repo
+
+```bash
+git checkout develop
+git pull origin develop  # gets the squashed commit
+git worktree remove <old-worktree-path> --force
+```
+
+### Hotfix exception
+
+If a production-blocking bug requires immediate patch, direct push with `--admin` to develop is permitted. Must be followed by a retrospective PR to document what happened. Hotfix commits always prefix the message with `[hotfix] BUG-XXXX:`.
+
+### Why PR-based
+
+1. **CI enforcement**: Lint, test, format, audit, SAST, secret scanning all run as required checks. No silent bypass.
+2. **Audit trail**: GitHub PR page shows agent collaboration (Pixel's diff, Lens's review, Sentinel's screenshots as comments).
+3. **Rollback**: One-click revert via `gh pr revert <num>` or GitHub UI.
+4. **Branch protection compliance**: Both `main` and `develop` are protected. PR workflow respects this instead of bypassing it.
+5. **Concurrent safety**: `gh pr merge --auto --squash` handles queue drift automatically.
+
+### What stays the same
+
+- DM_AGENT's 6-phase structure
+- Worktree isolation per agent
+- Concurrency safety utilities for shared files
+- BLOCK recovery protocol
+- Parallel agent failure coordination
+- Hard phase timeout rules

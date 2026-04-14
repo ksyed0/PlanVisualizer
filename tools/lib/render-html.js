@@ -14,28 +14,39 @@ const jsEsc = (s) =>
     .replace(/'/g, "\\'")
     .replace(/\n/g, '\\n');
 
+// US-0097 (EPIC-0015): Semantic badge token system. Maps 17 known badge labels
+// to 5 semantic tones (success/warn/danger/info/neutral). Colours flow from
+// CSS variables defined in :root and html.dark so badges adapt to theme
+// (fixes BUG-0110 where hardcoded dark hex values rendered as dark rectangles
+// in light mode).
+const BADGE_TONE = {
+  // success
+  Done: 'success',
+  Pass: 'success',
+  Fixed: 'success',
+  // warn
+  'To Do': 'warn',
+  'Not Run': 'warn',
+  Medium: 'warn',
+  P1: 'warn',
+  High: 'warn',
+  // danger
+  Blocked: 'danger',
+  Fail: 'danger',
+  Open: 'danger',
+  Critical: 'danger',
+  P0: 'danger',
+  // info
+  'In Progress': 'info',
+  // neutral
+  Planned: 'neutral',
+  Low: 'neutral',
+  P2: 'neutral',
+};
+
 function badge(text) {
-  const colors = {
-    'In Progress': 'border border-[#1d4ed8] bg-[#0a1628] text-[#93c5fd]',
-    Planned: 'border border-[#475569] bg-[#0f1520] text-[#94a3b8]',
-    Done: 'border border-[#166534] bg-[#031a0e] text-[#4ade80]',
-    Blocked: 'border border-[#991b1b] bg-[#1a0505] text-[#fca5a5]',
-    'To Do': 'border border-[#92400e] bg-[#150b03] text-[#fcd34d]',
-    P0: 'border border-[#991b1b] bg-[#1a0505] text-[#fca5a5]',
-    P1: 'border border-[#9a3412] bg-[#180803] text-[#fdba74]',
-    P2: 'border border-[#475569] bg-[#0f1520] text-[#94a3b8]',
-    Pass: 'border border-[#166534] bg-[#031a0e] text-[#4ade80]',
-    Fail: 'border border-[#991b1b] bg-[#1a0505] text-[#fca5a5]',
-    'Not Run': 'border border-[#92400e] bg-[#150b03] text-[#fcd34d]',
-    Open: 'border border-[#991b1b] bg-[#1a0505] text-[#fca5a5]',
-    Fixed: 'border border-[#166534] bg-[#031a0e] text-[#4ade80]',
-    Critical: 'border border-[#7f1d1d] bg-[#2a0606] text-[#f87171]',
-    High: 'border border-[#991b1b] bg-[#1a0505] text-[#fca5a5]',
-    Medium: 'border border-[#92400e] bg-[#150b03] text-[#fcd34d]',
-    Low: 'border border-[#475569] bg-[#0f1520] text-[#94a3b8]',
-  };
-  const cls = colors[text] || 'border border-[#475569] bg-[#0f1520] text-[#94a3b8]';
-  return `<span class="inline-block px-2 py-0.5 rounded text-xs font-medium ${cls}">${esc(text)}</span>`;
+  const tone = BADGE_TONE[text] || 'neutral';
+  return `<span class="badge badge-${tone}">${esc(text)}</span>`;
 }
 
 function usd(n) {
@@ -122,15 +133,15 @@ function renderTopBar(data) {
           <span class="tile-label">In Progress</span>
         </div>
         <div class="topbar-tile">
-          <span class="tile-value tile-bugs${bugValueCls}">&#128027; ${openBugs.length}</span>
+          <span class="tile-value hero-num hero-num-sm tile-bugs${bugValueCls}">&#128027; ${openBugs.length}</span>
           <span class="tile-label">Bugs Open</span>
         </div>
         <div class="topbar-tile tile-coverage">
-          <span class="tile-value tile-cov${covValueCls}">${covLabel}</span>
+          <span class="tile-value hero-num hero-num-sm tile-cov${covValueCls}">${covLabel}</span>
           <span class="tile-label">Coverage</span>
         </div>
         <div class="topbar-tile tile-ai-cost">
-          <span class="tile-value font-mono">${usd(totalAI)}</span>
+          <span class="tile-value hero-num hero-num-sm">${usd(totalAI)}</span>
           <span class="tile-label">AI Cost</span>
         </div>
         <div class="topbar-tile tile-projected">
@@ -646,37 +657,37 @@ function renderTrendsTab(data, options = {}) {
       ${
         hasData
           ? `
-      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+      <div class="card-elev rounded-lg p-4">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Done Stories Over Time</h3>
         <div style="height:250px;position:relative"><canvas id="chart-trends-progress"></canvas></div>
       </div>
 
-      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+      <div class="card-elev rounded-lg p-4">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">AI Cost Over Time</h3>
         <div style="height:250px;position:relative"><canvas id="chart-trends-cost"></canvas></div>
       </div>
 
-      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+      <div class="card-elev rounded-lg p-4">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Coverage Over Time</h3>
         <div style="height:250px;position:relative"><canvas id="chart-trends-coverage"></canvas></div>
       </div>
 
-      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+      <div class="card-elev rounded-lg p-4">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Velocity (Story Points)</h3>
         <div style="height:250px;position:relative"><canvas id="chart-trends-velocity"></canvas></div>
       </div>
 
-      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+      <div class="card-elev rounded-lg p-4">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Open Bugs Over Time</h3>
         <div style="height:250px;position:relative"><canvas id="chart-trends-bugs"></canvas></div>
       </div>
 
-      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+      <div class="card-elev rounded-lg p-4">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">At-Risk Stories Over Time</h3>
         <div style="height:250px;position:relative"><canvas id="chart-trends-risk"></canvas></div>
       </div>
 
-      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 col-span-full">
+      <div class="card-elev rounded-lg p-4 col-span-full">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Token Usage Over Time</h3>
         <div style="height:250px;position:relative"><canvas id="chart-trends-tokens"></canvas></div>
       </div>
@@ -811,40 +822,40 @@ function renderChartsTab(data) {
   <div id="tab-charts" class="p-6 hidden" role="tabpanel" aria-labelledby="tab-btn-charts">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+      <div class="card-elev rounded-lg p-4">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Epic Progress</h3>
         <div style="height:${Math.max(300, data.epics.length * 36)}px;position:relative"><canvas id="chart-epic-progress"></canvas></div>
       </div>
 
-      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+      <div class="card-elev rounded-lg p-4">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Cost Breakdown (Projected vs AI)</h3>
         <div style="height:300px;position:relative"><canvas id="chart-cost-breakdown"></canvas></div>
       </div>
 
-      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+      <div class="card-elev rounded-lg p-4">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Test Coverage</h3>
         <div style="height:300px;position:relative">
           <canvas id="chart-coverage"></canvas>
           <div class="absolute inset-0 flex items-center justify-center pointer-events-none" style="padding-bottom:3rem">
             <div class="text-center">
-              <div class="text-2xl font-bold text-slate-700 dark:text-slate-200">${coveragePct !== null ? coveragePct + '%' : 'N/A'}</div>
+              <div class="hero-num text-slate-700 dark:text-slate-200">${coveragePct !== null ? coveragePct + '%' : 'N/A'}</div>
               <div class="text-xs text-slate-500 dark:text-slate-400">overall</div>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+      <div class="card-elev rounded-lg p-4">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">AI Cost Timeline</h3>
         <div style="height:300px;position:relative"><canvas id="chart-ai-timeline"></canvas></div>
       </div>
 
-      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+      <div class="card-elev rounded-lg p-4">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Story Status Distribution</h3>
         <div style="height:300px;position:relative"><canvas id="chart-burndown"></canvas></div>
       </div>
 
-      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+      <div class="card-elev rounded-lg p-4">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Budget Burn Rate</h3>
         <div style="height:300px;position:relative"><canvas id="chart-burn-rate"></canvas></div>
       </div>
@@ -965,8 +976,10 @@ function renderCostsTab(data, options = {}) {
       .join('');
 
     const csvDownload = options.budgetCSV ? `onclick="downloadBudgetCSV()"` : '';
+    const remaining =
+      budget.totalBudget !== null && budget.totalBudget !== undefined ? budget.totalBudget - budget.totalSpent : null;
     budgetSection = `
-    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 mb-4">
+    <div class="card-elev rounded-lg p-4 mb-4">
       <div class="flex flex-wrap items-center gap-6 mb-4">
         <div>
           <span class="text-xs text-slate-500 uppercase">${brDisplay}</span>
@@ -974,11 +987,19 @@ function renderCostsTab(data, options = {}) {
         <div>
           <span class="text-xs text-slate-500 uppercase">${exDisplay}</span>
         </div>
+      </div>
+      <div class="flex flex-wrap items-end gap-8 mb-4">
         <div>
-          <span class="text-xs text-slate-500 uppercase">Total Budget: ${usd(budget.totalBudget)}</span>
+          <div class="text-xs text-slate-500 uppercase tracking-wide mb-1">Total Budget</div>
+          <div class="hero-num text-slate-800 dark:text-slate-100">${usd(budget.totalBudget)}</div>
         </div>
         <div>
-          <span class="text-xs text-slate-500 uppercase">Spent: ${usd(budget.totalSpent)}</span>
+          <div class="text-xs text-slate-500 uppercase tracking-wide mb-1">Spent</div>
+          <div class="hero-num text-slate-800 dark:text-slate-100">${usd(budget.totalSpent)}</div>
+        </div>
+        <div>
+          <div class="text-xs text-slate-500 uppercase tracking-wide mb-1">Remaining</div>
+          <div class="hero-num text-slate-800 dark:text-slate-100">${remaining !== null ? usd(remaining) : '—'}</div>
         </div>
       </div>
       <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Per-Epic Budget</h3>
@@ -1146,7 +1167,7 @@ function renderCostsTab(data, options = {}) {
         .map((story) => {
           const ai = data.costs[story.id] || {};
           const projected = ai.projectedUsd || 0;
-          return `<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 flex flex-col gap-2">
+          return `<div class="card-elev rounded-lg p-4 flex flex-col gap-2">
         <div class="flex items-center gap-2 flex-wrap">
           <span class="font-mono text-xs text-slate-500 whitespace-nowrap">${story.id}</span>
           ${badge(story.status)}
@@ -1212,7 +1233,7 @@ function renderCostsTab(data, options = {}) {
       const bugCardItems = bugs
         .map((bug) => {
           const bc = (data.costs._bugs && data.costs._bugs[bug.id]) || {};
-          return `<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 flex flex-col gap-2">
+          return `<div class="card-elev rounded-lg p-4 flex flex-col gap-2">
         <div class="flex items-center gap-2 flex-wrap">
           <span class="font-mono text-xs text-slate-500 whitespace-nowrap">${esc(bug.id)}</span>
           ${badge(bug.severity)} ${badge(bug.status)}
@@ -1396,7 +1417,7 @@ function renderBugsTab(data) {
   const renderBugCard = (bug) => {
     const epicId = storyEpicMap[bug.relatedStory] || '_ungrouped';
     return `
-    <div id="bug-card-${esc(bug.id)}" class="bug-row story-card-hover bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 flex flex-col gap-2" data-status="${esc(bug.status)}" data-epic="${esc(epicId)}" data-severity="${esc(bug.severity)}">
+    <div id="bug-card-${esc(bug.id)}" class="bug-row story-card-hover card-elev rounded-lg p-4 flex flex-col gap-2" data-status="${esc(bug.status)}" data-epic="${esc(epicId)}" data-severity="${esc(bug.severity)}">
       <div class="flex items-center gap-2 flex-wrap">
         <span class="font-mono text-xs text-slate-500 whitespace-nowrap">${bug.id}</span>
         ${badge(bug.severity)} ${badge(bug.status)}
@@ -1557,7 +1578,7 @@ function renderLessonsTab(data) {
   </tr>`;
 
   const renderLessonCard = (l) => `
-  <div id="lesson-card-${l.id}" class="lesson-row story-card-hover bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 flex flex-col gap-2">
+  <div id="lesson-card-${l.id}" class="lesson-row story-card-hover card-elev rounded-lg p-4 flex flex-col gap-2">
     <div class="flex items-center gap-2">
       <span class="font-mono text-xs font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap flex-shrink-0">${l.id}</span>
       <span class="text-sm font-semibold text-slate-700 dark:text-slate-200">${esc(l.title)}</span>
@@ -2248,6 +2269,28 @@ function renderPrintCSS() {
     --clr-input-text:    #1e293b;
     --clr-chart-text:    #475569;
     --clr-accent:        #7c3aed;
+    /* US-0095 — card depth via layered shadow instead of hard border */
+    --shadow-card:       0 1px 2px rgba(15,23,42,0.04), 0 4px 16px rgba(15,23,42,0.05);
+    --shadow-card-hover: 0 2px 4px rgba(15,23,42,0.06), 0 8px 24px rgba(15,23,42,0.08);
+    /* US-0096: Zebra striping + row hover — light mode */
+    --clr-row-alt:       rgba(148,163,184,0.04);
+    --clr-row-hover:     rgba(148,163,184,0.09);
+    /* US-0097: Semantic badge tokens — light mode */
+    --badge-success-bg:  #dcfce7;
+    --badge-success-text:#166534;
+    --badge-success-border:#86efac;
+    --badge-warn-bg:     #fef3c7;
+    --badge-warn-text:   #92400e;
+    --badge-warn-border: #fcd34d;
+    --badge-danger-bg:   #fee2e2;
+    --badge-danger-text: #991b1b;
+    --badge-danger-border:#fca5a5;
+    --badge-info-bg:     #dbeafe;
+    --badge-info-text:   #1d4ed8;
+    --badge-info-border: #93c5fd;
+    --badge-neutral-bg:  #f1f5f9;
+    --badge-neutral-text:#475569;
+    --badge-neutral-border:#cbd5e1;
   }
   html.dark {
     --clr-body-bg:       #0b0d12;
@@ -2267,7 +2310,73 @@ function renderPrintCSS() {
     --clr-input-text:    #dde1ea;
     --clr-chart-text:    #a0a8b8;
     --clr-accent:        #8b5cf6;
+    --shadow-card:       0 1px 2px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3);
+    --shadow-card-hover: 0 2px 6px rgba(0,0,0,0.5), 0 12px 32px rgba(0,0,0,0.4);
+    /* US-0096: Zebra striping + row hover — dark mode */
+    --clr-row-alt:       rgba(255,255,255,0.02);
+    --clr-row-hover:     rgba(255,255,255,0.05);
+    /* US-0097: Semantic badge tokens — dark mode */
+    --badge-success-bg:  #031a0e;
+    --badge-success-text:#4ade80;
+    --badge-success-border:#166534;
+    --badge-warn-bg:     #150b03;
+    --badge-warn-text:   #fcd34d;
+    --badge-warn-border: #92400e;
+    --badge-danger-bg:   #1a0505;
+    --badge-danger-text: #fca5a5;
+    --badge-danger-border:#991b1b;
+    --badge-info-bg:     #0a1628;
+    --badge-info-text:   #93c5fd;
+    --badge-info-border: #1d4ed8;
+    --badge-neutral-bg:  #0f1520;
+    --badge-neutral-text:#94a3b8;
+    --badge-neutral-border:#475569;
   }
+  /* US-0097: Badge base + semantic classes */
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.4;
+    border: 1px solid var(--badge-neutral-border);
+    background-color: var(--badge-neutral-bg);
+    color: var(--badge-neutral-text);
+    white-space: nowrap;
+  }
+  .badge-success { background-color: var(--badge-success-bg); color: var(--badge-success-text); border-color: var(--badge-success-border); }
+  .badge-warn    { background-color: var(--badge-warn-bg);    color: var(--badge-warn-text);    border-color: var(--badge-warn-border); }
+  .badge-danger  { background-color: var(--badge-danger-bg);  color: var(--badge-danger-text);  border-color: var(--badge-danger-border); }
+  .badge-info    { background-color: var(--badge-info-bg);    color: var(--badge-info-text);    border-color: var(--badge-info-border); }
+  .badge-neutral { background-color: var(--badge-neutral-bg); color: var(--badge-neutral-text); border-color: var(--badge-neutral-border); }
+  /* US-0097 AC-0317: .badge-dot variant — 8px coloured circle + text for dense contexts */
+  .badge-dot {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--clr-text-primary);
+    background: transparent;
+    border: none;
+    padding: 0;
+    white-space: nowrap;
+  }
+  .badge-dot::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--badge-neutral-text);
+    flex-shrink: 0;
+  }
+  .badge-dot.badge-success::before { background-color: var(--badge-success-text); }
+  .badge-dot.badge-warn::before    { background-color: var(--badge-warn-text); }
+  .badge-dot.badge-danger::before  { background-color: var(--badge-danger-text); }
+  .badge-dot.badge-info::before    { background-color: var(--badge-info-text); }
+  .badge-dot.badge-neutral::before { background-color: var(--badge-neutral-text); }
   /* === Dark mode fallbacks === */
   html.dark body {
     background-color: var(--clr-body-bg);
@@ -2293,6 +2402,12 @@ function renderPrintCSS() {
   .tab-fill .scroll-table { flex: 1; min-height: 0; max-height: none; }
   .scroll-table { overflow: auto; max-height: calc(100vh - var(--sticky-top, 100px) - 3rem); }
   .scroll-table thead th { position: sticky; top: 0; z-index: 10; background-color: var(--clr-header-bg); color: var(--clr-header-text); }
+  /* Zebra striping + row hover — nth-child(even) scopes WITHIN each tbody,
+     so Bugs/Costs epic-header tbodies (single row) are unaffected and only
+     data-row tbodies alternate. Epic header rows with inline background styles
+     keep their accent colour. tfoot rows are excluded by the tbody selector. */
+  .scroll-table tbody tr:nth-child(even) { background-color: var(--clr-row-alt); }
+  .scroll-table tbody tr:hover { background-color: var(--clr-row-hover); }
   /* Costs tab: scroll naturally with the page, no viewport-clipped tables */
   #tab-costs .scroll-table { max-height: none; overflow: visible; }
   /* Kanban: Epic swimlane grid */
@@ -2344,7 +2459,8 @@ function renderHtml(data, options = {}) {
   <script>tailwind.config={darkMode:'class'}</script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
   <style>
     /* === Base === */
     body { font-family: 'Inter', sans-serif; padding-top: 72px; background-color: var(--clr-body-bg); color: var(--clr-text-primary); }
@@ -2352,6 +2468,19 @@ function renderHtml(data, options = {}) {
     #topbar-fixed.has-alert { top: 28px; }
     #sidebar.has-alert { top: 100px; height: calc(100vh - 100px); }
     code, .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+    /* === Typography utilities (US-0094) === */
+    .font-display { font-family: 'Instrument Serif', 'Iowan Old Style', Georgia, serif; font-weight: 400; letter-spacing: -0.005em; }
+    .display-title { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--clr-text-muted); }
+    .tabular-nums, .usd, .num { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1, "ss01" 1; }
+    /* Apply tabular-nums to currency/number-heavy elements automatically */
+    td.num, td.cost, .topbar-tile .tile-value, .hero-num,
+    .scroll-table td, .scroll-table th, .font-mono, code,
+    .budget-stat, #tab-costs td, #tab-bugs td { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1, "ss01" 1; }
+
+    /* === Card elevation (US-0095) — shadow-based cards, no hard border === */
+    .card-elev { background-color: var(--clr-panel-bg); box-shadow: var(--shadow-card); transition: box-shadow 180ms ease; padding: 1rem; }
+    .card-elev:hover { box-shadow: var(--shadow-card-hover); }
 
     /* === Topbar (fixed, gradient) === */
     #topbar-fixed {
@@ -2362,7 +2491,7 @@ function renderHtml(data, options = {}) {
     }
     .topbar-inner { display: flex; align-items: center; gap: 12px; width: 100%; min-width: 0; }
     .topbar-project { flex: 1; min-width: 0; }
-    .topbar-title { font-size: 1rem; font-weight: 700; color: #ffffff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .topbar-title { font-family: 'Instrument Serif', 'Iowan Old Style', Georgia, serif; font-size: 1.4rem; font-weight: 400; letter-spacing: -0.005em; color: #ffffff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1; }
     .topbar-tagline { font-size: 11px; color: rgba(255,255,255,0.72); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 1px; }
     .topbar-btn { background: rgba(255,255,255,0.18); border: none; color: #ffffff; border-radius: 20px; padding: 5px 14px; font-size: 13px; cursor: pointer; transition: background 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
     .topbar-btn:hover { background: rgba(255,255,255,0.30); color: #ffffff; }
@@ -2394,6 +2523,22 @@ function renderHtml(data, options = {}) {
     .tile-label { font-size: 10px; font-weight: 500; color: rgba(255,255,255,0.68); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; white-space: nowrap; }
     .tile-danger { color: #fca5a5 !important; }
     .tile-warn { color: #fde68a !important; }
+
+    /* === Hero numbers (US-0099) === */
+    /* Default hero-num: large display treatment for prominent KPIs (budget totals, coverage %, bug counts). */
+    .hero-num {
+      font-family: 'Instrument Serif', 'Iowan Old Style', Georgia, serif;
+      font-size: clamp(28px, 4vw, 44px);
+      font-weight: 500;
+      letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1, "ss01" 1;
+      line-height: 1;
+    }
+    /* Compact variant for cramped contexts (e.g. topbar tiles). Scales down so it doesn't overflow. */
+    .hero-num.hero-num-sm {
+      font-size: clamp(1rem, 2.5vw, 1.6rem);
+    }
 
     /* === App shell === */
     #app-shell { display: flex; min-height: calc(100vh - 72px); }
@@ -2552,4 +2697,4 @@ function renderHtml(data, options = {}) {
 </html>`;
 }
 
-module.exports = { renderHtml };
+module.exports = { renderHtml, badge, BADGE_TONE };

@@ -1,5 +1,5 @@
 'use strict';
-const { renderHtml } = require('../../tools/lib/render-html');
+const { renderHtml, badge } = require('../../tools/lib/render-html');
 
 const sampleData = {
   epics: [{ id: 'EPIC-0001', title: 'Code Editing', status: 'In Progress', releaseTarget: 'MVP', dependencies: [] }],
@@ -202,14 +202,79 @@ describe('renderHtml — coverage below target', () => {
 });
 
 describe('renderHtml — badge fallback', () => {
-  it('uses grey fallback for unknown status', () => {
+  it('uses neutral semantic token for unknown status', () => {
     const dataUnknown = {
       ...sampleData,
       stories: [{ ...sampleData.stories[0], status: 'UNKNOWN_STATUS', priority: 'P3' }],
       atRisk: { 'US-0001': { missingTCs: false, noBranch: false, failedTCNoBug: false, isAtRisk: false } },
     };
     const html = renderHtml(dataUnknown);
-    expect(html).toMatch(/border-\[#475569\].*bg-\[#0f1520\]/s);
+    // US-0097: unknown text falls through to neutral tone (badge-neutral class)
+    expect(html).toMatch(/class="badge badge-neutral">UNKNOWN_STATUS</);
+    expect(html).toMatch(/class="badge badge-neutral">P3</);
+  });
+});
+
+// US-0097 (EPIC-0015): Exhaustive coverage of the BADGE_TONE mapping. Every
+// one of the 17 known badge labels must resolve to its expected semantic tone
+// class so that styling remains stable as the palette evolves. See
+// tools/lib/render-html.js:22 for the authoritative map.
+describe('badge() tone mapping — all 17 semantic labels', () => {
+  const cases = [
+    // success
+    ['Done', 'success'],
+    ['Pass', 'success'],
+    ['Fixed', 'success'],
+    // warn
+    ['To Do', 'warn'],
+    ['Not Run', 'warn'],
+    ['Medium', 'warn'],
+    ['P1', 'warn'],
+    ['High', 'warn'],
+    // danger
+    ['Blocked', 'danger'],
+    ['Fail', 'danger'],
+    ['Open', 'danger'],
+    ['Critical', 'danger'],
+    ['P0', 'danger'],
+    // info
+    ['In Progress', 'info'],
+    // neutral
+    ['Planned', 'neutral'],
+    ['Low', 'neutral'],
+    ['P2', 'neutral'],
+  ];
+
+  it('covers all 17 canonical labels', () => {
+    expect(cases).toHaveLength(17);
+  });
+
+  describe.each(cases)('label "%s"', (label, tone) => {
+    const output = badge(label);
+
+    it(`emits class="badge badge-${tone}"`, () => {
+      expect(output).toContain(`class="badge badge-${tone}"`);
+    });
+
+    it('preserves (escaped) text content', () => {
+      // badge() HTML-escapes its argument; for these plain labels the escaped
+      // form is identical to the input, so a substring check is sufficient.
+      expect(output).toContain(`>${label}<`);
+    });
+  });
+});
+
+describe('badge() unknown input fallback', () => {
+  it('falls back to badge-neutral for an unmapped label', () => {
+    const output = badge('Unknown');
+    expect(output).toBe('<span class="badge badge-neutral">Unknown</span>');
+  });
+
+  it('escapes HTML special characters in unknown labels', () => {
+    const output = badge('<script>');
+    expect(output).toContain('class="badge badge-neutral"');
+    expect(output).toContain('&lt;script&gt;');
+    expect(output).not.toContain('<script>');
   });
 });
 
@@ -663,5 +728,151 @@ describe('renderHtml — multi-epic bug grouping sort (BUG-0093)', () => {
     const posU = html.indexOf('bug-costs-ep--ungrouped');
     expect(pos1).toBeLessThan(pos2);
     expect(pos2).toBeLessThan(posU);
+  });
+});
+
+describe('renderHtml — CSS tokens (US-0096 zebra striping)', () => {
+  let html;
+  beforeAll(() => {
+    html = renderHtml(sampleData);
+  });
+
+  // Extract :root { ... } block (stops at closing brace of root block, before html.dark)
+  const rootBlock = () => {
+    const m = html.match(/:root\s*\{([\s\S]*?)\n\s{2}\}/);
+    return m ? m[1] : '';
+  };
+  // Extract html.dark { ... } block
+  const darkBlock = () => {
+    const m = html.match(/html\.dark\s*\{([\s\S]*?)\n\s{2}\}/);
+    return m ? m[1] : '';
+  };
+
+  it('declares --clr-row-alt in :root (light mode)', () => {
+    expect(rootBlock()).toMatch(/--clr-row-alt:\s*rgba\(148,163,184,0\.04\)/);
+  });
+
+  it('declares --clr-row-hover in :root (light mode)', () => {
+    expect(rootBlock()).toMatch(/--clr-row-hover:\s*rgba\(148,163,184,0\.09\)/);
+  });
+
+  it('declares --clr-row-alt in html.dark (dark mode)', () => {
+    expect(darkBlock()).toMatch(/--clr-row-alt:\s*rgba\(255,255,255,0\.02\)/);
+  });
+
+  it('declares --clr-row-hover in html.dark (dark mode)', () => {
+    expect(darkBlock()).toMatch(/--clr-row-hover:\s*rgba\(255,255,255,0\.05\)/);
+  });
+
+  it('emits .scroll-table tbody tr:nth-child(even) rule using --clr-row-alt', () => {
+    expect(html).toMatch(/\.scroll-table tbody tr:nth-child\(even\)\s*\{\s*background-color:\s*var\(--clr-row-alt\)/);
+  });
+
+  it('emits .scroll-table tbody tr:hover rule using --clr-row-hover', () => {
+    expect(html).toMatch(/\.scroll-table tbody tr:hover\s*\{\s*background-color:\s*var\(--clr-row-hover\)/);
+  });
+});
+
+describe('renderHtml — hero numbers (US-0099)', () => {
+  let html;
+  beforeAll(() => {
+    html = renderHtml(sampleData);
+  });
+
+  // Extract the .hero-num rule body (default variant). Stops at the next closing brace.
+  const heroNumBlock = () => {
+    const m = html.match(/\.hero-num\s*\{([\s\S]*?)\}/);
+    return m ? m[1] : '';
+  };
+  // Extract the .hero-num.hero-num-sm rule body.
+  const heroNumSmBlock = () => {
+    const m = html.match(/\.hero-num\.hero-num-sm\s*\{([\s\S]*?)\}/);
+    return m ? m[1] : '';
+  };
+
+  it('declares .hero-num with Instrument Serif font stack', () => {
+    expect(heroNumBlock()).toMatch(/font-family:\s*'Instrument Serif'/);
+  });
+
+  it('declares .hero-num with clamp() responsive font-size', () => {
+    expect(heroNumBlock()).toMatch(/font-size:\s*clamp\(/);
+  });
+
+  it('declares .hero-num with tabular-nums for aligned digits', () => {
+    expect(heroNumBlock()).toMatch(/font-variant-numeric:\s*tabular-nums/);
+  });
+
+  it('declares .hero-num.hero-num-sm variant with smaller clamp()', () => {
+    expect(heroNumSmBlock()).toMatch(/font-size:\s*clamp\(/);
+  });
+
+  it('.hero-num-sm clamp uses rem units (compact topbar scaling)', () => {
+    // Distinguishes sm variant from default (which uses px). Contract: sm scales in rem.
+    expect(heroNumSmBlock()).toMatch(/clamp\([^)]*rem[^)]*\)/);
+  });
+
+  it('applies hero-num hero-num-sm to Bugs Open topbar tile', () => {
+    expect(html).toMatch(/class="tile-value hero-num hero-num-sm tile-bugs[^"]*"[^>]*>[^<]*Bugs|tile-bugs[^"]*"[^>]*>[^<]*\d+<\/span>\s*<span class="tile-label">Bugs Open/);
+    // Precise: the Bugs Open tile-value contains hero-num hero-num-sm
+    const bugsTileMatch = html.match(/<span class="tile-value ([^"]+) tile-bugs[^"]*">[\s\S]*?<\/span>\s*<span class="tile-label">Bugs Open<\/span>/);
+    expect(bugsTileMatch).not.toBeNull();
+    expect(bugsTileMatch[1]).toContain('hero-num');
+    expect(bugsTileMatch[1]).toContain('hero-num-sm');
+  });
+
+  it('applies hero-num hero-num-sm to Coverage topbar tile', () => {
+    const covTileMatch = html.match(/<span class="tile-value ([^"]+) tile-cov[^"]*">[\s\S]*?<\/span>\s*<span class="tile-label">Coverage<\/span>/);
+    expect(covTileMatch).not.toBeNull();
+    expect(covTileMatch[1]).toContain('hero-num');
+    expect(covTileMatch[1]).toContain('hero-num-sm');
+  });
+
+  it('applies hero-num hero-num-sm to AI Cost topbar tile', () => {
+    const aiTileMatch = html.match(/<span class="tile-value ([^"]+)">[\s\S]*?<\/span>\s*<span class="tile-label">AI Cost<\/span>/);
+    expect(aiTileMatch).not.toBeNull();
+    expect(aiTileMatch[1]).toContain('hero-num');
+    expect(aiTileMatch[1]).toContain('hero-num-sm');
+  });
+
+  it('does NOT apply hero-num to Stories tile (treatment is scoped to Bugs/Coverage/AI Cost)', () => {
+    const storiesTileMatch = html.match(/<span class="tile-value[^"]*">[^<]*<\/span>\s*<span class="tile-label">Stories<\/span>/);
+    expect(storiesTileMatch).not.toBeNull();
+    expect(storiesTileMatch[0]).not.toContain('hero-num');
+  });
+
+  it('renders Coverage doughnut overlay using hero-num (default, not sm)', () => {
+    // Inside the Test Coverage card: overlay div wraps the percentage in .hero-num.
+    const covOverlayMatch = html.match(/Test Coverage<\/h3>[\s\S]*?<div class="hero-num [^"]*">([^<]+)<\/div>/);
+    expect(covOverlayMatch).not.toBeNull();
+    // Overlay uses the default (large) variant, not hero-num-sm.
+    expect(covOverlayMatch[0]).not.toMatch(/hero-num-sm/);
+    // And it renders the coverage value (81.0%) from sampleData.
+    expect(covOverlayMatch[1]).toMatch(/81(\.0)?%/);
+  });
+
+  it('renders Total Budget / Spent / Remaining as hero-num when hasBudget=true', () => {
+    const dataWithBudget = {
+      ...sampleData,
+      budget: {
+        hasBudget: true,
+        totalBudget: 10000,
+        totalSpent: 3500,
+        percentUsed: 35,
+        burnRate: 100,
+        daysRemaining: 65,
+        crossedThresholds: [],
+        epicBudgets: [],
+      },
+    };
+    const budgetHtml = renderHtml(dataWithBudget);
+    // Each of the three totals must be wrapped in hero-num.
+    expect(budgetHtml).toMatch(/Total Budget<\/div>\s*<div class="hero-num[^"]*">\$10,000<\/div>/);
+    expect(budgetHtml).toMatch(/Spent<\/div>\s*<div class="hero-num[^"]*">\$3,500<\/div>/);
+    expect(budgetHtml).toMatch(/Remaining<\/div>\s*<div class="hero-num[^"]*">\$6,500<\/div>/);
+  });
+
+  it('omits budget hero-num block when hasBudget=false', () => {
+    // sampleData has no budget key, so hasBudget is falsy → the Total Budget section must not render.
+    expect(html).not.toMatch(/Total Budget<\/div>\s*<div class="hero-num/);
   });
 });
