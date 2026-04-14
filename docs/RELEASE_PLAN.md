@@ -104,6 +104,12 @@ Description: Planned and in-progress work that was added after its original epic
 Release Target: Backlog
 Status: Planned
 Dependencies: None
+
+EPIC-0015: UI Review and Redesign
+Description: Editorial Operations Dashboard aesthetic pass. Promotes PlanVisualizer from "generic utility dashboard" to a refined, information-dense interface with display typography, semantic badge tokens, shadow-based cards, zebra-striped tables, and per-tab polish across Hierarchy, Kanban, Traceability, Status, Trends, Costs, Bugs, and Lessons.
+Release Target: Release 1.9
+Status: In Progress
+Dependencies: EPIC-0007
 ```
 
 ---
@@ -1920,4 +1926,213 @@ Acceptance Criteria:
   - [ ] AC-0152: All existing tests pass after refactoring
   - [ ] AC-0153: The generate-plan.js orchestrator imports from the new module files
 Dependencies: None
+```
+
+---
+
+## Epic — EPIC-0015: UI Review and Redesign
+
+```
+EPIC-0015: UI Review and Redesign
+Description: Editorial Operations Dashboard aesthetic pass. Promotes PlanVisualizer from "generic utility dashboard" to a refined, information-dense interface with display typography, semantic badge tokens, shadow-based cards, zebra-striped tables, and per-tab polish across Hierarchy, Kanban, Traceability, Status, Trends, Costs, Bugs, and Lessons.
+Release Target: Release 1.9
+Status: In Progress
+Dependencies: EPIC-0007
+```
+
+---
+
+## User Stories — EPIC-0015: UI Review and Redesign
+
+```
+US-0094 (EPIC-0015): As a user, I want distinctive display typography for section headers and KPIs, so that the dashboard has a clear editorial voice and tabular numeric data aligns cleanly.
+Priority: Medium (P1)
+Estimate: S
+Status: Planned
+Branch: feature/US-0094-typography-upgrade
+Acceptance Criteria:
+  - [ ] AC-0306: A display face (Instrument Serif / Fraunces / Geist) is loaded via Google Fonts with font-display:swap
+  - [ ] AC-0307: Tab supertitles and topbar H1 use the new display face
+  - [ ] AC-0308: All numeric/monetary cells use font-variant-numeric:tabular-nums
+  - [ ] AC-0309: A .display-title utility class exists and is consistently applied
+Dependencies: None
+```
+
+```
+US-0095 (EPIC-0015): As a user, I want cards to use layered shadows instead of hard 1px borders, so that the interface feels refined and depth-aware.
+Priority: Medium (P1)
+Estimate: S
+Status: Planned
+Branch: feature/US-0095-shadow-cards
+Acceptance Criteria:
+  - [ ] AC-0310: A --shadow-card token exists with light and dark mode variants
+  - [ ] AC-0311: All chart/story/bug/lesson card containers use box-shadow instead of 1px borders
+  - [ ] AC-0312: BUG-0111 (mixed bg-white/slate-800 tokens) is resolved
+Dependencies: None
+```
+
+```
+US-0096 (EPIC-0015): As a user, I want zebra striping and hover highlighting on all tables, so that rows are easier to scan and track.
+Priority: Medium (P1)
+Estimate: S
+Status: Planned
+Branch: feature/US-0096-zebra-tables
+Acceptance Criteria:
+  - [ ] AC-0313: A --clr-row-alt token with light/dark variants exists
+  - [ ] AC-0314: All .scroll-table tbody rows alternate background colour
+  - [ ] AC-0315: A --clr-row-hover token drives hover-row highlighting in all tables
+Dependencies: None
+```
+
+```
+US-0097 (EPIC-0015): As a user, I want status/severity/priority badges to adapt to light and dark modes, so that they render correctly regardless of theme.
+Priority: High (P0)
+Estimate: S
+Status: Planned
+Branch: feature/US-0097-semantic-badges
+Acceptance Criteria:
+  - [ ] AC-0316: The badge() function uses five semantic CSS variable triples (success/warn/danger/info/neutral)
+  - [ ] AC-0317: A .badge-dot variant is available for dense contexts
+  - [ ] AC-0318: BUG-0110 (dark-mode-only badges) is resolved
+Dependencies: None
+```
+
+```
+US-0098 (EPIC-0015): As a user, I want tab content to animate in with a staggered reveal, so that the interface feels alive without feeling busy.
+Priority: Medium (P2)
+Estimate: XS
+Status: Planned
+Branch: feature/US-0098-staggered-reveals
+Acceptance Criteria:
+  - [ ] AC-0319: Epic blocks, table rows, and chart cards animate with a fadeInUp of 240ms
+  - [ ] AC-0320: Stagger delay uses --i custom property (20ms per item, first 20 items)
+  - [ ] AC-0321: Animation is CSS-only (no JS library dependency)
+Dependencies: None
+```
+
+```
+US-0099 (EPIC-0015): As a user, I want KPI numbers to be visually prominent, so that my eye lands on the most important metrics first.
+Priority: Medium (P1)
+Estimate: S
+Status: Planned
+Branch: feature/US-0099-hero-numbers
+Acceptance Criteria:
+  - [ ] AC-0322: A .hero-num class applies display-font sizing with clamp() and tabular figures
+  - [ ] AC-0323: Budget totals, coverage %, and bug count tiles adopt .hero-num
+  - [ ] AC-0324: No more than 3 hero numbers appear per tab
+Dependencies: US-0094
+```
+
+```
+US-0100 (EPIC-0015): As a user, I want the Hierarchy tab to have stronger epic identity and AC visual structure, so that I can scan a 90+ story backlog quickly.
+Priority: Medium (P1)
+Estimate: S
+Status: Planned
+Branch: feature/US-0100-hierarchy-polish
+Acceptance Criteria:
+  - [ ] AC-0325: Epic headers render the ID in display face as "EPIC / XXXX" tracked-out in accent colour
+  - [ ] AC-0326: Each epic header has a 2px progress rule filled to done/total ratio
+  - [ ] AC-0327: AC lists have a left vertical guide line creating a tree-structure visual
+  - [ ] AC-0328: Card-view story cards show a small accent dot mapping back to their epic
+Dependencies: US-0094
+```
+
+```
+US-0101 (EPIC-0015): As a user, I want the Kanban board to differentiate columns and priority visually, so that WIP and high-priority work stand out at a glance.
+Priority: Medium (P1)
+Estimate: S
+Status: Planned
+Branch: feature/US-0101-kanban-polish
+Acceptance Criteria:
+  - [ ] AC-0329: Column headers use a subtle gradient and 2px bottom accent rule
+  - [ ] AC-0330: Cards have a left priority stripe (P0=danger, P1=warn, else transparent)
+  - [ ] AC-0331: The In-Progress column has a subtle CSS pulse animation
+  - [ ] AC-0332: WIP count renders as a coloured pill (red if >configured threshold)
+  - [ ] AC-0333: BUG-0112 (invisible hover in light mode) is resolved
+Dependencies: US-0097
+```
+
+```
+US-0102 (EPIC-0015): As a user, I want the Traceability matrix to be scannable at a glance, so that I can spot coverage gaps without translating P/F/N letters.
+Priority: High (P0)
+Estimate: M
+Status: Planned
+Branch: feature/US-0102-traceability-redesign
+Acceptance Criteria:
+  - [ ] AC-0334: Pass/Fail/Not Run are rendered as filled colour dots (8px) instead of letters
+  - [ ] AC-0335: Cross-hair hover highlights the full row and TC column header on cell hover
+  - [ ] AC-0336: Legend moves inline with the table caption and shows live counts
+  - [ ] AC-0337: First column (story ID + title) is sticky during horizontal scroll
+Dependencies: US-0097
+```
+
+```
+US-0103 (EPIC-0015): As a user, I want the Status tab charts to read like an editorial report, so that it's clear what each chart means at a glance.
+Priority: Medium (P1)
+Estimate: S
+Status: Planned
+Branch: feature/US-0103-status-editorial
+Acceptance Criteria:
+  - [ ] AC-0338: Chart boxes are replaced with hairline top rule + display-face title + subtitle
+  - [ ] AC-0339: Charts are grouped under "Delivery" and "Financial" supertitles
+  - [ ] AC-0340: All doughnut charts have a centered hero number
+  - [ ] AC-0341: Chart.js legends use Inter font family with point-style circular dots
+Dependencies: US-0094, US-0095, US-0099
+```
+
+```
+US-0104 (EPIC-0015): As a user, I want to filter Trends by time range and see charts grouped by theme, so that I can focus on the analysis question at hand.
+Priority: Medium (P1)
+Estimate: M
+Status: Planned
+Branch: feature/US-0104-trends-polish
+Acceptance Criteria:
+  - [ ] AC-0342: A time-range toggle (7d / 30d / 90d / All) filters all Trends charts client-side
+  - [ ] AC-0343: Charts are grouped under "Progress", "Cost & Spend", "Quality" supertitles
+  - [ ] AC-0344: Line charts use stroke-gradient fills via Chart.js createLinearGradient
+  - [ ] AC-0345: Empty state shows an animated SVG placeholder instead of text-only copy
+Dependencies: US-0095
+```
+
+```
+US-0105 (EPIC-0015): As a user, I want the Costs tab to show cost trends inline and highlight big numbers, so that budget analysis is fast.
+Priority: Medium (P1)
+Estimate: M
+Status: Planned
+Branch: feature/US-0105-costs-polish
+Acceptance Criteria:
+  - [ ] AC-0346: Budget totals use .hero-num with delta arrows
+  - [ ] AC-0347: Each story/epic row shows a 24x12 SVG sparkline of cumulative cost
+  - [ ] AC-0348: Cost columns use lighter-weight $ sign and tabular figures
+  - [ ] AC-0349: Progress bars use a reusable .progress-bar component with three threshold classes
+  - [ ] AC-0350: Token column is split into IN/OUT with labels, or hidden by default
+Dependencies: US-0094, US-0099
+```
+
+```
+US-0106 (EPIC-0015): As a user, I want severity and status to be visually distinct on bug cards, so that I can triage by severity at a glance.
+Priority: Medium (P1)
+Estimate: S
+Status: Planned
+Branch: feature/US-0106-bugs-severity
+Acceptance Criteria:
+  - [ ] AC-0351: Severity badges use a different shape/style from status badges
+  - [ ] AC-0352: Bug cards have a 4px severity stripe down the full left edge
+  - [ ] AC-0353: Fix Branch field has a title attribute and copy-on-hover micro-icon
+  - [ ] AC-0354: Lesson link renders as a full pill (e.g., L-0003 ↗) not a bare arrow
+  - [ ] AC-0355: A compact timeline view is available as a third view mode
+Dependencies: US-0097
+```
+
+```
+US-0107 (EPIC-0015): As a user, I want Lesson cards to visually link back to their source epic and category, so that patterns are easier to discover.
+Priority: Low (P2)
+Estimate: XS
+Status: Planned
+Branch: feature/US-0107-lessons-polish
+Acceptance Criteria:
+  - [ ] AC-0356: Lesson cards have a left accent bar using the epic accent colour cycle
+  - [ ] AC-0357: A category icon (security/performance/testing) is derived from keyword match in the rule text
+  - [ ] AC-0358: Related bugs expand inline with severity dots
+Dependencies: US-0097
 ```

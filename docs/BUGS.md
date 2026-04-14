@@ -1237,3 +1237,51 @@ Steps to Reproduce:
    Fix Branch: develop
    Lesson Encoded: No
    Estimated Cost USD: 0.00
+
+---
+
+BUG-0110: badge() function uses dark-mode-only hex values — badges render as dark rectangles in light mode
+Severity: High
+Related Story: US-0097
+Steps to Reproduce:
+
+1. Open plan-status.html in light mode
+2. Scroll to any status/severity/priority badge (e.g., "Done", "High", "P0")
+   Expected: Badges have readable background/text contrast in both light and dark modes
+   Actual: All badges use very dark backgrounds (#0a1628, #031a0e) with light text; in light mode they appear as tiny dark rectangles, clashing with the surrounding light UI
+   Status: Open
+   Fix Branch: feature/US-0097-semantic-badges
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+
+---
+
+BUG-0111: Chart card containers mix Tailwind classes with --clr-* tokens inconsistently
+Severity: Low
+Related Story: US-0095
+Steps to Reproduce:
+
+1. Inspect chart card elements in Status/Trends/Costs tabs
+2. Observe the bg/border class list on each card
+   Expected: All card containers use the --clr-panel-bg / --clr-border token system consistently
+   Actual: Cards mix `bg-white dark:bg-slate-800` + `border border-slate-200 dark:border-slate-700` — bypasses the token system and complicates theme swaps or future refactors
+   Status: Open
+   Fix Branch: feature/US-0095-shadow-cards
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+
+---
+
+BUG-0112: Kanban swimlane header hover effect nearly invisible in light mode
+Severity: Medium
+Related Story: US-0101
+Steps to Reproduce:
+
+1. Open plan-status.html → Kanban tab in light mode
+2. Hover over any epic swimlane header
+   Expected: Clear visual hover affordance (background-color shift or similar)
+   Actual: Hover uses `filter: brightness(1.05)` which on already-light backgrounds produces almost no visible change; users can't tell which row they're about to click
+   Status: Open
+   Fix Branch: feature/US-0101-kanban-polish
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
