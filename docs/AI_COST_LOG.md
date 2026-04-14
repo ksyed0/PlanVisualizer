@@ -200,3 +200,7 @@ Input Tokens column = direct input + cache-write tokens; cost computed with dist
 | 2026-04-14 | e7bf5b24-d1e5-46e0-b4fa-8a000b5b2199 | develop                                   | 1827096      | 397461        | 166648375         | 62.8072  |
 | 2026-04-14 | e7bf5b24-d1e5-46e0-b4fa-8a000b5b2199 | develop                                   | 1827366      | 401869        | 167596525         | 63.1588  |
 | 2026-04-14 | e7bf5b24-d1e5-46e0-b4fa-8a000b5b2199 | develop                                   | 1831838      | 409255        | 168544933         | 63.5709  |
+| 2026-04-14 | e7bf5b24-d1e5-46e0-b4fa-8a000b5b2199 | chore/prettier-baseline                   | 1867289      | 423582        | 185537605         | 69.0165  |
+| 2026-04-14 | e7bf5b24-d1e5-46e0-b4fa-8a000b5b2199 | feature/US-0096-zebra-tables              | 1907603      | 451553        | 199591480         | 73.8033  |
+| 2026-04-14 | e7bf5b24-d1e5-46e0-b4fa-8a000b5b2199 | develop                                   | 1908813      | 451607        | 200105513         | 73.9629  |
+| 2026-04-14 | e7bf5b24-d1e5-46e0-b4fa-8a000b5b2199 | develop                                   | 1919227      | 460069        | 205282049         | 75.6818  |

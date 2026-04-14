@@ -110,6 +110,12 @@ Description: Editorial Operations Dashboard aesthetic pass. Promotes PlanVisuali
 Release Target: Release 1.9
 Status: In Progress
 Dependencies: EPIC-0007
+
+EPIC-0017: Agentic Dashboard Effectiveness Review
+Description: Discovery / retrospective epic. Review the Agentic SDLC Dashboard (originally built for a hackathon demo, now extracted as a reusable component) and define what it takes to make it genuinely effective as a general-purpose agentic pipeline visualization. Output: a gap analysis and a set of implementation stories in a follow-on epic. Complements EPIC-0016 (Mission Control aesthetic redesign) by focusing on schema, data model, workflow coverage, and integration patterns — not just visual polish.
+Release Target: Release 2.0
+Status: Planned
+Dependencies: EPIC-0013, EPIC-0016
 ```
 
 ---
@@ -1928,9 +1934,21 @@ Acceptance Criteria:
 Dependencies: None
 ```
 
----
-
-## Epic — EPIC-0015: UI Review and Redesign
+```
+US-0108 (EPIC-0014): As a Conductor agent, I want a CLI tool to update docs/sdlc-status.json at each pipeline phase transition, so that the agentic dashboard stays live without manual JSON editing and without each sub-agent needing to understand the file schema.
+Priority: High (P0)
+Estimate: S
+Status: Done
+Branch: feature/US-0108-sdlc-status-updater
+Acceptance Criteria:
+  - [x] AC-0334: `tools/update-sdlc-status.js` exposes 10 commands (agent-start, agent-done, review, test-pass, test-fail, coverage, story-start, story-complete, phase, log) with --flag parsing
+  - [x] AC-0335: Uses `atomicReadModifyWriteJson` from orchestrator/atomic-write for safe concurrent updates
+  - [x] AC-0336: Canonical phase definitions (name, agents, deliverables) auto-seeded when phase handler auto-expands the phases array
+  - [x] AC-0337: Log array is trimmed to last 200 entries to prevent unbounded growth
+  - [x] AC-0338: DM_AGENT.md updated with the command table replacing the manual JSON-edit instructions
+  - [x] AC-0339: Unit tests cover all 10 command handlers (17 tests in tests/unit/update-sdlc-status.test.js)
+Dependencies: EPIC-0013
+```
 
 ```
 EPIC-0015: UI Review and Redesign
@@ -2136,3 +2154,21 @@ Acceptance Criteria:
   - [ ] AC-0358: Related bugs expand inline with severity dots
 Dependencies: US-0097
 ```
+
+---
+
+## Epic — EPIC-0017: Agentic Dashboard Effectiveness Review
+
+```
+EPIC-0017: Agentic Dashboard Effectiveness Review
+Description: Discovery / retrospective epic. Review the Agentic SDLC Dashboard (originally built for a hackathon demo, now extracted as a reusable component) and define what it takes to make it genuinely effective as a general-purpose agentic pipeline visualization. Output: a gap analysis and a set of implementation stories in a follow-on epic. Complements EPIC-0016 (Mission Control aesthetic redesign) by focusing on schema, data model, workflow coverage, and integration patterns — not just visual polish.
+Release Target: Release 2.0
+Status: Planned
+Dependencies: EPIC-0013, EPIC-0016
+```
+
+---
+
+## User Stories — EPIC-0017: Agentic Dashboard Effectiveness Review
+
+_(No stories yet — this epic starts with a review/gap analysis session. Stories will be added after the review concludes.)_
