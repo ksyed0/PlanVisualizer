@@ -1,5 +1,5 @@
 'use strict';
-const { renderHtml } = require('../../tools/lib/render-html');
+const { renderHtml, badge } = require('../../tools/lib/render-html');
 
 const sampleData = {
   epics: [{ id: 'EPIC-0001', title: 'Code Editing', status: 'In Progress', releaseTarget: 'MVP', dependencies: [] }],
@@ -212,6 +212,69 @@ describe('renderHtml — badge fallback', () => {
     // US-0097: unknown text falls through to neutral tone (badge-neutral class)
     expect(html).toMatch(/class="badge badge-neutral">UNKNOWN_STATUS</);
     expect(html).toMatch(/class="badge badge-neutral">P3</);
+  });
+});
+
+// US-0097 (EPIC-0015): Exhaustive coverage of the BADGE_TONE mapping. Every
+// one of the 17 known badge labels must resolve to its expected semantic tone
+// class so that styling remains stable as the palette evolves. See
+// tools/lib/render-html.js:22 for the authoritative map.
+describe('badge() tone mapping — all 17 semantic labels', () => {
+  const cases = [
+    // success
+    ['Done', 'success'],
+    ['Pass', 'success'],
+    ['Fixed', 'success'],
+    // warn
+    ['To Do', 'warn'],
+    ['Not Run', 'warn'],
+    ['Medium', 'warn'],
+    ['P1', 'warn'],
+    ['High', 'warn'],
+    // danger
+    ['Blocked', 'danger'],
+    ['Fail', 'danger'],
+    ['Open', 'danger'],
+    ['Critical', 'danger'],
+    ['P0', 'danger'],
+    // info
+    ['In Progress', 'info'],
+    // neutral
+    ['Planned', 'neutral'],
+    ['Low', 'neutral'],
+    ['P2', 'neutral'],
+  ];
+
+  it('covers all 17 canonical labels', () => {
+    expect(cases).toHaveLength(17);
+  });
+
+  describe.each(cases)('label "%s"', (label, tone) => {
+    const output = badge(label);
+
+    it(`emits class="badge badge-${tone}"`, () => {
+      expect(output).toContain(`class="badge badge-${tone}"`);
+    });
+
+    it('preserves (escaped) text content', () => {
+      // badge() HTML-escapes its argument; for these plain labels the escaped
+      // form is identical to the input, so a substring check is sufficient.
+      expect(output).toContain(`>${label}<`);
+    });
+  });
+});
+
+describe('badge() unknown input fallback', () => {
+  it('falls back to badge-neutral for an unmapped label', () => {
+    const output = badge('Unknown');
+    expect(output).toBe('<span class="badge badge-neutral">Unknown</span>');
+  });
+
+  it('escapes HTML special characters in unknown labels', () => {
+    const output = badge('<script>');
+    expect(output).toContain('class="badge badge-neutral"');
+    expect(output).toContain('&lt;script&gt;');
+    expect(output).not.toContain('<script>');
   });
 });
 

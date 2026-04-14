@@ -2640,4 +2640,4 @@ function renderHtml(data, options = {}) {
 </html>`;
 }
 
-module.exports = { renderHtml };
+module.exports = { renderHtml, badge, BADGE_TONE };
