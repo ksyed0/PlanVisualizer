@@ -990,15 +990,48 @@ function requestAlerts() {
   }
 }
 
-(function() {
-  // Restore alert button state
-  _updateAlertBtn(localStorage.getItem('dashboard-alerts-enabled') === 'true');
+// US-0111 AC-0363: the alert-delta logic was previously an IIFE that ran once
+// at page load, reading DASH_SNAPSHOT from its closure. It is now a named
+// function callable on every refreshState() tick with the latest fetched
+// status, so notifications and audio cues continue to fire on live state
+// transitions — not only the first render.
+//
+// Input shape matches the DASH_SNAPSHOT structure produced at generate time:
+//   { currentPhase, bugsOpen, agentStatuses, phaseStatuses, pipelineComplete }
+// We derive it here from the raw sdlc-status.json on each tick so the function
+// is self-contained and callers can pass the untransformed fetch result.
+function buildSnapshotFromStatus(status) {
+  var phases = (status && status.phases) || [];
+  var agents = (status && status.agents) || {};
+  var metrics = (status && status.metrics) || {};
+  var complete = phases.filter(function(p) { return p.status === 'complete'; }).length;
+  var agentStatuses = {};
+  Object.keys(agents).forEach(function(k) { agentStatuses[k] = (agents[k] || {}).status; });
+  return {
+    currentPhase: status && status.currentPhase,
+    bugsOpen: typeof metrics.bugsOpen === 'number' ? metrics.bugsOpen : null,
+    agentStatuses: agentStatuses,
+    phaseStatuses: phases.map(function(p) { return { id: p.id, status: p.status }; }),
+    pipelineComplete: phases.length > 0 && complete === phases.length,
+  };
+}
 
+function runAlertCheck(status) {
   var prevRaw = localStorage.getItem('dashboard-prev-snapshot');
-  var curr = DASH_SNAPSHOT;
+  // Accept either a pre-built snapshot (initial DASH_SNAPSHOT) or a raw
+  // sdlc-status.json object from refreshState().
+  var curr = (status && (status.phaseStatuses || status.agentStatuses))
+    ? status
+    : buildSnapshotFromStatus(status);
 
-  // Always save current as baseline for next refresh
-  localStorage.setItem('dashboard-prev-snapshot', JSON.stringify(curr));
+  // Always save current as baseline for next refresh.
+  try {
+    localStorage.setItem('dashboard-prev-snapshot', JSON.stringify(curr));
+  } catch (e) {
+    // localStorage can be unavailable (Safari private mode, quota) — log
+    // but do not break the tick; alerts simply reset on the next load.
+    console.warn('[runAlertCheck] localStorage write failed', { t: new Date().toISOString(), err: String(e) });
+  }
 
   if (!prevRaw) return; // first visit — no comparison yet
   var prev;
@@ -1054,6 +1087,13 @@ function requestAlerts() {
 
   // Browser notifications
   alerts.forEach(function(a) { sendNotification(a.title, a.body); });
+}
+
+// Page-load initialization: restore button state and fire initial delta check
+// against DASH_SNAPSHOT so behavior matches the previous IIFE exactly.
+(function() {
+  _updateAlertBtn(localStorage.getItem('dashboard-alerts-enabled') === 'true');
+  runAlertCheck(DASH_SNAPSHOT);
 })();
 // ─────────────────────────────────────────────────────────────────────────────
 
