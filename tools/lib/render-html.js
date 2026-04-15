@@ -1,6 +1,11 @@
 'use strict';
 
 const { buildSearchIndex } = require('./search-index');
+// US-0125 (EPIC-0016): BADGE_TONE + badge() moved to ./theme.js so the
+// Agentic Dashboard (tools/generate-dashboard.js) can reuse the same
+// semantic tokens. Re-exported from this module to preserve the existing
+// require('./render-html') surface.
+const { BADGE_TONE, badge } = require('./theme');
 
 const esc = (s) =>
   String(s ?? '')
@@ -13,41 +18,6 @@ const jsEsc = (s) =>
     .replace(/\\/g, '\\\\')
     .replace(/'/g, "\\'")
     .replace(/\n/g, '\\n');
-
-// US-0097 (EPIC-0015): Semantic badge token system. Maps 17 known badge labels
-// to 5 semantic tones (success/warn/danger/info/neutral). Colours flow from
-// CSS variables defined in :root and html.dark so badges adapt to theme
-// (fixes BUG-0110 where hardcoded dark hex values rendered as dark rectangles
-// in light mode).
-const BADGE_TONE = {
-  // success
-  Done: 'success',
-  Pass: 'success',
-  Fixed: 'success',
-  // warn
-  'To Do': 'warn',
-  'Not Run': 'warn',
-  Medium: 'warn',
-  P1: 'warn',
-  High: 'warn',
-  // danger
-  Blocked: 'danger',
-  Fail: 'danger',
-  Open: 'danger',
-  Critical: 'danger',
-  P0: 'danger',
-  // info
-  'In Progress': 'info',
-  // neutral
-  Planned: 'neutral',
-  Low: 'neutral',
-  P2: 'neutral',
-};
-
-function badge(text) {
-  const tone = BADGE_TONE[text] || 'neutral';
-  return `<span class="badge badge-${tone}">${esc(text)}</span>`;
-}
 
 function usd(n) {
   const num = Number(n);
