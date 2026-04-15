@@ -213,10 +213,19 @@ function generateHTML(status) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${DASH_META.title} — SDLC Live Dashboard</title>
+<!-- US-0110 AC-0361: Departure Mono (display numerics) + Geist (sans), font-display:swap via Google Fonts. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Departure+Mono&family=Geist:wght@400;500;600;700&display=swap">
 <style>
   :root {
     --brand-primary: ${DASH_META.primaryColor};
-    --bg-primary: #1a1a2e;
+    /* US-0110 AC-0361: scoped font stacks — do NOT reassign existing typography
+       to avoid cascade into unrelated surfaces; only .section-header opts in. */
+    --font-display: 'Departure Mono', 'SF Mono', Menlo, Consolas, monospace;
+    --font-sans: 'Geist', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    /* US-0110: canvas bg aligned with Plan Visualizer dark canvas (US-0094/US-0095). */
+    --bg-primary: #0b0d12;
     --bg-card: #16213e;
     --bg-card-inner: #1a1a3e;
     --bg-card-border: #2a2a5a;
@@ -259,7 +268,17 @@ function generateHTML(status) {
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; transition: background 0.3s, color 0.3s; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--bg-primary);
+    /* US-0110 AC-0360: subtle dot-grid — scoped to dark theme only, visible but low-key. */
+    background-image: radial-gradient(circle, rgba(148,163,184,0.06) 1px, transparent 1px);
+    background-size: 24px 24px;
+    color: var(--text-primary);
+    min-height: 100vh;
+    transition: background 0.3s, color 0.3s;
+  }
+  [data-theme="light"] body { background-image: none; }
 
   .header { background: linear-gradient(135deg, var(--brand-primary) 0%, #8B1A12 100%); padding: 20px 32px; display: flex; align-items: center; justify-content: space-between; }
   .header h1 { font-size: 22px; color: white; font-weight: 700; }
@@ -292,6 +311,20 @@ function generateHTML(status) {
 
   .card { background: var(--bg-card); border-radius: 12px; padding: 20px; border: 1px solid var(--bg-card-border); transition: background 0.3s, border-color 0.3s; }
   .card h2 { font-size: 15px; font-weight: 700; margin-bottom: 16px; color: var(--brand-primary); text-transform: uppercase; letter-spacing: 1px; }
+
+  /* US-0110 AC-0362: tracked-out muted section label (Geist, 11px, 700, 0.14em).
+     Overrides .card h2 brand color/sizing when both classes apply. */
+  .section-header,
+  .card h2.section-header {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 0 0 12px;
+    display: block;
+  }
 
   /* Metrics */
   .metric-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--divider); }
@@ -529,6 +562,7 @@ ${
 }
 
 <!-- Phase Pipeline -->
+<h2 class="section-header">PIPELINE</h2>
 <div class="pipeline">
 ${phases
   .map((p) => {
@@ -544,6 +578,7 @@ ${phases
 </div>
 
 <!-- Metrics Row -->
+<h2 class="section-header">TELEMETRY</h2>
 <div class="grid">
   <div class="card">
     <h2>Phase Progress</h2>
@@ -608,7 +643,7 @@ ${phases
 <!-- Agents + Stories -->
 <div class="grid-2">
   <div class="card">
-    <h2>Agent Status</h2>
+    <h2 class="section-header">ACTIVE AGENT</h2>
 ${(() => {
   const roles = agentRoles;
   const imgBase = 'agents/images';
