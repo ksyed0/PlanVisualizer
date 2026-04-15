@@ -624,8 +624,10 @@ ${
 ${phases
   .map((p) => {
     const icon = p.status === 'complete' ? '✅' : p.status === 'in-progress' ? '🔄' : '⏳';
-    return `  <div class="phase-block ${p.status}">
-    <div class="phase-status">${icon}</div>
+    // US-0111 AC-0364: stable IDs so refreshState() / patchDOM() can
+    // update only the changed phase nodes instead of reloading the page.
+    return `  <div class="phase-block ${p.status}" id="phase-${p.id}" data-phase-status="${p.status}">
+    <div class="phase-status" id="phase-${p.id}-icon">${icon}</div>
     <div class="phase-name">${p.name}</div>
     <div class="phase-agents">${p.agents.join(' · ')}</div>
     <div class="phase-deliverables">${p.deliverables.join(' · ')}</div>
@@ -641,38 +643,38 @@ ${phases
     <h2>Phase Progress</h2>
     <div class="metric-row">
       <span class="metric-label">Phases Complete</span>
-      <span class="metric-value blue">${phases.filter((p) => p.status === 'complete').length} / ${phases.length}</span>
+      <span class="metric-value blue" id="metric-phasesComplete">${phases.filter((p) => p.status === 'complete').length} / ${phases.length}</span>
     </div>
-    <div class="progress-bar"><div class="progress-fill blue" style="width: ${phasePercent}%"></div></div>
+    <div class="progress-bar"><div class="progress-fill blue" id="metric-phasesBar" style="width: ${phasePercent}%"></div></div>
     <div class="metric-row" style="margin-top: 12px">
       <span class="metric-label">Stories Done</span>
-      <span class="metric-value green">${metrics.storiesCompleted} / ${metrics.storiesTotal}</span>
+      <span class="metric-value green" id="metric-storiesDone">${metrics.storiesCompleted} / ${metrics.storiesTotal}</span>
     </div>
-    <div class="progress-bar"><div class="progress-fill green" style="width: ${storyPercent}%"></div></div>
+    <div class="progress-bar"><div class="progress-fill green" id="metric-storiesBar" style="width: ${storyPercent}%"></div></div>
     <div class="metric-row" style="margin-top: 12px">
       <span class="metric-label">Tasks Done</span>
-      <span class="metric-value orange">${metrics.tasksTotal > 0 ? `${metrics.tasksCompleted} / ${metrics.tasksTotal}` : '—'}</span>
+      <span class="metric-value orange" id="metric-tasksDone">${metrics.tasksTotal > 0 ? `${metrics.tasksCompleted} / ${metrics.tasksTotal}` : '—'}</span>
     </div>
-    <div class="progress-bar"><div class="progress-fill red" style="width: ${metrics.tasksTotal > 0 ? Math.round((metrics.tasksCompleted / metrics.tasksTotal) * 100) : 0}%"></div></div>
+    <div class="progress-bar"><div class="progress-fill red" id="metric-tasksBar" style="width: ${metrics.tasksTotal > 0 ? Math.round((metrics.tasksCompleted / metrics.tasksTotal) * 100) : 0}%"></div></div>
   </div>
 
   <div class="card">
     <h2><span class="live-dot ok" aria-label="live" title="live" id="quality-live-dot"></span>Quality</h2>
     <div class="metric-row">
       <span class="metric-label">Tests Passed</span>
-      <span class="metric-value green">${metrics.testsPassed}</span>
+      <span class="metric-value green" id="metric-testsPassed">${metrics.testsPassed}</span>
     </div>
     <div class="metric-row">
       <span class="metric-label">Tests Failed</span>
-      <span class="metric-value red">${metrics.testsFailed}</span>
+      <span class="metric-value red" id="metric-testsFailed">${metrics.testsFailed}</span>
     </div>
     <div class="metric-row">
       <span class="metric-label">Code Coverage</span>
-      <span class="metric-value ${metrics.coveragePercent >= 60 ? 'green' : 'orange'}">${metrics.coveragePercent}%</span>
+      <span class="metric-value ${metrics.coveragePercent >= 60 ? 'green' : 'orange'}" id="metric-coveragePercent">${metrics.coveragePercent}%</span>
     </div>
     <div class="metric-row">
       <span class="metric-label">Bugs Open</span>
-      <span class="metric-value ${metrics.bugsOpen > 0 ? 'red' : 'green'}">${metrics.bugsOpen}</span>
+      <span class="metric-value ${metrics.bugsOpen > 0 ? 'red' : 'green'}" id="metric-bugsOpen">${metrics.bugsOpen}</span>
     </div>
   </div>
 
@@ -680,19 +682,19 @@ ${phases
     <h2>Reviews</h2>
     <div class="metric-row">
       <span class="metric-label">Reviews Approved</span>
-      <span class="metric-value green">${metrics.reviewsApproved}</span>
+      <span class="metric-value green" id="metric-reviewsApproved">${metrics.reviewsApproved}</span>
     </div>
     <div class="metric-row">
       <span class="metric-label">Reviews Blocked</span>
-      <span class="metric-value red">${metrics.reviewsBlocked}</span>
+      <span class="metric-value red" id="metric-reviewsBlocked">${metrics.reviewsBlocked}</span>
     </div>
     <div class="metric-row">
       <span class="metric-label">Bugs Fixed</span>
-      <span class="metric-value blue">${metrics.bugsFixed}</span>
+      <span class="metric-value blue" id="metric-bugsFixed">${metrics.bugsFixed}</span>
     </div>
     <div class="metric-row">
       <span class="metric-label">Tests Total</span>
-      <span class="metric-value">${metrics.testsTotal}</span>
+      <span class="metric-value" id="metric-testsTotal">${metrics.testsTotal}</span>
     </div>
   </div>
 </div>
@@ -740,14 +742,16 @@ ${Object.entries(agents)
     // Option 1: Avatar headshot (extracted from team-grid) with fallback to full image, then emoji
     const avatarImg = `<img class="agent-avatar" src="${imgBase}/headshots/${name.toLowerCase()}.png" alt="${name}" style="border-color: ${color}" onerror="this.onerror=function(){this.outerHTML='<div class=\\'agent-avatar-fallback\\' style=\\'border-color: ${color}\\'>${icon}</div>'};this.src='${imgBase}/${name.toLowerCase()}.png'">`;
     const fullPortrait = `${imgBase}/${name.toLowerCase()}.png`;
-    return `      <div class="agent-card ${agent.status === 'active' ? 'active' : ''}" style="border-left-color: ${color}"
+    // US-0111 AC-0364: stable IDs on card + inner pills so patchDOM() can
+    // update status/task text without re-rendering the whole grid.
+    return `      <div class="agent-card ${agent.status === 'active' ? 'active' : ''}" id="agent-${esc(name)}" data-agent-name="${esc(name)}" data-agent-status="${esc(agent.status)}" style="border-left-color: ${color}"
         onmouseenter="showAgentPortrait(this,'${fullPortrait}')" onmouseleave="hideAgentPortrait()">
         ${avatarImg}
         <div class="agent-info">
           <div class="agent-name" style="color: ${color}">${name}</div>
           <div class="agent-role">${roles[name] || name}</div>
-          <div class="agent-status" style="background: ${statusBg}; color: ${statusColor}">${agent.status}</div>
-          ${agent.currentTask ? `<div class="agent-task">${agent.currentTask}</div>` : ''}
+          <div class="agent-status" id="agent-${esc(name)}-status" style="background: ${statusBg}; color: ${statusColor}">${agent.status}</div>
+          <div class="agent-task" id="agent-${esc(name)}-task"${agent.currentTask ? '' : ' style="display:none"'}>${agent.currentTask || ''}</div>
         </div>
       </div>`;
   })
@@ -811,7 +815,7 @@ ${storyRows}
 <!-- Activity Log -->
 <div class="card" style="margin-top: 24px">
   <h2><span class="live-dot ok" aria-label="live" title="live" id="activity-live-dot"></span>Activity Log</h2>
-  <div class="log-scroll">
+  <div class="log-scroll" id="log-scroll">
 ${
   log.length > 0
     ? log
@@ -819,7 +823,9 @@ ${
         .reverse()
         .map((entry) => {
           const agentColor = agentColors[entry.agent] || '#888';
-          return `    <div class="log-entry">
+          // US-0111 AC-0364: data-ts lets patchDOM() dedupe and append only new entries.
+          const key = `${entry.time || ''}|${entry.agent || ''}|${entry.message || ''}`;
+          return `    <div class="log-entry" data-log-key="${esc(key)}">
       <span class="log-time" data-log-time="${entry.time || ''}">${entry.time || ''}</span>
       <span class="log-agent" style="color: ${agentColor}">${entry.agent || 'System'}</span>
       ${entry.message || ''}
