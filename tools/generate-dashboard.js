@@ -11,6 +11,16 @@
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
+// US-0125 (EPIC-0016): shared semantic badge helpers extracted from
+// tools/lib/render-html.js. Imported here so later stories
+// (US-0118/US-0119/US-0120) can wire the Agentic Dashboard's status
+// pills (agent-status, story-status, epic-status) into the same
+// semantic vocabulary as the Plan Visualizer. Existing pill rendering
+// is intentionally left inline until those stories add matching
+// .badge/.badge-* CSS scaffolding to dashboard.html — see US-0125
+// report notes for the rationale.
+// eslint-disable-next-line no-unused-vars
+const { badge, BADGE_TONE } = require('./lib/theme');
 
 const ROOT = path.resolve(__dirname, '..');
 const STATUS_PATH = path.join(ROOT, 'docs', 'sdlc-status.json');
