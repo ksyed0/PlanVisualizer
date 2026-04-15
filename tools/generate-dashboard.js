@@ -998,17 +998,23 @@ function generate() {
   console.log(`[${new Date().toLocaleTimeString()}] Dashboard generated: ${OUTPUT_PATH}`);
 }
 
-// Main
-generate();
+// Main — only run the pipeline when invoked as a CLI, so tests and other
+// consumers can safely `require('tools/generate-dashboard')` to access
+// generateHTML without triggering file writes or fs.watch side-effects.
+if (require.main === module) {
+  generate();
 
-if (process.argv.includes('--watch')) {
-  console.log('Watching for changes...');
-  let debounce = null;
-  fs.watch(STATUS_PATH, () => {
-    if (debounce) clearTimeout(debounce);
-    debounce = setTimeout(() => {
-      console.log(`[${new Date().toLocaleTimeString()}] Status changed, regenerating...`);
-      generate();
-    }, 500);
-  });
+  if (process.argv.includes('--watch')) {
+    console.log('Watching for changes...');
+    let debounce = null;
+    fs.watch(STATUS_PATH, () => {
+      if (debounce) clearTimeout(debounce);
+      debounce = setTimeout(() => {
+        console.log(`[${new Date().toLocaleTimeString()}] Status changed, regenerating...`);
+        generate();
+      }, 500);
+    });
+  }
 }
+
+module.exports = { generateHTML, generate };
