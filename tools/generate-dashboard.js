@@ -217,6 +217,8 @@ function generateHTML(status) {
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Departure+Mono&family=Geist:wght@400;500;600;700&display=swap">
+<!-- US-0111 AC-0366: JetBrains Mono for the "Last updated: N ago" live-tick ticker. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap">
 <style>
   :root {
     --brand-primary: ${DASH_META.primaryColor};
@@ -399,6 +401,20 @@ function generateHTML(status) {
   .log-time { color: var(--text-dim); font-variant-numeric: tabular-nums; margin-right: 8px; }
   .log-agent { font-weight: 700; margin-right: 4px; }
   .log-scroll { max-height: 240px; overflow-y: auto; }
+
+  /* US-0111 AC-0366: live-fetch "Last updated" ticker. Rendered in JetBrains Mono
+     for a console/telemetry feel, with a .stale variant that turns red when
+     refreshState() can't reach sdlc-status.json. */
+  .last-updated {
+    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 11px;
+    color: rgba(255,255,255,0.75);
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .last-updated.stale { color: #f87171; }
+  [data-theme="light"] .last-updated { color: rgba(255,255,255,0.85); }
+  [data-theme="light"] .last-updated.stale { color: #fecaca; }
 
   /* Footer */
   .footer { text-align: center; padding: 16px; color: var(--footer-text); font-size: 11px; }
@@ -599,6 +615,8 @@ function generateHTML(status) {
     <div class="clock">
       <div class="time"><span class="live-dot ok" aria-label="live" title="live" id="clock-live-dot"></span>${now}</div>
       <div class="label">Last Updated</div>
+      <!-- US-0111 AC-0366: live ticker in JetBrains Mono; refreshState() updates this every tick. -->
+      <div id="last-updated-ticker" class="last-updated" aria-live="polite">Last updated: just now</div>
     </div>
   </div>
 </div>
