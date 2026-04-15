@@ -213,9 +213,17 @@ function generateHTML(status) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${DASH_META.title} — SDLC Live Dashboard</title>
+<!-- US-0110 AC-0361: Departure Mono (display numerics) + Geist (sans), font-display:swap via Google Fonts. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Departure+Mono&family=Geist:wght@400;500;600;700&display=swap">
 <style>
   :root {
     --brand-primary: ${DASH_META.primaryColor};
+    /* US-0110 AC-0361: scoped font stacks — do NOT reassign existing typography
+       to avoid cascade into unrelated surfaces; only .section-header opts in. */
+    --font-display: 'Departure Mono', 'SF Mono', Menlo, Consolas, monospace;
+    --font-sans: 'Geist', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     /* US-0110: canvas bg aligned with Plan Visualizer dark canvas (US-0094/US-0095). */
     --bg-primary: #0b0d12;
     --bg-card: #16213e;
