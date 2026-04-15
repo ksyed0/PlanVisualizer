@@ -57,9 +57,7 @@ describe('theme.js — badge() tone resolution', () => {
 
 describe('theme.js — badge() fallback for unknown labels', () => {
   it('uses badge-neutral for an unmapped label', () => {
-    expect(badge('SomeUnknownLabel')).toBe(
-      '<span class="badge badge-neutral">SomeUnknownLabel</span>',
-    );
+    expect(badge('SomeUnknownLabel')).toBe('<span class="badge badge-neutral">SomeUnknownLabel</span>');
   });
 
   it('uses badge-neutral for an empty string', () => {
