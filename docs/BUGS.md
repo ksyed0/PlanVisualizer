@@ -2044,11 +2044,11 @@ Steps to Reproduce:
 3. Wait up to 30 seconds
    Expected: Page refreshes polling data in place and preserves scroll position + any open modal/popup state
    Actual: setInterval fires location.reload(), the whole page reloads, scroll resets to top, and any open About modal / expanded card closes
-   Status: Open
-   Fix Branch:
+   Status: Fixed
+   Fix Branch: feature/US-0111-live-fetch-and-patch
    Lesson Encoded: No
    Estimated Cost USD: 0.00
-   Notes: To be fixed by US-0111 (live fetch-and-patch). Replace location.reload() with fetch(sdlc-status.json) + DOM diff-and-patch preserving scroll/modal state.
+   Notes: Fixed by US-0111 — the setInterval(location.reload, 30000) loop was replaced with setInterval(refreshState, 5000). refreshState() fetches docs/sdlc-status.json and invokes patchDOM(newStatus) + runAlertCheck(newStatus) so only changed nodes update; scroll position, open modals, and portrait popups now persist across ticks.
 
 ---
 

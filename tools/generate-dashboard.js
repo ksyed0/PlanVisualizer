@@ -217,6 +217,8 @@ function generateHTML(status) {
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Departure+Mono&family=Geist:wght@400;500;600;700&display=swap">
+<!-- US-0111 AC-0366: JetBrains Mono for the "Last updated: N ago" live-tick ticker. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap">
 <style>
   :root {
     --brand-primary: ${DASH_META.primaryColor};
@@ -399,6 +401,20 @@ function generateHTML(status) {
   .log-time { color: var(--text-dim); font-variant-numeric: tabular-nums; margin-right: 8px; }
   .log-agent { font-weight: 700; margin-right: 4px; }
   .log-scroll { max-height: 240px; overflow-y: auto; }
+
+  /* US-0111 AC-0366: live-fetch "Last updated" ticker. Rendered in JetBrains Mono
+     for a console/telemetry feel, with a .stale variant that turns red when
+     refreshState() can't reach sdlc-status.json. */
+  .last-updated {
+    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 11px;
+    color: rgba(255,255,255,0.75);
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .last-updated.stale { color: #f87171; }
+  [data-theme="light"] .last-updated { color: rgba(255,255,255,0.85); }
+  [data-theme="light"] .last-updated.stale { color: #fecaca; }
 
   /* Footer */
   .footer { text-align: center; padding: 16px; color: var(--footer-text); font-size: 11px; }
@@ -599,6 +615,8 @@ function generateHTML(status) {
     <div class="clock">
       <div class="time"><span class="live-dot ok" aria-label="live" title="live" id="clock-live-dot"></span>${now}</div>
       <div class="label">Last Updated</div>
+      <!-- US-0111 AC-0366: live ticker in JetBrains Mono; refreshState() updates this every tick. -->
+      <div id="last-updated-ticker" class="last-updated" aria-live="polite">Last updated: just now</div>
     </div>
   </div>
 </div>
@@ -624,8 +642,10 @@ ${
 ${phases
   .map((p) => {
     const icon = p.status === 'complete' ? '✅' : p.status === 'in-progress' ? '🔄' : '⏳';
-    return `  <div class="phase-block ${p.status}">
-    <div class="phase-status">${icon}</div>
+    // US-0111 AC-0364: stable IDs so refreshState() / patchDOM() can
+    // update only the changed phase nodes instead of reloading the page.
+    return `  <div class="phase-block ${p.status}" id="phase-${p.id}" data-phase-status="${p.status}">
+    <div class="phase-status" id="phase-${p.id}-icon">${icon}</div>
     <div class="phase-name">${p.name}</div>
     <div class="phase-agents">${p.agents.join(' · ')}</div>
     <div class="phase-deliverables">${p.deliverables.join(' · ')}</div>
@@ -641,38 +661,38 @@ ${phases
     <h2>Phase Progress</h2>
     <div class="metric-row">
       <span class="metric-label">Phases Complete</span>
-      <span class="metric-value blue">${phases.filter((p) => p.status === 'complete').length} / ${phases.length}</span>
+      <span class="metric-value blue" id="metric-phasesComplete">${phases.filter((p) => p.status === 'complete').length} / ${phases.length}</span>
     </div>
-    <div class="progress-bar"><div class="progress-fill blue" style="width: ${phasePercent}%"></div></div>
+    <div class="progress-bar"><div class="progress-fill blue" id="metric-phasesBar" style="width: ${phasePercent}%"></div></div>
     <div class="metric-row" style="margin-top: 12px">
       <span class="metric-label">Stories Done</span>
-      <span class="metric-value green">${metrics.storiesCompleted} / ${metrics.storiesTotal}</span>
+      <span class="metric-value green" id="metric-storiesDone">${metrics.storiesCompleted} / ${metrics.storiesTotal}</span>
     </div>
-    <div class="progress-bar"><div class="progress-fill green" style="width: ${storyPercent}%"></div></div>
+    <div class="progress-bar"><div class="progress-fill green" id="metric-storiesBar" style="width: ${storyPercent}%"></div></div>
     <div class="metric-row" style="margin-top: 12px">
       <span class="metric-label">Tasks Done</span>
-      <span class="metric-value orange">${metrics.tasksTotal > 0 ? `${metrics.tasksCompleted} / ${metrics.tasksTotal}` : '—'}</span>
+      <span class="metric-value orange" id="metric-tasksDone">${metrics.tasksTotal > 0 ? `${metrics.tasksCompleted} / ${metrics.tasksTotal}` : '—'}</span>
     </div>
-    <div class="progress-bar"><div class="progress-fill red" style="width: ${metrics.tasksTotal > 0 ? Math.round((metrics.tasksCompleted / metrics.tasksTotal) * 100) : 0}%"></div></div>
+    <div class="progress-bar"><div class="progress-fill red" id="metric-tasksBar" style="width: ${metrics.tasksTotal > 0 ? Math.round((metrics.tasksCompleted / metrics.tasksTotal) * 100) : 0}%"></div></div>
   </div>
 
   <div class="card">
     <h2><span class="live-dot ok" aria-label="live" title="live" id="quality-live-dot"></span>Quality</h2>
     <div class="metric-row">
       <span class="metric-label">Tests Passed</span>
-      <span class="metric-value green">${metrics.testsPassed}</span>
+      <span class="metric-value green" id="metric-testsPassed">${metrics.testsPassed}</span>
     </div>
     <div class="metric-row">
       <span class="metric-label">Tests Failed</span>
-      <span class="metric-value red">${metrics.testsFailed}</span>
+      <span class="metric-value red" id="metric-testsFailed">${metrics.testsFailed}</span>
     </div>
     <div class="metric-row">
       <span class="metric-label">Code Coverage</span>
-      <span class="metric-value ${metrics.coveragePercent >= 60 ? 'green' : 'orange'}">${metrics.coveragePercent}%</span>
+      <span class="metric-value ${metrics.coveragePercent >= 60 ? 'green' : 'orange'}" id="metric-coveragePercent">${metrics.coveragePercent}%</span>
     </div>
     <div class="metric-row">
       <span class="metric-label">Bugs Open</span>
-      <span class="metric-value ${metrics.bugsOpen > 0 ? 'red' : 'green'}">${metrics.bugsOpen}</span>
+      <span class="metric-value ${metrics.bugsOpen > 0 ? 'red' : 'green'}" id="metric-bugsOpen">${metrics.bugsOpen}</span>
     </div>
   </div>
 
@@ -680,19 +700,19 @@ ${phases
     <h2>Reviews</h2>
     <div class="metric-row">
       <span class="metric-label">Reviews Approved</span>
-      <span class="metric-value green">${metrics.reviewsApproved}</span>
+      <span class="metric-value green" id="metric-reviewsApproved">${metrics.reviewsApproved}</span>
     </div>
     <div class="metric-row">
       <span class="metric-label">Reviews Blocked</span>
-      <span class="metric-value red">${metrics.reviewsBlocked}</span>
+      <span class="metric-value red" id="metric-reviewsBlocked">${metrics.reviewsBlocked}</span>
     </div>
     <div class="metric-row">
       <span class="metric-label">Bugs Fixed</span>
-      <span class="metric-value blue">${metrics.bugsFixed}</span>
+      <span class="metric-value blue" id="metric-bugsFixed">${metrics.bugsFixed}</span>
     </div>
     <div class="metric-row">
       <span class="metric-label">Tests Total</span>
-      <span class="metric-value">${metrics.testsTotal}</span>
+      <span class="metric-value" id="metric-testsTotal">${metrics.testsTotal}</span>
     </div>
   </div>
 </div>
@@ -740,14 +760,16 @@ ${Object.entries(agents)
     // Option 1: Avatar headshot (extracted from team-grid) with fallback to full image, then emoji
     const avatarImg = `<img class="agent-avatar" src="${imgBase}/headshots/${name.toLowerCase()}.png" alt="${name}" style="border-color: ${color}" onerror="this.onerror=function(){this.outerHTML='<div class=\\'agent-avatar-fallback\\' style=\\'border-color: ${color}\\'>${icon}</div>'};this.src='${imgBase}/${name.toLowerCase()}.png'">`;
     const fullPortrait = `${imgBase}/${name.toLowerCase()}.png`;
-    return `      <div class="agent-card ${agent.status === 'active' ? 'active' : ''}" style="border-left-color: ${color}"
+    // US-0111 AC-0364: stable IDs on card + inner pills so patchDOM() can
+    // update status/task text without re-rendering the whole grid.
+    return `      <div class="agent-card ${agent.status === 'active' ? 'active' : ''}" id="agent-${esc(name)}" data-agent-name="${esc(name)}" data-agent-status="${esc(agent.status)}" style="border-left-color: ${color}"
         onmouseenter="showAgentPortrait(this,'${fullPortrait}')" onmouseleave="hideAgentPortrait()">
         ${avatarImg}
         <div class="agent-info">
           <div class="agent-name" style="color: ${color}">${name}</div>
           <div class="agent-role">${roles[name] || name}</div>
-          <div class="agent-status" style="background: ${statusBg}; color: ${statusColor}">${agent.status}</div>
-          ${agent.currentTask ? `<div class="agent-task">${agent.currentTask}</div>` : ''}
+          <div class="agent-status" id="agent-${esc(name)}-status" style="background: ${statusBg}; color: ${statusColor}">${agent.status}</div>
+          <div class="agent-task" id="agent-${esc(name)}-task"${agent.currentTask ? '' : ' style="display:none"'}>${agent.currentTask || ''}</div>
         </div>
       </div>`;
   })
@@ -811,7 +833,7 @@ ${storyRows}
 <!-- Activity Log -->
 <div class="card" style="margin-top: 24px">
   <h2><span class="live-dot ok" aria-label="live" title="live" id="activity-live-dot"></span>Activity Log</h2>
-  <div class="log-scroll">
+  <div class="log-scroll" id="log-scroll">
 ${
   log.length > 0
     ? log
@@ -819,7 +841,9 @@ ${
         .reverse()
         .map((entry) => {
           const agentColor = agentColors[entry.agent] || '#888';
-          return `    <div class="log-entry">
+          // US-0111 AC-0364: data-ts lets patchDOM() dedupe and append only new entries.
+          const key = `${entry.time || ''}|${entry.agent || ''}|${entry.message || ''}`;
+          return `    <div class="log-entry" data-log-key="${esc(key)}">
       <span class="log-time" data-log-time="${entry.time || ''}">${entry.time || ''}</span>
       <span class="log-agent" style="color: ${agentColor}">${entry.agent || 'System'}</span>
       ${entry.message || ''}
@@ -910,6 +934,11 @@ var DASH_SNAPSHOT = ${JSON.stringify({
     pipelineComplete: phasesComplete === phases.length && phases.length > 0,
   })};
 
+// US-0111: expose agent colors to the client so patchDOM() can restyle
+// agent-status pills when an agent transitions between idle/active/blocked
+// without the server-side renderer being involved.
+var DASH_AGENT_COLORS = ${JSON.stringify(agentColors)};
+
 function playBeep(frequency, duration, type) {
   try {
     var ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -984,15 +1013,48 @@ function requestAlerts() {
   }
 }
 
-(function() {
-  // Restore alert button state
-  _updateAlertBtn(localStorage.getItem('dashboard-alerts-enabled') === 'true');
+// US-0111 AC-0363: the alert-delta logic was previously an IIFE that ran once
+// at page load, reading DASH_SNAPSHOT from its closure. It is now a named
+// function callable on every refreshState() tick with the latest fetched
+// status, so notifications and audio cues continue to fire on live state
+// transitions — not only the first render.
+//
+// Input shape matches the DASH_SNAPSHOT structure produced at generate time:
+//   { currentPhase, bugsOpen, agentStatuses, phaseStatuses, pipelineComplete }
+// We derive it here from the raw sdlc-status.json on each tick so the function
+// is self-contained and callers can pass the untransformed fetch result.
+function buildSnapshotFromStatus(status) {
+  var phases = (status && status.phases) || [];
+  var agents = (status && status.agents) || {};
+  var metrics = (status && status.metrics) || {};
+  var complete = phases.filter(function(p) { return p.status === 'complete'; }).length;
+  var agentStatuses = {};
+  Object.keys(agents).forEach(function(k) { agentStatuses[k] = (agents[k] || {}).status; });
+  return {
+    currentPhase: status && status.currentPhase,
+    bugsOpen: typeof metrics.bugsOpen === 'number' ? metrics.bugsOpen : null,
+    agentStatuses: agentStatuses,
+    phaseStatuses: phases.map(function(p) { return { id: p.id, status: p.status }; }),
+    pipelineComplete: phases.length > 0 && complete === phases.length,
+  };
+}
 
+function runAlertCheck(status) {
   var prevRaw = localStorage.getItem('dashboard-prev-snapshot');
-  var curr = DASH_SNAPSHOT;
+  // Accept either a pre-built snapshot (initial DASH_SNAPSHOT) or a raw
+  // sdlc-status.json object from refreshState().
+  var curr = (status && (status.phaseStatuses || status.agentStatuses))
+    ? status
+    : buildSnapshotFromStatus(status);
 
-  // Always save current as baseline for next refresh
-  localStorage.setItem('dashboard-prev-snapshot', JSON.stringify(curr));
+  // Always save current as baseline for next refresh.
+  try {
+    localStorage.setItem('dashboard-prev-snapshot', JSON.stringify(curr));
+  } catch (e) {
+    // localStorage can be unavailable (Safari private mode, quota) — log
+    // but do not break the tick; alerts simply reset on the next load.
+    console.warn('[runAlertCheck] localStorage write failed', { t: new Date().toISOString(), err: String(e) });
+  }
 
   if (!prevRaw) return; // first visit — no comparison yet
   var prev;
@@ -1048,6 +1110,13 @@ function requestAlerts() {
 
   // Browser notifications
   alerts.forEach(function(a) { sendNotification(a.title, a.body); });
+}
+
+// Page-load initialization: restore button state and fire initial delta check
+// against DASH_SNAPSHOT so behavior matches the previous IIFE exactly.
+(function() {
+  _updateAlertBtn(localStorage.getItem('dashboard-alerts-enabled') === 'true');
+  runAlertCheck(DASH_SNAPSHOT);
 })();
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -1073,14 +1142,203 @@ function hideAgentPortrait() {
   if (_portraitPopup) _portraitPopup.style.display = 'none';
 }
 
-// Auto-refresh: reload every 30s, but only when the About modal is not open
-// so the modal doesn't disappear mid-read, and portraits don't blink constantly.
-setInterval(function() {
-  var modal = document.getElementById('about-modal');
-  if (!modal || !modal.classList.contains('open')) {
-    location.reload();
+// ── US-0111: Live fetch-and-patch ─────────────────────────────────────────────
+// Replaces the prior 30s location.reload() loop (BUG-0159). Every 5s we fetch
+// docs/sdlc-status.json, diff its fields against the current DOM, and patch
+// only the changed nodes — preserving scroll position, open modals, filter
+// chip state, and portrait popups (AC-0364, AC-0365, AC-0367, AC-0434).
+
+var _lastFetchedAt = Date.now();
+var _lastFetchOk = true;
+
+function _agentStatusColors(stat) {
+  // Mirrors the server-side renderer's pill color logic so patchDOM() can
+  // recompute styles client-side when an agent transitions. Keep in sync
+  // with the statusBg/statusColor ternaries in generateHTML.
+  if (stat === 'active') return { bg: 'rgba(52,168,83,0.2)', color: '#34A853' };
+  if (stat === 'complete') return { bg: 'rgba(21,101,192,0.15)', color: '#1565C0' };
+  if (stat === 'blocked' || stat === 'needs-review') return { bg: 'rgba(239,68,68,0.18)', color: '#ef4444' };
+  return { bg: 'rgba(136,136,136,0.15)', color: '#888' };
+}
+
+function patchDOM(status) {
+  if (!status || typeof status !== 'object') return;
+
+  // --- Phase pills -----------------------------------------------------------
+  var phases = Array.isArray(status.phases) ? status.phases : [];
+  phases.forEach(function(p) {
+    var el = document.getElementById('phase-' + p.id);
+    if (!el) return;
+    var prevStatus = el.getAttribute('data-phase-status');
+    if (prevStatus !== p.status) {
+      // Replace only the status class on the block — preserves the block
+      // element itself (and hence any inner elements, event listeners, ids).
+      el.classList.remove('pending', 'in-progress', 'complete');
+      el.classList.add(p.status);
+      el.setAttribute('data-phase-status', p.status);
+      var iconEl = document.getElementById('phase-' + p.id + '-icon');
+      if (iconEl) {
+        iconEl.textContent = p.status === 'complete' ? '✅' : p.status === 'in-progress' ? '🔄' : '⏳';
+      }
+    }
+  });
+
+  // --- Agents ----------------------------------------------------------------
+  var agents = status.agents || {};
+  Object.keys(agents).forEach(function(name) {
+    var a = agents[name] || {};
+    var card = document.getElementById('agent-' + name);
+    if (!card) return;
+    var prevStatus = card.getAttribute('data-agent-status');
+    if (prevStatus !== a.status) {
+      card.setAttribute('data-agent-status', a.status || '');
+      // active class toggles the pulse animation
+      if (a.status === 'active') card.classList.add('active');
+      else card.classList.remove('active');
+      var pill = document.getElementById('agent-' + name + '-status');
+      if (pill) {
+        pill.textContent = a.status || '';
+        var colors = _agentStatusColors(a.status);
+        pill.style.background = colors.bg;
+        pill.style.color = colors.color;
+      }
+    }
+    var taskEl = document.getElementById('agent-' + name + '-task');
+    if (taskEl) {
+      var newTask = a.currentTask || '';
+      if (taskEl.textContent !== newTask) taskEl.textContent = newTask;
+      taskEl.style.display = newTask ? '' : 'none';
+    }
+  });
+
+  // --- Metrics ---------------------------------------------------------------
+  var m = status.metrics || {};
+  function setText(id, value) {
+    var el = document.getElementById(id);
+    if (el && el.textContent !== String(value)) el.textContent = String(value);
   }
-}, 30000);
+  var phasesCompleteCount = phases.filter(function(p) { return p.status === 'complete'; }).length;
+  var phasePct = phases.length > 0 ? Math.round((phasesCompleteCount / phases.length) * 100) : 0;
+  setText('metric-phasesComplete', phasesCompleteCount + ' / ' + phases.length);
+  var phasesBar = document.getElementById('metric-phasesBar');
+  if (phasesBar) phasesBar.style.width = phasePct + '%';
+
+  if (typeof m.storiesCompleted === 'number' && typeof m.storiesTotal === 'number') {
+    setText('metric-storiesDone', m.storiesCompleted + ' / ' + m.storiesTotal);
+    var storiesBar = document.getElementById('metric-storiesBar');
+    if (storiesBar) {
+      var sp = m.storiesTotal > 0 ? Math.round((m.storiesCompleted / m.storiesTotal) * 100) : 0;
+      storiesBar.style.width = sp + '%';
+    }
+  }
+  if (typeof m.tasksTotal === 'number') {
+    setText('metric-tasksDone', m.tasksTotal > 0 ? (m.tasksCompleted + ' / ' + m.tasksTotal) : '—');
+    var tasksBar = document.getElementById('metric-tasksBar');
+    if (tasksBar) {
+      var tp = m.tasksTotal > 0 ? Math.round((m.tasksCompleted / m.tasksTotal) * 100) : 0;
+      tasksBar.style.width = tp + '%';
+    }
+  }
+  if (typeof m.testsPassed === 'number') setText('metric-testsPassed', m.testsPassed);
+  if (typeof m.testsFailed === 'number') setText('metric-testsFailed', m.testsFailed);
+  if (typeof m.testsTotal === 'number') setText('metric-testsTotal', m.testsTotal);
+  if (typeof m.coveragePercent === 'number') setText('metric-coveragePercent', m.coveragePercent + '%');
+  if (typeof m.bugsOpen === 'number') setText('metric-bugsOpen', m.bugsOpen);
+  if (typeof m.bugsFixed === 'number') setText('metric-bugsFixed', m.bugsFixed);
+  if (typeof m.reviewsApproved === 'number') setText('metric-reviewsApproved', m.reviewsApproved);
+  if (typeof m.reviewsBlocked === 'number') setText('metric-reviewsBlocked', m.reviewsBlocked);
+
+  // --- Activity log (append-only diff by data-log-key) -----------------------
+  var scroll = document.getElementById('log-scroll');
+  if (scroll && Array.isArray(status.log)) {
+    var existing = {};
+    scroll.querySelectorAll('[data-log-key]').forEach(function(el) {
+      existing[el.getAttribute('data-log-key')] = true;
+    });
+    // Server rendered newest-first (.slice(-20).reverse()). Match that ordering:
+    // prepend newer entries to the top so user-facing order stays identical.
+    var recent = status.log.slice(-20);
+    var toPrepend = [];
+    for (var i = recent.length - 1; i >= 0; i--) {
+      var entry = recent[i] || {};
+      var key = (entry.time || '') + '|' + (entry.agent || '') + '|' + (entry.message || '');
+      if (existing[key]) continue;
+      var div = document.createElement('div');
+      div.className = 'log-entry';
+      div.setAttribute('data-log-key', key);
+      var color = (DASH_AGENT_COLORS && DASH_AGENT_COLORS[entry.agent]) || '#888';
+      // Local 12h conversion mirrors the page-load converter below.
+      var timeDisplay = entry.time || '';
+      if (timeDisplay && timeDisplay.indexOf(':') !== -1) {
+        var parts = timeDisplay.split(':');
+        var h = parseInt(parts[0], 10);
+        var mm = parseInt(parts[1], 10);
+        if (!isNaN(h) && !isNaN(mm)) {
+          var ampm = h >= 12 ? 'PM' : 'AM';
+          var h12 = h % 12 || 12;
+          timeDisplay = h12 + ':' + ('0' + mm).slice(-2) + ' ' + ampm;
+        }
+      }
+      div.innerHTML = '<span class="log-time" data-log-time="' + (entry.time || '') + '">' + timeDisplay + '</span>'
+        + '<span class="log-agent" style="color: ' + color + '">' + (entry.agent || 'System') + '</span> '
+        + (entry.message || '');
+      toPrepend.push(div);
+    }
+    // Insert newest-first at the very top.
+    toPrepend.reverse().forEach(function(el) {
+      scroll.insertBefore(el, scroll.firstChild);
+    });
+  }
+}
+
+function _formatElapsed(ms) {
+  var s = Math.max(0, Math.floor(ms / 1000));
+  if (s < 5) return 'just now';
+  if (s < 60) return s + ' seconds ago';
+  var m = Math.floor(s / 60);
+  if (m < 60) return m + ' minute' + (m === 1 ? '' : 's') + ' ago';
+  var h = Math.floor(m / 60);
+  return h + ' hour' + (h === 1 ? '' : 's') + ' ago';
+}
+
+function updateLastUpdatedTicker(stale) {
+  var el = document.getElementById('last-updated-ticker');
+  if (!el) return;
+  var ago = _formatElapsed(Date.now() - _lastFetchedAt);
+  if (stale) {
+    el.textContent = 'Last updated: ' + ago + ' · STALE';
+    el.classList.add('stale');
+  } else {
+    el.textContent = 'Last updated: ' + ago;
+    el.classList.remove('stale');
+  }
+}
+
+async function refreshState() {
+  try {
+    var res = await fetch('./sdlc-status.json', { cache: 'no-store' });
+    if (!res || !res.ok) throw new Error('HTTP ' + (res ? res.status : 'no response'));
+    var newStatus = await res.json();
+    patchDOM(newStatus);
+    runAlertCheck(newStatus);
+    _lastFetchedAt = Date.now();
+    _lastFetchOk = true;
+    updateLastUpdatedTicker(false);
+  } catch (e) {
+    _lastFetchOk = false;
+    // Structured warning per AGENTS.md §13/§18 — no silent failure.
+    console.warn('[refreshState] fetch failed', { t: new Date().toISOString(), err: String(e) });
+    updateLastUpdatedTicker(true);
+  }
+}
+
+// 5-second fetch tick (AC-0434 allows 5–10s; pick 5s for snappier feedback
+// on state transitions. US-0122 may tune further based on cost/battery impact).
+setInterval(refreshState, 5000);
+
+// 1-second ticker update for smooth "Last updated: N seconds ago" display
+// without re-fetching. Cheap DOM text update only.
+setInterval(function() { updateLastUpdatedTicker(!_lastFetchOk); }, 1000);
 </script>
 
 <div id="agent-portrait-popup"><img src="" alt="Agent portrait" onerror="this.style.display='none'"></div>
