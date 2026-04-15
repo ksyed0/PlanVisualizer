@@ -312,6 +312,20 @@ function generateHTML(status) {
   .card { background: var(--bg-card); border-radius: 12px; padding: 20px; border: 1px solid var(--bg-card-border); transition: background 0.3s, border-color 0.3s; }
   .card h2 { font-size: 15px; font-weight: 700; margin-bottom: 16px; color: var(--brand-primary); text-transform: uppercase; letter-spacing: 1px; }
 
+  /* US-0110 AC-0362: tracked-out muted section label (Geist, 11px, 700, 0.14em).
+     Overrides .card h2 brand color/sizing when both classes apply. */
+  .section-header,
+  .card h2.section-header {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 0 0 12px;
+    display: block;
+  }
+
   /* Metrics */
   .metric-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--divider); }
   .metric-row:last-child { border-bottom: none; }
@@ -548,6 +562,7 @@ ${
 }
 
 <!-- Phase Pipeline -->
+<h2 class="section-header">PIPELINE</h2>
 <div class="pipeline">
 ${phases
   .map((p) => {
@@ -563,6 +578,7 @@ ${phases
 </div>
 
 <!-- Metrics Row -->
+<h2 class="section-header">TELEMETRY</h2>
 <div class="grid">
   <div class="card">
     <h2>Phase Progress</h2>
@@ -627,7 +643,7 @@ ${phases
 <!-- Agents + Stories -->
 <div class="grid-2">
   <div class="card">
-    <h2>Agent Status</h2>
+    <h2 class="section-header">ACTIVE AGENT</h2>
 ${(() => {
   const roles = agentRoles;
   const imgBase = 'agents/images';
