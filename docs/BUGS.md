@@ -2031,3 +2031,91 @@ Steps to Reproduce:
    Lesson Encoded: No
    Estimated Cost USD: 0.00
    Notes: Fix adds normalizeStoryRef() regex extraction in render-html.js + rewrites parseReleasePlan to scan chunks directly (no fence boundaries). 46 bugs still ungrouped after fix — all with n/a relatedStory from the legacy merge; those are a data concern for EPIC-0017 discovery.
+
+---
+
+BUG-0159: Agentic Dashboard 30s location.reload() wipes scroll position and modal state
+Severity: High
+Related Story: US-0111
+Steps to Reproduce:
+
+1. Open docs/dashboard.html in a browser
+2. Scroll down into the agents list or the activity log
+3. Wait up to 30 seconds
+   Expected: Page refreshes polling data in place and preserves scroll position + any open modal/popup state
+   Actual: setInterval fires location.reload(), the whole page reloads, scroll resets to top, and any open About modal / expanded card closes
+   Status: Open
+   Fix Branch:
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: To be fixed by US-0111 (live fetch-and-patch). Replace location.reload() with fetch(sdlc-status.json) + DOM diff-and-patch preserving scroll/modal state.
+
+---
+
+BUG-0160: playBeep() leaks AudioContext on every BLOCKED transition
+Severity: Medium
+Related Story: US-0122
+Steps to Reproduce:
+
+1. Open docs/dashboard.html
+2. Simulate 20 rapid BLOCKED-state transitions (e.g. toggle status in sdlc-status.json)
+3. Open DevTools → Application → Storage
+   Expected: A single AudioContext instance exists and is reused across beeps
+   Actual: playBeep() calls `new AudioContext()` on every invocation; browsers limit AudioContexts per page and the count climbs until the limit is hit
+   Status: Open
+   Fix Branch:
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: To be fixed by US-0122. Hoist AudioContext to a module-level singleton and reuse it across calls.
+
+---
+
+BUG-0161: Agent-card hover filter:brightness(1.12) is nearly invisible in light mode
+Severity: Medium
+Related Story: US-0119
+Steps to Reproduce:
+
+1. Open docs/dashboard.html in light mode
+2. Hover over an agent card in the agent grid
+   Expected: A visible hover affordance indicates the card is interactive
+   Actual: brightness(1.12) on an already-light surface produces almost no visible shift; users can't tell the card is hoverable
+   Status: Open
+   Fix Branch:
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Same class of issue as BUG-0112 (Kanban hover on plan-status). To be fixed by US-0119 via a 4px agent-color outline glow instead of brightness shift.
+
+---
+
+BUG-0162: Agentic Dashboard header gradient hardcodes #8B1A12 dark red which reads as warning state
+Severity: Low
+Related Story: US-0114
+Steps to Reproduce:
+
+1. Open docs/dashboard.html (any healthy pipeline state)
+2. Observe the header
+   Expected: Header neutral/healthy when system is healthy; alert color reserved for incident states
+   Actual: Header uses `linear-gradient(135deg, var(--brand-primary) 0%, #8B1A12 100%)` — the hardcoded dark red reads visually as "alert" even when nothing is blocked
+   Status: Open
+   Fix Branch:
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: To be fixed by US-0114 by replacing the gradient with a neutral canvas + 1px bottom border, and reserving red indicators for actual incident state only.
+
+---
+
+BUG-0163: Agent portraits exist in docs/agents/images/ but are not wired into agents.config.json or the dashboard renderer
+Severity: Low
+Related Story: US-0113
+Steps to Reproduce:
+
+1. Inspect docs/agents/images/ — see 9 agent PNG portraits (conductor, compass, keystone, lens, palette, forge, pixel, sentinel, circuit)
+2. Open docs/dashboard.html
+3. Inspect any agent card
+   Expected: Each agent card shows its portrait photo
+   Actual: Cards render emoji-only because the renderer has no avatar path to use — agents.config.json has no `avatar` field and generate-dashboard.js doesn't read one
+   Status: Open
+   Fix Branch:
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: To be fixed by US-0113. Portraits are raw 7-9MB PNGs so preprocessing to WebP at 64/160/320 sizes is required before wiring, otherwise page weight balloons to 70+ MB. Optimized variants already exist under docs/agents/images/optimized/ from Session 17 — US-0113 just needs to wire config and renderer.
