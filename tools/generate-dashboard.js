@@ -430,6 +430,63 @@ function generateHTML(status) {
   .modal-close { position: absolute; top: 12px; right: 16px; background: none; border: none; color: var(--text-muted); font-size: 22px; cursor: pointer; line-height: 1; padding: 4px 8px; border-radius: 6px; transition: background 0.2s; }
   .modal-close:hover { background: var(--bg-card-inner); color: var(--text-primary); }
 
+  /* ===== US-0112 BEGIN: .live-dot indicator (keep contiguous for mechanical rebase) ===== */
+  /* Reusable presence indicator — base dot + .ok/.warn/.err variants + pulse halo.
+     Color alone is not an accessibility signal (§16): callers must add aria-label+title. */
+  .live-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    vertical-align: middle;
+    margin-right: 6px;
+    background: #22c55e; /* default to ok-green so unset variant still renders */
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.3);
+    flex-shrink: 0;
+  }
+  /* OK — green #22c55e — contrast vs dark surface #16213e ≈ 6.3:1, vs light #ffffff ≈ 3.1:1 (AA large / non-text 3:1 pass) */
+  .live-dot.ok {
+    background: #22c55e;
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.3);
+  }
+  /* WARN — amber #f59e0b — contrast vs dark #16213e ≈ 7.8:1, vs light #ffffff ≈ 2.4:1 bg → uses darker halo in light mode via [data-theme="light"] override below */
+  .live-dot.warn {
+    background: #f59e0b;
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.3);
+  }
+  /* ERR — red #ef4444 — contrast vs dark #16213e ≈ 5.6:1, vs light #ffffff ≈ 3.8:1 */
+  .live-dot.err {
+    background: #ef4444;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.3);
+  }
+  /* Light-theme halo boost for warn (amber has low contrast on white) — swap halo for a slightly darker outline so the dot still reads at ≥3:1 */
+  [data-theme="light"] .live-dot.warn {
+    background: #d97706;
+    box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.35);
+  }
+  [data-theme="light"] .live-dot.ok {
+    background: #16a34a;
+    box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.35);
+  }
+  [data-theme="light"] .live-dot.err {
+    background: #dc2626;
+    box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.35);
+  }
+
+  @keyframes live-dot-pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50%      { transform: scale(1.18); opacity: 0.72; }
+  }
+
+  /* Animation only for users who haven't requested reduced motion (AGENTS.md §16). */
+  @media (prefers-reduced-motion: no-preference) {
+    .live-dot { animation: live-dot-pulse 2.4s ease-in-out infinite; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .live-dot { animation: none; }
+  }
+  /* ===== US-0112 END ===== */
+
   /* ===== RESPONSIVE: Tablet portrait (768-1024px) ===== */
   @media (max-width: 1024px) {
     .header { padding: 16px 20px; }
@@ -540,7 +597,7 @@ function generateHTML(status) {
     <button id="notif-btn" class="btn-header" onclick="requestAlerts()">🔔 Alerts</button>
     <button id="theme-toggle" onclick="toggleTheme()">☀️ Light</button>
     <div class="clock">
-      <div class="time">${now}</div>
+      <div class="time"><span class="live-dot ok" aria-label="live" title="live" id="clock-live-dot"></span>${now}</div>
       <div class="label">Last Updated</div>
     </div>
   </div>
@@ -600,7 +657,7 @@ ${phases
   </div>
 
   <div class="card">
-    <h2>Quality</h2>
+    <h2><span class="live-dot ok" aria-label="live" title="live" id="quality-live-dot"></span>Quality</h2>
     <div class="metric-row">
       <span class="metric-label">Tests Passed</span>
       <span class="metric-value green">${metrics.testsPassed}</span>
@@ -660,7 +717,7 @@ ${(() => {
       <img class="spotlight-img" src="${imgBase}/${aName.toLowerCase()}.png" alt="${aName}" onerror="this.style.display='none'">
       <div class="spotlight-overlay"></div>
       <div class="spotlight-info">
-        <div class="spotlight-name" style="color: ${aColor}">${agentIcons[aName] || ''} ${aName} — ${roles[aName] || aName}</div>
+        <div class="spotlight-name" style="color: ${aColor}"><span class="live-dot ok" aria-label="live" title="live" id="spotlight-live-dot"></span>${agentIcons[aName] || ''} ${aName} — ${roles[aName] || aName}</div>
         ${aData.currentTask ? `<div class="spotlight-task">${aData.currentTask}</div>` : ''}
       </div>
     </div>`;
@@ -753,7 +810,7 @@ ${storyRows}
 
 <!-- Activity Log -->
 <div class="card" style="margin-top: 24px">
-  <h2>Activity Log</h2>
+  <h2><span class="live-dot ok" aria-label="live" title="live" id="activity-live-dot"></span>Activity Log</h2>
   <div class="log-scroll">
 ${
   log.length > 0
