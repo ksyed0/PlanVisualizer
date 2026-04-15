@@ -1410,11 +1410,14 @@ function renderBugsTab(data) {
     return a.localeCompare(b);
   });
 
-  const renderBugRow = (bug) => {
+  // BUG-0165 — accent color on the first cell of every row paints a continuous
+  // left-edge stripe per epic group, matching Hierarchy's `epic-block` card.
+  const renderBugRow = (bug, accent) => {
     const epicId = storyEpicMap[normalizeStoryRef(bug.relatedStory)] || '_ungrouped';
+    const accentLeft = accent ? `border-left:4px solid ${accent.border};` : '';
     return `
     <tr id="bug-row-${esc(bug.id)}" class="bug-row border-t border-slate-100 dark:border-slate-700" data-status="${esc(bug.status)}" data-epic="${esc(epicId)}" data-severity="${esc(bug.severity)}">
-      <td class="px-3 py-2 font-mono text-xs whitespace-nowrap dark:text-slate-200">${bug.id}</td>
+      <td class="px-3 py-2 font-mono text-xs whitespace-nowrap dark:text-slate-200" style="${accentLeft}">${bug.id}</td>
       <td class="px-3 py-2 text-sm dark:text-slate-200">${esc(bug.title)}</td>
       <td class="px-3 py-2 text-center">${badge(bug.severity)}</td>
       <td class="px-3 py-2 text-center">${badge(bug.status)}</td>
@@ -1444,22 +1447,36 @@ function renderBugsTab(data) {
   </div>`;
   };
 
+  const openBugCount = (bugs) =>
+    bugs.filter((b) => !/^(Fixed|Retired|Cancelled|Verified|Closed)/i.test(b.status)).length;
+
   const bugColGroups = bugEpicOrder
     .map((epicId, i) => {
       const bugs = bugsByEpic[epicId];
       const epic = data.epics.find((e) => e.id === epicId);
       const accent = EPIC_ACCENT_COLORS[i % EPIC_ACCENT_COLORS.length];
-      const label = epic ? `${epicId}: ${esc(epic.title)}` : epicId === '_ungrouped' ? 'No Epic' : epicId;
       const beid = `bugs-ep-${epicId.replace(/[^a-zA-Z0-9]/g, '-')}`;
+      const open = openBugCount(bugs);
+      const titlePart = epic
+        ? `<span class="font-semibold dark:text-slate-100">${esc(epic.title)}</span>`
+        : epicId === '_ungrouped'
+          ? `<span class="italic text-slate-500">No Epic</span>`
+          : '';
+      // BUG-0165 — header mirrors Hierarchy: left-accent bar, epic-id +
+      // status badge + title + aggregate counter on the right.
       return `<tbody>
     <tr class="border-t-2 border-slate-300 dark:border-slate-600 cursor-pointer select-none bug-epic-header" data-epic="${epicId}" style="background:${accent.bg}" onclick="toggleSection('${beid}','${beid}-arrow')">
-      <td colspan="7" class="px-3 py-2">
-        <span id="${beid}-arrow" class="text-slate-400 text-xs mr-2">&#9660;</span>
-        <span class="font-mono text-xs font-bold" style="color:${accent.border}">${label}</span>
-        <span class="ml-2 text-xs text-slate-500 bug-count">(${bugs.length})</span>
+      <td colspan="7" class="px-3 py-2" style="border-left:4px solid ${accent.border};">
+        <div class="flex flex-wrap items-center gap-3">
+          <span id="${beid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9660;</span>
+          <span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${epicId}</span>
+          ${epic ? badge(epic.status) : ''}
+          ${titlePart}
+          <span class="ml-auto text-xs text-slate-500 bug-count">${open} open &middot; ${bugs.length} total</span>
+        </div>
       </td>
     </tr>
-    </tbody><tbody id="${beid}">${bugs.map(renderBugRow).join('')}</tbody>`;
+    </tbody><tbody id="${beid}">${bugs.map((b) => renderBugRow(b, accent)).join('')}</tbody>`;
     })
     .join('');
 
@@ -1468,13 +1485,20 @@ function renderBugsTab(data) {
       const bugs = bugsByEpic[epicId];
       const epic = data.epics.find((e) => e.id === epicId);
       const accent = EPIC_ACCENT_COLORS[i % EPIC_ACCENT_COLORS.length];
-      const label = epic ? `${epicId}: ${esc(epic.title)}` : epicId === '_ungrouped' ? 'No Epic' : epicId;
       const bceid = `bugs-card-ep-${epicId.replace(/[^a-zA-Z0-9]/g, '-')}`;
+      const open = openBugCount(bugs);
+      const titlePart = epic
+        ? `<span class="font-semibold dark:text-slate-100">${esc(epic.title)}</span>`
+        : epicId === '_ungrouped'
+          ? `<span class="italic text-slate-500">No Epic</span>`
+          : '';
       return `<div class="mb-6 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden bug-epic-card" data-epic="${epicId}" style="border-left:4px solid ${accent.border}">
-      <div class="flex items-center gap-2 px-3 py-2 cursor-pointer select-none bug-epic-header" data-epic="${epicId}" style="background:${accent.bg}" onclick="toggleSection('${bceid}','${bceid}-arrow')">
+      <div class="flex flex-wrap items-center gap-3 px-3 py-2 cursor-pointer select-none bug-epic-header" data-epic="${epicId}" style="background:${accent.bg}" onclick="toggleSection('${bceid}','${bceid}-arrow')">
         <span id="${bceid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9654;</span>
-        <span class="font-mono text-xs font-bold" style="color:${accent.border}">${label}</span>
-        <span class="ml-1 text-xs text-slate-500 bug-count">(${bugs.length})</span>
+        <span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${epicId}</span>
+        ${epic ? badge(epic.status) : ''}
+        ${titlePart}
+        <span class="ml-auto text-xs text-slate-500 bug-count">${open} open &middot; ${bugs.length} total</span>
       </div>
       <div id="${bceid}" class="p-3 hidden">
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">${bugs.map(renderBugCard).join('')}</div>

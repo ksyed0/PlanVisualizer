@@ -2119,3 +2119,52 @@ Steps to Reproduce:
    Lesson Encoded: No
    Estimated Cost USD: 0.00
    Notes: To be fixed by US-0113. Portraits are raw 7-9MB PNGs so preprocessing to WebP at 64/160/320 sizes is required before wiring, otherwise page weight balloons to 70+ MB. Optimized variants already exist under docs/agents/images/optimized/ from Session 17 — US-0113 just needs to wire config and renderer.
+
+BUG-0164: Agentic Dashboard USER STORIES panel shows "undefined" titles and duplicates the epic label
+Severity: Medium
+Related Story: n/a
+Steps to Reproduce:
+
+1. Open docs/dashboard.html
+2. Observe the USER STORIES panel
+   Expected: Each story row shows the story ID, title, and status; each epic header shows the epic ID once followed by its human-readable title
+   Actual: Story title column reads "undefined" because docs/sdlc-status.json stories have no `title` field; epic header renders the epic ID twice ("EPIC-0015 EPIC-0015") because `status.epics` is an empty object and the fallback uses the same ID
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0164-0166-dashboard-honesty
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed by enriching stories with titles from docs/plan-status.json at generate time in tools/generate-dashboard.js, suppressing the duplicate epic label when no human-readable name is available, and adding `min-width: 0` to the `.story-title` flex child so long titles truncate with ellipsis inside the fixed-width panel instead of overrunning horizontally.
+
+---
+
+BUG-0165: Plan Visualizer Bugs tab does not match the Hierarchy tab's epic grouping appearance
+Severity: Low
+Related Story: n/a
+Steps to Reproduce:
+
+1. Open docs/plan-status.html
+2. Compare the Hierarchy tab with the Bugs tab
+   Expected: Both tabs show epic groupings with the same visual treatment — left-border accent in the epic color, epic ID + status badge + title in the header, and an aggregate counter on the right
+   Actual: Hierarchy uses `.epic-block` cards with a 4px left accent border and status badge in the header; Bugs uses a plain `<tbody>` top-border with no left accent, no status badge, and only a `(N)` count
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0164-0166-dashboard-honesty
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed in tools/lib/render-html.js renderBugsTab — each per-epic header+rows pair is now wrapped in a `.bug-epic-block` tbody styled with the same left-accent bar and padding as Hierarchy, and the header renders the epic status badge plus an "N open · M total" aggregate.
+
+---
+
+BUG-0166: Agentic Dashboard metric cards show stale and incorrect data (including "4 / 0" for Tasks Done)
+Severity: High
+Related Story: n/a
+Steps to Reproduce:
+
+1. Open docs/dashboard.html
+2. Observe the Phase Progress, Quality, and Reviews metric cards
+   Expected: All metric counts reflect the live state of the project — tasks/stories/bugs/tests/coverage derived from the authoritative sources (RELEASE_PLAN.md, BUGS.md, coverage-summary.json)
+   Actual: Tasks Done renders "4 / 0" because `tasksTotal` is never bumped off its init-time zero default; Stories Done counts only pipeline-fired stories (5/6) not the project's 125; Bugs Open/Fixed are both frozen at 0 despite 130+ bug entries; Tests Passed 1861 is a stale sticky value from an earlier session
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0164-0166-dashboard-honesty
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed in tools/generate-dashboard.js by deriving story/task/bug counts from docs/plan-status.json at render time (same source Plan Visualizer uses), and guarding all progress-bar denominators against zero to prevent the "4/0" display regression. Coverage is now derived from plan-status.coverage.statements. **Follow-up (EPIC-0017):** Tests Passed / Tests Total still read from the stale sdlc-status.json `metrics` fields because no jest-summary file is persisted in the repo. Proper fix requires either (a) writing a jest test-summary file into docs/coverage/ during CI and reading it here, or (b) resetting testsPassed at cycle boundary when EPIC-0019's cycle-history lands. Phases Complete / Reviews Approved are left as-is (they reflect current-run pipeline state, not project totals) and should also be reset per cycle.

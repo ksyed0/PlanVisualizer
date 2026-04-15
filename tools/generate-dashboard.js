@@ -14,6 +14,7 @@ const { execSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..');
 const STATUS_PATH = path.join(ROOT, 'docs', 'sdlc-status.json');
+const PLAN_STATUS_PATH = path.join(ROOT, 'docs', 'plan-status.json');
 const OUTPUT_PATH = path.join(ROOT, 'docs', 'dashboard.html');
 
 // Git + version metadata (mirrors tools/generate-plan.js helpers) so the About
@@ -106,6 +107,18 @@ function esc(s) {
     .replace(/'/g, '&#39;');
 }
 
+// Read the Plan Visualizer's derived project data (produced by tools/generate-plan.js)
+// so the dashboard can show authoritative story/epic/task/bug counts instead of the
+// hand-maintained sdlc-status.json metric fields, which drift. Returns null if the
+// file is missing or malformed — callers must handle the null case.
+function loadPlanData() {
+  try {
+    return JSON.parse(fs.readFileSync(PLAN_STATUS_PATH, 'utf8'));
+  } catch {
+    return null;
+  }
+}
+
 function readJSON(filePath) {
   try {
     return JSON.parse(fs.readFileSync(filePath, 'utf8'));
@@ -131,9 +144,40 @@ function generateHTML(status) {
   const GIT_BRANCH = getCurrentBranch();
   const agents = status.agents;
   const phases = status.phases;
-  const metrics = status.metrics;
+  const metrics = { ...status.metrics };
   const stories = status.stories;
   const log = status.log || [];
+
+  // BUG-0164 / BUG-0166 — enrich with authoritative project data from plan-status.json.
+  // sdlc-status.json's metric fields and epic/story titles drift because nothing
+  // recomputes them; when plan-status.json is present we derive the truth instead.
+  const planData = loadPlanData();
+  const storyTitles = {};
+  const epicTitles = {};
+  if (planData) {
+    planData.stories.forEach((s) => {
+      storyTitles[s.id] = s.title;
+    });
+    planData.epics.forEach((e) => {
+      epicTitles[e.id] = e.title;
+    });
+    const isDone = (s) => /^(Complete|Done)$/i.test(s.status);
+    const isBugOpen = (b) => !/^(Fixed|Retired|Cancelled|Verified|Closed)/i.test(b.status);
+    const isBugFixed = (b) => /^(Fixed|Verified|Closed)/i.test(b.status);
+    metrics.storiesTotal = planData.stories.length;
+    metrics.storiesCompleted = planData.stories.filter(isDone).length;
+    metrics.tasksTotal = planData.tasks.length;
+    metrics.tasksCompleted = planData.tasks.filter(isDone).length;
+    metrics.bugsOpen = planData.bugs.filter(isBugOpen).length;
+    metrics.bugsFixed = planData.bugs.filter(isBugFixed).length;
+    if (
+      planData.coverage &&
+      planData.coverage.available !== false &&
+      typeof planData.coverage.statements === 'number'
+    ) {
+      metrics.coveragePercent = planData.coverage.statements;
+    }
+  }
 
   // Agent colors, icons, and roles derived from agents.config.json
   const agentColors = {};
@@ -298,7 +342,7 @@ function generateHTML(status) {
   .story-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: var(--bg-card-inner); border-radius: 6px; font-size: 12px; transition: all 0.2s; }
   .story-row:hover { filter: brightness(1.1); }
   .story-id { font-weight: 700; color: var(--brand-primary); width: 65px; }
-  .story-title { flex: 1; color: var(--story-title); margin: 0 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .story-title { flex: 1; min-width: 0; color: var(--story-title); margin: 0 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .story-status { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600; flex-shrink: 0; white-space: nowrap; }
   .story-status.Planned { background: var(--status-planned-bg); color: var(--status-planned-color); }
   .story-status.InProgress { background: var(--status-inprogress-bg); color: #F57C00; }
@@ -505,7 +549,7 @@ ${phases
     <div class="progress-bar"><div class="progress-fill green" style="width: ${storyPercent}%"></div></div>
     <div class="metric-row" style="margin-top: 12px">
       <span class="metric-label">Tasks Done</span>
-      <span class="metric-value orange">${metrics.tasksCompleted} / ${metrics.tasksTotal}</span>
+      <span class="metric-value orange">${metrics.tasksTotal > 0 ? `${metrics.tasksCompleted} / ${metrics.tasksTotal}` : '—'}</span>
     </div>
     <div class="progress-bar"><div class="progress-fill red" style="width: ${metrics.tasksTotal > 0 ? Math.round((metrics.tasksCompleted / metrics.tasksTotal) * 100) : 0}%"></div></div>
   </div>
@@ -623,13 +667,14 @@ ${(() => {
   });
   return Object.entries(groups)
     .map(([epicId, epicStories]) => {
-      const epicName = epics[epicId] || epicId;
+      const epicName = epicTitles[epicId] || epics[epicId] || '';
       const storyRows = epicStories
         .map((s) => {
           const statusClass = s.status === 'In Progress' ? 'InProgress' : s.status;
+          const title = storyTitles[s.id] || s.title || '';
           return `        <div class="story-row">
           <span class="story-id">${s.id}</span>
-          <span class="story-title">${s.title}</span>
+          <span class="story-title">${esc(title)}</span>
           <span class="story-status ${statusClass}">${s.status}</span>
         </div>`;
         })
@@ -646,7 +691,7 @@ ${(() => {
           : 'rgba(136,136,136,0.15)';
       return `      <div class="epic-group${epicDone ? ' collapsed' : ''}">
         <div class="epic-header" onclick="this.closest('.epic-group').classList.toggle('collapsed')">
-          <span class="epic-id">${epicId}</span> ${epicName}
+          <span class="epic-id">${epicId}</span>${epicName ? ' ' + esc(epicName) : ''}
           <span style="margin-left:8px; font-size:10px; padding:2px 8px; border-radius:10px; background:${epicStatusBg}; color:${epicStatusColor}; font-weight:600;">${epicStatus}</span>
           <span class="epic-toggle">▼</span>
         </div>
