@@ -216,7 +216,8 @@ function generateHTML(status) {
 <style>
   :root {
     --brand-primary: ${DASH_META.primaryColor};
-    --bg-primary: #1a1a2e;
+    /* US-0110: canvas bg aligned with Plan Visualizer dark canvas (US-0094/US-0095). */
+    --bg-primary: #0b0d12;
     --bg-card: #16213e;
     --bg-card-inner: #1a1a3e;
     --bg-card-border: #2a2a5a;
@@ -259,7 +260,17 @@ function generateHTML(status) {
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; transition: background 0.3s, color 0.3s; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--bg-primary);
+    /* US-0110 AC-0360: subtle dot-grid — scoped to dark theme only, visible but low-key. */
+    background-image: radial-gradient(circle, rgba(148,163,184,0.06) 1px, transparent 1px);
+    background-size: 24px 24px;
+    color: var(--text-primary);
+    min-height: 100vh;
+    transition: background 0.3s, color 0.3s;
+  }
+  [data-theme="light"] body { background-image: none; }
 
   .header { background: linear-gradient(135deg, var(--brand-primary) 0%, #8B1A12 100%); padding: 20px 32px; display: flex; align-items: center; justify-content: space-between; }
   .header h1 { font-size: 22px; color: white; font-weight: 700; }
