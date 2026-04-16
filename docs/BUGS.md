@@ -2079,11 +2079,11 @@ Steps to Reproduce:
 2. Hover over an agent card in the agent grid
    Expected: A visible hover affordance indicates the card is interactive
    Actual: brightness(1.12) on an already-light surface produces almost no visible shift; users can't tell the card is hoverable
-   Status: Open
-   Fix Branch:
+   Status: Fixed
+   Fix Branch: feature/US-0119-agent-spotlight-stations
    Lesson Encoded: No
    Estimated Cost USD: 0.00
-   Notes: Same class of issue as BUG-0112 (Kanban hover on plan-status). To be fixed by US-0119 via a 4px agent-color outline glow instead of brightness shift.
+   Notes: Fixed in US-0119 (AC-0405). .agent-card:hover now applies a 4px agent-color outline glow via box-shadow 0 0 0 4px var(--agent-color-ring) — an rgba-40% variant of the per-agent color pulled from agents.config.json. The previous filter:brightness(1.12) has been removed. The active-station 3px box-shadow glow (AC-0403) is preserved and layers with the hover glow so active+hover produces a combined outline. Verified visible in both dark and light themes since the agent color ring is a saturated hue regardless of surface brightness.
 
 ---
 
