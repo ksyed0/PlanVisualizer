@@ -189,14 +189,16 @@ function generateHTML(status) {
     }
   }
 
-  // Agent colors, icons, and roles derived from agents.config.json
+  // Agent colors, icons, roles, and avatars derived from agents.config.json
   const agentColors = {};
   const agentIcons = {};
   const agentRoles = {};
+  const agentAvatars = {};
   for (const [name, cfg] of Object.entries(AGENT_CONFIG.agents || {})) {
     agentColors[name] = cfg.color || '#888';
     agentIcons[name] = cfg.icon || '🤖';
     agentRoles[name] = cfg.role || name;
+    agentAvatars[name] = cfg.avatar || name.toLowerCase();
   }
 
   const phasesComplete = phases.filter((p) => p.status === 'complete').length;
@@ -205,7 +207,8 @@ function generateHTML(status) {
   const phasePercent = phases.length > 0 ? Math.round((phasesComplete / phases.length) * 100) : 0;
 
   // US-0114: compute current phase label for center zone
-  const currentPhaseObj = phases.find((p) => p.status === 'in-progress') ||
+  const currentPhaseObj =
+    phases.find((p) => p.status === 'in-progress') ||
     (pipelineComplete ? null : phases.filter((p) => p.status === 'complete').pop());
   const phaseLabel = pipelineComplete
     ? 'COMPLETE'
@@ -214,8 +217,8 @@ function generateHTML(status) {
       : 'STANDBY';
 
   // US-0114: detect if any agent or phase is BLOCKED for header accent
-  const anyBlocked = phases.some((p) => p.status === 'blocked') ||
-    Object.values(agents || {}).some((a) => a && a.status === 'blocked');
+  const anyBlocked =
+    phases.some((p) => p.status === 'blocked') || Object.values(agents || {}).some((a) => a && a.status === 'blocked');
 
   const storyPercent =
     metrics.storiesTotal > 0 ? Math.round((metrics.storiesCompleted / metrics.storiesTotal) * 100) : 0;
@@ -390,7 +393,7 @@ function generateHTML(status) {
   .agent-card { background: var(--bg-card-inner); border-radius: 8px; padding: 10px; border-left: 4px solid; transition: transform 150ms ease, box-shadow 150ms ease, filter 0.2s; display: flex; gap: 10px; align-items: flex-start; cursor: pointer; }
   .agent-card:hover { transform: scale(1.02); box-shadow: 0 6px 24px rgba(0,0,0,0.5); filter: brightness(1.12); }
   #agent-portrait-popup { position: fixed; z-index: 999; width: 200px; border-radius: 14px; overflow: hidden; box-shadow: 0 12px 40px rgba(0,0,0,0.7); pointer-events: none; display: none; transition: opacity 0.15s; border: 2px solid rgba(255,255,255,0.12); }
-  #agent-portrait-popup img { width: 100%; display: block; }
+  #agent-portrait-popup img { width: 100%; display: block; border-radius: 12px; object-fit: cover; object-position: center top; }
   .agent-card.active { animation: pulse-agent 1.5s infinite; }
   @keyframes pulse-agent { 0%, 100% { opacity: 1; } 50% { opacity: 0.85; } }
   .agent-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid; flex-shrink: 0; }
@@ -827,8 +830,9 @@ ${(() => {
   if (activeAgent) {
     const [aName, aData] = activeAgent;
     const aColor = agentColors[aName] || '#888';
+    const aAvatar = agentAvatars[aName] || aName.toLowerCase();
     spotlight = `    <div class="agent-spotlight">
-      <img class="spotlight-img" src="${imgBase}/${aName.toLowerCase()}.png" alt="${aName}" onerror="this.style.display='none'">
+      <img class="spotlight-img" src="${imgBase}/optimized/${aAvatar}-160.png" alt="${aName}" style="object-position:center top; border:3px solid ${aColor}" onerror="this.onerror=null; this.src='${imgBase}/headshots/${aName.toLowerCase()}.png'">
       <div class="spotlight-overlay"></div>
       <div class="spotlight-info">
         <div class="spotlight-name" style="color: ${aColor}"><span class="live-dot ok" aria-label="live" title="live" id="spotlight-live-dot"></span>${agentIcons[aName] || ''} ${aName} — ${roles[aName] || aName}</div>
@@ -851,9 +855,10 @@ ${Object.entries(agents)
     const statusBg = agent.status === 'active' ? 'rgba(52,168,83,0.2)' : 'rgba(136,136,136,0.15)';
     const statusColor = agent.status === 'active' ? '#34A853' : agent.status === 'complete' ? '#1565C0' : '#888';
     const roles = agentRoles;
-    // Option 1: Avatar headshot (extracted from team-grid) with fallback to full image, then emoji
-    const avatarImg = `<img class="agent-avatar" src="${imgBase}/headshots/${name.toLowerCase()}.png" alt="${name}" style="border-color: ${color}" onerror="this.onerror=function(){this.outerHTML='<div class=\\'agent-avatar-fallback\\' style=\\'border-color: ${color}\\'>${icon}</div>'};this.src='${imgBase}/${name.toLowerCase()}.png'">`;
-    const fullPortrait = `${imgBase}/${name.toLowerCase()}.png`;
+    // Option 1: Avatar from optimized 64px PNG with fallback to headshot PNG, then emoji
+    const avatar = agentAvatars[name] || name.toLowerCase();
+    const avatarImg = `<img class="agent-avatar" src="${imgBase}/optimized/${avatar}-64.png" alt="${name}" style="width:64px; height:64px; border-radius:50%; object-fit:cover; object-position:center top; border:2px solid ${color}" onerror="this.onerror=function(){this.outerHTML='<div class=\\'agent-avatar-fallback\\' style=\\'border-color: ${color}\\'>${icon}</div>'};this.src='${imgBase}/headshots/${name.toLowerCase()}.png'">`;
+    const fullPortrait = `${imgBase}/optimized/${avatar}-320.png`;
     // US-0111 AC-0364: stable IDs on card + inner pills so patchDOM() can
     // update status/task text without re-rendering the whole grid.
     return `      <div class="agent-card ${agent.status === 'active' ? 'active' : ''}" id="agent-${esc(name)}" data-agent-name="${esc(name)}" data-agent-status="${esc(agent.status)}" style="border-left-color: ${color}"
