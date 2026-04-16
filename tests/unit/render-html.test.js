@@ -608,10 +608,10 @@ describe('renderHtml — Bugs tab lesson hyperlink (US-0032)', () => {
     lessonEncoded: 'No',
   };
 
-  it('renders ✓ L-0010 ↗ as link when lesson ID present', () => {
+  it('renders lesson-pill link when lesson ID present (AC-0354)', () => {
     const d = { ...sampleData, bugs: [bugWithLessonId] };
     const html = renderHtml(d);
-    expect(html).toMatch(/&#10003;.*L-0010.*&#8599;/);
+    expect(html).toMatch(/lesson-pill.*L-0010|L-0010.*lesson-pill/);
     expect(html).toContain("'lesson-col-'");
     expect(html).toContain("'L-0010'");
   });
@@ -620,7 +620,8 @@ describe('renderHtml — Bugs tab lesson hyperlink (US-0032)', () => {
     const d = { ...sampleData, bugs: [bugWithYesNoId] };
     const html = renderHtml(d);
     expect(html).toMatch(/&#10003;|✓/);
-    expect(html).not.toMatch(/&#8599;|↗/);
+    // No lesson-pill anchor should be present (only plain ✓ text)
+    expect(html).not.toMatch(/<span class="lesson-pill-id">/);
   });
 
   it('renders ○ when lesson not encoded', () => {

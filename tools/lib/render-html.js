@@ -1360,11 +1360,33 @@ function renderBugsTab(data) {
     return `<div id="tab-bugs" class="p-6 hidden" role="tabpanel" aria-labelledby="tab-btn-bugs"><p class="text-slate-500">No bugs logged yet.</p></div>`;
   }
 
+  // AC-0351: severity tone helper
+  function severityTone(sev) {
+    if (!sev) return 'neutral';
+    const s = sev.toLowerCase();
+    if (s === 'critical' || s === 'high') return 'danger';
+    if (s === 'medium') return 'warn';
+    return 'neutral';
+  }
+
+  // AC-0352: severity stripe color helper
+  function severityStripeColor(sev) {
+    if (!sev) return 'transparent';
+    const s = sev.toLowerCase();
+    if (s === 'critical' || s === 'high') return 'var(--badge-danger-text, #dc2626)';
+    if (s === 'medium') return 'var(--badge-warn-text, #d97706)';
+    return 'var(--badge-neutral-text, #6b7280)';
+  }
+
+  // AC-0351: severity badge with badge-sev class
+  const sevBadge = (sev) => `<span class="badge badge-${severityTone(sev)} badge-sev">${esc(sev || '')}</span>`;
+
   const lessonCell = (bug) => {
     if (!bug.lessonEncoded || !bug.lessonEncoded.startsWith('Yes')) return '○';
     const lm = bug.lessonEncoded.match(/L-\d{4}/);
     if (!lm) return '✓';
-    return `<a href="#" onclick="showTab('lessons');setTimeout(function(){var colView=document.getElementById('lessons-column-view');var prefix=colView&&!colView.classList.contains('hidden')?'lesson-col-':'lesson-card-';var el=document.getElementById(prefix+'${lm[0]}');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});},50);return false;" class="text-blue-600 dark:text-blue-400 hover:underline font-mono text-xs whitespace-nowrap" title="View lesson ${lm[0]}">&#10003; ${lm[0]} &#8599;</a>`;
+    // AC-0354: lesson pill link
+    return `<a href="#" onclick="showTab('lessons');setTimeout(function(){var colView=document.getElementById('lessons-column-view');var prefix=colView&&!colView.classList.contains('hidden')?'lesson-col-':'lesson-card-';var el=document.getElementById(prefix+'${lm[0]}');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});},50);return false;" title="View lesson ${lm[0]}" style="text-decoration:none"><span class="lesson-pill"><span class="lesson-pill-id">${esc(lm[0])}</span><span>↗</span></span></a>`;
   };
 
   // Build story→epic map
@@ -1390,45 +1412,57 @@ function renderBugsTab(data) {
     return a.localeCompare(b);
   });
 
-  // BUG-0165 — accent color on the first cell of every row paints a continuous
-  // left-edge stripe per epic group, matching Hierarchy's `epic-block` card.
+  // BUG-0165 / AC-0352 — severity stripe on the first td of every row.
   const renderBugRow = (bug, accent) => {
     const epicId = storyEpicMap[normalizeStoryRef(bug.relatedStory)] || '_ungrouped';
-    const accentLeft = accent ? `border-left:4px solid ${accent.border};` : '';
+    const severityLeft = `border-left:4px solid ${severityStripeColor(bug.severity)};`;
     return `
     <tr id="bug-row-${esc(bug.id)}" class="bug-row border-t border-slate-100 dark:border-slate-700" data-status="${esc(bug.status)}" data-epic="${esc(epicId)}" data-severity="${esc(bug.severity)}">
-      <td class="px-3 py-2 font-mono text-xs whitespace-nowrap dark:text-slate-200" style="${accentLeft}">${bug.id}</td>
+      <td class="px-3 py-2 font-mono text-xs whitespace-nowrap dark:text-slate-200" style="${severityLeft}">${esc(bug.id)}</td>
       <td class="px-3 py-2 text-sm dark:text-slate-200">${esc(bug.title)}</td>
-      <td class="px-3 py-2 text-center">${badge(bug.severity)}</td>
+      <td class="px-3 py-2 text-center">${sevBadge(bug.severity)}</td>
       <td class="px-3 py-2 text-center">${badge(bug.status)}</td>
       <td class="px-3 py-2 text-xs text-slate-500 whitespace-nowrap">${esc(bug.relatedStory)}</td>
-      <td class="px-3 py-2 text-xs text-slate-500">${esc(bug.fixBranch || '—')}</td>
+      <td class="px-3 py-2 text-xs text-slate-500"><span class="truncate" title="${esc(bug.fixBranch || '')}">${esc(bug.fixBranch || '—')}<button class="copy-btn" onclick="navigator.clipboard.writeText('${jsEsc(bug.fixBranch || '')}')">&#x29c7;</button></span></td>
       <td class="px-3 py-2 text-center text-xs dark:text-slate-200">${lessonCell(bug)}</td>
     </tr>`;
   };
 
+  // AC-0352: bug cards get border-left severity stripe
   const renderBugCard = (bug) => {
     const epicId = storyEpicMap[normalizeStoryRef(bug.relatedStory)] || '_ungrouped';
     return `
-    <div id="bug-card-${esc(bug.id)}" class="bug-row story-card-hover card-elev rounded-lg p-4 flex flex-col gap-2" data-status="${esc(bug.status)}" data-epic="${esc(epicId)}" data-severity="${esc(bug.severity)}">
+    <div id="bug-card-${esc(bug.id)}" class="bug-row story-card-hover card-elev rounded-lg p-4 flex flex-col gap-2" data-status="${esc(bug.status)}" data-epic="${esc(epicId)}" data-severity="${esc(bug.severity)}" style="border-left:4px solid ${severityStripeColor(bug.severity)}">
       <div class="flex items-center gap-2 flex-wrap">
-        <span class="font-mono text-xs text-slate-500 whitespace-nowrap">${bug.id}</span>
-        ${badge(bug.severity)} ${badge(bug.status)}
+        <span class="font-mono text-xs text-slate-500 whitespace-nowrap">${esc(bug.id)}</span>
+        ${sevBadge(bug.severity)} ${badge(bug.status)}
       </div>
       <p class="text-sm font-medium dark:text-slate-200">${esc(bug.title)}</p>
       <div class="text-xs text-slate-500 flex flex-col gap-0.5">
         <span>Story: <span class="font-mono">${esc(bug.relatedStory || '—')}</span></span>
-        <span class="truncate" title="${esc(bug.fixBranch || '')}">Branch: <span class="font-mono">${esc(bug.fixBranch || '—')}</span></span>
-      </span>
-    </div>
-    <div class="flex items-center justify-between mt-1">
-      <span class="text-xs text-slate-500">Lesson: <span class="dark:text-slate-200">${lessonCell(bug)}</span></span>
-    </div>
-  </div>`;
+        <span class="truncate" title="${esc(bug.fixBranch || '')}">Branch: <span class="font-mono">${esc(bug.fixBranch || '—')}</span><button class="copy-btn" onclick="navigator.clipboard.writeText('${jsEsc(bug.fixBranch || '')}')">&#x29c7;</button></span>
+      </div>
+      <div class="flex items-center justify-between mt-1">
+        <span class="text-xs text-slate-500">Lesson: <span class="dark:text-slate-200">${lessonCell(bug)}</span></span>
+      </div>
+    </div>`;
   };
 
   const openBugCount = (bugs) =>
     bugs.filter((b) => !/^(Fixed|Retired|Cancelled|Verified|Closed)/i.test(b.status)).length;
+
+  // AC-0355: compact view rows (flat, no epic grouping)
+  const compactRows = data.bugs
+    .map(
+      (bug) => `
+    <div class="bug-compact-row" data-status="${esc(bug.status)}" data-severity="${esc(bug.severity)}" data-epic="${esc(storyEpicMap[normalizeStoryRef(bug.relatedStory)] || '_ungrouped')}" style="border-left:4px solid ${severityStripeColor(bug.severity)}">
+      <span class="bug-compact-id">${esc(bug.id)}</span>
+      <span class="bug-compact-title">${esc(bug.title)}</span>
+      ${sevBadge(bug.severity)}
+      <span class="badge badge-${BADGE_TONE[bug.status] || 'neutral'}">${esc(bug.status)}</span>
+    </div>`,
+    )
+    .join('');
 
   const bugColGroups = bugEpicOrder
     .map((epicId, i) => {
@@ -1502,6 +1536,10 @@ function renderBugsTab(data) {
           class="px-3 py-1 text-xs rounded border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
           ⊞ Card
         </button>
+        <button id="bugs-compact-btn" onclick="setBugsView('compact')"
+          class="px-3 py-1 text-xs rounded border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+          ☰ Compact
+        </button>
       </div>
     </div>
 
@@ -1521,20 +1559,28 @@ function renderBugsTab(data) {
     <div id="bugs-card-view" class="hidden" style="overflow-y:auto">
       ${bugCardGroups}
     </div>
+
+    <div id="bugs-compact-view" class="hidden" style="overflow-y:auto">
+      ${compactRows}
+    </div>
   </div>
   <script>
   function setBugsView(v) {
     var col = document.getElementById('bugs-column-view');
     var card = document.getElementById('bugs-card-view');
+    var compact = document.getElementById('bugs-compact-view');
     var colBtn = document.getElementById('bugs-col-btn');
     var cardBtn = document.getElementById('bugs-card-btn');
+    var compactBtn = document.getElementById('bugs-compact-btn');
     if (!col) return;
     col.classList.toggle('hidden', v !== 'column');
     card.classList.toggle('hidden', v !== 'card');
+    if (compact) compact.classList.toggle('hidden', v !== 'compact');
     colBtn.style.fontWeight = v === 'column' ? '700' : '';
     colBtn.style.background = v === 'column' ? 'rgba(59,130,246,0.1)' : '';
     cardBtn.style.fontWeight = v === 'card' ? '700' : '';
     cardBtn.style.background = v === 'card' ? 'rgba(59,130,246,0.1)' : '';
+    if (compactBtn) { compactBtn.style.fontWeight = v === 'compact' ? '700' : ''; compactBtn.style.background = v === 'compact' ? 'rgba(59,130,246,0.1)' : ''; }
     localStorage.setItem('bugsView', v);
   }
   (function() { setBugsView(localStorage.getItem('bugsView') || 'column'); })();
@@ -2569,6 +2615,15 @@ function renderPrintCSS() {
   .trace-hover-col { background: var(--clr-accent-subtle, rgba(124,58,237,0.06)) !important; }
   .trace-sticky-col { position: sticky; left: 0; z-index: 5; background: var(--clr-panel-bg); }
   .trace-caption { caption-side: bottom; text-align: left; font-size: 12px; color: var(--clr-text-muted, rgba(255,255,255,0.5)); padding: 8px 4px 0; }
+  /* US-0106: Bug severity styling */
+  .badge-sev { border-radius: 2px; font-variant: small-caps; letter-spacing: 0.05em; }
+  .copy-btn { opacity: 0; transition: opacity 150ms; background: none; border: none; cursor: pointer; font-size: 12px; color: var(--clr-text-muted); padding: 0 2px; vertical-align: middle; }
+  .truncate:hover .copy-btn { opacity: 1; }
+  .lesson-pill { display: inline-flex; align-items: center; gap: 4px; background: var(--badge-info-bg, rgba(59,130,246,0.12)); color: var(--badge-info-text, #3b82f6); border: 1px solid var(--badge-info-border, rgba(59,130,246,0.3)); border-radius: 12px; padding: 1px 8px; font-size: 11px; text-decoration: none; }
+  .lesson-pill-id { font-weight: 600; }
+  .bug-compact-row { display: flex; align-items: center; gap: 10px; padding: 6px 12px; border-bottom: 1px solid var(--clr-border); font-size: 13px; }
+  .bug-compact-id { font-family: monospace; font-size: 11px; opacity: 0.7; min-width: 80px; }
+  .bug-compact-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   </style>`;
 }
 
