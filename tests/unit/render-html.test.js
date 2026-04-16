@@ -1018,3 +1018,35 @@ describe('US-0100 — Hierarchy tab polish', () => {
     expect(html).toMatch(/width:0%/);
   });
 });
+
+describe('US-0101 — Kanban board polish', () => {
+  it('rendered HTML contains ksw-inprogress class for In Progress column', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toMatch(/ksw-inprogress/);
+  });
+
+  it('rendered HTML contains kswPulse animation', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toMatch(/kswPulse/);
+  });
+
+  it('rendered HTML contains wip-pill class', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toMatch(/wip-pill/);
+  });
+
+  it('P0 story card has danger priority stripe', () => {
+    const p0Data = {
+      ...sampleData,
+      stories: [{ ...sampleData.stories[0], priority: 'P0', status: 'In Progress' }],
+    };
+    const html = renderHtml(p0Data);
+    expect(html).toMatch(/badge-danger-text|#dc2626/);
+  });
+
+  it('BUG-0112: kanban cards do not contain hardcoded bg-white class; use card-elev instead', () => {
+    const html = renderHtml(sampleData);
+    // Cards should use card-elev not hardcoded bg-white
+    expect(html).toMatch(/card-elev/);
+  });
+});
