@@ -103,8 +103,10 @@ pkg.scripts['plan:test:coverage'] = pkg.scripts['plan:test:coverage'] || 'jest -
 pkg.scripts['plan:generate'] = pkg.scripts['plan:generate'] || 'node tools/generate-plan.js';
 pkg.scripts['plan:cleanup'] = pkg.scripts['plan:cleanup'] || 'bash scripts/cleanup-branches.sh';
 pkg.scripts['plan:cleanup:dry'] = pkg.scripts['plan:cleanup:dry'] || 'bash scripts/cleanup-branches.sh --dry-run';
+pkg.scripts['plan:migrate-config'] = pkg.scripts['plan:migrate-config'] || 'node tools/migrate-config.js';
+pkg.scripts['plan:migrate-config:dry'] = pkg.scripts['plan:migrate-config:dry'] || 'node tools/migrate-config.js --dry-run';
 fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n', 'utf8');
-console.log('[install] Scripts added: plan:test, plan:test:coverage, plan:generate, plan:cleanup, plan:cleanup:dry');
+console.log('[install] Scripts added: plan:test, plan:test:coverage, plan:generate, plan:cleanup, plan:cleanup:dry, plan:migrate-config, plan:migrate-config:dry');
 JS
 else
   echo "[install] Warning: no package.json found at ${TARGET} — skipping script merge."
@@ -118,6 +120,16 @@ if [ ! -f "$TARGET_CFG" ]; then
   echo "[install] Edit ${TARGET_CFG} to set your project name and file paths."
 else
   echo "[install] plan-visualizer.config.json already exists — skipping."
+fi
+
+# ── 4.5. Migrate existing configs to latest schema ──────────────────────────
+# Idempotent: adds any required fields the latest tools/* expect (e.g.
+# docs.lessons, agents.<name>.avatar) that early installs are missing.
+# Preserves user values; only appends missing keys. --auto suppresses output
+# when nothing needs migrating, keeping the installer log clean.
+if [ -f "${TARGET}/tools/migrate-config.js" ]; then
+  echo "[install] Checking config schema ..."
+  (cd "$TARGET" && node "${TARGET}/tools/migrate-config.js" --auto) || true
 fi
 
 # ── 5. Merge Claude Code stop hook into .claude/settings.json ───────────────

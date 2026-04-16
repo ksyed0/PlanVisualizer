@@ -16,7 +16,9 @@
     "format:check": "prettier --check .",
     "cleanup:branches": "bash scripts/cleanup-branches.sh",
     "cleanup:branches:dry": "bash scripts/cleanup-branches.sh --dry-run",
-    "prepare": "husky"
+    "prepare": "husky",
+    "migrate-config": "node tools/migrate-config.js",
+    "migrate-config:dry": "node tools/migrate-config.js --dry-run"
   },
   "lint-staged": {
     "*.{js,json,md,yml,yaml}": "prettier --write",

@@ -319,3 +319,7 @@ _Learned during session 19 — hand-auditing 52 stale branches (48 local + 46 re
 ### **Cleanup scripts MUST gate branch-delete on PR state, uniformly across every branch pattern.**
 
 _Learned from BUG-0173 (self-inflicted) — first version of `scripts/cleanup-branches.sh` gated step 6 (feature/bugfix/chore-session) on PR state but NOT step 5 (chore/version-bump-\*). The assumption "version-bump branches are ephemeral, always safe to nuke" is false when the auto-merge PR is still open; deleting the branch mid-flight closes the PR. Rule: any branch-delete loop in automation must check `gh pr list --state all --head <branch>` and skip when state=OPEN, regardless of how "trivial" the branch pattern looks._
+
+### **Every schema-bearing config file needs a paired migrator script, invoked on install/upgrade.**
+
+_Learned during the post-EPIC-0016 cleanup audit (BUG-0175) — US-0113 added `agents.<name>.avatar` and an earlier change required `docs.lessons` in `plan-visualizer.config.json`, but `scripts/install.sh` only created configs from the example when absent; upgrading an existing install quietly skipped both. Target projects on older configs silently lost features. Rule: whenever a field becomes required (code dereferences it without a sane undefined-path), add it to the corresponding example AND to `tools/migrate-config.js` at the same commit. The migrator must be idempotent (re-runnable), preserve user values, and run automatically from install.sh. Expose `plan:migrate-config:dry` so users can preview before applying._

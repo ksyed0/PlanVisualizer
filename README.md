@@ -155,6 +155,8 @@ The script is idempotent — it is safe to re-run at any time. If you have exist
 
 **What gets overwritten on update:** `tools/`, `tests/`, `scripts/cleanup-branches.sh`, `jest.config.js`, `plan_visualizer.md`, `.github/workflows/plan-visualizer.yml`, `eslint.config.js` — these are tool files managed by PlanVisualizer.
 
+**Config schema migration runs automatically** on every install/upgrade — `tools/migrate-config.js` adds any required fields introduced in newer versions (e.g. `docs.lessons`, `agents.<name>.avatar`) to your existing `plan-visualizer.config.json` and `agents.config.json` without touching values you've already set. Preview what would change with `npm run plan:migrate-config:dry`; apply manually with `npm run plan:migrate-config`. Safe to re-run.
+
 **Historical data:** When updating, the install script will ask "Would you like to estimate historical data? (y/n)" — answering yes runs a 30-day backfill to populate trend charts immediately with simulated historical data. Answering no lets history build naturally from real generations.
 
 **What is never overwritten:** `plan-visualizer.config.json` (your project config), `AGENTS.md` content (the script only appends; it will skip if the reference already exists).
