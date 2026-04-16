@@ -72,3 +72,32 @@ Log every change that must propagate to other platforms, modules, or installatio
 **What changed:** Config file now tracked in PlanVisualizer's own repo for self-documentation and plan-visualizer.yml workflow
 **Adaptations completed:** Done.
 **Adaptations still needed:** None.
+
+## 2026-04-16 — EPIC-0016 Agentic Dashboard Mission Control Redesign (14 stories + 7 interrupt BUGs)
+
+**Files changed:**
+
+- `tools/generate-dashboard.js` — full architectural rewrite: live fetch-and-patch replaces 30s reload, 6-phase pipeline timeline, differentiated metric cards, redesigned spotlight + stations, terminal activity log, 3-zone header, singleton AudioContext, BLOCKED border + incident ticker, agent portraits wired, 2-column About modal
+- `tools/lib/theme.js` — NEW shared module with BADGE_TONE + badge() (extracted from render-html.js)
+- `tools/lib/render-html.js` — now imports from theme.js (drift eliminated); Bugs tab matches Hierarchy visual
+- `tests/unit/generate-dashboard.test.js` — NEW harness (6 baseline + parameterised tests per wave)
+- `tests/unit/theme.test.js` — NEW, 13 assertions
+- `agents.config.json` — added `avatar` field per agent, set `author: "Kamal Syed"`
+- `docs/BUGS.md` — 7 bugs closed (BUG-0159 through BUG-0169)
+
+**Platforms affected:**
+
+- **GitHub Pages deploy**: `docs/sdlc-status.json` is gitignored — the deployed dashboard will show STALE ticker unless the Pages build step runs `npm run init:status` before deploy. Follow-up required.
+- **Local dev**: opening `docs/dashboard.html` via `file://` protocol blocks the live fetch via CORS — recommend `npx serve docs/` or `python3 -m http.server` for local inspection.
+
+**Cross-platform notes:**
+
+- `tools/lib/theme.js` is the new single source of truth for semantic tone tokens. Any future generator (plan-status, dashboard, anything) must import badge/BADGE_TONE from here rather than inline.
+- Google Fonts loaded: Departure Mono, Geist (US-0110), JetBrains Mono (US-0111). Stable across both light and dark themes.
+- 27 optimized agent portraits in `docs/agents/images/optimized/` — referenced via `avatar` config key, not hardcoded paths.
+
+**Follow-ups tracked (EPIC-0017 scope):**
+
+- Test counts in sdlc-status.metrics remain stale (1861 from prior session). Derive from jest-summary during CI.
+- Phases Complete / Reviews Approved cumulative — need cycle-reset when EPIC-0019 cycle-history lands.
+- Harden `getElementById('agent-' + name)` for non-ASCII agent names (flagged by Lens US-0111 review).

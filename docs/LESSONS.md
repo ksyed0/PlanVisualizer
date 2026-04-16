@@ -259,3 +259,41 @@ _Learned when Session 17 discovered `/BUGS.md` had 44 bugs NOT in `docs/BUGS.md`
 **Bugs:** N/A (governance)
 _Learned when Session 17 had to decide where US-0108 (sdlc-status CLI) belonged — EPIC-0013 was Done. Chose EPIC-0014 Follow-Up Changes. Same pattern later applied to US-0083 and US-0053 which had been attached to Done epics 0004 and 0007._
 **Date:** 2026-04-14
+
+## Session 18 lessons (EPIC-0016 Agentic Dashboard)
+
+### **Always respawn on fresh develop when parallel-wave rebase conflicts get complex.**
+
+_Learned during US-0115 pipeline timeline — multi-commit rebase after US-0118 and US-0119 merged hit irreconcilable conflicts in the same generate-dashboard.js region. A fresh respawn finished in ~5 min vs hours of manual conflict resolution._
+
+### **Test file conflicts between sibling PRs need manual `});` verification after conflict-marker removal.**
+
+_Learned during US-0120/US-0121 rebase — both added new `describe` blocks; removing conflict markers dropped a closing `});` boundary between them, producing a silent SyntaxError that prettier caught but jest tolerated (tests passed but file was malformed). Always `npx prettier --check` AND verify `grep describe(` produces balanced open/close counts after manual test-file conflict resolution._
+
+### **Derive live metrics from authoritative sources at render time; never trust hand-maintained kv stores.**
+
+_Learned from BUG-0166 — sdlc-status.json.metrics had "4 / 0" tasks, 0 bugs despite 130+ entries, stale 1861 tests. The fix (reading docs/plan-status.json at generate time) solved the displayed-data honesty problem permanently. Rule: any metric that can be derived from source of truth MUST be, otherwise it drifts._
+
+### **For `text-overflow: ellipsis` inside flex-child-in-grid-cell layouts, set `min-width: 0` at BOTH the grid item AND the flex child.**
+
+_Learned during BUG-0164 — titles overflowed panel width despite `.story-title { flex: 1; overflow: hidden; text-overflow: ellipsis }`. Root cause: `.story-row` was the grid item (`grid-template-columns: 1fr 1fr`) and grid items default to `min-width: auto`, forcing the cell wider than 1fr when content is `nowrap`. Fix: `min-width: 0` on both `.epic-stories > _`(grid items) and`.story-row` (flex container).\*
+
+### **AudioContext must be singleton'd at module level — never per-call.**
+
+_Learned from BUG-0160 — playBeep() was doing `new AudioContext()` every call. Rapid BLOCKED transitions produced 20+ leaked contexts. Pattern: module-level `_audioCtx = null` + `getAudioContext()` lazy-init with `ctx.resume()` on suspended state + graceful null-return on unsupported browsers._
+
+### **Live DOM patching requires stable IDs on every volatile element + append-only log pattern.**
+
+_Learned during US-0111 — replacing `location.reload()` with `fetch + patchDOM` needs every dynamic value to be `getElementById`-able. Phase pills, agent statuses, metric values, log entries all got stable IDs at generate time. Activity log uses `data-log-key` dedup + prepend for new entries._
+
+### **Auto-merge pauses on BEHIND; the fix is rebase + force-push, not re-enabling.**
+
+_Learned during Wave 1-4 parallel merges — `gh pr merge --auto --squash` stays armed through rebases. When a sibling PR lands and another goes BEHIND, rebase + force-push is enough; auto-merge fires when CI goes green on the new tip._
+
+### **Prettier failures on sibling PRs often trace back to `PROMPT_LOG.md` table formatting.**
+
+_Learned during multiple Wave 3+4 PRs — PROMPT_LOG markdown tables with inconsistent column alignment break Prettier on every PR until re-formatted. Run `npx prettier --check .` repo-wide after manual PROMPT_LOG edits._
+
+### **`file://` protocol breaks `fetch('./sdlc-status.json')` via CORS — by design.**
+
+_Learned during US-0111 testing — opening dashboard via Finder double-click triggers STALE state. Graceful degradation is correct; document the HTTP-server workaround (`npx serve docs/`) for local dev._
