@@ -239,14 +239,14 @@ function renderSidebar() {
 }
 
 const EPIC_ACCENT_COLORS = [
-  { border: '#8b5cf6', bg: 'rgba(139,92,246,0.07)' }, // violet
-  { border: '#06b6d4', bg: 'rgba(6,182,212,0.07)' }, // cyan
-  { border: '#f59e0b', bg: 'rgba(245,158,11,0.07)' }, // amber
-  { border: '#10b981', bg: 'rgba(16,185,129,0.07)' }, // emerald
-  { border: '#f43f5e', bg: 'rgba(244,63,94,0.07)' }, // rose
-  { border: '#3b82f6', bg: 'rgba(59,130,246,0.07)' }, // blue
-  { border: '#a855f7', bg: 'rgba(168,85,247,0.07)' }, // purple
-  { border: '#14b8a6', bg: 'rgba(20,184,166,0.07)' }, // teal
+  { border: '#8b5cf6', bg: 'rgba(139,92,246,0.07)', text: '#8b5cf6' }, // violet
+  { border: '#06b6d4', bg: 'rgba(6,182,212,0.07)', text: '#06b6d4' }, // cyan
+  { border: '#f59e0b', bg: 'rgba(245,158,11,0.07)', text: '#d97706' }, // amber
+  { border: '#10b981', bg: 'rgba(16,185,129,0.07)', text: '#10b981' }, // emerald
+  { border: '#f43f5e', bg: 'rgba(244,63,94,0.07)', text: '#f43f5e' }, // rose
+  { border: '#3b82f6', bg: 'rgba(59,130,246,0.07)', text: '#3b82f6' }, // blue
+  { border: '#a855f7', bg: 'rgba(168,85,247,0.07)', text: '#a855f7' }, // purple
+  { border: '#14b8a6', bg: 'rgba(20,184,166,0.07)', text: '#14b8a6' }, // teal
 ];
 
 function renderHierarchyTab(data) {
@@ -257,6 +257,8 @@ function renderHierarchyTab(data) {
       (s, st) => s + ((data.costs[st.id] && data.costs[st.id].projectedUsd) || 0),
       0,
     );
+    const totalCnt = stories.length;
+    const doneCnt = stories.filter((s) => /^done$/i.test(s.status)).length;
 
     // ── column view: expandable story rows ──────────────────────────────────
     const storyRows = stories
@@ -293,7 +295,7 @@ function renderHierarchyTab(data) {
           ${riskBadge}
           <span class="ml-auto text-xs text-slate-500">${esc(story.estimate || '?')} · ${usd((data.costs[story.id] && data.costs[story.id].projectedUsd) || 0)}</span>
         </div>
-        <ul id="acs-${story.id}" class="mt-2 hidden">${acItems || '<li class="text-xs text-slate-500 pl-4">No ACs yet</li>'}</ul>
+        <ul id="acs-${story.id}" class="ac-guide mt-2 hidden">${acItems || '<li class="text-xs text-slate-500 pl-4">No ACs yet</li>'}</ul>
       </div>`;
       })
       .join('');
@@ -325,14 +327,14 @@ function renderHierarchyTab(data) {
           ${badge(story.status)} ${badge(story.priority)}
           <span class="font-mono text-xs text-slate-500 ml-1">${story.id}</span>
         </div>
-        <p class="text-sm font-medium dark:text-slate-100 leading-snug cursor-pointer" onclick="toggleCardACs('${jsEsc(story.id)}')">${esc(story.title)}</p>
+        <p class="flex items-center gap-1 text-sm font-medium dark:text-slate-100 leading-snug cursor-pointer" onclick="toggleCardACs('${jsEsc(story.id)}')"><span class="epic-accent-dot" style="background:${accent.border}"></span>${esc(story.title)}</p>
         <div class="flex items-center gap-2 mt-auto pt-1 text-xs text-slate-500 border-t border-slate-100 dark:border-slate-600">
           <span>${esc(story.estimate || '?')}</span>
           <span>${cost}</span>
           ${acTotal ? `<span class="cursor-pointer" onclick="toggleCardACs('${jsEsc(story.id)}')">${acDone}/${acTotal} ACs ▾</span>` : ''}
           <span class="ml-auto">${riskBadge}</span>
         </div>
-        ${acTotal ? `<ul id="card-acs-${story.id}" class="hidden mt-1 pt-1 border-t border-slate-100 dark:border-slate-600 space-y-0.5">${acItems || '<li class="text-xs text-slate-500 pl-4">No ACs yet</li>'}</ul>` : ''}
+        ${acTotal ? `<ul id="card-acs-${story.id}" class="ac-guide hidden mt-1 pt-1 border-t border-slate-100 dark:border-slate-600 space-y-0.5">${acItems || '<li class="text-xs text-slate-500 pl-4">No ACs yet</li>'}</ul>` : ''}
       </div>`;
       })
       .join('');
@@ -346,20 +348,23 @@ function renderHierarchyTab(data) {
         <span class="ml-auto text-sm text-slate-500">${usd(epicProjected)} projected</span>
       </div>`;
 
-    return { epic, accent, epicProjected, storyRows, storyCards, epicHeader };
+    return { epic, accent, epicProjected, storyRows, storyCards, epicHeader, doneCnt, totalCnt };
   });
 
   const columnView = epicBlocks
     .map(
-      ({ epic, accent, epicProjected, storyRows }, epicIdx) => `
+      ({ epic, accent, epicProjected, storyRows, doneCnt, totalCnt }, epicIdx) => `
     <div class="epic-block mb-2 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden anim-stagger" data-epic-status="${esc(epic.status)}" style="--i:${Math.min(epicIdx, 19)};border-left:4px solid ${accent.border}">
-      <div class="px-3 py-2 flex flex-wrap items-center gap-3 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('epic-stories-${jsEsc(epic.id)}','epic-arrow-${jsEsc(epic.id)}')">
-        <span id="epic-arrow-${esc(epic.id)}" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9660;</span>
-        <span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${epic.id}</span>
-        ${badge(epic.status)}
-        <span class="font-semibold dark:text-slate-100">${esc(epic.title)}</span>
-        <span class="text-xs text-slate-500">${esc(epic.releaseTarget)}</span>
-        <span class="ml-auto text-sm text-slate-500">${usd(epicProjected)} projected</span>
+      <div class="px-3 py-2 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('epic-stories-${jsEsc(epic.id)}','epic-arrow-${jsEsc(epic.id)}')">
+        <div class="flex flex-wrap items-center gap-3">
+          <span id="epic-arrow-${esc(epic.id)}" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9660;</span>
+          <span class="epic-id-display font-mono text-xs font-bold uppercase"><span class="epic-id-label">EPIC /</span> <span class="epic-id-num" style="color:${accent.text}">${esc(epic.id.replace('EPIC-', ''))}</span></span>
+          ${badge(epic.status)}
+          <span class="font-semibold dark:text-slate-100">${esc(epic.title)}</span>
+          <span class="text-xs text-slate-500">${esc(epic.releaseTarget)}</span>
+          <span class="ml-auto text-sm text-slate-500">${usd(epicProjected)} projected</span>
+        </div>
+        <div class="epic-progress-track"><div class="epic-progress-fill" style="width:${Math.round((doneCnt / (totalCnt || 1)) * 100)}%;background:${accent.border}"></div></div>
       </div>
       <div id="epic-stories-${epic.id}">${storyRows || '<p class="text-slate-500 dark:text-slate-400 text-sm px-4 py-2">No stories yet.</p>'}</div>
     </div>`,
@@ -368,17 +373,18 @@ function renderHierarchyTab(data) {
 
   const cardView = epicBlocks
     .map(
-      ({ epic, accent, epicProjected, storyCards }, epicIdx) => `
+      ({ epic, accent, epicProjected, storyCards, doneCnt, totalCnt }, epicIdx) => `
     <div class="mb-4 anim-stagger" style="--i:${Math.min(epicIdx, 19)}">
       <div class="epic-block border border-slate-200 dark:border-slate-700 rounded-t-lg px-3 py-2 mb-0 cursor-pointer select-none" style="border-left:4px solid ${accent.border};background:${accent.bg}" onclick="toggleSection('epic-cards-${jsEsc(epic.id)}','epic-card-arrow-${jsEsc(epic.id)}')">
         <div class="flex flex-wrap items-center gap-3">
           <span id="epic-card-arrow-${esc(epic.id)}" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9660;</span>
-          <span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${epic.id}</span>
+          <span class="epic-id-display font-mono text-xs font-bold uppercase"><span class="epic-id-label">EPIC /</span> <span class="epic-id-num" style="color:${accent.text}">${esc(epic.id.replace('EPIC-', ''))}</span></span>
           ${badge(epic.status)}
           <span class="font-semibold dark:text-slate-100">${esc(epic.title)}</span>
           <span class="text-xs text-slate-500">${esc(epic.releaseTarget)}</span>
           <span class="ml-auto text-sm text-slate-500">${usd(epicProjected)} projected</span>
         </div>
+        <div class="epic-progress-track"><div class="epic-progress-fill" style="width:${Math.round((doneCnt / (totalCnt || 1)) * 100)}%;background:${accent.border}"></div></div>
       </div>
       <div id="epic-cards-${epic.id}" class="border border-t-0 border-slate-200 dark:border-slate-700 rounded-b-lg p-3">
         ${
@@ -2510,6 +2516,15 @@ function renderPrintCSS() {
     .bg-slate-900 { background: white !important; color: black !important; }
     .text-white, .text-blue-400, .text-slate-400 { color: black !important; }
   }
+  /* US-0100: Hierarchy tab polish */
+  .epic-id-display { font-family: var(--font-display, inherit); letter-spacing: 0.08em; text-transform: uppercase; }
+  .epic-id-label { font-size: 0.65em; opacity: 0.6; }
+  .epic-id-num { font-weight: 700; }
+  .epic-progress-track { height: 2px; background: var(--clr-border); border-radius: 1px; margin: 4px 0 8px; }
+  .epic-progress-fill { height: 100%; border-radius: 1px; transition: width 0.4s ease; }
+  .ac-guide { border-left: 1px solid var(--clr-accent, #7c3aed); padding-left: 12px; margin-left: 4px; }
+  html.dark .ac-guide { border-left-color: var(--clr-accent, #8b5cf6); }
+  .epic-accent-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-right: 4px; vertical-align: middle; }
   </style>`;
 }
 
