@@ -2302,3 +2302,19 @@ Steps to Reproduce:
    Lesson Encoded: Yes — see docs/LESSONS.md
    Estimated Cost USD: 0.00
    Notes: Fixed by (a) adding a `scripts/cleanup-branches.sh` copy step (new § 1.5) to `scripts/install.sh` so installed/upgraded projects get the branch hygiene tooling, (b) extending the npm-scripts merge in § 3 to register `plan:cleanup` and `plan:cleanup:dry`, and (c) documenting the commands + upgrade path in README.md ("Branch hygiene" subsection under Usage, `What gets overwritten on update` list in the Updating section). Re-running `scripts/install.sh` (idempotent) upgrades existing installs in place.
+
+BUG-0175: PlanVisualizer has no config schema migrator for upgrades — target projects with older `plan-visualizer.config.json` or `agents.config.json` silently miss fields the latest tools expect
+Severity: Medium
+Related Story: n/a
+Steps to Reproduce:
+
+1. Install PlanVisualizer into a project at version v1.0.200 (pre-US-0113 and pre-`docs.lessons`)
+2. Upgrade by re-running `scripts/install.sh` from the latest PlanVisualizer repo
+3. Generate the dashboard: `npm run plan:generate`
+   Expected: lessons tab renders; agent portraits resolve to optimized PNGs via the `avatar` key per agent
+   Actual: `config.docs.lessons` is undefined so `parseLessons` throws or returns empty; agent cards fall back to headshots because `agents.<name>.avatar` is missing from the existing config; user has no automated way to know which fields to add
+   Status: Fixed
+   Fix Branch: chore/config-schema-migration
+   Lesson Encoded: Yes — see docs/LESSONS.md
+   Estimated Cost USD: 0.00
+   Notes: Shipped `tools/migrate-config.js` — an idempotent schema migrator that adds missing required fields (currently `docs.lessons` and `agents.<name>.avatar`) to existing configs while preserving every user value. Invoked automatically from `scripts/install.sh` step 4.5 in `--auto` mode (silent unless it actually migrates something). Also exposed as `npm run plan:migrate-config` / `plan:migrate-config:dry` for explicit user invocation. Updated `plan-visualizer.config.example.json` and `agents.config.example.json` so future first-time installs start on the current schema without needing migration. 10 unit tests in `tests/unit/migrate-config.test.js` cover the ensureKey primitive, happy-path migrations, idempotency, missing-file fallbacks, invalid-JSON graceful skip, and user-value preservation.
