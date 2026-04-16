@@ -85,12 +85,29 @@ fi
 
 echo
 echo "=== 5. Delete orphan chore/version-bump-* remote branches ==="
+# IMPORTANT: gate on PR state. The version-bump workflow creates the branch
+# and opens an auto-merge PR milliseconds apart — deleting the branch while
+# the PR is still OPEN closes the PR and skips the version bump entirely
+# (learned the hard way on PR #341). Only delete when PR is MERGED or
+# absent, matching step 6's safety contract.
 VBUMPS=$(git branch -r | awk '/origin\/chore\/version-bump-/{print $1}' | sed 's|origin/||' || true)
 if [[ -n "$VBUMPS" ]]; then
   echo "$VBUMPS" | while read -r b; do
     [[ -z "$b" ]] && continue
-    echo "  $b"
-    run git push origin --delete "$b"
+    STATE=$(gh pr list --state all --head "$b" --json state --jq '.[0].state // "NO_PR"' 2>/dev/null || echo "NO_PR")
+    if [[ "$STATE" == "MERGED" || "$STATE" == "CLOSED" ]]; then
+      echo "  $b (PR $STATE — safe to delete)"
+      run git push origin --delete "$b"
+    elif [[ "$STATE" == "OPEN" ]]; then
+      echo "  $b (PR OPEN — skipping; let auto-merge finish first)"
+    elif [[ "$STATE" == "NO_PR" ]]; then
+      # No PR means the branch is truly orphaned (workflow crashed before
+      # creating the PR, or PR was deleted). Safe to remove.
+      echo "  $b (no PR — deleting orphan)"
+      run git push origin --delete "$b"
+    else
+      echo "  $b (state=$STATE — skipping)"
+    fi
   done
 else
   echo "  (none)"

@@ -315,3 +315,7 @@ _Learned from BUG-0172 — a squash merge creates a new commit on develop that i
 ### **Ship a cleanup script so the next-epic Conductor has a safety net.**
 
 _Learned during session 19 — hand-auditing 52 stale branches (48 local + 46 remote) after a 14-story epic isn't sustainable. `scripts/cleanup-branches.sh` (`npm run cleanup:branches`) codifies the recipe: remove worktrees → prune remotes → delete gone-upstream locals → force-delete squash-merged locals → delete orphan version-bump remotes → delete merged feature-branch remotes (guarded by PR-state check). Runs idempotently; has a `--dry-run` for preview. Rule: if a cleanup pattern surfaces in a post-mortem, turn it into a script immediately; the next epic will need it._
+
+### **Cleanup scripts MUST gate branch-delete on PR state, uniformly across every branch pattern.**
+
+_Learned from BUG-0173 (self-inflicted) — first version of `scripts/cleanup-branches.sh` gated step 6 (feature/bugfix/chore-session) on PR state but NOT step 5 (chore/version-bump-\*). The assumption "version-bump branches are ephemeral, always safe to nuke" is false when the auto-merge PR is still open; deleting the branch mid-flight closes the PR. Rule: any branch-delete loop in automation must check `gh pr list --state all --head <branch>` and skip when state=OPEN, regardless of how "trivial" the branch pattern looks._
