@@ -2270,3 +2270,19 @@ Steps to Reproduce:
    Lesson Encoded: Yes — see docs/LESSONS.md
    Estimated Cost USD: 0.00
    Notes: Fixed in scripts/cleanup-branches.sh step 4 — force-delete with -D after verifying the PR is MERGED on origin. Safe because the PR is the authoritative record; the local ref is just a stale pointer at the original (pre-squash) tip.
+
+BUG-0173: `scripts/cleanup-branches.sh` step 5 raced the version-bump workflow and closed its auto-merge PR
+Severity: Medium
+Related Story: n/a
+Steps to Reproduce:
+
+1. Run `npm run cleanup:branches` (or the script directly) while a `chore/version-bump-*` PR is OPEN (not yet merged)
+2. Script step 5 unconditionally deletes every `chore/version-bump-*` remote branch
+3. Deleting the branch while its PR is still open closes the PR without merging
+   Expected: only orphan version-bump branches (no PR or PR already MERGED/CLOSED) are deleted; open auto-merge PRs are left alone to complete
+   Actual: PR #341 was auto-created by the version-bump workflow after PR #340 merged, my cleanup script ran seconds later and deleted the branch, PR #341 closed without merging, version bump was skipped
+   Status: Fixed
+   Fix Branch: chore/cleanup-script-pr-gate
+   Lesson Encoded: Yes — see docs/LESSONS.md
+   Estimated Cost USD: 0.00
+   Notes: Fixed by gating step 5 on PR state via `gh pr list --state all --head <branch> --json state` exactly like step 6 already did. Delete only when state is MERGED, CLOSED, or NO_PR. Skip when state is OPEN. Self-inflicted wound from trusting "version-bump branches are always safe to nuke" — they're safe only when the auto-merge has completed. Added a manual `npm version patch` to this commit to compensate for the missed 1.0.208 version.
