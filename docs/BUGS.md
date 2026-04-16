@@ -2096,11 +2096,11 @@ Steps to Reproduce:
 2. Observe the header
    Expected: Header neutral/healthy when system is healthy; alert color reserved for incident states
    Actual: Header uses `linear-gradient(135deg, var(--brand-primary) 0%, #8B1A12 100%)` — the hardcoded dark red reads visually as "alert" even when nothing is blocked
-   Status: Open
-   Fix Branch:
+   Status: Fixed
+   Fix Branch: feature/US-0114-header-3-zone
    Lesson Encoded: No
    Estimated Cost USD: 0.00
-   Notes: To be fixed by US-0114 by replacing the gradient with a neutral canvas + 1px bottom border, and reserving red indicators for actual incident state only.
+   Notes: Fixed by US-0114: replaced gradient with neutral #0b0d12 bg + 1px divider border. Red reserved for .header-blocked accent only.
 
 ---
 

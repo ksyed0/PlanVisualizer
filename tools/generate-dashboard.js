@@ -204,6 +204,19 @@ function generateHTML(status) {
 
   const phasePercent = phases.length > 0 ? Math.round((phasesComplete / phases.length) * 100) : 0;
 
+  // US-0114: compute current phase label for center zone
+  const currentPhaseObj = phases.find((p) => p.status === 'in-progress') ||
+    (pipelineComplete ? null : phases.filter((p) => p.status === 'complete').pop());
+  const phaseLabel = pipelineComplete
+    ? 'COMPLETE'
+    : currentPhaseObj
+      ? `PHASE ${phases.indexOf(currentPhaseObj) + 1} / ${(currentPhaseObj.name || currentPhaseObj.id || '').toUpperCase()}`
+      : 'STANDBY';
+
+  // US-0114: detect if any agent or phase is BLOCKED for header accent
+  const anyBlocked = phases.some((p) => p.status === 'blocked') ||
+    Object.values(agents || {}).some((a) => a && a.status === 'blocked');
+
   const storyPercent =
     metrics.storiesTotal > 0 ? Math.round((metrics.storiesCompleted / metrics.storiesTotal) * 100) : 0;
 
@@ -282,13 +295,27 @@ function generateHTML(status) {
   }
   [data-theme="light"] body { background-image: none; }
 
-  .header { background: linear-gradient(135deg, var(--brand-primary) 0%, #8B1A12 100%); padding: 20px 32px; display: flex; align-items: center; justify-content: space-between; }
-  .header h1 { font-size: 22px; color: white; font-weight: 700; }
-  .header .subtitle { font-size: 13px; color: rgba(255,255,255,0.8); margin-top: 2px; }
-  .header .controls { display: flex; align-items: center; gap: 16px; }
-  .header .clock { text-align: right; }
-  .header .clock .time { font-size: 28px; font-weight: 700; color: white; font-variant-numeric: tabular-nums; }
-  .header .clock .label { font-size: 11px; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 1px; }
+  /* US-0114: 3-zone header — neutral canvas, no gradient (BUG-0162 fix). */
+  .header { background: #0b0d12; border-bottom: 1px solid var(--divider); padding: 14px 32px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .header.header-blocked { border-top: 2px solid #ef4444; }
+  .header-left { display: flex; flex-direction: column; min-width: 0; }
+  .header-left .header-title { font-family: var(--font-sans); font-size: 14px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .header-left .header-subtitle { font-family: var(--font-display), 'Departure Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.6); letter-spacing: 0.04em; margin-top: 2px; }
+  .header-center { display: flex; align-items: center; gap: 8px; font-family: var(--font-display), 'Departure Mono', monospace; font-size: 12px; color: rgba(255,255,255,0.8); letter-spacing: 0.04em; white-space: nowrap; }
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  .header-right .clock { text-align: right; }
+  .header-right .clock .time { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 22px; font-weight: 600; color: #fff; font-variant-numeric: tabular-nums; }
+  .header-right .clock .label { font-size: 11px; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 1px; }
+  [data-theme="light"] .header { background: #f0f2f5; }
+  [data-theme="light"] .header-left .header-title { color: var(--text-primary); }
+  [data-theme="light"] .header-left .header-subtitle { color: var(--text-muted); }
+  [data-theme="light"] .header-center { color: var(--text-secondary); }
+  [data-theme="light"] .header-right .clock .time { color: var(--text-primary); }
+  [data-theme="light"] .header-right .clock .label { color: var(--text-muted); }
+  [data-theme="light"] .btn-header { background: rgba(0,0,0,0.08); color: var(--text-primary); }
+  [data-theme="light"] .btn-header:hover { background: rgba(0,0,0,0.15); }
+  [data-theme="light"] #theme-toggle { background: rgba(0,0,0,0.08); color: var(--text-primary); }
+  [data-theme="light"] #theme-toggle:hover { background: rgba(0,0,0,0.15); }
   #theme-toggle { background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px 14px; border-radius: 20px; cursor: pointer; font-size: 13px; transition: background 0.2s; }
   #theme-toggle:hover { background: rgba(255,255,255,0.35); }
 
@@ -414,8 +441,8 @@ function generateHTML(status) {
     font-variant-numeric: tabular-nums;
   }
   .last-updated.stale { color: #f87171; }
-  [data-theme="light"] .last-updated { color: rgba(255,255,255,0.85); }
-  [data-theme="light"] .last-updated.stale { color: #fecaca; }
+  [data-theme="light"] .last-updated { color: var(--text-muted); }
+  [data-theme="light"] .last-updated.stale { color: #dc2626; }
 
   /* Footer */
   .footer { text-align: center; padding: 16px; color: var(--footer-text); font-size: 11px; }
@@ -562,8 +589,10 @@ function generateHTML(status) {
 
   /* ===== RESPONSIVE: Tablet portrait (768-1024px) ===== */
   @media (max-width: 1024px) {
-    .header { padding: 16px 20px; }
-    .header h1 { font-size: 18px; }
+    .header { padding: 12px 20px; }
+    .header-left .header-title { font-size: 13px; }
+    .header-center { font-size: 11px; }
+    .header-right .clock .time { font-size: 18px; }
     .container { padding: 16px; }
     .grid { grid-template-columns: 1fr 1fr; gap: 16px; }
     .grid-2 { grid-template-columns: 1fr; gap: 16px; }
@@ -582,9 +611,9 @@ function generateHTML(status) {
   /* ===== RESPONSIVE: Phone landscape (up to 767px landscape) ===== */
   @media (max-width: 767px) and (orientation: landscape) {
     .header { padding: 10px 16px; }
-    .header h1 { font-size: 16px; }
-    .header .subtitle { font-size: 11px; }
-    .header .clock .time { font-size: 20px; }
+    .header-left .header-title { font-size: 13px; }
+    .header-left .header-subtitle { font-size: 10px; }
+    .header-right .clock .time { font-size: 18px; }
     .container { padding: 10px; }
     .pipeline { flex-wrap: wrap; gap: 4px; }
     .phase-block { flex: 1 1 calc(33.33% - 4px); min-width: 120px; padding: 10px; }
@@ -607,12 +636,13 @@ function generateHTML(status) {
 
   /* ===== RESPONSIVE: Phone portrait (up to 480px) ===== */
   @media (max-width: 480px) {
-    .header { padding: 12px 16px; flex-wrap: wrap; gap: 8px; }
-    .header h1 { font-size: 15px; }
-    .header .subtitle { font-size: 10px; }
-    .header .controls { gap: 8px; }
-    .header .clock .time { font-size: 20px; }
-    .header .clock .label { font-size: 9px; }
+    .header { padding: 10px 16px; flex-wrap: wrap; gap: 6px; }
+    .header-left .header-title { font-size: 13px; }
+    .header-left .header-subtitle { font-size: 10px; }
+    .header-center { display: none; }
+    .header-right { gap: 8px; }
+    .header-right .clock .time { font-size: 18px; }
+    .header-right .clock .label { font-size: 9px; }
     .container { padding: 10px; }
     .pipeline { flex-direction: column; gap: 6px; }
     .phase-block { padding: 10px 12px; display: flex; align-items: center; gap: 10px; }
@@ -647,34 +677,38 @@ function generateHTML(status) {
 
   /* ===== RESPONSIVE: Small phone (up to 375px) ===== */
   @media (max-width: 375px) {
-    .header h1 { font-size: 13px; }
+    .header-left .header-title { font-size: 12px; }
     .agent-spotlight { height: 80px; }
     .spotlight-name { font-size: 14px; }
     .agent-grid { grid-template-columns: repeat(2, 1fr); }
     .agent-avatar, .agent-avatar-fallback { width: 28px; height: 28px; font-size: 14px; }
-    .header .clock .time { font-size: 18px; }
+    .header-right .clock .time { font-size: 16px; }
     #theme-toggle, .btn-header { font-size: 11px; padding: 4px 10px; }
   }
 </style>
 </head>
 <body>
 
-<div class="header">
-  <div>
-    <h1>${DASH_META.title} — ${DASH_META.subtitle}</h1>
-    <div class="subtitle">${DASH_META.platform} | ${DASH_META.agentCount} Specialized Agents | Live Agentic Pipeline Dashboard</div>
+<div class="header${anyBlocked ? ' header-blocked' : ''}" id="main-header">
+  <div class="header-left">
+    <div class="header-title">${esc(DASH_META.title)}</div>
+    <div class="header-subtitle">${esc(DASH_META.subtitle)}</div>
   </div>
-  <div class="controls">
-    <a href="plan-status.html" class="btn-header" style="text-decoration:none">&#8592; Plan Dashboard</a>
-    <button class="btn-header" onclick="document.getElementById('about-modal').classList.add('open')">ℹ️ About</button>
-    <button id="notif-btn" class="btn-header" onclick="requestAlerts()">🔔 Alerts</button>
-    <button id="theme-toggle" onclick="toggleTheme()">☀️ Light</button>
+  <div class="header-center" id="header-phase-label">
+    <span class="live-dot ok" aria-label="live" title="live" id="clock-live-dot"></span>
+    <span>${esc(phaseLabel)}</span>
+  </div>
+  <div class="header-right">
     <div class="clock">
-      <div class="time"><span class="live-dot ok" aria-label="live" title="live" id="clock-live-dot"></span>${now}</div>
+      <div class="time">${now}</div>
       <div class="label">Last Updated</div>
       <!-- US-0111 AC-0366: live ticker in JetBrains Mono; refreshState() updates this every tick. -->
       <div id="last-updated-ticker" class="last-updated" aria-live="polite">Last updated: just now</div>
     </div>
+    <a href="plan-status.html" class="btn-header" style="text-decoration:none">&#8592; Plan Dashboard</a>
+    <button class="btn-header" onclick="document.getElementById('about-modal').classList.add('open')">ℹ️ About</button>
+    <button id="notif-btn" class="btn-header" onclick="requestAlerts()">🔔 Alerts</button>
+    <button id="theme-toggle" onclick="toggleTheme()">☀️ Light</button>
   </div>
 </div>
 
