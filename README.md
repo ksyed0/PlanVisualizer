@@ -91,6 +91,17 @@ npm run plan:test:coverage
 
 The Claude Code Stop hook (`tools/capture-cost.js`) appends session token usage and cost to `AI_COST_LOG.md` automatically at the end of every Claude Code session. It reads token counts from the JSONL transcript at `~/.claude/projects/<project>/<session_id>.jsonl` (using the `transcript_path` provided in the Stop hook stdin, with a glob fallback) and computes cost from per-type rates. The "Input Tokens" column includes both direct input and cache-write tokens.
 
+### Branch hygiene (for agentic pipelines)
+
+If you run multi-story epics through the DM_AGENT pipeline, you'll accumulate `.claude/worktrees/agent-*` directories + orphan feature branches as sub-agents spawn. The cleanup script sweeps all of it:
+
+```bash
+npm run plan:cleanup:dry    # preview what would be deleted
+npm run plan:cleanup        # execute the sweep
+```
+
+Six-step pass: remove agent worktrees → prune origin → delete local branches with gone upstream → force-delete squash-merged local branches → delete orphan `chore/version-bump-*` remote branches (open-PR gated) → delete merged `feature/bugfix/chore` remote branches (open-PR gated). Preserves `develop`, `main`, `origin/gh-pages` always. Idempotent.
+
 ### Continuous Deployment
 
 The included `.github/workflows/plan-visualizer.yml` workflow triggers on pushes to `main` or `develop` when any of the tracked docs files change. It runs tests with coverage, generates `plan-status.html`, and deploys to GitHub Pages automatically.
@@ -142,7 +153,7 @@ rm -rf /tmp/PlanVisualizer
 
 The script is idempotent — it is safe to re-run at any time. If you have existing project data, it will prompt: "Would you like to estimate historical data? (y/n)" — answering yes runs a 30-day backfill to populate trend charts immediately.
 
-**What gets overwritten on update:** `tools/`, `tests/`, `jest.config.js`, `plan_visualizer.md`, `.github/workflows/plan-visualizer.yml`, `eslint.config.js` — these are tool files managed by PlanVisualizer.
+**What gets overwritten on update:** `tools/`, `tests/`, `scripts/cleanup-branches.sh`, `jest.config.js`, `plan_visualizer.md`, `.github/workflows/plan-visualizer.yml`, `eslint.config.js` — these are tool files managed by PlanVisualizer.
 
 **Historical data:** When updating, the install script will ask "Would you like to estimate historical data? (y/n)" — answering yes runs a 30-day backfill to populate trend charts immediately with simulated historical data. Answering no lets history build naturally from real generations.
 
