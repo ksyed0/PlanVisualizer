@@ -940,9 +940,33 @@ var DASH_SNAPSHOT = ${JSON.stringify({
 // without the server-side renderer being involved.
 var DASH_AGENT_COLORS = ${JSON.stringify(agentColors)};
 
+// US-0122 AC-0419 / BUG-0160: Singleton AudioContext. Previously, every
+// playBeep() call instantiated a new AudioContext, leaking a context on each
+// invocation — over many BLOCKED transitions this accumulated dozens of
+// orphaned contexts. getAudioContext() lazily constructs a single module-level
+// context on first use, then reuses it for all subsequent beeps. If the
+// browser suspended the context due to its autoplay policy, we call resume()
+// on demand (any beep triggered by an alert state change implies a user-
+// initiated path they opted into).
+var _audioCtx = null;
+function getAudioContext() {
+  if (!_audioCtx) {
+    var Ctor = window.AudioContext || window.webkitAudioContext;
+    if (!Ctor) return null;
+    try {
+      _audioCtx = new Ctor();
+    } catch (e) {
+      return null;
+    }
+  }
+  return _audioCtx;
+}
+
 function playBeep(frequency, duration, type) {
   try {
-    var ctx = new (window.AudioContext || window.webkitAudioContext)();
+    var ctx = getAudioContext();
+    if (!ctx) return;
+    if (ctx.state === 'suspended') { ctx.resume(); }
     var osc = ctx.createOscillator();
     var gain = ctx.createGain();
     osc.connect(gain);
