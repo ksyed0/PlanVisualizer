@@ -526,13 +526,35 @@ function generateHTML(status) {
   /* About modal */
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
   .modal-overlay.open { display: flex; }
-  .modal { background: var(--bg-card); border: 1px solid var(--bg-card-border); border-radius: 16px; padding: 32px; max-width: 460px; width: 90%; text-align: center; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+  .modal { background: var(--bg-card); border: 1px solid var(--bg-card-border); border-radius: 16px; padding: 28px; max-width: 720px; width: 92%; max-height: 88vh; overflow-y: auto; text-align: left; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
   .modal h3 { font-size: 18px; font-weight: 700; margin-bottom: 4px; color: var(--brand-primary); }
   .modal p { font-size: 14px; color: var(--text-secondary); margin-bottom: 6px; }
   .modal .author { font-size: 15px; font-weight: 600; color: var(--text-primary); margin: 16px 0 8px; }
-  .modal .repo-link { display: inline-block; margin: 12px 0 16px; background: var(--brand-primary); color: white; padding: 8px 20px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 600; transition: background 0.2s; }
+  .modal .repo-link { display: inline-block; margin: 10px 0 14px; background: var(--brand-primary); color: white; padding: 7px 16px; border-radius: 8px; text-decoration: none; font-size: 12px; font-weight: 600; transition: background 0.2s; }
   .modal .repo-link:hover { filter: brightness(0.85); text-decoration: none; }
-  .modal .meta-divider { border-top: 1px solid var(--bg-card-border); padding-top: 16px; margin-top: 12px; text-align: left; font-size: 12px; color: var(--text-muted); }
+
+  /* US-0123: two-column About modal (playbill image | mission + roster + meta) */
+  .modal .about-layout { display: grid; grid-template-columns: 200px 1fr; gap: 20px; align-items: start; }
+  .modal .about-playbill { border: 2px solid var(--divider); border-radius: 8px; padding: 8px; background: #0b0d12; display: flex; align-items: center; justify-content: center; }
+  .modal .about-playbill img { width: 100%; display: block; border-radius: 4px; }
+  .modal .about-right { min-width: 0; }
+  .modal .about-mission { font-size: 13px; color: var(--text-secondary); margin-bottom: 14px; line-height: 1.45; }
+  .modal .about-roster-title,
+  .modal .about-links-title { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted); margin: 0 0 6px; }
+  .modal .about-roster { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; margin-bottom: 14px; list-style: none; padding: 0; }
+  .modal .about-roster li { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-primary); min-width: 0; }
+  .modal .about-roster img,
+  .modal .about-roster .about-roster-fallback { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 1px solid var(--bg-card-border); background: var(--bg-card-inner); }
+  .modal .about-roster .about-roster-fallback { display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .modal .about-roster-name { font-weight: 600; font-size: 12px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .modal .about-roster-role { font-size: 10px; color: var(--text-muted); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .modal .about-roster-text { min-width: 0; display: flex; flex-direction: column; }
+  .modal .about-links { font-size: 12px; color: var(--text-secondary); margin-bottom: 14px; }
+  .modal .about-links a { color: var(--brand-primary); text-decoration: none; word-break: break-all; }
+  .modal .about-links a:hover { text-decoration: underline; }
+  .modal .about-links-row { margin-bottom: 2px; }
+
+  .modal .meta-divider { border-top: 1px solid var(--bg-card-border); padding-top: 14px; margin-top: 14px; text-align: left; font-size: 12px; color: var(--text-muted); }
   .modal .meta-section { margin-bottom: 12px; }
   .modal .meta-section:last-child { margin-bottom: 0; }
   .modal .meta-supertitle { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted); margin-bottom: 6px; }
@@ -542,6 +564,14 @@ function generateHTML(status) {
   .modal .meta-attribution { margin-top: 14px; font-size: 11px; color: var(--text-muted); text-align: center; }
   .modal-close { position: absolute; top: 12px; right: 16px; background: none; border: none; color: var(--text-muted); font-size: 22px; cursor: pointer; line-height: 1; padding: 4px 8px; border-radius: 6px; transition: background 0.2s; }
   .modal-close:hover { background: var(--bg-card-inner); color: var(--text-primary); }
+
+  /* US-0123: responsive fallback — single column below 640px */
+  @media (max-width: 640px) {
+    .modal { padding: 20px; }
+    .modal .about-layout { grid-template-columns: 1fr; gap: 14px; }
+    .modal .about-playbill { max-width: 240px; margin: 0 auto; }
+    .modal .about-roster { grid-template-columns: 1fr; }
+  }
 
   /* ===== US-0112 BEGIN: .live-dot indicator (keep contiguous for mechanical rebase) ===== */
   /* Reusable presence indicator — base dot + .ok/.warn/.err variants + pulse halo.
@@ -1346,29 +1376,66 @@ ${
 
 </div>
 
-<!-- About Modal — layout mirrors plan-status.html for consistency (US-0109) -->
+<!-- About Modal — US-0123: two-column (playbill image | mission + roster + meta).
+     Parity target: plan-status.html About modal (US-0109). -->
 <div id="about-modal" class="modal-overlay" onclick="if(event.target===this)this.classList.remove('open')">
   <div class="modal">
     <button class="modal-close" onclick="document.getElementById('about-modal').classList.remove('open')">&times;</button>
-    <img src="agents/images/team.png" style="width:100%; border-radius:8px; margin-bottom:12px;" onerror="this.style.display='none'">
-    <h3>${esc(DASH_META.title)}</h3>
-    <p>${esc(DASH_META.subtitle)}</p>
-    ${DASH_META.repoUrl ? `<a class="repo-link" href="${esc(DASH_META.repoUrl)}" target="_blank" rel="noopener">View on GitHub</a>` : ''}
-    <div class="meta-divider">
-      <div class="meta-section">
-        <div class="meta-supertitle">This Project</div>
-        <div class="meta-row"><span class="meta-label">Name:</span> <span class="meta-value">${esc(PROJECT_PKG.name)}</span></div>
-        <div class="meta-row"><span class="meta-label">Version:</span> <span class="meta-value">v${esc(PROJECT_PKG.version)}</span></div>
-        <div class="meta-row"><span class="meta-label">Branch:</span> <span class="meta-value">${esc(GIT_BRANCH)}</span></div>
-        <div class="meta-row"><span class="meta-label">Build:</span> <span class="meta-value">#${esc(BUILD_NUMBER)} ${esc(COMMIT_SHA)}</span></div>
+    <div class="about-layout">
+      <!-- AC-0421: left column — playbill-framed team image -->
+      <div class="about-playbill">
+        <img src="agents/images/team.png" alt="Agent team" onerror="this.style.display='none'">
       </div>
-      <div class="meta-section">
-        <div class="meta-supertitle">Dashboard Tool</div>
-        <div class="meta-row"><span class="meta-label">View:</span> <span class="meta-value">Agentic SDLC Dashboard</span></div>
-        <div class="meta-row"><span class="meta-label">Generated by:</span> <span class="meta-value">${esc(TOOL_PKG.name)} v${esc(TOOL_PKG.version)}</span></div>
-        <div class="meta-row"><span class="meta-label">Generated at:</span> <span class="meta-value">${esc(now)}</span></div>
+      <!-- AC-0422: right column — mission, roster, links, version info -->
+      <div class="about-right">
+        <h3>${esc(DASH_META.title)}</h3>
+        <p>${esc(DASH_META.subtitle)}</p>
+        <p class="about-mission">
+          An agentic SDLC mission-control dashboard. Nine role-specialised AI
+          agents plan, build, review, and ship software across a six-phase
+          pipeline — Blueprint, Architect, Build, Integration, Test, Polish —
+          while this view surfaces live progress, blockers, and telemetry.
+        </p>
+        ${DASH_META.repoUrl ? `<a class="repo-link" href="${esc(DASH_META.repoUrl)}" target="_blank" rel="noopener">View on GitHub</a>` : ''}
+        <div class="about-roster-title">Agent Roster</div>
+        <ul class="about-roster">
+          ${Object.entries(AGENT_CONFIG.agents || {})
+            .map(([name, cfg]) => {
+              const avatar = cfg.avatar || name.toLowerCase();
+              const icon = cfg.icon || '🤖';
+              return `<li>
+            <img src="agents/images/optimized/${esc(avatar)}-64.png" alt="${esc(name)}" onerror="this.outerHTML='&lt;span class=&quot;about-roster-fallback&quot;&gt;${esc(icon)}&lt;/span&gt;'">
+            <span class="about-roster-text">
+              <span class="about-roster-name">${esc(name)}</span>
+              <span class="about-roster-role">${esc(cfg.role || '')}</span>
+            </span>
+          </li>`;
+            })
+            .join('')}
+        </ul>
+        <div class="about-links-title">Links</div>
+        <div class="about-links">
+          ${DASH_META.repoUrl ? `<div class="about-links-row"><span class="meta-label">Repo:</span> <a href="${esc(DASH_META.repoUrl)}" target="_blank" rel="noopener">${esc(DASH_META.repoUrl)}</a></div>` : ''}
+          <div class="about-links-row"><span class="meta-label">Dashboard:</span> <a href="dashboard.html">dashboard.html</a></div>
+          <div class="about-links-row"><span class="meta-label">Plan:</span> <a href="plan-status.html">plan-status.html</a></div>
+        </div>
+        <div class="meta-divider">
+          <div class="meta-section">
+            <div class="meta-supertitle">This Project</div>
+            <div class="meta-row"><span class="meta-label">Name:</span> <span class="meta-value">${esc(PROJECT_PKG.name)}</span></div>
+            <div class="meta-row"><span class="meta-label">Version:</span> <span class="meta-value">v${esc(PROJECT_PKG.version)}</span></div>
+            <div class="meta-row"><span class="meta-label">Branch:</span> <span class="meta-value">${esc(GIT_BRANCH)}</span></div>
+            <div class="meta-row"><span class="meta-label">Build:</span> <span class="meta-value">#${esc(BUILD_NUMBER)} ${esc(COMMIT_SHA)}</span></div>
+          </div>
+          <div class="meta-section">
+            <div class="meta-supertitle">Dashboard Tool</div>
+            <div class="meta-row"><span class="meta-label">View:</span> <span class="meta-value">Agentic SDLC Dashboard</span></div>
+            <div class="meta-row"><span class="meta-label">Generated by:</span> <span class="meta-value">${esc(TOOL_PKG.name)} v${esc(TOOL_PKG.version)}</span></div>
+            <div class="meta-row"><span class="meta-label">Generated at:</span> <span class="meta-value">${esc(now)}</span></div>
+          </div>
+          ${DASH_META.author ? `<div class="meta-attribution">Implemented by ${esc(DASH_META.author)}${DASH_META.authorTitle ? ', ' + esc(DASH_META.authorTitle) : ''}</div>` : ''}
+        </div>
       </div>
-      ${DASH_META.author ? `<div class="meta-attribution">Implemented by ${esc(DASH_META.author)}${DASH_META.authorTitle ? ', ' + esc(DASH_META.authorTitle) : ''}</div>` : ''}
     </div>
   </div>
 </div>
