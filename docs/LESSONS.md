@@ -259,3 +259,67 @@ _Learned when Session 17 discovered `/BUGS.md` had 44 bugs NOT in `docs/BUGS.md`
 **Bugs:** N/A (governance)
 _Learned when Session 17 had to decide where US-0108 (sdlc-status CLI) belonged — EPIC-0013 was Done. Chose EPIC-0014 Follow-Up Changes. Same pattern later applied to US-0083 and US-0053 which had been attached to Done epics 0004 and 0007._
 **Date:** 2026-04-14
+
+## Session 18 lessons (EPIC-0016 Agentic Dashboard)
+
+### **Always respawn on fresh develop when parallel-wave rebase conflicts get complex.**
+
+_Learned during US-0115 pipeline timeline — multi-commit rebase after US-0118 and US-0119 merged hit irreconcilable conflicts in the same generate-dashboard.js region. A fresh respawn finished in ~5 min vs hours of manual conflict resolution._
+
+### **Test file conflicts between sibling PRs need manual `});` verification after conflict-marker removal.**
+
+_Learned during US-0120/US-0121 rebase — both added new `describe` blocks; removing conflict markers dropped a closing `});` boundary between them, producing a silent SyntaxError that prettier caught but jest tolerated (tests passed but file was malformed). Always `npx prettier --check` AND verify `grep describe(` produces balanced open/close counts after manual test-file conflict resolution._
+
+### **Derive live metrics from authoritative sources at render time; never trust hand-maintained kv stores.**
+
+_Learned from BUG-0166 — sdlc-status.json.metrics had "4 / 0" tasks, 0 bugs despite 130+ entries, stale 1861 tests. The fix (reading docs/plan-status.json at generate time) solved the displayed-data honesty problem permanently. Rule: any metric that can be derived from source of truth MUST be, otherwise it drifts._
+
+### **For `text-overflow: ellipsis` inside flex-child-in-grid-cell layouts, set `min-width: 0` at BOTH the grid item AND the flex child.**
+
+_Learned during BUG-0164 — titles overflowed panel width despite `.story-title { flex: 1; overflow: hidden; text-overflow: ellipsis }`. Root cause: `.story-row` was the grid item (`grid-template-columns: 1fr 1fr`) and grid items default to `min-width: auto`, forcing the cell wider than 1fr when content is `nowrap`. Fix: `min-width: 0` on both `.epic-stories > _`(grid items) and`.story-row` (flex container).\*
+
+### **AudioContext must be singleton'd at module level — never per-call.**
+
+_Learned from BUG-0160 — playBeep() was doing `new AudioContext()` every call. Rapid BLOCKED transitions produced 20+ leaked contexts. Pattern: module-level `_audioCtx = null` + `getAudioContext()` lazy-init with `ctx.resume()` on suspended state + graceful null-return on unsupported browsers._
+
+### **Live DOM patching requires stable IDs on every volatile element + append-only log pattern.**
+
+_Learned during US-0111 — replacing `location.reload()` with `fetch + patchDOM` needs every dynamic value to be `getElementById`-able. Phase pills, agent statuses, metric values, log entries all got stable IDs at generate time. Activity log uses `data-log-key` dedup + prepend for new entries._
+
+### **Auto-merge pauses on BEHIND; the fix is rebase + force-push, not re-enabling.**
+
+_Learned during Wave 1-4 parallel merges — `gh pr merge --auto --squash` stays armed through rebases. When a sibling PR lands and another goes BEHIND, rebase + force-push is enough; auto-merge fires when CI goes green on the new tip._
+
+### **Prettier failures on sibling PRs often trace back to `PROMPT_LOG.md` table formatting.**
+
+_Learned during multiple Wave 3+4 PRs — PROMPT_LOG markdown tables with inconsistent column alignment break Prettier on every PR until re-formatted. Run `npx prettier --check .` repo-wide after manual PROMPT_LOG edits._
+
+### **`file://` protocol breaks `fetch('./sdlc-status.json')` via CORS — by design.**
+
+_Learned during US-0111 testing — opening dashboard via Finder double-click triggers STALE state. Graceful degradation is correct; document the HTTP-server workaround (`npx serve docs/`) for local dev._
+
+## Session 19 lessons (branch hygiene)
+
+### **Every GitHub Actions workflow that opens a PR MUST pass `--delete-branch` to `gh pr merge`.**
+
+_Learned from BUG-0170 — `.github/workflows/version-bump.yml` auto-created a `chore/version-bump-<sha>` branch per develop commit and auto-merged it, but forgot `--delete-branch`. After EPIC-0016 there were 25+ orphan version-bump branches on origin. Fix: one-flag addition to line 44 of the workflow. Rule: audit every workflow file before merging it; `gh pr merge` without `--delete-branch` accumulates cruft forever._
+
+### **Worktree removal is a MANDATORY post-merge step, not optional cleanup.**
+
+_Learned from BUG-0171 — `gh pr merge --delete-branch` deletes the REMOTE branch on merge, but the LOCAL feature branch stays because the worktree holds a ref lock. After EPIC-0016, 16 `.claude/worktrees/agent-_`directories and matching`worktree-agent-_`local branches accumulated. Rule: the DM_AGENT post-merge protocol's`git worktree remove <path> --force` is required; skipping it for speed creates tech debt that compounds every story._
+
+### **Squash-merged local branches need `git branch -D` (force), not `-d`.**
+
+_Learned from BUG-0172 — a squash merge creates a new commit on develop that isn't a descendant of the feature branch's tip. `git branch -d` refuses "branch not merged" because it checks for ancestry, not upstream-PR merge state. Rule: after confirming via `gh pr list --state merged --head <branch>` that the PR is MERGED, use `git branch -D` safely. The cleanup-branches.sh script gates this behind an origin PR-state check so it never force-deletes a legitimately unmerged branch._
+
+### **Ship a cleanup script so the next-epic Conductor has a safety net.**
+
+_Learned during session 19 — hand-auditing 52 stale branches (48 local + 46 remote) after a 14-story epic isn't sustainable. `scripts/cleanup-branches.sh` (`npm run cleanup:branches`) codifies the recipe: remove worktrees → prune remotes → delete gone-upstream locals → force-delete squash-merged locals → delete orphan version-bump remotes → delete merged feature-branch remotes (guarded by PR-state check). Runs idempotently; has a `--dry-run` for preview. Rule: if a cleanup pattern surfaces in a post-mortem, turn it into a script immediately; the next epic will need it._
+
+### **Cleanup scripts MUST gate branch-delete on PR state, uniformly across every branch pattern.**
+
+_Learned from BUG-0173 (self-inflicted) — first version of `scripts/cleanup-branches.sh` gated step 6 (feature/bugfix/chore-session) on PR state but NOT step 5 (chore/version-bump-\*). The assumption "version-bump branches are ephemeral, always safe to nuke" is false when the auto-merge PR is still open; deleting the branch mid-flight closes the PR. Rule: any branch-delete loop in automation must check `gh pr list --state all --head <branch>` and skip when state=OPEN, regardless of how "trivial" the branch pattern looks._
+
+### **Every schema-bearing config file needs a paired migrator script, invoked on install/upgrade.**
+
+_Learned during the post-EPIC-0016 cleanup audit (BUG-0175) — US-0113 added `agents.<name>.avatar` and an earlier change required `docs.lessons` in `plan-visualizer.config.json`, but `scripts/install.sh` only created configs from the example when absent; upgrading an existing install quietly skipped both. Target projects on older configs silently lost features. Rule: whenever a field becomes required (code dereferences it without a sane undefined-path), add it to the corresponding example AND to `tools/migrate-config.js` at the same commit. The migrator must be idempotent (re-runnable), preserve user values, and run automatically from install.sh. Expose `plan:migrate-config:dry` so users can preview before applying._

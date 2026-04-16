@@ -1,6 +1,11 @@
 'use strict';
 
 const { buildSearchIndex } = require('./search-index');
+// US-0125 (EPIC-0016): BADGE_TONE + badge() moved to ./theme.js so the
+// Agentic Dashboard (tools/generate-dashboard.js) can reuse the same
+// semantic tokens. Re-exported from this module to preserve the existing
+// require('./render-html') surface.
+const { BADGE_TONE, badge } = require('./theme');
 
 const esc = (s) =>
   String(s ?? '')
@@ -13,41 +18,6 @@ const jsEsc = (s) =>
     .replace(/\\/g, '\\\\')
     .replace(/'/g, "\\'")
     .replace(/\n/g, '\\n');
-
-// US-0097 (EPIC-0015): Semantic badge token system. Maps 17 known badge labels
-// to 5 semantic tones (success/warn/danger/info/neutral). Colours flow from
-// CSS variables defined in :root and html.dark so badges adapt to theme
-// (fixes BUG-0110 where hardcoded dark hex values rendered as dark rectangles
-// in light mode).
-const BADGE_TONE = {
-  // success
-  Done: 'success',
-  Pass: 'success',
-  Fixed: 'success',
-  // warn
-  'To Do': 'warn',
-  'Not Run': 'warn',
-  Medium: 'warn',
-  P1: 'warn',
-  High: 'warn',
-  // danger
-  Blocked: 'danger',
-  Fail: 'danger',
-  Open: 'danger',
-  Critical: 'danger',
-  P0: 'danger',
-  // info
-  'In Progress': 'info',
-  // neutral
-  Planned: 'neutral',
-  Low: 'neutral',
-  P2: 'neutral',
-};
-
-function badge(text) {
-  const tone = BADGE_TONE[text] || 'neutral';
-  return `<span class="badge badge-${tone}">${esc(text)}</span>`;
-}
 
 function usd(n) {
   const num = Number(n);
@@ -837,9 +807,12 @@ function renderChartsTab(data) {
         <div style="height:${Math.max(300, data.epics.length * 36)}px;position:relative"><canvas id="chart-epic-progress"></canvas></div>
       </div>
 
-      <div class="card-elev rounded-lg p-4">
+      <div class="card-elev rounded-lg p-4 flex flex-col">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Cost Breakdown (Projected vs AI)</h3>
-        <div style="height:300px;position:relative"><canvas id="chart-cost-breakdown"></canvas></div>
+        <!-- BUG-0169 — flex-centered wrapper lets the fixed-height chart sit vertically centered when the grid row is forced taller by a sibling card (e.g. Epic Progress dynamic height). -->
+        <div class="flex-1 flex items-center justify-center">
+          <div class="w-full" style="height:300px;position:relative"><canvas id="chart-cost-breakdown"></canvas></div>
+        </div>
       </div>
 
       <div class="card-elev rounded-lg p-4">
@@ -1410,11 +1383,14 @@ function renderBugsTab(data) {
     return a.localeCompare(b);
   });
 
-  const renderBugRow = (bug) => {
+  // BUG-0165 — accent color on the first cell of every row paints a continuous
+  // left-edge stripe per epic group, matching Hierarchy's `epic-block` card.
+  const renderBugRow = (bug, accent) => {
     const epicId = storyEpicMap[normalizeStoryRef(bug.relatedStory)] || '_ungrouped';
+    const accentLeft = accent ? `border-left:4px solid ${accent.border};` : '';
     return `
     <tr id="bug-row-${esc(bug.id)}" class="bug-row border-t border-slate-100 dark:border-slate-700" data-status="${esc(bug.status)}" data-epic="${esc(epicId)}" data-severity="${esc(bug.severity)}">
-      <td class="px-3 py-2 font-mono text-xs whitespace-nowrap dark:text-slate-200">${bug.id}</td>
+      <td class="px-3 py-2 font-mono text-xs whitespace-nowrap dark:text-slate-200" style="${accentLeft}">${bug.id}</td>
       <td class="px-3 py-2 text-sm dark:text-slate-200">${esc(bug.title)}</td>
       <td class="px-3 py-2 text-center">${badge(bug.severity)}</td>
       <td class="px-3 py-2 text-center">${badge(bug.status)}</td>
@@ -1444,22 +1420,37 @@ function renderBugsTab(data) {
   </div>`;
   };
 
+  const openBugCount = (bugs) =>
+    bugs.filter((b) => !/^(Fixed|Retired|Cancelled|Verified|Closed)/i.test(b.status)).length;
+
   const bugColGroups = bugEpicOrder
     .map((epicId, i) => {
       const bugs = bugsByEpic[epicId];
       const epic = data.epics.find((e) => e.id === epicId);
       const accent = EPIC_ACCENT_COLORS[i % EPIC_ACCENT_COLORS.length];
-      const label = epic ? `${epicId}: ${esc(epic.title)}` : epicId === '_ungrouped' ? 'No Epic' : epicId;
       const beid = `bugs-ep-${epicId.replace(/[^a-zA-Z0-9]/g, '-')}`;
+      const open = openBugCount(bugs);
+      const titlePart = epic
+        ? `<span class="font-semibold dark:text-slate-100">${esc(epic.title)}</span>`
+        : epicId === '_ungrouped'
+          ? `<span class="italic text-slate-500">No Epic</span>`
+          : '';
+      // BUG-0165 — header mirrors Hierarchy: left-accent bar, epic-id +
+      // status badge + title + aggregate counter on the right.
+      // BUG-0167 — default-collapsed to match Hierarchy; &#9654; arrow + hidden tbody.
       return `<tbody>
     <tr class="border-t-2 border-slate-300 dark:border-slate-600 cursor-pointer select-none bug-epic-header" data-epic="${epicId}" style="background:${accent.bg}" onclick="toggleSection('${beid}','${beid}-arrow')">
-      <td colspan="7" class="px-3 py-2">
-        <span id="${beid}-arrow" class="text-slate-400 text-xs mr-2">&#9660;</span>
-        <span class="font-mono text-xs font-bold" style="color:${accent.border}">${label}</span>
-        <span class="ml-2 text-xs text-slate-500 bug-count">(${bugs.length})</span>
+      <td colspan="7" class="px-3 py-2" style="border-left:4px solid ${accent.border};">
+        <div class="flex flex-wrap items-center gap-3">
+          <span id="${beid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9654;</span>
+          <span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${epicId}</span>
+          ${epic ? badge(epic.status) : ''}
+          ${titlePart}
+          <span class="ml-auto text-xs text-slate-500 bug-count">${open} open &middot; ${bugs.length} total</span>
+        </div>
       </td>
     </tr>
-    </tbody><tbody id="${beid}">${bugs.map(renderBugRow).join('')}</tbody>`;
+    </tbody><tbody id="${beid}" class="hidden">${bugs.map((b) => renderBugRow(b, accent)).join('')}</tbody>`;
     })
     .join('');
 
@@ -1468,13 +1459,21 @@ function renderBugsTab(data) {
       const bugs = bugsByEpic[epicId];
       const epic = data.epics.find((e) => e.id === epicId);
       const accent = EPIC_ACCENT_COLORS[i % EPIC_ACCENT_COLORS.length];
-      const label = epic ? `${epicId}: ${esc(epic.title)}` : epicId === '_ungrouped' ? 'No Epic' : epicId;
       const bceid = `bugs-card-ep-${epicId.replace(/[^a-zA-Z0-9]/g, '-')}`;
-      return `<div class="mb-6 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden bug-epic-card" data-epic="${epicId}" style="border-left:4px solid ${accent.border}">
-      <div class="flex items-center gap-2 px-3 py-2 cursor-pointer select-none bug-epic-header" data-epic="${epicId}" style="background:${accent.bg}" onclick="toggleSection('${bceid}','${bceid}-arrow')">
+      const open = openBugCount(bugs);
+      const titlePart = epic
+        ? `<span class="font-semibold dark:text-slate-100">${esc(epic.title)}</span>`
+        : epicId === '_ungrouped'
+          ? `<span class="italic text-slate-500">No Epic</span>`
+          : '';
+      // BUG-0168 — mb-2 matches Hierarchy's tight spacing between epic groups.
+      return `<div class="mb-2 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden bug-epic-card" data-epic="${epicId}" style="border-left:4px solid ${accent.border}">
+      <div class="flex flex-wrap items-center gap-3 px-3 py-2 cursor-pointer select-none bug-epic-header" data-epic="${epicId}" style="background:${accent.bg}" onclick="toggleSection('${bceid}','${bceid}-arrow')">
         <span id="${bceid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9654;</span>
-        <span class="font-mono text-xs font-bold" style="color:${accent.border}">${label}</span>
-        <span class="ml-1 text-xs text-slate-500 bug-count">(${bugs.length})</span>
+        <span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${epicId}</span>
+        ${epic ? badge(epic.status) : ''}
+        ${titlePart}
+        <span class="ml-auto text-xs text-slate-500 bug-count">${open} open &middot; ${bugs.length} total</span>
       </div>
       <div id="${bceid}" class="p-3 hidden">
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">${bugs.map(renderBugCard).join('')}</div>

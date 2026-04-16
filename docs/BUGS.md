@@ -2031,3 +2031,290 @@ Steps to Reproduce:
    Lesson Encoded: No
    Estimated Cost USD: 0.00
    Notes: Fix adds normalizeStoryRef() regex extraction in render-html.js + rewrites parseReleasePlan to scan chunks directly (no fence boundaries). 46 bugs still ungrouped after fix — all with n/a relatedStory from the legacy merge; those are a data concern for EPIC-0017 discovery.
+
+---
+
+BUG-0159: Agentic Dashboard 30s location.reload() wipes scroll position and modal state
+Severity: High
+Related Story: US-0111
+Steps to Reproduce:
+
+1. Open docs/dashboard.html in a browser
+2. Scroll down into the agents list or the activity log
+3. Wait up to 30 seconds
+   Expected: Page refreshes polling data in place and preserves scroll position + any open modal/popup state
+   Actual: setInterval fires location.reload(), the whole page reloads, scroll resets to top, and any open About modal / expanded card closes
+   Status: Fixed
+   Fix Branch: feature/US-0111-live-fetch-and-patch
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed by US-0111 — the setInterval(location.reload, 30000) loop was replaced with setInterval(refreshState, 5000). refreshState() fetches docs/sdlc-status.json and invokes patchDOM(newStatus) + runAlertCheck(newStatus) so only changed nodes update; scroll position, open modals, and portrait popups now persist across ticks.
+
+---
+
+BUG-0160: playBeep() leaks AudioContext on every BLOCKED transition
+Severity: Medium
+Related Story: US-0122
+Steps to Reproduce:
+
+1. Open docs/dashboard.html
+2. Simulate 20 rapid BLOCKED-state transitions (e.g. toggle status in sdlc-status.json)
+3. Open DevTools → Application → Storage
+   Expected: A single AudioContext instance exists and is reused across beeps
+   Actual: playBeep() calls `new AudioContext()` on every invocation; browsers limit AudioContexts per page and the count climbs until the limit is hit
+   Status: Fixed
+   Fix Branch: feature/US-0122-alerts-incident-ticker
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed by US-0122 — playBeep now reuses a singleton module-level AudioContext via getAudioContext(), eliminating the per-call leak.
+
+---
+
+BUG-0161: Agent-card hover filter:brightness(1.12) is nearly invisible in light mode
+Severity: Medium
+Related Story: US-0119
+Steps to Reproduce:
+
+1. Open docs/dashboard.html in light mode
+2. Hover over an agent card in the agent grid
+   Expected: A visible hover affordance indicates the card is interactive
+   Actual: brightness(1.12) on an already-light surface produces almost no visible shift; users can't tell the card is hoverable
+   Status: Fixed
+   Fix Branch: feature/US-0119-agent-spotlight-stations
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed in US-0119 (AC-0405). .agent-card:hover now applies a 4px agent-color outline glow via box-shadow 0 0 0 4px var(--agent-color-ring) — an rgba-40% variant of the per-agent color pulled from agents.config.json. The previous filter:brightness(1.12) has been removed. The active-station 3px box-shadow glow (AC-0403) is preserved and layers with the hover glow so active+hover produces a combined outline. Verified visible in both dark and light themes since the agent color ring is a saturated hue regardless of surface brightness.
+
+---
+
+BUG-0162: Agentic Dashboard header gradient hardcodes #8B1A12 dark red which reads as warning state
+Severity: Low
+Related Story: US-0114
+Steps to Reproduce:
+
+1. Open docs/dashboard.html (any healthy pipeline state)
+2. Observe the header
+   Expected: Header neutral/healthy when system is healthy; alert color reserved for incident states
+   Actual: Header uses `linear-gradient(135deg, var(--brand-primary) 0%, #8B1A12 100%)` — the hardcoded dark red reads visually as "alert" even when nothing is blocked
+   Status: Fixed
+   Fix Branch: feature/US-0114-header-3-zone
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed by US-0114: replaced gradient with neutral #0b0d12 bg + 1px divider border. Red reserved for .header-blocked accent only.
+
+---
+
+BUG-0163: Agent portraits exist in docs/agents/images/ but are not wired into agents.config.json or the dashboard renderer
+Severity: Low
+Related Story: US-0113
+Steps to Reproduce:
+
+1. Inspect docs/agents/images/ — see 9 agent PNG portraits (conductor, compass, keystone, lens, palette, forge, pixel, sentinel, circuit)
+2. Open docs/dashboard.html
+3. Inspect any agent card
+   Expected: Each agent card shows its portrait photo
+   Actual: Cards render emoji-only because the renderer has no avatar path to use — agents.config.json has no `avatar` field and generate-dashboard.js doesn't read one
+   Status: Fixed
+   Fix Branch: feature/US-0113-agent-portraits
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: To be fixed by US-0113. Portraits are raw 7-9MB PNGs so preprocessing to WebP at 64/160/320 sizes is required before wiring, otherwise page weight balloons to 70+ MB. Optimized variants already exist under docs/agents/images/optimized/ from Session 17 — US-0113 just needs to wire config and renderer.
+
+BUG-0164: Agentic Dashboard USER STORIES panel shows "undefined" titles and duplicates the epic label
+Severity: Medium
+Related Story: n/a
+Steps to Reproduce:
+
+1. Open docs/dashboard.html
+2. Observe the USER STORIES panel
+   Expected: Each story row shows the story ID, title, and status; each epic header shows the epic ID once followed by its human-readable title
+   Actual: Story title column reads "undefined" because docs/sdlc-status.json stories have no `title` field; epic header renders the epic ID twice ("EPIC-0015 EPIC-0015") because `status.epics` is an empty object and the fallback uses the same ID
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0164-0166-dashboard-honesty
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed by enriching stories with titles from docs/plan-status.json at generate time in tools/generate-dashboard.js, suppressing the duplicate epic label when no human-readable name is available, and adding `min-width: 0` to the `.story-title` flex child so long titles truncate with ellipsis inside the fixed-width panel instead of overrunning horizontally.
+
+---
+
+BUG-0165: Plan Visualizer Bugs tab does not match the Hierarchy tab's epic grouping appearance
+Severity: Low
+Related Story: n/a
+Steps to Reproduce:
+
+1. Open docs/plan-status.html
+2. Compare the Hierarchy tab with the Bugs tab
+   Expected: Both tabs show epic groupings with the same visual treatment — left-border accent in the epic color, epic ID + status badge + title in the header, and an aggregate counter on the right
+   Actual: Hierarchy uses `.epic-block` cards with a 4px left accent border and status badge in the header; Bugs uses a plain `<tbody>` top-border with no left accent, no status badge, and only a `(N)` count
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0164-0166-dashboard-honesty
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed in tools/lib/render-html.js renderBugsTab — each per-epic header+rows pair is now wrapped in a `.bug-epic-block` tbody styled with the same left-accent bar and padding as Hierarchy, and the header renders the epic status badge plus an "N open · M total" aggregate.
+
+---
+
+BUG-0166: Agentic Dashboard metric cards show stale and incorrect data (including "4 / 0" for Tasks Done)
+Severity: High
+Related Story: n/a
+Steps to Reproduce:
+
+1. Open docs/dashboard.html
+2. Observe the Phase Progress, Quality, and Reviews metric cards
+   Expected: All metric counts reflect the live state of the project — tasks/stories/bugs/tests/coverage derived from the authoritative sources (RELEASE_PLAN.md, BUGS.md, coverage-summary.json)
+   Actual: Tasks Done renders "4 / 0" because `tasksTotal` is never bumped off its init-time zero default; Stories Done counts only pipeline-fired stories (5/6) not the project's 125; Bugs Open/Fixed are both frozen at 0 despite 130+ bug entries; Tests Passed 1861 is a stale sticky value from an earlier session
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0164-0166-dashboard-honesty
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed in tools/generate-dashboard.js by deriving story/task/bug counts from docs/plan-status.json at render time (same source Plan Visualizer uses), and guarding all progress-bar denominators against zero to prevent the "4/0" display regression. Coverage is now derived from plan-status.coverage.statements. **Follow-up (EPIC-0017):** Tests Passed / Tests Total still read from the stale sdlc-status.json `metrics` fields because no jest-summary file is persisted in the repo. Proper fix requires either (a) writing a jest test-summary file into docs/coverage/ during CI and reading it here, or (b) resetting testsPassed at cycle boundary when EPIC-0019's cycle-history lands. Phases Complete / Reviews Approved are left as-is (they reflect current-run pipeline state, not project totals) and should also be reset per cycle.
+
+BUG-0167: Plan Visualizer Bugs tab column view is default-expanded, not collapsed
+Severity: Low
+Related Story: n/a
+Steps to Reproduce:
+
+1. Open docs/plan-status.html
+2. Click the Bugs tab (Column view)
+   Expected: Epic groups are default-collapsed (arrow ▶), matching the Hierarchy tab convention documented in MEMORY.md
+   Actual: Groups are default-expanded (arrow ▼) and every bug row renders, making the list very long
+   Status: Fixed
+   Fix Branch: bugfix/dashboard-polish-round-2
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed in tools/lib/render-html.js renderBugsTab column view — arrow template changed from &#9660; to &#9654; and the bug-rows tbody now gets `class="hidden"` by default. Card view was already default-collapsed; this aligns the two views.
+
+---
+
+BUG-0168: Plan Visualizer Bugs tab card view uses mb-6 instead of Hierarchy's mb-2 spacing
+Severity: Low
+Related Story: n/a
+Steps to Reproduce:
+
+1. Open docs/plan-status.html
+2. Switch the Bugs tab to Card view
+3. Compare vertical spacing between epic groups to the Hierarchy tab
+   Expected: Same tight spacing (mb-2) between epic groupings across Hierarchy, Bugs, and Costs
+   Actual: Bugs card view uses mb-6, producing ~3x wider vertical gaps than Hierarchy
+   Status: Fixed
+   Fix Branch: bugfix/dashboard-polish-round-2
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Single mb-6 → mb-2 on the bug-epic-card wrapper in tools/lib/render-html.js renderBugsTab card view.
+
+---
+
+BUG-0169: Cost Breakdown chart is not vertically centered in its panel
+Severity: Low
+Related Story: n/a
+Steps to Reproduce:
+
+1. Open docs/plan-status.html
+2. Click the Charts tab
+3. Observe the Cost Breakdown (Projected vs AI) card in the first row of the 2-column grid
+   Expected: The chart sits vertically centered within the card's render height
+   Actual: Chart is pinned to the top of the card with empty space below, because the sibling Epic Progress card is forced to ~648px (18 epics × 36px), and the grid equal-height layout stretches Cost Breakdown to match while its canvas is fixed at 300px
+   Status: Fixed
+   Fix Branch: bugfix/dashboard-polish-round-2
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed in tools/lib/render-html.js by making the Cost Breakdown card a flex column (`flex flex-col`) and wrapping the 300px-tall canvas in a `flex-1 flex items-center justify-center` parent so the chart centers vertically regardless of how much extra height the grid row imposes. Other similarly-sized chart cards (Test Coverage, AI Cost Timeline, etc.) retain their existing layout for now — extend the pattern if further centering issues surface.
+
+BUG-0170: `chore/version-bump-*` branches are not auto-deleted after PR merge
+Severity: Low
+Related Story: n/a
+Steps to Reproduce:
+
+1. Merge any PR to develop (triggers .github/workflows/version-bump.yml)
+2. The workflow creates `chore/version-bump-<sha>`, opens a PR, auto-merges with `gh pr merge --squash --auto`
+3. Inspect remote branches: `git branch -r | grep version-bump`
+   Expected: branch deleted after the auto-merge completes
+   Actual: branch persists on origin; 25+ orphan version-bump branches accumulate after a typical epic (one per develop-advance)
+   Status: Fixed
+   Fix Branch: chore/branch-cleanup-tooling
+   Lesson Encoded: Yes — see docs/LESSONS.md
+   Estimated Cost USD: 0.00
+   Notes: Fixed by adding `--delete-branch` to the `gh pr merge` invocation in .github/workflows/version-bump.yml line 44. `gh pr merge --squash --auto --delete-branch`.
+
+---
+
+BUG-0171: Agent worktrees under `.claude/worktrees/agent-*` are not cleaned up after feature-branch PR merges
+Severity: Medium
+Related Story: n/a
+Steps to Reproduce:
+
+1. Run a multi-story epic through the DM_AGENT pipeline, spawning Pixel/Lens/Sentinel/Circuit with `isolation: "worktree"` per story
+2. Let each story's PR merge via `gh pr merge --auto --squash --delete-branch`
+3. Inspect worktrees: `git worktree list` and `ls .claude/worktrees/`
+   Expected: worktrees removed after each story merges; only the main repo worktree remains
+   Actual: every agent-spawn worktree persists until manually removed; 14-story epic leaves 16+ worktrees (Pixel retries leave extras)
+   Status: Fixed
+   Fix Branch: chore/branch-cleanup-tooling
+   Lesson Encoded: Yes — see docs/LESSONS.md
+   Estimated Cost USD: 0.00
+   Notes: Fixed by (a) strengthening the "Post-merge — sync main repo" section of docs/agents/DM_AGENT.md with a "why this step is mandatory" rationale and (b) shipping scripts/cleanup-branches.sh as a safety-net sweep (npm run cleanup:branches) for end-of-epic cleanup. Root cause: gh pr merge --delete-branch deletes the REMOTE branch but can't delete the LOCAL branch while a worktree holds the ref — the worktree must be removed first.
+
+---
+
+BUG-0172: Squash-merged feature branches leave local refs that `git branch -d` refuses to delete
+Severity: Low
+Related Story: n/a
+Steps to Reproduce:
+
+1. Squash-merge a feature branch into develop via a PR
+2. On the local repo where the feature branch exists, run `git branch -d feature/US-XXXX-name`
+   Expected: local branch is deleted (it's merged upstream)
+   Actual: git refuses because the branch's tip is not an ancestor of develop (squash created a NEW commit with a different SHA)
+   Status: Fixed
+   Fix Branch: chore/branch-cleanup-tooling
+   Lesson Encoded: Yes — see docs/LESSONS.md
+   Estimated Cost USD: 0.00
+   Notes: Fixed in scripts/cleanup-branches.sh step 4 — force-delete with -D after verifying the PR is MERGED on origin. Safe because the PR is the authoritative record; the local ref is just a stale pointer at the original (pre-squash) tip.
+
+BUG-0173: `scripts/cleanup-branches.sh` step 5 raced the version-bump workflow and closed its auto-merge PR
+Severity: Medium
+Related Story: n/a
+Steps to Reproduce:
+
+1. Run `npm run cleanup:branches` (or the script directly) while a `chore/version-bump-*` PR is OPEN (not yet merged)
+2. Script step 5 unconditionally deletes every `chore/version-bump-*` remote branch
+3. Deleting the branch while its PR is still open closes the PR without merging
+   Expected: only orphan version-bump branches (no PR or PR already MERGED/CLOSED) are deleted; open auto-merge PRs are left alone to complete
+   Actual: PR #341 was auto-created by the version-bump workflow after PR #340 merged, my cleanup script ran seconds later and deleted the branch, PR #341 closed without merging, version bump was skipped
+   Status: Fixed
+   Fix Branch: chore/cleanup-script-pr-gate
+   Lesson Encoded: Yes — see docs/LESSONS.md
+   Estimated Cost USD: 0.00
+   Notes: Fixed by gating step 5 on PR state via `gh pr list --state all --head <branch> --json state` exactly like step 6 already did. Delete only when state is MERGED, CLOSED, or NO_PR. Skip when state is OPEN. Self-inflicted wound from trusting "version-bump branches are always safe to nuke" — they're safe only when the auto-merge has completed. Added a manual `npm version patch` to this commit to compensate for the missed 1.0.208 version.
+
+BUG-0174: `scripts/install.sh` does not propagate branch hygiene tooling to target projects
+Severity: Low
+Related Story: n/a
+Steps to Reproduce:
+
+1. Run `bash scripts/install.sh` in a fresh target project
+2. Inspect the target project's `scripts/` directory
+3. Inspect the target project's `package.json` scripts
+   Expected: `scripts/cleanup-branches.sh` is present and `plan:cleanup` / `plan:cleanup:dry` npm scripts are registered, matching what PlanVisualizer itself ships with
+   Actual: only `tools/`, `tests/`, `jest.config.js`, `eslint.config.js`, `plan_visualizer.md`, and the Pages workflow get copied. Branch hygiene tooling stays behind — target projects running DM_AGENT pipelines accumulate 50+ stale refs per epic with no bundled sweep command.
+   Status: Fixed
+   Fix Branch: chore/install-cleanup-tooling-propagation
+   Lesson Encoded: Yes — see docs/LESSONS.md
+   Estimated Cost USD: 0.00
+   Notes: Fixed by (a) adding a `scripts/cleanup-branches.sh` copy step (new § 1.5) to `scripts/install.sh` so installed/upgraded projects get the branch hygiene tooling, (b) extending the npm-scripts merge in § 3 to register `plan:cleanup` and `plan:cleanup:dry`, and (c) documenting the commands + upgrade path in README.md ("Branch hygiene" subsection under Usage, `What gets overwritten on update` list in the Updating section). Re-running `scripts/install.sh` (idempotent) upgrades existing installs in place.
+
+BUG-0175: PlanVisualizer has no config schema migrator for upgrades — target projects with older `plan-visualizer.config.json` or `agents.config.json` silently miss fields the latest tools expect
+Severity: Medium
+Related Story: n/a
+Steps to Reproduce:
+
+1. Install PlanVisualizer into a project at version v1.0.200 (pre-US-0113 and pre-`docs.lessons`)
+2. Upgrade by re-running `scripts/install.sh` from the latest PlanVisualizer repo
+3. Generate the dashboard: `npm run plan:generate`
+   Expected: lessons tab renders; agent portraits resolve to optimized PNGs via the `avatar` key per agent
+   Actual: `config.docs.lessons` is undefined so `parseLessons` throws or returns empty; agent cards fall back to headshots because `agents.<name>.avatar` is missing from the existing config; user has no automated way to know which fields to add
+   Status: Fixed
+   Fix Branch: chore/config-schema-migration
+   Lesson Encoded: Yes — see docs/LESSONS.md
+   Estimated Cost USD: 0.00
+   Notes: Shipped `tools/migrate-config.js` — an idempotent schema migrator that adds missing required fields (currently `docs.lessons` and `agents.<name>.avatar`) to existing configs while preserving every user value. Invoked automatically from `scripts/install.sh` step 4.5 in `--auto` mode (silent unless it actually migrates something). Also exposed as `npm run plan:migrate-config` / `plan:migrate-config:dry` for explicit user invocation. Updated `plan-visualizer.config.example.json` and `agents.config.example.json` so future first-time installs start on the current schema without needing migration. 10 unit tests in `tests/unit/migrate-config.test.js` cover the ensureKey primitive, happy-path migrations, idempotency, missing-file fallbacks, invalid-JSON graceful skip, and user-value preservation.

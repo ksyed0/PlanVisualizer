@@ -4,55 +4,64 @@
       "role": "Delivery Manager",
       "icon": "🎯",
       "color": "#D52B1E",
-      "instructionFile": "docs/agents/DM_AGENT.md"
+      "instructionFile": "docs/agents/DM_AGENT.md",
+      "avatar": "conductor"
     },
     "Compass": {
       "role": "Product Owner",
       "icon": "🧭",
       "color": "#1565C0",
-      "instructionFile": "docs/agents/PO_AGENT.md"
+      "instructionFile": "docs/agents/PO_AGENT.md",
+      "avatar": "compass"
     },
     "Keystone": {
       "role": "Architect",
       "icon": "🏗️",
       "color": "#6A1B9A",
-      "instructionFile": "docs/agents/ARCHITECT_AGENT.md"
+      "instructionFile": "docs/agents/ARCHITECT_AGENT.md",
+      "avatar": "keystone"
     },
     "Lens": {
       "role": "Code Reviewer",
       "icon": "🔍",
       "color": "#F57C00",
-      "instructionFile": "docs/agents/CODE_REVIEWER_AGENT.md"
+      "instructionFile": "docs/agents/CODE_REVIEWER_AGENT.md",
+      "avatar": "lens"
     },
     "Palette": {
       "role": "UI Designer",
       "icon": "🎨",
       "color": "#00897B",
-      "instructionFile": "docs/agents/UI_DESIGNER_AGENT.md"
+      "instructionFile": "docs/agents/UI_DESIGNER_AGENT.md",
+      "avatar": "palette"
     },
     "Forge": {
       "role": "Backend Developer",
       "icon": "⚒️",
       "color": "#C62828",
-      "instructionFile": "docs/agents/BE_DEV_AGENT.md"
+      "instructionFile": "docs/agents/BE_DEV_AGENT.md",
+      "avatar": "forge"
     },
     "Pixel": {
       "role": "Frontend Developer",
       "icon": "📱",
       "color": "#283593",
-      "instructionFile": "docs/agents/FE_DEV_AGENT.md"
+      "instructionFile": "docs/agents/FE_DEV_AGENT.md",
+      "avatar": "pixel"
     },
     "Sentinel": {
       "role": "Functional Tester",
       "icon": "🛡️",
       "color": "#2E7D32",
-      "instructionFile": "docs/agents/FUNCTIONAL_TESTER_AGENT.md"
+      "instructionFile": "docs/agents/FUNCTIONAL_TESTER_AGENT.md",
+      "avatar": "sentinel"
     },
     "Circuit": {
       "role": "Automation Tester",
       "icon": "⚡",
       "color": "#4527A0",
-      "instructionFile": "docs/agents/AUTOMATION_TESTER_AGENT.md"
+      "instructionFile": "docs/agents/AUTOMATION_TESTER_AGENT.md",
+      "avatar": "circuit"
     }
   },
   "dashboard": {

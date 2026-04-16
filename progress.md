@@ -4,6 +4,64 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 18 — 2026-04-15 through 2026-04-16
+
+### What Was Done
+
+**EPIC-0016 "Agentic Dashboard Mission Control Redesign" — complete (14/14 stories)** plus 7 interrupt bugfixes shipped in 18 PRs.
+
+#### EPIC-0016 story execution
+
+All 14 stories merged to develop via the DM_AGENT pipeline (Pixel/Palette/Forge → Lens → PR → auto-merge-squash):
+
+| Wave | Story                                                                                 | PR   | Notes                                                        |
+| ---- | ------------------------------------------------------------------------------------- | ---- | ------------------------------------------------------------ |
+| 0.1  | US-0124 test harness for generate-dashboard.js                                        | #308 | 81.48% baseline coverage from zero                           |
+| 0.2  | US-0125 extract BADGE_TONE/badge() → tools/lib/theme.js                               | #310 | 13 new theme tests; render-html re-export identity preserved |
+| 1.1  | US-0110 canvas refresh — `#0b0d12` + dot-grid + Departure Mono/Geist                  | #312 | New `.section-header` utility                                |
+| 1.2  | US-0112 .live-dot component (ok/warn/err + pulse + prefers-reduced-motion)            | #314 | 4 placements with stable IDs                                 |
+| 2.1  | US-0111 live fetch-and-patch (L) — runAlertCheck extraction + refreshState + patchDOM | #316 | Removed location.reload (BUG-0159). JetBrains Mono ticker    |
+| 2.2  | US-0122 singleton AudioContext + BLOCKED border + incident ticker                     | #320 | BUG-0160 closed                                              |
+| 3.1  | US-0113 agent portraits wired from optimized PNGs                                     | #322 | avatar field in agents.config.json; BUG-0163 closed          |
+| 3.2  | US-0114 3-zone header (title/phase/clock) — no more red gradient                      | #323 | BUG-0162 closed                                              |
+| 4    | US-0115 6-phase pipeline timeline + cycle counter                                     | #326 | L story — partial-progress fill + BLOCKED beacon             |
+| 4    | US-0118 differentiated metric cards (hero/doughnut/chips)                             | #327 | Inline SVG doughnut, no Chart.js                             |
+| 4    | US-0119 spotlight + station redesign (portraits + on-air dot)                         | #328 | BUG-0161 closed                                              |
+| 4    | US-0120 stories panel status-strip + elapsed pill + agent dot                         | #330 | min-width:0 BUG-0164 guard preserved                         |
+| 4    | US-0121 activity-log terminal aesthetic + filter chips + tail-mode                    | #331 | localStorage tail-mode persist                               |
+| 4    | US-0123 two-column About modal (playbill + roster)                                    | #332 | Parity with US-0109                                          |
+
+#### Interrupt bugfixes (round 1 + round 2, 7 BUGs across 2 PRs)
+
+- **PR #306** (BUG-0164 USER STORIES undefined titles, BUG-0165 Bugs tab Hierarchy parity, BUG-0166 metric card honesty) — fixed story titles via plan-status.json enrichment, Bugs tab gets 4px left-accent stripe + status badge + "N open · M total" aggregate matching Hierarchy, metric cards derive stories/tasks/bugs/coverage from plan-status.json
+- **PR #318** (BUG-0167 column-view default-collapse, BUG-0168 card mb-6→mb-2, BUG-0169 Cost Breakdown vertical centering, + attribution fix + story-title min-width root cause fix)
+
+#### BUG-0166 follow-up (logged for EPIC-0017)
+
+Tests Passed / Phases Complete / Reviews Approved still read from `sdlc-status.json` (stale). Real fix requires jest-summary file persisted in CI, and cycle-reset semantics from EPIC-0019. Noted in BUG-0166 Notes.
+
+### Test Results
+
+- **5588 tests passing / 331 suites** on develop after all merges.
+- **tools/generate-dashboard.js coverage: 83.72% statements / 60.45% branches / 87.03% functions / 83.78% lines** — exceeds the 60% epic-wrap target by +24 points (from zero baseline).
+- `tools/lib/render-html.js` coverage stable at 91.56%.
+- `tools/lib/theme.js` coverage 100% / 75% branches.
+
+### Blockers Resolved During the Session
+
+- Recurring base-drift: every parallel Wave-merge introduced BLOCK-then-rebase cycle as siblings landed. Protocol learned: _respawn from fresh origin/develop_ rather than fighting multi-commit rebase conflicts; cherry-pick + manual resolve for single-hunk test file conflicts (preserving both describe blocks).
+- Prettier failures on sibling PRs repeatedly traced to `PROMPT_LOG.md` formatting drift.
+- `sdlc-status.json` being gitignored means GitHub Pages live-fetch needs `npm run init:status` in the build step — flagged as deploy concern, not a US-0111 code defect.
+- `file://` protocol CORS blocks the live fetch — graceful STALE degradation is the correct behavior; recommend `npx serve docs/` for local dev.
+
+### Retry Log
+
+| Story   | Agent   | Attempts | Outcome                                                                          |
+| ------- | ------- | -------- | -------------------------------------------------------------------------------- |
+| US-0112 | Palette | 2        | APPROVE (1 base-drift BLOCK → rebase)                                            |
+| US-0115 | Pixel   | 2        | Fresh respawn on post-#327/#328 develop after unresolvable rebase conflict       |
+| US-0120 | -       | -        | Manual conflict resolution in test file (kept both describe blocks) + syntax fix |
+
 ## Session 17 — 2026-04-13 through 2026-04-14
 
 ### What Was Done

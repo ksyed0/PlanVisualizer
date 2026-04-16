@@ -1,6 +1,6 @@
 {
   "name": "plan-visualizer",
-  "version": "1.0.188",
+  "version": "1.0.212",
   "description": "Self-contained project dashboard for Claude Code projects",
   "scripts": {
     "test": "jest",
@@ -14,7 +14,11 @@
     "build": "npm run generate && npm run init:status && npm run dashboard",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "prepare": "husky"
+    "cleanup:branches": "bash scripts/cleanup-branches.sh",
+    "cleanup:branches:dry": "bash scripts/cleanup-branches.sh --dry-run",
+    "prepare": "husky",
+    "migrate-config": "node tools/migrate-config.js",
+    "migrate-config:dry": "node tools/migrate-config.js --dry-run"
   },
   "lint-staged": {
     "*.{js,json,md,yml,yaml}": "prettier --write",

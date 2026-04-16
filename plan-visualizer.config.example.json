@@ -5,6 +5,7 @@
     "testCases": "docs/TEST_CASES.md",
     "bugs": "docs/BUGS.md",
     "costLog": "docs/AI_COST_LOG.md",
+    "lessons": "docs/LESSONS.md",
     "outputDir": "docs"
   },
   "coverage": { "summaryPath": "docs/coverage/coverage-summary.json" },

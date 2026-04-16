@@ -4,54 +4,63 @@
       "role": "Delivery Manager",
       "icon": "🎯",
       "color": "#D52B1E",
+      "avatar": "conductor",
       "instructionFile": "docs/agents/DM_AGENT.md"
     },
     "Compass": {
       "role": "Product Owner",
       "icon": "🧭",
       "color": "#1565C0",
+      "avatar": "compass",
       "instructionFile": "docs/agents/PO_AGENT.md"
     },
     "Keystone": {
       "role": "Architect",
       "icon": "🏗️",
       "color": "#6A1B9A",
+      "avatar": "keystone",
       "instructionFile": "docs/agents/ARCHITECT_AGENT.md"
     },
     "Lens": {
       "role": "Code Reviewer",
       "icon": "🔍",
       "color": "#F57C00",
+      "avatar": "lens",
       "instructionFile": "docs/agents/CODE_REVIEWER_AGENT.md"
     },
     "Palette": {
       "role": "UI Designer",
       "icon": "🎨",
       "color": "#00897B",
+      "avatar": "palette",
       "instructionFile": "docs/agents/UI_DESIGNER_AGENT.md"
     },
     "Forge": {
       "role": "Backend Developer",
       "icon": "⚒️",
       "color": "#C62828",
+      "avatar": "forge",
       "instructionFile": "docs/agents/BE_DEV_AGENT.md"
     },
     "Pixel": {
       "role": "Frontend Developer",
       "icon": "📱",
       "color": "#283593",
+      "avatar": "pixel",
       "instructionFile": "docs/agents/FE_DEV_AGENT.md"
     },
     "Sentinel": {
       "role": "Functional Tester",
       "icon": "🛡️",
       "color": "#2E7D32",
+      "avatar": "sentinel",
       "instructionFile": "docs/agents/FUNCTIONAL_TESTER_AGENT.md"
     },
     "Circuit": {
       "role": "Automation Tester",
       "icon": "⚡",
       "color": "#4527A0",
+      "avatar": "circuit",
       "instructionFile": "docs/agents/AUTOMATION_TESTER_AGENT.md"
     }
   },
@@ -62,8 +71,7 @@
     "repoUrl": "https://github.com/yourorg/your-project",
     "primaryColor": "#1565C0",
     "platform": "Claude Code",
-    "author": "Your Name",
-    "authorTitle": "Your Role"
+    "author": "Kamal Syed"
   },
   "orchestrator": {
     "dmAgent": "Conductor",
