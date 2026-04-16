@@ -1048,5 +1048,6 @@ describe('US-0101 — Kanban board polish', () => {
     const html = renderHtml(sampleData);
     // Cards should use card-elev not hardcoded bg-white
     expect(html).toMatch(/card-elev/);
+    expect(html).not.toMatch(/story-row story-card-hover bg-white/);
   });
 });

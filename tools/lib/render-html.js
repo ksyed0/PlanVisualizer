@@ -321,7 +321,7 @@ function renderHierarchyTab(data) {
           })
           .join('');
         return `
-      <div class="story-row story-card-hover bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg p-3 flex flex-col gap-1"
+      <div class="story-row story-card-hover card-elev rounded-lg p-3 flex flex-col gap-1"
            data-epic="${esc(story.epicId)}" data-status="${esc(story.status)}" data-priority="${esc(story.priority)}">
         <div class="flex flex-wrap items-center gap-1 cursor-pointer" onclick="toggleCardACs('${jsEsc(story.id)}')">
           ${badge(story.status)} ${badge(story.priority)}
@@ -2484,7 +2484,7 @@ function renderPrintCSS() {
   .ksw-header-row, .ksw-swim-body { display: grid; grid-template-columns: 160px repeat(5, minmax(200px, 1fr)); }
   /* US-0101: Kanban polish — AC-0329 column header gradient + accent rule */
   .ksw-status-cell { padding: 8px 10px; background: linear-gradient(to bottom, var(--clr-header-bg, #f8fafc), var(--clr-body-bg, #f1f5f9)); color: var(--clr-header-text); border-bottom: 2px solid var(--clr-accent, #7c3aed); position: sticky; top: 0; z-index: 6; }
-  html.dark .ksw-status-cell { background: linear-gradient(to bottom, #1e2433, #111318); }
+  html.dark .ksw-status-cell { background: linear-gradient(to bottom, var(--clr-header-bg), var(--clr-panel-bg)); }
   .ksw-label-cell { padding: 8px 10px; }
   .ksw-header-row .ksw-label-cell { background: var(--clr-header-bg); border-bottom: 2px solid var(--clr-border); position: sticky; top: 0; z-index: 6; }
   .ksw-swimlane { border-left: 3px solid transparent; margin-bottom: 4px; }
@@ -2498,7 +2498,7 @@ function renderPrintCSS() {
   .ksw-inprogress { animation: kswPulse 3s ease-in-out infinite; }
   @keyframes kswPulse {
     0%, 100% { background: transparent; }
-    50% { background: rgba(59, 130, 246, 0.06); }
+    50% { background: color-mix(in srgb, var(--clr-accent) 6%, transparent); }
   }
   /* US-0101: AC-0332 WIP count pill */
   .wip-pill { display:inline-flex; align-items:center; justify-content:center; min-width:20px; height:18px; border-radius:9px; padding:0 5px; font-size:11px; font-weight:600; background:var(--clr-border); color:var(--clr-text-muted,#64748b); }
