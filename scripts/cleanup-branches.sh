@@ -67,10 +67,17 @@ else
 fi
 
 echo
-echo "=== 4. Force-delete local squash-merged feature/bugfix/chore-session branches ==="
+echo "=== 4. Force-delete local squash-merged feature/bugfix/chore branches ==="
 # Squash merges leave local refs that aren't ancestors of develop, so plain -d
 # refuses. We know these are merged because their PRs are MERGED on origin.
-LOCAL=$(git branch --format='%(refname:short)' | grep -E '^(feature/US-|bugfix/BUG-|chore/session-|worktree-agent-)' || true)
+# Broad pattern catches all EPIC conventions: feature/, bugfix/, chore/,
+# plus Claude's internal worktree-agent-* refs. Excludes chore/version-bump-*
+# because step 5 owns those (they need the open-PR race guard).
+# Always skips the currently-checked-out branch via the per-row guard below.
+LOCAL=$(git branch --format='%(refname:short)' \
+  | grep -E '^(feature/|bugfix/|chore/|worktree-agent-)' \
+  | grep -v '^chore/version-bump-' \
+  || true)
 if [[ -n "$LOCAL" ]]; then
   echo "$LOCAL" | while read -r b; do
     [[ -z "$b" ]] && continue
@@ -114,8 +121,16 @@ else
 fi
 
 echo
-echo "=== 6. Delete merged feature/bugfix/chore-session remote branches ==="
-REMOTE_MERGED=$(git branch -r | awk '/origin\/(feature\/US-|bugfix\/BUG-|chore\/session-)/{print $1}' | sed 's|origin/||' || true)
+echo "=== 6. Delete merged feature/bugfix/chore remote branches ==="
+# Broad pattern matches all EPIC conventions. Excludes chore/version-bump-*
+# because step 5 owns those. The PR-state gate below ensures we never delete
+# a branch with an open PR — even for one-off chore/<anything> branches the
+# user creates outside the session-close / branch-cleanup patterns.
+REMOTE_MERGED=$(git branch -r \
+  | awk '/origin\/(feature\/|bugfix\/|chore\/)/{print $1}' \
+  | sed 's|origin/||' \
+  | grep -v '^chore/version-bump-' \
+  || true)
 if [[ -n "$REMOTE_MERGED" ]]; then
   echo "$REMOTE_MERGED" | while read -r b; do
     [[ -z "$b" ]] && continue
