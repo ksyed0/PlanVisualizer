@@ -2114,8 +2114,8 @@ Steps to Reproduce:
 3. Inspect any agent card
    Expected: Each agent card shows its portrait photo
    Actual: Cards render emoji-only because the renderer has no avatar path to use — agents.config.json has no `avatar` field and generate-dashboard.js doesn't read one
-   Status: Open
-   Fix Branch:
+   Status: Fixed
+   Fix Branch: feature/US-0113-agent-portraits
    Lesson Encoded: No
    Estimated Cost USD: 0.00
    Notes: To be fixed by US-0113. Portraits are raw 7-9MB PNGs so preprocessing to WebP at 64/160/320 sizes is required before wiring, otherwise page weight balloons to 70+ MB. Optimized variants already exist under docs/agents/images/optimized/ from Session 17 — US-0113 just needs to wire config and renderer.
