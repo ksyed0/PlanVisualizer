@@ -163,6 +163,24 @@ function readJSON(filePath) {
   }
 }
 
+// US-0120 AC-0408: format a duration between startedAt and now as "6h 23m",
+// "12m", or "45s". Returns null if the input is missing/invalid so callers can
+// choose whether to render the pill at all. Negative durations clamp to 0s so
+// clock-skew between the writer and this renderer never produces "-3m".
+function formatElapsed(startedAt, nowMs) {
+  if (!startedAt) return null;
+  const startMs = Date.parse(startedAt);
+  if (!Number.isFinite(startMs)) return null;
+  const deltaMs = Math.max(0, (typeof nowMs === 'number' ? nowMs : Date.now()) - startMs);
+  const totalSeconds = Math.floor(deltaMs / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  if (minutes > 0) return `${minutes}m`;
+  return `${seconds}s`;
+}
+
 function generateHTML(status) {
   const now = new Date().toLocaleString('en-US', {
     month: 'short',
@@ -753,18 +771,49 @@ function generateHTML(status) {
   /* Story table */
   .story-list { display: flex; flex-direction: column; gap: 10px; }
   .epic-group { }
-  .epic-header { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; padding: 0 4px 4px; border-bottom: 1px solid var(--divider); margin-bottom: 4px; display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; }
+  /* US-0120 AC-0409: epic header reuses .section-header tracked-out treatment
+     (Departure Mono-aligned via var(--font-display), uppercase, 0.14em) for
+     visual consistency with the other "SECTION" labels across the dashboard. */
+  .epic-header { font-family: var(--font-display), 'Departure Mono', 'SF Mono', Menlo, Consolas, monospace; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.14em; padding: 0 4px 4px; border-bottom: 1px solid var(--divider); margin-bottom: 4px; display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; }
   .epic-header:hover { color: var(--text-secondary); }
   .epic-toggle { font-size: 9px; margin-left: auto; opacity: 0.6; transition: transform 0.2s; }
   .epic-group.collapsed .epic-toggle { transform: rotate(-90deg); }
   .epic-group.collapsed .epic-stories { display: none; }
-  .epic-id { color: var(--brand-primary); font-size: 10px; font-weight: 600; }
+  .epic-id { color: var(--brand-primary); font-size: 10px; font-weight: 600; letter-spacing: 0.04em; }
   .epic-stories { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
   .epic-stories > * { min-width: 0; }
-  .story-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: var(--bg-card-inner); border-radius: 6px; font-size: 12px; transition: all 0.2s; min-width: 0; }
+  /* US-0120 AC-0407: 3px vertical status strip on the left of each story row.
+     Colour is swapped via .status-complete / .status-inprogress / .status-planned
+     modifiers so patchDOM() could later retune it without re-rendering. */
+  .story-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: var(--bg-card-inner); border-radius: 6px; font-size: 12px; transition: all 0.2s; min-width: 0; border-left: 3px solid #64748b; }
   .story-row:hover { filter: brightness(1.1); }
-  .story-id { font-weight: 700; color: var(--brand-primary); width: 65px; }
-  .story-title { flex: 1; min-width: 0; color: var(--story-title); margin: 0 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .story-row.status-complete { border-left-color: #22c55e; }
+  .story-row.status-inprogress { border-left-color: #f59e0b; }
+  .story-row.status-planned { border-left-color: #64748b; }
+  .story-id { font-weight: 700; color: var(--brand-primary); width: 65px; flex-shrink: 0; }
+  /* US-0120 AC-0410: keep .story-title's min-width:0 intact (BUG-0164 fix) so
+     long titles still truncate correctly when an agent dot is present. */
+  .story-title { flex: 1; min-width: 0; color: var(--story-title); margin: 0 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px; }
+  .story-title-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .story-agent { display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0; font-size: 10px; font-weight: 600; color: var(--text-secondary); }
+  .story-agent-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+  /* US-0120 AC-0408: elapsed-time pill in JetBrains Mono next to the status
+     badge. Rendered only for In Progress stories that carry a startedAt stamp. */
+  .story-elapsed {
+    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+    flex-shrink: 0;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+    margin-right: 6px;
+  }
+  [data-theme="light"] .story-elapsed { color: #b45309; }
   .story-status { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600; flex-shrink: 0; white-space: nowrap; }
   .story-status.Planned { background: var(--status-planned-bg); color: var(--status-planned-color); }
   .story-status.InProgress { background: var(--status-inprogress-bg); color: #F57C00; }
@@ -1733,14 +1782,39 @@ ${(() => {
   return Object.entries(groups)
     .map(([epicId, epicStories]) => {
       const epicName = epicTitles[epicId] || epics[epicId] || '';
+      const nowMs = Date.now();
       const storyRows = epicStories
         .map((s) => {
           const statusClass = s.status === 'In Progress' ? 'InProgress' : s.status;
+          // US-0120 AC-0407: map the story status to a status-strip modifier.
+          // Anything that isn't Complete/Done or In Progress falls through to
+          // "planned" so ToDo, Planned, Backlog, and unknown values all share
+          // the muted slate strip.
+          const isComplete = s.status === 'Complete' || s.status === 'Done';
+          const isInProgress = s.status === 'In Progress';
+          const stripClass = isComplete ? 'status-complete' : isInProgress ? 'status-inprogress' : 'status-planned';
           const title = storyTitles[s.id] || s.title || '';
-          return `        <div class="story-row">
+          // US-0120 AC-0410: agent color-dot + initial next to the title.
+          // Only render when assignedAgent resolves to a known agent colour so
+          // legacy rows (assignedAgent: null, or a name we don't track) stay
+          // unchanged and patchDOM-friendly.
+          const agentName = s.assignedAgent || '';
+          const agentColor = agentName ? agentColors[agentName] : null;
+          const agentInitial = agentName ? agentName.charAt(0).toUpperCase() : '';
+          const agentChip =
+            agentName && agentColor
+              ? `<span class="story-agent" title="${esc(agentName)}"><span class="story-agent-dot" style="background:${agentColor}"></span><span class="story-agent-initial">${esc(agentInitial)}</span></span>`
+              : '';
+          // US-0120 AC-0408: elapsed-time pill for In Progress stories that
+          // carry a startedAt timestamp. Skipped silently otherwise.
+          const elapsed = isInProgress ? formatElapsed(s.startedAt, nowMs) : null;
+          const elapsedPill = elapsed
+            ? `<span class="story-elapsed" title="elapsed since startedAt">${esc(elapsed)}</span>`
+            : '';
+          return `        <div class="story-row ${stripClass}">
           <span class="story-id">${s.id}</span>
-          <span class="story-title">${esc(title)}</span>
-          <span class="story-status ${statusClass}">${s.status}</span>
+          <span class="story-title"><span class="story-title-text">${esc(title)}</span>${agentChip}</span>
+          ${elapsedPill}<span class="story-status ${statusClass}">${s.status}</span>
         </div>`;
         })
         .join('\n');
@@ -2774,4 +2848,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { generateHTML, generate };
+module.exports = { generateHTML, generate, formatElapsed };
