@@ -321,7 +321,7 @@ function renderHierarchyTab(data) {
           })
           .join('');
         return `
-      <div class="story-row story-card-hover bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg p-3 flex flex-col gap-1"
+      <div class="story-row story-card-hover card-elev rounded-lg p-3 flex flex-col gap-1"
            data-epic="${esc(story.epicId)}" data-status="${esc(story.status)}" data-priority="${esc(story.priority)}">
         <div class="flex flex-wrap items-center gap-1 cursor-pointer" onclick="toggleCardACs('${jsEsc(story.id)}')">
           ${badge(story.status)} ${badge(story.priority)}
@@ -437,8 +437,16 @@ function renderKanbanTab(data) {
         </li>`;
       })
       .join('');
+    // AC-0330: left border stripe by priority (P0=danger, P1=warn, else transparent)
+    const priorityStripe =
+      s.priority === 'P0'
+        ? 'var(--badge-danger-text,#dc2626)'
+        : s.priority === 'P1'
+          ? 'var(--badge-warn-text,#d97706)'
+          : 'transparent';
     return `
-    <div class="story-row story-card-hover bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded p-3 mb-2 cursor-pointer anim-stagger" style="--i:${Math.min(cardIdx, 19)}"
+    <div class="story-row story-card-hover card-elev border border-slate-200 dark:border-slate-600 rounded p-3 mb-2 cursor-pointer anim-stagger"
+         style="--i:${Math.min(cardIdx || 0, 19)};border-left:3px solid ${priorityStripe}"
          data-epic="${esc(s.epicId)}" data-status="${esc(s.status)}" data-priority="${esc(s.priority)}"
          onclick="toggleKanbanACs('${jsEsc(s.id)}')">
       <div class="flex gap-1 mb-1">${badge(s.priority)} <span class="text-xs text-slate-500 font-mono">${esc(s.id)}</span></div>
@@ -459,7 +467,7 @@ function renderKanbanTab(data) {
         const count = data.stories.filter((s) => s.status === col).length;
         return `<div class="ksw-status-cell">
         <span class="text-xs font-semibold uppercase tracking-widest">${col}</span>
-        <span class="text-xs font-normal opacity-60 ml-1">(${count})</span>
+        <span class="wip-pill${count > 3 ? ' wip-over' : ''} ml-1">${count}</span>
       </div>`;
       })
       .join('')}
@@ -485,7 +493,8 @@ function renderKanbanTab(data) {
         ${cols
           .map((col) => {
             const items = data.stories.filter((s) => s.epicId === epicId && s.status === col);
-            return `<div class="ksw-cards-cell">${items.map(renderCard).join('')}</div>`;
+            const inProgressClass = col === 'In Progress' ? ' ksw-inprogress' : '';
+            return `<div class="ksw-cards-cell${inProgressClass}">${items.map((s, idx) => renderCard(s, idx)).join('')}</div>`;
           })
           .join('')}
       </div>
@@ -510,7 +519,8 @@ function renderKanbanTab(data) {
         ${cols
           .map((col) => {
             const ci = items.filter((s) => s.status === col);
-            return `<div class="ksw-cards-cell">${ci.map(renderCard).join('')}</div>`;
+            const inProgressClass = col === 'In Progress' ? ' ksw-inprogress' : '';
+            return `<div class="ksw-cards-cell${inProgressClass}">${ci.map((s, idx) => renderCard(s, idx)).join('')}</div>`;
           })
           .join('')}
       </div>
@@ -2472,7 +2482,9 @@ function renderPrintCSS() {
   .ksw-outer { overflow: auto; height: calc(100vh - var(--sticky-top, 100px) - 1rem); padding: 16px; }
   .ksw-board { min-width: calc(160px + 5 * 200px); }
   .ksw-header-row, .ksw-swim-body { display: grid; grid-template-columns: 160px repeat(5, minmax(200px, 1fr)); }
-  .ksw-status-cell { padding: 8px 10px; background: var(--clr-header-bg); color: var(--clr-header-text); border-bottom: 2px solid var(--clr-border); position: sticky; top: 0; z-index: 6; }
+  /* US-0101: Kanban polish — AC-0329 column header gradient + accent rule */
+  .ksw-status-cell { padding: 8px 10px; background: linear-gradient(to bottom, var(--clr-header-bg, #f8fafc), var(--clr-body-bg, #f1f5f9)); color: var(--clr-header-text); border-bottom: 2px solid var(--clr-accent, #7c3aed); position: sticky; top: 0; z-index: 6; }
+  html.dark .ksw-status-cell { background: linear-gradient(to bottom, var(--clr-header-bg), var(--clr-panel-bg)); }
   .ksw-label-cell { padding: 8px 10px; }
   .ksw-header-row .ksw-label-cell { background: var(--clr-header-bg); border-bottom: 2px solid var(--clr-border); position: sticky; top: 0; z-index: 6; }
   .ksw-swimlane { border-left: 3px solid transparent; margin-bottom: 4px; }
@@ -2482,6 +2494,15 @@ function renderPrintCSS() {
   .ksw-epic-title { font-size: 12px; font-weight: 700; letter-spacing: 0.04em; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .ksw-epic-count { font-size: 11px; color: var(--clr-text-muted); flex-shrink: 0; }
   .ksw-cards-cell { padding: 8px 6px; border-right: 1px solid var(--clr-border); min-height: 40px; }
+  /* US-0101: AC-0331 In-Progress column pulse */
+  .ksw-inprogress { animation: kswPulse 3s ease-in-out infinite; }
+  @keyframes kswPulse {
+    0%, 100% { background: transparent; }
+    50% { background: color-mix(in srgb, var(--clr-accent) 6%, transparent); }
+  }
+  /* US-0101: AC-0332 WIP count pill */
+  .wip-pill { display:inline-flex; align-items:center; justify-content:center; min-width:20px; height:18px; border-radius:9px; padding:0 5px; font-size:11px; font-weight:600; background:var(--clr-border); color:var(--clr-text-muted,#64748b); }
+  .wip-over { background:var(--badge-danger-bg,#fef2f2); color:var(--badge-danger-text,#dc2626); border:1px solid var(--badge-danger-border,#fca5a5); }
   html.dark .scroll-table table thead { background-color: transparent; }
   html.dark table tbody tr { border-color: var(--clr-border) !important; }
   html.dark .bg-white { background-color: var(--clr-panel-bg) !important; }
