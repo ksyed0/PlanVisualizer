@@ -384,7 +384,8 @@ function generateHTML(status) {
   .epic-group.collapsed .epic-stories { display: none; }
   .epic-id { color: var(--brand-primary); font-size: 10px; font-weight: 600; }
   .epic-stories { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
-  .story-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: var(--bg-card-inner); border-radius: 6px; font-size: 12px; transition: all 0.2s; }
+  .epic-stories > * { min-width: 0; }
+  .story-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: var(--bg-card-inner); border-radius: 6px; font-size: 12px; transition: all 0.2s; min-width: 0; }
   .story-row:hover { filter: brightness(1.1); }
   .story-id { font-weight: 700; color: var(--brand-primary); width: 65px; }
   .story-title { flex: 1; min-width: 0; color: var(--story-title); margin: 0 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

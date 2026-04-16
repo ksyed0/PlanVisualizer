@@ -807,9 +807,12 @@ function renderChartsTab(data) {
         <div style="height:${Math.max(300, data.epics.length * 36)}px;position:relative"><canvas id="chart-epic-progress"></canvas></div>
       </div>
 
-      <div class="card-elev rounded-lg p-4">
+      <div class="card-elev rounded-lg p-4 flex flex-col">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Cost Breakdown (Projected vs AI)</h3>
-        <div style="height:300px;position:relative"><canvas id="chart-cost-breakdown"></canvas></div>
+        <!-- BUG-0169 — flex-centered wrapper lets the fixed-height chart sit vertically centered when the grid row is forced taller by a sibling card (e.g. Epic Progress dynamic height). -->
+        <div class="flex-1 flex items-center justify-center">
+          <div class="w-full" style="height:300px;position:relative"><canvas id="chart-cost-breakdown"></canvas></div>
+        </div>
       </div>
 
       <div class="card-elev rounded-lg p-4">
@@ -1434,11 +1437,12 @@ function renderBugsTab(data) {
           : '';
       // BUG-0165 — header mirrors Hierarchy: left-accent bar, epic-id +
       // status badge + title + aggregate counter on the right.
+      // BUG-0167 — default-collapsed to match Hierarchy; &#9654; arrow + hidden tbody.
       return `<tbody>
     <tr class="border-t-2 border-slate-300 dark:border-slate-600 cursor-pointer select-none bug-epic-header" data-epic="${epicId}" style="background:${accent.bg}" onclick="toggleSection('${beid}','${beid}-arrow')">
       <td colspan="7" class="px-3 py-2" style="border-left:4px solid ${accent.border};">
         <div class="flex flex-wrap items-center gap-3">
-          <span id="${beid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9660;</span>
+          <span id="${beid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9654;</span>
           <span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${epicId}</span>
           ${epic ? badge(epic.status) : ''}
           ${titlePart}
@@ -1446,7 +1450,7 @@ function renderBugsTab(data) {
         </div>
       </td>
     </tr>
-    </tbody><tbody id="${beid}">${bugs.map((b) => renderBugRow(b, accent)).join('')}</tbody>`;
+    </tbody><tbody id="${beid}" class="hidden">${bugs.map((b) => renderBugRow(b, accent)).join('')}</tbody>`;
     })
     .join('');
 
@@ -1462,7 +1466,8 @@ function renderBugsTab(data) {
         : epicId === '_ungrouped'
           ? `<span class="italic text-slate-500">No Epic</span>`
           : '';
-      return `<div class="mb-6 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden bug-epic-card" data-epic="${epicId}" style="border-left:4px solid ${accent.border}">
+      // BUG-0168 — mb-2 matches Hierarchy's tight spacing between epic groups.
+      return `<div class="mb-2 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden bug-epic-card" data-epic="${epicId}" style="border-left:4px solid ${accent.border}">
       <div class="flex flex-wrap items-center gap-3 px-3 py-2 cursor-pointer select-none bug-epic-header" data-epic="${epicId}" style="background:${accent.bg}" onclick="toggleSection('${bceid}','${bceid}-arrow')">
         <span id="${bceid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9654;</span>
         <span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${epicId}</span>

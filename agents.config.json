@@ -62,8 +62,7 @@
     "repoUrl": "https://github.com/yourorg/your-project",
     "primaryColor": "#1565C0",
     "platform": "Claude Code",
-    "author": "Your Name",
-    "authorTitle": "Your Role"
+    "author": "Kamal Syed"
   },
   "orchestrator": {
     "dmAgent": "Conductor",

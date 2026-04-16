@@ -2168,3 +2168,54 @@ Steps to Reproduce:
    Lesson Encoded: No
    Estimated Cost USD: 0.00
    Notes: Fixed in tools/generate-dashboard.js by deriving story/task/bug counts from docs/plan-status.json at render time (same source Plan Visualizer uses), and guarding all progress-bar denominators against zero to prevent the "4/0" display regression. Coverage is now derived from plan-status.coverage.statements. **Follow-up (EPIC-0017):** Tests Passed / Tests Total still read from the stale sdlc-status.json `metrics` fields because no jest-summary file is persisted in the repo. Proper fix requires either (a) writing a jest test-summary file into docs/coverage/ during CI and reading it here, or (b) resetting testsPassed at cycle boundary when EPIC-0019's cycle-history lands. Phases Complete / Reviews Approved are left as-is (they reflect current-run pipeline state, not project totals) and should also be reset per cycle.
+
+BUG-0167: Plan Visualizer Bugs tab column view is default-expanded, not collapsed
+Severity: Low
+Related Story: n/a
+Steps to Reproduce:
+
+1. Open docs/plan-status.html
+2. Click the Bugs tab (Column view)
+   Expected: Epic groups are default-collapsed (arrow ▶), matching the Hierarchy tab convention documented in MEMORY.md
+   Actual: Groups are default-expanded (arrow ▼) and every bug row renders, making the list very long
+   Status: Fixed
+   Fix Branch: bugfix/dashboard-polish-round-2
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed in tools/lib/render-html.js renderBugsTab column view — arrow template changed from &#9660; to &#9654; and the bug-rows tbody now gets `class="hidden"` by default. Card view was already default-collapsed; this aligns the two views.
+
+---
+
+BUG-0168: Plan Visualizer Bugs tab card view uses mb-6 instead of Hierarchy's mb-2 spacing
+Severity: Low
+Related Story: n/a
+Steps to Reproduce:
+
+1. Open docs/plan-status.html
+2. Switch the Bugs tab to Card view
+3. Compare vertical spacing between epic groups to the Hierarchy tab
+   Expected: Same tight spacing (mb-2) between epic groupings across Hierarchy, Bugs, and Costs
+   Actual: Bugs card view uses mb-6, producing ~3x wider vertical gaps than Hierarchy
+   Status: Fixed
+   Fix Branch: bugfix/dashboard-polish-round-2
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Single mb-6 → mb-2 on the bug-epic-card wrapper in tools/lib/render-html.js renderBugsTab card view.
+
+---
+
+BUG-0169: Cost Breakdown chart is not vertically centered in its panel
+Severity: Low
+Related Story: n/a
+Steps to Reproduce:
+
+1. Open docs/plan-status.html
+2. Click the Charts tab
+3. Observe the Cost Breakdown (Projected vs AI) card in the first row of the 2-column grid
+   Expected: The chart sits vertically centered within the card's render height
+   Actual: Chart is pinned to the top of the card with empty space below, because the sibling Epic Progress card is forced to ~648px (18 epics × 36px), and the grid equal-height layout stretches Cost Breakdown to match while its canvas is fixed at 300px
+   Status: Fixed
+   Fix Branch: bugfix/dashboard-polish-round-2
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed in tools/lib/render-html.js by making the Cost Breakdown card a flex column (`flex flex-col`) and wrapping the 300px-tall canvas in a `flex-1 flex items-center justify-center` parent so the chart centers vertically regardless of how much extra height the grid row imposes. Other similarly-sized chart cards (Test Coverage, AI Cost Timeline, etc.) retain their existing layout for now — extend the pattern if further centering issues surface.
