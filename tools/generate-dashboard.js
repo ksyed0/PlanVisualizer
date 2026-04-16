@@ -504,6 +504,62 @@ function generateHTML(status) {
   }
   /* ===== US-0112 END ===== */
 
+  /* ===== US-0122: BLOCKED full-viewport border + incident ticker ===== */
+  /* AC-0416: Red 4px border overlay shown whenever any agent or phase is
+     blocked. position:fixed + inset:0 + pointer-events:none guarantees it
+     does not intercept clicks or affect layout. Fades in/out on toggle and
+     pulses while active; prefers-reduced-motion disables the pulse. */
+  .blocked-border {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    border: 4px solid #ef4444;
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 180ms ease;
+  }
+  .blocked-border.active {
+    opacity: 1;
+    animation: blocked-border-pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes blocked-border-pulse {
+    0%, 100% { box-shadow: inset 0 0 0 0 rgba(239, 68, 68, 0.0); }
+    50%      { box-shadow: inset 0 0 24px 0 rgba(239, 68, 68, 0.35); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .blocked-border.active { animation: none; }
+  }
+
+  /* AC-0417: Incident ticker beneath the header. Uses --font-display
+     (Departure Mono from US-0110) for the terminal aesthetic, a red accent,
+     subtle shimmer while active, and display:none when hidden so it
+     collapses rather than leaves a blank strip. */
+  .incident-ticker {
+    font-family: var(--font-display), 'Departure Mono', 'SF Mono', Menlo, monospace;
+    color: #ef4444;
+    font-size: 12px;
+    padding: 6px 16px;
+    text-align: center;
+    background: rgba(239, 68, 68, 0.08);
+    border-bottom: 1px solid rgba(239, 68, 68, 0.25);
+    letter-spacing: 0.06em;
+    display: none;
+  }
+  .incident-ticker.active {
+    display: block;
+    animation: incident-shimmer 3s linear infinite;
+    background-size: 200% 100%;
+    background-image: linear-gradient(90deg, rgba(239,68,68,0.08) 0%, rgba(239,68,68,0.18) 50%, rgba(239,68,68,0.08) 100%);
+  }
+  @keyframes incident-shimmer {
+    0% { background-position: 0% 0; }
+    100% { background-position: -200% 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .incident-ticker.active { animation: none; background-image: none; }
+  }
+  /* ===== US-0122 END ===== */
+
   /* ===== RESPONSIVE: Tablet portrait (768-1024px) ===== */
   @media (max-width: 1024px) {
     .header { padding: 16px 20px; }
@@ -621,6 +677,9 @@ function generateHTML(status) {
     </div>
   </div>
 </div>
+
+<!-- US-0122 AC-0417: incident ticker (hidden by default, .active shown beneath header when any agent/phase is blocked). -->
+<div id="incident-ticker" class="incident-ticker" aria-live="polite" aria-atomic="true"></div>
 
 <div class="container">
 
@@ -940,9 +999,33 @@ var DASH_SNAPSHOT = ${JSON.stringify({
 // without the server-side renderer being involved.
 var DASH_AGENT_COLORS = ${JSON.stringify(agentColors)};
 
+// US-0122 AC-0419 / BUG-0160: Singleton AudioContext. Previously, every
+// playBeep() call instantiated a new AudioContext, leaking a context on each
+// invocation — over many BLOCKED transitions this accumulated dozens of
+// orphaned contexts. getAudioContext() lazily constructs a single module-level
+// context on first use, then reuses it for all subsequent beeps. If the
+// browser suspended the context due to its autoplay policy, we call resume()
+// on demand (any beep triggered by an alert state change implies a user-
+// initiated path they opted into).
+var _audioCtx = null;
+function getAudioContext() {
+  if (!_audioCtx) {
+    var Ctor = window.AudioContext || window.webkitAudioContext;
+    if (!Ctor) return null;
+    try {
+      _audioCtx = new Ctor();
+    } catch (e) {
+      return null;
+    }
+  }
+  return _audioCtx;
+}
+
 function playBeep(frequency, duration, type) {
   try {
-    var ctx = new (window.AudioContext || window.webkitAudioContext)();
+    var ctx = getAudioContext();
+    if (!ctx) return;
+    if (ctx.state === 'suspended') { ctx.resume(); }
     var osc = ctx.createOscillator();
     var gain = ctx.createGain();
     osc.connect(gain);
@@ -1040,7 +1123,85 @@ function buildSnapshotFromStatus(status) {
   };
 }
 
+// US-0122 AC-0416/AC-0417: derive "is anything blocked right now?" from
+// either a raw sdlc-status.json object (agents keyed by name, phases array)
+// or a pre-built snapshot (agentStatuses / phaseStatuses maps). Returns
+// { blocked: bool, agent: string|null, story: string|null } so the ticker
+// can render "INCIDENT HH:MM:SS · <agent> blocked on <story>" with correct
+// first-blocked-wins selection. When multiple agents/phases are blocked we
+// report the FIRST one encountered (chosen for simplicity over rotation —
+// DM agent briefing called this out explicitly). Falls back through agent
+// currentStory → currentTask → 'unknown' per AC-0417.
+function _findFirstBlocked(status) {
+  if (!status) return { blocked: false, agent: null, story: null };
+  var agents = status.agents || null;
+  var agentStatuses = status.agentStatuses || null;
+  var phases = status.phases || null;
+  var phaseStatuses = status.phaseStatuses || null;
+
+  if (agents && typeof agents === 'object') {
+    var names = Object.keys(agents);
+    for (var i = 0; i < names.length; i++) {
+      var a = agents[names[i]] || {};
+      if (a.status === 'blocked') {
+        return {
+          blocked: true,
+          agent: names[i],
+          story: a.currentStory || a.currentTask || 'unknown',
+        };
+      }
+    }
+  } else if (agentStatuses && typeof agentStatuses === 'object') {
+    var keys = Object.keys(agentStatuses);
+    for (var j = 0; j < keys.length; j++) {
+      if (agentStatuses[keys[j]] === 'blocked') {
+        return { blocked: true, agent: keys[j], story: 'unknown' };
+      }
+    }
+  }
+
+  if (phases && phases.length) {
+    for (var k = 0; k < phases.length; k++) {
+      if (phases[k] && phases[k].status === 'blocked') {
+        return { blocked: true, agent: phases[k].id || 'phase', story: 'unknown' };
+      }
+    }
+  } else if (phaseStatuses && phaseStatuses.length) {
+    for (var m = 0; m < phaseStatuses.length; m++) {
+      if (phaseStatuses[m] && phaseStatuses[m].status === 'blocked') {
+        return { blocked: true, agent: phaseStatuses[m].id || 'phase', story: 'unknown' };
+      }
+    }
+  }
+
+  return { blocked: false, agent: null, story: null };
+}
+
+function _pad2(n) { return n < 10 ? '0' + n : String(n); }
+
+function _applyBlockedUI(info) {
+  var border = document.getElementById('blocked-border');
+  var ticker = document.getElementById('incident-ticker');
+  if (info.blocked) {
+    if (border) border.classList.add('active');
+    if (ticker) {
+      var d = new Date();
+      var hhmmss = _pad2(d.getHours()) + ':' + _pad2(d.getMinutes()) + ':' + _pad2(d.getSeconds());
+      ticker.textContent = 'INCIDENT ' + hhmmss + ' · ' + info.agent + ' blocked on ' + info.story;
+      ticker.classList.add('active');
+    }
+  } else {
+    if (border) border.classList.remove('active');
+    if (ticker) ticker.classList.remove('active');
+  }
+}
+
 function runAlertCheck(status) {
+  // US-0122 AC-0416/AC-0417: toggle the BLOCKED overlay + incident ticker on
+  // every tick, independent of the delta-alert path below. This runs first
+  // so the UI reflects current state even when no transition fired audio.
+  _applyBlockedUI(_findFirstBlocked(status));
+
   var prevRaw = localStorage.getItem('dashboard-prev-snapshot');
   // Accept either a pre-built snapshot (initial DASH_SNAPSHOT) or a raw
   // sdlc-status.json object from refreshState().
@@ -1343,6 +1504,9 @@ setInterval(function() { updateLastUpdatedTicker(!_lastFetchOk); }, 1000);
 </script>
 
 <div id="agent-portrait-popup"><img src="" alt="Agent portrait" onerror="this.style.display='none'"></div>
+
+<!-- US-0122 AC-0416: full-viewport red border overlay toggled on BLOCKED state. -->
+<div id="blocked-border" class="blocked-border"></div>
 
 </body>
 </html>`;

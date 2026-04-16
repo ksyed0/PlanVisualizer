@@ -2062,11 +2062,11 @@ Steps to Reproduce:
 3. Open DevTools → Application → Storage
    Expected: A single AudioContext instance exists and is reused across beeps
    Actual: playBeep() calls `new AudioContext()` on every invocation; browsers limit AudioContexts per page and the count climbs until the limit is hit
-   Status: Open
-   Fix Branch:
+   Status: Fixed
+   Fix Branch: feature/US-0122-alerts-incident-ticker
    Lesson Encoded: No
    Estimated Cost USD: 0.00
-   Notes: To be fixed by US-0122. Hoist AudioContext to a module-level singleton and reuse it across calls.
+   Notes: Fixed by US-0122 — playBeep now reuses a singleton module-level AudioContext via getAudioContext(), eliminating the per-call leak.
 
 ---
 
