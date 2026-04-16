@@ -239,6 +239,56 @@ function generateHTML(status) {
     return 18;
   });
 
+  // US-0115 (EPIC-0016): cycle counter + per-phase fill ratio.
+  //
+  // Cycle N is defined as "completed stories + 1" (AC-0384). The active
+  // implementation target is the currently In Progress story (or null →
+  // "STANDBY"). The active-phase fill ratio (AC-0385) uses the same
+  // storiesCompleted / storiesTotal ratio; when totals are missing we fall
+  // back to 50% so the bar still reads as partial progress rather than
+  // empty. The cycle "elapsed HH:MM:SS" timer is kicked off client-side
+  // (see updateCycleElapsed() below) from a data-started-at attribute on
+  // #cycle-elapsed; the server renders 00:00:00 as a placeholder.
+  const cycleStories = (status && status.stories) || {};
+  const cycleStoryEntries = Object.entries(cycleStories).map(([id, s]) => ({ id, ...s }));
+  const cycleCompletedCount = cycleStoryEntries.filter((s) => /^(Complete|Done)$/i.test(s.status)).length;
+  const cycleNumber = cycleCompletedCount + 1;
+  const cycleActiveStory = cycleStoryEntries.find((s) => /^In[ -]?Progress$/i.test(s.status)) || null;
+  const cycleTargetId = cycleActiveStory ? cycleActiveStory.id : null;
+  const cycleLabel = cycleTargetId ? `CYCLE ${cycleNumber} \u00B7 IMPLEMENTING ${cycleTargetId}` : 'STANDBY';
+  // Partial fill ratio for the in-progress phase (AC-0385). Prefer story
+  // completion within the metrics object (authoritative after BUG-0166),
+  // fall back to 50% so the fill still reads as partial-progress when the
+  // source data hasn't caught up yet.
+  const cycleFillRatio =
+    metrics && metrics.storiesTotal > 0
+      ? Math.max(0.04, Math.min(1, metrics.storiesCompleted / metrics.storiesTotal))
+      : 0.5;
+  const cycleFillPct = Math.round(cycleFillRatio * 100);
+  // Elapsed-ms helper for completed phases (AC-0386). Returns a formatted
+  // "HH:MM:SS" string (with leading zeros) when both timestamps are valid,
+  // empty string otherwise. The client-side refresh never rewrites these
+  // strings — completed-phase elapsed is static.
+  function formatPhaseElapsed(startedAt, completedAt) {
+    if (!startedAt || !completedAt) return '';
+    const ms = Date.parse(completedAt) - Date.parse(startedAt);
+    if (!isFinite(ms) || ms < 0) return '';
+    const totalS = Math.floor(ms / 1000);
+    const h = Math.floor(totalS / 3600);
+    const m = Math.floor((totalS % 3600) / 60);
+    const s = totalS % 60;
+    const pad = (n) => (n < 10 ? '0' : '') + n;
+    return pad(h) + ':' + pad(m) + ':' + pad(s);
+  }
+
+  // AC-0384: ISO start for the cycle elapsed ticker. Prefer the active
+  // story's startedAt, fall back to the in-progress phase's startedAt,
+  // else empty string (client keeps 00:00:00).
+  const cycleStartedAt =
+    (cycleActiveStory && cycleActiveStory.startedAt) ||
+    (phases.find((p) => p.status === 'in-progress') || {}).startedAt ||
+    '';
+
   // US-0118 AC-0398: pull the most recent review verdicts from status.log.
   // Canonical messages emitted by tools/update-sdlc-status.js are
   //   "approve review of US-XXXX" / "block review of US-XXXX".
@@ -372,18 +422,222 @@ function generateHTML(status) {
 
   .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
 
-  /* Phase Pipeline */
-  .pipeline { display: flex; gap: 4px; margin-bottom: 24px; }
-  .phase-block { flex: 1; border-radius: 8px; padding: 16px; position: relative; overflow: hidden; transition: all 0.3s; }
-  .phase-block.pending { background: var(--bg-phase-pending); border: 1px solid var(--bg-phase-border); }
-  .phase-block.in-progress { background: var(--bg-phase-pending); border: 2px solid #F57C00; animation: pulse 2s infinite; }
-  .phase-block.complete { background: var(--bg-phase-complete); border: 1px solid #2E7D32; }
-  .phase-name { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
-  .phase-agents { font-size: 11px; color: var(--text-muted); }
-  .phase-status { position: absolute; top: 8px; right: 12px; font-size: 18px; }
-  .phase-deliverables { font-size: 10px; color: var(--text-dim); margin-top: 8px; }
+  /* ===== US-0115 BEGIN: 6-phase pipeline timeline =====
+     Replaces the earlier .pipeline flex-row with a horizontal timeline of
+     phase "stations". Each station shows a phase number (Departure Mono
+     32px per AC-0383) above the phase name, a status icon/checkmark, and
+     either a partial-progress fill (active, AC-0385), an elapsed-time
+     footer in JetBrains Mono (complete, AC-0386), or a rotating beacon
+     (blocked, AC-0387). 1px rules connect adjacent stations.
+
+     The structural needle <div class="phase-name">[name]</div> is
+     preserved so the US-0124 harness (AC-0427) keeps passing, and stable
+     ids (phase-N, phase-N-icon/-check/-elapsed/-fill/-num) keep patchDOM()
+     from US-0111 able to mutate live without a page reload. */
+  .cycle-counter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-family: var(--font-display), 'Departure Mono', 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+  }
+  .cycle-counter .cycle-label { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+  .cycle-counter .cycle-elapsed {
+    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+  .cycle-counter .cycle-elapsed::before { content: 'ELAPSED '; color: var(--text-dim); margin-right: 6px; }
+
+  .pipeline {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    margin-bottom: 24px;
+    background: var(--bg-card);
+    border: 1px solid var(--bg-card-border);
+    border-radius: 12px;
+    padding: 16px 8px 14px;
+    position: relative;
+    overflow: hidden;
+  }
+  .phase-block {
+    flex: 1;
+    position: relative;
+    padding: 6px 10px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    min-width: 0;
+    transition: opacity 0.3s;
+    z-index: 1;
+  }
+  /* 1px horizontal rule connecting adjacent phase stations (AC-0383). The
+     connector sits at the vertical middle of the phase-number row. The
+     first station omits the left half of the connector. */
+  .phase-block::before {
+    content: '';
+    position: absolute;
+    top: 22px; /* centred on the ~32px phase-number line */
+    left: 0;
+    right: 50%;
+    height: 1px;
+    background: var(--bg-phase-border);
+    z-index: 0;
+  }
+  .phase-block::after {
+    content: '';
+    position: absolute;
+    top: 22px;
+    left: 50%;
+    right: 0;
+    height: 1px;
+    background: var(--bg-phase-border);
+    z-index: 0;
+  }
+  .phase-block:first-child::before { background: transparent; }
+  .phase-block:last-child::after { background: transparent; }
+  .phase-block.complete::before,
+  .phase-block.complete::after,
+  .phase-block.in-progress::before { background: #2E7D32; }
+
+  .phase-number {
+    font-family: var(--font-display), 'Departure Mono', 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 32px;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    padding: 0 8px;
+    background: var(--bg-card);
+    position: relative;
+    z-index: 2;
+  }
+  .phase-block.in-progress .phase-number { color: #F57C00; }
+  .phase-block.complete .phase-number { color: #34A853; }
+  [data-theme="light"] .phase-block.in-progress .phase-number { color: #E65100; }
+  [data-theme="light"] .phase-block.complete .phase-number { color: #2E7D32; }
+  .phase-block.blocked .phase-number { color: #ef4444; }
+
+  .phase-name {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+    position: relative;
+    z-index: 2;
+  }
+  .phase-block.pending .phase-name { color: var(--text-muted); }
+
+  .phase-status {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 14px;
+    opacity: 0.6;
+    z-index: 2;
+  }
+  .phase-agents { font-size: 10px; color: var(--text-muted); margin-top: 2px; letter-spacing: 0.04em; }
+  .phase-deliverables { font-size: 9px; color: var(--text-dim); margin-top: 4px; letter-spacing: 0.04em; }
+
+  /* AC-0385: partial-progress fill under the active phase. Width is set
+     inline from storiesCompleted/storiesTotal at render time and patched
+     by refreshState(). Rendered underneath the text so it reads as a
+     station "load bar", not a label. */
+  .phase-fill-track {
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    bottom: 4px;
+    height: 3px;
+    background: var(--bg-phase-pending);
+    border-radius: 2px;
+    overflow: hidden;
+    z-index: 1;
+  }
+  .phase-fill-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #F57C00, #FFB74D);
+    transition: width 0.6s ease;
+    border-radius: 2px;
+  }
+  .phase-block.complete .phase-fill-bar { background: linear-gradient(90deg, #2E7D32, #66BB6A); width: 100%; }
+
+  /* AC-0386: completed phase checkmark + elapsed footer. Shown only when
+     .complete class is present; hidden for pending/in-progress/blocked. */
+  .phase-check {
+    display: none;
+    font-size: 14px;
+    color: #34A853;
+    margin-right: 4px;
+  }
+  .phase-block.complete .phase-check { display: inline-block; }
+  [data-theme="light"] .phase-check { color: #2E7D32; }
+  .phase-elapsed {
+    display: none;
+    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
+    margin-top: 4px;
+  }
+  .phase-block.complete .phase-elapsed[data-has-elapsed="1"] { display: block; }
+
+  /* AC-0387: BLOCKED rotating beacon. A conic-gradient sweep rides over
+     the phase station on a 1s rotation. prefers-reduced-motion disables
+     the rotation and substitutes a static red overlay so the blocked
+     state is still perceivable without motion. */
+  .phase-block.blocked {
+    background: rgba(239, 68, 68, 0.08);
+    border-radius: 8px;
+  }
+  .phase-block.blocked::before,
+  .phase-block.blocked::after { background: #ef4444; }
+  .phase-block .phase-beacon {
+    display: none;
+    position: absolute;
+    inset: 0;
+    border-radius: 8px;
+    pointer-events: none;
+    z-index: 0;
+    background: conic-gradient(from 0deg, transparent 0deg, rgba(239, 68, 68, 0.35) 60deg, transparent 120deg, transparent 360deg);
+    opacity: 0.85;
+    mix-blend-mode: screen;
+  }
+  .phase-block.blocked .phase-beacon { display: block; }
+  @media (prefers-reduced-motion: no-preference) {
+    .phase-block.blocked .phase-beacon {
+      animation: phase-beacon-sweep 1s linear infinite;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .phase-block.blocked .phase-beacon {
+      animation: none;
+      background: rgba(239, 68, 68, 0.18);
+    }
+  }
+  @keyframes phase-beacon-sweep {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
 
   @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(245, 124, 0, 0.4); } 50% { box-shadow: 0 0 20px 4px rgba(245, 124, 0, 0.2); } }
+  /* ===== US-0115 END ===== */
 
   .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-bottom: 24px; }
   .grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
@@ -934,7 +1188,8 @@ function generateHTML(status) {
   /* ===== RESPONSIVE: Tablet landscape adjustments ===== */
   @media (max-width: 1024px) and (orientation: landscape) {
     .pipeline { flex-wrap: wrap; }
-    .phase-block { flex: 1 1 calc(33.33% - 4px); min-width: 150px; }
+    .phase-block { flex: 1 1 calc(33.33% - 4px); min-width: 120px; }
+    .phase-block::before, .phase-block::after { display: none; }
     .grid { grid-template-columns: 1fr 1fr 1fr; }
     .grid-2 { grid-template-columns: 1fr 1fr; }
   }
@@ -946,10 +1201,16 @@ function generateHTML(status) {
     .header-left .header-subtitle { font-size: 10px; }
     .header-right .clock .time { font-size: 18px; }
     .container { padding: 10px; }
-    .pipeline { flex-wrap: wrap; gap: 4px; }
-    .phase-block { flex: 1 1 calc(33.33% - 4px); min-width: 120px; padding: 10px; }
-    .phase-name { font-size: 12px; }
+    /* US-0115: at narrow widths wrap the 6 phases into two rows of 3 so
+       the Departure Mono 32px phase number still reads. */
+    .pipeline { flex-wrap: wrap; gap: 4px; padding: 10px 4px 8px; }
+    .phase-block { flex: 1 1 calc(33.33% - 4px); min-width: 80px; padding: 4px 6px 8px; }
+    .phase-number { font-size: 24px; }
+    .phase-name { font-size: 11px; }
+    .phase-agents { display: none; }
     .phase-deliverables { display: none; }
+    /* 1px connector at wrap boundaries looks broken; hide on phone. */
+    .phase-block::before, .phase-block::after { display: none; }
     .grid { grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
     .grid-2 { grid-template-columns: 1fr 1fr; gap: 10px; }
     .card { padding: 12px; }
@@ -978,12 +1239,17 @@ function generateHTML(status) {
     .header-right .clock .time { font-size: 18px; }
     .header-right .clock .label { font-size: 9px; }
     .container { padding: 10px; }
-    .pipeline { flex-direction: column; gap: 6px; }
-    .phase-block { padding: 10px 12px; display: flex; align-items: center; gap: 10px; }
+    /* US-0115: phone portrait — vertical timeline (row-per-phase), number
+       on left, name on right, 1px connectors hidden. */
+    .pipeline { flex-direction: column; gap: 6px; padding: 10px 10px; }
+    .phase-block { padding: 8px 10px; flex-direction: row; align-items: center; text-align: left; gap: 10px; }
+    .phase-block::before, .phase-block::after { display: none; }
+    .phase-number { font-size: 20px; margin-bottom: 0; padding: 0; background: transparent; }
     .phase-block .phase-status { position: static; font-size: 16px; }
     .phase-block .phase-name { margin-bottom: 0; font-size: 13px; flex: 1; }
     .phase-block .phase-agents { display: none; }
     .phase-block .phase-deliverables { display: none; }
+    .phase-fill-track { position: static; margin-left: auto; width: 40px; flex: 0 0 40px; }
     .grid { grid-template-columns: 1fr; gap: 12px; margin-bottom: 12px; }
     .grid-2 { grid-template-columns: 1fr; gap: 12px; }
     .card { padding: 14px; border-radius: 10px; }
@@ -1070,19 +1336,46 @@ ${
     : ''
 }
 
-<!-- Phase Pipeline -->
+<!-- Phase Pipeline — US-0115: 6-phase timeline with cycle counter. -->
 <h2 class="section-header">PIPELINE</h2>
+<!-- AC-0384: cycle counter above the timeline. The #cycle-elapsed node
+     carries data-started-at (ISO8601) and is re-rendered every second by
+     updateCycleElapsed() client-side so the HH:MM:SS ticks smoothly. -->
+<div class="cycle-counter" id="cycle-counter" aria-live="polite">
+  <span class="cycle-label">
+    <span class="live-dot ok" aria-label="live" title="live"></span>
+    <span id="cycle-label-text">${esc(cycleLabel)}</span>
+  </span>
+  <span class="cycle-elapsed" id="cycle-elapsed" data-started-at="${esc(cycleStartedAt)}">00:00:00</span>
+</div>
 <div class="pipeline">
 ${phases
-  .map((p) => {
-    const icon = p.status === 'complete' ? '✅' : p.status === 'in-progress' ? '🔄' : '⏳';
-    // US-0111 AC-0364: stable IDs so refreshState() / patchDOM() can
+  .map((p, i) => {
+    const phaseNum = String(i + 1).padStart(2, '0');
+    const icon =
+      p.status === 'complete' ? '✅' : p.status === 'in-progress' ? '🔄' : p.status === 'blocked' ? '⚠️' : '⏳';
+    const elapsed = p.status === 'complete' ? formatPhaseElapsed(p.startedAt, p.completedAt) : '';
+    const hasElapsed = elapsed ? '1' : '0';
+    // AC-0385: the in-progress phase gets the partial-fill width; all
+    // other phases render the track with either 0 (pending/blocked) or
+    // 100 (complete, via CSS) so patchDOM() only needs to flip the class
+    // to transition states.
+    const fillWidth = p.status === 'in-progress' ? cycleFillPct : p.status === 'complete' ? 100 : 0;
+    const agents = Array.isArray(p.agents) ? p.agents : [];
+    const deliverables = Array.isArray(p.deliverables) ? p.deliverables : [];
+    // US-0111 AC-0364 + US-0115: stable IDs so refreshState() / patchDOM() can
     // update only the changed phase nodes instead of reloading the page.
+    // New helper ids (-check, -elapsed, -fill, -num) support the timeline
+    // footer/fill elements added here.
     return `  <div class="phase-block ${p.status}" id="phase-${p.id}" data-phase-status="${p.status}">
-    <div class="phase-status" id="phase-${p.id}-icon">${icon}</div>
+    <div class="phase-beacon" aria-hidden="true"></div>
+    <div class="phase-status" id="phase-${p.id}-icon" aria-hidden="true">${icon}</div>
+    <div class="phase-number" id="phase-${p.id}-num">${phaseNum}</div>
     <div class="phase-name">${p.name}</div>
-    <div class="phase-agents">${p.agents.join(' · ')}</div>
-    <div class="phase-deliverables">${p.deliverables.join(' · ')}</div>
+    <div class="phase-agents">${agents.join(' \u00B7 ')}</div>
+    <div class="phase-deliverables">${deliverables.join(' \u00B7 ')}</div>
+    <div class="phase-elapsed" id="phase-${p.id}-elapsed" data-has-elapsed="${hasElapsed}"><span class="phase-check" id="phase-${p.id}-check" aria-label="complete">\u2713</span>${esc(elapsed)}</div>
+    <div class="phase-fill-track"><div class="phase-fill-bar" id="phase-${p.id}-fill" style="width: ${fillWidth}%"></div></div>
   </div>`;
   })
   .join('\n')}
@@ -1822,8 +2115,15 @@ function _agentStatusColors(stat) {
 function patchDOM(status) {
   if (!status || typeof status !== 'object') return;
 
-  // --- Phase pills -----------------------------------------------------------
+  // --- Phase timeline (US-0115) ---------------------------------------------
+  // Toggle status class, swap status icon, flip blocked beacon, reveal
+  // completed-phase checkmark + elapsed footer, and resize the active
+  // phase's partial-progress fill — all without remounting the block.
   var phases = Array.isArray(status.phases) ? status.phases : [];
+  var _storiesTotal = (status.metrics && status.metrics.storiesTotal) || 0;
+  var _storiesDone = (status.metrics && status.metrics.storiesCompleted) || 0;
+  var _fillRatio = _storiesTotal > 0 ? Math.max(0.04, Math.min(1, _storiesDone / _storiesTotal)) : 0.5;
+  var _fillPct = Math.round(_fillRatio * 100);
   phases.forEach(function(p) {
     var el = document.getElementById('phase-' + p.id);
     if (!el) return;
@@ -1831,12 +2131,46 @@ function patchDOM(status) {
     if (prevStatus !== p.status) {
       // Replace only the status class on the block — preserves the block
       // element itself (and hence any inner elements, event listeners, ids).
-      el.classList.remove('pending', 'in-progress', 'complete');
+      el.classList.remove('pending', 'in-progress', 'complete', 'blocked');
       el.classList.add(p.status);
       el.setAttribute('data-phase-status', p.status);
       var iconEl = document.getElementById('phase-' + p.id + '-icon');
       if (iconEl) {
-        iconEl.textContent = p.status === 'complete' ? '✅' : p.status === 'in-progress' ? '🔄' : '⏳';
+        iconEl.textContent = p.status === 'complete' ? '✅'
+          : p.status === 'in-progress' ? '🔄'
+          : p.status === 'blocked' ? '⚠️'
+          : '⏳';
+      }
+    }
+    // US-0115 AC-0385/0386: patch fill width + elapsed-footer text.
+    var fillEl = document.getElementById('phase-' + p.id + '-fill');
+    if (fillEl) {
+      var newWidth = p.status === 'in-progress' ? _fillPct
+        : p.status === 'complete' ? 100
+        : 0;
+      fillEl.style.width = newWidth + '%';
+    }
+    var elapsedEl = document.getElementById('phase-' + p.id + '-elapsed');
+    if (elapsedEl) {
+      if (p.status === 'complete' && p.startedAt && p.completedAt) {
+        var ms = Date.parse(p.completedAt) - Date.parse(p.startedAt);
+        if (isFinite(ms) && ms >= 0) {
+          var totalS = Math.floor(ms / 1000);
+          var h = Math.floor(totalS / 3600);
+          var mi = Math.floor((totalS % 3600) / 60);
+          var se = totalS % 60;
+          function pad2(n) { return (n < 10 ? '0' : '') + n; }
+          var newElapsed = pad2(h) + ':' + pad2(mi) + ':' + pad2(se);
+          // Preserve the .phase-check span sibling; only rewrite the
+          // trailing text node so the ✓ keeps its styling.
+          var checkSpan = elapsedEl.querySelector('.phase-check');
+          elapsedEl.textContent = '';
+          if (checkSpan) elapsedEl.appendChild(checkSpan);
+          elapsedEl.appendChild(document.createTextNode(newElapsed));
+          elapsedEl.setAttribute('data-has-elapsed', '1');
+        }
+      } else if (p.status !== 'complete') {
+        elapsedEl.setAttribute('data-has-elapsed', '0');
       }
     }
   });
@@ -2045,6 +2379,7 @@ async function refreshState() {
     if (!res || !res.ok) throw new Error('HTTP ' + (res ? res.status : 'no response'));
     var newStatus = await res.json();
     patchDOM(newStatus);
+    patchCycleCounter(newStatus);
     runAlertCheck(newStatus);
     _lastFetchedAt = Date.now();
     _lastFetchOk = true;
@@ -2096,6 +2431,59 @@ function updateSpotlightElapsed() {
 // Run immediately so the first tick isn't a 1s delay of "—" text.
 updateSpotlightElapsed();
 setInterval(updateSpotlightElapsed, 1000);
+
+// US-0115 AC-0384: cycle-counter elapsed ticker.
+// The #cycle-elapsed node carries data-started-at (ISO 8601) set server-side
+// (see generateHTML cycleStartedAt). When present, render HH:MM:SS since
+// that instant; when absent, show 00:00:00 so the UI still has tabular
+// numerics instead of collapsing. patchCycleCounter() (called from
+// refreshState) keeps the label text + startedAt attr in sync with the
+// latest status.json without replacing the node.
+function updateCycleElapsed() {
+  var el = document.getElementById('cycle-elapsed');
+  if (!el) return;
+  var startedAt = el.getAttribute('data-started-at') || '';
+  if (!startedAt) {
+    if (el.textContent !== '00:00:00') el.textContent = '00:00:00';
+    return;
+  }
+  var startMs = Date.parse(startedAt);
+  if (isNaN(startMs)) {
+    if (el.textContent !== '00:00:00') el.textContent = '00:00:00';
+    return;
+  }
+  el.textContent = _formatElapsedClock(Date.now() - startMs);
+}
+function patchCycleCounter(status) {
+  if (!status || typeof status !== 'object') return;
+  var storiesMap = status.stories || {};
+  var entries = Object.keys(storiesMap).map(function(id) { return Object.assign({ id: id }, storiesMap[id] || {}); });
+  var completedCount = entries.filter(function(s) { return /^(Complete|Done)$/i.test(s.status); }).length;
+  var active = null;
+  for (var i = 0; i < entries.length; i++) {
+    if (/^In[ -]?Progress$/i.test(entries[i].status)) { active = entries[i]; break; }
+  }
+  var cycleN = completedCount + 1;
+  var labelText = active ? ('CYCLE ' + cycleN + ' \u00B7 IMPLEMENTING ' + active.id) : 'STANDBY';
+  var labelEl = document.getElementById('cycle-label-text');
+  if (labelEl && labelEl.textContent !== labelText) labelEl.textContent = labelText;
+  var elapsedEl = document.getElementById('cycle-elapsed');
+  if (elapsedEl) {
+    // Prefer active story startedAt, fall back to the in-progress phase's startedAt.
+    var started = (active && active.startedAt) || '';
+    if (!started) {
+      var phases = Array.isArray(status.phases) ? status.phases : [];
+      for (var j = 0; j < phases.length; j++) {
+        if (phases[j].status === 'in-progress' && phases[j].startedAt) { started = phases[j].startedAt; break; }
+      }
+    }
+    var prev = elapsedEl.getAttribute('data-started-at') || '';
+    if (prev !== started) elapsedEl.setAttribute('data-started-at', started);
+  }
+}
+// Kick the ticker immediately and every second, mirroring updateSpotlightElapsed.
+updateCycleElapsed();
+setInterval(updateCycleElapsed, 1000);
 </script>
 
 <div id="agent-portrait-popup"><img src="" alt="Agent portrait" onerror="this.style.display='none'"></div>
