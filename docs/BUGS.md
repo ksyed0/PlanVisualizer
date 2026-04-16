@@ -2219,3 +2219,54 @@ Steps to Reproduce:
    Lesson Encoded: No
    Estimated Cost USD: 0.00
    Notes: Fixed in tools/lib/render-html.js by making the Cost Breakdown card a flex column (`flex flex-col`) and wrapping the 300px-tall canvas in a `flex-1 flex items-center justify-center` parent so the chart centers vertically regardless of how much extra height the grid row imposes. Other similarly-sized chart cards (Test Coverage, AI Cost Timeline, etc.) retain their existing layout for now — extend the pattern if further centering issues surface.
+
+BUG-0170: `chore/version-bump-*` branches are not auto-deleted after PR merge
+Severity: Low
+Related Story: n/a
+Steps to Reproduce:
+
+1. Merge any PR to develop (triggers .github/workflows/version-bump.yml)
+2. The workflow creates `chore/version-bump-<sha>`, opens a PR, auto-merges with `gh pr merge --squash --auto`
+3. Inspect remote branches: `git branch -r | grep version-bump`
+   Expected: branch deleted after the auto-merge completes
+   Actual: branch persists on origin; 25+ orphan version-bump branches accumulate after a typical epic (one per develop-advance)
+   Status: Fixed
+   Fix Branch: chore/branch-cleanup-tooling
+   Lesson Encoded: Yes — see docs/LESSONS.md
+   Estimated Cost USD: 0.00
+   Notes: Fixed by adding `--delete-branch` to the `gh pr merge` invocation in .github/workflows/version-bump.yml line 44. `gh pr merge --squash --auto --delete-branch`.
+
+---
+
+BUG-0171: Agent worktrees under `.claude/worktrees/agent-*` are not cleaned up after feature-branch PR merges
+Severity: Medium
+Related Story: n/a
+Steps to Reproduce:
+
+1. Run a multi-story epic through the DM_AGENT pipeline, spawning Pixel/Lens/Sentinel/Circuit with `isolation: "worktree"` per story
+2. Let each story's PR merge via `gh pr merge --auto --squash --delete-branch`
+3. Inspect worktrees: `git worktree list` and `ls .claude/worktrees/`
+   Expected: worktrees removed after each story merges; only the main repo worktree remains
+   Actual: every agent-spawn worktree persists until manually removed; 14-story epic leaves 16+ worktrees (Pixel retries leave extras)
+   Status: Fixed
+   Fix Branch: chore/branch-cleanup-tooling
+   Lesson Encoded: Yes — see docs/LESSONS.md
+   Estimated Cost USD: 0.00
+   Notes: Fixed by (a) strengthening the "Post-merge — sync main repo" section of docs/agents/DM_AGENT.md with a "why this step is mandatory" rationale and (b) shipping scripts/cleanup-branches.sh as a safety-net sweep (npm run cleanup:branches) for end-of-epic cleanup. Root cause: gh pr merge --delete-branch deletes the REMOTE branch but can't delete the LOCAL branch while a worktree holds the ref — the worktree must be removed first.
+
+---
+
+BUG-0172: Squash-merged feature branches leave local refs that `git branch -d` refuses to delete
+Severity: Low
+Related Story: n/a
+Steps to Reproduce:
+
+1. Squash-merge a feature branch into develop via a PR
+2. On the local repo where the feature branch exists, run `git branch -d feature/US-XXXX-name`
+   Expected: local branch is deleted (it's merged upstream)
+   Actual: git refuses because the branch's tip is not an ancestor of develop (squash created a NEW commit with a different SHA)
+   Status: Fixed
+   Fix Branch: chore/branch-cleanup-tooling
+   Lesson Encoded: Yes — see docs/LESSONS.md
+   Estimated Cost USD: 0.00
+   Notes: Fixed in scripts/cleanup-branches.sh step 4 — force-delete with -D after verifying the PR is MERGED on origin. Safe because the PR is the authoritative record; the local ref is just a stale pointer at the original (pre-squash) tip.

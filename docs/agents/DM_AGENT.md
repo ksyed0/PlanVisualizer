@@ -497,6 +497,12 @@ git pull origin develop  # gets the squashed commit
 git worktree remove <old-worktree-path> --force
 ```
 
+**Why `git worktree remove` is mandatory**: When a worktree holds a feature branch, `gh pr merge --delete-branch` deletes the remote branch but the local ref stays (the worktree locks it). Skipping this step accumulates `.claude/worktrees/agent-*` directories and orphaned `worktree-agent-*` branches — one per sub-agent spawn. A 14-story epic with 2 Pixel retries leaves 16+ worktrees if you forget.
+
+### Epic-end cleanup
+
+After the last story merges, run `npm run cleanup:branches` (or `scripts/cleanup-branches.sh`) to catch any worktrees/branches the per-story post-merge step missed. Use `npm run cleanup:branches:dry` first to preview. Safe to re-run; preserves develop, main, and origin/gh-pages.
+
 ### Hotfix exception
 
 If a production-blocking bug requires immediate patch, direct push with `--admin` to develop is permitted. Must be followed by a retrospective PR to document what happened. Hotfix commits always prefix the message with `[hotfix] BUG-XXXX:`.
