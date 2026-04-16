@@ -114,7 +114,7 @@ Dependencies: EPIC-0007
 EPIC-0016: Agentic Dashboard Mission Control Redesign
 Description: Mission Control / Broadcast Studio aesthetic pass on the Agentic SDLC Dashboard (docs/dashboard.html). Replaces the 30s location.reload() with live fetch-and-patch, wires up size-appropriate agent portraits, redesigns the phase pipeline (6-phase timeline with partial progress fill), differentiates the metric cards, gives the activity log a terminal aesthetic, tightens header/footer/alert treatments, and adds a baseline test harness + shared theme module for durable cross-dashboard token reuse. Cycle-history visualization is deferred to EPIC-0019. Sibling to EPIC-0015 (shared semantic badge tokens from US-0097, distinct voice — report vs. live channel).
 Release Target: Release 1.10
-Status: Planned
+Status: Complete
 Dependencies: EPIC-0013, EPIC-0015
 
 EPIC-0017: Agentic Dashboard Effectiveness Review
