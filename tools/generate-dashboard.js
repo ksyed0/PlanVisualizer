@@ -425,32 +425,50 @@ function generateHTML(status) {
   .progress-fill.green { background: linear-gradient(90deg, #2E7D32, #4CAF50); }
   .progress-fill.blue { background: linear-gradient(90deg, #1565C0, #42A5F5); }
 
-  /* Agent spotlight banner (Option 2) */
-  .agent-spotlight { position: relative; border-radius: 10px; overflow: hidden; margin-bottom: 14px; height: 120px; background: var(--bg-card-inner); display: flex; align-items: flex-end; }
-  .agent-spotlight.no-active { display: flex; align-items: center; justify-content: center; height: 80px; }
+  /* US-0119 AC-0401: Agent spotlight banner — broadcast "on air" stage.
+     240px tall with a 160px portrait thumbnail, Geist Display 28px name,
+     small-caps role micro-copy, JetBrains Mono current-task and elapsed
+     ticker. Two-column flex layout (portrait | info) replaces the earlier
+     full-bleed background + absolute overlay so the composition is
+     legible at higher sizes without depending on a gradient to mask the
+     image. */
+  .agent-spotlight { position: relative; border-radius: 12px; overflow: hidden; margin-bottom: 14px; height: 240px; background: var(--bg-card-inner); display: flex; align-items: stretch; gap: 20px; padding: 20px; border: 1px solid var(--bg-card-border); }
+  .agent-spotlight.no-active { display: flex; align-items: center; justify-content: center; height: 100px; padding: 12px; }
   .agent-spotlight.no-active .spotlight-waiting { color: var(--text-muted); font-size: 13px; font-style: italic; }
-  .spotlight-img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
-  .spotlight-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.1) 60%, transparent 100%); }
-  .spotlight-info { position: relative; z-index: 1; padding: 12px 16px; width: 100%; }
-  .spotlight-name { font-size: 18px; font-weight: 700; color: white; }
-  .spotlight-role { font-size: 12px; color: rgba(255,255,255,0.75); margin-top: 2px; }
-  .spotlight-task { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .spotlight-portrait-wrap { flex: 0 0 160px; width: 160px; height: 100%; border-radius: 10px; overflow: hidden; position: relative; border: 3px solid; background: var(--bg-primary); }
+  .spotlight-img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+  .spotlight-info { position: relative; flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 8px; justify-content: center; }
+  .spotlight-name { font-family: var(--font-sans); font-size: 28px; font-weight: 700; letter-spacing: -0.01em; color: var(--text-primary); display: flex; align-items: center; gap: 10px; line-height: 1.1; }
+  [data-theme="light"] .spotlight-name { color: var(--text-primary); }
+  .spotlight-role { font-family: var(--font-sans); font-size: 11px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-muted); }
+  .spotlight-task { font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace; font-size: 12px; color: var(--text-secondary); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
+  .spotlight-elapsed { font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace; font-size: 11px; color: var(--text-dim); letter-spacing: 0.04em; font-variant-numeric: tabular-nums; margin-top: 2px; }
+  .spotlight-elapsed::before { content: 'ELAPSED '; color: var(--text-muted); letter-spacing: 0.14em; }
 
-  /* Agent grid (Option 1: avatar images) */
-  .agent-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-  .agent-card { background: var(--bg-card-inner); border-radius: 8px; padding: 10px; border-left: 4px solid; transition: transform 150ms ease, box-shadow 150ms ease, filter 0.2s; display: flex; gap: 10px; align-items: flex-start; cursor: pointer; }
-  .agent-card:hover { transform: scale(1.02); box-shadow: 0 6px 24px rgba(0,0,0,0.5); filter: brightness(1.12); }
+  /* US-0119 AC-0402/0403/0404/0405: Vertical station cards. Portrait on
+     top (80x80 circle, 2px agent-color ring), then name, role micro-copy,
+     status pill. Active station gets a 3px agent-color box-shadow glow
+     (variable --agent-color set inline per card) plus a pulsing green
+     "now on air" dot. Idle stations fade to 0.5 opacity. Hover replaces
+     the old filter:brightness(1.12) — invisible in light mode (BUG-0161)
+     — with a 4px agent-color outline glow. */
+  .agent-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .agent-card { position: relative; background: var(--bg-card-inner); border-radius: 10px; padding: 14px 10px; transition: transform 150ms ease, box-shadow 150ms ease, opacity 0.2s; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; border: 1px solid var(--bg-card-border); }
+  .agent-card.idle { opacity: 0.5; }
+  .agent-card:hover { transform: translateY(-1px); box-shadow: 0 0 0 4px var(--agent-color-ring, rgba(136,136,136,0.35)); opacity: 1; }
+  .agent-card.active { box-shadow: 0 0 0 3px var(--agent-color, #888), 0 6px 24px rgba(0,0,0,0.35); }
+  .agent-card.active:hover { box-shadow: 0 0 0 3px var(--agent-color, #888), 0 0 0 7px var(--agent-color-ring, rgba(136,136,136,0.35)); }
+  .agent-card .on-air-dot { position: absolute; top: 8px; right: 10px; display: none; }
+  .agent-card.active .on-air-dot { display: inline-block; }
   #agent-portrait-popup { position: fixed; z-index: 999; width: 200px; border-radius: 14px; overflow: hidden; box-shadow: 0 12px 40px rgba(0,0,0,0.7); pointer-events: none; display: none; transition: opacity 0.15s; border: 2px solid rgba(255,255,255,0.12); }
   #agent-portrait-popup img { width: 100%; display: block; border-radius: 12px; object-fit: cover; object-position: center top; }
-  .agent-card.active { animation: pulse-agent 1.5s infinite; }
-  @keyframes pulse-agent { 0%, 100% { opacity: 1; } 50% { opacity: 0.85; } }
-  .agent-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid; flex-shrink: 0; }
-  .agent-avatar-fallback { width: 40px; height: 40px; border-radius: 50%; border: 2px solid; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 20px; background: var(--bg-phase-pending); }
-  .agent-info { min-width: 0; flex: 1; }
-  .agent-name { font-size: 13px; font-weight: 700; }
-  .agent-role { font-size: 10px; color: var(--text-muted); margin-bottom: 4px; }
-  .agent-status { font-size: 11px; padding: 2px 8px; border-radius: 10px; display: inline-block; }
-  .agent-task { font-size: 10px; color: var(--text-secondary); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .agent-avatar { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; object-position: center top; border: 2px solid var(--agent-color, #888); flex-shrink: 0; }
+  .agent-avatar-fallback { width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--agent-color, #888); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 32px; background: var(--bg-phase-pending); }
+  .agent-info { min-width: 0; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; }
+  .agent-name { font-family: var(--font-sans); font-size: 13px; font-weight: 700; letter-spacing: 0.01em; }
+  .agent-role { font-family: var(--font-sans); font-size: 9px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
+  .agent-status { font-size: 10px; font-weight: 600; padding: 2px 10px; border-radius: 10px; display: inline-block; text-transform: uppercase; letter-spacing: 0.06em; }
+  .agent-task { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10px; color: var(--text-secondary); margin-top: 4px; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
   /* Story table */
   .story-list { display: flex; flex-direction: column; gap: 10px; }
@@ -906,11 +924,14 @@ function generateHTML(status) {
     .grid-2 { grid-template-columns: 1fr 1fr; gap: 10px; }
     .card { padding: 12px; }
     .card h2 { font-size: 12px; margin-bottom: 10px; }
-    .agent-spotlight { height: 90px; }
-    .spotlight-name { font-size: 15px; }
+    /* US-0119: scale spotlight + station cards for phone landscape. */
+    .agent-spotlight { height: 160px; padding: 12px; gap: 12px; }
+    .spotlight-portrait-wrap { flex-basis: 110px; width: 110px; }
+    .spotlight-name { font-size: 20px; }
+    .spotlight-role { font-size: 10px; }
     .agent-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
-    .agent-card { padding: 8px; gap: 8px; }
-    .agent-avatar, .agent-avatar-fallback { width: 32px; height: 32px; }
+    .agent-card { padding: 10px 6px; gap: 6px; }
+    .agent-avatar, .agent-avatar-fallback { width: 56px; height: 56px; font-size: 24px; }
     .agent-name { font-size: 11px; }
     .epic-stories { grid-template-columns: 1fr; }
     .log-scroll { max-height: 150px; }
@@ -937,12 +958,17 @@ function generateHTML(status) {
     .grid-2 { grid-template-columns: 1fr; gap: 12px; }
     .card { padding: 14px; border-radius: 10px; }
     .card h2 { font-size: 13px; margin-bottom: 12px; }
-    .agent-spotlight { height: 100px; }
-    .spotlight-name { font-size: 15px; }
+    /* US-0119: phone portrait — stack spotlight into vertical, smaller stations. */
+    .agent-spotlight { height: auto; min-height: 180px; padding: 12px; gap: 12px; flex-direction: column; align-items: center; }
+    .spotlight-portrait-wrap { flex-basis: 120px; width: 120px; height: 120px; }
+    .spotlight-info { align-items: center; text-align: center; }
+    .spotlight-name { font-size: 18px; }
+    .spotlight-role { font-size: 10px; }
     .spotlight-task { display: none; }
+    .spotlight-elapsed { font-size: 10px; }
     .agent-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
-    .agent-card { padding: 8px; gap: 6px; }
-    .agent-avatar, .agent-avatar-fallback { width: 32px; height: 32px; font-size: 16px; }
+    .agent-card { padding: 10px 6px; gap: 6px; }
+    .agent-avatar, .agent-avatar-fallback { width: 52px; height: 52px; font-size: 22px; }
     .agent-name { font-size: 11px; }
     .agent-role { font-size: 9px; }
     .agent-status { font-size: 9px; padding: 1px 6px; }
@@ -961,10 +987,11 @@ function generateHTML(status) {
   /* ===== RESPONSIVE: Small phone (up to 375px) ===== */
   @media (max-width: 375px) {
     .header-left .header-title { font-size: 12px; }
-    .agent-spotlight { height: 80px; }
-    .spotlight-name { font-size: 14px; }
+    .agent-spotlight { min-height: 160px; }
+    .spotlight-portrait-wrap { flex-basis: 96px; width: 96px; height: 96px; }
+    .spotlight-name { font-size: 16px; }
     .agent-grid { grid-template-columns: repeat(2, 1fr); }
-    .agent-avatar, .agent-avatar-fallback { width: 28px; height: 28px; font-size: 14px; }
+    .agent-avatar, .agent-avatar-fallback { width: 48px; height: 48px; font-size: 20px; }
     .header-right .clock .time { font-size: 16px; }
     #theme-toggle, .btn-header { font-size: 11px; padding: 4px 10px; }
   }
@@ -1156,7 +1183,12 @@ ${
 ${(() => {
   const roles = agentRoles;
   const imgBase = 'agents/images';
-  // Option 2: Spotlight banner — prefer non-Conductor active agent (BUG-0079)
+  // US-0119 AC-0401: Spotlight banner — broadcast stage for the current on-air
+  // agent. Prefer non-Conductor active agent (BUG-0079). Uses the 160px
+  // optimized portrait from US-0113's config, Geist 28px name, small-caps
+  // role, JetBrains Mono task line, and an elapsed-time ticker seeded from
+  // agent.startedAt (ISO 8601) when available — the client-side ticker in
+  // the main <script> block re-renders the elapsed text every second.
   const dmAgentName = (AGENT_CONFIG.orchestrator || {}).dmAgent || 'Conductor';
   const activeAgent =
     Object.entries(agents).find(([name, a]) => a.status === 'active' && name !== dmAgentName) ||
@@ -1166,16 +1198,22 @@ ${(() => {
     const [aName, aData] = activeAgent;
     const aColor = agentColors[aName] || '#888';
     const aAvatar = agentAvatars[aName] || aName.toLowerCase();
-    spotlight = `    <div class="agent-spotlight">
-      <img class="spotlight-img" src="${imgBase}/optimized/${aAvatar}-160.png" alt="${aName}" style="object-position:center top; border:3px solid ${aColor}" onerror="this.onerror=null; this.src='${imgBase}/headshots/${aName.toLowerCase()}.png'">
-      <div class="spotlight-overlay"></div>
+    const startedAt = aData.startedAt || '';
+    const fullPortrait = `${imgBase}/optimized/${aAvatar}-320.png`;
+    spotlight = `    <div class="agent-spotlight" id="agent-spotlight" data-agent-name="${esc(aName)}" data-started-at="${esc(startedAt)}">
+      <div class="spotlight-portrait-wrap" style="border-color: ${aColor}"
+        onmouseenter="showAgentPortrait(this,'${fullPortrait}')" onmouseleave="hideAgentPortrait()">
+        <img class="spotlight-img" src="${imgBase}/optimized/${aAvatar}-160.png" alt="${esc(aName)}" onerror="this.onerror=null; this.src='${imgBase}/headshots/${esc(aName.toLowerCase())}.png'">
+      </div>
       <div class="spotlight-info">
-        <div class="spotlight-name" style="color: ${aColor}"><span class="live-dot ok" aria-label="live" title="live" id="spotlight-live-dot"></span>${agentIcons[aName] || ''} ${aName} — ${roles[aName] || aName}</div>
-        ${aData.currentTask ? `<div class="spotlight-task">${aData.currentTask}</div>` : ''}
+        <div class="spotlight-name" id="agent-spotlight-name" style="color: ${aColor}"><span class="live-dot ok" aria-label="live" title="live" id="spotlight-live-dot"></span>${esc(aName)}</div>
+        <div class="spotlight-role" id="agent-spotlight-role">${esc(roles[aName] || aName)}</div>
+        <div class="spotlight-task" id="agent-spotlight-task">${esc(aData.currentTask || 'Awaiting assignment')}</div>
+        <div class="spotlight-elapsed" id="agent-spotlight-elapsed" data-started-at="${esc(startedAt)}">${startedAt ? '—' : 'IDLE'}</div>
       </div>
     </div>`;
   } else {
-    spotlight = `    <div class="agent-spotlight no-active">
+    spotlight = `    <div class="agent-spotlight no-active" id="agent-spotlight">
       <div class="spotlight-waiting">Waiting for ${(AGENT_CONFIG.orchestrator || {}).dmAgent || 'orchestrator'} to activate agents...</div>
     </div>`;
   }
@@ -1190,20 +1228,37 @@ ${Object.entries(agents)
     const statusBg = agent.status === 'active' ? 'rgba(52,168,83,0.2)' : 'rgba(136,136,136,0.15)';
     const statusColor = agent.status === 'active' ? '#34A853' : agent.status === 'complete' ? '#1565C0' : '#888';
     const roles = agentRoles;
-    // Option 1: Avatar from optimized 64px PNG with fallback to headshot PNG, then emoji
+    // US-0119 AC-0402: vertical layout — 80x80 circle portrait with 2px
+    // agent-color ring on top, then name, role micro-copy, status pill.
+    // Active station (AC-0403) gets .active class → 3px agent-color glow
+    // box-shadow + pulsing green "now on air" live-dot. Idle stations
+    // (AC-0404) get .idle class → opacity 0.5. Hover (AC-0405) applies a
+    // 4px agent-color outline glow via --agent-color-ring CSS variable,
+    // replacing the previous filter:brightness(1.12) which was invisible
+    // in light mode (BUG-0161).
     const avatar = agentAvatars[name] || name.toLowerCase();
-    const avatarImg = `<img class="agent-avatar" src="${imgBase}/optimized/${avatar}-64.png" alt="${name}" style="width:64px; height:64px; border-radius:50%; object-fit:cover; object-position:center top; border:2px solid ${color}" onerror="this.onerror=function(){this.outerHTML='<div class=\\'agent-avatar-fallback\\' style=\\'border-color: ${color}\\'>${icon}</div>'};this.src='${imgBase}/headshots/${name.toLowerCase()}.png'">`;
+    const avatarImg = `<img class="agent-avatar" src="${imgBase}/optimized/${avatar}-64.png" alt="${esc(name)}" onerror="this.onerror=function(){this.outerHTML='<div class=\\'agent-avatar-fallback\\'>${icon}</div>'};this.src='${imgBase}/headshots/${esc(name.toLowerCase())}.png'">`;
     const fullPortrait = `${imgBase}/optimized/${avatar}-320.png`;
-    // US-0111 AC-0364: stable IDs on card + inner pills so patchDOM() can
-    // update status/task text without re-rendering the whole grid.
-    return `      <div class="agent-card ${agent.status === 'active' ? 'active' : ''}" id="agent-${esc(name)}" data-agent-name="${esc(name)}" data-agent-status="${esc(agent.status)}" style="border-left-color: ${color}"
+    const isActive = agent.status === 'active';
+    const isIdle =
+      !isActive && agent.status !== 'complete' && agent.status !== 'blocked' && agent.status !== 'needs-review';
+    const stationClasses = ['agent-card'];
+    if (isActive) stationClasses.push('active');
+    if (isIdle) stationClasses.push('idle');
+    // --agent-color drives the 3px active glow; --agent-color-ring is the
+    // translucent variant used for the 4px hover outline (AC-0405).
+    const styleVars = `--agent-color: ${color}; --agent-color-ring: ${color}40;`;
+    // US-0111 AC-0364: keep stable IDs on card + inner pills so patchDOM()
+    // can update status/task text without re-rendering the whole grid.
+    return `      <div class="${stationClasses.join(' ')}" id="agent-${esc(name)}" data-agent-name="${esc(name)}" data-agent-status="${esc(agent.status)}" style="${styleVars}"
         onmouseenter="showAgentPortrait(this,'${fullPortrait}')" onmouseleave="hideAgentPortrait()">
+        <span class="live-dot ok on-air-dot" aria-label="now on air" title="now on air"></span>
         ${avatarImg}
         <div class="agent-info">
-          <div class="agent-name" style="color: ${color}">${name}</div>
-          <div class="agent-role">${roles[name] || name}</div>
-          <div class="agent-status" id="agent-${esc(name)}-status" style="background: ${statusBg}; color: ${statusColor}">${agent.status}</div>
-          <div class="agent-task" id="agent-${esc(name)}-task"${agent.currentTask ? '' : ' style="display:none"'}>${agent.currentTask || ''}</div>
+          <div class="agent-name" style="color: ${color}">${esc(name)}</div>
+          <div class="agent-role">${esc(roles[name] || name)}</div>
+          <div class="agent-status" id="agent-${esc(name)}-status" style="background: ${statusBg}; color: ${statusColor}">${esc(agent.status)}</div>
+          <div class="agent-task" id="agent-${esc(name)}-task"${agent.currentTask ? '' : ' style="display:none"'}>${esc(agent.currentTask || '')}</div>
         </div>
       </div>`;
   })
@@ -1728,9 +1783,15 @@ function patchDOM(status) {
     var prevStatus = card.getAttribute('data-agent-status');
     if (prevStatus !== a.status) {
       card.setAttribute('data-agent-status', a.status || '');
-      // active class toggles the pulse animation
+      // US-0119 AC-0403/0404: toggle active (3px color glow + on-air dot)
+      // and idle (0.5 opacity) classes so the station visually reflects
+      // the live status without re-rendering the card.
       if (a.status === 'active') card.classList.add('active');
       else card.classList.remove('active');
+      var isIdle = a.status !== 'active' && a.status !== 'complete'
+        && a.status !== 'blocked' && a.status !== 'needs-review';
+      if (isIdle) card.classList.add('idle');
+      else card.classList.remove('idle');
       var pill = document.getElementById('agent-' + name + '-status');
       if (pill) {
         pill.textContent = a.status || '';
@@ -1746,6 +1807,29 @@ function patchDOM(status) {
       taskEl.style.display = newTask ? '' : 'none';
     }
   });
+
+  // --- Spotlight (US-0119 AC-0401) ------------------------------------------
+  // Keep the live spotlight panel in sync with the active (non-Conductor)
+  // agent. We only patch text/attribute fields — the portrait <img> is NOT
+  // swapped because the server-side renderer already chose the correct
+  // agent at generation time, and swapping image sources here would cause
+  // the 5s refresh loop to thrash the browser cache on every tick.
+  var spotlightEl = document.getElementById('agent-spotlight');
+  if (spotlightEl) {
+    var spotlightAgentName = spotlightEl.getAttribute('data-agent-name');
+    if (spotlightAgentName && agents[spotlightAgentName]) {
+      var sa = agents[spotlightAgentName];
+      var spotlightTask = document.getElementById('agent-spotlight-task');
+      if (spotlightTask) {
+        var newSpotlightTask = sa.currentTask || 'Awaiting assignment';
+        if (spotlightTask.textContent !== newSpotlightTask) spotlightTask.textContent = newSpotlightTask;
+      }
+      var spotlightElapsedEl = document.getElementById('agent-spotlight-elapsed');
+      if (spotlightElapsedEl && sa.startedAt) {
+        spotlightElapsedEl.setAttribute('data-started-at', sa.startedAt);
+      }
+    }
+  }
 
   // --- Metrics ---------------------------------------------------------------
   var m = status.metrics || {};
@@ -1913,6 +1997,38 @@ setInterval(refreshState, 5000);
 // 1-second ticker update for smooth "Last updated: N seconds ago" display
 // without re-fetching. Cheap DOM text update only.
 setInterval(function() { updateLastUpdatedTicker(!_lastFetchOk); }, 1000);
+
+// US-0119 AC-0401: spotlight elapsed-time ticker. Reads data-started-at
+// (ISO 8601) off #agent-spotlight-elapsed and re-renders "HH:MM:SS" every
+// second. When the field is absent/empty, the element shows IDLE so the
+// spotlight gracefully degrades before agents get a startedAt field.
+function _formatElapsedClock(ms) {
+  if (!isFinite(ms) || ms < 0) ms = 0;
+  var s = Math.floor(ms / 1000);
+  var h = Math.floor(s / 3600);
+  var m = Math.floor((s % 3600) / 60);
+  var sec = s % 60;
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  return pad(h) + ':' + pad(m) + ':' + pad(sec);
+}
+function updateSpotlightElapsed() {
+  var el = document.getElementById('agent-spotlight-elapsed');
+  if (!el) return;
+  var startedAt = el.getAttribute('data-started-at') || '';
+  if (!startedAt) {
+    if (el.textContent !== 'IDLE') el.textContent = 'IDLE';
+    return;
+  }
+  var startMs = Date.parse(startedAt);
+  if (isNaN(startMs)) {
+    if (el.textContent !== 'IDLE') el.textContent = 'IDLE';
+    return;
+  }
+  el.textContent = _formatElapsedClock(Date.now() - startMs);
+}
+// Run immediately so the first tick isn't a 1s delay of "—" text.
+updateSpotlightElapsed();
+setInterval(updateSpotlightElapsed, 1000);
 </script>
 
 <div id="agent-portrait-popup"><img src="" alt="Agent portrait" onerror="this.style.display='none'"></div>
