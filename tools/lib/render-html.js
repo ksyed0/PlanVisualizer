@@ -1951,7 +1951,7 @@ function renderScripts(data, options = {}) {
         (search && !row.innerText.toLowerCase().includes(search));
       row.style.display = hide ? 'none' : '';
     });
-    document.querySelectorAll('.bug-row').forEach(row => {
+    document.querySelectorAll('.bug-row, .bug-compact-row').forEach(row => {
       const rowEpic = row.dataset.epic || '_ungrouped';
       const rowSeverity = row.dataset.severity || '';
       const hide =

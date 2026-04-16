@@ -18,7 +18,17 @@ const sampleData = {
   ],
   tasks: [],
   testCases: [],
-  bugs: [],
+  bugs: [
+    {
+      id: 'BUG-0001',
+      title: 'Test critical bug',
+      severity: 'Critical',
+      status: 'Open',
+      relatedStory: 'US-0001',
+      fixBranch: 'bugfix/BUG-0001-test',
+      epicId: 'EPIC-0001',
+    },
+  ],
   lessons: [],
   costs: {
     'US-0001': { projectedUsd: 800, aiCostUsd: 0.47, inputTokens: 50000, outputTokens: 14000 },
@@ -1115,5 +1125,38 @@ describe('US-0102 — Traceability matrix redesign', () => {
     expect(html).toMatch(/data-col="TC-0010"/);
     expect(html).toMatch(/data-col="TC-0011"/);
     expect(html).toMatch(/data-col="TC-0012"/);
+  });
+});
+
+describe('US-0106 — Bug severity styling', () => {
+  it('severity badge cells have badge-sev class', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toMatch(/badge-sev/);
+  });
+
+  it('Critical bug card has border-left with danger token', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toMatch(/border-left:4px solid var\(--badge-danger-text/);
+  });
+
+  it('fix branch cell has title attribute', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toMatch(/class="truncate" title="/);
+  });
+
+  it('lesson link renders lesson-pill', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toMatch(/lesson-pill/);
+  });
+
+  it('compact view button and container are present', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toMatch(/bugs-compact-view/);
+    expect(html).toMatch(/setBugsView\('compact'\)/);
+  });
+
+  it('applyFilters targets bug-compact-row elements', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toMatch(/\.bug-row,\s*\.bug-compact-row/);
   });
 });
