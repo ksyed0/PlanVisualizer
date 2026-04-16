@@ -2286,3 +2286,19 @@ Steps to Reproduce:
    Lesson Encoded: Yes — see docs/LESSONS.md
    Estimated Cost USD: 0.00
    Notes: Fixed by gating step 5 on PR state via `gh pr list --state all --head <branch> --json state` exactly like step 6 already did. Delete only when state is MERGED, CLOSED, or NO_PR. Skip when state is OPEN. Self-inflicted wound from trusting "version-bump branches are always safe to nuke" — they're safe only when the auto-merge has completed. Added a manual `npm version patch` to this commit to compensate for the missed 1.0.208 version.
+
+BUG-0174: `scripts/install.sh` does not propagate branch hygiene tooling to target projects
+Severity: Low
+Related Story: n/a
+Steps to Reproduce:
+
+1. Run `bash scripts/install.sh` in a fresh target project
+2. Inspect the target project's `scripts/` directory
+3. Inspect the target project's `package.json` scripts
+   Expected: `scripts/cleanup-branches.sh` is present and `plan:cleanup` / `plan:cleanup:dry` npm scripts are registered, matching what PlanVisualizer itself ships with
+   Actual: only `tools/`, `tests/`, `jest.config.js`, `eslint.config.js`, `plan_visualizer.md`, and the Pages workflow get copied. Branch hygiene tooling stays behind — target projects running DM_AGENT pipelines accumulate 50+ stale refs per epic with no bundled sweep command.
+   Status: Fixed
+   Fix Branch: chore/install-cleanup-tooling-propagation
+   Lesson Encoded: Yes — see docs/LESSONS.md
+   Estimated Cost USD: 0.00
+   Notes: Fixed by (a) adding a `scripts/cleanup-branches.sh` copy step (new § 1.5) to `scripts/install.sh` so installed/upgraded projects get the branch hygiene tooling, (b) extending the npm-scripts merge in § 3 to register `plan:cleanup` and `plan:cleanup:dry`, and (c) documenting the commands + upgrade path in README.md ("Branch hygiene" subsection under Usage, `What gets overwritten on update` list in the Updating section). Re-running `scripts/install.sh` (idempotent) upgrades existing installs in place.

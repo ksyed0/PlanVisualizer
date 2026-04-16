@@ -28,6 +28,17 @@ cp "${REPO_ROOT}/jest.config.js" "${TARGET}/jest.config.js"
 echo "[install] Copying eslint.config.js ..."
 cp "${REPO_ROOT}/eslint.config.js" "${TARGET}/eslint.config.js"
 
+# ── 1.5. Copy branch hygiene tooling ────────────────────────────────────────
+# scripts/cleanup-branches.sh sweeps stale worktrees + merged branches left
+# behind by the DM_AGENT pipeline (auto-merge can't delete refs held by a
+# local worktree). Idempotent; PR-state gated so it never kills an open PR.
+mkdir -p "${TARGET}/scripts"
+if [ -f "${REPO_ROOT}/scripts/cleanup-branches.sh" ]; then
+  echo "[install] Copying scripts/cleanup-branches.sh ..."
+  cp "${REPO_ROOT}/scripts/cleanup-branches.sh" "${TARGET}/scripts/cleanup-branches.sh"
+  chmod +x "${TARGET}/scripts/cleanup-branches.sh"
+fi
+
 # ── 2. Copy GitHub Actions workflow ─────────────────────────────────────────
 mkdir -p "${TARGET}/.github/workflows"
 if [ -f "${REPO_ROOT}/.github/workflows/plan-visualizer.yml" ]; then
@@ -90,8 +101,10 @@ pkg.scripts = pkg.scripts || {};
 pkg.scripts['plan:test'] = pkg.scripts['plan:test'] || 'jest --watchAll=false';
 pkg.scripts['plan:test:coverage'] = pkg.scripts['plan:test:coverage'] || 'jest --watchAll=false --coverage';
 pkg.scripts['plan:generate'] = pkg.scripts['plan:generate'] || 'node tools/generate-plan.js';
+pkg.scripts['plan:cleanup'] = pkg.scripts['plan:cleanup'] || 'bash scripts/cleanup-branches.sh';
+pkg.scripts['plan:cleanup:dry'] = pkg.scripts['plan:cleanup:dry'] || 'bash scripts/cleanup-branches.sh --dry-run';
 fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n', 'utf8');
-console.log('[install] Scripts added: plan:test, plan:test:coverage, plan:generate');
+console.log('[install] Scripts added: plan:test, plan:test:coverage, plan:generate, plan:cleanup, plan:cleanup:dry');
 JS
 else
   echo "[install] Warning: no package.json found at ${TARGET} — skipping script merge."
