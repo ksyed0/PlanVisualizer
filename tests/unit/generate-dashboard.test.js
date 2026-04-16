@@ -157,3 +157,81 @@ describe('generate-dashboard.js baseline harness (US-0124)', () => {
     expect(html).toMatch(titleInModal);
   });
 });
+
+describe('US-0121 terminal-aesthetic activity log', () => {
+  // AC-0411: Log entries render with agent-color left bar and bracketed
+  // [HH:MM:SS] [AGENT] message format.
+  test('AC-0411: log entries use [HH:MM:SS] [AGENT] format with agent-color left bar', () => {
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    const fixture = makeHealthyFixture();
+    fixture.log = [{ time: '09:05', agent: 'Pixel', message: 'kicked off patchDOM' }];
+    const html = generateHTML(fixture);
+
+    // Bracketed time with seconds padding (09:05 -> 09:05:00).
+    expect(html).toMatch(/<span class="log-time"[^>]*>\[09:05:00\]<\/span>/);
+    // Bracketed agent token.
+    expect(html).toMatch(/<span class="log-agent"[^>]*>\[Pixel\]<\/span>/);
+    // Agent-color left bar on the row.
+    expect(html).toMatch(/<div class="log-entry"[^>]*style="border-left-color: [^"]+"[^>]*>/);
+  });
+
+  // AC-0412: timestamps muted gray, agent tokens agent-colored, messages
+  // use primary foreground — asserted via CSS rule presence.
+  test('AC-0412: CSS assigns muted gray to log-time and primary fg to log-msg', () => {
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    const html = generateHTML(makeHealthyFixture());
+    expect(html).toMatch(/\.log-time\s*\{\s*color:\s*var\(--text-muted\)/);
+    expect(html).toMatch(/\.log-msg\s*\{\s*color:\s*var\(--text-primary\)/);
+  });
+
+  // AC-0413: filter chips [All] [Errors] [Reviews] [Tests] [Bugs] with
+  // data-category attributes on each log row.
+  test('AC-0413: filter chips render and entries carry data-category', () => {
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    const fixture = makeHealthyFixture();
+    fixture.log = [
+      { time: '09:01', agent: 'Sentinel', message: 'coverage review complete' },
+      { time: '09:02', agent: 'Circuit', message: 'test suite green' },
+      { time: '09:03', agent: 'Forge', message: 'bug BUG-0001 patched' },
+      { time: '09:04', agent: 'Pixel', message: 'build error in render-html.js' },
+    ];
+    const html = generateHTML(fixture);
+
+    ['all', 'errors', 'reviews', 'tests', 'bugs'].forEach((f) => {
+      expect(html).toContain(`data-log-filter="${f}"`);
+    });
+    expect(html).toMatch(/data-category="reviews"/);
+    expect(html).toMatch(/data-category="tests"/);
+    expect(html).toMatch(/data-category="bugs"/);
+    expect(html).toMatch(/data-category="errors"/);
+  });
+
+  // AC-0414: tail-mode toggle ON by default and persisted via
+  // localStorage('dashboard-tail-mode').
+  test('AC-0414: tail-mode toggle present, on by default, uses dashboard-tail-mode key', () => {
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    const html = generateHTML(makeHealthyFixture());
+    expect(html).toContain('id="log-tail-checkbox"');
+    expect(html).toMatch(/id="log-tail-checkbox"[^>]*checked/);
+    expect(html).toContain("localStorage.setItem('dashboard-tail-mode'");
+    expect(html).toContain("localStorage.getItem('dashboard-tail-mode')");
+  });
+
+  // AC-0415: empty-state blinking cursor + "Awaiting agent activity…" when
+  // the log is empty. Also verifies prefers-reduced-motion guard on the
+  // blink animation so accessibility isn't regressed.
+  test('AC-0415: empty log renders blinking cursor placeholder', () => {
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    const fixture = makeHealthyFixture();
+    fixture.log = [];
+    const html = generateHTML(fixture);
+
+    expect(html).toContain('id="log-empty"');
+    expect(html).toContain('class="log-cursor"');
+    expect(html).toContain('Awaiting agent activity');
+    expect(html).toMatch(
+      /@media \(prefers-reduced-motion: no-preference\)[\s\S]*?\.log-cursor \{ animation: blink-cursor/,
+    );
+    expect(html).toMatch(/@media \(prefers-reduced-motion: reduce\)[\s\S]*?\.log-cursor \{ animation: none/);
+  });
+});
