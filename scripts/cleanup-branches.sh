@@ -1,0 +1,134 @@
+#!/usr/bin/env bash
+# cleanup-branches.sh — remove stale worktrees + merged branches left behind
+# by the EPIC pipeline (auto-merge --delete-branch fails when a worktree still
+# holds a ref; version-bump workflow forgot --delete-branch before this fix).
+#
+# Safe to run repeatedly. Preserves: develop, main, origin/gh-pages, origin/HEAD.
+#
+# Usage:
+#   scripts/cleanup-branches.sh [--dry-run]
+#
+# Flags:
+#   --dry-run    Print what would be deleted without touching anything.
+
+set -euo pipefail
+
+DRY_RUN=false
+if [[ "${1:-}" == "--dry-run" ]]; then
+  DRY_RUN=true
+  echo "[dry-run] no branches or worktrees will be deleted"
+fi
+
+run() {
+  if $DRY_RUN; then
+    echo "  would run: $*"
+  else
+    "$@"
+  fi
+}
+
+# Always operate from the repo root (where .git lives).
+REPO_ROOT=$(git rev-parse --show-toplevel)
+cd "$REPO_ROOT"
+
+# 0. Make sure we are on develop or main so we can delete feature branches safely.
+CURRENT=$(git branch --show-current)
+if [[ "$CURRENT" != "develop" && "$CURRENT" != "main" ]]; then
+  echo "[cleanup] currently on '$CURRENT'; switching to develop"
+  run git checkout develop
+fi
+
+echo
+echo "=== 1. Remove agent worktrees under .claude/worktrees/ ==="
+if [[ -d .claude/worktrees ]]; then
+  for wt in .claude/worktrees/agent-*/; do
+    [[ -d "$wt" ]] || continue
+    echo "  removing $wt"
+    run git worktree remove --force "$wt"
+  done
+fi
+run git worktree prune
+
+echo
+echo "=== 2. Fetch + prune remote refs ==="
+run git fetch origin --prune
+
+echo
+echo "=== 3. Delete local branches whose upstream is gone ==="
+GONE=$(git branch -vv | awk '/: gone]/{print $1}' | tr -d '*+' || true)
+if [[ -n "$GONE" ]]; then
+  echo "$GONE" | while read -r b; do
+    [[ -z "$b" ]] && continue
+    echo "  $b"
+    run git branch -D "$b"
+  done
+else
+  echo "  (none)"
+fi
+
+echo
+echo "=== 4. Force-delete local squash-merged feature/bugfix/chore-session branches ==="
+# Squash merges leave local refs that aren't ancestors of develop, so plain -d
+# refuses. We know these are merged because their PRs are MERGED on origin.
+LOCAL=$(git branch --format='%(refname:short)' | grep -E '^(feature/US-|bugfix/BUG-|chore/session-|worktree-agent-)' || true)
+if [[ -n "$LOCAL" ]]; then
+  echo "$LOCAL" | while read -r b; do
+    [[ -z "$b" ]] && continue
+    # Skip the branch currently checked out
+    [[ "$b" == "$(git branch --show-current)" ]] && continue
+    echo "  $b"
+    run git branch -D "$b"
+  done
+else
+  echo "  (none)"
+fi
+
+echo
+echo "=== 5. Delete orphan chore/version-bump-* remote branches ==="
+VBUMPS=$(git branch -r | awk '/origin\/chore\/version-bump-/{print $1}' | sed 's|origin/||' || true)
+if [[ -n "$VBUMPS" ]]; then
+  echo "$VBUMPS" | while read -r b; do
+    [[ -z "$b" ]] && continue
+    echo "  $b"
+    run git push origin --delete "$b"
+  done
+else
+  echo "  (none)"
+fi
+
+echo
+echo "=== 6. Delete merged feature/bugfix/chore-session remote branches ==="
+REMOTE_MERGED=$(git branch -r | awk '/origin\/(feature\/US-|bugfix\/BUG-|chore\/session-)/{print $1}' | sed 's|origin/||' || true)
+if [[ -n "$REMOTE_MERGED" ]]; then
+  echo "$REMOTE_MERGED" | while read -r b; do
+    [[ -z "$b" ]] && continue
+    # Guard: only delete if PR is merged
+    STATE=$(gh pr list --state all --head "$b" --json state --jq '.[0].state // "NO_PR"' 2>/dev/null || echo "NO_PR")
+    if [[ "$STATE" == "MERGED" ]]; then
+      echo "  $b (merged)"
+      run git push origin --delete "$b"
+    elif [[ "$STATE" == "NO_PR" ]]; then
+      echo "  $b (no PR — skipping for safety)"
+    else
+      echo "  $b (state=$STATE — skipping)"
+    fi
+  done
+else
+  echo "  (none)"
+fi
+
+echo
+echo "=== Final state ==="
+echo "local branches:  $(git branch | wc -l | tr -d ' ')"
+git branch
+echo "remote branches: $(git branch -r | wc -l | tr -d ' ')"
+git branch -r
+echo "worktrees:       $(git worktree list | wc -l | tr -d ' ')"
+git worktree list
+
+echo
+if $DRY_RUN; then
+  echo "[cleanup] dry-run complete — re-run without --dry-run to execute"
+else
+  echo "[cleanup] done"
+fi

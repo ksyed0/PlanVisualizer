@@ -297,3 +297,21 @@ _Learned during multiple Wave 3+4 PRs — PROMPT_LOG markdown tables with incons
 ### **`file://` protocol breaks `fetch('./sdlc-status.json')` via CORS — by design.**
 
 _Learned during US-0111 testing — opening dashboard via Finder double-click triggers STALE state. Graceful degradation is correct; document the HTTP-server workaround (`npx serve docs/`) for local dev._
+
+## Session 19 lessons (branch hygiene)
+
+### **Every GitHub Actions workflow that opens a PR MUST pass `--delete-branch` to `gh pr merge`.**
+
+_Learned from BUG-0170 — `.github/workflows/version-bump.yml` auto-created a `chore/version-bump-<sha>` branch per develop commit and auto-merged it, but forgot `--delete-branch`. After EPIC-0016 there were 25+ orphan version-bump branches on origin. Fix: one-flag addition to line 44 of the workflow. Rule: audit every workflow file before merging it; `gh pr merge` without `--delete-branch` accumulates cruft forever._
+
+### **Worktree removal is a MANDATORY post-merge step, not optional cleanup.**
+
+_Learned from BUG-0171 — `gh pr merge --delete-branch` deletes the REMOTE branch on merge, but the LOCAL feature branch stays because the worktree holds a ref lock. After EPIC-0016, 16 `.claude/worktrees/agent-_`directories and matching`worktree-agent-_`local branches accumulated. Rule: the DM_AGENT post-merge protocol's`git worktree remove <path> --force` is required; skipping it for speed creates tech debt that compounds every story._
+
+### **Squash-merged local branches need `git branch -D` (force), not `-d`.**
+
+_Learned from BUG-0172 — a squash merge creates a new commit on develop that isn't a descendant of the feature branch's tip. `git branch -d` refuses "branch not merged" because it checks for ancestry, not upstream-PR merge state. Rule: after confirming via `gh pr list --state merged --head <branch>` that the PR is MERGED, use `git branch -D` safely. The cleanup-branches.sh script gates this behind an origin PR-state check so it never force-deletes a legitimately unmerged branch._
+
+### **Ship a cleanup script so the next-epic Conductor has a safety net.**
+
+_Learned during session 19 — hand-auditing 52 stale branches (48 local + 46 remote) after a 14-story epic isn't sustainable. `scripts/cleanup-branches.sh` (`npm run cleanup:branches`) codifies the recipe: remove worktrees → prune remotes → delete gone-upstream locals → force-delete squash-merged locals → delete orphan version-bump remotes → delete merged feature-branch remotes (guarded by PR-state check). Runs idempotently; has a `--dry-run` for preview. Rule: if a cleanup pattern surfaces in a post-mortem, turn it into a script immediately; the next epic will need it._
