@@ -1553,6 +1553,49 @@ function renderLessonsTab(data) {
     return `<a href="#" onclick="showTab('bugs');setTimeout(function(){var el=document.getElementById('bug-row-${bugId}');if(el)el.scrollIntoView({behavior:'smooth',block:'center'});},50);return false;" class="text-blue-600 dark:text-blue-400 hover:underline font-mono text-xs">${bugId} ↗</a>`;
   };
 
+  // US-0107 AC-0357: Category icon derived from keyword match in rule text
+  function categoryIcon(rule) {
+    const r = (rule || '').toLowerCase();
+    if (/security|auth|credential|secret|token|inject/.test(r)) return '🔒';
+    if (/performance|cache|slow|memory|latency|timeout/.test(r)) return '⚡';
+    if (/test|coverage|mock|assert|spec/.test(r)) return '🧪';
+    return '💡';
+  }
+
+  // US-0107 AC-0358: Related bug inline expansion with severity dot
+  function lessonBugDetails(l, bugs) {
+    // Use l.bugIds (from parseLessons) or fall back to BUG-XXXX in lessonEncoded
+    const bugIds =
+      l.bugIds && l.bugIds.length > 0
+        ? l.bugIds
+        : (() => {
+            const m = (l.lessonEncoded || '').match(/BUG-\d{4}/);
+            return m ? [m[0]] : [];
+          })();
+    if (!bugIds.length) return '';
+    return bugIds
+      .map((bugId) => {
+        const bug = (bugs || []).find((b) => b.id === bugId);
+        if (!bug) return `<span class="text-xs text-slate-400">${esc(bugId)}</span>`;
+        const dotColor =
+          bug.severity === 'Critical' || bug.severity === 'High'
+            ? 'var(--badge-danger-text,#dc2626)'
+            : bug.severity === 'Medium'
+              ? 'var(--badge-warn-text,#d97706)'
+              : 'var(--badge-neutral-text,#64748b)';
+        return `<details class="lesson-bug-inline">
+    <summary class="cursor-pointer text-xs text-slate-500 hover:text-slate-700 list-none flex items-center gap-1">
+      <span class="inline-block w-2 h-2 rounded-full flex-shrink-0" style="background:${dotColor}"></span>
+      <span class="font-mono">${esc(bugId)}</span>
+    </summary>
+    <div class="mt-1 text-xs text-slate-600 dark:text-slate-400 pl-3">
+      ${esc(bug.title || '')} — <span class="badge badge-${BADGE_TONE[bug.severity] || 'neutral'}">${esc(bug.severity || '')}</span>
+    </div>
+  </details>`;
+      })
+      .join('');
+  }
+
   // Build lesson→epic grouping via lesson→bug→story→epic
   const lessonStoryMap = {};
   for (const bug of data.bugs) {
@@ -1586,8 +1629,8 @@ function renderLessonsTab(data) {
     <td class="px-3 py-3 text-xs whitespace-nowrap">${bugRefLink(l.id)}</td>
   </tr>`;
 
-  const renderLessonCard = (l) => `
-  <div id="lesson-card-${l.id}" class="lesson-row story-card-hover card-elev rounded-lg p-4 flex flex-col gap-2">
+  const renderLessonCard = (l, accent) => `
+  <div id="lesson-card-${l.id}" class="lesson-row story-card-hover card-elev lesson-accent-bar rounded-lg p-4 flex flex-col gap-2" style="border-left:4px solid ${accent.border}">
     <div class="flex items-center gap-2">
       <span class="font-mono text-xs font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap flex-shrink-0">${l.id}</span>
       <span class="text-sm font-semibold text-slate-700 dark:text-slate-200">${esc(l.title)}</span>
@@ -1595,7 +1638,7 @@ function renderLessonsTab(data) {
     <hr class="border-slate-100 dark:border-slate-700">
     <div>
       <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Rule</span>
-      <p class="text-sm text-slate-700 dark:text-slate-200 mt-0.5">${esc(l.rule)}</p>
+      <p class="text-sm text-slate-700 dark:text-slate-200 mt-0.5"><span class="lesson-cat-icon">${categoryIcon(l.rule)}</span>${esc(l.rule)}</p>
     </div>
     <div>
       <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Context</span>
@@ -1603,7 +1646,7 @@ function renderLessonsTab(data) {
     </div>
     <div class="flex items-center justify-between mt-1">
       <span class="text-xs text-slate-400">${l.date ? l.date.slice(0, 7) : '—'}</span>
-      <span class="text-xs text-slate-500">Bug ref: ${bugRefLink(l.id)}</span>
+      <span class="text-xs text-slate-500">${lessonBugDetails(l, data.bugs) || `Bug ref: ${bugRefLink(l.id)}`}</span>
     </div>
   </div>`;
 
@@ -1640,7 +1683,7 @@ function renderLessonsTab(data) {
         <span class="ml-1 text-xs text-slate-500">(${ls.length})</span>
       </div>
       <div id="${lceid}" class="p-3 hidden">
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">${ls.map(renderLessonCard).join('')}</div>
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">${ls.map((l) => renderLessonCard(l, accent)).join('')}</div>
       </div>
     </div>`;
     })
@@ -2451,6 +2494,11 @@ function renderPrintCSS() {
     animation: fadeInUp 240ms ease both;
     animation-delay: calc(var(--i, 0) * 20ms);
   }
+  /* US-0107: Lessons card polish */
+  .lesson-accent-bar { border-left-width: 4px; border-left-style: solid; }
+  .lesson-cat-icon { font-size: 1em; margin-right: 4px; }
+  .lesson-bug-inline summary::-webkit-details-marker { display: none; }
+  .lesson-bug-inline summary { display: flex; }
   @media print {
     #filter-bar, #sidebar, #topbar-fixed, .fixed, .activity-panel { display: none !important; }
     body { padding: 0 !important; }

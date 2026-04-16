@@ -914,3 +914,68 @@ describe('US-0098 — staggered animation', () => {
     expect(html).not.toMatch(/gsap|anime\.js|framer/);
   });
 });
+
+describe('US-0107 — Lessons card polish', () => {
+  const lessonData = {
+    ...sampleData,
+    lessons: [
+      {
+        id: 'L-0001',
+        title: 'Validate security tokens',
+        rule: 'Always validate security tokens before use',
+        context: 'Learned during auth implementation',
+        date: '2026-01',
+        bugIds: ['BUG-0001'],
+      },
+    ],
+    bugs: [
+      {
+        id: 'BUG-0001',
+        title: 'Token not validated',
+        severity: 'High',
+        status: 'Fixed',
+        relatedStory: 'US-0001',
+        fixBranch: 'bugfix/BUG-0001',
+        lessonEncoded: 'Yes — L-0001',
+      },
+    ],
+  };
+
+  it('lesson cards have lesson-accent-bar class', () => {
+    const html = renderHtml(lessonData);
+    expect(html).toMatch(/lesson-accent-bar/);
+  });
+
+  it('security keyword produces lock icon', () => {
+    const html = renderHtml(lessonData);
+    expect(html).toMatch(/🔒/);
+  });
+
+  it('lesson card has border-left accent style', () => {
+    const html = renderHtml(lessonData);
+    expect(html).toMatch(/border-left.*solid/);
+  });
+
+  it('related bug renders lesson-bug-inline details element', () => {
+    const html = renderHtml(lessonData);
+    expect(html).toMatch(/lesson-bug-inline/);
+  });
+
+  it('fallback icon for unmatched keyword is lightbulb', () => {
+    const genericData = {
+      ...sampleData,
+      lessons: [
+        {
+          id: 'L-0002',
+          title: 'Keep commits small',
+          rule: 'Keep commits small',
+          context: '',
+          date: '2026-01',
+          bugIds: [],
+        },
+      ],
+    };
+    const html = renderHtml(genericData);
+    expect(html).toMatch(/💡/);
+  });
+});
