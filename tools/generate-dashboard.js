@@ -223,6 +223,54 @@ function generateHTML(status) {
   const storyPercent =
     metrics.storiesTotal > 0 ? Math.round((metrics.storiesCompleted / metrics.storiesTotal) * 100) : 0;
 
+  // US-0118 AC-0397: coverage threshold → semantic tone.
+  //   green  ≥ 80%
+  //   amber  60–80%
+  //   red    <  60%
+  const coveragePct = typeof metrics.coveragePercent === 'number' ? metrics.coveragePercent : 0;
+  const coverageTone = coveragePct >= 80 ? 'green' : coveragePct >= 60 ? 'amber' : 'red';
+
+  // US-0118 AC-0396: sparkline bar heights keyed to phase status. Complete
+  // phases render at full height, in-progress at ~60%, pending at a short
+  // baseline so the shape still reads as a mini chart.
+  const sparkHeights = phases.map((p) => {
+    if (p.status === 'complete') return 100;
+    if (p.status === 'in-progress') return 60;
+    return 18;
+  });
+
+  // US-0118 AC-0398: pull the most recent review verdicts from status.log.
+  // Canonical messages emitted by tools/update-sdlc-status.js are
+  //   "approve review of US-XXXX" / "block review of US-XXXX".
+  // We also match the raw tokens "approved"/"blocked" for safety.
+  const reviewRegex = /^(approve|block)\s+review\s+of\s+(US-\d{4}|[A-Za-z0-9_-]+)/i;
+  const reviewEntries = [];
+  for (let i = log.length - 1; i >= 0 && reviewEntries.length < 5; i--) {
+    const entry = log[i] || {};
+    const msg = String(entry.message || '');
+    const m = msg.match(reviewRegex);
+    if (m) {
+      reviewEntries.push({
+        agent: entry.agent || 'Reviewer',
+        verdict: m[1].toLowerCase() === 'block' ? 'block' : 'approve',
+        target: m[2],
+        time: entry.time || '',
+      });
+    }
+  }
+
+  // US-0118 AC-0400: "LAST UPDATED HH:MM" footer stamp — server-rendered
+  // from current generation time. refreshState() rewrites it on each fetch.
+  const stampHHMM = new Date().toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+
+  // SVG doughnut geometry. With r=15.9155 the circumference is exactly 100,
+  // so stroke-dasharray can be written as "<percent> 100" without extra math.
+  const doughnutOffset = (100 - Math.max(0, Math.min(100, coveragePct))).toFixed(2);
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -590,6 +638,238 @@ function generateHTML(status) {
   }
   /* ===== US-0122 END ===== */
 
+  /* ===== US-0118 BEGIN: Differentiated metric cards ===== */
+  /* Each of the three TELEMETRY cards tells its own story:
+     - Phase Progress: hero number + sparkline (six phase blocks),
+     - Quality: SVG doughnut keyed to coverage threshold,
+     - Reviews: avatar-chip list derived from status.log entries.
+     Semantic colors (AC-0399) match the same thresholds used by the
+     progress-fill gradients elsewhere in the dashboard. */
+  .metric-card { position: relative; display: flex; flex-direction: column; }
+  .metric-hero {
+    font-family: var(--font-display), 'Departure Mono', monospace;
+    font-size: 56px;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    margin: 4px 0 2px;
+    font-variant-numeric: tabular-nums;
+  }
+  .metric-hero .hero-sep { font-size: 36px; color: var(--text-muted); margin: 0 4px; }
+  .metric-hero .hero-den { font-size: 32px; color: var(--text-muted); }
+  .metric-hero.blue { color: #1565C0; }
+  .metric-hero.green { color: #34A853; }
+  .metric-hero.amber { color: #F57C00; }
+  .metric-hero.red { color: var(--brand-primary); }
+  [data-theme="light"] .metric-hero.green { color: #2E7D32; }
+  [data-theme="light"] .metric-hero.amber { color: #E65100; }
+
+  .metric-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    margin-bottom: 12px;
+  }
+
+  /* Sparkline: one bar per phase, height keyed to per-phase story-complete
+     ratio or a fixed "pending" baseline. Pure CSS, no Chart.js needed. */
+  .phase-sparkline { height: 32px; display: flex; gap: 4px; align-items: flex-end; margin-bottom: 12px; }
+  .phase-sparkline .spark-bar {
+    flex: 1;
+    min-height: 4px;
+    border-radius: 2px;
+    background: var(--bg-phase-pending);
+    transition: height 0.3s ease, background 0.3s ease;
+    position: relative;
+  }
+  .phase-sparkline .spark-bar.complete { background: linear-gradient(180deg, #42A5F5, #1565C0); }
+  .phase-sparkline .spark-bar.in-progress { background: linear-gradient(180deg, #F57C00, #E65100); }
+  @media (prefers-reduced-motion: no-preference) {
+    .phase-sparkline .spark-bar.in-progress { animation: spark-pulse 1.8s ease-in-out infinite; }
+  }
+  @keyframes spark-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+  /* Doughnut chart: SVG ring driven by stroke-dasharray.
+     viewBox 36x36 keeps circumference tidy (2*pi*15.9155 ~= 100). */
+  .doughnut-wrap { display: flex; justify-content: center; align-items: center; padding: 4px 0 6px; }
+  .doughnut { position: relative; width: 132px; height: 132px; }
+  .doughnut svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .doughnut .d-track { fill: none; stroke: var(--bg-phase-pending); stroke-width: 3.2; }
+  .doughnut .d-fill {
+    fill: none;
+    stroke-width: 3.2;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.6s ease, stroke 0.3s ease;
+  }
+  .doughnut .d-fill.green { stroke: #34A853; }
+  .doughnut .d-fill.amber { stroke: #F57C00; }
+  .doughnut .d-fill.red { stroke: var(--brand-primary); }
+  [data-theme="light"] .doughnut .d-fill.green { stroke: #2E7D32; }
+  [data-theme="light"] .doughnut .d-fill.amber { stroke: #E65100; }
+  .doughnut-center {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    pointer-events: none;
+  }
+  .doughnut-center .d-num {
+    font-family: var(--font-display), 'Departure Mono', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .doughnut-center .d-num.green { color: #34A853; }
+  .doughnut-center .d-num.amber { color: #F57C00; }
+  .doughnut-center .d-num.red { color: var(--brand-primary); }
+  [data-theme="light"] .doughnut-center .d-num.green { color: #2E7D32; }
+  [data-theme="light"] .doughnut-center .d-num.amber { color: #E65100; }
+  .doughnut-center .d-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    margin-top: 2px;
+  }
+
+  .quality-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-top: 6px;
+    text-align: center;
+  }
+  .quality-stats .qs-cell { padding: 4px 0; }
+  .quality-stats .qs-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    display: block;
+    margin-bottom: 3px;
+  }
+  .quality-stats .qs-val { font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .quality-stats .qs-val.green { color: #34A853; }
+  .quality-stats .qs-val.red { color: var(--brand-primary); }
+  .quality-stats .qs-val.muted { color: var(--text-secondary); }
+  [data-theme="light"] .quality-stats .qs-val.green { color: #2E7D32; }
+
+  /* Reviews list with avatar chips. Summary row on top, scrollable list below. */
+  .reviews-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .reviews-summary .rs-cell { padding: 6px 4px; border-radius: 6px; background: var(--bg-card-inner); }
+  .reviews-summary .rs-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    display: block;
+    margin-bottom: 2px;
+  }
+  .reviews-summary .rs-val {
+    font-family: var(--font-display), 'Departure Mono', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .reviews-summary .rs-approved .rs-val { color: #34A853; }
+  .reviews-summary .rs-blocked .rs-val { color: var(--brand-primary); }
+  [data-theme="light"] .reviews-summary .rs-approved .rs-val { color: #2E7D32; }
+  [data-theme="light"] .reviews-summary .rs-blocked .rs-val.zero { color: var(--text-muted); }
+  .reviews-list {
+    list-style: none; padding: 0; margin: 0;
+    display: flex; flex-direction: column; gap: 4px;
+    max-height: 172px; overflow-y: auto;
+  }
+  .review-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 2px;
+    border-bottom: 1px solid var(--divider);
+  }
+  .review-item:last-child { border-bottom: none; }
+  .review-chip {
+    width: 28px; height: 28px; border-radius: 50%;
+    object-fit: cover; object-position: center top;
+    border: 2px solid; flex-shrink: 0;
+  }
+  .review-chip-fallback {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 2px solid; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    background: var(--bg-phase-pending);
+  }
+  .review-body { flex: 1; min-width: 0; }
+  .review-line {
+    display: flex; align-items: baseline; gap: 6px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .review-agent { font-size: 12px; font-weight: 700; flex-shrink: 0; }
+  .review-target {
+    font-size: 11px; color: var(--text-secondary);
+    font-family: 'JetBrains Mono', monospace;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .review-time {
+    font-size: 10px; color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums;
+    margin-top: 1px;
+  }
+  .review-verdict {
+    font-size: 9px; font-weight: 700;
+    padding: 3px 8px; border-radius: 10px;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    font-family: 'JetBrains Mono', monospace;
+    flex-shrink: 0;
+  }
+  .review-verdict.approve { color: #34A853; background: rgba(52, 168, 83, 0.14); }
+  .review-verdict.block { color: var(--brand-primary); background: rgba(213, 43, 30, 0.16); }
+  [data-theme="light"] .review-verdict.approve { color: #2E7D32; background: rgba(46, 125, 50, 0.12); }
+  .reviews-empty {
+    font-size: 12px; color: var(--text-muted); font-style: italic;
+    padding: 16px 0; text-align: center;
+  }
+
+  /* AC-0400: hairline footer with "LAST UPDATED HH:MM" stamp. */
+  .card-footer {
+    margin-top: auto;
+    padding-top: 10px;
+    border-top: 1px solid var(--divider);
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+  }
+  .card-footer .stamp {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .card-footer .stamp b { color: var(--text-secondary); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  @media (max-width: 480px) {
+    .metric-hero { font-size: 40px; }
+    .metric-hero .hero-den { font-size: 22px; }
+    .doughnut { width: 108px; height: 108px; }
+    .doughnut-center .d-num { font-size: 22px; }
+    .reviews-summary .rs-val { font-size: 18px; }
+  }
+  /* ===== US-0118 END ===== */
+
   /* ===== RESPONSIVE: Tablet portrait (768-1024px) ===== */
   @media (max-width: 1024px) {
     .header { padding: 12px 20px; }
@@ -751,65 +1031,120 @@ ${phases
   .join('\n')}
 </div>
 
-<!-- Metrics Row -->
+<!-- Metrics Row — US-0118 differentiated cards.
+     AC-0399: semantic color keyed to state: Phase=blue, Quality=green/amber/red
+     by coverage threshold, Reviews=green(approve)/red(block).
+     Metric IDs (id="metric-*") are preserved so patchDOM() from US-0111 can
+     mutate values in-place on live refresh. -->
 <h2 class="section-header">TELEMETRY</h2>
 <div class="grid">
-  <div class="card">
+
+  <!-- AC-0396: Phase Progress card — hero number in Departure Mono 56px +
+       sparkline below (one bar per phase, height keyed to status). -->
+  <div class="card metric-card" id="card-phase-progress">
     <h2>Phase Progress</h2>
-    <div class="metric-row">
-      <span class="metric-label">Phases Complete</span>
-      <span class="metric-value blue" id="metric-phasesComplete">${phases.filter((p) => p.status === 'complete').length} / ${phases.length}</span>
+    <div class="metric-sub">Phases Complete</div>
+    <div class="metric-hero blue" id="metric-phaseHero"><span id="metric-phasesCompleteNum">${phases.filter((p) => p.status === 'complete').length}</span><span class="hero-sep">/</span><span class="hero-den" id="metric-phasesTotalNum">${phases.length}</span></div>
+    <!-- Legacy ids preserved for patchDOM() compatibility. -->
+    <span id="metric-phasesComplete" hidden>${phases.filter((p) => p.status === 'complete').length} / ${phases.length}</span>
+    <div class="phase-sparkline" id="metric-phasesSparkline" aria-hidden="true">
+${phases
+  .map(
+    (p, i) =>
+      `      <div class="spark-bar ${p.status}" data-phase-id="${esc(p.id)}" data-phase-status="${esc(p.status)}" style="height: ${sparkHeights[i]}%" title="${esc(p.name)}: ${esc(p.status)}"></div>`,
+  )
+  .join('\n')}
     </div>
     <div class="progress-bar"><div class="progress-fill blue" id="metric-phasesBar" style="width: ${phasePercent}%"></div></div>
-    <div class="metric-row" style="margin-top: 12px">
-      <span class="metric-label">Stories Done</span>
-      <span class="metric-value green" id="metric-storiesDone">${metrics.storiesCompleted} / ${metrics.storiesTotal}</span>
-    </div>
+    <div class="metric-sub" style="margin-top: 14px">Stories Done · <span id="metric-storiesDone">${metrics.storiesCompleted} / ${metrics.storiesTotal}</span> · Tasks <span id="metric-tasksDone">${metrics.tasksTotal > 0 ? `${metrics.tasksCompleted} / ${metrics.tasksTotal}` : '—'}</span></div>
     <div class="progress-bar"><div class="progress-fill green" id="metric-storiesBar" style="width: ${storyPercent}%"></div></div>
-    <div class="metric-row" style="margin-top: 12px">
-      <span class="metric-label">Tasks Done</span>
-      <span class="metric-value orange" id="metric-tasksDone">${metrics.tasksTotal > 0 ? `${metrics.tasksCompleted} / ${metrics.tasksTotal}` : '—'}</span>
+    <div class="progress-bar" style="margin-top: 4px"><div class="progress-fill red" id="metric-tasksBar" style="width: ${metrics.tasksTotal > 0 ? Math.round((metrics.tasksCompleted / metrics.tasksTotal) * 100) : 0}%"></div></div>
+    <div class="card-footer">
+      <span class="stamp">Last updated <b id="stamp-phase-progress">${stampHHMM}</b></span>
     </div>
-    <div class="progress-bar"><div class="progress-fill red" id="metric-tasksBar" style="width: ${metrics.tasksTotal > 0 ? Math.round((metrics.tasksCompleted / metrics.tasksTotal) * 100) : 0}%"></div></div>
   </div>
 
-  <div class="card">
+  <!-- AC-0397: Quality card — SVG doughnut (circle + stroke-dasharray) with
+       center coverage number. Tint green ≥80%, amber 60–80%, red <60%. -->
+  <div class="card metric-card" id="card-quality">
     <h2><span class="live-dot ok" aria-label="live" title="live" id="quality-live-dot"></span>Quality</h2>
-    <div class="metric-row">
-      <span class="metric-label">Tests Passed</span>
-      <span class="metric-value green" id="metric-testsPassed">${metrics.testsPassed}</span>
+    <div class="doughnut-wrap">
+      <div class="doughnut" id="metric-coverageDoughnut" data-coverage="${coveragePct}" data-tone="${coverageTone}" role="img" aria-label="Code coverage ${coveragePct}%">
+        <svg viewBox="0 0 36 36">
+          <circle class="d-track" cx="18" cy="18" r="15.9155"></circle>
+          <circle class="d-fill ${coverageTone}" id="metric-coverageDoughnutFill" cx="18" cy="18" r="15.9155"
+                  stroke-dasharray="100 100" stroke-dashoffset="${doughnutOffset}"></circle>
+        </svg>
+        <div class="doughnut-center">
+          <div class="d-num ${coverageTone}" id="metric-coveragePercent">${coveragePct}%</div>
+          <div class="d-label">Coverage</div>
+        </div>
+      </div>
     </div>
-    <div class="metric-row">
-      <span class="metric-label">Tests Failed</span>
-      <span class="metric-value red" id="metric-testsFailed">${metrics.testsFailed}</span>
+    <div class="quality-stats">
+      <div class="qs-cell">
+        <span class="qs-label">Passed</span>
+        <span class="qs-val green" id="metric-testsPassed">${metrics.testsPassed}</span>
+      </div>
+      <div class="qs-cell">
+        <span class="qs-label">Failed</span>
+        <span class="qs-val ${metrics.testsFailed > 0 ? 'red' : 'muted'}" id="metric-testsFailed">${metrics.testsFailed}</span>
+      </div>
+      <div class="qs-cell">
+        <span class="qs-label">Bugs Open</span>
+        <span class="qs-val ${metrics.bugsOpen > 0 ? 'red' : 'green'}" id="metric-bugsOpen">${metrics.bugsOpen}</span>
+      </div>
     </div>
-    <div class="metric-row">
-      <span class="metric-label">Code Coverage</span>
-      <span class="metric-value ${metrics.coveragePercent >= 60 ? 'green' : 'orange'}" id="metric-coveragePercent">${metrics.coveragePercent}%</span>
-    </div>
-    <div class="metric-row">
-      <span class="metric-label">Bugs Open</span>
-      <span class="metric-value ${metrics.bugsOpen > 0 ? 'red' : 'green'}" id="metric-bugsOpen">${metrics.bugsOpen}</span>
+    <span id="metric-testsTotal" hidden>${metrics.testsTotal}</span>
+    <div class="card-footer">
+      <span class="stamp">Last updated <b id="stamp-quality">${stampHHMM}</b></span>
     </div>
   </div>
 
-  <div class="card">
+  <!-- AC-0398: Reviews card — compact list of recent review verdicts from
+       status.log, each row with an agent avatar chip (small circular image
+       from agents.config.json, path agents/images/optimized/AVATAR-64.png). -->
+  <div class="card metric-card" id="card-reviews">
     <h2>Reviews</h2>
-    <div class="metric-row">
-      <span class="metric-label">Reviews Approved</span>
-      <span class="metric-value green" id="metric-reviewsApproved">${metrics.reviewsApproved}</span>
+    <div class="reviews-summary">
+      <div class="rs-cell rs-approved">
+        <span class="rs-label">Approved</span>
+        <span class="rs-val" id="metric-reviewsApproved">${metrics.reviewsApproved}</span>
+      </div>
+      <div class="rs-cell rs-blocked">
+        <span class="rs-label">Blocked</span>
+        <span class="rs-val ${metrics.reviewsBlocked > 0 ? '' : 'zero'}" id="metric-reviewsBlocked">${metrics.reviewsBlocked}</span>
+      </div>
     </div>
-    <div class="metric-row">
-      <span class="metric-label">Reviews Blocked</span>
-      <span class="metric-value red" id="metric-reviewsBlocked">${metrics.reviewsBlocked}</span>
-    </div>
-    <div class="metric-row">
-      <span class="metric-label">Bugs Fixed</span>
-      <span class="metric-value blue" id="metric-bugsFixed">${metrics.bugsFixed}</span>
-    </div>
-    <div class="metric-row">
-      <span class="metric-label">Tests Total</span>
-      <span class="metric-value" id="metric-testsTotal">${metrics.testsTotal}</span>
+    <ul class="reviews-list" id="metric-reviewsList">
+${
+  reviewEntries.length === 0
+    ? `      <li class="reviews-empty">No reviews yet — awaiting first verdict.</li>`
+    : reviewEntries
+        .map((r) => {
+          const color = agentColors[r.agent] || '#888';
+          const icon = agentIcons[r.agent] || '🔍';
+          const avatar = agentAvatars[r.agent] || r.agent.toLowerCase();
+          const imgBase = 'agents/images';
+          const chipImg = `<img class="review-chip" src="${imgBase}/optimized/${esc(avatar)}-64.png" alt="${esc(r.agent)}" style="border-color: ${color}" onerror="this.onerror=function(){this.outerHTML='<div class=\\'review-chip-fallback\\' style=\\'border-color: ${color}\\'>${icon}</div>'};this.src='${imgBase}/headshots/${esc(r.agent.toLowerCase())}.png'">`;
+          return `      <li class="review-item">
+        ${chipImg}
+        <div class="review-body">
+          <div class="review-line">
+            <span class="review-agent" style="color: ${color}">${esc(r.agent)}</span>
+            <span class="review-target">${esc(r.target)}</span>
+          </div>
+          <div class="review-time">${esc(r.time)}</div>
+        </div>
+        <span class="review-verdict ${r.verdict}">${r.verdict === 'approve' ? 'Approve' : 'Block'}</span>
+      </li>`;
+        })
+        .join('\n')
+}
+    </ul>
+    <span id="metric-bugsFixed" hidden>${metrics.bugsFixed}</span>
+    <div class="card-footer">
+      <span class="stamp">Last updated <b id="stamp-reviews">${stampHHMM}</b></span>
     </div>
   </div>
 </div>
@@ -1421,6 +1756,24 @@ function patchDOM(status) {
   var phasesCompleteCount = phases.filter(function(p) { return p.status === 'complete'; }).length;
   var phasePct = phases.length > 0 ? Math.round((phasesCompleteCount / phases.length) * 100) : 0;
   setText('metric-phasesComplete', phasesCompleteCount + ' / ' + phases.length);
+  // US-0118: hero number (split across two spans) + sparkline bars keyed to phase status.
+  setText('metric-phasesCompleteNum', phasesCompleteCount);
+  setText('metric-phasesTotalNum', phases.length);
+  var spark = document.getElementById('metric-phasesSparkline');
+  if (spark) {
+    var bars = spark.querySelectorAll('.spark-bar');
+    phases.forEach(function(p, i) {
+      var bar = bars[i];
+      if (!bar) return;
+      var prevStatus = bar.getAttribute('data-phase-status');
+      if (prevStatus !== p.status) {
+        bar.setAttribute('data-phase-status', p.status || '');
+        bar.className = 'spark-bar ' + (p.status || 'pending');
+        var h = p.status === 'complete' ? 100 : p.status === 'in-progress' ? 60 : 18;
+        bar.style.height = h + '%';
+      }
+    });
+  }
   var phasesBar = document.getElementById('metric-phasesBar');
   if (phasesBar) phasesBar.style.width = phasePct + '%';
 
@@ -1443,11 +1796,31 @@ function patchDOM(status) {
   if (typeof m.testsPassed === 'number') setText('metric-testsPassed', m.testsPassed);
   if (typeof m.testsFailed === 'number') setText('metric-testsFailed', m.testsFailed);
   if (typeof m.testsTotal === 'number') setText('metric-testsTotal', m.testsTotal);
-  if (typeof m.coveragePercent === 'number') setText('metric-coveragePercent', m.coveragePercent + '%');
+  if (typeof m.coveragePercent === 'number') {
+    setText('metric-coveragePercent', m.coveragePercent + '%');
+    // US-0118 AC-0397: re-tint the SVG doughnut + hero number by threshold.
+    var tone = m.coveragePercent >= 80 ? 'green' : m.coveragePercent >= 60 ? 'amber' : 'red';
+    var dough = document.getElementById('metric-coverageDoughnut');
+    var fill = document.getElementById('metric-coverageDoughnutFill');
+    var dnum = document.getElementById('metric-coveragePercent');
+    if (fill) {
+      fill.setAttribute('class', 'd-fill ' + tone);
+      var pct = Math.max(0, Math.min(100, m.coveragePercent));
+      fill.setAttribute('stroke-dashoffset', (100 - pct).toFixed(2));
+    }
+    if (dnum) dnum.className = 'd-num ' + tone;
+    if (dough) { dough.setAttribute('data-tone', tone); dough.setAttribute('data-coverage', String(m.coveragePercent)); dough.setAttribute('aria-label', 'Code coverage ' + m.coveragePercent + '%'); }
+  }
   if (typeof m.bugsOpen === 'number') setText('metric-bugsOpen', m.bugsOpen);
   if (typeof m.bugsFixed === 'number') setText('metric-bugsFixed', m.bugsFixed);
   if (typeof m.reviewsApproved === 'number') setText('metric-reviewsApproved', m.reviewsApproved);
   if (typeof m.reviewsBlocked === 'number') setText('metric-reviewsBlocked', m.reviewsBlocked);
+
+  // US-0118 AC-0400: bump the per-card "LAST UPDATED HH:MM" stamps each
+  // successful refresh. Uses the browser's local time (24h) for consistency
+  // with the header clock's tabular numerics.
+  var _hhmm = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+  ['stamp-phase-progress', 'stamp-quality', 'stamp-reviews'].forEach(function(id) { setText(id, _hhmm); });
 
   // --- Activity log (append-only diff by data-log-key) -----------------------
   var scroll = document.getElementById('log-scroll');
