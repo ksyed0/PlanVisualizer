@@ -101,7 +101,7 @@ describe('renderHtml — traceability tab', () => {
     };
     const html = renderHtml(dataWithTCs);
     expect(html).toMatch(/TC-0001/);
-    expect(html).toMatch(/Not linked/);
+    expect(html).toMatch(/trace-caption/);
   });
 });
 
@@ -321,7 +321,7 @@ describe('renderHtml — traceability with Fail TC', () => {
       ],
     };
     const html = renderHtml(dataFailTC);
-    expect(html).toMatch(/bg-red-100/);
+    expect(html).toMatch(/tc-dot-danger/);
   });
 });
 
@@ -1049,5 +1049,70 @@ describe('US-0101 — Kanban board polish', () => {
     // Cards should use card-elev not hardcoded bg-white
     expect(html).toMatch(/card-elev/);
     expect(html).not.toMatch(/story-row story-card-hover bg-white/);
+  });
+});
+
+describe('US-0102 — Traceability matrix redesign', () => {
+  const tcData = {
+    ...sampleData,
+    testCases: [
+      {
+        id: 'TC-0010',
+        relatedStory: 'US-0001',
+        relatedAC: 'AC-0001',
+        status: 'Pass',
+        defect: 'None',
+        title: 'Pass test',
+        type: 'Functional',
+      },
+      {
+        id: 'TC-0011',
+        relatedStory: 'US-0001',
+        relatedAC: 'AC-0002',
+        status: 'Fail',
+        defect: 'BUG-0001',
+        title: 'Fail test',
+        type: 'Functional',
+      },
+      {
+        id: 'TC-0012',
+        relatedStory: 'US-0001',
+        relatedAC: 'AC-0003',
+        status: 'Not Run',
+        defect: 'None',
+        title: 'Not run test',
+        type: 'Functional',
+      },
+    ],
+  };
+
+  let html;
+  beforeAll(() => {
+    html = renderHtml(tcData);
+  });
+
+  it('Pass TC cell has tc-dot-success class', () => {
+    expect(html).toContain('tc-dot tc-dot-success');
+  });
+
+  it('Fail TC cell has tc-dot-danger class', () => {
+    expect(html).toContain('tc-dot tc-dot-danger');
+  });
+
+  it('Caption contains Pass/Fail/Not Run counts', () => {
+    expect(html).toMatch(/class="trace-caption"/);
+    expect(html).toMatch(/Pass: 1/);
+    expect(html).toMatch(/Fail: 1/);
+    expect(html).toMatch(/Not Run: 1/);
+  });
+
+  it('First td in story rows has trace-sticky-col class', () => {
+    expect(html).toMatch(/class="trace-sticky-col[^"]*"/);
+  });
+
+  it('TC header cells have data-col attribute', () => {
+    expect(html).toMatch(/data-col="TC-0010"/);
+    expect(html).toMatch(/data-col="TC-0011"/);
+    expect(html).toMatch(/data-col="TC-0012"/);
   });
 });

@@ -539,16 +539,15 @@ function renderTraceabilityTab(data) {
   if (!data.testCases.length) {
     return `<div id="tab-traceability" class="p-6 hidden" role="tabpanel" aria-labelledby="tab-btn-traceability"><p class="text-slate-500">No test cases yet.</p></div>`;
   }
-  const tcStatusColor = {
-    Pass: 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300',
-    Fail: 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300',
-    'Not Run': 'bg-amber-50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
-  };
+  const tcTone = { Pass: 'success', Fail: 'danger', 'Not Run': 'warn' };
   const passed = data.testCases.filter((tc) => tc.status === 'Pass').length;
   const failed = data.testCases.filter((tc) => tc.status === 'Fail').length;
   const notRun = data.testCases.filter((tc) => tc.status === 'Not Run').length;
   const headers = data.testCases
-    .map((tc) => `<th class="text-xs font-mono p-2 border border-slate-200 dark:border-slate-600">${tc.id}</th>`)
+    .map(
+      (tc) =>
+        `<th class="text-xs font-mono p-2 border border-slate-200 dark:border-slate-600" data-col="${tc.id}">${tc.id}</th>`,
+    )
     .join('');
   const rows = data.epics
     .map((epic) => {
@@ -581,14 +580,14 @@ function renderTraceabilityTab(data) {
           const cells = data.testCases
             .map((tc) => {
               const linked = tc.relatedStory === story.id;
-              const cls = linked
-                ? tcStatusColor[tc.status] || 'bg-amber-50 text-amber-700'
-                : 'bg-white dark:bg-slate-800';
-              return `<td class="p-2 border border-slate-200 dark:border-slate-600 text-center text-xs font-medium ${cls}">${linked ? tc.status.slice(0, 1) : ''}</td>`;
+              const tone = linked ? tcTone[tc.status] || 'warn' : null;
+              return linked
+                ? `<td class="tc-dot tc-dot-${tone}" data-col="${tc.id}"></td>`
+                : `<td class="p-2 border border-slate-200 dark:border-slate-600" data-col="${tc.id}"></td>`;
             })
             .join('');
           return `<tr class="hidden" data-trace-epic="${esc(epic.id)}">
-        <td class="text-xs font-mono px-2 py-1 border border-slate-200 dark:border-slate-600 whitespace-nowrap pl-6 dark:text-slate-200">${story.id}</td>
+        <td class="trace-sticky-col text-xs font-mono px-2 py-1 border border-slate-200 dark:border-slate-600 whitespace-nowrap pl-6 dark:text-slate-200">${story.id}</td>
         ${cells}
       </tr>`;
         })
@@ -596,26 +595,18 @@ function renderTraceabilityTab(data) {
       return epicHeader + storyRows;
     })
     .join('');
+  const caption = `<caption class="trace-caption">
+    <span class="tc-dot tc-dot-success"></span> Pass: ${passed}
+    &middot; <span class="tc-dot tc-dot-danger"></span> Fail: ${failed}
+    &middot; <span class="tc-dot tc-dot-warn"></span> Not Run: ${notRun}
+    &middot; Total: ${data.testCases.length}
+  </caption>`;
   return `
   <div id="tab-traceability" class="p-6 hidden tab-fill" role="tabpanel" aria-labelledby="tab-btn-traceability">
-    <div class="flex flex-wrap items-center gap-4 mb-3 text-xs flex-shrink-0">
-      <span class="flex items-center gap-1">
-        <span class="w-7 h-5 rounded bg-green-100 text-green-800 flex items-center justify-center font-medium">P</span> Pass
-      </span>
-      <span class="flex items-center gap-1">
-        <span class="w-7 h-5 rounded bg-red-100 text-red-800 flex items-center justify-center font-medium">F</span> Fail
-      </span>
-      <span class="flex items-center gap-1">
-        <span class="w-7 h-5 rounded bg-amber-50 text-amber-700 flex items-center justify-center font-medium">N</span> Not Run
-      </span>
-      <span class="flex items-center gap-1">
-        <span class="w-7 h-5 rounded border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 inline-block"></span> Not linked
-      </span>
-      <span class="text-slate-500 ml-2">${passed} Pass &middot; ${failed} Fail &middot; ${notRun} Not Run &middot; ${data.testCases.length} Total</span>
-    </div>
     <div class="scroll-table">
       <table class="border-collapse text-sm">
-        <thead><tr><th class="p-2 border border-slate-200 dark:border-slate-600 text-xs">Story</th>${headers}</tr></thead>
+        ${caption}
+        <thead><tr><th class="trace-sticky-col p-2 border border-slate-200 dark:border-slate-600 text-xs">Story</th>${headers}</tr></thead>
         <tbody>${rows}</tbody>
       </table>
     </div>
@@ -2312,6 +2303,28 @@ function renderScripts(data, options = {}) {
       _runSearch(q);
     }
   });
+
+  // US-0102: Traceability crosshair hover
+  (function() {
+    var tbl = document.querySelector('#tab-traceability table');
+    if (!tbl) return;
+    tbl.addEventListener('mouseover', function(e) {
+      var td = e.target.closest('td[data-col]');
+      if (!td) return;
+      var col = td.dataset.col;
+      td.closest('tr').classList.add('trace-hover-row');
+      var th = tbl.querySelector('th[data-col="' + col + '"]');
+      if (th) th.classList.add('trace-hover-col');
+    });
+    tbl.addEventListener('mouseout', function(e) {
+      var td = e.target.closest('td[data-col]');
+      if (!td) return;
+      td.closest('tr').classList.remove('trace-hover-row');
+      var col = td.dataset.col;
+      var th = tbl.querySelector('th[data-col="' + col + '"]');
+      if (th) th.classList.remove('trace-hover-col');
+    });
+  })();
   </script>`;
 }
 
@@ -2546,6 +2559,16 @@ function renderPrintCSS() {
   .ac-guide { border-left: 1px solid var(--clr-accent, #7c3aed); padding-left: 12px; margin-left: 4px; }
   html.dark .ac-guide { border-left-color: var(--clr-accent, #8b5cf6); }
   .epic-accent-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-right: 4px; vertical-align: middle; }
+  /* US-0102: Traceability matrix redesign */
+  .tc-dot { text-align: center; vertical-align: middle; width: 32px; }
+  .tc-dot::after { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; }
+  .tc-dot-success::after { background: var(--badge-success-text, #16a34a); }
+  .tc-dot-danger::after { background: var(--badge-danger-text, #dc2626); }
+  .tc-dot-warn::after { background: var(--badge-warn-text, #d97706); }
+  .trace-hover-row td { background: var(--clr-accent-subtle, rgba(124,58,237,0.06)); }
+  .trace-hover-col { background: var(--clr-accent-subtle, rgba(124,58,237,0.06)) !important; }
+  .trace-sticky-col { position: sticky; left: 0; z-index: 5; background: var(--clr-panel-bg); }
+  .trace-caption { caption-side: bottom; text-align: left; font-size: 12px; color: var(--clr-text-muted, rgba(255,255,255,0.5)); padding: 8px 4px 0; }
   </style>`;
 }
 
