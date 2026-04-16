@@ -117,6 +117,32 @@ function esc(s) {
     .replace(/'/g, '&#39;');
 }
 
+// US-0121 AC-0411: Normalize a log time string to bracketed [HH:MM:SS].
+// sdlc-status.json log entries historically stored HH:MM; pad seconds so
+// the terminal-aesthetic format stays consistent for old and new rows.
+function formatLogTime(raw) {
+  const t = String(raw || '').trim();
+  if (!t) return '--:--:--';
+  const parts = t.split(':');
+  if (parts.length < 2) return t;
+  const h = parts[0].padStart(2, '0');
+  const m = (parts[1] || '00').padStart(2, '0');
+  const s = (parts[2] || '00').padStart(2, '0');
+  return `${h}:${m}:${s}`;
+}
+
+// US-0121 AC-0413: Derive a filter category from the message body by
+// case-insensitive substring match. Order matters: "error" wins over the
+// rest so a "bug review error" row surfaces under the Errors chip first.
+function logCategory(message) {
+  const m = String(message || '').toLowerCase();
+  if (m.includes('error')) return 'errors';
+  if (m.includes('review')) return 'reviews';
+  if (m.includes('test')) return 'tests';
+  if (m.includes('bug')) return 'bugs';
+  return 'other';
+}
+
 // Read the Plan Visualizer's derived project data (produced by tools/generate-plan.js)
 // so the dashboard can show authoritative story/epic/task/bug counts instead of the
 // hand-maintained sdlc-status.json metric fields, which drift. Returns null if the
@@ -746,12 +772,115 @@ function generateHTML(status) {
   .story-status.Complete { background: var(--status-complete-bg); color: #34A853; }
   [data-theme="light"] .story-status.Complete { color: #2E7D32; }
 
-  /* Activity log */
-  .log-entry { padding: 8px 0; border-bottom: 1px solid var(--divider); font-size: 12px; }
-  .log-entry:last-child { border-bottom: none; }
-  .log-time { color: var(--text-dim); font-variant-numeric: tabular-nums; margin-right: 8px; }
-  .log-agent { font-weight: 700; margin-right: 4px; }
-  .log-scroll { max-height: 240px; overflow-y: auto; }
+  /* ===== US-0121 BEGIN: Terminal-aesthetic activity log ===== */
+  /* AC-0411..AC-0415: monospace log rows with agent-color left bar, bracketed
+     [HH:MM:SS] [AGENT] message format, filter chips, tail-mode toggle, and a
+     blinking-cursor empty state. Colors honour the three-token split
+     (AC-0412): muted gray timestamps, agent-color AGENT token, primary
+     foreground for the message body. */
+  .log-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+  }
+  .log-filters { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; min-width: 0; }
+  .log-filter-chip {
+    font-family: inherit;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 4px 10px;
+    border-radius: 10px;
+    border: 1px solid var(--divider);
+    background: var(--bg-card-inner);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .log-filter-chip:hover { color: var(--text-primary); border-color: var(--text-muted); }
+  .log-filter-chip.active {
+    background: rgba(66, 165, 245, 0.18);
+    color: #1565C0;
+    border-color: rgba(66, 165, 245, 0.55);
+  }
+  [data-theme="light"] .log-filter-chip.active { color: #0D47A1; background: rgba(21, 101, 192, 0.12); }
+  .log-tail-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: inherit;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    cursor: pointer;
+    user-select: none;
+  }
+  .log-tail-toggle input { margin: 0; cursor: pointer; }
+  .log-tail-toggle .tail-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--text-muted);
+    display: inline-block;
+  }
+  .log-tail-toggle.on .tail-dot { background: #34A853; box-shadow: 0 0 6px rgba(52, 168, 83, 0.6); }
+  [data-theme="light"] .log-tail-toggle.on .tail-dot { background: #2E7D32; }
+
+  .log-scroll {
+    max-height: 240px;
+    overflow-y: auto;
+    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .log-entry {
+    display: block;
+    padding: 4px 10px;
+    margin-bottom: 2px;
+    border-left: 3px solid #888;            /* AC-0411: agent-color left bar */
+    background: rgba(255, 255, 255, 0.02);
+    color: var(--text-primary);             /* AC-0412: message uses primary fg */
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-variant-numeric: tabular-nums;
+  }
+  [data-theme="light"] .log-entry { background: rgba(0, 0, 0, 0.02); }
+  .log-entry:last-child { margin-bottom: 0; }
+  .log-entry.log-hidden { display: none; }
+  .log-time { color: var(--text-muted); margin-right: 6px; }     /* AC-0412 */
+  .log-agent { font-weight: 700; margin-right: 6px; }            /* agent color inline */
+  .log-msg { color: var(--text-primary); }
+
+  /* AC-0415: empty state — blinking terminal cursor + waiting message. */
+  .log-empty {
+    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .log-cursor {
+    display: inline-block;
+    width: 0.55em;
+    height: 1em;
+    background: currentColor;
+    vertical-align: -0.1em;
+    margin-right: 2px;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .log-cursor { animation: blink-cursor 1.05s steps(2, start) infinite; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .log-cursor { animation: none; opacity: 0.85; }
+  }
+  @keyframes blink-cursor {
+    to { visibility: hidden; }
+  }
+  /* ===== US-0121 END ===== */
 
   /* US-0111 AC-0366: live-fetch "Last updated" ticker. Rendered in JetBrains Mono
      for a console/telemetry feel, with a .stale variant that turns red when
@@ -1642,10 +1771,27 @@ ${storyRows}
   </div>
 </div>
 
-<!-- Activity Log -->
+<!-- Activity Log — US-0121 terminal aesthetic -->
 <div class="card" style="margin-top: 24px">
   <h2><span class="live-dot ok" aria-label="live" title="live" id="activity-live-dot"></span>Activity Log</h2>
-  <div class="log-scroll" id="log-scroll">
+  <!-- US-0121 AC-0413/AC-0414: filter chips + tail-mode toggle. Chip clicks
+       toggle filtering via data-log-filter; tail-mode persists to
+       localStorage('dashboard-tail-mode'). -->
+  <div class="log-toolbar" role="toolbar" aria-label="Activity log controls">
+    <div class="log-filters" role="group" aria-label="Filter log entries">
+      <button class="log-filter-chip active" data-log-filter="all" aria-pressed="true">All</button>
+      <button class="log-filter-chip" data-log-filter="errors" aria-pressed="false">Errors</button>
+      <button class="log-filter-chip" data-log-filter="reviews" aria-pressed="false">Reviews</button>
+      <button class="log-filter-chip" data-log-filter="tests" aria-pressed="false">Tests</button>
+      <button class="log-filter-chip" data-log-filter="bugs" aria-pressed="false">Bugs</button>
+    </div>
+    <label class="log-tail-toggle on" id="log-tail-toggle">
+      <input type="checkbox" id="log-tail-checkbox" checked>
+      <span class="tail-dot" aria-hidden="true"></span>
+      <span>Tail mode</span>
+    </label>
+  </div>
+  <div class="log-scroll" id="log-scroll" data-active-filter="all">
 ${
   log.length > 0
     ? log
@@ -1653,16 +1799,21 @@ ${
         .reverse()
         .map((entry) => {
           const agentColor = agentColors[entry.agent] || '#888';
-          // US-0111 AC-0364: data-ts lets patchDOM() dedupe and append only new entries.
+          // US-0111 AC-0364: data-log-key lets patchDOM() dedupe and prepend only new entries.
           const key = `${entry.time || ''}|${entry.agent || ''}|${entry.message || ''}`;
-          return `    <div class="log-entry" data-log-key="${esc(key)}">
-      <span class="log-time" data-log-time="${entry.time || ''}">${entry.time || ''}</span>
-      <span class="log-agent" style="color: ${agentColor}">${entry.agent || 'System'}</span>
-      ${entry.message || ''}
-    </div>`;
+          const category = logCategory(entry.message);
+          const agentToken = entry.agent || 'System';
+          const timeFormatted = formatLogTime(entry.time);
+          return (
+            `    <div class="log-entry" data-log-key="${esc(key)}" data-category="${category}" style="border-left-color: ${agentColor}">` +
+            `<span class="log-time" data-log-time="${esc(entry.time || '')}">[${esc(timeFormatted)}]</span>` +
+            `<span class="log-agent" style="color: ${agentColor}">[${esc(agentToken)}]</span>` +
+            `<span class="log-msg">${esc(entry.message || '')}</span>` +
+            `</div>`
+          );
         })
         .join('\n')
-    : `    <div class="log-entry" style="color: #666">Waiting for ${(AGENT_CONFIG.orchestrator || {}).dmAgent || 'orchestrator'} to begin orchestration...</div>`
+    : `    <div class="log-empty" id="log-empty"><span class="log-cursor" aria-hidden="true"></span><span>Awaiting agent activity&hellip;</span></div>`
 }
   </div>
 </div>
@@ -1755,21 +1906,95 @@ function updateToggleButton(theme) {
   if (saved === 'light') document.documentElement.setAttribute('data-theme', 'light');
   updateToggleButton(saved);
 })();
-// BUG-0083/0088: Log times are stored as local wall-clock HH:MM (24h).
-// Convert to 12-hour format using simple arithmetic — no Date/timezone manipulation
-// to avoid UTC drift across environments.
+// US-0121 (supersedes BUG-0083/0088 legacy 12h converter): Log times render
+// bracketed as [HH:MM:SS] in the terminal aesthetic. The server emits the
+// final-formatted text directly, so no client-side rewriting is needed —
+// kept as a no-op stub intentionally for traceability.
+
+// US-0121 helpers shared between page-load and patchDOM() so categories and
+// time formatting are computed in one place on the client.
+function _formatLogTime(raw) {
+  var t = String(raw || '').trim();
+  if (!t) return '--:--:--';
+  var parts = t.split(':');
+  if (parts.length < 2) return t;
+  var h = ('00' + parts[0]).slice(-2);
+  var m = ('00' + (parts[1] || '00')).slice(-2);
+  var s = ('00' + (parts[2] || '00')).slice(-2);
+  return h + ':' + m + ':' + s;
+}
+function _logCategory(message) {
+  var m = String(message || '').toLowerCase();
+  if (m.indexOf('error') !== -1) return 'errors';
+  if (m.indexOf('review') !== -1) return 'reviews';
+  if (m.indexOf('test') !== -1) return 'tests';
+  if (m.indexOf('bug') !== -1) return 'bugs';
+  return 'other';
+}
+
+// US-0121 AC-0414: Tail mode — scroll newest entries into view. Newest is
+// at the top in this log (server renders .slice(-20).reverse()), so tailing
+// means scrollTop = 0. Persisted in localStorage.
+function _isTailModeOn() {
+  var v = localStorage.getItem('dashboard-tail-mode');
+  // Default ON when unset.
+  return v === null || v === 'true';
+}
+function _applyTailIfOn() {
+  if (!_isTailModeOn()) return;
+  var scroll = document.getElementById('log-scroll');
+  if (scroll) scroll.scrollTop = 0;
+}
+
+// US-0121 AC-0413: Apply the currently-selected filter chip. Rows are shown
+// when data-category === active filter, or when filter === 'all'.
+function _applyLogFilter(filter) {
+  var scroll = document.getElementById('log-scroll');
+  if (!scroll) return;
+  scroll.setAttribute('data-active-filter', filter);
+  var rows = scroll.querySelectorAll('.log-entry');
+  for (var i = 0; i < rows.length; i++) {
+    var cat = rows[i].getAttribute('data-category') || 'other';
+    if (filter === 'all' || cat === filter) rows[i].classList.remove('log-hidden');
+    else rows[i].classList.add('log-hidden');
+  }
+}
+
+// Initialize filter chips + tail-mode toggle once the DOM is parsed.
 (function() {
-  document.querySelectorAll('[data-log-time]').forEach(function(el) {
-    var t = el.getAttribute('data-log-time');
-    if (!t || !t.includes(':')) return;
-    var parts = t.split(':');
-    var h = parseInt(parts[0], 10);
-    var m = parseInt(parts[1], 10);
-    if (isNaN(h) || isNaN(m)) return;
-    var ampm = h >= 12 ? 'PM' : 'AM';
-    var h12 = h % 12 || 12;
-    el.textContent = h12 + ':' + ('0' + m).slice(-2) + ' ' + ampm;
-  });
+  function init() {
+    var chips = document.querySelectorAll('.log-filter-chip');
+    chips.forEach(function(chip) {
+      chip.addEventListener('click', function() {
+        var filter = chip.getAttribute('data-log-filter') || 'all';
+        chips.forEach(function(c) {
+          var on = c === chip;
+          c.classList.toggle('active', on);
+          c.setAttribute('aria-pressed', on ? 'true' : 'false');
+        });
+        _applyLogFilter(filter);
+      });
+    });
+
+    var tailOn = _isTailModeOn();
+    var toggleWrap = document.getElementById('log-tail-toggle');
+    var toggleBox = document.getElementById('log-tail-checkbox');
+    if (toggleWrap) toggleWrap.classList.toggle('on', tailOn);
+    if (toggleBox) {
+      toggleBox.checked = tailOn;
+      toggleBox.addEventListener('change', function() {
+        var on = !!toggleBox.checked;
+        localStorage.setItem('dashboard-tail-mode', on ? 'true' : 'false');
+        if (toggleWrap) toggleWrap.classList.toggle('on', on);
+        if (on) _applyTailIfOn();
+      });
+    }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 })();
 
 // ── Dashboard Alert System ────────────────────────────────────────────────────
@@ -2308,6 +2533,9 @@ function patchDOM(status) {
   ['stamp-phase-progress', 'stamp-quality', 'stamp-reviews'].forEach(function(id) { setText(id, _hhmm); });
 
   // --- Activity log (append-only diff by data-log-key) -----------------------
+  // US-0121 AC-0411/AC-0413/AC-0414: terminal-aesthetic rows with
+  // data-category for filter chips, bracketed [HH:MM:SS] [AGENT] format, and
+  // tail-mode scroll-to-top when enabled.
   var scroll = document.getElementById('log-scroll');
   if (scroll && Array.isArray(status.log)) {
     var existing = {};
@@ -2318,35 +2546,56 @@ function patchDOM(status) {
     // prepend newer entries to the top so user-facing order stays identical.
     var recent = status.log.slice(-20);
     var toPrepend = [];
+    var activeFilter = scroll.getAttribute('data-active-filter') || 'all';
     for (var i = recent.length - 1; i >= 0; i--) {
       var entry = recent[i] || {};
       var key = (entry.time || '') + '|' + (entry.agent || '') + '|' + (entry.message || '');
       if (existing[key]) continue;
+      var color = (DASH_AGENT_COLORS && DASH_AGENT_COLORS[entry.agent]) || '#888';
+      var category = _logCategory(entry.message);
+      var timeDisplay = _formatLogTime(entry.time);
+      var agentToken = entry.agent || 'System';
+
       var div = document.createElement('div');
       div.className = 'log-entry';
       div.setAttribute('data-log-key', key);
-      var color = (DASH_AGENT_COLORS && DASH_AGENT_COLORS[entry.agent]) || '#888';
-      // Local 12h conversion mirrors the page-load converter below.
-      var timeDisplay = entry.time || '';
-      if (timeDisplay && timeDisplay.indexOf(':') !== -1) {
-        var parts = timeDisplay.split(':');
-        var h = parseInt(parts[0], 10);
-        var mm = parseInt(parts[1], 10);
-        if (!isNaN(h) && !isNaN(mm)) {
-          var ampm = h >= 12 ? 'PM' : 'AM';
-          var h12 = h % 12 || 12;
-          timeDisplay = h12 + ':' + ('0' + mm).slice(-2) + ' ' + ampm;
-        }
+      div.setAttribute('data-category', category);
+      div.style.borderLeftColor = color;
+
+      var timeSpan = document.createElement('span');
+      timeSpan.className = 'log-time';
+      timeSpan.setAttribute('data-log-time', entry.time || '');
+      timeSpan.textContent = '[' + timeDisplay + ']';
+
+      var agentSpan = document.createElement('span');
+      agentSpan.className = 'log-agent';
+      agentSpan.style.color = color;
+      agentSpan.textContent = '[' + agentToken + ']';
+
+      var msgSpan = document.createElement('span');
+      msgSpan.className = 'log-msg';
+      msgSpan.textContent = entry.message || '';
+
+      div.appendChild(timeSpan);
+      div.appendChild(agentSpan);
+      div.appendChild(msgSpan);
+
+      // Honour the currently-selected filter chip for newly-added rows.
+      if (activeFilter !== 'all' && category !== activeFilter) {
+        div.classList.add('log-hidden');
       }
-      div.innerHTML = '<span class="log-time" data-log-time="' + (entry.time || '') + '">' + timeDisplay + '</span>'
-        + '<span class="log-agent" style="color: ' + color + '">' + (entry.agent || 'System') + '</span> '
-        + (entry.message || '');
       toPrepend.push(div);
     }
-    // Insert newest-first at the very top.
-    toPrepend.reverse().forEach(function(el) {
-      scroll.insertBefore(el, scroll.firstChild);
-    });
+    if (toPrepend.length > 0) {
+      // First real entry replaces the empty-state placeholder.
+      var emptyEl = document.getElementById('log-empty');
+      if (emptyEl && emptyEl.parentNode) emptyEl.parentNode.removeChild(emptyEl);
+      // Insert newest-first at the very top.
+      toPrepend.reverse().forEach(function(el) {
+        scroll.insertBefore(el, scroll.firstChild);
+      });
+      _applyTailIfOn();
+    }
   }
 }
 
