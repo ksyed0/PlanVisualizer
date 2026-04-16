@@ -351,8 +351,8 @@ function renderHierarchyTab(data) {
 
   const columnView = epicBlocks
     .map(
-      ({ epic, accent, epicProjected, storyRows }) => `
-    <div class="epic-block mb-2 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden" data-epic-status="${esc(epic.status)}" style="border-left:4px solid ${accent.border}">
+      ({ epic, accent, epicProjected, storyRows }, epicIdx) => `
+    <div class="epic-block mb-2 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden anim-stagger" data-epic-status="${esc(epic.status)}" style="--i:${Math.min(epicIdx, 19)};border-left:4px solid ${accent.border}">
       <div class="px-3 py-2 flex flex-wrap items-center gap-3 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('epic-stories-${jsEsc(epic.id)}','epic-arrow-${jsEsc(epic.id)}')">
         <span id="epic-arrow-${esc(epic.id)}" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9660;</span>
         <span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${epic.id}</span>
@@ -368,8 +368,8 @@ function renderHierarchyTab(data) {
 
   const cardView = epicBlocks
     .map(
-      ({ epic, accent, epicProjected, storyCards }) => `
-    <div class="mb-4">
+      ({ epic, accent, epicProjected, storyCards }, epicIdx) => `
+    <div class="mb-4 anim-stagger" style="--i:${Math.min(epicIdx, 19)}">
       <div class="epic-block border border-slate-200 dark:border-slate-700 rounded-t-lg px-3 py-2 mb-0 cursor-pointer select-none" style="border-left:4px solid ${accent.border};background:${accent.bg}" onclick="toggleSection('epic-cards-${jsEsc(epic.id)}','epic-card-arrow-${jsEsc(epic.id)}')">
         <div class="flex flex-wrap items-center gap-3">
           <span id="epic-card-arrow-${esc(epic.id)}" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9660;</span>
@@ -416,7 +416,7 @@ function renderKanbanTab(data) {
   const hasUngrouped = data.stories.some((s) => !s.epicId);
   const SWIM_COLORS = ['#7c3aed', '#0369a1', '#b45309', '#166534', '#9f1239', '#6b21a8', '#0e7490', '#92400e'];
 
-  const renderCard = (s) => {
+  const renderCard = (s, cardIdx) => {
     const tcs = data.testCases.filter((tc) => tc.relatedStory === s.id);
     const acDone = s.acs.filter((a) => a.done).length;
     const acTotal = s.acs.length;
@@ -432,7 +432,7 @@ function renderKanbanTab(data) {
       })
       .join('');
     return `
-    <div class="story-row story-card-hover bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded p-3 mb-2 cursor-pointer"
+    <div class="story-row story-card-hover bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded p-3 mb-2 cursor-pointer anim-stagger" style="--i:${Math.min(cardIdx, 19)}"
          data-epic="${esc(s.epicId)}" data-status="${esc(s.status)}" data-priority="${esc(s.priority)}"
          onclick="toggleKanbanACs('${jsEsc(s.id)}')">
       <div class="flex gap-1 mb-1">${badge(s.priority)} <span class="text-xs text-slate-500 font-mono">${esc(s.id)}</span></div>
@@ -802,12 +802,12 @@ function renderChartsTab(data) {
   <div id="tab-charts" class="p-6 hidden" role="tabpanel" aria-labelledby="tab-btn-charts">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-      <div class="card-elev rounded-lg p-4">
+      <div class="card-elev rounded-lg p-4 anim-stagger" style="--i:0">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Epic Progress</h3>
         <div style="height:${Math.max(300, data.epics.length * 36)}px;position:relative"><canvas id="chart-epic-progress"></canvas></div>
       </div>
 
-      <div class="card-elev rounded-lg p-4 flex flex-col">
+      <div class="card-elev rounded-lg p-4 flex flex-col anim-stagger" style="--i:1">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Cost Breakdown (Projected vs AI)</h3>
         <!-- BUG-0169 — flex-centered wrapper lets the fixed-height chart sit vertically centered when the grid row is forced taller by a sibling card (e.g. Epic Progress dynamic height). -->
         <div class="flex-1 flex items-center justify-center">
@@ -815,7 +815,7 @@ function renderChartsTab(data) {
         </div>
       </div>
 
-      <div class="card-elev rounded-lg p-4">
+      <div class="card-elev rounded-lg p-4 anim-stagger" style="--i:2">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Test Coverage</h3>
         <div style="height:300px;position:relative">
           <canvas id="chart-coverage"></canvas>
@@ -828,17 +828,17 @@ function renderChartsTab(data) {
         </div>
       </div>
 
-      <div class="card-elev rounded-lg p-4">
+      <div class="card-elev rounded-lg p-4 anim-stagger" style="--i:3">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">AI Cost Timeline</h3>
         <div style="height:300px;position:relative"><canvas id="chart-ai-timeline"></canvas></div>
       </div>
 
-      <div class="card-elev rounded-lg p-4">
+      <div class="card-elev rounded-lg p-4 anim-stagger" style="--i:4">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Story Status Distribution</h3>
         <div style="height:300px;position:relative"><canvas id="chart-burndown"></canvas></div>
       </div>
 
-      <div class="card-elev rounded-lg p-4">
+      <div class="card-elev rounded-lg p-4 anim-stagger" style="--i:5">
         <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Budget Burn Rate</h3>
         <div style="height:300px;position:relative"><canvas id="chart-burn-rate"></canvas></div>
       </div>
@@ -2442,6 +2442,15 @@ function renderPrintCSS() {
   html.dark .text-slate-700, html.dark .text-slate-600 { color: var(--clr-text-primary) !important; }
   html.dark .text-slate-500 { color: var(--clr-text-muted) !important; }
   html.dark h3 { color: var(--clr-text-primary) !important; }
+  /* US-0098: Staggered tab content animation */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .anim-stagger {
+    animation: fadeInUp 240ms ease both;
+    animation-delay: calc(var(--i, 0) * 20ms);
+  }
   @media print {
     #filter-bar, #sidebar, #topbar-fixed, .fixed, .activity-panel { display: none !important; }
     body { padding: 0 !important; }

@@ -886,3 +886,31 @@ describe('renderHtml — hero numbers (US-0099)', () => {
     expect(html).not.toMatch(/Total Budget<\/div>\s*<div class="hero-num/);
   });
 });
+
+describe('US-0098 — staggered animation', () => {
+  it('rendered HTML contains @keyframes fadeInUp', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toMatch(/@keyframes fadeInUp/);
+  });
+
+  it('rendered HTML contains .anim-stagger with animation-delay calc', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toMatch(/\.anim-stagger/);
+    expect(html).toMatch(/animation-delay:\s*calc\(var\(--i/);
+  });
+
+  it('rendered HTML contains --i custom property on elements', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toMatch(/--i:/);
+  });
+
+  it('rendered HTML contains anim-stagger class', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toMatch(/anim-stagger/);
+  });
+
+  it('no JS animation library is used', () => {
+    const html = renderHtml(sampleData);
+    expect(html).not.toMatch(/gsap|anime\.js|framer/);
+  });
+});
