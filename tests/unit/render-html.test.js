@@ -979,3 +979,42 @@ describe('US-0107 — Lessons card polish', () => {
     expect(html).toMatch(/💡/);
   });
 });
+
+describe('US-0100 — Hierarchy tab polish', () => {
+  it('epic ID renders with EPIC / split pattern', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toMatch(/epic-id-display/);
+    expect(html).toMatch(/EPIC \//);
+  });
+
+  it('epic progress rule div is present', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toMatch(/epic-progress-track/);
+    expect(html).toMatch(/epic-progress-fill/);
+  });
+
+  it('AC list has left-guide class', () => {
+    const dataWithACs = {
+      ...sampleData,
+      stories: [
+        {
+          ...sampleData.stories[0],
+          acs: [{ id: 'AC-0001', text: 'Should work', done: false }],
+        },
+      ],
+    };
+    const html = renderHtml(dataWithACs);
+    expect(html).toMatch(/ac-guide/);
+  });
+
+  it('card view story cards have accent dot', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toMatch(/epic-accent-dot/);
+  });
+
+  it('progress rule is 0% when no stories done', () => {
+    // sampleData story has status "In Progress" — doneCnt=0, so width should be 0%
+    const html = renderHtml(sampleData);
+    expect(html).toMatch(/width:0%/);
+  });
+});
