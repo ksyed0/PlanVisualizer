@@ -852,7 +852,10 @@ describe('renderHtml — hero numbers (US-0099)', () => {
 
   it('renders Coverage doughnut overlay using hero-num (default, not sm)', () => {
     // Inside the Test Coverage card: overlay div wraps the percentage in .hero-num.
-    const covOverlayMatch = html.match(/Test Coverage<\/h3>[\s\S]*?<div class="hero-num [^"]*">([^<]+)<\/div>/);
+    // US-0103: h3 replaced with chart-header-rule + display-title span
+    const covOverlayMatch = html.match(
+      /display-title[^>]*>Test Coverage[\s\S]*?<div class="hero-num [^"]*">([^<]+)<\/div>/,
+    );
     expect(covOverlayMatch).not.toBeNull();
     // Overlay uses the default (large) variant, not hero-num-sm.
     expect(covOverlayMatch[0]).not.toMatch(/hero-num-sm/);
@@ -1114,5 +1117,64 @@ describe('US-0102 — Traceability matrix redesign', () => {
     expect(html).toMatch(/data-col="TC-0010"/);
     expect(html).toMatch(/data-col="TC-0011"/);
     expect(html).toMatch(/data-col="TC-0012"/);
+  });
+});
+
+describe('US-0106 — Bug severity styling', () => {
+  const bugData = {
+    ...sampleData,
+    bugs: [
+      {
+        id: 'BUG-0001',
+        title: 'Critical crash',
+        severity: 'Critical',
+        status: 'Open',
+        relatedStory: 'US-0001',
+        fixBranch: 'bugfix/BUG-0001-crash',
+        lessonEncoded: 'Yes — L-0001',
+      },
+      {
+        id: 'BUG-0002',
+        title: 'Medium issue',
+        severity: 'Medium',
+        status: 'Fixed',
+        relatedStory: 'US-0001',
+        fixBranch: '',
+        lessonEncoded: 'No',
+      },
+    ],
+  };
+
+  it('severity badge cells have badge-sev class', () => {
+    const html = renderHtml(bugData);
+    expect(html).toMatch(/badge-sev/);
+    expect(html).toMatch(/badge badge-danger badge-sev/);
+  });
+
+  it('Critical bug card has border-left with danger token colour', () => {
+    const html = renderHtml(bugData);
+    expect(html).toMatch(/border-left:4px solid var\(--badge-danger-text/);
+  });
+
+  it('Fix Branch cell has title attribute', () => {
+    const html = renderHtml(bugData);
+    expect(html).toMatch(/title="bugfix\/BUG-0001-crash"/);
+  });
+
+  it('Lesson link renders .lesson-pill', () => {
+    const html = renderHtml(bugData);
+    expect(html).toMatch(/class="lesson-pill"/);
+    expect(html).toMatch(/lesson-pill-id/);
+  });
+
+  it('Compact view button present and bugs-compact-view container present', () => {
+    const html = renderHtml(bugData);
+    expect(html).toMatch(/setBugsView\('compact'\)/);
+    expect(html).toMatch(/id="bugs-compact-view"/);
+  });
+
+  it("setBugsView('compact') JS appears in rendered HTML", () => {
+    const html = renderHtml(bugData);
+    expect(html).toMatch(/v !== 'compact'/);
   });
 });
