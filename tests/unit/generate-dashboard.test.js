@@ -235,3 +235,133 @@ describe('US-0121 terminal-aesthetic activity log', () => {
     expect(html).toMatch(/@media \(prefers-reduced-motion: reduce\)[\s\S]*?\.log-cursor \{ animation: none/);
   });
 });
+
+describe('US-0120 stories panel polish', () => {
+  function makeStoriesFixture() {
+    const base = {
+      hackathon: { name: 'SDLC Dashboard', date: '2026-04-15', startTime: '09:00', endTime: '17:00' },
+      currentPhase: 3,
+      phases: CANONICAL_PHASES.map((p, i) => ({
+        ...p,
+        status: i < 2 ? 'complete' : i === 2 ? 'in-progress' : 'pending',
+      })),
+      agents: AGENT_NAMES.reduce((acc, name) => {
+        acc[name] = { status: 'idle', currentTask: null, tasksCompleted: 0 };
+        return acc;
+      }, {}),
+      epics: { 'EPIC-0016': 'Agentic Dashboard Mission Control Redesign' },
+      stories: {
+        'US-0120': {
+          title: 'Stories panel polish',
+          status: 'In Progress',
+          epic: 'EPIC-0016',
+          assignedAgent: 'Pixel',
+          startedAt: new Date(Date.now() - (6 * 3600 + 23 * 60) * 1000).toISOString(),
+        },
+        'US-0121': {
+          title: 'Terminal activity log',
+          status: 'ToDo',
+          epic: 'EPIC-0016',
+          assignedAgent: null,
+          startedAt: null,
+        },
+        'US-0119': {
+          title: 'Spotlight redesign',
+          status: 'Complete',
+          epic: 'EPIC-0016',
+          assignedAgent: 'Forge',
+          startedAt: null,
+        },
+      },
+      metrics: { storiesCompleted: 1, storiesTotal: 3, tasksCompleted: 0, tasksTotal: 3 },
+      log: [{ time: '09:00', agent: 'Conductor', message: 'Session started' }],
+    };
+    return base;
+  }
+
+  // AC-0407: 3px vertical status strip on each story row, colour-coded by
+  // status. Strip is applied via .status-complete / .status-inprogress /
+  // .status-planned modifier classes on .story-row so patchDOM can retune
+  // it later without re-rendering.
+  test('AC-0407: story rows carry a status-strip modifier class', () => {
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    const html = generateHTML(makeStoriesFixture());
+    expect(html).toMatch(/<div class="story-row status-complete">[\s\S]*?US-0119/);
+    expect(html).toMatch(/<div class="story-row status-inprogress">[\s\S]*?US-0120/);
+    expect(html).toMatch(/<div class="story-row status-planned">[\s\S]*?US-0121/);
+    // CSS enumerates the three strip colours + the 3px border-left baseline.
+    expect(html).toMatch(/\.story-row \{[^}]*border-left:\s*3px solid/);
+    expect(html).toMatch(/\.story-row\.status-complete \{[^}]*border-left-color:\s*#22c55e/);
+    expect(html).toMatch(/\.story-row\.status-inprogress \{[^}]*border-left-color:\s*#f59e0b/);
+    expect(html).toMatch(/\.story-row\.status-planned \{[^}]*border-left-color:\s*#64748b/);
+  });
+
+  // AC-0408: elapsed pill appears on In Progress stories, rendered in
+  // JetBrains Mono. formatElapsed is exported so the computation contract
+  // (hours/minutes/seconds fall-through) is directly testable.
+  test('AC-0408: in-progress stories render an elapsed-time pill in JetBrains Mono', () => {
+    const { generateHTML, formatElapsed } = require('../../tools/generate-dashboard.js');
+    // Unit-level: formatElapsed contract.
+    const base = Date.parse('2026-04-15T09:00:00Z');
+    expect(formatElapsed('2026-04-15T09:00:00Z', base + 45 * 1000)).toBe('45s');
+    expect(formatElapsed('2026-04-15T09:00:00Z', base + 12 * 60 * 1000)).toBe('12m');
+    expect(formatElapsed('2026-04-15T09:00:00Z', base + (6 * 3600 + 23 * 60) * 1000)).toBe('6h 23m');
+    expect(formatElapsed(null, base)).toBeNull();
+    expect(formatElapsed('not-a-date', base)).toBeNull();
+    // Clock skew must never surface as a negative duration.
+    expect(formatElapsed('2026-04-15T09:05:00Z', base)).toBe('0s');
+
+    // Integration-level: the pill markup only appears for the in-progress
+    // story, and the CSS declares the JetBrains Mono font-family.
+    const html = generateHTML(makeStoriesFixture());
+    expect(html).toMatch(/<span class="story-elapsed"[^>]*>\d+h \d+m<\/span>/);
+    // Completed/ToDo rows must not carry the pill.
+    const todoSlice = html.match(/<div class="story-row status-planned">[\s\S]*?<\/div>/);
+    expect(todoSlice).not.toBeNull();
+    expect(todoSlice[0]).not.toMatch(/story-elapsed/);
+    const doneSlice = html.match(/<div class="story-row status-complete">[\s\S]*?<\/div>/);
+    expect(doneSlice).not.toBeNull();
+    expect(doneSlice[0]).not.toMatch(/story-elapsed/);
+    expect(html).toMatch(/\.story-elapsed \{[\s\S]*?font-family:\s*'JetBrains Mono'/);
+  });
+
+  // AC-0409: epic headers reuse the tracked-out treatment that US-0110
+  // standardised via .section-header (Departure Mono / var(--font-display),
+  // uppercase, wide letter-spacing). The assertion looks for the
+  // Departure-Mono-aligned font-family on .epic-header so a future
+  // refactor can't silently regress it back to the Geist default.
+  test('AC-0409: epic headers use the Departure Mono tracked-out treatment', () => {
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    const html = generateHTML(makeStoriesFixture());
+    expect(html).toMatch(/\.epic-header \{[^}]*font-family:\s*var\(--font-display\)/);
+    expect(html).toMatch(/\.epic-header \{[^}]*text-transform:\s*uppercase/);
+    expect(html).toMatch(/\.epic-header \{[^}]*letter-spacing:\s*0\.14em/);
+  });
+
+  // AC-0410: assigned stories get a coloured dot + initial next to the
+  // title, drawn from the DASH_AGENT_COLORS map. Unassigned stories must
+  // not leak an empty chip.
+  test('AC-0410: assigned stories render a coloured agent dot + initial', () => {
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    const html = generateHTML(makeStoriesFixture());
+    // Pixel is assigned to US-0120 and Forge to US-0119 — both must surface
+    // as story-agent chips with the correct initial letter.
+    const pixelRow = html.match(/<div class="story-row status-inprogress">[\s\S]*?<\/div>/);
+    expect(pixelRow).not.toBeNull();
+    expect(pixelRow[0]).toMatch(/<span class="story-agent"[^>]*title="Pixel"/);
+    expect(pixelRow[0]).toMatch(/<span class="story-agent-dot" style="background:[^"]+"><\/span>/);
+    expect(pixelRow[0]).toMatch(/<span class="story-agent-initial">P<\/span>/);
+
+    const forgeRow = html.match(/<div class="story-row status-complete">[\s\S]*?<\/div>/);
+    expect(forgeRow).not.toBeNull();
+    expect(forgeRow[0]).toMatch(/<span class="story-agent-initial">F<\/span>/);
+
+    // Unassigned (assignedAgent: null) must not render a story-agent chip.
+    const todoRow = html.match(/<div class="story-row status-planned">[\s\S]*?<\/div>/);
+    expect(todoRow).not.toBeNull();
+    expect(todoRow[0]).not.toMatch(/story-agent/);
+
+    // min-width: 0 on .story-title must persist — BUG-0164 fix guard.
+    expect(html).toMatch(/\.story-title \{[^}]*min-width:\s*0/);
+  });
+});
