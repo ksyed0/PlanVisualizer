@@ -207,7 +207,8 @@ function generateHTML(status) {
   const phasePercent = phases.length > 0 ? Math.round((phasesComplete / phases.length) * 100) : 0;
 
   // US-0114: compute current phase label for center zone
-  const currentPhaseObj = phases.find((p) => p.status === 'in-progress') ||
+  const currentPhaseObj =
+    phases.find((p) => p.status === 'in-progress') ||
     (pipelineComplete ? null : phases.filter((p) => p.status === 'complete').pop());
   const phaseLabel = pipelineComplete
     ? 'COMPLETE'
@@ -216,8 +217,8 @@ function generateHTML(status) {
       : 'STANDBY';
 
   // US-0114: detect if any agent or phase is BLOCKED for header accent
-  const anyBlocked = phases.some((p) => p.status === 'blocked') ||
-    Object.values(agents || {}).some((a) => a && a.status === 'blocked');
+  const anyBlocked =
+    phases.some((p) => p.status === 'blocked') || Object.values(agents || {}).some((a) => a && a.status === 'blocked');
 
   const storyPercent =
     metrics.storiesTotal > 0 ? Math.round((metrics.storiesCompleted / metrics.storiesTotal) * 100) : 0;
