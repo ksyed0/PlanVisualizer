@@ -934,21 +934,12 @@ describe('US-0098 — staggered animation', () => {
     expect(html).toContain('.anim-stagger { animation: none');
   });
 
-  it('costs tab epic rows have anim-stagger', () => {
-    const html = renderHtml({
-      ...sampleData,
-      budget: {
-        hasBudget: true,
-        epicBudgets: [{ id: 'EPIC-0001', budget: 100, spent: 50, remaining: 50, percentUsed: 50 }],
-        totalBudget: 100,
-        totalSpent: 50,
-        burnRate: 0,
-        daysRemaining: null,
-      },
-    });
+  it('costs tab epic accordion headers have anim-stagger', () => {
+    const html = renderHtml(sampleData);
     const costsIdx = html.indexOf('id="tab-costs"');
-    const costsHtml = html.slice(costsIdx, costsIdx + 20000);
-    expect(costsHtml).toContain('anim-stagger');
+    const costsHtml = html.slice(costsIdx, costsIdx + 30000);
+    // accordion header rows are uniquely identifiable by cursor-pointer + select-none
+    expect(costsHtml).toMatch(/cursor-pointer select-none anim-stagger/);
   });
 
   it('traceability story rows have anim-stagger', () => {
