@@ -9,11 +9,24 @@
     "testCases": "docs/TEST_CASES.md",
     "bugs": "docs/BUGS.md",
     "costLog": "docs/AI_COST_LOG.md",
-    "outputDir": "docs"
+    "outputDir": "docs",
+    "lessons": "docs/LESSONS.md"
   },
-  "coverage": { "summaryPath": "coverage/coverage-summary.json" },
-  "progress": { "path": "progress.md" },
-  "costs": { "hourlyRate": 100, "tshirtHours": { "S": 4, "M": 8, "L": 16, "XL": 32 } },
+  "coverage": {
+    "summaryPath": "coverage/coverage-summary.json"
+  },
+  "progress": {
+    "path": "progress.md"
+  },
+  "costs": {
+    "hourlyRate": 100,
+    "tshirtHours": {
+      "S": 4,
+      "M": 8,
+      "L": 16,
+      "XL": 32
+    }
+  },
   "budget": {
     "totalUsd": null,
     "byEpic": {},
