@@ -176,6 +176,12 @@ async function main() {
     fs.closeSync(fd);
   }
 
+  try {
+    execSync(`npx prettier --write "${LOG_PATH}"`, { cwd: ROOT, stdio: 'ignore' });
+  } catch {
+    /* prettier unavailable — CI will catch formatting; non-fatal */
+  }
+
   process.stderr.write(
     `[capture-cost] $${costUsd} | in=${displayInput} out=${outputTokens} cacheR=${cacheReadTokens} | branch=${branch}\n`,
   );
