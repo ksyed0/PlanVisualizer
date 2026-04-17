@@ -696,7 +696,7 @@ function renderTrendsTab(data, options = {}) {
           { label: 'Done', data: ${doneJson}, borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,0.1)', fill: true, tension: 0.3 },
           { label: 'Total', data: ${totalJson}, borderColor: '#64748b', backgroundColor: 'transparent', borderDash: [5,5], tension: 0.3 }
         ]},
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc }}}, scales: { x: { ticks: { color: tc, maxTicksLimit: 8, callback: function(val, i, ticks) { var d = new Date(this.getLabelForValue(val)); return isNaN(d) ? val : (d.getMonth()+1) + '/' + d.getDate(); } }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }}, y: { ticks: { color: tc }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }, beginAtZero: true }}}
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true }}}, scales: { x: { ticks: { color: tc, maxTicksLimit: 8, callback: function(val, i, ticks) { var d = new Date(this.getLabelForValue(val)); return isNaN(d) ? val : (d.getMonth()+1) + '/' + d.getDate(); } }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }}, y: { ticks: { color: tc }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }, beginAtZero: true }}}
       });
     }
 
@@ -706,7 +706,7 @@ function renderTrendsTab(data, options = {}) {
         data: { labels: labels, datasets: [
           { label: 'Total Cost ($)', data: ${costJson}, borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.1)', fill: true, tension: 0.3 }
         ]},
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc }}}, scales: { x: { ticks: { color: tc, maxTicksLimit: 8, callback: function(val, i, ticks) { var d = new Date(this.getLabelForValue(val)); return isNaN(d) ? val : (d.getMonth()+1) + '/' + d.getDate(); } }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }}, y: { ticks: { color: tc }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }, beginAtZero: true }}}
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true }}}, scales: { x: { ticks: { color: tc, maxTicksLimit: 8, callback: function(val, i, ticks) { var d = new Date(this.getLabelForValue(val)); return isNaN(d) ? val : (d.getMonth()+1) + '/' + d.getDate(); } }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }}, y: { ticks: { color: tc }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }, beginAtZero: true }}}
       });
     }
 
@@ -716,7 +716,7 @@ function renderTrendsTab(data, options = {}) {
         data: { labels: labels, datasets: [
           { label: 'Coverage %', data: ${coverageJson}, borderColor: '#8b5cf6', backgroundColor: 'rgba(139,92,246,0.1)', fill: true, tension: 0.3 }
         ]},
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc }}}, scales: { x: { ticks: { color: tc, maxTicksLimit: 8, callback: function(val, i, ticks) { var d = new Date(this.getLabelForValue(val)); return isNaN(d) ? val : (d.getMonth()+1) + '/' + d.getDate(); } }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }}, y: { min: 0, max: 100, ticks: { color: tc }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }}}}
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true }}}, scales: { x: { ticks: { color: tc, maxTicksLimit: 8, callback: function(val, i, ticks) { var d = new Date(this.getLabelForValue(val)); return isNaN(d) ? val : (d.getMonth()+1) + '/' + d.getDate(); } }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }}, y: { min: 0, max: 100, ticks: { color: tc }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }}}}
       });
     }
 
@@ -726,7 +726,7 @@ function renderTrendsTab(data, options = {}) {
         data: { labels: labels, datasets: [
           { label: 'Story Points', data: ${velocityJson}, backgroundColor: '#3b82f6' }
         ]},
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc }}}, scales: { x: { ticks: { color: tc, maxTicksLimit: 8, callback: function(val, i, ticks) { var d = new Date(this.getLabelForValue(val)); return isNaN(d) ? val : (d.getMonth()+1) + '/' + d.getDate(); } }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }}, y: { ticks: { color: tc }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }, beginAtZero: true }}}
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true }}}, scales: { x: { ticks: { color: tc, maxTicksLimit: 8, callback: function(val, i, ticks) { var d = new Date(this.getLabelForValue(val)); return isNaN(d) ? val : (d.getMonth()+1) + '/' + d.getDate(); } }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }}, y: { ticks: { color: tc }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }, beginAtZero: true }}}
       });
     }
 
@@ -736,7 +736,7 @@ function renderTrendsTab(data, options = {}) {
         data: { labels: labels, datasets: [
           { label: 'Open Bugs', data: ${bugsJson}, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)', fill: true, tension: 0.3 }
         ]},
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc }}}, scales: { x: { ticks: { color: tc, maxTicksLimit: 8, callback: function(val, i, ticks) { var d = new Date(this.getLabelForValue(val)); return isNaN(d) ? val : (d.getMonth()+1) + '/' + d.getDate(); } }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }}, y: { ticks: { color: tc }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }, beginAtZero: true }}}
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true }}}, scales: { x: { ticks: { color: tc, maxTicksLimit: 8, callback: function(val, i, ticks) { var d = new Date(this.getLabelForValue(val)); return isNaN(d) ? val : (d.getMonth()+1) + '/' + d.getDate(); } }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }}, y: { ticks: { color: tc }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }, beginAtZero: true }}}
       });
     }
 
@@ -746,7 +746,7 @@ function renderTrendsTab(data, options = {}) {
         data: { labels: labels, datasets: [
           { label: 'At-Risk Stories', data: ${riskJson}, borderColor: '#f97316', backgroundColor: 'rgba(249,115,22,0.1)', fill: true, tension: 0.3 }
         ]},
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc }}}, scales: { x: { ticks: { color: tc, maxTicksLimit: 8, callback: function(val, i, ticks) { var d = new Date(this.getLabelForValue(val)); return isNaN(d) ? val : (d.getMonth()+1) + '/' + d.getDate(); } }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }}, y: { ticks: { color: tc }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }, beginAtZero: true, suggestedMax: 5 }}}
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true }}}, scales: { x: { ticks: { color: tc, maxTicksLimit: 8, callback: function(val, i, ticks) { var d = new Date(this.getLabelForValue(val)); return isNaN(d) ? val : (d.getMonth()+1) + '/' + d.getDate(); } }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }}, y: { ticks: { color: tc }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }, beginAtZero: true, suggestedMax: 5 }}}
       });
     }
 
@@ -757,7 +757,7 @@ function renderTrendsTab(data, options = {}) {
           { label: 'Input', data: ${inputTokensJson}, borderColor: '#06b6d4', backgroundColor: 'rgba(6,182,212,0.2)', fill: true },
           { label: 'Output', data: ${outputTokensJson}, borderColor: '#ec4899', backgroundColor: 'rgba(236,72,153,0.2)', fill: true }
         ]},
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc }}}, scales: { x: { ticks: { color: tc, maxTicksLimit: 8, callback: function(val, i, ticks) { var d = new Date(this.getLabelForValue(val)); return isNaN(d) ? val : (d.getMonth()+1) + '/' + d.getDate(); } }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }}, y: { ticks: { color: tc, callback: function(v) { if (v >= 1e6) return (v/1e6).toFixed(0) + 'M'; if (v >= 1e3) return (v/1e3).toFixed(0) + 'K'; return v; } }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }, beginAtZero: true }}}
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true }}}, scales: { x: { ticks: { color: tc, maxTicksLimit: 8, callback: function(val, i, ticks) { var d = new Date(this.getLabelForValue(val)); return isNaN(d) ? val : (d.getMonth()+1) + '/' + d.getDate(); } }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }}, y: { ticks: { color: tc, callback: function(v) { if (v >= 1e6) return (v/1e6).toFixed(0) + 'M'; if (v >= 1e3) return (v/1e3).toFixed(0) + 'K'; return v; } }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }, beginAtZero: true }}}
       });
     }
   }
@@ -804,26 +804,41 @@ function renderChartsTab(data) {
       (st) => data.stories.filter((s) => s.status === st).length,
     ),
   );
+  const totalStories = data.stories.filter((s) => s.status !== 'Retired').length;
 
   return `
   <div id="tab-charts" class="p-6 hidden" role="tabpanel" aria-labelledby="tab-btn-charts">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
+      <div class="chart-supertitle">Delivery</div>
+
       <div class="card-elev rounded-lg p-4 anim-stagger" style="--i:0">
-        <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Epic Progress</h3>
+        <div class="chart-header-rule">
+          <span class="display-title">Epic Progress</span>
+          <span class="chart-subtitle">by epic</span>
+        </div>
         <div style="height:${Math.max(300, data.epics.length * 36)}px;position:relative"><canvas id="chart-epic-progress"></canvas></div>
       </div>
 
-      <div class="card-elev rounded-lg p-4 flex flex-col anim-stagger" style="--i:1">
-        <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Cost Breakdown (Projected vs AI)</h3>
-        <!-- BUG-0169 — flex-centered wrapper lets the fixed-height chart sit vertically centered when the grid row is forced taller by a sibling card (e.g. Epic Progress dynamic height). -->
-        <div class="flex-1 flex items-center justify-center">
-          <div class="w-full" style="height:300px;position:relative"><canvas id="chart-cost-breakdown"></canvas></div>
+      <div class="card-elev rounded-lg p-4 anim-stagger" style="--i:1">
+        <div class="chart-header-rule">
+          <span class="display-title">Story Status Distribution</span>
+          <span class="chart-subtitle">distribution</span>
+        </div>
+        <div style="position:relative">
+          <canvas id="chart-burndown"></canvas>
+          <div class="chart-center-overlay">
+            <span class="hero-num">${totalStories}</span>
+            <span style="font-size:10px;opacity:0.6">stories</span>
+          </div>
         </div>
       </div>
 
       <div class="card-elev rounded-lg p-4 anim-stagger" style="--i:2">
-        <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Test Coverage</h3>
+        <div class="chart-header-rule">
+          <span class="display-title">Test Coverage</span>
+          <span class="chart-subtitle">overall %</span>
+        </div>
         <div style="height:300px;position:relative">
           <canvas id="chart-coverage"></canvas>
           <div class="absolute inset-0 flex items-center justify-center pointer-events-none" style="padding-bottom:3rem">
@@ -836,20 +851,33 @@ function renderChartsTab(data) {
       </div>
 
       <div class="card-elev rounded-lg p-4 anim-stagger" style="--i:3">
-        <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">AI Cost Timeline</h3>
+        <div class="chart-header-rule">
+          <span class="display-title">AI Cost Timeline</span>
+          <span class="chart-subtitle">trend</span>
+        </div>
         <div style="height:300px;position:relative"><canvas id="chart-ai-timeline"></canvas></div>
       </div>
 
-      <div class="card-elev rounded-lg p-4 anim-stagger" style="--i:4">
-        <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Story Status Distribution</h3>
-        <div style="height:300px;position:relative"><canvas id="chart-burndown"></canvas></div>
+      <div class="chart-supertitle">Financial</div>
+
+      <div class="card-elev rounded-lg p-4 flex flex-col anim-stagger" style="--i:4">
+        <div class="chart-header-rule">
+          <span class="display-title">Cost Breakdown</span>
+          <span class="chart-subtitle">projected vs AI</span>
+        </div>
+        <!-- BUG-0169 — flex-centered wrapper lets the fixed-height chart sit vertically centered when the grid row is forced taller by a sibling card (e.g. Epic Progress dynamic height). -->
+        <div class="flex-1 flex items-center justify-center">
+          <div class="w-full" style="height:300px;position:relative"><canvas id="chart-cost-breakdown"></canvas></div>
+        </div>
       </div>
 
       <div class="card-elev rounded-lg p-4 anim-stagger" style="--i:5">
-        <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Budget Burn Rate</h3>
+        <div class="chart-header-rule">
+          <span class="display-title">Budget Burn Rate</span>
+          <span class="chart-subtitle">by session</span>
+        </div>
         <div style="height:300px;position:relative"><canvas id="chart-burn-rate"></canvas></div>
       </div>
-
     </div>
   </div>
   <script>
@@ -867,7 +895,7 @@ function renderChartsTab(data) {
         { label: 'Planned/To Do', data: ${epicPlanned}, backgroundColor: '#cbd5e1' },
       ]},
       options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { labels: { color: tc } } },
+        plugins: { legend: { labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true } } },
         scales: { x: { stacked: true, ticks: { color: tc } }, y: { stacked: true, ticks: { color: tc, autoSkip: false } } } }
     });
     _charts.costBreakdown = new Chart(document.getElementById('chart-cost-breakdown'), {
@@ -878,7 +906,7 @@ function renderChartsTab(data) {
       ]},
       options: {
         responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { labels: { color: tc } } },
+        plugins: { legend: { labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true } } },
         scales: {
           x: { ticks: { color: tc, autoSkip: false, maxRotation: 60, minRotation: 45 } },
           yProjected: { type: 'linear', position: 'left', ticks: { color: tc }, title: { display: true, text: 'Projected ($)', color: tc } },
@@ -889,22 +917,22 @@ function renderChartsTab(data) {
     _charts.coverage = new Chart(document.getElementById('chart-coverage'), {
       type: 'doughnut',
       data: { labels: ['Covered', 'Gap'], datasets: [{ data: [${coveragePctNum}, ${coverageGap}], backgroundColor: ['${coveragePct !== null ? '#22c55e' : '#94a3b8'}','#cbd5e1'], borderWidth: 0 }] },
-      options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: true, position: 'bottom', labels: { color: tc } } } }
+      options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: true, position: 'bottom', labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true } } } }
     });
     _charts.aiTimeline = new Chart(document.getElementById('chart-ai-timeline'), {
       type: 'line',
       data: { labels: ${sessionDates}, datasets: [{ label: 'Cumulative AI Cost ($)', data: ${sessionCosts}, borderColor: '#0d9488', tension: 0.3, fill: true, backgroundColor: 'rgba(13,148,136,0.1)' }] },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc } } }, scales: { x: { ticks: { color: tc } }, y: { ticks: { color: tc } } } }
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true } } }, scales: { x: { ticks: { color: tc } }, y: { ticks: { color: tc } } } }
     });
     _charts.burndown = new Chart(document.getElementById('chart-burndown'), {
       type: 'doughnut',
       data: { labels: ['Done','In Progress','Planned','To Do','Blocked'], datasets: [{ data: ${statusCounts}, backgroundColor: ['#22c55e','#3b82f6','#94a3b8','#f59e0b','#ef4444'], borderWidth: 1 }] },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { color: tc } } } }
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true } } } }
     });
     _charts.burnRate = new Chart(document.getElementById('chart-burn-rate'), {
       type: 'bar',
       data: { labels: ${sessionDates}, datasets: [{ label: 'Session AI Spend ($)', data: ${sessionPerCosts}, backgroundColor: '#6366f1' }] },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc } } }, scales: { x: { ticks: { color: tc } }, y: { ticks: { color: tc } } } }
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true } } }, scales: { x: { ticks: { color: tc } }, y: { ticks: { color: tc } } } }
     });
   }
   function updateChartTheme() {
@@ -2719,6 +2747,12 @@ function renderHtml(data, options = {}) {
     .hero-num.hero-num-sm {
       font-size: clamp(1rem, 2.5vw, 1.6rem);
     }
+
+    /* === Status tab editorial (US-0103) === */
+    .chart-supertitle { grid-column: 1 / -1; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--clr-text-muted, rgba(255,255,255,0.4)); padding: 16px 0 6px; border-bottom: 1px solid var(--clr-border); margin-bottom: 4px; }
+    .chart-header-rule { border-top: 1px solid var(--clr-border); padding-top: 10px; margin-bottom: 8px; }
+    .chart-subtitle { display: block; font-size: 11px; color: var(--clr-text-muted, rgba(255,255,255,0.5)); margin-top: 2px; font-weight: 400; }
+    .chart-center-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none; }
 
     /* === App shell === */
     #app-shell { display: flex; min-height: calc(100vh - 72px); }

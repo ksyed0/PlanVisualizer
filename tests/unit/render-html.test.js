@@ -863,7 +863,10 @@ describe('renderHtml — hero numbers (US-0099)', () => {
 
   it('renders Coverage doughnut overlay using hero-num (default, not sm)', () => {
     // Inside the Test Coverage card: overlay div wraps the percentage in .hero-num.
-    const covOverlayMatch = html.match(/Test Coverage<\/h3>[\s\S]*?<div class="hero-num [^"]*">([^<]+)<\/div>/);
+    // US-0103: h3 replaced with chart-header-rule + display-title span
+    const covOverlayMatch = html.match(
+      /display-title[^>]*>Test Coverage[\s\S]*?<div class="hero-num [^"]*">([^<]+)<\/div>/,
+    );
     expect(covOverlayMatch).not.toBeNull();
     // Overlay uses the default (large) variant, not hero-num-sm.
     expect(covOverlayMatch[0]).not.toMatch(/hero-num-sm/);
