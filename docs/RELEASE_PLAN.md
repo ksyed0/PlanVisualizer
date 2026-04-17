@@ -380,11 +380,11 @@ Dependencies: None
 US-0083 (EPIC-0014): As a developer, I want all GitHub Actions steps to use Node.js 24-compatible action versions, so that no deprecation warnings appear in CI runs after June 2, 2026.
 Priority: Medium (P1)
 Estimate: S
-Status: Planned
+Status: Done
 Branch: feature/US-0083-actions-node24-upgrade
 Acceptance Criteria:
-  - [ ] AC-0262: actions/checkout updated to v5 (or later) in plan-visualizer.yml
-  - [ ] AC-0263: actions/setup-node updated to v5 (or later) in plan-visualizer.yml
+  - [x] AC-0262: actions/checkout updated to v5 (or later) in plan-visualizer.yml
+  - [x] AC-0263: actions/setup-node updated to v5 (or later) in plan-visualizer.yml
 Dependencies: None
 ```
 
@@ -1924,11 +1924,11 @@ Dependencies: None
 US-0083 (EPIC-0014): As a developer, I want all GitHub Actions steps to use Node.js 24-compatible action versions, so that no deprecation warnings appear in CI runs after June 2, 2026.
 Priority: Medium (P1)
 Estimate: S
-Status: Planned
+Status: Done
 Branch: feature/US-0083-actions-node24-upgrade
 Acceptance Criteria:
-  - [ ] AC-0262: actions/checkout updated to v5 (or later) in plan-visualizer.yml
-  - [ ] AC-0263: actions/setup-node updated to v5 (or later) in plan-visualizer.yml
+  - [x] AC-0262: actions/checkout updated to v5 (or later) in plan-visualizer.yml
+  - [x] AC-0263: actions/setup-node updated to v5 (or later) in plan-visualizer.yml
 Dependencies: None
 ```
 
