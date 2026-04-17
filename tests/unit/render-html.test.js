@@ -1211,3 +1211,73 @@ describe('US-0106 — Bug severity styling', () => {
     expect(html).toMatch(/\.bug-row,\s*\.bug-compact-row/);
   });
 });
+
+describe('US-0104 Trends', () => {
+  const trendsData = {
+    ...sampleData,
+    trends: {
+      dates: ['2026-01-01', '2026-01-15'],
+      doneCounts: [5, 10],
+      totalStories: [20, 20],
+      aiCosts: [1.5, 3.0],
+      coverage: [80, 85],
+      velocity: [3, 5],
+      openBugs: [2, 1],
+      atRisk: [1, 0],
+      inputTokens: [100000, 200000],
+      outputTokens: [30000, 60000],
+    },
+  };
+
+  it('renders Progress supertitle in Trends tab', () => {
+    const html = renderHtml(trendsData);
+    const idx = html.indexOf('id="tab-trends"');
+    const trendsHtml = html.slice(idx, idx + 30000);
+    expect(trendsHtml).toContain('Progress');
+    expect(trendsHtml).toContain('chart-trends-progress');
+  });
+
+  it('renders Cost & Spend supertitle in Trends tab', () => {
+    const html = renderHtml(trendsData);
+    const idx = html.indexOf('id="tab-trends"');
+    const trendsHtml = html.slice(idx, idx + 30000);
+    expect(trendsHtml).toMatch(/Cost.*Spend|Cost &amp; Spend/);
+    expect(trendsHtml).toContain('chart-trends-cost');
+  });
+
+  it('renders Quality supertitle in Trends tab', () => {
+    const html = renderHtml(trendsData);
+    const idx = html.indexOf('id="tab-trends"');
+    const trendsHtml = html.slice(idx, idx + 30000);
+    expect(trendsHtml).toContain('Quality');
+    expect(trendsHtml).toContain('chart-trends-coverage');
+  });
+
+  it('renders filter bar buttons in Trends tab', () => {
+    const html = renderHtml(trendsData);
+    const idx = html.indexOf('id="tab-trends"');
+    const trendsHtml = html.slice(idx, idx + 30000);
+    expect(trendsHtml).toContain('trends-filter-bar');
+    expect(trendsHtml).toContain('data-range="all"');
+    expect(trendsHtml).toContain('data-range="7"');
+    expect(trendsHtml).toContain('data-range="30"');
+    expect(trendsHtml).toContain('data-range="90"');
+  });
+
+  it('includes setTrendsRange function', () => {
+    const html = renderHtml(trendsData);
+    expect(html).toContain('function setTrendsRange');
+    expect(html).toContain("localStorage.setItem('pv-trends-range'");
+  });
+
+  it('restores trends range from localStorage', () => {
+    const html = renderHtml(trendsData);
+    expect(html).toContain("localStorage.getItem('pv-trends-range'");
+  });
+
+  it('applies gradient fills via createLinearGradient', () => {
+    const html = renderHtml(trendsData);
+    expect(html).toContain('createLinearGradient');
+    expect(html).toContain('addColorStop');
+  });
+});
