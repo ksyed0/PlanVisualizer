@@ -2071,13 +2071,13 @@ Dependencies: US-0094
 US-0100 (EPIC-0015): As a user, I want the Hierarchy tab to have stronger epic identity and AC visual structure, so that I can scan a 90+ story backlog quickly.
 Priority: Medium (P1)
 Estimate: S
-Status: Planned
+Status: Done
 Branch: feature/US-0100-hierarchy-polish
 Acceptance Criteria:
-  - [ ] AC-0325: Epic headers render the ID in display face as "EPIC / XXXX" tracked-out in accent colour
-  - [ ] AC-0326: Each epic header has a 2px progress rule filled to done/total ratio
-  - [ ] AC-0327: AC lists have a left vertical guide line creating a tree-structure visual
-  - [ ] AC-0328: Card-view story cards show a small accent dot mapping back to their epic
+  - [x] AC-0325: Epic headers render the ID in display face as "EPIC / XXXX" tracked-out in accent colour
+  - [x] AC-0326: Each epic header has a 2px progress rule filled to done/total ratio
+  - [x] AC-0327: AC lists have a left vertical guide line creating a tree-structure visual
+  - [x] AC-0328: Card-view story cards show a small accent dot mapping back to their epic
 Dependencies: US-0094
 ```
 
@@ -2172,12 +2172,12 @@ Dependencies: US-0097
 US-0107 (EPIC-0015): As a user, I want Lesson cards to visually link back to their source epic and category, so that patterns are easier to discover.
 Priority: Low (P2)
 Estimate: XS
-Status: Planned
+Status: Done
 Branch: feature/US-0107-lessons-polish
 Acceptance Criteria:
-  - [ ] AC-0356: Lesson cards have a left accent bar using the epic accent colour cycle
-  - [ ] AC-0357: A category icon (security/performance/testing) is derived from keyword match in the rule text
-  - [ ] AC-0358: Related bugs expand inline with severity dots
+  - [x] AC-0356: Lesson cards have a left accent bar using the epic accent colour cycle
+  - [x] AC-0357: A category icon (security/performance/testing) is derived from keyword match in the rule text
+  - [x] AC-0358: Related bugs expand inline with severity dots
 Dependencies: US-0097
 ```
 
