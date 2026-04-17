@@ -21,9 +21,33 @@ const jsEsc = (s) =>
 
 function usd(n) {
   const num = Number(n);
-  if (num >= 1000) return '$' + Math.round(num).toLocaleString('en-US');
-  if (num > 0) return '$' + num.toFixed(2);
-  return '$0.00';
+  const sign = '<span class="currency-sign">$</span>';
+  if (num >= 1000) return sign + Math.round(num).toLocaleString('en-US');
+  if (num > 0) return sign + num.toFixed(2);
+  return sign + '0.00';
+}
+
+function sparkline(values, w = 24, h = 12) {
+  if (!values || values.length < 2) return '';
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = max - min || 1;
+  const pts = values
+    .map((v, i) => {
+      const x = ((i / (values.length - 1)) * w).toFixed(1);
+      const y = (h - ((v - min) / range) * (h - 1)).toFixed(1);
+      return `${x},${y}`;
+    })
+    .join(' ');
+  return `<svg width="${w}" height="${h}" class="sparkline-svg" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+
+function deltaArrow(delta) {
+  if (delta === null || delta === undefined) return '';
+  const abs = Math.abs(delta);
+  if (abs < 0.5) return '<span class="delta-arrow delta-flat">= </span>';
+  if (delta > 0) return `<span class="delta-arrow delta-up">↑ ${usd(abs)}</span>`;
+  return `<span class="delta-arrow delta-down">↓ ${usd(abs)}</span>`;
 }
 function fmtNum(n) {
   return Number(n).toLocaleString();
@@ -984,13 +1008,19 @@ function renderCostsTab(data, options = {}) {
           else if (eb.percentUsed >= 75) barColor = '#f97316';
           else if (eb.percentUsed >= 50) barColor = '#eab308';
         }
+        const pbClass =
+          eb.percentUsed !== null && eb.percentUsed >= 90
+            ? 'pb-danger'
+            : eb.percentUsed !== null && eb.percentUsed >= 75
+              ? 'pb-warn'
+              : 'pb-ok';
         return `<tr class="border-t border-slate-100 dark:border-slate-700 anim-stagger" style="--i:${Math.min(i, 19)}">
         <td class="px-3 py-2"><span class="font-mono text-xs font-bold" style="color:${accent.border}">${eb.id}</span></td>
         <td class="px-3 py-2 text-sm dark:text-slate-200">${eb.budget !== null ? usd(eb.budget) : '—'}</td>
         <td class="px-3 py-2 text-sm dark:text-slate-200">${usd(eb.spent)}</td>
         <td class="px-3 py-2 text-sm dark:text-slate-200">${eb.remaining !== null ? usd(eb.remaining) : '—'}</td>
         <td class="px-3 py-2">
-          ${eb.percentUsed !== null ? `<div class="flex items-center gap-2"><div style="width:60px;height:6px;background:#334155;border-radius:3px;overflow:hidden"><div style="width:${barPct}%;height:100%;background:${barColor}"></div></div><span class="text-xs" style="color:${barColor}">${eb.percentUsed}%</span></div>` : '—'}
+          ${eb.percentUsed !== null ? `<div class="flex items-center gap-2"><div class="progress-bar"><div class="pb-fill ${pbClass}" style="width:${barPct}%"></div></div><span class="text-xs" style="color:${barColor}">${eb.percentUsed}%</span></div>` : '—'}
         </td>
       </tr>`;
       })
@@ -1016,7 +1046,7 @@ function renderCostsTab(data, options = {}) {
         </div>
         <div>
           <div class="text-xs text-slate-500 uppercase tracking-wide mb-1">Spent</div>
-          <div class="hero-num text-slate-800 dark:text-slate-100">${usd(budget.totalSpent)}</div>
+          <div class="hero-num text-slate-800 dark:text-slate-100">${usd(budget.totalSpent)}${deltaArrow(data.deltaSpend)}</div>
         </div>
         <div>
           <div class="text-xs text-slate-500 uppercase tracking-wide mb-1">Remaining</div>
@@ -1059,13 +1089,15 @@ function renderCostsTab(data, options = {}) {
         .map((story) => {
           const projected = (data.costs[story.id] && data.costs[story.id].projectedUsd) || 0;
           const ai = data.costs[story.id] || {};
+          const storyHistory = (data.costHistory || {})[story.branch] || [];
+          const sparkSvg = sparkline(storyHistory.map((h) => h.costUsd));
           return `<tr class="border-t border-slate-100 dark:border-slate-700">
         <td class="px-3 py-2 pl-8 font-mono text-xs text-slate-500 whitespace-nowrap">${story.id}</td>
         <td class="px-3 py-2 text-sm dark:text-slate-200">${esc(story.title)}</td>
         <td class="px-3 py-2 text-center">${badge(story.status)}</td>
         <td class="px-3 py-2 text-center text-sm dark:text-slate-200">${esc(story.estimate || '?')}</td>
         <td class="px-3 py-2 text-right text-sm dark:text-slate-200">${usd(projected)}</td>
-        <td class="px-3 py-2 text-right text-sm text-teal-700 dark:text-teal-400">${usd(ai.costUsd || 0)}</td>
+        <td class="px-3 py-2 text-right text-sm text-teal-700 dark:text-teal-400">${usd(ai.costUsd || 0)}${sparkSvg}</td>
         <td class="px-3 py-2 text-right text-xs text-slate-500 tokens-col">${fmtNum(ai.inputTokens || 0)} / ${fmtNum(ai.outputTokens || 0)}</td>
       </tr>`;
         })
@@ -2631,6 +2663,18 @@ function renderPrintCSS() {
   }
   .trends-range-btn.active { background: var(--clr-accent); color: #fff; border-color: var(--clr-accent); }
   .trends-range-btn:hover:not(.active) { border-color: var(--clr-accent); color: var(--clr-accent); }
+  /* US-0105: Costs tab sparklines + polish */
+  .sparkline-svg { display: inline-block; vertical-align: middle; color: var(--clr-accent); opacity: 0.7; }
+  .currency-sign { font-size: 0.72em; vertical-align: super; opacity: 0.65; }
+  .delta-arrow { font-size: 11px; font-weight: 600; margin-left: 6px; vertical-align: middle; }
+  .delta-up   { color: var(--badge-danger-text, #dc2626); }
+  .delta-down { color: var(--badge-success-text, #16a34a); }
+  .delta-flat { color: var(--clr-text-muted); }
+  .progress-bar { width: 60px; height: 6px; background: #334155; border-radius: 3px; overflow: hidden; display: inline-block; vertical-align: middle; }
+  .pb-fill { height: 100%; border-radius: 3px; }
+  .pb-ok   { background: #22c55e; }
+  .pb-warn { background: #eab308; }
+  .pb-danger { background: #ef4444; }
   /* US-0107: Lessons card polish */
   .lesson-accent-bar { border-left-width: 4px; border-left-style: solid; }
   .lesson-cat-icon { font-size: 1em; margin-right: 4px; }
@@ -2934,4 +2978,4 @@ function renderHtml(data, options = {}) {
 </html>`;
 }
 
-module.exports = { renderHtml, badge, BADGE_TONE };
+module.exports = { renderHtml, badge, BADGE_TONE, sparkline };

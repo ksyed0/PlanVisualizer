@@ -1,5 +1,5 @@
 'use strict';
-const { renderHtml, badge } = require('../../tools/lib/render-html');
+const { renderHtml, badge, sparkline } = require('../../tools/lib/render-html');
 
 const sampleData = {
   epics: [{ id: 'EPIC-0001', title: 'Code Editing', status: 'In Progress', releaseTarget: 'MVP', dependencies: [] }],
@@ -56,7 +56,7 @@ describe('renderHtml', () => {
   it('includes project name', () => expect(html).toMatch(/NomadCode/));
   it('includes generated timestamp', () => expect(html).toMatch(/2026-03-10/));
   it('includes commit SHA', () => expect(html).toMatch(/abc1234/));
-  it('includes total projected cost', () => expect(html).toMatch(/\$800/));
+  it('includes total projected cost', () => expect(html).toMatch(/currency-sign[^>]*>\$<\/span>800/));
   it('includes coverage percent', () => expect(html).toMatch(/81/));
   it('includes epic filter option', () => expect(html).toMatch(/EPIC-0001/));
   it('includes all 7 tabs', () => {
@@ -438,7 +438,7 @@ describe('renderHtml — sticky header (BUG-0004 regression)', () => {
 describe('renderHtml — projected cost from data.costs (BUG-0006)', () => {
   it('uses data.costs.projectedUsd not TSHIRT_HOURS', () => {
     const html = renderHtml(sampleData);
-    expect(html).toMatch(/\$800/);
+    expect(html).toMatch(/currency-sign[^>]*>\$<\/span>800/);
   });
 });
 
@@ -890,9 +890,15 @@ describe('renderHtml — hero numbers (US-0099)', () => {
     };
     const budgetHtml = renderHtml(dataWithBudget);
     // Each of the three totals must be wrapped in hero-num.
-    expect(budgetHtml).toMatch(/Total Budget<\/div>\s*<div class="hero-num[^"]*">\$10,000<\/div>/);
-    expect(budgetHtml).toMatch(/Spent<\/div>\s*<div class="hero-num[^"]*">\$3,500<\/div>/);
-    expect(budgetHtml).toMatch(/Remaining<\/div>\s*<div class="hero-num[^"]*">\$6,500<\/div>/);
+    expect(budgetHtml).toMatch(
+      /Total Budget<\/div>\s*<div class="hero-num[^"]*"><span class="currency-sign">\$<\/span>10,000<\/div>/,
+    );
+    expect(budgetHtml).toMatch(
+      /Spent<\/div>\s*<div class="hero-num[^"]*"><span class="currency-sign">\$<\/span>3,500<\/div>/,
+    );
+    expect(budgetHtml).toMatch(
+      /Remaining<\/div>\s*<div class="hero-num[^"]*"><span class="currency-sign">\$<\/span>6,500<\/div>/,
+    );
   });
 
   it('omits budget hero-num block when hasBudget=false', () => {
@@ -1279,5 +1285,58 @@ describe('US-0104 Trends', () => {
     const html = renderHtml(trendsData);
     expect(html).toContain('createLinearGradient');
     expect(html).toContain('addColorStop');
+  });
+});
+
+describe('US-0105 costs polish', () => {
+  it('sparkline() returns empty string for < 2 values', () => {
+    expect(sparkline([])).toBe('');
+    expect(sparkline([5])).toBe('');
+  });
+
+  it('sparkline() returns SVG polyline for >= 2 values', () => {
+    const svg = sparkline([1, 2, 3]);
+    expect(svg).toContain('<svg');
+    expect(svg).toContain('<polyline');
+    expect(svg).toContain('sparkline-svg');
+  });
+
+  it('usd() wraps $ in currency-sign span', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toContain('<span class="currency-sign">$</span>');
+  });
+
+  it('renders delta arrow beside totalSpent when deltaSpend provided', () => {
+    const html = renderHtml({
+      ...sampleData,
+      deltaSpend: 5.5,
+      budget: {
+        hasBudget: true,
+        epicBudgets: [],
+        totalBudget: 100,
+        totalSpent: 50,
+        burnRate: 0,
+        daysRemaining: null,
+      },
+    });
+    const costsIdx = html.indexOf('id="tab-costs"');
+    const costsHtml = html.slice(costsIdx, costsIdx + 5000);
+    expect(costsHtml).toMatch(/delta-arrow|delta-up|delta-down|delta-flat/);
+  });
+
+  it('uses .progress-bar class instead of inline height/background style', () => {
+    const html = renderHtml({
+      ...sampleData,
+      budget: {
+        hasBudget: true,
+        epicBudgets: [{ id: 'EPIC-0001', budget: 100, spent: 50, remaining: 50, percentUsed: 50 }],
+        totalBudget: 100,
+        totalSpent: 50,
+        burnRate: 0,
+        daysRemaining: null,
+      },
+    });
+    expect(html).toContain('class="progress-bar"');
+    expect(html).not.toMatch(/style="width:60px;height:6px;background:#334155/);
   });
 });

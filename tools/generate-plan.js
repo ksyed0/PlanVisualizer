@@ -237,6 +237,26 @@ function main() {
       return acc;
     }, []);
 
+  // Group deduplicated cost rows by branch for sparklines (US-0105)
+  const costHistory = {};
+  deduplicateSessions(costRows)
+    .filter((row) => !row.branch.startsWith('est/'))
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .forEach((row) => {
+      if (!costHistory[row.branch]) costHistory[row.branch] = [];
+      costHistory[row.branch].push({ date: row.date, costUsd: row.costUsd });
+    });
+
+  // Delta spend: cost of most recent session vs previous (US-0105)
+  const deltaSpend =
+    sessionTimeline.length >= 2
+      ? parseFloat(
+          (
+            sessionTimeline[sessionTimeline.length - 1].cumCost - sessionTimeline[sessionTimeline.length - 2].cumCost
+          ).toFixed(2),
+        )
+      : null;
+
   const data = {
     epics,
     stories,
@@ -253,6 +273,8 @@ function main() {
     buildNumber,
     branch,
     sessionTimeline,
+    costHistory,
+    deltaSpend,
     projectName: config.project.name,
     tagline: config.project.tagline,
     version: pkg.version,
