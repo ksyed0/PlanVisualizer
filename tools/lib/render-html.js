@@ -614,7 +614,7 @@ function renderTraceabilityTab(data) {
 }
 
 function renderTrendsTab(data, options = {}) {
-  const trends = options.trends || null;
+  const trends = options.trends || data.trends || null;
   const hasData = trends && trends.dates && trends.dates.length >= 2;
 
   const datesJson = trends ? JSON.stringify(trends.dates.map((d) => d.replace('T', ' ').slice(0, 16))) : '[]';
@@ -638,130 +638,133 @@ function renderTrendsTab(data, options = {}) {
     </div>`;
 
   return `
-  <div id="tab-trends" class="p-6 hidden" role="tabpanel" aria-labelledby="tab-btn-trends">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      ${!hasData ? placeholder : ''}
-      ${
-        hasData
-          ? `
-      <div class="card-elev rounded-lg p-4">
-        <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Done Stories Over Time</h3>
-        <div style="height:250px;position:relative"><canvas id="chart-trends-progress"></canvas></div>
-      </div>
-
-      <div class="card-elev rounded-lg p-4">
-        <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">AI Cost Over Time</h3>
-        <div style="height:250px;position:relative"><canvas id="chart-trends-cost"></canvas></div>
-      </div>
-
-      <div class="card-elev rounded-lg p-4">
-        <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Coverage Over Time</h3>
-        <div style="height:250px;position:relative"><canvas id="chart-trends-coverage"></canvas></div>
-      </div>
-
-      <div class="card-elev rounded-lg p-4">
-        <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Velocity (Story Points)</h3>
-        <div style="height:250px;position:relative"><canvas id="chart-trends-velocity"></canvas></div>
-      </div>
-
-      <div class="card-elev rounded-lg p-4">
-        <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Open Bugs Over Time</h3>
-        <div style="height:250px;position:relative"><canvas id="chart-trends-bugs"></canvas></div>
-      </div>
-
-      <div class="card-elev rounded-lg p-4">
-        <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">At-Risk Stories Over Time</h3>
-        <div style="height:250px;position:relative"><canvas id="chart-trends-risk"></canvas></div>
-      </div>
-
-      <div class="card-elev rounded-lg p-4 col-span-full">
-        <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">Token Usage Over Time</h3>
-        <div style="height:250px;position:relative"><canvas id="chart-trends-tokens"></canvas></div>
-      </div>
-      `
-          : ''
-      }
+<div id="tab-trends" class="p-6 hidden" role="tabpanel" aria-labelledby="tab-btn-trends">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    ${
+      !hasData
+        ? placeholder
+        : `
+    <div class="col-span-full trends-filter-bar mb-2">
+      <button class="trends-range-btn active" data-range="all" onclick="setTrendsRange(this,'all')">All</button>
+      <button class="trends-range-btn" data-range="90" onclick="setTrendsRange(this,90)">90d</button>
+      <button class="trends-range-btn" data-range="30" onclick="setTrendsRange(this,30)">30d</button>
+      <button class="trends-range-btn" data-range="7" onclick="setTrendsRange(this,7)">7d</button>
     </div>
+
+    <div class="chart-supertitle">Progress</div>
+
+    <div class="card-elev rounded-lg p-4 anim-stagger" style="--i:0">
+      <div class="chart-header-rule"><span class="display-title">Done Stories</span><span class="chart-subtitle">over time</span></div>
+      <div style="height:250px;position:relative"><canvas id="chart-trends-progress"></canvas></div>
+    </div>
+    <div class="card-elev rounded-lg p-4 anim-stagger" style="--i:1">
+      <div class="chart-header-rule"><span class="display-title">Velocity</span><span class="chart-subtitle">story points per session</span></div>
+      <div style="height:250px;position:relative"><canvas id="chart-trends-velocity"></canvas></div>
+    </div>
+
+    <div class="chart-supertitle">Cost &amp; Spend</div>
+
+    <div class="card-elev rounded-lg p-4 anim-stagger" style="--i:2">
+      <div class="chart-header-rule"><span class="display-title">AI Cost</span><span class="chart-subtitle">cumulative USD over time</span></div>
+      <div style="height:250px;position:relative"><canvas id="chart-trends-cost"></canvas></div>
+    </div>
+    <div class="card-elev rounded-lg p-4 anim-stagger" style="--i:3">
+      <div class="chart-header-rule"><span class="display-title">Token Usage</span><span class="chart-subtitle">input &amp; output tokens</span></div>
+      <div style="height:250px;position:relative"><canvas id="chart-trends-tokens"></canvas></div>
+    </div>
+
+    <div class="chart-supertitle">Quality</div>
+
+    <div class="card-elev rounded-lg p-4 anim-stagger" style="--i:4">
+      <div class="chart-header-rule"><span class="display-title">Coverage</span><span class="chart-subtitle">statement % over time</span></div>
+      <div style="height:250px;position:relative"><canvas id="chart-trends-coverage"></canvas></div>
+    </div>
+    <div class="card-elev rounded-lg p-4 anim-stagger" style="--i:5">
+      <div class="chart-header-rule"><span class="display-title">Open Bugs</span><span class="chart-subtitle">over time</span></div>
+      <div style="height:250px;position:relative"><canvas id="chart-trends-bugs"></canvas></div>
+    </div>
+    <div class="card-elev rounded-lg p-4 col-span-full anim-stagger" style="--i:6">
+      <div class="chart-header-rule"><span class="display-title">At-Risk Stories</span><span class="chart-subtitle">over time</span></div>
+      <div style="height:250px;position:relative"><canvas id="chart-trends-risk"></canvas></div>
+    </div>
+    `
+    }
   </div>
-  <script>
-  function initTrendsCharts() {
-    var tc = chartTextColor();
-    var labels = ${datesJson};
-    var hasEnough = labels.length >= 2;
-
-    if (hasEnough && document.getElementById('chart-trends-progress')) {
-      _charts.trendsProgress = new Chart(document.getElementById('chart-trends-progress'), {
-        type: 'line',
-        data: { labels: labels, datasets: [
-          { label: 'Done', data: ${doneJson}, borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,0.1)', fill: true, tension: 0.3 },
-          { label: 'Total', data: ${totalJson}, borderColor: '#64748b', backgroundColor: 'transparent', borderDash: [5,5], tension: 0.3 }
-        ]},
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true }}}, scales: { x: { ticks: { color: tc, maxTicksLimit: 8, callback: function(val, i, ticks) { var d = new Date(this.getLabelForValue(val)); return isNaN(d) ? val : (d.getMonth()+1) + '/' + d.getDate(); } }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }}, y: { ticks: { color: tc }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }, beginAtZero: true }}}
-      });
-    }
-
-    if (hasEnough && document.getElementById('chart-trends-cost')) {
-      _charts.trendsCost = new Chart(document.getElementById('chart-trends-cost'), {
-        type: 'line',
-        data: { labels: labels, datasets: [
-          { label: 'Total Cost ($)', data: ${costJson}, borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.1)', fill: true, tension: 0.3 }
-        ]},
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true }}}, scales: { x: { ticks: { color: tc, maxTicksLimit: 8, callback: function(val, i, ticks) { var d = new Date(this.getLabelForValue(val)); return isNaN(d) ? val : (d.getMonth()+1) + '/' + d.getDate(); } }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }}, y: { ticks: { color: tc }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }, beginAtZero: true }}}
-      });
-    }
-
-    if (hasEnough && document.getElementById('chart-trends-coverage')) {
-      _charts.trendsCoverage = new Chart(document.getElementById('chart-trends-coverage'), {
-        type: 'line',
-        data: { labels: labels, datasets: [
-          { label: 'Coverage %', data: ${coverageJson}, borderColor: '#8b5cf6', backgroundColor: 'rgba(139,92,246,0.1)', fill: true, tension: 0.3 }
-        ]},
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true }}}, scales: { x: { ticks: { color: tc, maxTicksLimit: 8, callback: function(val, i, ticks) { var d = new Date(this.getLabelForValue(val)); return isNaN(d) ? val : (d.getMonth()+1) + '/' + d.getDate(); } }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }}, y: { min: 0, max: 100, ticks: { color: tc }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }}}}
-      });
-    }
-
-    if (hasEnough && document.getElementById('chart-trends-velocity')) {
-      _charts.trendsVelocity = new Chart(document.getElementById('chart-trends-velocity'), {
-        type: 'bar',
-        data: { labels: labels, datasets: [
-          { label: 'Story Points', data: ${velocityJson}, backgroundColor: '#3b82f6' }
-        ]},
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true }}}, scales: { x: { ticks: { color: tc, maxTicksLimit: 8, callback: function(val, i, ticks) { var d = new Date(this.getLabelForValue(val)); return isNaN(d) ? val : (d.getMonth()+1) + '/' + d.getDate(); } }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }}, y: { ticks: { color: tc }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }, beginAtZero: true }}}
-      });
-    }
-
-    if (hasEnough && document.getElementById('chart-trends-bugs')) {
-      _charts.trendsBugs = new Chart(document.getElementById('chart-trends-bugs'), {
-        type: 'line',
-        data: { labels: labels, datasets: [
-          { label: 'Open Bugs', data: ${bugsJson}, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)', fill: true, tension: 0.3 }
-        ]},
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true }}}, scales: { x: { ticks: { color: tc, maxTicksLimit: 8, callback: function(val, i, ticks) { var d = new Date(this.getLabelForValue(val)); return isNaN(d) ? val : (d.getMonth()+1) + '/' + d.getDate(); } }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }}, y: { ticks: { color: tc }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }, beginAtZero: true }}}
-      });
-    }
-
-    if (hasEnough && document.getElementById('chart-trends-risk')) {
-      _charts.trendsRisk = new Chart(document.getElementById('chart-trends-risk'), {
-        type: 'line',
-        data: { labels: labels, datasets: [
-          { label: 'At-Risk Stories', data: ${riskJson}, borderColor: '#f97316', backgroundColor: 'rgba(249,115,22,0.1)', fill: true, tension: 0.3 }
-        ]},
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true }}}, scales: { x: { ticks: { color: tc, maxTicksLimit: 8, callback: function(val, i, ticks) { var d = new Date(this.getLabelForValue(val)); return isNaN(d) ? val : (d.getMonth()+1) + '/' + d.getDate(); } }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }}, y: { ticks: { color: tc }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }, beginAtZero: true, suggestedMax: 5 }}}
-      });
-    }
-
-    if (hasEnough && document.getElementById('chart-trends-tokens')) {
-      _charts.trendsTokens = new Chart(document.getElementById('chart-trends-tokens'), {
-        type: 'line',
-        data: { labels: labels, datasets: [
-          { label: 'Input', data: ${inputTokensJson}, borderColor: '#06b6d4', backgroundColor: 'rgba(6,182,212,0.2)', fill: true },
-          { label: 'Output', data: ${outputTokensJson}, borderColor: '#ec4899', backgroundColor: 'rgba(236,72,153,0.2)', fill: true }
-        ]},
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true }}}, scales: { x: { ticks: { color: tc, maxTicksLimit: 8, callback: function(val, i, ticks) { var d = new Date(this.getLabelForValue(val)); return isNaN(d) ? val : (d.getMonth()+1) + '/' + d.getDate(); } }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }}, y: { ticks: { color: tc, callback: function(v) { if (v >= 1e6) return (v/1e6).toFixed(0) + 'M'; if (v >= 1e3) return (v/1e3).toFixed(0) + 'K'; return v; } }, grid: { color: document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0' }, beginAtZero: true }}}
-      });
-    }
+</div>
+<script>
+var _trendsAllLabels = ${datesJson};
+var _trendsAllData = {
+  done: ${doneJson}, total: ${totalJson}, cost: ${costJson},
+  coverage: ${coverageJson}, velocity: ${velocityJson},
+  bugs: ${bugsJson}, risk: ${riskJson},
+  inputTokens: ${inputTokensJson}, outputTokens: ${outputTokensJson}
+};
+var _trendsChartRefs = {};
+function _trendGrad(ctx, hex) {
+  var r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+  var grad = ctx.createLinearGradient(0,0,0,200);
+  grad.addColorStop(0,'rgba('+r+','+g+','+b+',0.35)');
+  grad.addColorStop(1,'rgba('+r+','+g+','+b+',0.0)');
+  return grad;
+}
+function _mkTrend(id, cfg) {
+  var el = document.getElementById(id); if (!el) return;
+  _trendsChartRefs[id] = new Chart(el, cfg);
+  _trendsChartRefs[id]._allData = cfg.data.datasets.map(function(ds){ return ds.data.slice(); });
+  cfg.data.datasets.forEach(function(ds, i) {
+    if (ds._gc) _trendsChartRefs[id].data.datasets[i].backgroundColor = _trendGrad(el.getContext('2d'), ds._gc);
+  });
+  _trendsChartRefs[id].update('none');
+}
+function initTrendsCharts() {
+  var tc = chartTextColor();
+  var gc = document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0';
+  var labels = _trendsAllLabels; if (labels.length < 2) return;
+  var xA = { ticks:{ color:tc, maxTicksLimit:8, callback:function(v){ var d=new Date(this.getLabelForValue(v)); return isNaN(d)?v:(d.getMonth()+1)+'/'+d.getDate(); }}, grid:{color:gc} };
+  var yA = function(o){ return Object.assign({ticks:{color:tc},grid:{color:gc},beginAtZero:true},o||{}); };
+  var leg = { labels:{color:tc, font:{family:"'Inter',sans-serif",size:12}, pointStyle:'circle', usePointStyle:true }};
+  _mkTrend('chart-trends-progress', {type:'line', data:{labels:labels, datasets:[
+    {label:'Done', data:_trendsAllData.done, borderColor:'#22c55e', _gc:'#22c55e', fill:true, tension:0.3},
+    {label:'Total', data:_trendsAllData.total, borderColor:'#64748b', backgroundColor:'transparent', borderDash:[5,5], tension:0.3}
+  ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:leg}, scales:{x:xA,y:yA()}}});
+  _mkTrend('chart-trends-velocity', {type:'bar', data:{labels:labels, datasets:[
+    {label:'Story Points', data:_trendsAllData.velocity, backgroundColor:'#3b82f6'}
+  ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:leg}, scales:{x:xA,y:yA()}}});
+  _mkTrend('chart-trends-cost', {type:'line', data:{labels:labels, datasets:[
+    {label:'Total Cost ($)', data:_trendsAllData.cost, borderColor:'#f59e0b', _gc:'#f59e0b', fill:true, tension:0.3}
+  ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:leg}, scales:{x:xA,y:yA()}}});
+  _mkTrend('chart-trends-tokens', {type:'line', data:{labels:labels, datasets:[
+    {label:'Input', data:_trendsAllData.inputTokens, borderColor:'#06b6d4', _gc:'#06b6d4', fill:true},
+    {label:'Output', data:_trendsAllData.outputTokens, borderColor:'#ec4899', _gc:'#ec4899', fill:true}
+  ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:leg}, scales:{x:xA,y:yA({ticks:{color:tc,callback:function(v){return v>=1e6?(v/1e6).toFixed(0)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':v;}}})}}});
+  _mkTrend('chart-trends-coverage', {type:'line', data:{labels:labels, datasets:[
+    {label:'Coverage %', data:_trendsAllData.coverage, borderColor:'#8b5cf6', _gc:'#8b5cf6', fill:true, tension:0.3}
+  ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:leg}, scales:{x:xA,y:yA({min:0,max:100})}}});
+  _mkTrend('chart-trends-bugs', {type:'line', data:{labels:labels, datasets:[
+    {label:'Open Bugs', data:_trendsAllData.bugs, borderColor:'#ef4444', _gc:'#ef4444', fill:true, tension:0.3}
+  ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:leg}, scales:{x:xA,y:yA()}}});
+  _mkTrend('chart-trends-risk', {type:'line', data:{labels:labels, datasets:[
+    {label:'At-Risk', data:_trendsAllData.risk, borderColor:'#f97316', _gc:'#f97316', fill:true, tension:0.3}
+  ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:leg}, scales:{x:xA,y:yA({suggestedMax:5})}}});
+  var saved = localStorage.getItem('pv-trends-range');
+  if (saved && saved !== 'all') {
+    var btn = document.querySelector('.trends-range-btn[data-range="'+saved+'"]');
+    if (btn) setTrendsRange(btn, saved === 'all' ? 'all' : Number(saved));
   }
-  </script>`;
+}
+function setTrendsRange(btn, range) {
+  document.querySelectorAll('.trends-range-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  localStorage.setItem('pv-trends-range', range);
+  var n = range === 'all' ? _trendsAllLabels.length : Math.min(Number(range), _trendsAllLabels.length);
+  Object.keys(_trendsChartRefs).forEach(function(id) {
+    var ch = _trendsChartRefs[id]; if (!ch._allData) return;
+    ch.data.labels = _trendsAllLabels.slice(-n);
+    ch.data.datasets.forEach(function(ds, i){ ds.data = ch._allData[i].slice(-n); });
+    ch.update('none');
+  });
+}
+</script>`;
 }
 
 function renderChartsTab(data) {
@@ -2619,6 +2622,15 @@ function renderPrintCSS() {
   @media (prefers-reduced-motion: reduce) {
     .anim-stagger { animation: none; }
   }
+  /* US-0104: Trends filter bar */
+  .trends-filter-bar { display: flex; gap: 6px; flex-wrap: wrap; }
+  .trends-range-btn {
+    padding: 4px 14px; border-radius: 16px; border: 1px solid var(--clr-border-mid);
+    background: var(--clr-panel-bg); color: var(--clr-text-secondary);
+    font-size: 12px; font-weight: 500; cursor: pointer; transition: all 150ms;
+  }
+  .trends-range-btn.active { background: var(--clr-accent); color: #fff; border-color: var(--clr-accent); }
+  .trends-range-btn:hover:not(.active) { border-color: var(--clr-accent); color: var(--clr-accent); }
   /* US-0107: Lessons card polish */
   .lesson-accent-bar { border-left-width: 4px; border-left-style: solid; }
   .lesson-cat-icon { font-size: 1em; margin-right: 4px; }
