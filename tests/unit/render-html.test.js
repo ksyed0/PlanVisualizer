@@ -927,6 +927,63 @@ describe('US-0098 — staggered animation', () => {
     const html = renderHtml(sampleData);
     expect(html).not.toMatch(/gsap|anime\.js|framer/);
   });
+
+  it('includes prefers-reduced-motion guard for .anim-stagger', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toContain('@media (prefers-reduced-motion: reduce)');
+    expect(html).toContain('.anim-stagger { animation: none');
+  });
+
+  it('costs tab epic rows have anim-stagger', () => {
+    const html = renderHtml({
+      ...sampleData,
+      budget: {
+        hasBudget: true,
+        epicBudgets: [{ id: 'EPIC-0001', budget: 100, spent: 50, remaining: 50, percentUsed: 50 }],
+        totalBudget: 100,
+        totalSpent: 50,
+        burnRate: 0,
+        daysRemaining: null,
+      },
+    });
+    const costsIdx = html.indexOf('id="tab-costs"');
+    const costsHtml = html.slice(costsIdx, costsIdx + 20000);
+    expect(costsHtml).toContain('anim-stagger');
+  });
+
+  it('traceability story rows have anim-stagger', () => {
+    const html = renderHtml({
+      ...sampleData,
+      testCases: [{ id: 'TC-0001', relatedStory: 'US-0001', status: 'Pass' }],
+    });
+    const traceIdx = html.indexOf('id="tab-traceability"');
+    const traceHtml = html.slice(traceIdx, traceIdx + 30000);
+    expect(traceHtml).toContain('anim-stagger');
+  });
+
+  it('bugs tab rows have anim-stagger', () => {
+    const html = renderHtml(sampleData);
+    const bugsIdx = html.indexOf('id="tab-bugs"');
+    const bugsHtml = html.slice(bugsIdx, bugsIdx + 20000);
+    expect(bugsHtml).toContain('anim-stagger');
+  });
+
+  it('lesson cards have anim-stagger', () => {
+    const html = renderHtml({
+      ...sampleData,
+      lessons: [{ id: 'L-0001', title: 'Test', rule: 'Do X', context: 'Ctx', date: '2026-01', bugIds: [] }],
+    });
+    const lessonsIdx = html.indexOf('id="tab-lessons"');
+    const lessonsHtml = html.slice(lessonsIdx, lessonsIdx + 20000);
+    expect(lessonsHtml).toContain('anim-stagger');
+  });
+
+  it('showTab JS re-triggers anim-stagger on tab switch', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toContain("classList.remove('anim-stagger')");
+    expect(html).toContain('offsetWidth');
+    expect(html).toContain("classList.add('anim-stagger')");
+  });
 });
 
 describe('US-0107 — Lessons card polish', () => {

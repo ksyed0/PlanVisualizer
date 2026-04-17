@@ -576,7 +576,7 @@ function renderTraceabilityTab(data) {
       </td>
     </tr>`;
       const storyRows = epicStories
-        .map((story) => {
+        .map((story, storyIdx) => {
           const cells = data.testCases
             .map((tc) => {
               const linked = tc.relatedStory === story.id;
@@ -586,7 +586,7 @@ function renderTraceabilityTab(data) {
                 : `<td class="p-2 border border-slate-200 dark:border-slate-600" data-col="${tc.id}"></td>`;
             })
             .join('');
-          return `<tr class="hidden" data-trace-epic="${esc(epic.id)}">
+          return `<tr class="hidden anim-stagger" style="--i:${Math.min(storyIdx, 19)}" data-trace-epic="${esc(epic.id)}">
         <td class="trace-sticky-col text-xs font-mono px-2 py-1 border border-slate-200 dark:border-slate-600 whitespace-nowrap pl-6 dark:text-slate-200">${story.id}</td>
         ${cells}
       </tr>`;
@@ -981,7 +981,7 @@ function renderCostsTab(data, options = {}) {
           else if (eb.percentUsed >= 75) barColor = '#f97316';
           else if (eb.percentUsed >= 50) barColor = '#eab308';
         }
-        return `<tr class="border-t border-slate-100 dark:border-slate-700">
+        return `<tr class="border-t border-slate-100 dark:border-slate-700 anim-stagger" style="--i:${Math.min(i, 19)}">
         <td class="px-3 py-2"><span class="font-mono text-xs font-bold" style="color:${accent.border}">${eb.id}</span></td>
         <td class="px-3 py-2 text-sm dark:text-slate-200">${eb.budget !== null ? usd(eb.budget) : '—'}</td>
         <td class="px-3 py-2 text-sm dark:text-slate-200">${usd(eb.spent)}</td>
@@ -1441,11 +1441,11 @@ function renderBugsTab(data) {
   });
 
   // BUG-0165 / AC-0352 — severity stripe on the first td of every row.
-  const renderBugRow = (bug, accent) => {
+  const renderBugRow = (bug, accent, bugIdx = 0) => {
     const epicId = storyEpicMap[normalizeStoryRef(bug.relatedStory)] || '_ungrouped';
     const severityLeft = `border-left:4px solid ${severityStripeColor(bug.severity)};`;
     return `
-    <tr id="bug-row-${esc(bug.id)}" class="bug-row border-t border-slate-100 dark:border-slate-700" data-status="${esc(bug.status)}" data-epic="${esc(epicId)}" data-severity="${esc(bug.severity)}">
+    <tr id="bug-row-${esc(bug.id)}" class="bug-row border-t border-slate-100 dark:border-slate-700 anim-stagger" style="--i:${Math.min(bugIdx, 19)}" data-status="${esc(bug.status)}" data-epic="${esc(epicId)}" data-severity="${esc(bug.severity)}">
       <td class="px-3 py-2 font-mono text-xs whitespace-nowrap dark:text-slate-200" style="${severityLeft}">${esc(bug.id)}</td>
       <td class="px-3 py-2 text-sm dark:text-slate-200">${esc(bug.title)}</td>
       <td class="px-3 py-2 text-center">${sevBadge(bug.severity)}</td>
@@ -1457,10 +1457,10 @@ function renderBugsTab(data) {
   };
 
   // AC-0352: bug cards get border-left severity stripe
-  const renderBugCard = (bug) => {
+  const renderBugCard = (bug, bugIdx = 0) => {
     const epicId = storyEpicMap[normalizeStoryRef(bug.relatedStory)] || '_ungrouped';
     return `
-    <div id="bug-card-${esc(bug.id)}" class="bug-row story-card-hover card-elev rounded-lg p-4 flex flex-col gap-2" data-status="${esc(bug.status)}" data-epic="${esc(epicId)}" data-severity="${esc(bug.severity)}" style="border-left:4px solid ${severityStripeColor(bug.severity)}">
+    <div id="bug-card-${esc(bug.id)}" class="bug-row story-card-hover card-elev rounded-lg p-4 flex flex-col gap-2 anim-stagger" style="--i:${Math.min(bugIdx, 19)};border-left:4px solid ${severityStripeColor(bug.severity)}" data-status="${esc(bug.status)}" data-epic="${esc(epicId)}" data-severity="${esc(bug.severity)}">
       <div class="flex items-center gap-2 flex-wrap">
         <span class="font-mono text-xs text-slate-500 whitespace-nowrap">${esc(bug.id)}</span>
         ${sevBadge(bug.severity)} ${badge(bug.status)}
@@ -1519,7 +1519,7 @@ function renderBugsTab(data) {
         </div>
       </td>
     </tr>
-    </tbody><tbody id="${beid}" class="hidden">${bugs.map((b) => renderBugRow(b, accent)).join('')}</tbody>`;
+    </tbody><tbody id="${beid}" class="hidden">${bugs.map((b, bugIdx) => renderBugRow(b, accent, bugIdx)).join('')}</tbody>`;
     })
     .join('');
 
@@ -1545,7 +1545,7 @@ function renderBugsTab(data) {
         <span class="ml-auto text-xs text-slate-500 bug-count">${open} open &middot; ${bugs.length} total</span>
       </div>
       <div id="${bceid}" class="p-3 hidden">
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">${bugs.map(renderBugCard).join('')}</div>
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">${bugs.map((b, bugIdx) => renderBugCard(b, bugIdx)).join('')}</div>
       </div>
     </div>`;
     })
@@ -1710,8 +1710,8 @@ function renderLessonsTab(data) {
     <td class="px-3 py-3 text-xs whitespace-nowrap">${bugRefLink(l.id)}</td>
   </tr>`;
 
-  const renderLessonCard = (l, accent) => `
-  <div id="lesson-card-${l.id}" class="lesson-row story-card-hover card-elev lesson-accent-bar rounded-lg p-4 flex flex-col gap-2" style="border-left:4px solid ${accent.border}">
+  const renderLessonCard = (l, accent, lessonIdx = 0) => `
+  <div id="lesson-card-${l.id}" class="lesson-row story-card-hover card-elev lesson-accent-bar rounded-lg p-4 flex flex-col gap-2 anim-stagger" style="--i:${Math.min(lessonIdx, 19)};border-left:4px solid ${accent.border}">
     <div class="flex items-center gap-2">
       <span class="font-mono text-xs font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap flex-shrink-0">${l.id}</span>
       <span class="text-sm font-semibold text-slate-700 dark:text-slate-200">${esc(l.title)}</span>
@@ -1764,7 +1764,7 @@ function renderLessonsTab(data) {
         <span class="ml-1 text-xs text-slate-500">(${ls.length})</span>
       </div>
       <div id="${lceid}" class="p-3 hidden">
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">${ls.map((l) => renderLessonCard(l, accent)).join('')}</div>
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">${ls.map((l, lessonIdx) => renderLessonCard(l, accent, lessonIdx)).join('')}</div>
       </div>
     </div>`;
     })
@@ -1906,6 +1906,14 @@ function renderScripts(data, options = {}) {
     setStickyTop();
     if (name === 'charts' && typeof initCharts === 'function') { initCharts(); initCharts = () => {}; }
     if (name === 'trends' && typeof initTrendsCharts === 'function') { initTrendsCharts(); initTrendsCharts = () => {}; }
+    var _staggerPanel = document.getElementById('tab-' + name);
+    if (_staggerPanel) {
+      _staggerPanel.querySelectorAll('.anim-stagger').forEach(function(el) {
+        el.classList.remove('anim-stagger');
+        void el.offsetWidth;
+        el.classList.add('anim-stagger');
+      });
+    }
     localStorage.setItem('activeTab', name);
     history.replaceState(null, '', '#' + name);
   }
@@ -2607,6 +2615,9 @@ function renderPrintCSS() {
   .anim-stagger {
     animation: fadeInUp 240ms ease both;
     animation-delay: calc(var(--i, 0) * 20ms);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .anim-stagger { animation: none; }
   }
   /* US-0107: Lessons card polish */
   .lesson-accent-bar { border-left-width: 4px; border-left-style: solid; }
