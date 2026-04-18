@@ -1359,7 +1359,9 @@ describe('renderHtml — kanban tab US-0101', () => {
   };
 
   let html;
-  beforeAll(() => { html = renderHtml(kanbanData); });
+  beforeAll(() => {
+    html = renderHtml(kanbanData);
+  });
 
   // TC-0140
   it('TC-0140: kanban column headers have gradient and accent border', () => {
@@ -1394,14 +1396,40 @@ describe('renderHtml — traceability tab US-0102', () => {
   const tcData = {
     ...sampleData,
     testCases: [
-      { id: 'TC-0001', relatedStory: 'US-0001', relatedAC: 'AC-0001', status: 'Pass',    defect: 'None',     title: 'Passes', type: 'Functional' },
-      { id: 'TC-0002', relatedStory: 'US-0001', relatedAC: 'AC-0001', status: 'Fail',    defect: 'BUG-0001', title: 'Fails',  type: 'Functional' },
-      { id: 'TC-0003', relatedStory: 'US-0001', relatedAC: 'AC-0001', status: 'Not Run', defect: 'None',     title: 'Pending',type: 'Functional' },
+      {
+        id: 'TC-0001',
+        relatedStory: 'US-0001',
+        relatedAC: 'AC-0001',
+        status: 'Pass',
+        defect: 'None',
+        title: 'Passes',
+        type: 'Functional',
+      },
+      {
+        id: 'TC-0002',
+        relatedStory: 'US-0001',
+        relatedAC: 'AC-0001',
+        status: 'Fail',
+        defect: 'BUG-0001',
+        title: 'Fails',
+        type: 'Functional',
+      },
+      {
+        id: 'TC-0003',
+        relatedStory: 'US-0001',
+        relatedAC: 'AC-0001',
+        status: 'Not Run',
+        defect: 'None',
+        title: 'Pending',
+        type: 'Functional',
+      },
     ],
   };
 
   let html;
-  beforeAll(() => { html = renderHtml(tcData); });
+  beforeAll(() => {
+    html = renderHtml(tcData);
+  });
 
   // TC-0145
   it('TC-0145: TC cells render tc-dot class not letter text', () => {
@@ -1434,7 +1462,9 @@ describe('renderHtml — traceability tab US-0102', () => {
 
 describe('renderHtml — status tab US-0103', () => {
   let html;
-  beforeAll(() => { html = renderHtml(sampleData); });
+  beforeAll(() => {
+    html = renderHtml(sampleData);
+  });
 
   // TC-0149
   it('TC-0149: chart sections render chart-header-rule with display-title and chart-subtitle', () => {
@@ -1466,14 +1496,43 @@ describe('renderHtml — bugs tab US-0106', () => {
   const bugsData = {
     ...sampleData,
     bugs: [
-      { id: 'BUG-0001', title: 'Critical crash', severity: 'Critical', status: 'Open',  relatedStory: 'US-0001', fixBranch: 'bugfix/BUG-0001-fix', lessonEncoded: 'Yes — see docs/LESSONS.md L-0001', epicId: 'EPIC-0001' },
-      { id: 'BUG-0002', title: 'Medium lag',     severity: 'Medium',   status: 'Open',  relatedStory: 'US-0001', fixBranch: 'bugfix/BUG-0002-lag', lessonEncoded: '',       epicId: 'EPIC-0001' },
-      { id: 'BUG-0003', title: 'Low cosmetic',   severity: 'Low',      status: 'Fixed', relatedStory: 'US-0001', fixBranch: '',                   lessonEncoded: '',       epicId: 'EPIC-0001' },
+      {
+        id: 'BUG-0001',
+        title: 'Critical crash',
+        severity: 'Critical',
+        status: 'Open',
+        relatedStory: 'US-0001',
+        fixBranch: 'bugfix/BUG-0001-fix',
+        lessonEncoded: 'Yes — see docs/LESSONS.md L-0001',
+        epicId: 'EPIC-0001',
+      },
+      {
+        id: 'BUG-0002',
+        title: 'Medium lag',
+        severity: 'Medium',
+        status: 'Open',
+        relatedStory: 'US-0001',
+        fixBranch: 'bugfix/BUG-0002-lag',
+        lessonEncoded: '',
+        epicId: 'EPIC-0001',
+      },
+      {
+        id: 'BUG-0003',
+        title: 'Low cosmetic',
+        severity: 'Low',
+        status: 'Fixed',
+        relatedStory: 'US-0001',
+        fixBranch: '',
+        lessonEncoded: '',
+        epicId: 'EPIC-0001',
+      },
     ],
   };
 
   let html;
-  beforeAll(() => { html = renderHtml(bugsData); });
+  beforeAll(() => {
+    html = renderHtml(bugsData);
+  });
 
   // TC-0153
   it('TC-0153: severity badge renders badge-sev class alongside badge tone class', () => {

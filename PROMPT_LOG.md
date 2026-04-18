@@ -6,55 +6,55 @@ Timestamped log of every user prompt across all sessions. Append-only. Never edi
 
 ## Session 21 — 2026-04-18
 
-| #   | Timestamp            | Prompt |
-| --- | -------------------- | ------ |
-| 1   | 2026-04-18T16:00:00Z | EPIC-0015 is now fully Done. US-0110 — formally write into RELEASE_PLAN.md under EPIC-0017 with ACs. Scope: research/document superpowers skills mapping to DM_AGENT.md stages. Use US-0110, EPIC-0017. Next AC: AC-0344, TC: TC-0158. Also check EPIC-0014 remaining Planned stories. |
-| 2   | 2026-04-18T16:05:00Z | can you check if US-0110 is already completed |
-| 3   | 2026-04-18T16:10:00Z | yes [proceed with US-0126 under EPIC-0017; also fix US-0110 stale status] |
-| 4   | 2026-04-18T16:15:00Z | cleanup EPIC-0016 and EPIC-0014 if they are already implemented |
-| 5   | 2026-04-18T16:20:00Z | how did EPIC-0016 and EPIC-0014 status get out of sync? |
-| 6   | 2026-04-18T16:25:00Z | yes lets logs these all as docs/BUGS.md and fix them and add to the current plan |
+| #   | Timestamp            | Prompt                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| --- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | 2026-04-18T16:00:00Z | EPIC-0015 is now fully Done. US-0110 — formally write into RELEASE_PLAN.md under EPIC-0017 with ACs. Scope: research/document superpowers skills mapping to DM_AGENT.md stages. Use US-0110, EPIC-0017. Next AC: AC-0344, TC: TC-0158. Also check EPIC-0014 remaining Planned stories.                                                                                                                                                                                                                                                 |
+| 2   | 2026-04-18T16:05:00Z | can you check if US-0110 is already completed                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| 3   | 2026-04-18T16:10:00Z | yes [proceed with US-0126 under EPIC-0017; also fix US-0110 stale status]                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| 4   | 2026-04-18T16:15:00Z | cleanup EPIC-0016 and EPIC-0014 if they are already implemented                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| 5   | 2026-04-18T16:20:00Z | how did EPIC-0016 and EPIC-0014 status get out of sync?                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| 6   | 2026-04-18T16:25:00Z | yes lets logs these all as docs/BUGS.md and fix them and add to the current plan                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | 7   | 2026-04-18T16:30:00Z | for the new superpowers skill check the install script and upgrade script should check if the latest version of the superpowers script in the user environment is installed and up to date and if not then it should install or update it as needed. Then the agent invocations should leverage the key superpowers skills during respective agent invocations - for example, DM_AGENT.md should invoke the superpowers brainstorming skill and plan implementation skill, and UI_DESIGNER_AGENT.md should invoke the UI design skill. |
 
 ---
 
 ## Session 20 — 2026-04-18
 
-| #   | Timestamp            | Prompt |
-| --- | -------------------- | ------ |
-| 1   | 2026-04-18T14:00:00Z | what plans are still not completed |
+| #   | Timestamp            | Prompt                                                                                 |
+| --- | -------------------- | -------------------------------------------------------------------------------------- |
+| 1   | 2026-04-18T14:00:00Z | what plans are still not completed                                                     |
 | 2   | 2026-04-18T14:05:00Z | lets use superpowers brainstorming to review and plan the remaining items in EPIC-0015 |
-| 3   | 2026-04-18T14:10:00Z | yes [to visual companion offer] |
-| 4   | 2026-04-18T14:15:00Z | you can check, I think these were planned but not implemented |
-| 5   | 2026-04-18T14:20:00Z | B [visual QA first before writing test cases] |
-| 6   | 2026-04-18T14:25:00Z | A [file issues as BUG-XXXX in docs/BUGS.md] |
-| 7   | 2026-04-18T14:30:00Z | b [parallel via worktrees] |
-| 8   | 2026-04-18T14:35:00Z | yes [Phase 1 Sentinel + Phase 2 pipeline structure approved] |
-| 9   | 2026-04-18T14:40:00Z | yes [QA scope/checklist approved] |
-| 10  | 2026-04-18T14:45:00Z | yes [per-agent workflow approved] |
-| 11  | 2026-04-18T14:50:00Z | yes [design approved] |
-| 12  | 2026-04-18T14:55:00Z | looks good [spec file approved, proceed to writing-plans] |
-| 13  | 2026-04-18T15:00:00Z | 1 [subagent-driven execution chosen] |
-| 14  | 2026-04-18T15:30:00Z | whats next after this |
-| 15  | 2026-04-18T15:35:00Z | 2 [push and create PR for session close branch] |
+| 3   | 2026-04-18T14:10:00Z | yes [to visual companion offer]                                                        |
+| 4   | 2026-04-18T14:15:00Z | you can check, I think these were planned but not implemented                          |
+| 5   | 2026-04-18T14:20:00Z | B [visual QA first before writing test cases]                                          |
+| 6   | 2026-04-18T14:25:00Z | A [file issues as BUG-XXXX in docs/BUGS.md]                                            |
+| 7   | 2026-04-18T14:30:00Z | b [parallel via worktrees]                                                             |
+| 8   | 2026-04-18T14:35:00Z | yes [Phase 1 Sentinel + Phase 2 pipeline structure approved]                           |
+| 9   | 2026-04-18T14:40:00Z | yes [QA scope/checklist approved]                                                      |
+| 10  | 2026-04-18T14:45:00Z | yes [per-agent workflow approved]                                                      |
+| 11  | 2026-04-18T14:50:00Z | yes [design approved]                                                                  |
+| 12  | 2026-04-18T14:55:00Z | looks good [spec file approved, proceed to writing-plans]                              |
+| 13  | 2026-04-18T15:00:00Z | 1 [subagent-driven execution chosen]                                                   |
+| 14  | 2026-04-18T15:30:00Z | whats next after this                                                                  |
+| 15  | 2026-04-18T15:35:00Z | 2 [push and create PR for session close branch]                                        |
 
 ---
 
 ## Session 19 — 2026-04-17 through 2026-04-18
 
-| #   | Timestamp            | Prompt                                                                                                                                                                                                                                                                                  |
-| --- | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| #   | Timestamp            | Prompt                                                                                                                                                                                                                           |
+| --- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1   | 2026-04-17T18:00:00Z | Execute the implementation plan at docs/superpowers/plans/2026-04-17-epic-0014-0015-completion.md using the DM_AGENT parallel pipeline (Task 0 housekeeping, Wave 1: US-0083+US-0098, Wave 2: US-0104+US-0105, Wave 3: US-0053). |
-| 2   | 2026-04-17T18:30:00Z | open the active dashboard                                                                                                                                                                                                                                                               |
-| 3   | 2026-04-17T18:45:00Z | PR 371 is already merged                                                                                                                                                                                                                                                                |
-| 4   | 2026-04-17T19:00:00Z | why is the agentic dashboard not updating [screenshot — 0% coverage, 0/0 stories]                                                                                                                                                                                                      |
-| 5   | 2026-04-17T19:15:00Z | can you open the currently active agentic dashboard [screenshot — STANDBY, all agents IDLE]                                                                                                                                                                                             |
-| 6   | 2026-04-17T19:30:00Z | dashboard is still showing stale and nothing is showing as running [screenshot — Cycle 5, last updated 15:36, STALE]                                                                                                                                                                    |
-| 7   | 2026-04-17T19:50:00Z | still showing that no agents are running [screenshot — all agents IDLE, Waiting for Conductor]                                                                                                                                                                                          |
-| 8   | 2026-04-17T20:10:00Z | PR 378 needs to resolve conflicts, why are you not finding this issue and fixing                                                                                                                                                                                                         |
-| 9   | 2026-04-17T20:30:00Z | PR 378 is merged now, what are you working on                                                                                                                                                                                                                                           |
-| 10  | 2026-04-17T20:50:00Z | whats happening                                                                                                                                                                                                                                                                         |
-| 11  | 2026-04-18T00:00:00Z | are you stuck                                                                                                                                                                                                                                                                           |
+| 2   | 2026-04-17T18:30:00Z | open the active dashboard                                                                                                                                                                                                        |
+| 3   | 2026-04-17T18:45:00Z | PR 371 is already merged                                                                                                                                                                                                         |
+| 4   | 2026-04-17T19:00:00Z | why is the agentic dashboard not updating [screenshot — 0% coverage, 0/0 stories]                                                                                                                                                |
+| 5   | 2026-04-17T19:15:00Z | can you open the currently active agentic dashboard [screenshot — STANDBY, all agents IDLE]                                                                                                                                      |
+| 6   | 2026-04-17T19:30:00Z | dashboard is still showing stale and nothing is showing as running [screenshot — Cycle 5, last updated 15:36, STALE]                                                                                                             |
+| 7   | 2026-04-17T19:50:00Z | still showing that no agents are running [screenshot — all agents IDLE, Waiting for Conductor]                                                                                                                                   |
+| 8   | 2026-04-17T20:10:00Z | PR 378 needs to resolve conflicts, why are you not finding this issue and fixing                                                                                                                                                 |
+| 9   | 2026-04-17T20:30:00Z | PR 378 is merged now, what are you working on                                                                                                                                                                                    |
+| 10  | 2026-04-17T20:50:00Z | whats happening                                                                                                                                                                                                                  |
+| 11  | 2026-04-18T00:00:00Z | are you stuck                                                                                                                                                                                                                    |
 
 ---
 
