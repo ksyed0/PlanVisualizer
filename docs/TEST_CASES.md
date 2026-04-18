@@ -2383,3 +2383,76 @@ Steps:
    Status: [x] Pass
    Defect Raised: None
    Notes:
+
+---
+
+TC-0145: Traceability matrix cells render as colored dots not letter text
+Related Story: US-0102
+Related Task:
+Related AC: AC-0334
+Type: Visual
+Preconditions: renderHtml called with testCases having Pass, Fail, and Not Run statuses
+Steps:
+
+1. Call renderHtml() with Pass/Fail/Not Run test cases
+2. Check output HTML for tc-dot tc-dot-success, tc-dot-danger, tc-dot-warn classes
+3. Confirm no raw "Pass", "Fail", "Not Run" text appears as cell content
+   Expected Result: Cells use tc-dot classes with CSS pseudo-element circles; no letter abbreviations
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0146: Traceability first column has trace-sticky-col class on header and data cells
+Related Story: US-0102
+Related Task:
+Related AC: AC-0337
+Type: Functional
+Preconditions: renderHtml called with testCases present
+Steps:
+
+1. Call renderHtml() with test case data
+2. Check output HTML for trace-sticky-col class on the Story column header th and each story td
+   Expected Result: First column th and td elements carry the trace-sticky-col class for sticky positioning
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0147: Traceability caption contains live pass/fail/not-run counts with tc-dot icons
+Related Story: US-0102
+Related Task:
+Related AC: AC-0336
+Type: Functional
+Preconditions: renderHtml called with mixed Pass/Fail/Not Run test cases
+Steps:
+
+1. Call renderHtml() with Pass, Fail, and Not Run test cases
+2. Check output HTML for trace-caption class and numeric counts for each status
+   Expected Result: Caption renders "Pass: N · Fail: N · Not Run: N" with tc-dot icon elements
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0148: Traceability TC column headers carry data-col attributes for crosshair JS
+Related Story: US-0102
+Related Task:
+Related AC: AC-0335
+Type: Functional
+Preconditions: renderHtml called with testCases
+Steps:
+
+1. Call renderHtml() with test cases TC-0001 and TC-0002
+2. Check output HTML for data-col="TC-0001" and data-col="TC-0002" on header th elements
+   Expected Result: Each TC column header th has a data-col attribute matching the TC ID
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:

@@ -2100,13 +2100,13 @@ Dependencies: US-0097
 US-0102 (EPIC-0015): As a user, I want the Traceability matrix to be scannable at a glance, so that I can spot coverage gaps without translating P/F/N letters.
 Priority: High (P0)
 Estimate: M
-Status: Planned
+Status: Done
 Branch: feature/US-0102-traceability-redesign
 Acceptance Criteria:
-  - [ ] AC-0334: Pass/Fail/Not Run are rendered as filled colour dots (8px) instead of letters
-  - [ ] AC-0335: Cross-hair hover highlights the full row and TC column header on cell hover
-  - [ ] AC-0336: Legend moves inline with the table caption and shows live counts
-  - [ ] AC-0337: First column (story ID + title) is sticky during horizontal scroll
+  - [x] AC-0334: Pass/Fail/Not Run are rendered as filled colour dots (8px) instead of letters
+  - [x] AC-0335: Cross-hair hover highlights the full row and TC column header on cell hover
+  - [x] AC-0336: Legend moves inline with the table caption and shows live counts
+  - [x] AC-0337: First column (story ID + title) is sticky during horizontal scroll
 Dependencies: US-0097
 ```
 

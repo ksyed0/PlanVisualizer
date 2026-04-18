@@ -1389,3 +1389,45 @@ describe('renderHtml — kanban tab US-0101', () => {
     expect(html).not.toMatch(/story-card-hover:hover[^}]*rgba\(0,0,0/);
   });
 });
+
+describe('renderHtml — traceability tab US-0102', () => {
+  const tcData = {
+    ...sampleData,
+    testCases: [
+      { id: 'TC-0001', relatedStory: 'US-0001', relatedAC: 'AC-0001', status: 'Pass',    defect: 'None',     title: 'Passes', type: 'Functional' },
+      { id: 'TC-0002', relatedStory: 'US-0001', relatedAC: 'AC-0001', status: 'Fail',    defect: 'BUG-0001', title: 'Fails',  type: 'Functional' },
+      { id: 'TC-0003', relatedStory: 'US-0001', relatedAC: 'AC-0001', status: 'Not Run', defect: 'None',     title: 'Pending',type: 'Functional' },
+    ],
+  };
+
+  let html;
+  beforeAll(() => { html = renderHtml(tcData); });
+
+  // TC-0145
+  it('TC-0145: TC cells render tc-dot class not letter text', () => {
+    expect(html).toMatch(/class="tc-dot tc-dot-success"/);
+    expect(html).toMatch(/class="tc-dot tc-dot-danger"/);
+    expect(html).toMatch(/class="tc-dot tc-dot-warn"/);
+    expect(html).not.toMatch(/<td[^>]*>\s*Pass\s*<\/td>/);
+    expect(html).not.toMatch(/<td[^>]*>\s*Fail\s*<\/td>/);
+  });
+
+  // TC-0146
+  it('TC-0146: first column th and story td have trace-sticky-col class', () => {
+    expect(html).toMatch(/class="[^"]*trace-sticky-col[^"]*"/);
+  });
+
+  // TC-0147
+  it('TC-0147: caption contains pass/fail/not-run counts', () => {
+    expect(html).toMatch(/trace-caption/);
+    expect(html).toMatch(/Pass:\s*\d/);
+    expect(html).toMatch(/Fail:\s*\d/);
+    expect(html).toMatch(/Not Run:\s*\d/);
+  });
+
+  // TC-0148
+  it('TC-0148: TC header th elements have data-col attributes', () => {
+    expect(html).toMatch(/data-col="TC-0001"/);
+    expect(html).toMatch(/data-col="TC-0002"/);
+  });
+});
