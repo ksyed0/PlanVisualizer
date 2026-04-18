@@ -4,6 +4,37 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 19 — 2026-04-17 through 2026-04-18
+
+### What Was Done
+
+**EPIC-0014 + EPIC-0015 partial close** — 6 stories across 4 waves delivered via DM_AGENT pipeline.
+
+#### Stories shipped (5 PRs merged to develop)
+
+| Story | PR | Description |
+|-------|----|-------------|
+| US-0100, US-0107 | #371 | Housekeeping: mark Done (ACs already in codebase) |
+| US-0083 | #373 | GH Actions already at v6 — mark Done |
+| US-0098 | #374 | Staggered fadeInUp reveal extended to all tabs + re-trigger on tab switch |
+| US-0104 | #377 | Trends time-range filter (All/90d/30d/7d), supertitle groups, gradient fills |
+| US-0105 | #378 | Costs sparklines, delta arrows, .progress-bar component, currency-sign span |
+| US-0053 | #381 | Split render-html.js (2981L) into 4 modules: render-utils, render-shell, render-tabs, render-scripts |
+
+#### Test results
+- 419 tests, 22 suites — all pass. Coverage: ~91% statements (gate: 80%)
+
+#### Key incidents
+- PR #378 (US-0105) conflict: US-0104 merged first, both touched render-html.js CSS block and test describe blocks. Resolved manually — kept both CSS sections and both describe blocks properly closed.
+- Worktree base drift: isolation:worktree created US-0053 Pixel agent from old commit (893e4c3 vs current a317683). Aborted rebase, recreated branch from correct develop, did split directly in main repo.
+- sdlc-status.json is gitignored — agentic dashboard requires explicit `node tools/update-sdlc-status.js` calls at each pipeline transition. Dashboard showed stale/idle throughout session; updated manually after each wave.
+
+#### Blockers / remaining work
+- US-0101 (Kanban polish), US-0102 (Traceability), US-0103 (Charts editorial), US-0106 (Bug cards severity) still Planned in EPIC-0015. EPIC-0015 remains In Progress.
+- EPIC-0014 still In Progress (US-0053 Done, others ongoing).
+
+---
+
 ## Session 18 — 2026-04-15 through 2026-04-16
 
 ### What Was Done

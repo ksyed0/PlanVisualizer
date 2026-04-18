@@ -1106,13 +1106,13 @@ Dependencies: US-0051
 US-0053 (EPIC-0014): As a developer, I want the render-html.js module to be split into smaller focused files, so that the codebase is easier to maintain and debug.
 Priority: Low (P3)
 Estimate: M
-Status: Planned
-Branch:
+Status: Done
+Branch: feature/US-0053-split-render-html
 Acceptance Criteria:
-  - [ ] AC-0150: render-html.js is refactored into separate modules (e.g., render-header.js, render-tabs.js, render-charts.js, render-scripts.js)
-  - [ ] AC-0151: Each module exports a single render function that follows the existing contract
-  - [ ] AC-0152: All existing tests pass after refactoring
-  - [ ] AC-0153: The generate-plan.js orchestrator imports from the new module files
+  - [x] AC-0150: render-html.js is refactored into separate modules (render-utils.js, render-shell.js, render-tabs.js, render-scripts.js)
+  - [x] AC-0151: Each module exports a single render function that follows the existing contract
+  - [x] AC-0152: All existing tests pass after refactoring
+  - [x] AC-0153: The generate-plan.js orchestrator imports from the new module files via render-html.js orchestrator
 Dependencies: None
 ```
 
@@ -1936,13 +1936,13 @@ Dependencies: None
 US-0053 (EPIC-0014): As a developer, I want the render-html.js module to be split into smaller focused files, so that the codebase is easier to maintain and debug.
 Priority: Low (P3)
 Estimate: M
-Status: Planned
-Branch:
+Status: Done
+Branch: feature/US-0053-split-render-html
 Acceptance Criteria:
-  - [ ] AC-0150: render-html.js is refactored into separate modules (e.g., render-header.js, render-tabs.js, render-charts.js, render-scripts.js)
-  - [ ] AC-0151: Each module exports a single render function that follows the existing contract
-  - [ ] AC-0152: All existing tests pass after refactoring
-  - [ ] AC-0153: The generate-plan.js orchestrator imports from the new module files
+  - [x] AC-0150: render-html.js is refactored into separate modules (render-utils.js, render-shell.js, render-tabs.js, render-scripts.js)
+  - [x] AC-0151: Each module exports a single render function that follows the existing contract
+  - [x] AC-0152: All existing tests pass after refactoring
+  - [x] AC-0153: The generate-plan.js orchestrator imports from the new module files via render-html.js orchestrator
 Dependencies: None
 ```
 
@@ -2045,12 +2045,12 @@ Dependencies: None
 US-0098 (EPIC-0015): As a user, I want tab content to animate in with a staggered reveal, so that the interface feels alive without feeling busy.
 Priority: Medium (P2)
 Estimate: XS
-Status: Planned
+Status: Done
 Branch: feature/US-0098-staggered-reveals
 Acceptance Criteria:
-  - [ ] AC-0319: Epic blocks, table rows, and chart cards animate with a fadeInUp of 240ms
-  - [ ] AC-0320: Stagger delay uses --i custom property (20ms per item, first 20 items)
-  - [ ] AC-0321: Animation is CSS-only (no JS library dependency)
+  - [x] AC-0319: Epic blocks, table rows, and chart cards animate with a fadeInUp of 240ms
+  - [x] AC-0320: Stagger delay uses --i custom property (20ms per item, first 20 items)
+  - [x] AC-0321: Animation is CSS-only (no JS library dependency)
 Dependencies: None
 ```
 
@@ -2128,12 +2128,12 @@ Dependencies: US-0094, US-0095, US-0099
 US-0104 (EPIC-0015): As a user, I want to filter Trends by time range and see charts grouped by theme, so that I can focus on the analysis question at hand.
 Priority: Medium (P1)
 Estimate: M
-Status: Planned
+Status: Done
 Branch: feature/US-0104-trends-polish
 Acceptance Criteria:
-  - [ ] AC-0342: A time-range toggle (7d / 30d / 90d / All) filters all Trends charts client-side
-  - [ ] AC-0343: Charts are grouped under "Progress", "Cost & Spend", "Quality" supertitles
-  - [ ] AC-0344: Line charts use stroke-gradient fills via Chart.js createLinearGradient
+  - [x] AC-0342: A time-range toggle (7d / 30d / 90d / All) filters all Trends charts client-side
+  - [x] AC-0343: Charts are grouped under "Progress", "Cost & Spend", "Quality" supertitles
+  - [x] AC-0344: Line charts use stroke-gradient fills via Chart.js createLinearGradient
   - [ ] AC-0345: Empty state shows an animated SVG placeholder instead of text-only copy
 Dependencies: US-0095
 ```
@@ -2142,13 +2142,13 @@ Dependencies: US-0095
 US-0105 (EPIC-0015): As a user, I want the Costs tab to show cost trends inline and highlight big numbers, so that budget analysis is fast.
 Priority: Medium (P1)
 Estimate: M
-Status: Planned
+Status: Done
 Branch: feature/US-0105-costs-polish
 Acceptance Criteria:
-  - [ ] AC-0346: Budget totals use .hero-num with delta arrows
-  - [ ] AC-0347: Each story/epic row shows a 24x12 SVG sparkline of cumulative cost
-  - [ ] AC-0348: Cost columns use lighter-weight $ sign and tabular figures
-  - [ ] AC-0349: Progress bars use a reusable .progress-bar component with three threshold classes
+  - [x] AC-0346: Budget totals use .hero-num with delta arrows
+  - [x] AC-0347: Each story/epic row shows a 24x12 SVG sparkline of cumulative cost
+  - [x] AC-0348: Cost columns use lighter-weight $ sign and tabular figures
+  - [x] AC-0349: Progress bars use a reusable .progress-bar component with three threshold classes
   - [ ] AC-0350: Token column is split into IN/OUT with labels, or hidden by default
 Dependencies: US-0094, US-0099
 ```

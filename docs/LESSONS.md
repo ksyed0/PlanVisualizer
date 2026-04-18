@@ -4,6 +4,22 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
+## L-0032 — isolation:worktree uses main repo HEAD at spawn time; always be on develop before spawning
+
+**Rule:** Before dispatching any Agent with `isolation: "worktree"`, verify the main repo's current HEAD is the correct base branch (develop). Run `pwd && git branch --show-current && git log --oneline -1` before spawning. If the shell's CWD has drifted to a worktree directory, commands run against the wrong repo state.
+_Learned when Pixel agent for US-0053 was spawned but the CWD was `.claude/worktrees/agent-a394fc02` (an old base at 893e4c3) rather than the main repo on develop (a317683). The split was done on stale code, test counts diverged (370 vs 419), and the rebase produced an unresolvable conflict. Fix: always `cd /path/to/main/repo` and confirm branch before spawning._
+**Date:** 2026-04-18
+
+---
+
+## L-0033 — Parallel-wave merge conflicts: keep all CSS and test describe blocks from both sides
+
+**Rule:** When two parallel stories both modify `render-html.js` CSS and the same test file, the merge conflict resolution is always additive: include BOTH CSS blocks (different class names = no overlap) and BOTH describe blocks (each properly closed). Git's conflict representation places closing `});` after `>>>>>>>` as shared suffix — re-add them explicitly to each block.
+_Learned when US-0104 (Trends CSS) and US-0105 (Costs CSS) both modified render-html.js CSS section and tests/unit/render-html.test.js. PR #378 showed CONFLICTING; resolved by keeping both CSS sections and both describe blocks with correct closing braces._
+**Date:** 2026-04-18
+
+---
+
 ## L-0001 — Jest upgrade eliminates transitive deprecation warnings
 
 **Rule:** Always upgrade Jest to the latest stable major when transitive dependencies emit deprecation warnings — do not attempt to override or suppress them with resolutions.
