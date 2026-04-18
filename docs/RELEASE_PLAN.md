@@ -2085,14 +2085,14 @@ Dependencies: US-0094
 US-0101 (EPIC-0015): As a user, I want the Kanban board to differentiate columns and priority visually, so that WIP and high-priority work stand out at a glance.
 Priority: Medium (P1)
 Estimate: S
-Status: Planned
+Status: Done
 Branch: feature/US-0101-kanban-polish
 Acceptance Criteria:
-  - [ ] AC-0329: Column headers use a subtle gradient and 2px bottom accent rule
-  - [ ] AC-0330: Cards have a left priority stripe (P0=danger, P1=warn, else transparent)
-  - [ ] AC-0331: The In-Progress column has a subtle CSS pulse animation
-  - [ ] AC-0332: WIP count renders as a coloured pill (red if >configured threshold)
-  - [ ] AC-0333: BUG-0112 (invisible hover in light mode) is resolved
+  - [x] AC-0329: Column headers use a subtle gradient and 2px bottom accent rule
+  - [x] AC-0330: Cards have a left priority stripe (P0=danger, P1=warn, else transparent)
+  - [x] AC-0331: The In-Progress column has a subtle CSS pulse animation
+  - [x] AC-0332: WIP count renders as a coloured pill (red if >configured threshold)
+  - [x] AC-0333: BUG-0112 (invisible hover in light mode) is resolved
 Dependencies: US-0097
 ```
 

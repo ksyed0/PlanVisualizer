@@ -2318,3 +2318,48 @@ Steps to Reproduce:
    Lesson Encoded: Yes — see docs/LESSONS.md
    Estimated Cost USD: 0.00
    Notes: Shipped `tools/migrate-config.js` — an idempotent schema migrator that adds missing required fields (currently `docs.lessons` and `agents.<name>.avatar`) to existing configs while preserving every user value. Invoked automatically from `scripts/install.sh` step 4.5 in `--auto` mode (silent unless it actually migrates something). Also exposed as `npm run plan:migrate-config` / `plan:migrate-config:dry` for explicit user invocation. Updated `plan-visualizer.config.example.json` and `agents.config.example.json` so future first-time installs start on the current schema without needing migration. 10 unit tests in `tests/unit/migrate-config.test.js` cover the ensureKey primitive, happy-path migrations, idempotency, missing-file fallbacks, invalid-JSON graceful skip, and user-value preservation.
+
+BUG-0176: Kanban column headers allegedly show no gradient background or 2px accent border
+Severity: Low
+Related Story: US-0101
+Steps to Reproduce:
+
+1. Generate dashboard and inspect Kanban tab at small viewport
+2. Check column header styling
+   Expected: Headers show gradient background and 2px accent border-bottom
+   Actual: QA screenshot appeared to show plain headers
+   Status: Retired
+   Fix Branch: feature/US-0101-kanban-polish
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Retired: CSS/HTML confirmed present; screenshot resolution artifact. `.ksw-status-cell` CSS rule contains `linear-gradient` and `border-bottom: 2px solid` in generated HTML.
+
+BUG-0177: Kanban story cards allegedly show no P0/P1 priority left stripe
+Severity: Low
+Related Story: US-0101
+Steps to Reproduce:
+
+1. Generate dashboard and inspect Kanban tab cards at small viewport
+2. Check priority stripe styling on P0/P1 cards
+   Expected: P0 cards show danger-color left stripe; P1 show warn-color left stripe
+   Actual: QA screenshot appeared to show cards without color stripes
+   Status: Retired
+   Fix Branch: feature/US-0101-kanban-polish
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Retired: CSS/HTML confirmed present; screenshot resolution artifact. Card elements have `border-left:3px solid var(--badge-danger-text,#dc2626)` inline styles for P0/P1 in generated HTML.
+
+BUG-0178: Kanban WIP count allegedly shows no colored pill styling
+Severity: Low
+Related Story: US-0101
+Steps to Reproduce:
+
+1. Generate dashboard and inspect Kanban column header WIP count at small viewport
+2. Check WIP count element styling
+   Expected: WIP count shows as a styled colored pill element
+   Actual: QA screenshot appeared to show plain text WIP count
+   Status: Retired
+   Fix Branch: feature/US-0101-kanban-polish
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Retired: CSS/HTML confirmed present; screenshot resolution artifact. `.wip-pill` CSS class and `<span class="wip-pill...">` elements are present in generated HTML.

@@ -706,7 +706,7 @@ function renderPrintCSS() {
   html.dark #activity-panel li { border-color: var(--clr-border) !important; }
   /* === Hover transforms === */
   .story-card-hover { transition: transform 150ms ease, box-shadow 150ms ease; }
-  .story-card-hover:hover { transform: scale(1.02); box-shadow: 0 4px 16px rgba(0,0,0,0.35); }
+  .story-card-hover:hover { transform: scale(1.02); box-shadow: var(--shadow-card-hover); }
   /* Tabs that should fill the full viewport height */
   .tab-fill { display: flex; flex-direction: column; height: calc(100vh - var(--sticky-top, 100px)); box-sizing: border-box; }
   .tab-fill .scroll-table { flex: 1; min-height: 0; max-height: none; }
