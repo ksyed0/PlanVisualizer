@@ -67,3 +67,4 @@ Types: `feat`, `fix`, `test`, `docs`, `refactor`, `chore`, `style`, `perf`
 - [ ] `MIGRATION_LOG.md` updated if cross-platform changes were made
 - [ ] `docs/LESSONS.md` updated if bugs were fixed or lessons learned
 - [ ] Coverage verified above 80%
+- [ ] All stories shipped this session show `Status: Done` with all ACs checked in `docs/RELEASE_PLAN.md` (fixes BUG-0182)

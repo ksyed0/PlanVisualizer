@@ -2388,3 +2388,39 @@ Steps to Reproduce:
    Lesson Encoded: No
    Estimated Cost USD: 0.00
    Notes: Retired: Bug rows confirmed present in HTML (57 epic headers, 291 bug rows); default collapsed epic sections are by design — not a rendering failure. Investigated in US-0106 closure.
+
+---
+
+BUG-0181: DM_AGENT post-merge step missing RELEASE_PLAN.md story status write-back
+Severity: Medium
+Related Story: US-0126
+Steps to Reproduce:
+
+1. Run any story through the DM_AGENT canonical pipeline (Pixel → Lens → Sentinel → Circuit → PR merge)
+2. After gh pr merge --auto --squash --delete-branch completes, inspect docs/RELEASE_PLAN.md
+   Expected: Story block shows Status: Done with all ACs checked ([x])
+   Actual: Story block still shows Status: Planned with all ACs unchecked ([ ]) — no agent in the pipeline writes back to RELEASE_PLAN.md after the PR merges
+   Root Cause: The "Post-merge — sync main repo" section of DM_AGENT.md contains only 3 git commands (checkout develop, pull, worktree remove). There is no step instructing the Conductor to update the merged story's Status field and AC checkboxes in RELEASE_PLAN.md.
+   Status: Fixed
+   Fix Branch: chore/session-20-close
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed by adding explicit Conductor step 4 in the "Post-merge — sync main repo" section of docs/agents/DM_AGENT.md: after pulling develop, open RELEASE_PLAN.md and change Status: Planned → Status: Done and all [ ] ACs → [x] for the merged story. This is the authoritative write-back that per-story PRs cannot do (agents only write code, not doc status).
+
+---
+
+BUG-0182: Session close checklist missing per-story RELEASE_PLAN.md audit
+Severity: Low
+Related Story: US-0126
+Steps to Reproduce:
+
+1. Complete an epic (all story PRs merged to develop)
+2. Execute the session close checklist (CLAUDE.md "Session Close Checklist")
+   Expected: Checklist includes a step to verify all merged stories show Status: Done in RELEASE_PLAN.md
+   Actual: Checklist covers progress.md, MEMORY.md, PROMPT_LOG.md, MIGRATION_LOG.md, LESSONS.md, and coverage — but has no step to audit RELEASE_PLAN.md story statuses against merged PRs. The EPIC-0016 session close (PR #338) updated the epic-level Status: Complete but all 13 story blocks remained Planned.
+   Root Cause: The session close procedure was designed before the PR-based merge workflow (adopted 2026-04-14). It predates the pattern where per-story PRs ship code without updating the RELEASE_PLAN.md markdown.
+   Status: Fixed
+   Fix Branch: chore/session-20-close
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed by adding a RELEASE_PLAN.md audit step to the Session Close Checklist in CLAUDE.md: "Verify all stories shipped this session show Status: Done and have all ACs checked in docs/RELEASE_PLAN.md."
