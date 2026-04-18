@@ -8,11 +8,11 @@
 > **Check:** `[ -d ~/.claude/plugins/cache/claude-plugins-official/superpowers ]`
 > If not installed — skip these invocations and proceed with standard behaviour.
 
-| Stage | Skill to invoke |
-|-------|----------------|
-| Before writing any new test suites | `test-driven-development` |
-| When diagnosing a failing test or coverage gap | `systematic-debugging` |
-| Before reporting coverage results | `verification-before-completion` |
+| Stage                                          | Skill to invoke                  |
+| ---------------------------------------------- | -------------------------------- |
+| Before writing any new test suites             | `test-driven-development`        |
+| When diagnosing a failing test or coverage gap | `systematic-debugging`           |
+| Before reporting coverage results              | `verification-before-completion` |
 
 ## Role
 

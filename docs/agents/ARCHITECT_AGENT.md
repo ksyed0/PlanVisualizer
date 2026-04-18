@@ -8,10 +8,10 @@
 > **Check:** `[ -d ~/.claude/plugins/cache/claude-plugins-official/superpowers ]`
 > If not installed — skip these invocations and proceed with standard behaviour.
 
-| Stage | Skill to invoke |
-|-------|----------------|
-| Before producing the scaffold plan | `writing-plans` |
-| When executing the scaffold tasks | `executing-plans` |
+| Stage                              | Skill to invoke   |
+| ---------------------------------- | ----------------- |
+| Before producing the scaffold plan | `writing-plans`   |
+| When executing the scaffold tasks  | `executing-plans` |
 
 ## Role
 

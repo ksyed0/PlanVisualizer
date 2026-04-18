@@ -8,8 +8,8 @@
 > **Check:** `[ -d ~/.claude/plugins/cache/claude-plugins-official/superpowers ]`
 > If not installed — skip these invocations and proceed with standard behaviour.
 
-| Stage | Skill to invoke |
-|-------|----------------|
+| Stage                                              | Skill to invoke |
+| -------------------------------------------------- | --------------- |
 | Before writing or refining any user stories or ACs | `brainstorming` |
 
 ## Role
