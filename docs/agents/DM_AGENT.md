@@ -497,6 +497,13 @@ git pull origin develop  # gets the squashed commit
 git worktree remove <old-worktree-path> --force
 ```
 
+**Step 4 — Write back story status to RELEASE_PLAN.md (BUG-0181 fix):**
+After pulling, open `docs/RELEASE_PLAN.md` and update the merged story's block:
+- Change `Status: Planned` → `Status: Done`
+- Change all `- [ ] AC-XXXX:` → `- [x] AC-XXXX:`
+
+This is the authoritative write-back. Per-story PRs (Pixel, Lens, Sentinel, Circuit) only commit code — none of them update the RELEASE_PLAN.md story block. If this step is skipped, the story will show as Planned indefinitely until a manual audit.
+
 **Why `git worktree remove` is mandatory**: When a worktree holds a feature branch, `gh pr merge --delete-branch` deletes the remote branch but the local ref stays (the worktree locks it). Skipping this step accumulates `.claude/worktrees/agent-*` directories and orphaned `worktree-agent-*` branches — one per sub-agent spawn. A 14-story epic with 2 Pixel retries leaves 16+ worktrees if you forget.
 
 ### Epic-end cleanup
