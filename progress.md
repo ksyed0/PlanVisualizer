@@ -4,6 +4,40 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 21 — 2026-04-18
+
+### What Was Done
+
+**US-0126 (EPIC-0017) — Superpowers Skills Integration** — fully shipped via brainstorming → writing-plans → subagent-driven-development pipeline.
+
+#### Stories shipped (3 PRs merged to develop)
+
+| PR | Description |
+|----|-------------|
+| #395 | US-0126: superpowers skills integration across all 9 agent files + install.sh + skills-integration.md |
+| #397 | Prettier fix: agent files + skills-integration.md |
+| #399 | Prettier fix: remaining 10 pre-existing failures (LESSONS.md, plans, specs, TEST_CASES.md, progress.md, PROMPT_LOG.md, render-html.test.js, render-tabs.js) |
+
+#### Key deliverables
+- `scripts/install.sh` §0: detects superpowers plugin, prompts Y/N, prints slash command on Y, continues on N
+- All 9 `docs/agents/*.md` files: `## Superpowers Skills` section with per-agent skill/stage tables
+- `docs/skills-integration.md`: full agent × skill × stage reference (24 rows, 12-entry catalogue)
+- `docs/RELEASE_PLAN.md`: EPIC-0014 and EPIC-0016 status corrected to Done; US-0126 registered and marked Done
+- `docs/BUGS.md`: BUG-0181 (DM_AGENT missing post-merge RELEASE_PLAN write-back) and BUG-0182 (session-close checklist gap) filed and fixed
+- `DM_AGENT.md`: Step 4 post-merge write-back procedure added
+- `CLAUDE.md`: session-close checklist item added for per-story RELEASE_PLAN audit
+
+#### Incidents
+- **ID conflict**: Memory said next US = US-0110 but 16 stories had shipped since that snapshot. Actual next was US-0126. Rule: always read ID_REGISTRY.md directly.
+- **Auto-merge race condition**: PR #395 auto-merged before Prettier fix could be pushed, requiring two follow-up PRs (#397, #399).
+- **GitHub CI not triggering**: After force-push, subsequent regular pushes did not trigger new CI runs — required empty-commit trigger. Root cause unclear (GitHub Actions event queue behavior).
+- **Prettier scope**: CI runs `prettier --check .` (whole repo), so pre-existing failures in unrelated files block the check even when changed files are clean.
+
+#### Test results
+- No application code changed; coverage unchanged (~92.7%, 437 tests passing).
+
+---
+
 ## Session 20 — 2026-04-18
 
 ### What Was Done
