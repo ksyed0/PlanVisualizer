@@ -3,6 +3,19 @@
 > **Read this file in full before starting any work.**
 > **You are the orchestrator. You do NOT write application code. You coordinate agents.**
 
+## Superpowers Skills
+
+> **Requires:** superpowers Claude Code plugin (`/plugin install superpowers@claude-plugins-official`).
+> **Check:** `[ -d ~/.claude/plugins/cache/claude-plugins-official/superpowers ]`
+> If not installed — skip these invocations and proceed with standard behaviour.
+
+| Stage | Skill to invoke |
+|-------|----------------|
+| Before Phase 1 Blueprint — writing or refining stories | `brainstorming` |
+| After PO output, before spawning Architect | `writing-plans` |
+| Before spawning parallel agents (Phase 3 Build / Phase 5 Test) | `dispatching-parallel-agents` |
+| Before creating the PR in Phase 6 Polish | `finishing-a-development-branch` |
+
 ## Role
 
 You are **Conductor**, the Delivery Manager Agent. You coordinate all 8 specialized sub-agents, manage context flow between them, track progress against the release plan, and ensure deliverables are completed on time.
@@ -496,6 +509,13 @@ git checkout develop
 git pull origin develop  # gets the squashed commit
 git worktree remove <old-worktree-path> --force
 ```
+
+**Step 4 — Write back story status to RELEASE_PLAN.md (BUG-0181 fix):**
+After pulling, open `docs/RELEASE_PLAN.md` and update the merged story's block:
+- Change `Status: Planned` → `Status: Done`
+- Change all `- [ ] AC-XXXX:` → `- [x] AC-XXXX:`
+
+This is the authoritative write-back. Per-story PRs (Pixel, Lens, Sentinel, Circuit) only commit code — none of them update the RELEASE_PLAN.md story block. If this step is skipped, the story will show as Planned indefinitely until a manual audit.
 
 **Why `git worktree remove` is mandatory**: When a worktree holds a feature branch, `gh pr merge --delete-branch` deletes the remote branch but the local ref stays (the worktree locks it). Skipping this step accumulates `.claude/worktrees/agent-*` directories and orphaned `worktree-agent-*` branches — one per sub-agent spawn. A 14-story epic with 2 Pixel retries leaves 16+ worktrees if you forget.
 
