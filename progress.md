@@ -4,6 +4,36 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 20 — 2026-04-18
+
+### What Was Done
+
+**EPIC-0015 full closure** — closed all 4 remaining Planned stories via superpowers brainstorming → writing-plans → subagent-driven-development pipeline.
+
+#### Stories shipped (4 PRs merged to develop)
+
+| Story | PR | Description |
+|-------|----|-------------|
+| US-0101 | #386 | Kanban Polish: fix BUG-0112 (hover shadow CSS variable), TC-0140–0144 |
+| US-0102 | #385 | Traceability Redesign: TC-0145–0148 |
+| US-0103 | #387 | Status Tab Editorial: TC-0149–0152 |
+| US-0106 | #388 | Bugs Severity Triage: TC-0153–0157, BUG-0180 Retired |
+
+#### Test results
+- 437 tests, 22 suites — all pass. Coverage: ~92.73% statements (gate: 80%)
+
+#### Key incidents
+- Phase-1 Sentinel QA filed 5 bugs (BUG-0176–0180); all were visual false positives at 900px viewport. Retired before Phase-2.
+- BUG-0112 had two components: `.story-card-hover:hover` box-shadow AND `.ksw-swim-hdr:hover filter: brightness`. Both fixed with CSS variable tokens.
+- Sequential merge cascade: each story branch modified TEST_CASES.md / ID_REGISTRY.md / RELEASE_PLAN.md, causing each successive branch to need a rebase after the previous PR merged. US-0102 needed 1 rebase, US-0103 needed 1, US-0106 needed 2.
+- Spec/code reviewers checked local files instead of PR branch content — verified via `git diff origin/develop...origin/feature/BRANCH`.
+
+#### EPIC status
+- EPIC-0015: **Done** (all 15 stories complete)
+- Next BUG: BUG-0181 | Next TC: TC-0158 | Next US: US-0110
+
+---
+
 ## Session 19 — 2026-04-17 through 2026-04-18
 
 ### What Was Done

@@ -4,6 +4,22 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
+## L-0034 — Sequential-merge cascade: pre-allocate ID ranges and expect per-PR rebases
+
+**Rule:** When closing multiple stories that all write to the same docs files (TEST_CASES.md, ID_REGISTRY.md, RELEASE_PLAN.md, BUGS.md), pre-allocate non-overlapping ID ranges in the plan so branches can be written in parallel. Accept that each branch will need at least one rebase after the previous PR merges — budget for this in the pipeline. Keep rebase conflict resolution simple: always combine all changes from both sides additively (all TCs in sequential order, ID counters at the max value).
+_Learned when closing EPIC-0015 (4 stories, 18 TCs): US-0102 needed 1 rebase, US-0103 needed 1, US-0106 needed 2, due to each successive develop advance after merging the prior story._
+**Date:** 2026-04-18
+
+---
+
+## L-0035 — Spec/code reviewers check local files; verify actual PR content via git diff
+
+**Rule:** When a spec reviewer reports all deliverables missing, confirm whether it's checking the local develop/chore branch or the actual PR feature branch. Use `git diff origin/develop...origin/feature/BRANCH` to see the true PR diff. Reviewer agents dispatched without explicit branch context will default to whatever's checked out locally.
+_Learned when spec reviewers for US-0101 and US-0106 reported all TCs/fixes missing — they were checking local files on a non-feature branch. The PR branches were correct._
+**Date:** 2026-04-18
+
+---
+
 ## L-0032 — isolation:worktree uses main repo HEAD at spawn time; always be on develop before spawning
 
 **Rule:** Before dispatching any Agent with `isolation: "worktree"`, verify the main repo's current HEAD is the correct base branch (develop). Run `pwd && git branch --show-current && git log --oneline -1` before spawning. If the shell's CWD has drifted to a worktree directory, commands run against the wrong repo state.
