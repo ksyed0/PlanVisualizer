@@ -2293,3 +2293,93 @@ Steps:
    Status: [x] Pass
    Defect Raised: None
    Notes:
+
+---
+
+TC-0140: Kanban column headers render with gradient background and 2px accent border-bottom
+Related Story: US-0101
+Related Task:
+Related AC: AC-0329
+Type: Visual
+Preconditions: renderHtml called with at least one story
+Steps:
+
+1. Call renderHtml() with story data
+2. Check output HTML for ksw-status-cell class and border-bottom:2px solid
+   Expected Result: HTML contains ksw-status-cell and the 2px accent bottom border rule
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0141: P0 story cards render danger-color left stripe; P1 renders warn-color left stripe
+Related Story: US-0101
+Related Task:
+Related AC: AC-0330
+Type: Visual
+Preconditions: renderHtml called with P0 and P1 priority stories
+Steps:
+
+1. Call renderHtml() with stories having P0 and P1 priorities
+2. Check output HTML for badge-danger-text color on P0 border-left; badge-warn-text on P1
+   Expected Result: P0 stories have the danger CSS variable in their border-left style; P1 stories have the warn CSS variable
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0142: In-Progress column cell renders with ksw-inprogress pulse class
+Related Story: US-0101
+Related Task:
+Related AC: AC-0331
+Type: Functional
+Preconditions: renderHtml called with at least one In Progress story
+Steps:
+
+1. Call renderHtml() with a story in In Progress status
+2. Check output HTML for ksw-inprogress class on the column cell
+   Expected Result: The In-Progress column cell element has the ksw-inprogress class applied
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0143: WIP count pill element is present in kanban output
+Related Story: US-0101
+Related Task:
+Related AC: AC-0332
+Type: Functional
+Preconditions: renderHtml called with story data
+Steps:
+
+1. Call renderHtml() with story data
+2. Check output HTML for wip-pill class
+   Expected Result: HTML contains an element with wip-pill class showing the WIP count
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0144: story-card-hover hover box-shadow uses CSS variable not hardcoded rgba
+Related Story: US-0101
+Related Task:
+Related AC: AC-0333
+Type: Functional
+Preconditions: renderHtml called with any data
+Steps:
+
+1. Call renderHtml() and inspect the embedded CSS for .story-card-hover:hover
+2. Check that box-shadow value references var(--shadow-card-hover), not rgba(0,0,0,...)
+   Expected Result: CSS rule uses var(--shadow-card-hover); no hardcoded rgba shadow present on hover rule
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:

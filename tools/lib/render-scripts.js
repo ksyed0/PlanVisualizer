@@ -706,7 +706,7 @@ function renderPrintCSS() {
   html.dark #activity-panel li { border-color: var(--clr-border) !important; }
   /* === Hover transforms === */
   .story-card-hover { transition: transform 150ms ease, box-shadow 150ms ease; }
-  .story-card-hover:hover { transform: scale(1.02); box-shadow: 0 4px 16px rgba(0,0,0,0.35); }
+  .story-card-hover:hover { transform: scale(1.02); box-shadow: var(--shadow-card-hover); }
   /* Tabs that should fill the full viewport height */
   .tab-fill { display: flex; flex-direction: column; height: calc(100vh - var(--sticky-top, 100px)); box-sizing: border-box; }
   .tab-fill .scroll-table { flex: 1; min-height: 0; max-height: none; }
@@ -731,7 +731,7 @@ function renderPrintCSS() {
   .ksw-header-row .ksw-label-cell { background: var(--clr-header-bg); border-bottom: 2px solid var(--clr-border); position: sticky; top: 0; z-index: 6; }
   .ksw-swimlane { border-left: 3px solid transparent; margin-bottom: 4px; }
   .ksw-swim-hdr { display: flex; align-items: center; gap: 8px; padding: 6px 12px; cursor: pointer; background: var(--clr-surface); border-bottom: 1px solid var(--clr-border); user-select: none; }
-  .ksw-swim-hdr:hover { filter: brightness(1.05); }
+  .ksw-swim-hdr:hover { background: var(--clr-row-hover, rgba(124,58,237,0.08)); }
   .ksw-arrow { font-size: 10px; color: var(--clr-text-muted); flex-shrink: 0; }
   .ksw-epic-title { font-size: 12px; font-weight: 700; letter-spacing: 0.04em; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .ksw-epic-count { font-size: 11px; color: var(--clr-text-muted); flex-shrink: 0; }

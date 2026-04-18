@@ -1340,3 +1340,52 @@ describe('US-0105 costs polish', () => {
     expect(html).not.toMatch(/style="width:60px;height:6px;background:#334155/);
   });
 });
+
+describe('renderHtml — kanban tab US-0101', () => {
+  const kanbanData = {
+    ...sampleData,
+    stories: [
+      { ...sampleData.stories[0], id: 'US-0001', priority: 'P0', status: 'In Progress' },
+      { ...sampleData.stories[0], id: 'US-0002', priority: 'P1', status: 'Planned', branch: 'feature/US-0002' },
+      { ...sampleData.stories[0], id: 'US-0003', priority: 'P2', status: 'To Do', branch: 'feature/US-0003' },
+    ],
+    costs: {
+      'US-0001': { projectedUsd: 100, aiCostUsd: 0.1, inputTokens: 1000, outputTokens: 500 },
+      'US-0002': { projectedUsd: 100, aiCostUsd: 0.1, inputTokens: 1000, outputTokens: 500 },
+      'US-0003': { projectedUsd: 100, aiCostUsd: 0.1, inputTokens: 1000, outputTokens: 500 },
+      _totals: { costUsd: 0.3, inputTokens: 3000, outputTokens: 1500 },
+    },
+    atRisk: {},
+  };
+
+  let html;
+  beforeAll(() => { html = renderHtml(kanbanData); });
+
+  // TC-0140
+  it('TC-0140: kanban column headers have gradient and accent border', () => {
+    expect(html).toMatch(/ksw-status-cell/);
+    expect(html).toMatch(/border-bottom:\s*2px solid/);
+  });
+
+  // TC-0141
+  it('TC-0141: P0 card renders danger border-left; P1 renders warn border-left', () => {
+    expect(html).toMatch(/badge-danger-text[^)]*\)/);
+    expect(html).toMatch(/badge-warn-text[^)]*\)/);
+  });
+
+  // TC-0142
+  it('TC-0142: In-Progress column cell has ksw-inprogress class', () => {
+    expect(html).toMatch(/ksw-inprogress/);
+  });
+
+  // TC-0143
+  it('TC-0143: WIP pill element is present in kanban output', () => {
+    expect(html).toMatch(/wip-pill/);
+  });
+
+  // TC-0144
+  it('TC-0144: story-card-hover hover uses CSS variable not hardcoded rgba', () => {
+    expect(html).toMatch(/story-card-hover:hover[^}]*var\(--shadow-card-hover\)/);
+    expect(html).not.toMatch(/story-card-hover:hover[^}]*rgba\(0,0,0/);
+  });
+});
