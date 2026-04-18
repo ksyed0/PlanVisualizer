@@ -4,6 +4,28 @@ Timestamped log of every user prompt across all sessions. Append-only. Never edi
 
 ---
 
+## Session 20 — 2026-04-18
+
+| #   | Timestamp            | Prompt |
+| --- | -------------------- | ------ |
+| 1   | 2026-04-18T14:00:00Z | what plans are still not completed |
+| 2   | 2026-04-18T14:05:00Z | lets use superpowers brainstorming to review and plan the remaining items in EPIC-0015 |
+| 3   | 2026-04-18T14:10:00Z | yes [to visual companion offer] |
+| 4   | 2026-04-18T14:15:00Z | you can check, I think these were planned but not implemented |
+| 5   | 2026-04-18T14:20:00Z | B [visual QA first before writing test cases] |
+| 6   | 2026-04-18T14:25:00Z | A [file issues as BUG-XXXX in docs/BUGS.md] |
+| 7   | 2026-04-18T14:30:00Z | b [parallel via worktrees] |
+| 8   | 2026-04-18T14:35:00Z | yes [Phase 1 Sentinel + Phase 2 pipeline structure approved] |
+| 9   | 2026-04-18T14:40:00Z | yes [QA scope/checklist approved] |
+| 10  | 2026-04-18T14:45:00Z | yes [per-agent workflow approved] |
+| 11  | 2026-04-18T14:50:00Z | yes [design approved] |
+| 12  | 2026-04-18T14:55:00Z | looks good [spec file approved, proceed to writing-plans] |
+| 13  | 2026-04-18T15:00:00Z | 1 [subagent-driven execution chosen] |
+| 14  | 2026-04-18T15:30:00Z | whats next after this |
+| 15  | 2026-04-18T15:35:00Z | 2 [push and create PR for session close branch] |
+
+---
+
 ## Session 19 — 2026-04-17 through 2026-04-18
 
 | #   | Timestamp            | Prompt                                                                                                                                                                                                                                                                                  |
