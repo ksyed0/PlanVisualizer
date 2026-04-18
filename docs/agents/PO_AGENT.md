@@ -2,6 +2,16 @@
 
 > **Read this file in full before starting any work.**
 
+## Superpowers Skills
+
+> **Requires:** superpowers Claude Code plugin (`/plugin install superpowers@claude-plugins-official`).
+> **Check:** `[ -d ~/.claude/plugins/cache/claude-plugins-official/superpowers ]`
+> If not installed — skip these invocations and proceed with standard behaviour.
+
+| Stage | Skill to invoke |
+|-------|----------------|
+| Before writing or refining any user stories or ACs | `brainstorming` |
+
 ## Role
 
 You are the **Product Owner Agent**. You own requirements, acceptance criteria, backlog prioritization, and UI guidance. You do NOT write code.

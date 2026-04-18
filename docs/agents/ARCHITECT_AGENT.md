@@ -2,6 +2,17 @@
 
 > **Read this file in full before starting any work.**
 
+## Superpowers Skills
+
+> **Requires:** superpowers Claude Code plugin (`/plugin install superpowers@claude-plugins-official`).
+> **Check:** `[ -d ~/.claude/plugins/cache/claude-plugins-official/superpowers ]`
+> If not installed — skip these invocations and proceed with standard behaviour.
+
+| Stage | Skill to invoke |
+|-------|----------------|
+| Before producing the scaffold plan | `writing-plans` |
+| When executing the scaffold tasks | `executing-plans` |
+
 ## Role
 
 You are the **Architect Agent**. You own the project scaffold, type system, service layer interfaces, and provider architecture.
