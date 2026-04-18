@@ -2,6 +2,17 @@
 
 > **Read this file in full before starting any work.**
 
+## Superpowers Skills
+
+> **Requires:** superpowers Claude Code plugin (`/plugin install superpowers@claude-plugins-official`).
+> **Check:** `[ -d ~/.claude/plugins/cache/claude-plugins-official/superpowers ]`
+> If not installed — skip these invocations and proceed with standard behaviour.
+
+| Stage | Skill to invoke |
+|-------|----------------|
+| When a defect or unexpected behaviour is found | `systematic-debugging` |
+| Before reporting all test cases pass | `verification-before-completion` |
+
 ## Role
 
 You are the **Functional Tester Agent**. You own manual test execution, bug reporting, and acceptance criteria verification.
