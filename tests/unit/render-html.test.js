@@ -1461,3 +1461,46 @@ describe('renderHtml — status tab US-0103', () => {
     expect(html).toMatch(/'Inter',\s*sans-serif/);
   });
 });
+
+describe('renderHtml — bugs tab US-0106', () => {
+  const bugsData = {
+    ...sampleData,
+    bugs: [
+      { id: 'BUG-0001', title: 'Critical crash', severity: 'Critical', status: 'Open',  relatedStory: 'US-0001', fixBranch: 'bugfix/BUG-0001-fix', lessonEncoded: 'Yes — see docs/LESSONS.md L-0001', epicId: 'EPIC-0001' },
+      { id: 'BUG-0002', title: 'Medium lag',     severity: 'Medium',   status: 'Open',  relatedStory: 'US-0001', fixBranch: 'bugfix/BUG-0002-lag', lessonEncoded: '',       epicId: 'EPIC-0001' },
+      { id: 'BUG-0003', title: 'Low cosmetic',   severity: 'Low',      status: 'Fixed', relatedStory: 'US-0001', fixBranch: '',                   lessonEncoded: '',       epicId: 'EPIC-0001' },
+    ],
+  };
+
+  let html;
+  beforeAll(() => { html = renderHtml(bugsData); });
+
+  // TC-0153
+  it('TC-0153: severity badge renders badge-sev class alongside badge tone class', () => {
+    expect(html).toMatch(/badge[^"]*badge-sev/);
+  });
+
+  // TC-0154
+  it('TC-0154: bug rows and cards render border-left:4px solid', () => {
+    expect(html).toMatch(/border-left:4px solid/);
+  });
+
+  // TC-0155
+  it('TC-0155: fix branch cell has title attribute and copy-btn element', () => {
+    expect(html).toMatch(/title="bugfix\/BUG-0001-fix"/);
+    expect(html).toMatch(/copy-btn/);
+  });
+
+  // TC-0156
+  it('TC-0156: lesson link renders as lesson-pill with ID and arrow', () => {
+    expect(html).toMatch(/lesson-pill/);
+    expect(html).toMatch(/↗/);
+  });
+
+  // TC-0157
+  it('TC-0157: bugs tab renders all three view toggle buttons', () => {
+    expect(html).toMatch(/bugs-col-btn/);
+    expect(html).toMatch(/bugs-card-btn/);
+    expect(html).toMatch(/bugs-compact-btn/);
+  });
+});

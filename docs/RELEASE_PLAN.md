@@ -108,7 +108,7 @@ Dependencies: None
 EPIC-0015: UI Review and Redesign
 Description: Editorial Operations Dashboard aesthetic pass. Promotes PlanVisualizer from "generic utility dashboard" to a refined, information-dense interface with display typography, semantic badge tokens, shadow-based cards, zebra-striped tables, and per-tab polish across Hierarchy, Kanban, Traceability, Status, Trends, Costs, Bugs, and Lessons.
 Release Target: Release 1.9
-Status: In Progress
+Status: Done
 Dependencies: EPIC-0007
 
 EPIC-0016: Agentic Dashboard Mission Control Redesign
@@ -1980,7 +1980,7 @@ Dependencies: US-0108
 EPIC-0015: UI Review and Redesign
 Description: Editorial Operations Dashboard aesthetic pass. Promotes PlanVisualizer from "generic utility dashboard" to a refined, information-dense interface with display typography, semantic badge tokens, shadow-based cards, zebra-striped tables, and per-tab polish across Hierarchy, Kanban, Traceability, Status, Trends, Costs, Bugs, and Lessons.
 Release Target: Release 1.9
-Status: In Progress
+Status: Done
 Dependencies: EPIC-0007
 ```
 
@@ -2157,14 +2157,14 @@ Dependencies: US-0094, US-0099
 US-0106 (EPIC-0015): As a user, I want severity and status to be visually distinct on bug cards, so that I can triage by severity at a glance.
 Priority: Medium (P1)
 Estimate: S
-Status: Planned
+Status: Done
 Branch: feature/US-0106-bugs-severity
 Acceptance Criteria:
-  - [ ] AC-0351: Severity badges use a different shape/style from status badges
-  - [ ] AC-0352: Bug cards have a 4px severity stripe down the full left edge
-  - [ ] AC-0353: Fix Branch field has a title attribute and copy-on-hover micro-icon
-  - [ ] AC-0354: Lesson link renders as a full pill (e.g., L-0003 ↗) not a bare arrow
-  - [ ] AC-0355: A compact timeline view is available as a third view mode
+  - [x] AC-0351: Severity badges use a different shape/style from status badges
+  - [x] AC-0352: Bug cards have a 4px severity stripe down the full left edge
+  - [x] AC-0353: Fix Branch field has a title attribute and copy-on-hover micro-icon
+  - [x] AC-0354: Lesson link renders as a full pill (e.g., L-0003 ↗) not a bare arrow
+  - [x] AC-0355: A compact timeline view is available as a third view mode
 Dependencies: US-0097
 ```
 
