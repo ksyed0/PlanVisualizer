@@ -2372,3 +2372,19 @@ Related Story: US-0103
 Fix Branch:
 Description: Expected two named section groupings on the Status tab — "Delivery" (epic progress + test results charts) and "Financial" (budget/cost charts) — per the US-0103 AC. Observed in charts-light.png and charts-dark.png: only the "DELIVERY" section heading is visible with the epic progress bars and doughnut chart. No "FINANCIAL" section heading or financial charts (budget by epic, AI cost) appear in the viewport. The section may be absent from the rendered output or not reached by the screenshot viewport.
 Retired: Financial section confirmed present in HTML (grep returns 11 matches for "Financial" in plan-status.html); screenshot viewport limitation only.
+
+BUG-0180: Bugs tab table view renders no bug rows despite 142 bugs counted in header
+Severity: Low
+Related Story: US-0106
+Steps to Reproduce:
+
+1. Open plan-status.html → Bugs tab → Column view
+2. Observe bug rows in the table body
+   Expected: Bug rows are visible in the table with epic header rows showing even in collapsed state
+   Actual: QA screenshot appeared to show no bug rows rendered (report from Sentinel QA pass)
+   Root Cause: False positive. Bugs tab defaults to collapsed epic sections — bug rows are hidden behind collapsed accordions until user expands an epic. The bug-epic-header rows (57) and bug-row elements (291) are confirmed present in the generated HTML. This is the intended UX, not a rendering failure.
+   Status: Retired
+   Fix Branch:
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Retired: Bug rows confirmed present in HTML (57 epic headers, 291 bug rows); default collapsed epic sections are by design — not a rendering failure. Investigated in US-0106 closure.

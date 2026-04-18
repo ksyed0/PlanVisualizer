@@ -2306,15 +2306,7 @@ Steps:
 
 1. Call renderHtml() with story data
 2. Check output HTML for ksw-status-cell class and border-bottom:2px solid
-   Expected Result: HTML contains ksw-status-cell and the 2px accent bottom border rule
-   Actual Result:
-   Status: [x] Pass
-   Defect Raised: None
-   Notes:
-
----
-
-TC-0141: P0 story cards render danger-color left stripe; P1 renders warn-color left stripe
+   Expected Result: HTML contains ksw-status-cell and the 2px accent bottom border ruleTC-0141: P0 story cards render danger-color left stripe; P1 renders warn-color left stripe
 Related Story: US-0101
 Related Task:
 Related AC: AC-0330
@@ -2324,15 +2316,7 @@ Steps:
 
 1. Call renderHtml() with stories having P0 and P1 priorities
 2. Check output HTML for badge-danger-text color on P0 border-left; badge-warn-text on P1
-   Expected Result: P0 stories have the danger CSS variable in their border-left style; P1 stories have the warn CSS variable
-   Actual Result:
-   Status: [x] Pass
-   Defect Raised: None
-   Notes:
-
----
-
-TC-0142: In-Progress column cell renders with ksw-inprogress pulse class
+   Expected Result: P0 stories have the danger CSS variable in their border-left style; P1 stories have the warn CSS variableTC-0142: In-Progress column cell renders with ksw-inprogress pulse class
 Related Story: US-0101
 Related Task:
 Related AC: AC-0331
@@ -2342,15 +2326,7 @@ Steps:
 
 1. Call renderHtml() with a story in In Progress status
 2. Check output HTML for ksw-inprogress class on the column cell
-   Expected Result: The In-Progress column cell element has the ksw-inprogress class applied
-   Actual Result:
-   Status: [x] Pass
-   Defect Raised: None
-   Notes:
-
----
-
-TC-0143: WIP count pill element is present in kanban output
+   Expected Result: The In-Progress column cell element has the ksw-inprogress class appliedTC-0143: WIP count pill element is present in kanban output
 Related Story: US-0101
 Related Task:
 Related AC: AC-0332
@@ -2397,15 +2373,7 @@ Steps:
 1. Call renderHtml() with Pass/Fail/Not Run test cases
 2. Check output HTML for tc-dot tc-dot-success, tc-dot-danger, tc-dot-warn classes
 3. Confirm no raw "Pass", "Fail", "Not Run" text appears as cell content
-   Expected Result: Cells use tc-dot classes with CSS pseudo-element circles; no letter abbreviations
-   Actual Result:
-   Status: [x] Pass
-   Defect Raised: None
-   Notes:
-
----
-
-TC-0146: Traceability first column has trace-sticky-col class on header and data cells
+   Expected Result: Cells use tc-dot classes with CSS pseudo-element circles; no letter abbreviationsTC-0146: Traceability first column has trace-sticky-col class on header and data cells
 Related Story: US-0102
 Related Task:
 Related AC: AC-0337
@@ -2524,6 +2492,92 @@ Steps:
 1. Call renderHtml() with sample data
 2. Check output HTML/JS for Inter font string in Chart.js legend font configuration
    Expected Result: Chart.js legend config includes font.family set to "Inter" or "'Inter', sans-serif"
+
+---
+
+TC-0153: Severity badge renders with badge-sev class giving distinct shape from status badge
+Related Story: US-0106
+Related Task:
+Related AC: AC-0351
+Type: Visual
+Preconditions: renderHtml called with bugs of varying severity
+Steps:
+
+1. Call renderHtml() with Critical, Medium, and Low severity bugs
+2. Check output HTML for badge-sev class alongside the severity badge tone class
+   Expected Result: Severity badges carry badge-sev class (2px border-radius, small-caps) distinguishing them from standard status badges
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0154: Bug rows and cards render a 4px left severity stripe via inline border-left style
+Related Story: US-0106
+Related Task:
+Related AC: AC-0352
+Type: Visual
+Preconditions: renderHtml called with bugs of varying severity
+Steps:
+
+1. Call renderHtml() with bug data
+2. Check output HTML for "border-left:4px solid" inline style on bug row/card elements
+   Expected Result: Every bug row, card, and compact row has a 4px left border in the severity-mapped color
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0155: Fix Branch cell renders title attribute and copy-btn element for hover copy
+Related Story: US-0106
+Related Task:
+Related AC: AC-0353
+Type: Functional
+Preconditions: renderHtml called with a bug that has a fixBranch value
+Steps:
+
+1. Call renderHtml() with a bug having fixBranch set to "bugfix/BUG-0001-fix"
+2. Check output HTML for title="bugfix/BUG-0001-fix" and an element with copy-btn class
+   Expected Result: Fix Branch cell has title attribute and a copy-btn child element
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0156: Lesson link renders as full lesson-pill with lesson ID and arrow icon
+Related Story: US-0106
+Related Task:
+Related AC: AC-0354
+Type: Visual
+Preconditions: renderHtml called with a bug having lessonEncoded set to a lesson ID
+Steps:
+
+1. Call renderHtml() with a bug where lessonEncoded = "Yes — see docs/LESSONS.md L-0001"
+2. Check output HTML for lesson-pill class and "↗" arrow character
+   Expected Result: Lesson link renders as a styled pill showing the lesson ID with ↗ arrow
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0157: Bugs tab renders three view mode toggle buttons (column, card, compact)
+Related Story: US-0106
+Related Task:
+Related AC: AC-0355
+Type: Functional
+Preconditions: renderHtml called with any bug data
+Steps:
+
+1. Call renderHtml() with bug data
+2. Check output HTML for bugs-col-btn, bugs-card-btn, and bugs-compact-btn classes
+   Expected Result: All three view toggle buttons are present
    Actual Result:
    Status: [x] Pass
    Defect Raised: None
