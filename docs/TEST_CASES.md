@@ -2308,7 +2308,7 @@ Steps:
 2. Check output HTML for ksw-status-cell class and border-bottom:2px solid
    Expected Result: HTML contains ksw-status-cell and the 2px accent bottom border rule
    Actual Result:
-   Status: [ ] Pass
+   Status: [x] Pass
    Defect Raised: None
    Notes:
 
@@ -2326,7 +2326,7 @@ Steps:
 2. Check output HTML for badge-danger-text color on P0 border-left; badge-warn-text on P1
    Expected Result: P0 stories have the danger CSS variable in their border-left style; P1 stories have the warn CSS variable
    Actual Result:
-   Status: [ ] Pass
+   Status: [x] Pass
    Defect Raised: None
    Notes:
 
@@ -2344,7 +2344,7 @@ Steps:
 2. Check output HTML for ksw-inprogress class on the column cell
    Expected Result: The In-Progress column cell element has the ksw-inprogress class applied
    Actual Result:
-   Status: [ ] Pass
+   Status: [x] Pass
    Defect Raised: None
    Notes:
 
@@ -2362,7 +2362,7 @@ Steps:
 2. Check output HTML for wip-pill class
    Expected Result: HTML contains an element with wip-pill class showing the WIP count
    Actual Result:
-   Status: [ ] Pass
+   Status: [x] Pass
    Defect Raised: None
    Notes:
 
@@ -2380,6 +2380,6 @@ Steps:
 2. Check that box-shadow value references var(--shadow-card-hover), not rgba(0,0,0,...)
    Expected Result: CSS rule uses var(--shadow-card-hover); no hardcoded rgba shadow present on hover rule
    Actual Result:
-   Status: [ ] Pass
+   Status: [x] Pass
    Defect Raised: None
    Notes:

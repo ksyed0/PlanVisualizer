@@ -1281,7 +1281,8 @@ Steps to Reproduce:
 2. Hover over any epic swimlane header
    Expected: Clear visual hover affordance (background-color shift or similar)
    Actual: Hover uses `filter: brightness(1.05)` which on already-light backgrounds produces almost no visible change; users can't tell which row they're about to click
-   Status: Open
+   Fix: Replaced `filter: brightness(1.05)` with `background: var(--clr-row-hover)` on `.ksw-swim-hdr:hover` — provides visible background-color shift in both light and dark modes
+   Status: Fixed
    Fix Branch: feature/US-0101-kanban-polish
    Lesson Encoded: No
    Estimated Cost USD: 0.00
