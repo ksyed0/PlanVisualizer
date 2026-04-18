@@ -15,6 +15,30 @@ TARGET="${1:-$(pwd)}"
 
 echo "[install] Installing PlanVisualizer into: $TARGET"
 
+# ── 0. Check superpowers plugin ─────────────────────────────────────────────
+# superpowers enhances agent workflows via structured skill invocations.
+# Cannot be auto-installed — it requires a Claude Code slash command.
+SP_BASE="$HOME/.claude/plugins/cache/claude-plugins-official/superpowers"
+if [ ! -d "$SP_BASE" ]; then
+  echo ""
+  echo "[install] superpowers plugin not detected at $SP_BASE"
+  read -p "[install] Install superpowers for enhanced agent workflows? (y/n) " -n 1 -r; echo
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    echo ""
+    echo "[install] Run the following inside a Claude Code session, then re-run install.sh:"
+    echo ""
+    echo "  /plugin install superpowers@claude-plugins-official"
+    echo ""
+    exit 0
+  else
+    echo "[install] Skipping superpowers. Agent files note skills are optional when not installed."
+    echo ""
+  fi
+else
+  SP_VER=$(ls "$SP_BASE" | sort -V | tail -1)
+  echo "[install] superpowers plugin detected (v${SP_VER}) ✓"
+fi
+
 # ── 1. Copy tool files ──────────────────────────────────────────────────────
 echo "[install] Copying tools/ ..."
 cp -r "${REPO_ROOT}/tools" "${TARGET}/"
