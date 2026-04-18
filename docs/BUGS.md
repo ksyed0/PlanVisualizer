@@ -2364,3 +2364,11 @@ Steps to Reproduce:
    Lesson Encoded: No
    Estimated Cost USD: 0.00
    Notes: Retired: CSS/HTML confirmed present; screenshot resolution artifact. `.wip-pill` CSS class and `<span class="wip-pill...">` elements are present in generated HTML.
+
+BUG-0179: Status tab missing "Financial" section grouping — only "Delivery" section rendered
+Severity: Medium
+Status: Retired
+Related Story: US-0103
+Fix Branch:
+Description: Expected two named section groupings on the Status tab — "Delivery" (epic progress + test results charts) and "Financial" (budget/cost charts) — per the US-0103 AC. Observed in charts-light.png and charts-dark.png: only the "DELIVERY" section heading is visible with the epic progress bars and doughnut chart. No "FINANCIAL" section heading or financial charts (budget by epic, AI cost) appear in the viewport. The section may be absent from the rendered output or not reached by the screenshot viewport.
+Retired: Financial section confirmed present in HTML (grep returns 11 matches for "Financial" in plan-status.html); screenshot viewport limitation only.

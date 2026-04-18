@@ -1431,3 +1431,33 @@ describe('renderHtml — traceability tab US-0102', () => {
     expect(html).toMatch(/data-col="TC-0002"/);
   });
 });
+
+describe('renderHtml — status tab US-0103', () => {
+  let html;
+  beforeAll(() => { html = renderHtml(sampleData); });
+
+  // TC-0149
+  it('TC-0149: chart sections render chart-header-rule with display-title and chart-subtitle', () => {
+    expect(html).toMatch(/chart-header-rule/);
+    expect(html).toMatch(/display-title/);
+    expect(html).toMatch(/chart-subtitle/);
+  });
+
+  // TC-0150
+  it('TC-0150: status tab contains Delivery and Financial supertitle sections', () => {
+    expect(html).toMatch(/chart-supertitle/);
+    expect(html).toMatch(/Delivery/);
+    expect(html).toMatch(/Financial/);
+  });
+
+  // TC-0151
+  it('TC-0151: doughnut chart containers include chart-center-overlay with hero-num', () => {
+    expect(html).toMatch(/chart-center-overlay/);
+    expect(html).toMatch(/hero-num/);
+  });
+
+  // TC-0152
+  it('TC-0152: Chart.js config includes Inter font family', () => {
+    expect(html).toMatch(/'Inter',\s*sans-serif/);
+  });
+});
