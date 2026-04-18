@@ -2424,15 +2424,15 @@ Dependencies: EPIC-0013, EPIC-0016
 US-0126 (EPIC-0017): As a developer onboarding to PlanVisualizer, I want the install script to detect and prompt for the superpowers plugin, and as a Conductor or sub-agent, I want each agent instruction file to explicitly list which superpowers skills to invoke at which pipeline stage, so that the full DM_AGENT workflow leverages structured skill discipline without requiring me to remember which skills apply where.
 Priority: High (P0)
 Estimate: S
-Status: Planned
+Status: Done
 Branch: feature/US-0126-skills-integration
 Acceptance Criteria:
-  - [ ] AC-0435: scripts/install.sh §0 detects ~/.claude/plugins/cache/claude-plugins-official/superpowers/; if absent prompts Y/N; if Y prints the slash command and exits; if N continues
-  - [ ] AC-0436: All 8 docs/agents/*.md files have a ## Superpowers Skills section immediately after the opening callout block listing applicable skills and stages
-  - [ ] AC-0437: The conditional note ("If not installed — skip these invocations") is present in every agent file's Skills section
-  - [ ] AC-0438: docs/skills-integration.md is created with installation instructions, full agent × skill × stage table, and skill catalogue
-  - [ ] AC-0439: docs/skills-integration.md skill catalogue covers all 12 skills listed in the design spec
-  - [ ] AC-0440: docs/ID_REGISTRY.md AC sequence updated to AC-0441 after this story is written
+  - [x] AC-0435: scripts/install.sh §0 detects ~/.claude/plugins/cache/claude-plugins-official/superpowers/; if absent prompts Y/N; if Y prints the slash command and exits; if N continues
+  - [x] AC-0436: All 8 docs/agents/*.md files have a ## Superpowers Skills section immediately after the opening callout block listing applicable skills and stages
+  - [x] AC-0437: The conditional note ("If not installed — skip these invocations") is present in every agent file's Skills section
+  - [x] AC-0438: docs/skills-integration.md is created with installation instructions, full agent × skill × stage table, and skill catalogue
+  - [x] AC-0439: docs/skills-integration.md skill catalogue covers all 12 skills listed in the design spec
+  - [x] AC-0440: docs/ID_REGISTRY.md AC sequence updated to AC-0441 after this story is written
 Dependencies: EPIC-0013, EPIC-0016
 ```
 
