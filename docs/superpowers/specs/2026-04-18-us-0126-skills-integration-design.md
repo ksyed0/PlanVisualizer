@@ -16,7 +16,6 @@ invocations into each agent instruction file, and ensure the install/upgrade scr
 the plugin is present and guide users to install it if not.
 
 **Outputs:**
-
 1. `scripts/install.sh` — new §0 that detects the superpowers plugin and prompts to install
 2. Each of the 8 `docs/agents/*.md` files — new `## Superpowers Skills` section at the top
 3. `docs/skills-integration.md` — rollup reference doc (agent × skill × stage table + catalogue)
@@ -58,11 +57,11 @@ fi
 
 ### Behaviour table
 
-| State          | User answers | Outcome                                              |
-| -------------- | ------------ | ---------------------------------------------------- |
-| Plugin present | n/a          | Silent ✓, continue install                           |
-| Plugin absent  | Y            | Print slash command, exit 0 (user installs, re-runs) |
-| Plugin absent  | N            | Print skip note, continue install                    |
+| State | User answers | Outcome |
+|-------|-------------|---------|
+| Plugin present | n/a | Silent ✓, continue install |
+| Plugin absent | Y | Print slash command, exit 0 (user installs, re-runs) |
+| Plugin absent | N | Print skip note, continue install |
 
 ### Why exit on Y
 
@@ -87,9 +86,9 @@ role header** (the `> Read this file...` callout), before any other content.
 > **Check:** `[ -d ~/.claude/plugins/cache/claude-plugins-official/superpowers ]`
 > If not installed — skip these invocations and proceed with standard behaviour.
 
-| Stage               | Skill to invoke |
-| ------------------- | --------------- |
-| [stage description] | `skill-name`    |
+| Stage | Skill to invoke |
+|-------|----------------|
+| [stage description] | `skill-name` |
 ```
 
 Only rows applicable to the agent's role are included — no agent carries the full table.
@@ -98,72 +97,72 @@ Only rows applicable to the agent's role are included — no agent carries the f
 
 **DM_AGENT.md (Conductor)**
 
-| Stage                                                          | Skill to invoke                  |
-| -------------------------------------------------------------- | -------------------------------- |
-| Before Phase 1 Blueprint — writing or refining stories         | `brainstorming`                  |
-| After PO output, before spawning Architect                     | `writing-plans`                  |
-| Before spawning parallel agents (Phase 3 Build / Phase 5 Test) | `dispatching-parallel-agents`    |
-| Before creating the PR in Phase 6 Polish                       | `finishing-a-development-branch` |
+| Stage | Skill to invoke |
+|-------|----------------|
+| Before Phase 1 Blueprint — writing or refining stories | `brainstorming` |
+| After PO output, before spawning Architect | `writing-plans` |
+| Before spawning parallel agents (Phase 3 Build / Phase 5 Test) | `dispatching-parallel-agents` |
+| Before creating the PR in Phase 6 Polish | `finishing-a-development-branch` |
 
 **PO_AGENT.md (Compass)**
 
-| Stage                                              | Skill to invoke |
-| -------------------------------------------------- | --------------- |
+| Stage | Skill to invoke |
+|-------|----------------|
 | Before writing or refining any user stories or ACs | `brainstorming` |
 
 **ARCHITECT_AGENT.md (Keystone)**
 
-| Stage                              | Skill to invoke   |
-| ---------------------------------- | ----------------- |
-| Before producing the scaffold plan | `writing-plans`   |
-| When executing the scaffold tasks  | `executing-plans` |
+| Stage | Skill to invoke |
+|-------|----------------|
+| Before producing the scaffold plan | `writing-plans` |
+| When executing the scaffold tasks | `executing-plans` |
 
 **FE_DEV_AGENT.md (Pixel)**
 
-| Stage                                         | Skill to invoke                  |
-| --------------------------------------------- | -------------------------------- |
-| Before writing any implementation code        | `test-driven-development`        |
-| When working through assigned tasks           | `executing-plans`                |
+| Stage | Skill to invoke |
+|-------|----------------|
+| Before writing any implementation code | `test-driven-development` |
+| When working through assigned tasks | `executing-plans` |
 | Before pushing the final commit on the branch | `finishing-a-development-branch` |
-| Before reporting implementation complete      | `verification-before-completion` |
+| Before reporting implementation complete | `verification-before-completion` |
 
 **BE_DEV_AGENT.md (Forge)**
 
-| Stage                                         | Skill to invoke                  |
-| --------------------------------------------- | -------------------------------- |
-| Before writing any implementation code        | `test-driven-development`        |
-| When working through assigned tasks           | `executing-plans`                |
+| Stage | Skill to invoke |
+|-------|----------------|
+| Before writing any implementation code | `test-driven-development` |
+| When working through assigned tasks | `executing-plans` |
 | Before pushing the final commit on the branch | `finishing-a-development-branch` |
-| Before reporting implementation complete      | `verification-before-completion` |
+| Before reporting implementation complete | `verification-before-completion` |
 
 **UI_DESIGNER_AGENT.md (Palette)**
 
-| Stage                                                      | Skill to invoke                   |
-| ---------------------------------------------------------- | --------------------------------- |
-| Before exploring design directions                         | `brainstorming`                   |
+| Stage | Skill to invoke |
+|-------|----------------|
+| Before exploring design directions | `brainstorming` |
 | When producing visual specs, mockups, or component designs | `frontend-design:frontend-design` |
 
 **CODE_REVIEWER_AGENT.md (Lens)**
 
-| Stage                                                    | Skill to invoke          |
-| -------------------------------------------------------- | ------------------------ |
-| Before issuing a review verdict                          | `requesting-code-review` |
-| When the original agent applies Lens's requested changes | `receiving-code-review`  |
+| Stage | Skill to invoke |
+|-------|----------------|
+| Before issuing a review verdict | `requesting-code-review` |
+| When the original agent applies Lens's requested changes | `receiving-code-review` |
 
 **FUNCTIONAL_TESTER_AGENT.md (Sentinel)**
 
-| Stage                                          | Skill to invoke                  |
-| ---------------------------------------------- | -------------------------------- |
-| When a defect or unexpected behaviour is found | `systematic-debugging`           |
-| Before reporting all test cases pass           | `verification-before-completion` |
+| Stage | Skill to invoke |
+|-------|----------------|
+| When a defect or unexpected behaviour is found | `systematic-debugging` |
+| Before reporting all test cases pass | `verification-before-completion` |
 
 **AUTOMATION_TESTER_AGENT.md (Circuit)**
 
-| Stage                                          | Skill to invoke                  |
-| ---------------------------------------------- | -------------------------------- |
-| Before writing any new test suites             | `test-driven-development`        |
-| When diagnosing a failing test or coverage gap | `systematic-debugging`           |
-| Before reporting coverage results              | `verification-before-completion` |
+| Stage | Skill to invoke |
+|-------|----------------|
+| Before writing any new test suites | `test-driven-development` |
+| When diagnosing a failing test or coverage gap | `systematic-debugging` |
+| Before reporting coverage results | `verification-before-completion` |
 
 ---
 
@@ -182,20 +181,20 @@ Only rows applicable to the agent's role are included — no agent carries the f
 
 ### Skill catalogue entries (13 skills used across all agents)
 
-| Skill                             | Purpose                                                                         |
-| --------------------------------- | ------------------------------------------------------------------------------- |
-| `brainstorming`                   | Turn requirements into validated designs before any implementation begins       |
-| `writing-plans`                   | Produce step-by-step implementation plans from approved designs                 |
-| `executing-plans`                 | Work through a written plan task-by-task with discipline                        |
-| `dispatching-parallel-agents`     | Launch independent sub-agents concurrently and coordinate their results         |
-| `subagent-driven-development`     | Drive implementation via spawned sub-agents rather than inline code edits       |
-| `test-driven-development`         | Write failing tests before writing implementation code (red → green → refactor) |
-| `finishing-a-development-branch`  | Ensure a branch is clean, tested, and PR-ready before merging                   |
-| `verification-before-completion`  | Run a final checklist before claiming any task is done                          |
-| `systematic-debugging`            | Diagnose failures methodically rather than guessing at fixes                    |
-| `requesting-code-review`          | Frame review requests with context so reviewers can give precise verdicts       |
-| `receiving-code-review`           | Apply review feedback systematically without regressing other areas             |
-| `frontend-design:frontend-design` | Produce production-grade UI specs, tokens, and component designs                |
+| Skill | Purpose |
+|-------|---------|
+| `brainstorming` | Turn requirements into validated designs before any implementation begins |
+| `writing-plans` | Produce step-by-step implementation plans from approved designs |
+| `executing-plans` | Work through a written plan task-by-task with discipline |
+| `dispatching-parallel-agents` | Launch independent sub-agents concurrently and coordinate their results |
+| `subagent-driven-development` | Drive implementation via spawned sub-agents rather than inline code edits |
+| `test-driven-development` | Write failing tests before writing implementation code (red → green → refactor) |
+| `finishing-a-development-branch` | Ensure a branch is clean, tested, and PR-ready before merging |
+| `verification-before-completion` | Run a final checklist before claiming any task is done |
+| `systematic-debugging` | Diagnose failures methodically rather than guessing at fixes |
+| `requesting-code-review` | Frame review requests with context so reviewers can give precise verdicts |
+| `receiving-code-review` | Apply review feedback systematically without regressing other areas |
+| `frontend-design:frontend-design` | Produce production-grade UI specs, tokens, and component designs |
 
 ---
 
@@ -224,18 +223,18 @@ Acceptance Criteria:
 
 ## 5. Files Changed
 
-| File                                     | Change                                      |
-| ---------------------------------------- | ------------------------------------------- |
-| `scripts/install.sh`                     | Add §0 superpowers detection block          |
-| `docs/agents/DM_AGENT.md`                | Add `## Superpowers Skills` section         |
-| `docs/agents/PO_AGENT.md`                | Add `## Superpowers Skills` section         |
-| `docs/agents/ARCHITECT_AGENT.md`         | Add `## Superpowers Skills` section         |
-| `docs/agents/FE_DEV_AGENT.md`            | Add `## Superpowers Skills` section         |
-| `docs/agents/BE_DEV_AGENT.md`            | Add `## Superpowers Skills` section         |
-| `docs/agents/UI_DESIGNER_AGENT.md`       | Add `## Superpowers Skills` section         |
-| `docs/agents/CODE_REVIEWER_AGENT.md`     | Add `## Superpowers Skills` section         |
-| `docs/agents/FUNCTIONAL_TESTER_AGENT.md` | Add `## Superpowers Skills` section         |
-| `docs/agents/AUTOMATION_TESTER_AGENT.md` | Add `## Superpowers Skills` section         |
-| `docs/skills-integration.md`             | Create (new file)                           |
-| `docs/RELEASE_PLAN.md`                   | Add US-0126 story block under EPIC-0017     |
-| `docs/ID_REGISTRY.md`                    | Update AC next → AC-0441, US next → US-0127 |
+| File | Change |
+|------|--------|
+| `scripts/install.sh` | Add §0 superpowers detection block |
+| `docs/agents/DM_AGENT.md` | Add `## Superpowers Skills` section |
+| `docs/agents/PO_AGENT.md` | Add `## Superpowers Skills` section |
+| `docs/agents/ARCHITECT_AGENT.md` | Add `## Superpowers Skills` section |
+| `docs/agents/FE_DEV_AGENT.md` | Add `## Superpowers Skills` section |
+| `docs/agents/BE_DEV_AGENT.md` | Add `## Superpowers Skills` section |
+| `docs/agents/UI_DESIGNER_AGENT.md` | Add `## Superpowers Skills` section |
+| `docs/agents/CODE_REVIEWER_AGENT.md` | Add `## Superpowers Skills` section |
+| `docs/agents/FUNCTIONAL_TESTER_AGENT.md` | Add `## Superpowers Skills` section |
+| `docs/agents/AUTOMATION_TESTER_AGENT.md` | Add `## Superpowers Skills` section |
+| `docs/skills-integration.md` | Create (new file) |
+| `docs/RELEASE_PLAN.md` | Add US-0126 story block under EPIC-0017 |
+| `docs/ID_REGISTRY.md` | Update AC next → AC-0441, US next → US-0127 |

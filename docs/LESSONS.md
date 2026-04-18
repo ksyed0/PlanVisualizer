@@ -4,10 +4,34 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
+## L-0036 — GitHub Actions CI does not trigger on pushes after a force-push in the same session
+
+**Rule:** After force-pushing a branch, subsequent regular pushes to the same branch sometimes do not trigger new GitHub Actions runs (zero check-runs on the new commit). Workaround: push an empty commit (`git commit --allow-empty`) to force a new `synchronize` event. Do not wait for CI that will never come — poll `gh api repos/.../commits/{sha}/check-runs` first; if `total_count` is 0 after 30+ seconds, use the empty-commit trigger.
+_Learned during US-0126 CI remediation: after force-pushing the rebased branch, the Prettier fix push produced no CI runs. Empty commit unblocked it._
+**Date:** 2026-04-18
+
+---
+
+## L-0037 — Auto-merge fires immediately on MERGEABLE; Prettier fix must be in the same push
+
+**Rule:** When `gh pr merge --auto --squash` is set and the PR becomes MERGEABLE (e.g., after resolving conflicts), GitHub auto-merge can fire within seconds — before a follow-up Prettier fix can be pushed. Mitigate: always run `npx prettier --write .` and commit BEFORE rebasing and pushing, so the fix is included in the same force-push that resolves the conflict. Never rely on a second push to the same PR to catch a Prettier failure.
+_Learned when PR #395 auto-merged at commit 333243a before the Prettier fix at 9be4c87 could be included, requiring two additional PRs (#397, #399) to clean up._
+**Date:** 2026-04-18
+
+---
+
+## L-0038 — Memory ID snapshots go stale fast; always read ID_REGISTRY.md directly
+
+**Rule:** MEMORY.md ID snapshots (US next, AC next, etc.) are frozen at the time of the last memory write. If multiple stories shipped between sessions, the snapshot is wrong. Always `cat docs/ID_REGISTRY.md` before creating any artefact — never rely on memory for ID values.
+_Learned when memory said next US = US-0110 but 16 stories had shipped since Session 17 (next was actually US-0126). Would have created a duplicate ID._
+**Date:** 2026-04-18
+
+---
+
 ## L-0034 — Sequential-merge cascade: pre-allocate ID ranges and expect per-PR rebases
 
-**Rule:** When closing multiple stories that all write to the same docs files (TEST*CASES.md, ID_REGISTRY.md, RELEASE_PLAN.md, BUGS.md), pre-allocate non-overlapping ID ranges in the plan so branches can be written in parallel. Accept that each branch will need at least one rebase after the previous PR merges — budget for this in the pipeline. Keep rebase conflict resolution simple: always combine all changes from both sides additively (all TCs in sequential order, ID counters at the max value).
-\_Learned when closing EPIC-0015 (4 stories, 18 TCs): US-0102 needed 1 rebase, US-0103 needed 1, US-0106 needed 2, due to each successive develop advance after merging the prior story.*
+**Rule:** When closing multiple stories that all write to the same docs files (TEST_CASES.md, ID_REGISTRY.md, RELEASE_PLAN.md, BUGS.md), pre-allocate non-overlapping ID ranges in the plan so branches can be written in parallel. Accept that each branch will need at least one rebase after the previous PR merges — budget for this in the pipeline. Keep rebase conflict resolution simple: always combine all changes from both sides additively (all TCs in sequential order, ID counters at the max value).
+_Learned when closing EPIC-0015 (4 stories, 18 TCs): US-0102 needed 1 rebase, US-0103 needed 1, US-0106 needed 2, due to each successive develop advance after merging the prior story._
 **Date:** 2026-04-18
 
 ---
