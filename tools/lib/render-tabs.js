@@ -1,6 +1,17 @@
 'use strict';
 
-const { esc, jsEsc, usd, sparkline, deltaArrow, fmtNum, normalizeStoryRef, EPIC_ACCENT_COLORS, badge, BADGE_TONE } = require('./render-utils');
+const {
+  esc,
+  jsEsc,
+  usd,
+  sparkline,
+  deltaArrow,
+  fmtNum,
+  normalizeStoryRef,
+  EPIC_ACCENT_COLORS,
+  badge,
+  BADGE_TONE,
+} = require('./render-utils');
 
 function renderHierarchyTab(data) {
   const epicBlocks = data.epics.map((epic, epicIdx) => {
@@ -1620,4 +1631,14 @@ function renderRecentActivity(data) {
   </div>`;
 }
 
-module.exports = { renderHierarchyTab, renderKanbanTab, renderTraceabilityTab, renderTrendsTab, renderChartsTab, renderCostsTab, renderBugsTab, renderLessonsTab, renderRecentActivity };
+module.exports = {
+  renderHierarchyTab,
+  renderKanbanTab,
+  renderTraceabilityTab,
+  renderTrendsTab,
+  renderChartsTab,
+  renderCostsTab,
+  renderBugsTab,
+  renderLessonsTab,
+  renderRecentActivity,
+};

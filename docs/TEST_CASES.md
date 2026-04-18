@@ -2307,35 +2307,35 @@ Steps:
 1. Call renderHtml() with story data
 2. Check output HTML for ksw-status-cell class and border-bottom:2px solid
    Expected Result: HTML contains ksw-status-cell and the 2px accent bottom border ruleTC-0141: P0 story cards render danger-color left stripe; P1 renders warn-color left stripe
-Related Story: US-0101
-Related Task:
-Related AC: AC-0330
-Type: Visual
-Preconditions: renderHtml called with P0 and P1 priority stories
-Steps:
+   Related Story: US-0101
+   Related Task:
+   Related AC: AC-0330
+   Type: Visual
+   Preconditions: renderHtml called with P0 and P1 priority stories
+   Steps:
 
-1. Call renderHtml() with stories having P0 and P1 priorities
-2. Check output HTML for badge-danger-text color on P0 border-left; badge-warn-text on P1
+3. Call renderHtml() with stories having P0 and P1 priorities
+4. Check output HTML for badge-danger-text color on P0 border-left; badge-warn-text on P1
    Expected Result: P0 stories have the danger CSS variable in their border-left style; P1 stories have the warn CSS variableTC-0142: In-Progress column cell renders with ksw-inprogress pulse class
-Related Story: US-0101
-Related Task:
-Related AC: AC-0331
-Type: Functional
-Preconditions: renderHtml called with at least one In Progress story
-Steps:
+   Related Story: US-0101
+   Related Task:
+   Related AC: AC-0331
+   Type: Functional
+   Preconditions: renderHtml called with at least one In Progress story
+   Steps:
 
-1. Call renderHtml() with a story in In Progress status
-2. Check output HTML for ksw-inprogress class on the column cell
+5. Call renderHtml() with a story in In Progress status
+6. Check output HTML for ksw-inprogress class on the column cell
    Expected Result: The In-Progress column cell element has the ksw-inprogress class appliedTC-0143: WIP count pill element is present in kanban output
-Related Story: US-0101
-Related Task:
-Related AC: AC-0332
-Type: Functional
-Preconditions: renderHtml called with story data
-Steps:
+   Related Story: US-0101
+   Related Task:
+   Related AC: AC-0332
+   Type: Functional
+   Preconditions: renderHtml called with story data
+   Steps:
 
-1. Call renderHtml() with story data
-2. Check output HTML for wip-pill class
+7. Call renderHtml() with story data
+8. Check output HTML for wip-pill class
    Expected Result: HTML contains an element with wip-pill class showing the WIP count
    Actual Result:
    Status: [x] Pass
@@ -2374,15 +2374,15 @@ Steps:
 2. Check output HTML for tc-dot tc-dot-success, tc-dot-danger, tc-dot-warn classes
 3. Confirm no raw "Pass", "Fail", "Not Run" text appears as cell content
    Expected Result: Cells use tc-dot classes with CSS pseudo-element circles; no letter abbreviationsTC-0146: Traceability first column has trace-sticky-col class on header and data cells
-Related Story: US-0102
-Related Task:
-Related AC: AC-0337
-Type: Functional
-Preconditions: renderHtml called with testCases present
-Steps:
+   Related Story: US-0102
+   Related Task:
+   Related AC: AC-0337
+   Type: Functional
+   Preconditions: renderHtml called with testCases present
+   Steps:
 
-1. Call renderHtml() with test case data
-2. Check output HTML for trace-sticky-col class on the Story column header th and each story td
+4. Call renderHtml() with test case data
+5. Check output HTML for trace-sticky-col class on the Story column header th and each story td
    Expected Result: First column th and td elements carry the trace-sticky-col class for sticky positioning
    Actual Result:
    Status: [x] Pass
