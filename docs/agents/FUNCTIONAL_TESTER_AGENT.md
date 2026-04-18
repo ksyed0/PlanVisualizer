@@ -8,10 +8,10 @@
 > **Check:** `[ -d ~/.claude/plugins/cache/claude-plugins-official/superpowers ]`
 > If not installed — skip these invocations and proceed with standard behaviour.
 
-| Stage | Skill to invoke |
-|-------|----------------|
-| When a defect or unexpected behaviour is found | `systematic-debugging` |
-| Before reporting all test cases pass | `verification-before-completion` |
+| Stage                                          | Skill to invoke                  |
+| ---------------------------------------------- | -------------------------------- |
+| When a defect or unexpected behaviour is found | `systematic-debugging`           |
+| Before reporting all test cases pass           | `verification-before-completion` |
 
 ## Role
 

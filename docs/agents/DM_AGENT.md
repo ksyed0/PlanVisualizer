@@ -9,12 +9,12 @@
 > **Check:** `[ -d ~/.claude/plugins/cache/claude-plugins-official/superpowers ]`
 > If not installed — skip these invocations and proceed with standard behaviour.
 
-| Stage | Skill to invoke |
-|-------|----------------|
-| Before Phase 1 Blueprint — writing or refining stories | `brainstorming` |
-| After PO output, before spawning Architect | `writing-plans` |
-| Before spawning parallel agents (Phase 3 Build / Phase 5 Test) | `dispatching-parallel-agents` |
-| Before creating the PR in Phase 6 Polish | `finishing-a-development-branch` |
+| Stage                                                          | Skill to invoke                  |
+| -------------------------------------------------------------- | -------------------------------- |
+| Before Phase 1 Blueprint — writing or refining stories         | `brainstorming`                  |
+| After PO output, before spawning Architect                     | `writing-plans`                  |
+| Before spawning parallel agents (Phase 3 Build / Phase 5 Test) | `dispatching-parallel-agents`    |
+| Before creating the PR in Phase 6 Polish                       | `finishing-a-development-branch` |
 
 ## Role
 
@@ -512,6 +512,7 @@ git worktree remove <old-worktree-path> --force
 
 **Step 4 — Write back story status to RELEASE_PLAN.md (BUG-0181 fix):**
 After pulling, open `docs/RELEASE_PLAN.md` and update the merged story's block:
+
 - Change `Status: Planned` → `Status: Done`
 - Change all `- [ ] AC-XXXX:` → `- [x] AC-XXXX:`
 

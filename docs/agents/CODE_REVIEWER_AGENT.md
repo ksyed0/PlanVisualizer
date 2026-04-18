@@ -9,10 +9,10 @@
 > **Check:** `[ -d ~/.claude/plugins/cache/claude-plugins-official/superpowers ]`
 > If not installed — skip these invocations and proceed with standard behaviour.
 
-| Stage | Skill to invoke |
-|-------|----------------|
-| Before issuing a review verdict | `requesting-code-review` |
-| When the original agent applies Lens's requested changes | `receiving-code-review` |
+| Stage                                                    | Skill to invoke          |
+| -------------------------------------------------------- | ------------------------ |
+| Before issuing a review verdict                          | `requesting-code-review` |
+| When the original agent applies Lens's requested changes | `receiving-code-review`  |
 
 ## Role
 
