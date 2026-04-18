@@ -1458,6 +1458,6 @@ describe('renderHtml — status tab US-0103', () => {
 
   // TC-0152
   it('TC-0152: Chart.js config includes Inter font family', () => {
-    expect(html).toMatch(/Inter/);
+    expect(html).toMatch(/'Inter',\s*sans-serif/);
   });
 });
