@@ -2114,13 +2114,13 @@ Dependencies: US-0097
 US-0103 (EPIC-0015): As a user, I want the Status tab charts to read like an editorial report, so that it's clear what each chart means at a glance.
 Priority: Medium (P1)
 Estimate: S
-Status: Planned
+Status: Done
 Branch: feature/US-0103-status-editorial
 Acceptance Criteria:
-  - [ ] AC-0338: Chart boxes are replaced with hairline top rule + display-face title + subtitle
-  - [ ] AC-0339: Charts are grouped under "Delivery" and "Financial" supertitles
-  - [ ] AC-0340: All doughnut charts have a centered hero number
-  - [ ] AC-0341: Chart.js legends use Inter font family with point-style circular dots
+  - [x] AC-0338: Chart boxes are replaced with hairline top rule + display-face title + subtitle
+  - [x] AC-0339: Charts are grouped under "Delivery" and "Financial" supertitles
+  - [x] AC-0340: All doughnut charts have a centered hero number
+  - [x] AC-0341: Chart.js legends use Inter font family with point-style circular dots
 Dependencies: US-0094, US-0095, US-0099
 ```
 

@@ -2456,3 +2456,75 @@ Steps:
    Status: [x] Pass
    Defect Raised: None
    Notes:
+
+---
+
+TC-0149: Status tab chart sections render with chart-header-rule, display-title, and chart-subtitle
+Related Story: US-0103
+Related Task:
+Related AC: AC-0338
+Type: Visual
+Preconditions: renderHtml called with any story/cost data
+Steps:
+
+1. Call renderHtml() with sample data
+2. Check output HTML for chart-header-rule, display-title, and chart-subtitle classes
+   Expected Result: Each chart block uses the editorial header pattern: hairline rule, display face title, subtitle
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0150: Status tab contains "Delivery" and "Financial" section supertitles
+Related Story: US-0103
+Related Task:
+Related AC: AC-0339
+Type: Visual
+Preconditions: renderHtml called with any data
+Steps:
+
+1. Call renderHtml() with sample data
+2. Search output HTML for elements with chart-supertitle class containing "Delivery" and "Financial"
+   Expected Result: Two supertitle headings group the charts into Delivery and Financial sections
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0151: Doughnut chart containers include chart-center-overlay with hero-num child
+Related Story: US-0103
+Related Task:
+Related AC: AC-0340
+Type: Visual
+Preconditions: renderHtml called with any data
+Steps:
+
+1. Call renderHtml() with sample data
+2. Check output HTML for chart-center-overlay elements containing hero-num class
+   Expected Result: Doughnut charts have a centered overlay element displaying the hero number
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0152: Chart.js configuration specifies Inter font family in legend options
+Related Story: US-0103
+Related Task:
+Related AC: AC-0341
+Type: Functional
+Preconditions: renderHtml called with any data
+Steps:
+
+1. Call renderHtml() with sample data
+2. Check output HTML/JS for Inter font string in Chart.js legend font configuration
+   Expected Result: Chart.js legend config includes font.family set to "Inter" or "'Inter', sans-serif"
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
