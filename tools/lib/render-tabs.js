@@ -737,6 +737,33 @@ function renderChartsTab(data) {
           </div>
         </div>
       </div>
+
+      ${
+        atRiskEpics.length > 0
+          ? `
+      <div class="col-span-full card-elev rounded-lg p-4 anim-stagger" style="--i:8">
+        <div class="chart-header-rule">
+          <span class="display-title">At-Risk Epics</span>
+          <span class="chart-subtitle">avg score \u2265 2.0</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
+          ${atRiskEpics
+            .map(([id, r]) => {
+              const col = RISK_LEVEL_COLORS[r.level];
+              const textCol = r.level === 'High' ? '#1e293b' : 'white';
+              return `<div style="display:flex;align-items:center;gap:10px;padding:6px 10px;background:var(--clr-card,#1e293b);border-radius:6px;border-left:3px solid ${col}">
+              <span style="font-family:monospace;font-size:12px;font-weight:700;color:#e2e8f0">${esc(id)}</span>
+              <span style="font-size:13px;font-weight:700;color:${col}">${r.avgScore}</span>
+              <span style="background:${col};color:${textCol};font-size:10px;padding:1px 6px;border-radius:3px">${r.level}</span>
+              <span style="font-size:11px;color:#64748b;margin-left:auto">${r.counts.High + r.counts.Critical} High+Critical stories</span>
+            </div>`;
+            })
+            .join('')}
+        </div>
+      </div>`
+          : ''
+      }
+
     </div>
   </div>
   <script>

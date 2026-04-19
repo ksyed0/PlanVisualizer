@@ -1677,3 +1677,37 @@ describe('renderHtml — Status tab risk charts (US-0064)', () => {
     expect(h).toContain('Story Risk Distribution');
   });
 });
+
+describe('renderHtml — at-risk epic summary (US-0067)', () => {
+  it('Status tab shows At-Risk Epics heading when epics score >= 2.0', () => {
+    const d = {
+      ...sampleData,
+      risk: {
+        byStory: new Map([['US-0001', { score: 2.3, level: 'High' }]]),
+        byEpic: new Map([
+          [
+            'EPIC-0001',
+            { avgScore: 2.3, maxScore: 2.3, level: 'High', counts: { Low: 0, Medium: 0, High: 1, Critical: 0 } },
+          ],
+        ]),
+      },
+    };
+    expect(renderHtml(d)).toContain('At-Risk Epics');
+  });
+
+  it('Status tab omits At-Risk Epics section when all epics score < 2.0', () => {
+    const d = {
+      ...sampleData,
+      risk: {
+        byStory: new Map([['US-0001', { score: 0.7, level: 'Low' }]]),
+        byEpic: new Map([
+          [
+            'EPIC-0001',
+            { avgScore: 0.7, maxScore: 0.7, level: 'Low', counts: { Low: 1, Medium: 0, High: 0, Critical: 0 } },
+          ],
+        ]),
+      },
+    };
+    expect(renderHtml(d)).not.toContain('At-Risk Epics');
+  });
+});
