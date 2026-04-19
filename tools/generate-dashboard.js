@@ -1991,21 +1991,8 @@ function updateToggleButton(theme) {
   if (saved === 'light') document.documentElement.setAttribute('data-theme', 'light');
   updateToggleButton(saved);
 })();
-// US-0121 (supersedes BUG-0083/0088 legacy 12h converter): Log times render
-// bracketed as [HH:MM:SS] in the terminal aesthetic. The server emits the
-// final-formatted text directly, so no client-side rewriting is needed —
-// kept as a no-op stub intentionally for traceability.
-
-// US-0121 helpers shared between page-load and patchDOM() so categories and
-// time formatting are computed in one place on the client.
-function fmtLogTime(t) {
-  if (!t) return '';
-  if (String(t).includes('T')) {
-    var d = new Date(t);
-    return isNaN(d) ? t : (String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0'));
-  }
-  return t; // legacy HH:MM strings pass through unchanged
-}
+// US-0121 helpers used by patchDOM(): _formatLogTime formats ISO timestamps
+// as HH:MM:SS; _logCategory classifies log entries for colour coding.
 function _formatLogTime(raw) {
   var t = String(raw || '').trim();
   if (!t) return '--:--:--';
@@ -2457,7 +2444,6 @@ function patchDOM(status) {
     if (proj.repoUrl) {
       document.querySelectorAll('a.repo-link, .about-links-row a[href*="yourorg"]').forEach(function(a) {
         a.href = proj.repoUrl;
-        a.textContent = proj.repoUrl;
       });
     }
     if (!document._projectTitlePatched && proj.name) {
