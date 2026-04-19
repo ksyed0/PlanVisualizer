@@ -117,17 +117,21 @@ Branch name in `AI_COST_LOG.md` row must exactly match `Branch:` field in story 
 
 ---
 
-## Project Completion Status (as of 2026-03-30)
+## Project Completion Status (as of 2026-04-19 Session 23)
 
-7 EPICs, 52 active stories (49 Done, 1 In Progress, 2 Retired), 139 TCs, 89 bugs (all Fixed), 21 lessons.
-Current feature branch: `feature/US-0048-ui-redesign-sidebar` (EPIC-0007 UI overhaul, US-0048–US-0052).
+20 EPICs (EPIC-0010/0014/0015/0016/0017/0019 Done; EPIC-0020 next), 134 active stories, 182 bugs.
+Open PRs: #401 (EPIC-0019 → develop), #405 (EPIC-0010 + BUG-0098/0099/0157 → develop).
+Next IDs: EPIC-0020, US-0135, TASK-0055, AC-0488, TC-0158, BUG-0183.
+
+Key new module: `tools/lib/compute-risk.js` — pure risk scoring (computeStoryRisk, computeAllRisk).
+`data.risk` and `data.completion` added to generate-plan.js data object and consumed by all render modules.
 
 ---
 
 ## Coverage Thresholds
 
-Jest coverage gate: 80% lines, branches, functions, statements (all global).
-Current coverage (2026-03-30): 95.74% statements, 86.85% branches, 95.88% functions, 97.71% lines. 179 tests.
+Jest coverage gate: 80% statements (global).
+Current coverage (2026-04-19 Session 23): 93.07% statements, 79.69% branches, 94.53% functions. 953 tests, 45 suites.
 
 ---
 
@@ -167,6 +171,10 @@ Current coverage (2026-03-30): 95.74% statements, 86.85% branches, 95.88% functi
 - **Always upgrade Jest when transitive deps emit deprecation warnings.** Jest 29 → 30 eliminated the `inflight` and `glob@7` deprecation warnings with zero test changes. (2026-03-10)
 - **CodeQL cannot be scoped with per-job `on:` triggers** — it requires its own workflow file (`codeql.yml`) to control trigger conditions independently from the main CI workflow.
 - **GitHub Pages: always include docs/index.html.** Without it Pages falls back to README.md. Use `<meta http-equiv="refresh">` to redirect to the real entry point.
+- **Chart.js has no built-in data labels.** When bars need score/badge text, use an HTML/CSS bar chart instead of a canvas. No extra dependency required. (L-0041, 2026-04-19)
+- **STATUS_WEIGHTS must include both `'In-Progress'` and `'In Progress'`.** The parser emits the space variant; missing it silently defaults all In-Progress stories to the fallback weight. (L-0042, 2026-04-19)
+- **Use `MONTH_NAMES` array for date formatting in server-rendered strings** — `toLocaleDateString` fails on slim-ICU Node (Alpine CI). (2026-04-19)
+- **Pure computation modules should duplicate tiny utilities** rather than import from render-layer modules — avoids cross-layer deps and keeps the module independently testable. (L-0043, 2026-04-19)
 - **peaceiris/actions-gh-pages deploys the full filesystem.** Never add a `git add / commit` step for the generated artifact — it's gitignored and the deploy action works directly from disk.
 - **Add workflow_dispatch to any workflow with path filters.** This is the only way to trigger the workflow manually when the changed files don't match the path filter (e.g. when editing the workflow file itself).
 - **Always update TEST_CASES.md Status fields when a story is marked Done.** The parser is correct; stale Not Run statuses are a data problem. (L-0010, BUG-0003, 2026-03-10)
