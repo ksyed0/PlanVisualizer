@@ -1652,3 +1652,28 @@ describe('renderHtml — completion banner (US-0066)', () => {
     expect(renderHtml(d)).not.toContain('completion-banner');
   });
 });
+
+describe('renderHtml — Status tab risk charts (US-0064)', () => {
+  const riskData = {
+    ...sampleData,
+    risk: {
+      byStory: new Map([['US-0001', { score: 2.3, level: 'High' }]]),
+      byEpic: new Map([
+        [
+          'EPIC-0001',
+          { avgScore: 2.3, maxScore: 2.3, level: 'High', counts: { Low: 0, Medium: 0, High: 1, Critical: 0 } },
+        ],
+      ]),
+    },
+  };
+
+  it('Status tab contains Risk Score by Epic heading', () => {
+    const h = renderHtml(riskData);
+    expect(h).toContain('Risk Score by Epic');
+  });
+
+  it('Status tab contains Story Risk Distribution heading', () => {
+    const h = renderHtml(riskData);
+    expect(h).toContain('Story Risk Distribution');
+  });
+});

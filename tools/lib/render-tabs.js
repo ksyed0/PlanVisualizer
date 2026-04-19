@@ -595,6 +595,33 @@ function renderChartsTab(data) {
   );
   const totalStories = data.stories.filter((s) => s.status !== 'Retired').length;
 
+  // Risk chart data
+  const riskEpics =
+    data.risk && data.risk.byEpic ? [...data.risk.byEpic.entries()].sort((a, b) => b[1].avgScore - a[1].avgScore) : [];
+  const epicRiskLabels = JSON.stringify(riskEpics.map(([id]) => id));
+  const epicRiskScores = JSON.stringify(riskEpics.map(([, r]) => r.avgScore));
+  const epicRiskColors = JSON.stringify(riskEpics.map(([, r]) => RISK_LEVEL_COLORS[r.level]));
+
+  const riskCounts = { Low: 0, Medium: 0, High: 0, Critical: 0 };
+  let totalRiskScore = 0,
+    activeStoryCount = 0;
+  if (data.risk && data.risk.byStory) {
+    for (const story of data.stories) {
+      if (story.status === 'Done' || story.status === 'Retired') continue;
+      const sr = data.risk.byStory.get(story.id);
+      if (sr) {
+        riskCounts[sr.level]++;
+        totalRiskScore += sr.score;
+        activeStoryCount++;
+      }
+    }
+  }
+  const avgRiskScore = activeStoryCount > 0 ? (totalRiskScore / activeStoryCount).toFixed(1) : '—';
+  const highCritCount = riskCounts.High + riskCounts.Critical;
+  const riskDistCounts = JSON.stringify([riskCounts.Low, riskCounts.Medium, riskCounts.High, riskCounts.Critical]);
+
+  const atRiskEpics = riskEpics.filter(([, r]) => r.avgScore >= 2.0);
+
   return `
   <div id="tab-charts" class="p-6 hidden" role="tabpanel" aria-labelledby="tab-btn-charts">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -667,6 +694,36 @@ function renderChartsTab(data) {
         </div>
         <div style="height:300px;position:relative"><canvas id="chart-burn-rate"></canvas></div>
       </div>
+
+      <div class="chart-supertitle">Risk</div>
+
+      <div class="card-elev rounded-lg p-4 anim-stagger" style="--i:6">
+        <div class="chart-header-rule">
+          <span class="display-title">Risk Score by Epic</span>
+          <span class="chart-subtitle">avg score, active stories</span>
+        </div>
+        <div style="height:${Math.max(200, riskEpics.length * 36)}px;position:relative">
+          <canvas id="chart-risk-by-epic"></canvas>
+        </div>
+      </div>
+
+      <div class="card-elev rounded-lg p-4 anim-stagger" style="--i:7">
+        <div class="chart-header-rule">
+          <span class="display-title">Story Risk Distribution</span>
+          <span class="chart-subtitle">stories by risk level</span>
+        </div>
+        <div style="height:200px;position:relative"><canvas id="chart-risk-distribution"></canvas></div>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <div style="flex:1;background:var(--clr-card,#1e293b);border-radius:6px;padding:8px 10px;border-left:3px solid #f59e0b">
+            <div style="font-size:10px;color:#64748b">Avg score</div>
+            <div style="font-size:18px;font-weight:700;color:#f59e0b">${avgRiskScore}</div>
+          </div>
+          <div style="flex:1;background:var(--clr-card,#1e293b);border-radius:6px;padding:8px 10px;border-left:3px solid #ef4444">
+            <div style="font-size:10px;color:#64748b">High + Critical</div>
+            <div style="font-size:18px;font-weight:700;color:#ef4444">${highCritCount} stories</div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
   <script>
@@ -723,6 +780,24 @@ function renderChartsTab(data) {
       data: { labels: ${sessionDates}, datasets: [{ label: 'Session AI Spend ($)', data: ${sessionPerCosts}, backgroundColor: '#6366f1' }] },
       options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true } } }, scales: { x: { ticks: { color: tc } }, y: { ticks: { color: tc } } } }
     });
+    if (document.getElementById('chart-risk-by-epic')) {
+      _charts.riskByEpic = new Chart(document.getElementById('chart-risk-by-epic'), {
+        type: 'bar',
+        data: { labels: ${epicRiskLabels}, datasets: [{ label: 'Avg Risk Score', data: ${epicRiskScores}, backgroundColor: ${epicRiskColors} }] },
+        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { x: { ticks: { color: tc }, max: 4 }, y: { ticks: { color: tc, autoSkip: false } } } }
+      });
+    }
+    if (document.getElementById('chart-risk-distribution')) {
+      _charts.riskDist = new Chart(document.getElementById('chart-risk-distribution'), {
+        type: 'bar',
+        data: { labels: ['Low','Medium','High','Critical'], datasets: [{ data: ${riskDistCounts}, backgroundColor: ['#22c55e','#3b82f6','#f59e0b','#ef4444'] }] },
+        options: { responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { x: { ticks: { color: tc } }, y: { ticks: { color: tc }, beginAtZero: true } } }
+      });
+    }
   }
   function updateChartTheme() {
     var tc = chartTextColor();
