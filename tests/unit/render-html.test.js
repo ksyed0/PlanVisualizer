@@ -1574,3 +1574,59 @@ describe('renderHtml — bugs tab US-0106', () => {
     expect(html).toMatch(/bugs-compact-btn/);
   });
 });
+
+describe('renderHtml — risk badges (US-0064)', () => {
+  const riskData = {
+    ...sampleData,
+    risk: {
+      byStory: new Map([['US-0001', { score: 2.3, level: 'High' }]]),
+      byEpic: new Map([
+        [
+          'EPIC-0001',
+          { avgScore: 2.3, maxScore: 2.3, level: 'High', counts: { Low: 0, Medium: 0, High: 1, Critical: 0 } },
+        ],
+      ]),
+    },
+  };
+
+  it('shows risk score badge on In-Progress story', () => {
+    const h = renderHtml(riskData);
+    expect(h).toContain('High');
+    expect(h).toContain('2.3');
+  });
+
+  it('does not show numeric risk badge on Done story', () => {
+    const doneData = {
+      ...riskData,
+      stories: [{ ...sampleData.stories[0], status: 'Done' }],
+      risk: {
+        byStory: new Map([['US-0001', { score: 0.4, level: 'Low' }]]),
+        byEpic: new Map(),
+      },
+    };
+    const h = renderHtml(doneData);
+    expect(h).not.toContain('risk-score-badge');
+  });
+});
+
+describe('renderHtml — Trends tab avgRisk (US-0065)', () => {
+  it('Trends tab HTML references avgRisk data series', () => {
+    const h = renderHtml(sampleData, {
+      trends: {
+        dates: ['2026-01-01T00:00:00Z', '2026-02-01T00:00:00Z'],
+        doneCounts: [1, 2],
+        totalStories: [5, 5],
+        aiCosts: [1.0, 2.0],
+        coverage: [80, 85],
+        velocity: [3, 5],
+        openBugs: [2, 1],
+        atRisk: [1, 0],
+        inputTokens: [1000, 2000],
+        outputTokens: [500, 1000],
+        avgRisk: [1.8, 1.5],
+      },
+    });
+    expect(h).toContain('avgRisk');
+    expect(h).toContain('Avg Risk Score');
+  });
+});

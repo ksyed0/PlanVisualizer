@@ -12,6 +12,7 @@ const {
   badge,
   BADGE_TONE,
 } = require('./render-utils');
+const { LEVEL_COLORS: RISK_LEVEL_COLORS } = require('./compute-risk');
 
 function renderHierarchyTab(data) {
   const epicBlocks = data.epics.map((epic, epicIdx) => {
@@ -37,6 +38,11 @@ function renderHierarchyTab(data) {
               .filter(Boolean)
               .join('; ')}">⚠ At Risk</span>`
           : '';
+        const storyRisk = data.risk && data.risk.byStory ? data.risk.byStory.get(story.id) : null;
+        const riskScoreBadge =
+          storyRisk && story.status !== 'Done' && story.status !== 'Retired'
+            ? `<span class="risk-score-badge text-xs font-semibold ml-1" style="color:${RISK_LEVEL_COLORS[storyRisk.level]}">${storyRisk.level} ${storyRisk.score}</span>`
+            : '';
         const tcs = data.testCases.filter((tc) => tc.relatedStory === story.id);
         const acItems = story.acs
           .map((ac) => {
@@ -57,6 +63,7 @@ function renderHierarchyTab(data) {
           ${badge(story.status)} ${badge(story.priority)}
           <span class="text-sm font-medium">${esc(story.title)}</span>
           ${riskBadge}
+          ${riskScoreBadge}
           <span class="ml-auto text-xs text-slate-500">${esc(story.estimate || '?')} · ${usd((data.costs[story.id] && data.costs[story.id].projectedUsd) || 0)}</span>
         </div>
         <ul id="acs-${story.id}" class="ac-guide mt-2 hidden">${acItems || '<li class="text-xs text-slate-500 pl-4">No ACs yet</li>'}</ul>
@@ -69,6 +76,11 @@ function renderHierarchyTab(data) {
       .map((story) => {
         const risk = data.atRisk[story.id] || {};
         const riskBadge = risk.isAtRisk ? `<span class="text-orange-500 text-xs">⚠ At Risk</span>` : '';
+        const storyRisk = data.risk && data.risk.byStory ? data.risk.byStory.get(story.id) : null;
+        const riskScoreBadge =
+          storyRisk && story.status !== 'Done' && story.status !== 'Retired'
+            ? `<span class="risk-score-badge text-xs font-semibold" style="color:${RISK_LEVEL_COLORS[storyRisk.level]}">${storyRisk.level} ${storyRisk.score}</span>`
+            : '';
         const tcs = data.testCases.filter((tc) => tc.relatedStory === story.id);
         const acDone = story.acs.filter((a) => a.done).length;
         const acTotal = story.acs.length;
@@ -96,6 +108,7 @@ function renderHierarchyTab(data) {
           <span>${esc(story.estimate || '?')}</span>
           <span>${cost}</span>
           ${acTotal ? `<span class="cursor-pointer" onclick="toggleCardACs('${jsEsc(story.id)}')">${acDone}/${acTotal} ACs ▾</span>` : ''}
+          ${riskScoreBadge}
           <span class="ml-auto">${riskBadge}</span>
         </div>
         ${acTotal ? `<ul id="card-acs-${story.id}" class="ac-guide hidden mt-1 pt-1 border-t border-slate-100 dark:border-slate-600 space-y-0.5">${acItems || '<li class="text-xs text-slate-500 pl-4">No ACs yet</li>'}</ul>` : ''}
@@ -391,6 +404,7 @@ function renderTrendsTab(data, options = {}) {
   const riskJson = trends ? JSON.stringify(trends.atRisk) : '[]';
   const inputTokensJson = trends ? JSON.stringify(trends.inputTokens) : '[]';
   const outputTokensJson = trends ? JSON.stringify(trends.outputTokens) : '[]';
+  const avgRiskJson = trends ? JSON.stringify((trends.avgRisk || []).map((v) => v.toFixed(2))) : '[]';
 
   const placeholder = `
     <div class="col-span-full flex flex-col items-center justify-center py-16 text-center">
@@ -451,6 +465,10 @@ function renderTrendsTab(data, options = {}) {
       <div class="chart-header-rule"><span class="display-title">At-Risk Stories</span><span class="chart-subtitle">over time</span></div>
       <div style="height:250px;position:relative"><canvas id="chart-trends-risk"></canvas></div>
     </div>
+    <div class="card-elev rounded-lg p-4 col-span-full anim-stagger" style="--i:7">
+      <div class="chart-header-rule"><span class="display-title">Avg Risk Score</span><span class="chart-subtitle">project-wide, over time</span></div>
+      <div style="height:250px;position:relative"><canvas id="chart-trends-avg-risk"></canvas></div>
+    </div>
     `
     }
   </div>
@@ -461,7 +479,8 @@ var _trendsAllData = {
   done: ${doneJson}, total: ${totalJson}, cost: ${costJson},
   coverage: ${coverageJson}, velocity: ${velocityJson},
   bugs: ${bugsJson}, risk: ${riskJson},
-  inputTokens: ${inputTokensJson}, outputTokens: ${outputTokensJson}
+  inputTokens: ${inputTokensJson}, outputTokens: ${outputTokensJson},
+  avgRisk: ${avgRiskJson}
 };
 var _trendsChartRefs = {};
 function _trendGrad(ctx, hex) {
