@@ -78,6 +78,15 @@ describe('computeStoryRisk', () => {
     expect(r.score).toBe(2.0);
     expect(r.level).toBe('High');
   });
+
+  it("'In Progress' (space) status is treated same as 'In-Progress' (hyphen) → weight 2", () => {
+    // Canonical status from parser is 'In Progress'; STATUS_WEIGHTS has both spellings
+    const story = { priority: 'P4', status: 'In Progress' };
+    const r = computeStoryRisk(story);
+    // (1×0.4)+(0×0.3)+(2×0.3) = 0.4+0+0.6 = 1.0 → Medium
+    expect(r.score).toBe(1.0);
+    expect(r.level).toBe('Medium');
+  });
 });
 
 describe('computeAllRisk', () => {
