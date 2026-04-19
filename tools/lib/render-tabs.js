@@ -527,11 +527,11 @@ function initTrendsCharts() {
     {label:'Open Bugs', data:_trendsAllData.bugs, borderColor:'#ef4444', _gc:'#ef4444', fill:true, tension:0.3}
   ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:leg}, scales:{x:xA,y:yA()}}});
   _mkTrend('chart-trends-risk', {type:'line', data:{labels:labels, datasets:[
+    {label:'At-Risk', data:_trendsAllData.risk, borderColor:'#f97316', _gc:'#f97316', fill:true, tension:0.3}
+  ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:leg}, scales:{x:xA,y:yA({suggestedMax:5})}}});
   _mkTrend('chart-trends-avg-risk', {type:'line', data:{labels:labels, datasets:[
     {label:'Avg Risk Score', data:_trendsAllData.avgRisk, borderColor:'#f59e0b', _gc:'#f59e0b', fill:true, tension:0.3}
   ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:leg}, scales:{x:xA,y:yA({min:0,max:4})}}});
-    {label:'At-Risk', data:_trendsAllData.risk, borderColor:'#f97316', _gc:'#f97316', fill:true, tension:0.3}
-  ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:leg}, scales:{x:xA,y:yA({suggestedMax:5})}}});
   var saved = localStorage.getItem('pv-trends-range');
   if (saved && saved !== 'all') {
     var btn = document.querySelector('.trends-range-btn[data-range="'+saved+'"]');
