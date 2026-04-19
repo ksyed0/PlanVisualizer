@@ -194,7 +194,35 @@ const HANDLERS = {
     data.metrics = data.metrics || {};
     data.metrics.storiesCompleted = (data.metrics.storiesCompleted || 0) + 1;
     data.metrics.storiesTotal = Math.max(data.metrics.storiesTotal || 0, Object.keys(data.stories).length);
+    const epicId = opts.epic || story.epic;
+    if (epicId && data.epics && data.epics[epicId]) {
+      data.epics[epicId].storiesCompleted = (data.epics[epicId].storiesCompleted || 0) + 1;
+    }
     appendLog(data, 'Conductor', `completed ${opts.story}${opts.epic ? ' (' + opts.epic + ')' : ''}`);
+    return data;
+  },
+
+  'epic-start': (data, opts) => {
+    data.epics = data.epics || {};
+    data.epics[opts.epic] = {
+      name: opts.name || opts.epic,
+      status: 'in-progress',
+      startedAt: nowISO(),
+      completedAt: null,
+      storiesCompleted: 0,
+      storiesTotal: parseInt(opts.stories || '0', 10),
+    };
+    appendLog(data, 'Conductor', `Epic ${opts.epic} (${opts.name || opts.epic}) started`);
+    return data;
+  },
+
+  'epic-complete': (data, opts) => {
+    data.epics = data.epics || {};
+    if (data.epics[opts.epic]) {
+      data.epics[opts.epic].status = 'complete';
+      data.epics[opts.epic].completedAt = nowISO();
+    }
+    appendLog(data, 'Conductor', `Epic ${opts.epic} complete`);
     return data;
   },
 

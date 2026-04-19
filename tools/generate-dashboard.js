@@ -1570,6 +1570,12 @@ ${phases
   .join('\n')}
 </div>
 
+<!-- US-0130: Epic progress strip — rendered by patchDOM on each tick -->
+<div id="epic-strip" style="display:none; margin-bottom:16px; background:var(--bg-card); border:1px solid var(--bg-card-border); border-radius:10px; padding:10px 16px; font-family:var(--font-sans); font-size:12px;">
+  <div style="font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin-bottom:8px;">Epic Progress</div>
+  <div id="epic-strip-rows"></div>
+</div>
+
 <!-- Metrics Row — US-0118 differentiated cards.
      AC-0399: semantic color keyed to state: Phase=blue, Quality=green/amber/red
      by coverage threshold, Reviews=green(approve)/red(block).
@@ -2449,6 +2455,33 @@ function patchDOM(status) {
     if (!document._projectTitlePatched && proj.name) {
       document.title = proj.name + ' \u2014 SDLC Live Dashboard';
       document._projectTitlePatched = true;
+    }
+  }
+
+  // --- Epic progress strip (US-0130) ----------------------------------------
+  var epics = status.epics || {};
+  var epicKeys = Object.keys(epics);
+  var epicStripEl = document.getElementById('epic-strip');
+  var epicRowsEl = document.getElementById('epic-strip-rows');
+  if (epicStripEl && epicRowsEl) {
+    if (epicKeys.length === 0) {
+      epicStripEl.style.display = 'none';
+    } else {
+      epicStripEl.style.display = '';
+      epicRowsEl.innerHTML = epicKeys.map(function(id) {
+        var ep = epics[id];
+        var pct = ep.storiesTotal > 0 ? Math.round((ep.storiesCompleted / ep.storiesTotal) * 100) : 0;
+        var badgeColor = ep.status === 'complete' ? '#34A853' : ep.status === 'in-progress' ? '#F57C00' : '#888';
+        return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">'
+          + '<span style="font-weight:600;color:var(--text-primary);min-width:90px;">' + id + '</span>'
+          + '<span style="color:var(--text-secondary);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (ep.name || '') + '</span>'
+          + '<span style="min-width:60px;text-align:right;color:var(--text-muted);">' + ep.storiesCompleted + '/' + ep.storiesTotal + '</span>'
+          + '<div style="width:80px;height:4px;background:var(--bg-progress);border-radius:2px;overflow:hidden;">'
+          + '<div style="height:100%;width:' + pct + '%;background:' + badgeColor + ';border-radius:2px;transition:width 0.6s;"></div>'
+          + '</div>'
+          + '<span style="min-width:32px;text-align:right;color:' + badgeColor + ';font-weight:600;">' + pct + '%</span>'
+          + '</div>';
+      }).join('');
     }
   }
 

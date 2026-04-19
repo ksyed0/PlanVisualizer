@@ -195,6 +195,36 @@ describe('update-sdlc-status — phase', () => {
   });
 });
 
+describe('update-sdlc-status — epic lifecycle', () => {
+  it('epic-start creates epics entry with correct shape', () => {
+    const data = baseState();
+    data.epics = {};
+    HANDLERS['epic-start'](data, { epic: 'EPIC-0019', name: 'Dashboard Effectiveness', stories: '8' });
+    expect(data.epics['EPIC-0019']).toBeDefined();
+    expect(data.epics['EPIC-0019'].status).toBe('in-progress');
+    expect(data.epics['EPIC-0019'].storiesTotal).toBe(8);
+    expect(data.epics['EPIC-0019'].storiesCompleted).toBe(0);
+    expect(data.epics['EPIC-0019'].startedAt).toBeTruthy();
+    expect(data.epics['EPIC-0019'].completedAt).toBeNull();
+    expect(data.log[0].message).toContain('EPIC-0019');
+  });
+
+  it('epic-complete sets status and completedAt', () => {
+    const data = baseState();
+    data.epics = { 'EPIC-0019': { status: 'in-progress', storiesCompleted: 8, storiesTotal: 8, startedAt: '2026-01-01T00:00:00Z', completedAt: null } };
+    HANDLERS['epic-complete'](data, { epic: 'EPIC-0019' });
+    expect(data.epics['EPIC-0019'].status).toBe('complete');
+    expect(data.epics['EPIC-0019'].completedAt).toBeTruthy();
+  });
+
+  it('story-complete increments epic storiesCompleted when epic exists', () => {
+    const data = baseState();
+    data.epics = { 'EPIC-0019': { status: 'in-progress', storiesCompleted: 2, storiesTotal: 8, startedAt: '2026-01-01T00:00:00Z', completedAt: null } };
+    HANDLERS['story-complete'](data, { story: 'US-0127', epic: 'EPIC-0019' });
+    expect(data.epics['EPIC-0019'].storiesCompleted).toBe(3);
+  });
+});
+
 describe('update-sdlc-status — log', () => {
   it('appends a generic log entry', () => {
     const data = baseState();
