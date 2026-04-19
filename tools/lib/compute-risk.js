@@ -25,4 +25,57 @@ function computeStoryRisk(story, linkedBugs = []) {
   return { score, level: scoreToLevel(score) };
 }
 
-module.exports = { computeStoryRisk, PRIORITY_WEIGHTS, SEVERITY_WEIGHTS, STATUS_WEIGHTS, LEVEL_COLORS, scoreToLevel };
+function _normalizeRef(raw) {
+  if (!raw) return null;
+  const m = String(raw).match(/US-\d{4}/);
+  return m ? m[0] : null;
+}
+
+function computeAllRisk(stories, bugs) {
+  const bugsByStory = new Map();
+  for (const bug of bugs) {
+    const id = _normalizeRef(bug.relatedStory);
+    if (!id) continue;
+    if (!bugsByStory.has(id)) bugsByStory.set(id, []);
+    bugsByStory.get(id).push(bug);
+  }
+
+  const byStory = new Map();
+  const epicAccum = new Map();
+
+  for (const story of stories) {
+    const result = computeStoryRisk(story, bugsByStory.get(story.id) || []);
+    byStory.set(story.id, result);
+
+    const eid = story.epicId || '_ungrouped';
+    if (!epicAccum.has(eid)) epicAccum.set(eid, { scores: [], counts: { Low: 0, Medium: 0, High: 0, Critical: 0 } });
+
+    if (story.status === 'Done' || story.status === 'Retired') continue;
+    const acc = epicAccum.get(eid);
+    acc.scores.push(result.score);
+    acc.counts[result.level]++;
+  }
+
+  const byEpic = new Map();
+  for (const [eid, { scores, counts }] of epicAccum) {
+    const avg = scores.length ? Math.round((scores.reduce((s, v) => s + v, 0) / scores.length) * 10) / 10 : 0;
+    byEpic.set(eid, {
+      avgScore: avg,
+      maxScore: scores.length ? Math.max(...scores) : 0,
+      level: scoreToLevel(avg),
+      counts,
+    });
+  }
+
+  return { byStory, byEpic };
+}
+
+module.exports = {
+  computeStoryRisk,
+  computeAllRisk,
+  scoreToLevel,
+  PRIORITY_WEIGHTS,
+  SEVERITY_WEIGHTS,
+  STATUS_WEIGHTS,
+  LEVEL_COLORS,
+};

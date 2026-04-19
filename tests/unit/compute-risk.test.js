@@ -1,5 +1,5 @@
 'use strict';
-const { computeStoryRisk } = require('../../tools/lib/compute-risk');
+const { computeStoryRisk, computeAllRisk } = require('../../tools/lib/compute-risk');
 
 describe('computeStoryRisk', () => {
   it('P1 Blocked + Critical open bug → score 4.0, Critical', () => {
@@ -77,5 +77,61 @@ describe('computeStoryRisk', () => {
     const r = computeStoryRisk(story, bugs);
     expect(r.score).toBe(2.0);
     expect(r.level).toBe('High');
+  });
+});
+
+describe('computeAllRisk', () => {
+  it('returns empty Maps for empty input', () => {
+    const { byStory, byEpic } = computeAllRisk([], []);
+    expect(byStory.size).toBe(0);
+    expect(byEpic.size).toBe(0);
+  });
+
+  it('scores stories and aggregates per epic, excluding Done stories', () => {
+    const stories = [
+      { id: 'US-0001', epicId: 'EPIC-0001', priority: 'P1', status: 'In Progress' },
+      { id: 'US-0002', epicId: 'EPIC-0001', priority: 'P2', status: 'Done' },
+    ];
+    const { byStory, byEpic } = computeAllRisk(stories, []);
+    // US-0001: (4×0.4)+(0×0.3)+(2×0.3) = 1.6+0+0.6 = 2.2 → High
+    expect(byStory.get('US-0001').score).toBe(2.2);
+    expect(byStory.get('US-0001').level).toBe('High');
+    // US-0002: (3×0.4)+(0×0.3)+(0×0.3) = 1.2 → Medium (still scored)
+    expect(byStory.get('US-0002').score).toBe(1.2);
+    // EPIC-0001: only US-0001 contributes (Done excluded)
+    const ep = byEpic.get('EPIC-0001');
+    expect(ep.avgScore).toBe(2.2);
+    expect(ep.level).toBe('High');
+    expect(ep.counts.High).toBe(1);
+    expect(ep.counts.Low).toBe(0);
+  });
+
+  it('matches bugs to stories via normalizeStoryRef on relatedStory', () => {
+    const stories = [{ id: 'US-0003', epicId: 'EPIC-0002', priority: 'P2', status: 'Planned' }];
+    const bugs = [{ severity: 'Critical', status: 'Open', relatedStory: 'US-0003 (some context)' }];
+    const { byStory } = computeAllRisk(stories, bugs);
+    // (3×0.4)+(4×0.3)+(1×0.3) = 1.2+1.2+0.3 = 2.7 → High
+    expect(byStory.get('US-0003').score).toBe(2.7);
+    expect(byStory.get('US-0003').level).toBe('High');
+  });
+
+  it('excludes Retired stories from epic aggregation', () => {
+    const stories = [
+      { id: 'US-0004', epicId: 'EPIC-0003', priority: 'P3', status: 'Retired' },
+      { id: 'US-0005', epicId: 'EPIC-0003', priority: 'P4', status: 'Planned' },
+    ];
+    const { byEpic } = computeAllRisk(stories, []);
+    // Only US-0005: (1×0.4)+(0×0.3)+(1×0.3) = 0.4+0+0.3 = 0.7 → Low
+    const ep = byEpic.get('EPIC-0003');
+    expect(ep.avgScore).toBe(0.7);
+    expect(ep.counts.Low).toBe(1);
+    expect(ep.counts.Medium).toBe(0);
+  });
+
+  it('epic with all Done stories gets avgScore 0', () => {
+    const stories = [{ id: 'US-0006', epicId: 'EPIC-0004', priority: 'P1', status: 'Done' }];
+    const { byEpic } = computeAllRisk(stories, []);
+    const ep = byEpic.get('EPIC-0004');
+    expect(ep.avgScore).toBe(0);
   });
 });
