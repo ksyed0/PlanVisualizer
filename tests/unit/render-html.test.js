@@ -69,6 +69,13 @@ describe('renderHtml', () => {
     expect(html).toMatch(/Lessons/);
   });
   it('marks at-risk story with warning', () => expect(html).toMatch(/at-risk|⚠/));
+  it('BUG-0157: search-body element appears before its addEventListener call in the script', () => {
+    const bodyPos = html.indexOf('id="search-body"');
+    const listenerPos = html.indexOf("getElementById('search-body').addEventListener");
+    expect(bodyPos).toBeGreaterThan(-1);
+    expect(listenerPos).toBeGreaterThan(-1);
+    expect(bodyPos).toBeLessThan(listenerPos);
+  });
 });
 
 describe('renderHtml — bugs tab', () => {

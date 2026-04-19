@@ -12,18 +12,19 @@ Running log of session activity, errors, session activity, errors, test results,
 
 #### Stories shipped (1 PR, 20 commits)
 
-| Story | Description |
-|-------|-------------|
-| US-0127 | Schema generalization — `hackathon` → `project` config block |
-| US-0128 | Dynamic project identity in dashboard patchDOM |
-| US-0129 | Phase config externalization — remove PHASE_DEFS |
-| US-0130 | Epic lifecycle commands (epic-start, epic-complete) |
-| US-0131 | Session reset & CLI validation (session-start, --agent guard) |
-| US-0132 | Coverage, bug metrics, DM_AGENT.md wiring |
+| Story   | Description                                                     |
+| ------- | --------------------------------------------------------------- |
+| US-0127 | Schema generalization — `hackathon` → `project` config block    |
+| US-0128 | Dynamic project identity in dashboard patchDOM                  |
+| US-0129 | Phase config externalization — remove PHASE_DEFS                |
+| US-0130 | Epic lifecycle commands (epic-start, epic-complete)             |
+| US-0131 | Session reset & CLI validation (session-start, --agent guard)   |
+| US-0132 | Coverage, bug metrics, DM_AGENT.md wiring                       |
 | US-0133 | Cycle history — cycle-complete, lap strip, telemetry, animation |
-| US-0134 | Dashboard extraction guide + install.sh §7 |
+| US-0134 | Dashboard extraction guide + install.sh §7                      |
 
 #### Key deliverables
+
 - `tools/update-sdlc-status.js`: 10 new/updated commands — `session-start`, `epic-start`, `epic-complete`, `bug-open`, `bug-fix`, `cycle-complete`; `requireAgent()`, `resetSession()` helpers; ISO timestamps; `phase` reads from seeded data
 - `tools/generate-dashboard.js`: `escH()` for XSS safety; project identity patchDOM; epic-progress strip; cycle history lap strip + telemetry row + audio animation
 - `tools/init-sdlc-status.js`: reads `project` + `phases` from agents.config.json; exports `buildStatus`, `loadConfig`
@@ -36,10 +37,12 @@ Running log of session activity, errors, session activity, errors, test results,
 - `docs/ID_REGISTRY.md`: US → US-0135, AC → AC-0488
 
 #### Test results
+
 - 462 tests passing, 22 suites
 - Statement coverage: ~91%
 
 #### Incidents / Notable Fixes
+
 - Task 2: `fmtLogTime` dead code (was never called; `_formatLogTime` was the real helper) removed
 - Task 3: NaN crash in `phase --number` when arg missing — fixed with `Number.isInteger` guard
 - Task 4: XSS in epic-strip innerHTML — fixed with `escH()` added to embedded client-side JS
