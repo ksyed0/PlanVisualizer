@@ -226,7 +226,8 @@ else
       [ -f "${REPO_ROOT}/${f}" ] && cp "${REPO_ROOT}/${f}" "${TARGET}/${f}" && echo "[install] Copied ${f}"
     done
     [ -f "${REPO_ROOT}/orchestrator/atomic-write.js" ] && \
-      cp "${REPO_ROOT}/orchestrator/atomic-write.js" "${TARGET}/orchestrator/atomic-write.js"
+      cp "${REPO_ROOT}/orchestrator/atomic-write.js" "${TARGET}/orchestrator/atomic-write.js" && \
+      echo "[install] Copied orchestrator/atomic-write.js"
     echo "[install] Run: node tools/init-sdlc-status.js   (after adding project/phases to agents.config.json)"
     echo "[install] See: docs/dashboard-extraction.md for the full adoption guide"
   fi

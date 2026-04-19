@@ -19,6 +19,7 @@ Step-by-step guide for adopting the Agentic SDLC Dashboard in another project.
 ### 1. Copy the files
 
 ```bash
+mkdir -p docs tools orchestrator
 cp /path/to/PlanVisualizer/docs/dashboard.html docs/
 cp /path/to/PlanVisualizer/tools/update-sdlc-status.js tools/
 cp /path/to/PlanVisualizer/tools/init-sdlc-status.js tools/
