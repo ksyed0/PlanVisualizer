@@ -199,36 +199,25 @@ const HANDLERS = {
   },
 
   phase: (data, opts) => {
-    // Canonical DM_AGENT.md phase definitions
-    const PHASE_DEFS = [
-      { name: 'Blueprint', agents: ['Compass'], deliverables: ['refined ACs', 'priority list'] },
-      { name: 'Architect', agents: ['Keystone'], deliverables: ['scaffold', 'types', 'service stubs'] },
-      { name: 'Build', agents: ['Pixel', 'Forge', 'Palette'], deliverables: ['implementation', 'unit tests'] },
-      { name: 'Integration', agents: ['Pixel'], deliverables: ['wired services', 'e2e flows'] },
-      { name: 'Test', agents: ['Sentinel', 'Circuit'], deliverables: ['test report', 'coverage'] },
-      { name: 'Polish', agents: ['Pixel', 'Forge'], deliverables: ['bug fixes', 'demo prep'] },
-    ];
     const n = parseInt(opts.number, 10);
     const status = opts.status || 'in-progress';
     data.currentPhase = n;
     data.phases = data.phases || [];
-    // Auto-expand phases up to n, seeding with canonical name+agents
+    // Auto-expand if phases weren't seeded by init-sdlc-status.js
     while (data.phases.length < n) {
       const i = data.phases.length;
-      const def = PHASE_DEFS[i] || { name: `Phase ${i + 1}`, agents: [], deliverables: [] };
       data.phases.push({
+        id: i + 1,
+        name: `Phase ${i + 1}`,
+        agents: [],
+        deliverables: [],
         status: 'pending',
-        name: def.name,
-        agents: def.agents.slice(),
-        deliverables: def.deliverables.slice(),
+        startedAt: null,
+        completedAt: null,
       });
     }
     const phase = data.phases[n - 1];
     phase.status = status;
-    // Ensure name/agents/deliverables are populated on the active phase
-    if (!phase.name && PHASE_DEFS[n - 1]) phase.name = PHASE_DEFS[n - 1].name;
-    if (!phase.agents && PHASE_DEFS[n - 1]) phase.agents = PHASE_DEFS[n - 1].agents.slice();
-    if (!phase.deliverables && PHASE_DEFS[n - 1]) phase.deliverables = PHASE_DEFS[n - 1].deliverables.slice();
     if (status === 'in-progress' && !phase.startedAt) phase.startedAt = nowISO();
     if (status === 'complete' && !phase.completedAt) phase.completedAt = nowISO();
     appendLog(data, 'Conductor', `Phase ${n} (${phase.name}) → ${status}`);

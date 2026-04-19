@@ -147,13 +147,23 @@ describe('update-sdlc-status — story lifecycle', () => {
 });
 
 describe('update-sdlc-status — phase', () => {
-  it('sets currentPhase + auto-expands phases array with canonical names', () => {
+  function seededPhaseState() {
     const data = baseState();
+    data.phases = [
+      { id: 1, name: 'Blueprint',   agents: ['Compass'],                 deliverables: ['refined ACs'],   status: 'pending', startedAt: null, completedAt: null },
+      { id: 2, name: 'Architect',   agents: ['Keystone'],                deliverables: ['scaffold'],      status: 'pending', startedAt: null, completedAt: null },
+      { id: 3, name: 'Build',       agents: ['Pixel', 'Forge', 'Palette'], deliverables: ['implementation'], status: 'pending', startedAt: null, completedAt: null },
+      { id: 4, name: 'Integration', agents: ['Pixel'],                   deliverables: ['e2e flows'],     status: 'pending', startedAt: null, completedAt: null },
+      { id: 5, name: 'Test',        agents: ['Sentinel', 'Circuit'],     deliverables: ['test report'],   status: 'pending', startedAt: null, completedAt: null },
+      { id: 6, name: 'Polish',      agents: ['Pixel', 'Forge'],          deliverables: ['bug fixes'],     status: 'pending', startedAt: null, completedAt: null },
+    ];
+    return data;
+  }
+
+  it('sets currentPhase + updates pre-seeded phase status', () => {
+    const data = seededPhaseState();
     HANDLERS.phase(data, { number: '3', status: 'in-progress' });
     expect(data.currentPhase).toBe(3);
-    expect(data.phases).toHaveLength(3);
-    expect(data.phases[0].name).toBe('Blueprint');
-    expect(data.phases[1].name).toBe('Architect');
     expect(data.phases[2].name).toBe('Build');
     expect(data.phases[2].agents).toEqual(['Pixel', 'Forge', 'Palette']);
     expect(data.phases[2].status).toBe('in-progress');
@@ -161,11 +171,20 @@ describe('update-sdlc-status — phase', () => {
   });
 
   it('records completedAt on complete', () => {
-    const data = baseState();
+    const data = seededPhaseState();
     HANDLERS.phase(data, { number: '1', status: 'in-progress' });
     HANDLERS.phase(data, { number: '1', status: 'complete' });
     expect(data.phases[0].status).toBe('complete');
     expect(data.phases[0].completedAt).toBeTruthy();
+  });
+
+  it('falls back to generic phase name when no phases seeded', () => {
+    const data = baseState();
+    data.phases = [];
+    HANDLERS.phase(data, { number: '2', status: 'in-progress' });
+    expect(data.currentPhase).toBe(2);
+    expect(data.phases[1].name).toBe('Phase 2');
+    expect(data.phases[1].status).toBe('in-progress');
   });
 });
 
