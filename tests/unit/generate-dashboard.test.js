@@ -37,12 +37,13 @@ function makeHealthyFixture() {
   agents.Pixel = { status: 'active', currentTask: 'US-0124 test harness', tasksCompleted: 1 };
 
   return {
-    hackathon: {
+    project: {
       name: 'SDLC Dashboard',
-      date: '2026-04-15',
-      startTime: '09:00',
-      endTime: '17:00',
+      description: 'Agentic AI SDLC',
+      repoUrl: 'https://github.com/ksyed0/PlanVisualizer',
+      startDate: '2026-04-15',
     },
+    cycles: [],
     currentPhase: 3,
     phases: CANONICAL_PHASES.map((p, i) => ({
       ...p,
@@ -363,5 +364,63 @@ describe('US-0120 stories panel polish', () => {
 
     // min-width: 0 on .story-title must persist — BUG-0164 fix guard.
     expect(html).toMatch(/\.story-title \{[^}]*min-width:\s*0/);
+  });
+});
+
+// --- US-0127: init-sdlc-status buildStatus ---
+const os = require('os');
+
+describe('init-sdlc-status — buildStatus', () => {
+  let tmpDir;
+
+  beforeEach(() => {
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sdlc-test-'));
+  });
+
+  afterEach(() => {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+    jest.resetModules();
+  });
+
+  function writeConfig(obj) {
+    fs.writeFileSync(path.join(tmpDir, 'agents.config.json'), JSON.stringify(obj));
+    return path.join(tmpDir, 'agents.config.json');
+  }
+
+  it('writes project block (not hackathon) to output', () => {
+    const { buildStatus } = require('../../tools/init-sdlc-status');
+    const cfgPath = writeConfig({
+      project: { name: 'TestProj', description: 'Desc', repoUrl: 'https://github.com/test/proj', startDate: '2026-01-01' },
+      phases: [],
+      agents: {},
+    });
+    const status = buildStatus(cfgPath);
+    expect(status.project).toBeDefined();
+    expect(status.project.name).toBe('TestProj');
+    expect(status.project.repoUrl).toBe('https://github.com/test/proj');
+    expect(status.hackathon).toBeUndefined();
+  });
+
+  it('seeds phases from config with id, status:pending, timestamps null', () => {
+    const { buildStatus } = require('../../tools/init-sdlc-status');
+    const cfgPath = writeConfig({
+      project: { name: 'P', description: '', repoUrl: '', startDate: '2026-01-01' },
+      phases: [
+        { name: 'Build', agents: ['Dev'], deliverables: ['code'] },
+        { name: 'Test',  agents: ['QA'],  deliverables: ['report'] },
+      ],
+      agents: {},
+    });
+    const status = buildStatus(cfgPath);
+    expect(status.phases).toHaveLength(2);
+    expect(status.phases[0]).toMatchObject({ id: 1, name: 'Build', status: 'pending', startedAt: null, completedAt: null });
+    expect(status.phases[1]).toMatchObject({ id: 2, name: 'Test' });
+  });
+
+  it('initialises cycles as empty array', () => {
+    const { buildStatus } = require('../../tools/init-sdlc-status');
+    const cfgPath = writeConfig({ project: { name: 'P', description: '', repoUrl: '', startDate: '' }, phases: [], agents: {} });
+    const status = buildStatus(cfgPath);
+    expect(status.cycles).toEqual([]);
   });
 });
