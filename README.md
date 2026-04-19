@@ -175,6 +175,14 @@ historical data backfill if existing project data is detected.
 
 ---
 
+## Agentic SDLC Dashboard
+
+A live dashboard that visualises pipeline agent activity at `docs/dashboard.html`.
+
+**Adopting in another project:** see [`docs/dashboard-extraction.md`](docs/dashboard-extraction.md).
+
+---
+
 ## Credits
 
 The `AGENTS.md` operating framework included with this tool is based on the **BLAST framework** originally developed by **Jack Roberts** ([Jack@JackRoberts.ai](mailto:Jack@JackRoberts.ai)).
