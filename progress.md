@@ -4,6 +4,39 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 23 — 2026-04-19
+
+### What Was Done
+
+1. **Bug fixes (3 PRs opened, PRs #403–#405):**
+   - BUG-0157: Fixed search-body null TypeError by moving `renderScripts` after modal HTML in `render-html.js`
+   - BUG-0099: Fixed Lessons tab link — used `nextElementSibling` on tbody to find bug row section
+   - BUG-0098: Closed stale Open status (filter was already correct since Session 16)
+
+2. **EPIC-0010 Risk Analytics — full implementation (all on branch `bugfix/BUG-0098-stale-open-status`, PR #405):**
+   - Brainstormed design using `superpowers:brainstorming` — wrote design spec + implementation plan
+   - Implemented 9 tasks via `superpowers:subagent-driven-development`
+   - New module: `tools/lib/compute-risk.js` — pure risk computation (computeStoryRisk, computeAllRisk, weight tables)
+   - US-0064: Hierarchy tab risk badges + Status tab risk charts (HTML bar + column distribution)
+   - US-0065: `avgRisk` in snapshot.js `extractTrends()` + Trends tab Avg Risk Score line chart
+   - US-0066: Velocity-based completion date banner in `render-shell.js` below topbar
+   - US-0067: At-Risk Epics summary widget in Status tab (epics with avgScore ≥ 2.0)
+   - US-0068 (Monte Carlo): Deferred — ±20% confidence range used instead
+
+### Test Results
+
+- 953 tests pass, 45 suites, 0 failures
+- Statement coverage: 93.07% (gate: 80%)
+- Branch: `bugfix/BUG-0098-stale-open-status`, PR #405 → develop
+
+### Blockers / Notes
+
+- None. PR #405 is ready to merge pending CI.
+- AC-0190, AC-0193, AC-0201–0203 left unchecked in RELEASE_PLAN.md — not in final design spec scope.
+- `_normalizeRef` in compute-risk.js intentionally duplicates `normalizeStoryRef` from render-utils.js to keep compute module free of render-layer deps.
+
+---
+
 ## Session 22 — 2026-04-18
 
 ### What Was Done

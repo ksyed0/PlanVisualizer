@@ -4,6 +4,30 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
+## L-0041 — Chart.js has no built-in data labels; use HTML bar charts when text annotations are required
+
+**Rule:** When a spec requires text labels (score values, badges) alongside chart bars, do not use Chart.js canvas — it requires the `chartjs-plugin-datalabels` external dependency which is not in this project. Use an HTML/CSS bar chart instead: `<div style="width:${pct}%;background:${col}">` rows with adjacent text spans. This is simpler, controllable, and produces exactly the required output without adding a dependency.
+_Learned during EPIC-0010 Task 5: the initial canvas implementation produced bars with no text at all. The spec reviewer flagged score labels and level badges as missing. Replaced with HTML bar chart in one pass._
+**Date:** 2026-04-19
+
+---
+
+## L-0042 — STATUS_WEIGHTS must handle both 'In-Progress' (hyphen) and 'In Progress' (space)
+
+**Rule:** The RELEASE*PLAN.md parser emits story status as `'In Progress'` (with a space), but design specs and weight tables often write it as `'In-Progress'` (with a hyphen). Any STATUS_WEIGHTS map must include both: `{ 'In-Progress': 2, 'In Progress': 2, ... }`. Missing the space variant silently defaults to weight 1 for all In Progress stories, skewing risk scores.
+\_Learned during EPIC-0010 compute-risk.js implementation — the code quality reviewer caught the missing alias during review.*
+**Date:** 2026-04-19
+
+---
+
+## L-0043 — Pure computation modules should duplicate small utility functions to avoid render-layer deps
+
+**Rule:** `compute-risk.js` implements its own `_normalizeRef` instead of importing `normalizeStoryRef` from `render-utils.js`. This is correct: pulling a render-layer utility into a pure data module would create a cross-layer dependency and make the module harder to test in isolation. When a pure module needs a small utility that exists elsewhere, prefer duplicating the minimal logic rather than importing from a higher layer.
+_Observed during EPIC-0010 final review. The tradeoff: regex changes in render-utils.js won't propagate to compute-risk.js. Document the duplication with a comment._
+**Date:** 2026-04-19
+
+---
+
 ## L-0039 — Spec reviewers without the actual spec file will hallucinate requirements
 
 **Rule:** A spec compliance reviewer given only the feature files (no plan document) will invent requirements that sound plausible but don't exist — e.g., fabricating "Section 1 must cover prerequisites" when the real AC is just "document the adoption steps". Always pass the reviewer the exact plan file path and the AC IDs to check. When reviewer findings feel surprising, cross-check against the plan file directly before acting on them.
