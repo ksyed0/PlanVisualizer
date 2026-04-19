@@ -598,10 +598,6 @@ function renderChartsTab(data) {
   // Risk chart data
   const riskEpics =
     data.risk && data.risk.byEpic ? [...data.risk.byEpic.entries()].sort((a, b) => b[1].avgScore - a[1].avgScore) : [];
-  const epicRiskLabels = JSON.stringify(riskEpics.map(([id]) => id));
-  const epicRiskScores = JSON.stringify(riskEpics.map(([, r]) => r.avgScore));
-  const epicRiskColors = JSON.stringify(riskEpics.map(([, r]) => RISK_LEVEL_COLORS[r.level]));
-
   const riskCounts = { Low: 0, Medium: 0, High: 0, Critical: 0 };
   let totalRiskScore = 0,
     activeStoryCount = 0;
@@ -702,8 +698,25 @@ function renderChartsTab(data) {
           <span class="display-title">Risk Score by Epic</span>
           <span class="chart-subtitle">avg score, active stories</span>
         </div>
-        <div style="height:${Math.max(200, riskEpics.length * 36)}px;position:relative">
-          <canvas id="chart-risk-by-epic"></canvas>
+        <div style="display:flex;flex-direction:column;gap:5px;margin-top:4px">
+          ${
+            riskEpics.length === 0
+              ? '<p style="color:#64748b;font-size:12px">No risk data</p>'
+              : riskEpics
+                  .map(([id, r]) => {
+                    const pct = Math.min(100, Math.round((r.avgScore / 4) * 100));
+                    const col = RISK_LEVEL_COLORS[r.level];
+                    return `<div style="display:flex;align-items:center;gap:6px">
+              <span style="color:#e2e8f0;width:72px;font-size:11px;font-family:monospace;flex-shrink:0">${esc(id)}</span>
+              <div style="flex:1;background:#1e293b;border-radius:3px;height:14px;overflow:hidden">
+                <div style="width:${pct}%;height:100%;background:${col};border-radius:3px"></div>
+              </div>
+              <span style="color:${col};font-size:11px;font-weight:600;width:28px;text-align:right">${r.avgScore}</span>
+              <span style="background:${col};color:${r.level === 'High' ? '#1e293b' : 'white'};font-size:9px;padding:1px 5px;border-radius:3px;white-space:nowrap">${r.level}</span>
+            </div>`;
+                  })
+                  .join('')
+          }
         </div>
       </div>
 
@@ -780,15 +793,6 @@ function renderChartsTab(data) {
       data: { labels: ${sessionDates}, datasets: [{ label: 'Session AI Spend ($)', data: ${sessionPerCosts}, backgroundColor: '#6366f1' }] },
       options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true } } }, scales: { x: { ticks: { color: tc } }, y: { ticks: { color: tc } } } }
     });
-    if (document.getElementById('chart-risk-by-epic')) {
-      _charts.riskByEpic = new Chart(document.getElementById('chart-risk-by-epic'), {
-        type: 'bar',
-        data: { labels: ${epicRiskLabels}, datasets: [{ label: 'Avg Risk Score', data: ${epicRiskScores}, backgroundColor: ${epicRiskColors} }] },
-        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: { x: { ticks: { color: tc }, max: 4 }, y: { ticks: { color: tc, autoSkip: false } } } }
-      });
-    }
     if (document.getElementById('chart-risk-distribution')) {
       _charts.riskDist = new Chart(document.getElementById('chart-risk-distribution'), {
         type: 'bar',
