@@ -4,6 +4,53 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 22 — 2026-04-18
+
+### What Was Done
+
+**EPIC-0019 — Dashboard Effectiveness** — all 8 stories shipped via subagent-driven development. PR #401 opened to develop.
+
+#### Stories shipped (1 PR, 20 commits)
+
+| Story | Description |
+|-------|-------------|
+| US-0127 | Schema generalization — `hackathon` → `project` config block |
+| US-0128 | Dynamic project identity in dashboard patchDOM |
+| US-0129 | Phase config externalization — remove PHASE_DEFS |
+| US-0130 | Epic lifecycle commands (epic-start, epic-complete) |
+| US-0131 | Session reset & CLI validation (session-start, --agent guard) |
+| US-0132 | Coverage, bug metrics, DM_AGENT.md wiring |
+| US-0133 | Cycle history — cycle-complete, lap strip, telemetry, animation |
+| US-0134 | Dashboard extraction guide + install.sh §7 |
+
+#### Key deliverables
+- `tools/update-sdlc-status.js`: 10 new/updated commands — `session-start`, `epic-start`, `epic-complete`, `bug-open`, `bug-fix`, `cycle-complete`; `requireAgent()`, `resetSession()` helpers; ISO timestamps; `phase` reads from seeded data
+- `tools/generate-dashboard.js`: `escH()` for XSS safety; project identity patchDOM; epic-progress strip; cycle history lap strip + telemetry row + audio animation
+- `tools/init-sdlc-status.js`: reads `project` + `phases` from agents.config.json; exports `buildStatus`, `loadConfig`
+- `agents.config.json`: `project` section + 6-phase `phases` array added
+- `docs/agents/DM_AGENT.md`: Conductor Pipeline Checklists with all 10 CLI commands
+- `docs/dashboard-extraction.md`: 6-step adoption guide
+- `scripts/install.sh`: §7 dashboard setup with idempotency guard (skips entire section if dashboard.html already exists in target)
+- `docs/dashboard.html`: committed to repo (removed from .gitignore)
+- `docs/RELEASE_PLAN.md`: US-0127–0134 written back; EPIC-0017 → Done; EPIC-0019 description updated
+- `docs/ID_REGISTRY.md`: US → US-0135, AC → AC-0488
+
+#### Test results
+- 462 tests passing, 22 suites
+- Statement coverage: ~91%
+
+#### Incidents / Notable Fixes
+- Task 2: `fmtLogTime` dead code (was never called; `_formatLogTime` was the real helper) removed
+- Task 3: NaN crash in `phase --number` when arg missing — fixed with `Number.isInteger` guard
+- Task 4: XSS in epic-strip innerHTML — fixed with `escH()` added to embedded client-side JS
+- Task 5: silent NaN in `resetSession` when `--stories` non-numeric — fixed with throw
+- Task 7: `testsFailed` missing from cycle snapshot — fixed; success rate telemetry was permanently 100%
+- Task 8: AC-0486 — entire §7 must be skipped (not just dashboard.html copy) when target already has file — fixed
+- Task 8 quality: `dashboard.html` was gitignored; removed from .gitignore and committed so installer can copy it
+- Task 8: spec reviewer hallucinated section-numbering requirements that don't exist in actual spec — cross-checked against plan file directly
+
+---
+
 ## Session 21 — 2026-04-18
 
 ### What Was Done

@@ -4,6 +4,14 @@ Timestamped log of every user prompt across all sessions. Append-only. Never edi
 
 ---
 
+## Session 22 — 2026-04-18
+
+| #   | Timestamp            | Prompt |
+| --- | -------------------- | ------ |
+| 1   | 2026-04-18T23:00:00Z | [Session resumed from context summary — continuing EPIC-0019 subagent-driven development, Task 8 AC-0486 fix through Task 9 write-back and PR #401] |
+
+---
+
 ## Session 21 — 2026-04-18
 
 | #   | Timestamp            | Prompt                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
