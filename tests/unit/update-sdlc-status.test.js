@@ -262,6 +262,7 @@ describe('update-sdlc-status — session-start', () => {
     // preserved:
     expect(data.project.name).toBe('TestProj');
     expect(data.agents.Pixel).toBeDefined();
+    expect(data.agents.Pixel.tasksCompleted).toBe(5); // accumulated state preserved
     expect(data.cycles).toHaveLength(1);
     expect(data.epics['EPIC-0001']).toBeDefined();
   });
@@ -270,6 +271,11 @@ describe('update-sdlc-status — session-start', () => {
     const data = baseState();
     HANDLERS['session-start'](data, { stories: '5' });
     expect(data.metrics.storiesTotal).toBe(5);
+  });
+
+  it('throws when --stories is non-numeric', () => {
+    const data = baseState();
+    expect(() => HANDLERS['session-start'](data, { stories: 'abc' })).toThrow('--stories must be a non-negative integer');
   });
 });
 

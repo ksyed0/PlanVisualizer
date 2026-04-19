@@ -103,6 +103,10 @@ function requireAgent(opts) {
 }
 
 function resetSession(data, storiesTotal) {
+  const total = parseInt(storiesTotal || '0', 10);
+  if (Number.isNaN(total) || total < 0) {
+    throw new Error(`[update-sdlc-status] --stories must be a non-negative integer, got: ${storiesTotal}`);
+  }
   data.stories = {};
   data.currentPhase = 0;
   if (Array.isArray(data.phases)) {
@@ -115,7 +119,7 @@ function resetSession(data, storiesTotal) {
   }
   data.metrics = {
     storiesCompleted: 0,
-    storiesTotal: parseInt(storiesTotal || '0', 10),
+    storiesTotal: total,
     tasksCompleted: 0,
     tasksTotal: 0,
     testsPassed: 0,
