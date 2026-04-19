@@ -178,6 +178,7 @@ describe('update-sdlc-status — cycle-complete', () => {
     expect(data.cycles[0].id).toBe(1);
     expect(data.cycles[0].storiesCompleted).toBe(4);
     expect(data.cycles[0].coveragePercent).toBeCloseTo(91.5);
+    expect(data.cycles[0].testsFailed).toBe(0);
     expect(data.cycles[0].completedAt).toBeTruthy();
   });
 

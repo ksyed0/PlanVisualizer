@@ -306,6 +306,7 @@ const HANDLERS = {
       completedAt: nowISO(),
       storiesCompleted: (data.metrics && data.metrics.storiesCompleted) || 0,
       testsPassed: (data.metrics && data.metrics.testsPassed) || 0,
+      testsFailed: (data.metrics && data.metrics.testsFailed) || 0,
       coveragePercent: (data.metrics && data.metrics.coveragePercent) || 0,
       bugsFixed: (data.metrics && data.metrics.bugsFixed) || 0,
       phaseDurations,
