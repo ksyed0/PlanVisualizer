@@ -297,3 +297,5 @@ Input Tokens column = direct input + cache-write tokens; cost computed with dist
 | 2026-04-19 | 6d3e534e-e525-4a74-8758-383af5d745e5 | bugfix/BUG-0098-stale-open-status          | 836992       | 192173        | 18765730          | 11.6508  |
 | 2026-04-19 | 6d3e534e-e525-4a74-8758-383af5d745e5 | bugfix/BUG-0098-stale-open-status          | 944788       | 271759        | 22715983          | 14.4339  |
 | 2026-04-19 | 6d3e534e-e525-4a74-8758-383af5d745e5 | bugfix/BUG-0098-stale-open-status          | 1391357      | 426141        | 48949091          | 26.2900  |
+| 2026-04-19 | 6d3e534e-e525-4a74-8758-383af5d745e5 | bugfix/BUG-0098-stale-open-status          | 1403548      | 433302        | 51380480          | 27.1725  |
+| 2026-04-19 | 6d3e534e-e525-4a74-8758-383af5d745e5 | bugfix/BUG-0098-stale-open-status          | 1405647      | 435797        | 52118749          | 27.4393  |
