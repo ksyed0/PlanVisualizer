@@ -1709,6 +1709,26 @@ describe('renderHtml — at-risk epic summary (US-0067)', () => {
       },
     };
     expect(renderHtml(d)).toContain('At-Risk Epics');
+    // Entry should show epic ID, score, level badge, and H+C count
+    expect(renderHtml(d)).toContain('EPIC-0001');
+    expect(renderHtml(d)).toContain('2.3');
+    expect(renderHtml(d)).toContain('1 High+Critical stories');
+  });
+
+  it('Status tab shows At-Risk Epics when avgScore is exactly 2.0 (inclusive boundary)', () => {
+    const d = {
+      ...sampleData,
+      risk: {
+        byStory: new Map([['US-0001', { score: 2.0, level: 'High' }]]),
+        byEpic: new Map([
+          [
+            'EPIC-0001',
+            { avgScore: 2.0, maxScore: 2.0, level: 'High', counts: { Low: 0, Medium: 0, High: 1, Critical: 0 } },
+          ],
+        ]),
+      },
+    };
+    expect(renderHtml(d)).toContain('At-Risk Epics');
   });
 
   it('Status tab omits At-Risk Epics section when all epics score < 2.0', () => {
