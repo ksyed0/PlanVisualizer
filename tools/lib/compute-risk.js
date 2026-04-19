@@ -1,8 +1,12 @@
 'use strict';
 
+// Composite delivery-risk scoring for stories.
+// score = (priorityWeight × 0.4) + (maxOpenBugSeverityWeight × 0.3) + (statusWeight × 0.3)
+// Weights range 0–4; score range 0–4; level: Low <1, Medium 1–2, High 2–3, Critical ≥3.
+
 const PRIORITY_WEIGHTS = { P1: 4, P2: 3, P3: 2, P4: 1 };
 const SEVERITY_WEIGHTS = { Critical: 4, High: 3, Medium: 2, Low: 1 };
-const STATUS_WEIGHTS = { Blocked: 4, 'In-Progress': 2, Planned: 1, Done: 0, Retired: 0 };
+const STATUS_WEIGHTS = { Blocked: 4, 'In-Progress': 2, 'In Progress': 2, Planned: 1, Done: 0, Retired: 0 };
 const LEVEL_COLORS = { Critical: '#ef4444', High: '#f59e0b', Medium: '#3b82f6', Low: '#22c55e' };
 
 function scoreToLevel(score) {
