@@ -120,13 +120,13 @@ Dependencies: EPIC-0013, EPIC-0015
 EPIC-0017: Agentic Dashboard Effectiveness Review
 Description: Discovery / retrospective epic. Review the Agentic SDLC Dashboard (originally built for a hackathon demo, now extracted as a reusable component) and define what it takes to make it genuinely effective as a general-purpose agentic pipeline visualization. Output: a gap analysis and a set of implementation stories in a follow-on epic. Complements EPIC-0016 (Mission Control aesthetic redesign) by focusing on schema, data model, workflow coverage, and integration patterns — not just visual polish.
 Release Target: Release 2.0
-Status: Planned
+Status: Done
 Dependencies: EPIC-0013, EPIC-0016
 
 EPIC-0019: Dashboard Cycle History
-Description: Extends sdlc-status.json with a cycles[] history schema and renders it on the Agentic SDLC Dashboard as a lap-history strip (last 10 completed cycles) plus an aggregate telemetry row (avg cycle time, cycles today, incidents, success rate) and a cycle-completion animation. Requires a DM_AGENT.md protocol decision first (canonical: one cycle = one story). Split out of EPIC-0016 to keep the aesthetic redesign unblocked by schema-migration work.
+Description: Comprehensive effectiveness improvement for the Agentic SDLC Dashboard. Covers three tracks: (A) schema generalization — replacing hackathon framing with a project config block, externalizing phase definitions, and removing hardcoded project identity from the HTML; (B) CLI completeness — epic lifecycle commands, session reset, coverage/bug/phase wiring in DM_AGENT.md; (C) new features — cycle history lap strip, aggregate telemetry, and a dashboard extraction guide for adopting projects. Supersedes the original narrow cycle-history scope.
 Release Target: Release 1.11
-Status: Planned
+Status: Done
 Dependencies: EPIC-0016
 ```
 
