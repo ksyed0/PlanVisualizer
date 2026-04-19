@@ -1630,3 +1630,22 @@ describe('renderHtml — Trends tab avgRisk (US-0065)', () => {
     expect(h).toContain('Avg Risk Score');
   });
 });
+
+describe('renderHtml — completion banner (US-0066)', () => {
+  it('shows completion banner when data.completion is set', () => {
+    const d = {
+      ...sampleData,
+      completion: { likelyDate: 'May 14', rangeStart: 'Apr 28', rangeEnd: 'Jun 3', velocityWeeks: 4 },
+    };
+    const h = renderHtml(d);
+    expect(h).toContain('completion-banner');
+    expect(h).toContain('May 14');
+    expect(h).toContain('Apr 28');
+    expect(h).toContain('4-wk velocity');
+  });
+
+  it('omits completion banner when data.completion is null', () => {
+    const d = { ...sampleData, completion: null };
+    expect(renderHtml(d)).not.toContain('completion-banner');
+  });
+});

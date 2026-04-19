@@ -1,7 +1,7 @@
 'use strict';
 
 const { esc, sparkline, BADGE_TONE, badge } = require('./render-utils');
-const { renderTopBar, renderFilterBar, renderSidebar } = require('./render-shell');
+const { renderTopBar, renderFilterBar, renderSidebar, renderCompletionBanner } = require('./render-shell');
 const {
   renderHierarchyTab,
   renderKanbanTab,
@@ -202,6 +202,7 @@ function renderHtml(data, options = {}) {
       : ''
   }
   ${renderTopBar(data)}
+  ${renderCompletionBanner(data)}
   <div id="app-shell">
     ${renderSidebar()}
     <main id="main-content" role="main">
