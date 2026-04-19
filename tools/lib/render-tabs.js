@@ -755,7 +755,7 @@ function renderChartsTab(data) {
               <span style="font-family:monospace;font-size:12px;font-weight:700;color:#e2e8f0">${esc(id)}</span>
               <span style="font-size:13px;font-weight:700;color:${col}">${r.avgScore}</span>
               <span style="background:${col};color:${textCol};font-size:10px;padding:1px 6px;border-radius:3px">${r.level}</span>
-              <span style="font-size:11px;color:#64748b;margin-left:auto">${r.counts.High + r.counts.Critical} High+Critical stories</span>
+              <span style="font-size:11px;color:#64748b;margin-left:auto">${(r.counts?.High ?? 0) + (r.counts?.Critical ?? 0)} High+Critical stories</span>
             </div>`;
             })
             .join('')}

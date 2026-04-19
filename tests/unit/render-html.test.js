@@ -1712,6 +1712,7 @@ describe('renderHtml — at-risk epic summary (US-0067)', () => {
     // Entry should show epic ID, score, level badge, and H+C count
     expect(renderHtml(d)).toContain('EPIC-0001');
     expect(renderHtml(d)).toContain('2.3');
+    expect(renderHtml(d)).toContain('>High</span>');
     expect(renderHtml(d)).toContain('1 High+Critical stories');
   });
 
