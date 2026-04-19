@@ -1593,6 +1593,8 @@ describe('renderHtml — risk badges (US-0064)', () => {
     const h = renderHtml(riskData);
     expect(h).toContain('High');
     expect(h).toContain('2.3');
+    expect(h).toContain('risk-score-badge');
+    expect(h).toContain('#f59e0b');
   });
 
   it('does not show numeric risk badge on Done story', () => {
@@ -1641,6 +1643,7 @@ describe('renderHtml — completion banner (US-0066)', () => {
     expect(h).toContain('completion-banner');
     expect(h).toContain('May 14');
     expect(h).toContain('Apr 28');
+    expect(h).toContain('Jun 3');
     expect(h).toContain('4-wk velocity');
   });
 

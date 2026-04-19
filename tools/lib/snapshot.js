@@ -158,7 +158,7 @@ function extractTrends(snapshots) {
     if (active.length === 0) return 0;
     const { byStory } = computeAllRisk(stories, bugs);
     const scores = active.map((st) => (byStory.get(st.id) || { score: 0 }).score);
-    return Math.round((scores.reduce((a, v) => a + v, 0) / scores.length) * 10) / 10;
+    return scores.reduce((a, v) => a + v, 0) / scores.length;
   });
 
   return {

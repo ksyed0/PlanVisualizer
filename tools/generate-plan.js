@@ -152,7 +152,8 @@ function computeCompletion(stories, trends) {
   const weeksRemaining = remainingPts / ptsPerWeek;
   const likelyMs = lastDate.getTime() + weeksRemaining * 7 * 24 * 60 * 60 * 1000;
   const rangeMs = weeksRemaining * 0.2 * 7 * 24 * 60 * 60 * 1000;
-  const fmt = (d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const fmt = (d) => `${MONTH_NAMES[d.getMonth()]} ${d.getDate()}`;
   return {
     likelyDate: fmt(new Date(likelyMs)),
     rangeStart: fmt(new Date(likelyMs - rangeMs)),

@@ -40,7 +40,7 @@ function renderHierarchyTab(data) {
           : '';
         const storyRisk = data.risk && data.risk.byStory ? data.risk.byStory.get(story.id) : null;
         const riskScoreBadge =
-          storyRisk && story.status !== 'Done' && story.status !== 'Retired'
+          storyRisk && story.status !== 'Done' && story.status !== 'Retired' && story.status !== 'Cancelled'
             ? `<span class="risk-score-badge text-xs font-semibold ml-1" style="color:${RISK_LEVEL_COLORS[storyRisk.level]}">${storyRisk.level} ${storyRisk.score}</span>`
             : '';
         const tcs = data.testCases.filter((tc) => tc.relatedStory === story.id);
@@ -78,7 +78,7 @@ function renderHierarchyTab(data) {
         const riskBadge = risk.isAtRisk ? `<span class="text-orange-500 text-xs">⚠ At Risk</span>` : '';
         const storyRisk = data.risk && data.risk.byStory ? data.risk.byStory.get(story.id) : null;
         const riskScoreBadge =
-          storyRisk && story.status !== 'Done' && story.status !== 'Retired'
+          storyRisk && story.status !== 'Done' && story.status !== 'Retired' && story.status !== 'Cancelled'
             ? `<span class="risk-score-badge text-xs font-semibold" style="color:${RISK_LEVEL_COLORS[storyRisk.level]}">${storyRisk.level} ${storyRisk.score}</span>`
             : '';
         const tcs = data.testCases.filter((tc) => tc.relatedStory === story.id);
@@ -531,7 +531,7 @@ function initTrendsCharts() {
   ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:leg}, scales:{x:xA,y:yA({suggestedMax:5})}}});
   _mkTrend('chart-trends-avg-risk', {type:'line', data:{labels:labels, datasets:[
     {label:'Avg Risk Score', data:_trendsAllData.avgRisk, borderColor:'#f59e0b', _gc:'#f59e0b', fill:true, tension:0.3}
-  ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:leg}, scales:{x:xA,y:yA({min:0,max:4})}}});
+  ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:leg}, scales:{x:xA,y:yA({min:0,suggestedMax:4})}}});
   var saved = localStorage.getItem('pv-trends-range');
   if (saved && saved !== 'all') {
     var btn = document.querySelector('.trends-range-btn[data-range="'+saved+'"]');
