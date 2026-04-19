@@ -1122,8 +1122,8 @@ Steps to Reproduce:
 3. Observe the epic group header
    Expected: Epic group headers with zero visible children are hidden; counts reflect filtered results
    Actual: Epic group headers remain visible even when all children are hidden by filters; counts show original totals
-   Status: Open
-   Fix Branch:
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0099-epic-header-filter-visibility
    Lesson Encoded: No
 
 ---

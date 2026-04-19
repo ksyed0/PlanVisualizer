@@ -168,15 +168,24 @@ function renderScripts(data, options = {}) {
       if (header) header.style.display = visibleChildren.length > 0 ? '' : 'none';
     });
     document.querySelectorAll('.bug-epic-header').forEach(header => {
-      const headerEpic = header.dataset.epic || '_ungrouped';
-      const container = header.closest('tbody') || header.closest('.bug-epic-card');
-      const visibleChildren = container ? container.querySelectorAll('.bug-row:not([style*="display: none"])') : [];
+      let container, visibleChildren;
+      if (header.tagName === 'TR') {
+        // Column view: header <tr> is in its own <tbody>; bug rows are in the next sibling <tbody>
+        const headerTbody = header.closest('tbody');
+        container = headerTbody ? headerTbody.nextElementSibling : null;
+        visibleChildren = container ? container.querySelectorAll('tr:not([style*="display: none"])') : [];
+      } else {
+        // Card/compact view: bug rows are descendants of .bug-epic-card wrapper
+        container = header.closest('.bug-epic-card');
+        visibleChildren = container
+          ? container.querySelectorAll('.bug-row:not([style*="display: none"]), .bug-compact-row:not([style*="display: none"])')
+          : [];
+      }
       header.style.display = visibleChildren.length > 0 ? '' : 'none';
       const countSpan = header.querySelector('.bug-count');
-      if (countSpan) {
-        countSpan.textContent = '(' + visibleChildren.length + ')';
-      }
-      if (container && container.tagName !== 'TR') {
+      if (countSpan) countSpan.textContent = '(' + visibleChildren.length + ')';
+      // For card/compact view, hide the whole .bug-epic-card when no bugs match
+      if (container && container.tagName === 'DIV') {
         container.style.display = visibleChildren.length > 0 ? '' : 'none';
       }
     });

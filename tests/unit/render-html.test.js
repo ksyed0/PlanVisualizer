@@ -76,6 +76,10 @@ describe('renderHtml', () => {
     expect(listenerPos).toBeGreaterThan(-1);
     expect(bodyPos).toBeLessThan(listenerPos);
   });
+  it('BUG-0099: applyFilters uses nextElementSibling for TR bug-epic-headers', () => {
+    expect(html).toContain('nextElementSibling');
+    expect(html).not.toContain("header.closest('tbody') || header.closest('.bug-epic-card')");
+  });
 });
 
 describe('renderHtml — bugs tab', () => {
