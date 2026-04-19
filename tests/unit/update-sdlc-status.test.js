@@ -127,13 +127,14 @@ describe('update-sdlc-status — test-pass / test-fail / coverage', () => {
 });
 
 describe('update-sdlc-status — story lifecycle', () => {
-  it('story-start sets InProgress + startedAt + bumps storiesTotal', () => {
+  it('story-start sets InProgress + startedAt (storiesTotal set by session-start)', () => {
     const data = baseState();
+    data.metrics.storiesTotal = 5; // set externally by session-start
     HANDLERS['story-start'](data, { story: 'US-0096', epic: 'EPIC-0015' });
     expect(data.stories['US-0096'].status).toBe('InProgress');
     expect(data.stories['US-0096'].epic).toBe('EPIC-0015');
     expect(data.stories['US-0096'].startedAt).toBeTruthy();
-    expect(data.metrics.storiesTotal).toBe(1);
+    expect(data.metrics.storiesTotal).toBe(5); // unchanged
   });
 
   it('story-complete sets Complete + completedAt + bumps storiesCompleted', () => {
@@ -233,6 +234,59 @@ describe('update-sdlc-status — epic lifecycle', () => {
   it('epic-complete throws when --epic is missing', () => {
     const data = baseState();
     expect(() => HANDLERS['epic-complete'](data, {})).toThrow('epic-complete requires --epic');
+  });
+});
+
+describe('update-sdlc-status — session-start', () => {
+  it('resets stories, phases status, and metrics but preserves project, agents, cycles, epics, log', () => {
+    const data = baseState();
+    data.project = { name: 'TestProj', description: 'Desc', repoUrl: '', startDate: '2026-01-01' };
+    data.agents = { Pixel: { status: 'active', currentTask: 'old task', tasksCompleted: 5 } };
+    data.cycles = [{ id: 1, completedAt: '2026-01-01T00:00:00Z', storiesCompleted: 3 }];
+    data.epics = { 'EPIC-0001': { status: 'complete' } };
+    data.stories = { 'US-0001': { status: 'InProgress' } };
+    data.metrics.storiesCompleted = 4;
+    data.metrics.testsPassed = 100;
+    data.phases = [{ id: 1, name: 'Build', status: 'complete', startedAt: '2026-04-18T09:00:00Z', completedAt: '2026-04-18T10:00:00Z' }];
+
+    HANDLERS['session-start'](data, { stories: '8' });
+
+    expect(data.stories).toEqual({});
+    expect(data.metrics.storiesCompleted).toBe(0);
+    expect(data.metrics.testsPassed).toBe(0);
+    expect(data.metrics.storiesTotal).toBe(8);
+    expect(data.currentPhase).toBe(0);
+    expect(data.phases[0].status).toBe('pending');
+    expect(data.phases[0].startedAt).toBeNull();
+    expect(data.phases[0].completedAt).toBeNull();
+    // preserved:
+    expect(data.project.name).toBe('TestProj');
+    expect(data.agents.Pixel).toBeDefined();
+    expect(data.cycles).toHaveLength(1);
+    expect(data.epics['EPIC-0001']).toBeDefined();
+  });
+
+  it('sets storiesTotal from --stories argument', () => {
+    const data = baseState();
+    HANDLERS['session-start'](data, { stories: '5' });
+    expect(data.metrics.storiesTotal).toBe(5);
+  });
+});
+
+describe('update-sdlc-status — --agent validation', () => {
+  it('agent-start throws when --agent is missing', () => {
+    const data = baseState();
+    expect(() => HANDLERS['agent-start'](data, { task: 'work' })).toThrow('--agent is required');
+  });
+
+  it('agent-start throws when --agent is the string "undefined"', () => {
+    const data = baseState();
+    expect(() => HANDLERS['agent-start'](data, { agent: 'undefined', task: 'work' })).toThrow('--agent is required');
+  });
+
+  it('agent-done throws when --agent is missing', () => {
+    const data = baseState();
+    expect(() => HANDLERS['agent-done'](data, {})).toThrow('--agent is required');
   });
 });
 

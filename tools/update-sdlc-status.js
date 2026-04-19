@@ -96,8 +96,43 @@ function ensureStory(data, id) {
   return data.stories[id];
 }
 
+function requireAgent(opts) {
+  if (!opts.agent || opts.agent === 'undefined') {
+    throw new Error('[update-sdlc-status] --agent is required');
+  }
+}
+
+function resetSession(data, storiesTotal) {
+  data.stories = {};
+  data.currentPhase = 0;
+  if (Array.isArray(data.phases)) {
+    data.phases = data.phases.map(p => ({
+      ...p,
+      status: 'pending',
+      startedAt: null,
+      completedAt: null,
+    }));
+  }
+  data.metrics = {
+    storiesCompleted: 0,
+    storiesTotal: parseInt(storiesTotal || '0', 10),
+    tasksCompleted: 0,
+    tasksTotal: 0,
+    testsPassed: 0,
+    testsFailed: 0,
+    testsTotal: 0,
+    bugsOpen: 0,
+    bugsFixed: 0,
+    coveragePercent: 0,
+    reviewsApproved: 0,
+    reviewsBlocked: 0,
+  };
+  return data;
+}
+
 const HANDLERS = {
   'agent-start': (data, opts) => {
+    requireAgent(opts);
     const agent = ensureAgent(data, opts.agent);
     agent.status = 'active';
     agent.currentTask = opts.task || `Working on ${opts.story || 'task'}`;
@@ -114,6 +149,7 @@ const HANDLERS = {
   },
 
   'agent-done': (data, opts) => {
+    requireAgent(opts);
     const agent = ensureAgent(data, opts.agent);
     agent.status = 'idle';
     agent.currentTask = null;
@@ -181,7 +217,6 @@ const HANDLERS = {
     story.epic = opts.epic || story.epic;
     story.startedAt = nowISO();
     data.metrics = data.metrics || {};
-    data.metrics.storiesTotal = Math.max(data.metrics.storiesTotal || 0, Object.keys(data.stories).length);
     appendLog(data, 'Conductor', `started ${opts.story}${opts.epic ? ' (' + opts.epic + ')' : ''}`);
     return data;
   },
@@ -225,6 +260,12 @@ const HANDLERS = {
       data.epics[opts.epic].completedAt = nowISO();
     }
     appendLog(data, 'Conductor', `Epic ${opts.epic} complete`);
+    return data;
+  },
+
+  'session-start': (data, opts) => {
+    resetSession(data, opts.stories);
+    appendLog(data, 'Conductor', `Session started — ${opts.stories || 0} stories planned`);
     return data;
   },
 
@@ -297,4 +338,4 @@ if (require.main === module) {
   main();
 }
 
-module.exports = { HANDLERS, parseArgs };
+module.exports = { HANDLERS, parseArgs, resetSession };
