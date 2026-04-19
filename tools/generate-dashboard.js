@@ -1997,8 +1997,14 @@ function updateToggleButton(theme) {
   if (saved === 'light') document.documentElement.setAttribute('data-theme', 'light');
   updateToggleButton(saved);
 })();
-// US-0121 helpers used by patchDOM(): _formatLogTime formats ISO timestamps
-// as HH:MM:SS; _logCategory classifies log entries for colour coding.
+// Shared client-side helpers used by patchDOM() and related rendering code.
+// escH: HTML-escape a value before inserting into innerHTML (prevents XSS).
+function escH(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+// US-0121 helpers: _formatLogTime formats ISO timestamps as HH:MM:SS;
+// _logCategory classifies log entries for colour coding.
 function _formatLogTime(raw) {
   var t = String(raw || '').trim();
   if (!t) return '--:--:--';
@@ -2473,8 +2479,8 @@ function patchDOM(status) {
         var pct = ep.storiesTotal > 0 ? Math.round((ep.storiesCompleted / ep.storiesTotal) * 100) : 0;
         var badgeColor = ep.status === 'complete' ? '#34A853' : ep.status === 'in-progress' ? '#F57C00' : '#888';
         return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">'
-          + '<span style="font-weight:600;color:var(--text-primary);min-width:90px;">' + id + '</span>'
-          + '<span style="color:var(--text-secondary);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (ep.name || '') + '</span>'
+          + '<span style="font-weight:600;color:var(--text-primary);min-width:90px;">' + escH(id) + '</span>'
+          + '<span style="color:var(--text-secondary);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escH(ep.name || '') + '</span>'
           + '<span style="min-width:60px;text-align:right;color:var(--text-muted);">' + ep.storiesCompleted + '/' + ep.storiesTotal + '</span>'
           + '<div style="width:80px;height:4px;background:var(--bg-progress);border-radius:2px;overflow:hidden;">'
           + '<div style="height:100%;width:' + pct + '%;background:' + badgeColor + ';border-radius:2px;transition:width 0.6s;"></div>'

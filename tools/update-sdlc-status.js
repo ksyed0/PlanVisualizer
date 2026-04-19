@@ -203,6 +203,7 @@ const HANDLERS = {
   },
 
   'epic-start': (data, opts) => {
+    if (!opts.epic) throw new Error('[update-sdlc-status] epic-start requires --epic');
     data.epics = data.epics || {};
     data.epics[opts.epic] = {
       name: opts.name || opts.epic,
@@ -217,6 +218,7 @@ const HANDLERS = {
   },
 
   'epic-complete': (data, opts) => {
+    if (!opts.epic) throw new Error('[update-sdlc-status] epic-complete requires --epic');
     data.epics = data.epics || {};
     if (data.epics[opts.epic]) {
       data.epics[opts.epic].status = 'complete';

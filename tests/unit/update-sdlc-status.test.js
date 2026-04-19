@@ -223,6 +223,17 @@ describe('update-sdlc-status — epic lifecycle', () => {
     HANDLERS['story-complete'](data, { story: 'US-0127', epic: 'EPIC-0019' });
     expect(data.epics['EPIC-0019'].storiesCompleted).toBe(3);
   });
+
+  it('epic-start throws when --epic is missing', () => {
+    const data = baseState();
+    data.epics = {};
+    expect(() => HANDLERS['epic-start'](data, { name: 'No Epic ID' })).toThrow('epic-start requires --epic');
+  });
+
+  it('epic-complete throws when --epic is missing', () => {
+    const data = baseState();
+    expect(() => HANDLERS['epic-complete'](data, {})).toThrow('epic-complete requires --epic');
+  });
 });
 
 describe('update-sdlc-status — log', () => {
