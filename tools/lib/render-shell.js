@@ -201,4 +201,17 @@ function renderSidebar() {
   </aside>`;
 }
 
-module.exports = { renderTopBar, renderFilterBar, renderSidebar };
+function renderCompletionBanner(data) {
+  if (!data.completion) return '';
+  const { likelyDate, rangeStart, rangeEnd, velocityWeeks } = data.completion;
+  return `
+  <div id="completion-banner" style="background:#0f172a;border-bottom:1px solid #1e293b;padding:6px 24px;display:flex;align-items:center;gap:8px;font-size:12px;flex-wrap:wrap">
+    <span style="color:#94a3b8">Estimated completion:</span>
+    <span style="color:#fbbf24;font-weight:600">${esc(likelyDate)} (likely)</span>
+    <span style="color:#475569">·</span>
+    <span style="color:#c4b5fd">${esc(rangeStart)} – ${esc(rangeEnd)} range</span>
+    <span style="color:#475569;font-size:11px;margin-left:auto">based on ${esc(String(velocityWeeks))}-wk velocity</span>
+  </div>`;
+}
+
+module.exports = { renderTopBar, renderFilterBar, renderSidebar, renderCompletionBanner };

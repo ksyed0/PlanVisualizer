@@ -1106,8 +1106,8 @@ Steps to Reproduce:
 3. Click the Bugs tab and apply a status filter
    Expected: Open bug count excludes Retired and Cancelled bugs; shows only truly open bugs
    Actual: Bugs with status "Retired" are counted as open because filter uses !/^Fixed/i which passes Retired
-   Status: Open
-   Fix Branch:
+   Status: Fixed
+   Fix Branch: develop (fixed in Session 16 — render-shell.js:20 + render-tabs.js:1254; BUGS.md status was stale)
    Lesson Encoded: No
 
 ---

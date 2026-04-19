@@ -20,6 +20,7 @@ const { parseRecentActivity } = require('./lib/parse-progress');
 const { parseLessons } = require('./lib/parse-lessons');
 const { computeProjectedCost, attributeAICosts, attributeBugCosts } = require('./lib/compute-costs');
 const { detectAtRisk } = require('./lib/detect-at-risk');
+const { computeAllRisk } = require('./lib/compute-risk');
 const { saveSnapshot, loadSnapshots, extractTrends } = require('./lib/snapshot');
 const { computeBudgetMetrics, generateBudgetCSV } = require('./lib/budget');
 const { renderHtml } = require('./lib/render-html');
@@ -128,6 +129,39 @@ function getAppVersion() {
   }
 }
 
+function computeCompletion(stories, trends) {
+  if (!trends || !trends.dates || trends.dates.length < 2) return null;
+  const TSHIRT = { XS: 0.5, S: 1, M: 3, L: 5, XL: 8 };
+  const pts = (s) => {
+    const e = s.estimate ? s.estimate.toUpperCase() : null;
+    return (e && TSHIRT[e]) || 1;
+  };
+  const done = stories.filter((s) => s.status === 'Done');
+  if (done.length < 2) return null;
+  const completedPts = done.reduce((sum, s) => sum + pts(s), 0);
+  const remainingPts = stories
+    .filter((s) => s.status !== 'Done' && s.status !== 'Retired')
+    .reduce((sum, s) => sum + pts(s), 0);
+  if (remainingPts === 0) return null;
+  const firstDate = new Date(trends.dates[0]);
+  const lastDate = new Date(trends.dates[trends.dates.length - 1]);
+  const weeksElapsed = (lastDate - firstDate) / (7 * 24 * 60 * 60 * 1000);
+  if (weeksElapsed < 1) return null;
+  const ptsPerWeek = completedPts / weeksElapsed;
+  if (ptsPerWeek <= 0) return null;
+  const weeksRemaining = remainingPts / ptsPerWeek;
+  const likelyMs = lastDate.getTime() + weeksRemaining * 7 * 24 * 60 * 60 * 1000;
+  const rangeMs = weeksRemaining * 0.2 * 7 * 24 * 60 * 60 * 1000;
+  const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const fmt = (d) => `${MONTH_NAMES[d.getMonth()]} ${d.getDate()}`;
+  return {
+    likelyDate: fmt(new Date(likelyMs)),
+    rangeStart: fmt(new Date(likelyMs - rangeMs)),
+    rangeEnd: fmt(new Date(likelyMs + rangeMs)),
+    velocityWeeks: Math.round(weeksElapsed),
+  };
+}
+
 function main() {
   const config = loadConfig();
   const HOURS = config.costs.tshirtHours;
@@ -211,6 +245,7 @@ function main() {
   }
 
   const atRisk = detectAtRisk(stories, testCases, bugs);
+  const risk = computeAllRisk(stories, bugs);
   const generatedAt = new Date().toISOString();
   const commitSha = getCommitSha();
   const buildNumber = getBuildNumber();
@@ -265,6 +300,7 @@ function main() {
     bugs,
     costs,
     atRisk,
+    risk,
     coverage,
     recentActivity,
     lessons,
@@ -314,6 +350,7 @@ function main() {
   const budgetCSV = generateBudgetCSV(data, budgetMetrics, snapshots);
 
   data.budget = budgetMetrics;
+  data.completion = computeCompletion(data.stories, trends);
 
   const outputDir = path.join(ROOT, config.docs.outputDir);
   if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });

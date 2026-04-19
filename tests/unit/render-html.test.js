@@ -1574,3 +1574,177 @@ describe('renderHtml — bugs tab US-0106', () => {
     expect(html).toMatch(/bugs-compact-btn/);
   });
 });
+
+describe('renderHtml — risk badges (US-0064)', () => {
+  const riskData = {
+    ...sampleData,
+    risk: {
+      byStory: new Map([['US-0001', { score: 2.3, level: 'High' }]]),
+      byEpic: new Map([
+        [
+          'EPIC-0001',
+          { avgScore: 2.3, maxScore: 2.3, level: 'High', counts: { Low: 0, Medium: 0, High: 1, Critical: 0 } },
+        ],
+      ]),
+    },
+  };
+
+  it('shows risk score badge on In-Progress story', () => {
+    const h = renderHtml(riskData);
+    expect(h).toContain('High');
+    expect(h).toContain('2.3');
+    expect(h).toContain('risk-score-badge');
+    expect(h).toContain('#f59e0b');
+  });
+
+  it('does not show numeric risk badge on Done story', () => {
+    const doneData = {
+      ...riskData,
+      stories: [{ ...sampleData.stories[0], status: 'Done' }],
+      risk: {
+        byStory: new Map([['US-0001', { score: 0.4, level: 'Low' }]]),
+        byEpic: new Map(),
+      },
+    };
+    const h = renderHtml(doneData);
+    expect(h).not.toContain('risk-score-badge');
+  });
+});
+
+describe('renderHtml — Trends tab avgRisk (US-0065)', () => {
+  it('Trends tab HTML references avgRisk data series', () => {
+    const h = renderHtml(sampleData, {
+      trends: {
+        dates: ['2026-01-01T00:00:00Z', '2026-02-01T00:00:00Z'],
+        doneCounts: [1, 2],
+        totalStories: [5, 5],
+        aiCosts: [1.0, 2.0],
+        coverage: [80, 85],
+        velocity: [3, 5],
+        openBugs: [2, 1],
+        atRisk: [1, 0],
+        inputTokens: [1000, 2000],
+        outputTokens: [500, 1000],
+        avgRisk: [1.8, 1.5],
+      },
+    });
+    expect(h).toContain('avgRisk');
+    expect(h).toContain('Avg Risk Score');
+  });
+});
+
+describe('renderHtml — completion banner (US-0066)', () => {
+  it('shows completion banner when data.completion is set', () => {
+    const d = {
+      ...sampleData,
+      completion: { likelyDate: 'May 14', rangeStart: 'Apr 28', rangeEnd: 'Jun 3', velocityWeeks: 4 },
+    };
+    const h = renderHtml(d);
+    expect(h).toContain('completion-banner');
+    expect(h).toContain('May 14');
+    expect(h).toContain('Apr 28');
+    expect(h).toContain('Jun 3');
+    expect(h).toContain('4-wk velocity');
+  });
+
+  it('omits completion banner when data.completion is null', () => {
+    const d = { ...sampleData, completion: null };
+    expect(renderHtml(d)).not.toContain('completion-banner');
+  });
+});
+
+describe('renderHtml — Status tab risk charts (US-0064)', () => {
+  const riskData = {
+    ...sampleData,
+    risk: {
+      byStory: new Map([['US-0001', { score: 2.3, level: 'High' }]]),
+      byEpic: new Map([
+        [
+          'EPIC-0001',
+          { avgScore: 2.3, maxScore: 2.3, level: 'High', counts: { Low: 0, Medium: 0, High: 1, Critical: 0 } },
+        ],
+      ]),
+    },
+  };
+
+  it('Status tab contains Risk Score by Epic heading', () => {
+    const h = renderHtml(riskData);
+    expect(h).toContain('Risk Score by Epic');
+  });
+
+  it('Status tab contains Story Risk Distribution heading', () => {
+    const h = renderHtml(riskData);
+    expect(h).toContain('Story Risk Distribution');
+  });
+
+  it('Status tab contains chart-risk-distribution canvas', () => {
+    const h = renderHtml(riskData);
+    expect(h).toContain('chart-risk-distribution');
+  });
+
+  it('Status tab contains Avg score and High + Critical KPI tiles', () => {
+    const h = renderHtml(riskData);
+    expect(h).toContain('Avg score');
+    expect(h).toContain('High + Critical');
+  });
+
+  it('Status tab risk chart shows No risk data when risk is absent', () => {
+    const h = renderHtml({ ...sampleData, risk: null });
+    expect(h).toContain('No risk data');
+  });
+});
+
+describe('renderHtml — at-risk epic summary (US-0067)', () => {
+  it('Status tab shows At-Risk Epics heading when epics score >= 2.0', () => {
+    const d = {
+      ...sampleData,
+      risk: {
+        byStory: new Map([['US-0001', { score: 2.3, level: 'High' }]]),
+        byEpic: new Map([
+          [
+            'EPIC-0001',
+            { avgScore: 2.3, maxScore: 2.3, level: 'High', counts: { Low: 0, Medium: 0, High: 1, Critical: 0 } },
+          ],
+        ]),
+      },
+    };
+    expect(renderHtml(d)).toContain('At-Risk Epics');
+    // Entry should show epic ID, score, level badge, and H+C count
+    expect(renderHtml(d)).toContain('EPIC-0001');
+    expect(renderHtml(d)).toContain('2.3');
+    expect(renderHtml(d)).toContain('>High</span>');
+    expect(renderHtml(d)).toContain('1 High+Critical stories');
+  });
+
+  it('Status tab shows At-Risk Epics when avgScore is exactly 2.0 (inclusive boundary)', () => {
+    const d = {
+      ...sampleData,
+      risk: {
+        byStory: new Map([['US-0001', { score: 2.0, level: 'High' }]]),
+        byEpic: new Map([
+          [
+            'EPIC-0001',
+            { avgScore: 2.0, maxScore: 2.0, level: 'High', counts: { Low: 0, Medium: 0, High: 1, Critical: 0 } },
+          ],
+        ]),
+      },
+    };
+    expect(renderHtml(d)).toContain('At-Risk Epics');
+  });
+
+  it('Status tab omits At-Risk Epics section when all epics score < 2.0', () => {
+    const d = {
+      ...sampleData,
+      risk: {
+        byStory: new Map([['US-0001', { score: 0.7, level: 'Low' }]]),
+        byEpic: new Map([
+          [
+            'EPIC-0001',
+            { avgScore: 0.7, maxScore: 0.7, level: 'Low', counts: { Low: 1, Medium: 0, High: 0, Critical: 0 } },
+          ],
+        ]),
+      },
+    };
+    expect(renderHtml(d)).not.toContain('At-Risk Epics');
+  });
+});

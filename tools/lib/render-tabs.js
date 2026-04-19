@@ -12,6 +12,7 @@ const {
   badge,
   BADGE_TONE,
 } = require('./render-utils');
+const { LEVEL_COLORS: RISK_LEVEL_COLORS } = require('./compute-risk');
 
 function renderHierarchyTab(data) {
   const epicBlocks = data.epics.map((epic, epicIdx) => {
@@ -37,6 +38,11 @@ function renderHierarchyTab(data) {
               .filter(Boolean)
               .join('; ')}">⚠ At Risk</span>`
           : '';
+        const storyRisk = data.risk && data.risk.byStory ? data.risk.byStory.get(story.id) : null;
+        const riskScoreBadge =
+          storyRisk && story.status !== 'Done' && story.status !== 'Retired' && story.status !== 'Cancelled'
+            ? `<span class="risk-score-badge text-xs font-semibold ml-1" style="color:${RISK_LEVEL_COLORS[storyRisk.level]}">${storyRisk.level} ${storyRisk.score}</span>`
+            : '';
         const tcs = data.testCases.filter((tc) => tc.relatedStory === story.id);
         const acItems = story.acs
           .map((ac) => {
@@ -57,6 +63,7 @@ function renderHierarchyTab(data) {
           ${badge(story.status)} ${badge(story.priority)}
           <span class="text-sm font-medium">${esc(story.title)}</span>
           ${riskBadge}
+          ${riskScoreBadge}
           <span class="ml-auto text-xs text-slate-500">${esc(story.estimate || '?')} · ${usd((data.costs[story.id] && data.costs[story.id].projectedUsd) || 0)}</span>
         </div>
         <ul id="acs-${story.id}" class="ac-guide mt-2 hidden">${acItems || '<li class="text-xs text-slate-500 pl-4">No ACs yet</li>'}</ul>
@@ -69,6 +76,11 @@ function renderHierarchyTab(data) {
       .map((story) => {
         const risk = data.atRisk[story.id] || {};
         const riskBadge = risk.isAtRisk ? `<span class="text-orange-500 text-xs">⚠ At Risk</span>` : '';
+        const storyRisk = data.risk && data.risk.byStory ? data.risk.byStory.get(story.id) : null;
+        const riskScoreBadge =
+          storyRisk && story.status !== 'Done' && story.status !== 'Retired' && story.status !== 'Cancelled'
+            ? `<span class="risk-score-badge text-xs font-semibold" style="color:${RISK_LEVEL_COLORS[storyRisk.level]}">${storyRisk.level} ${storyRisk.score}</span>`
+            : '';
         const tcs = data.testCases.filter((tc) => tc.relatedStory === story.id);
         const acDone = story.acs.filter((a) => a.done).length;
         const acTotal = story.acs.length;
@@ -96,6 +108,7 @@ function renderHierarchyTab(data) {
           <span>${esc(story.estimate || '?')}</span>
           <span>${cost}</span>
           ${acTotal ? `<span class="cursor-pointer" onclick="toggleCardACs('${jsEsc(story.id)}')">${acDone}/${acTotal} ACs ▾</span>` : ''}
+          ${riskScoreBadge}
           <span class="ml-auto">${riskBadge}</span>
         </div>
         ${acTotal ? `<ul id="card-acs-${story.id}" class="ac-guide hidden mt-1 pt-1 border-t border-slate-100 dark:border-slate-600 space-y-0.5">${acItems || '<li class="text-xs text-slate-500 pl-4">No ACs yet</li>'}</ul>` : ''}
@@ -391,6 +404,7 @@ function renderTrendsTab(data, options = {}) {
   const riskJson = trends ? JSON.stringify(trends.atRisk) : '[]';
   const inputTokensJson = trends ? JSON.stringify(trends.inputTokens) : '[]';
   const outputTokensJson = trends ? JSON.stringify(trends.outputTokens) : '[]';
+  const avgRiskJson = trends ? JSON.stringify((trends.avgRisk || []).map((v) => v.toFixed(2))) : '[]';
 
   const placeholder = `
     <div class="col-span-full flex flex-col items-center justify-center py-16 text-center">
@@ -451,6 +465,10 @@ function renderTrendsTab(data, options = {}) {
       <div class="chart-header-rule"><span class="display-title">At-Risk Stories</span><span class="chart-subtitle">over time</span></div>
       <div style="height:250px;position:relative"><canvas id="chart-trends-risk"></canvas></div>
     </div>
+    <div class="card-elev rounded-lg p-4 col-span-full anim-stagger" style="--i:7">
+      <div class="chart-header-rule"><span class="display-title">Avg Risk Score</span><span class="chart-subtitle">project-wide, over time</span></div>
+      <div style="height:250px;position:relative"><canvas id="chart-trends-avg-risk"></canvas></div>
+    </div>
     `
     }
   </div>
@@ -461,7 +479,8 @@ var _trendsAllData = {
   done: ${doneJson}, total: ${totalJson}, cost: ${costJson},
   coverage: ${coverageJson}, velocity: ${velocityJson},
   bugs: ${bugsJson}, risk: ${riskJson},
-  inputTokens: ${inputTokensJson}, outputTokens: ${outputTokensJson}
+  inputTokens: ${inputTokensJson}, outputTokens: ${outputTokensJson},
+  avgRisk: ${avgRiskJson}
 };
 var _trendsChartRefs = {};
 function _trendGrad(ctx, hex) {
@@ -510,6 +529,9 @@ function initTrendsCharts() {
   _mkTrend('chart-trends-risk', {type:'line', data:{labels:labels, datasets:[
     {label:'At-Risk', data:_trendsAllData.risk, borderColor:'#f97316', _gc:'#f97316', fill:true, tension:0.3}
   ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:leg}, scales:{x:xA,y:yA({suggestedMax:5})}}});
+  _mkTrend('chart-trends-avg-risk', {type:'line', data:{labels:labels, datasets:[
+    {label:'Avg Risk Score', data:_trendsAllData.avgRisk, borderColor:'#f59e0b', _gc:'#f59e0b', fill:true, tension:0.3}
+  ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:leg}, scales:{x:xA,y:yA({min:0,suggestedMax:4})}}});
   var saved = localStorage.getItem('pv-trends-range');
   if (saved && saved !== 'all') {
     var btn = document.querySelector('.trends-range-btn[data-range="'+saved+'"]');
@@ -572,6 +594,29 @@ function renderChartsTab(data) {
     ),
   );
   const totalStories = data.stories.filter((s) => s.status !== 'Retired').length;
+
+  // Risk chart data
+  const riskEpics =
+    data.risk && data.risk.byEpic ? [...data.risk.byEpic.entries()].sort((a, b) => b[1].avgScore - a[1].avgScore) : [];
+  const riskCounts = { Low: 0, Medium: 0, High: 0, Critical: 0 };
+  let totalRiskScore = 0,
+    activeStoryCount = 0;
+  if (data.risk && data.risk.byStory) {
+    for (const story of data.stories || []) {
+      if (story.status === 'Done' || story.status === 'Retired' || story.status === 'Cancelled') continue;
+      const sr = data.risk.byStory.get(story.id);
+      if (sr) {
+        if (sr.level in riskCounts) riskCounts[sr.level]++;
+        totalRiskScore += sr.score;
+        activeStoryCount++;
+      }
+    }
+  }
+  const avgRiskScore = activeStoryCount > 0 ? (totalRiskScore / activeStoryCount).toFixed(1) : '—';
+  const highCritCount = riskCounts.High + riskCounts.Critical;
+  const riskDistCounts = JSON.stringify([riskCounts.Low, riskCounts.Medium, riskCounts.High, riskCounts.Critical]);
+
+  const atRiskEpics = riskEpics.filter(([, r]) => r.avgScore >= 2.0);
 
   return `
   <div id="tab-charts" class="p-6 hidden" role="tabpanel" aria-labelledby="tab-btn-charts">
@@ -645,6 +690,80 @@ function renderChartsTab(data) {
         </div>
         <div style="height:300px;position:relative"><canvas id="chart-burn-rate"></canvas></div>
       </div>
+
+      <div class="chart-supertitle">Risk</div>
+
+      <div class="card-elev rounded-lg p-4 anim-stagger" style="--i:6">
+        <div class="chart-header-rule">
+          <span class="display-title">Risk Score by Epic</span>
+          <span class="chart-subtitle">avg score, active stories</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;margin-top:4px">
+          ${
+            riskEpics.length === 0
+              ? '<p style="color:#64748b;font-size:12px">No risk data</p>'
+              : riskEpics
+                  .map(([id, r]) => {
+                    const pct = Math.min(100, Math.round((r.avgScore / 4) * 100));
+                    const col = RISK_LEVEL_COLORS[r.level];
+                    return `<div style="display:flex;align-items:center;gap:6px">
+              <span style="color:#e2e8f0;width:72px;font-size:11px;font-family:monospace;flex-shrink:0">${esc(id)}</span>
+              <div style="flex:1;background:#1e293b;border-radius:3px;height:14px;overflow:hidden">
+                <div style="width:${pct}%;height:100%;background:${col};border-radius:3px"></div>
+              </div>
+              <span style="color:${col};font-size:11px;font-weight:600;width:28px;text-align:right">${r.avgScore}</span>
+              <span style="background:${col};color:${r.level === 'High' || r.level === 'Low' ? '#1e293b' : 'white'};font-size:9px;padding:1px 5px;border-radius:3px;white-space:nowrap">${r.level}</span>
+            </div>`;
+                  })
+                  .join('')
+          }
+        </div>
+      </div>
+
+      <div class="card-elev rounded-lg p-4 anim-stagger" style="--i:7">
+        <div class="chart-header-rule">
+          <span class="display-title">Story Risk Distribution</span>
+          <span class="chart-subtitle">stories by risk level</span>
+        </div>
+        <div style="height:200px;position:relative"><canvas id="chart-risk-distribution"></canvas></div>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <div style="flex:1;background:var(--clr-card,#1e293b);border-radius:6px;padding:8px 10px;border-left:3px solid #f59e0b">
+            <div style="font-size:10px;color:#64748b">Avg score</div>
+            <div style="font-size:18px;font-weight:700;color:#f59e0b">${avgRiskScore}</div>
+          </div>
+          <div style="flex:1;background:var(--clr-card,#1e293b);border-radius:6px;padding:8px 10px;border-left:3px solid #ef4444">
+            <div style="font-size:10px;color:#64748b">High + Critical</div>
+            <div style="font-size:18px;font-weight:700;color:#ef4444">${highCritCount} stories</div>
+          </div>
+        </div>
+      </div>
+
+      ${
+        atRiskEpics.length > 0
+          ? `
+      <div class="col-span-full card-elev rounded-lg p-4 anim-stagger" style="--i:8">
+        <div class="chart-header-rule">
+          <span class="display-title">At-Risk Epics</span>
+          <span class="chart-subtitle">avg score \u2265 2.0</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
+          ${atRiskEpics
+            .map(([id, r]) => {
+              const col = RISK_LEVEL_COLORS[r.level];
+              const textCol = r.level === 'High' || r.level === 'Low' ? '#1e293b' : 'white';
+              return `<div style="display:flex;align-items:center;gap:10px;padding:6px 10px;background:var(--clr-card,#1e293b);border-radius:6px;border-left:3px solid ${col}">
+              <span style="font-family:monospace;font-size:12px;font-weight:700;color:#e2e8f0">${esc(id)}</span>
+              <span style="font-size:13px;font-weight:700;color:${col}">${r.avgScore}</span>
+              <span style="background:${col};color:${textCol};font-size:10px;padding:1px 6px;border-radius:3px">${r.level}</span>
+              <span style="font-size:11px;color:#64748b;margin-left:auto">${(r.counts?.High ?? 0) + (r.counts?.Critical ?? 0)} High+Critical stories</span>
+            </div>`;
+            })
+            .join('')}
+        </div>
+      </div>`
+          : ''
+      }
+
     </div>
   </div>
   <script>
@@ -701,6 +820,15 @@ function renderChartsTab(data) {
       data: { labels: ${sessionDates}, datasets: [{ label: 'Session AI Spend ($)', data: ${sessionPerCosts}, backgroundColor: '#6366f1' }] },
       options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true } } }, scales: { x: { ticks: { color: tc } }, y: { ticks: { color: tc } } } }
     });
+    if (document.getElementById('chart-risk-distribution')) {
+      _charts.riskDist = new Chart(document.getElementById('chart-risk-distribution'), {
+        type: 'bar',
+        data: { labels: ['Low','Medium','High','Critical'], datasets: [{ data: ${riskDistCounts}, backgroundColor: ['${RISK_LEVEL_COLORS.Low}','${RISK_LEVEL_COLORS.Medium}','${RISK_LEVEL_COLORS.High}','${RISK_LEVEL_COLORS.Critical}'] }] },
+        options: { responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { x: { ticks: { color: tc } }, y: { ticks: { color: tc }, beginAtZero: true } } }
+      });
+    }
   }
   function updateChartTheme() {
     var tc = chartTextColor();

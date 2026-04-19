@@ -1338,47 +1338,47 @@ Dependencies: EPIC-0009
 US-0064 (EPIC-0010): As a project manager, I want stories to have a composite risk score based on priority, severity, and status, so that I can prioritise mitigation efforts.
 Priority: High (P0)
 Estimate: M
-Status: Planned
-Branch:
+Status: Done
+Branch: bugfix/BUG-0098-stale-open-status
 Acceptance Criteria:
-  - [ ] AC-0187: Each story receives a risk score calculated as: (priorityWeight × 0.4) + (severityWeight × 0.3) + (statusWeight × 0.3)
-  - [ ] AC-0188: Priority weights: P0=4, P1=3, P2=2, P3=1; Severity weights (for bugs): Critical=4, High=3, Medium=2, Low=1; Status weights: Blocked=4, In Progress=3, Planned=2, To Do=1, Done=0
-  - [ ] AC-0189: The Hierarchy tab displays a risk badge (Low/Medium/High/Critical) on each story card based on score thresholds (0-1: Low, 1.1-2: Medium, 2.1-3: High, 3.1+: Critical)
+  - [x] AC-0187: Each story receives a risk score calculated as: (priorityWeight × 0.4) + (severityWeight × 0.3) + (statusWeight × 0.3)
+  - [x] AC-0188: Priority weights: P0=4, P1=3, P2=2, P3=1; Severity weights (for bugs): Critical=4, High=3, Medium=2, Low=1; Status weights: Blocked=4, In Progress=3, Planned=2, To Do=1, Done=0
+  - [x] AC-0189: The Hierarchy tab displays a risk badge (Low/Medium/High/Critical) on each story card based on score thresholds (0-1: Low, 1.1-2: Medium, 2.1-3: High, 3.1+: Critical)
   - [ ] AC-0190: Stories can be sorted by risk score descending in the Hierarchy tab
 Dependencies: None
 
 US-0065 (EPIC-0010): As a project manager, I want a risk trend chart showing aggregate risk over time, so that I can see if the project is becoming more or less risky.
 Priority: Medium (P1)
 Estimate: S
-Status: Planned
-Branch:
+Status: Done
+Branch: bugfix/BUG-0098-stale-open-status
 Acceptance Criteria:
-  - [ ] AC-0191: The Charts tab displays a "Risk Trend" line chart with dates on X-axis and average risk score on Y-axis
-  - [ ] AC-0192: Data is sourced from .history/ snapshots; each point is the average risk score of all stories at that point in time
+  - [x] AC-0191: The Charts tab displays a "Risk Trend" line chart with dates on X-axis and average risk score on Y-axis
+  - [x] AC-0192: Data is sourced from .history/ snapshots; each point is the average risk score of all stories at that point in time
   - [ ] AC-0193: A horizontal reference line at 2.0 (High threshold) helps identify when risk crosses into critical territory
-  - [ ] AC-0194: If fewer than 2 snapshots exist, show placeholder message
+  - [x] AC-0194: If fewer than 2 snapshots exist, show placeholder message
 Dependencies: US-0054, US-0064
 
 US-0066 (EPIC-0010): As a project manager, I want to predict the project completion date based on current velocity, so that I can set realistic delivery expectations.
 Priority: High (P0)
 Estimate: M
-Status: Planned
-Branch:
+Status: Done
+Branch: bugfix/BUG-0098-stale-open-status
 Acceptance Criteria:
-  - [ ] AC-0195: Using .history/ data, calculate weekly velocity as the average story points completed per week over the last 4 weeks
-  - [ ] AC-0196: Remaining story points = sum of estimates for all non-Done stories
-  - [ ] AC-0197: Projected completion = today + (remainingPoints / weeklyVelocity × 7 days)
-  - [ ] AC-0198: The dashboard displays "Estimated Completion: YYYY-MM-DD (based on N weeks of velocity data)" in the top bar
-  - [ ] AC-0199: If insufficient velocity data (< 2 weeks), show "Insufficient data for completion estimate"
+  - [x] AC-0195: Using .history/ data, calculate weekly velocity as the average story points completed per week over the last 4 weeks
+  - [x] AC-0196: Remaining story points = sum of estimates for all non-Done stories
+  - [x] AC-0197: Projected completion = today + (remainingPoints / weeklyVelocity × 7 days)
+  - [x] AC-0198: The dashboard displays "Estimated Completion: YYYY-MM-DD (based on N weeks of velocity data)" in the top bar
+  - [x] AC-0199: If insufficient velocity data (< 2 weeks), show "Insufficient data for completion estimate"
 Dependencies: US-0054, US-0058
 
 US-0067 (EPIC-0010): As a project manager, I want to see an at-risk epic summary highlighting which epics are most likely to miss deadlines, so that I can focus rescue efforts.
 Priority: Medium (P1)
 Estimate: S
-Status: Planned
-Branch:
+Status: Done
+Branch: bugfix/BUG-0098-stale-open-status
 Acceptance Criteria:
-  - [ ] AC-0200: Each epic receives an aggregate risk score = average of all story risk scores within that epic
+  - [x] AC-0200: Each epic receives an aggregate risk score = average of all story risk scores within that epic
   - [ ] AC-0201: The Hierarchy tab epic headers display a risk indicator (Low/Medium/High/Critical) matching the epic's aggregate score
   - [ ] AC-0202: Epics are sorted by risk score descending by default within each tab that shows epics
   - [ ] AC-0203: A filter allows showing only High/Critical risk epics
