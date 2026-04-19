@@ -186,6 +186,13 @@ describe('update-sdlc-status — phase', () => {
     expect(data.phases[1].name).toBe('Phase 2');
     expect(data.phases[1].status).toBe('in-progress');
   });
+
+  it('throws a clear error when --number is missing or invalid', () => {
+    const data = baseState();
+    expect(() => HANDLERS.phase(data, { number: '0', status: 'in-progress' })).toThrow('--number must be a positive integer');
+    expect(() => HANDLERS.phase(data, { number: 'abc', status: 'in-progress' })).toThrow('--number must be a positive integer');
+    expect(() => HANDLERS.phase(data, { status: 'in-progress' })).toThrow('--number must be a positive integer');
+  });
 });
 
 describe('update-sdlc-status — log', () => {

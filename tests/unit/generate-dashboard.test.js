@@ -15,7 +15,7 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..', '..');
 const AGENTS_CONFIG = JSON.parse(fs.readFileSync(path.join(ROOT, 'agents.config.json'), 'utf8'));
 
-// Canonical phases mirror tools/update-sdlc-status.js PHASE_DEFS.
+// Canonical phases mirror agents.config.json phases (seeded into sdlc-status.json by init-sdlc-status.js).
 const CANONICAL_PHASES = [
   { id: 1, name: 'Blueprint', agents: ['Compass'], deliverables: ['refined ACs', 'priority list'] },
   { id: 2, name: 'Architect', agents: ['Keystone'], deliverables: ['scaffold', 'types', 'service stubs'] },

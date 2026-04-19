@@ -200,6 +200,9 @@ const HANDLERS = {
 
   phase: (data, opts) => {
     const n = parseInt(opts.number, 10);
+    if (!Number.isInteger(n) || n < 1) {
+      throw new Error(`[update-sdlc-status] phase --number must be a positive integer, got: ${opts.number}`);
+    }
     const status = opts.status || 'in-progress';
     data.currentPhase = n;
     data.phases = data.phases || [];
