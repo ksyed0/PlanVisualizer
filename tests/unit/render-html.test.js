@@ -1676,6 +1676,22 @@ describe('renderHtml — Status tab risk charts (US-0064)', () => {
     const h = renderHtml(riskData);
     expect(h).toContain('Story Risk Distribution');
   });
+
+  it('Status tab contains chart-risk-distribution canvas', () => {
+    const h = renderHtml(riskData);
+    expect(h).toContain('chart-risk-distribution');
+  });
+
+  it('Status tab contains Avg score and High + Critical KPI tiles', () => {
+    const h = renderHtml(riskData);
+    expect(h).toContain('Avg score');
+    expect(h).toContain('High + Critical');
+  });
+
+  it('Status tab risk chart shows No risk data when risk is absent', () => {
+    const h = renderHtml({ ...sampleData, risk: null });
+    expect(h).toContain('No risk data');
+  });
 });
 
 describe('renderHtml — at-risk epic summary (US-0067)', () => {

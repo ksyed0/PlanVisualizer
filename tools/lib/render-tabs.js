@@ -602,11 +602,11 @@ function renderChartsTab(data) {
   let totalRiskScore = 0,
     activeStoryCount = 0;
   if (data.risk && data.risk.byStory) {
-    for (const story of data.stories) {
-      if (story.status === 'Done' || story.status === 'Retired') continue;
+    for (const story of data.stories || []) {
+      if (story.status === 'Done' || story.status === 'Retired' || story.status === 'Cancelled') continue;
       const sr = data.risk.byStory.get(story.id);
       if (sr) {
-        riskCounts[sr.level]++;
+        if (sr.level in riskCounts) riskCounts[sr.level]++;
         totalRiskScore += sr.score;
         activeStoryCount++;
       }
@@ -712,7 +712,7 @@ function renderChartsTab(data) {
                 <div style="width:${pct}%;height:100%;background:${col};border-radius:3px"></div>
               </div>
               <span style="color:${col};font-size:11px;font-weight:600;width:28px;text-align:right">${r.avgScore}</span>
-              <span style="background:${col};color:${r.level === 'High' ? '#1e293b' : 'white'};font-size:9px;padding:1px 5px;border-radius:3px;white-space:nowrap">${r.level}</span>
+              <span style="background:${col};color:${r.level === 'High' || r.level === 'Low' ? '#1e293b' : 'white'};font-size:9px;padding:1px 5px;border-radius:3px;white-space:nowrap">${r.level}</span>
             </div>`;
                   })
                   .join('')
@@ -750,7 +750,7 @@ function renderChartsTab(data) {
           ${atRiskEpics
             .map(([id, r]) => {
               const col = RISK_LEVEL_COLORS[r.level];
-              const textCol = r.level === 'High' ? '#1e293b' : 'white';
+              const textCol = r.level === 'High' || r.level === 'Low' ? '#1e293b' : 'white';
               return `<div style="display:flex;align-items:center;gap:10px;padding:6px 10px;background:var(--clr-card,#1e293b);border-radius:6px;border-left:3px solid ${col}">
               <span style="font-family:monospace;font-size:12px;font-weight:700;color:#e2e8f0">${esc(id)}</span>
               <span style="font-size:13px;font-weight:700;color:${col}">${r.avgScore}</span>
@@ -823,7 +823,7 @@ function renderChartsTab(data) {
     if (document.getElementById('chart-risk-distribution')) {
       _charts.riskDist = new Chart(document.getElementById('chart-risk-distribution'), {
         type: 'bar',
-        data: { labels: ['Low','Medium','High','Critical'], datasets: [{ data: ${riskDistCounts}, backgroundColor: ['#22c55e','#3b82f6','#f59e0b','#ef4444'] }] },
+        data: { labels: ['Low','Medium','High','Critical'], datasets: [{ data: ${riskDistCounts}, backgroundColor: ['${RISK_LEVEL_COLORS.Low}','${RISK_LEVEL_COLORS.Medium}','${RISK_LEVEL_COLORS.High}','${RISK_LEVEL_COLORS.Critical}'] }] },
         options: { responsive: true, maintainAspectRatio: false,
           plugins: { legend: { display: false } },
           scales: { x: { ticks: { color: tc } }, y: { ticks: { color: tc }, beginAtZero: true } } }
