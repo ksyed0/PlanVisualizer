@@ -1480,6 +1480,13 @@ function generateHTML(status) {
     .header-right .clock .time { font-size: 16px; }
     #theme-toggle, .btn-header { font-size: 11px; padding: 4px 10px; }
   }
+  /* US-0133: Cycle history cards */
+  .cycle-card { flex: 0 0 auto; background: var(--bg-card); border: 1px solid var(--bg-card-border); border-radius: 8px; padding: 8px 12px; min-width: 120px; font-family: var(--font-sans); font-size: 11px; }
+  .cycle-card-id { font-family: var(--font-display), monospace; font-size: 18px; font-weight: 700; color: var(--text-primary); }
+  .cycle-card-stat { color: var(--text-muted); margin-top: 2px; }
+  .cycle-telemetry-tile { background: var(--bg-card); border: 1px solid var(--bg-card-border); border-radius: 8px; padding: 8px 14px; text-align: center; font-family: var(--font-sans); min-width: 100px; }
+  .cycle-telemetry-tile .tile-value { font-family: var(--font-display), monospace; font-size: 20px; font-weight: 700; color: var(--text-primary); }
+  .cycle-telemetry-tile .tile-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); margin-top: 2px; }
 </style>
 </head>
 <body>
@@ -1574,6 +1581,13 @@ ${phases
 <div id="epic-strip" style="display:none; margin-bottom:16px; background:var(--bg-card); border:1px solid var(--bg-card-border); border-radius:10px; padding:10px 16px; font-family:var(--font-sans); font-size:12px;">
   <div style="font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin-bottom:8px;">Epic Progress</div>
   <div id="epic-strip-rows"></div>
+</div>
+
+<!-- US-0133: Cycle history — lap strip + telemetry -->
+<div id="cycle-history-section" style="display:none; margin-bottom:24px;">
+  <div style="font-family:var(--font-display),monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin-bottom:8px;">Cycle History</div>
+  <div id="cycle-telemetry" style="display:flex; gap:16px; margin-bottom:10px; flex-wrap:wrap;"></div>
+  <div id="cycle-lap-strip" style="display:flex; gap:8px; overflow-x:auto; padding-bottom:4px;"></div>
 </div>
 
 <!-- Metrics Row — US-0118 differentiated cards.
@@ -2488,6 +2502,50 @@ function patchDOM(status) {
           + '<span style="min-width:32px;text-align:right;color:' + badgeColor + ';font-weight:600;">' + pct + '%</span>'
           + '</div>';
       }).join('');
+    }
+  }
+
+  // --- Cycle history (US-0133) -----------------------------------------------
+  var cycles = Array.isArray(status.cycles) ? status.cycles : [];
+  var cycleSection = document.getElementById('cycle-history-section');
+  var lapStrip = document.getElementById('cycle-lap-strip');
+  var telemetryRow = document.getElementById('cycle-telemetry');
+  if (cycleSection && lapStrip && telemetryRow) {
+    if (cycles.length === 0) {
+      cycleSection.style.display = 'none';
+    } else {
+      cycleSection.style.display = '';
+      var avgTotalSec = cycles.reduce(function(sum, c) {
+        var total = Object.values(c.phaseDurations || {}).reduce(function(a, b) { return a + b; }, 0);
+        return sum + total;
+      }, 0) / cycles.length;
+      var avgMin = Math.round(avgTotalSec / 60);
+      var today = new Date().toDateString();
+      var cyclesToday = cycles.filter(function(c) { return c.completedAt && new Date(c.completedAt).toDateString() === today; }).length;
+      var successRate = cycles.length > 0 ? Math.round((cycles.filter(function(c) { return (c.testsFailed || 0) === 0; }).length / cycles.length) * 100) : 0;
+      telemetryRow.innerHTML = [
+        { label: 'Cycles Total', value: cycles.length },
+        { label: 'Today', value: cyclesToday },
+        { label: 'Avg Cycle (min)', value: avgMin || '–' },
+        { label: 'Success Rate', value: successRate + '%' },
+      ].map(function(t) {
+        return '<div class="cycle-telemetry-tile"><div class="tile-value">' + escH(String(t.value)) + '</div><div class="tile-label">' + escH(t.label) + '</div></div>';
+      }).join('');
+      var recent = cycles.slice(-10).reverse();
+      var prevLen = parseInt(lapStrip.getAttribute('data-cycle-count') || '0', 10);
+      lapStrip.innerHTML = recent.map(function(c) {
+        return '<div class="cycle-card">'
+          + '<div class="cycle-card-id">#' + escH(String(c.id)) + '</div>'
+          + '<div class="cycle-card-stat">' + escH(String(c.storiesCompleted)) + ' stories</div>'
+          + '<div class="cycle-card-stat">' + escH((c.coveragePercent || 0).toFixed(1)) + '% cov</div>'
+          + '</div>';
+      }).join('');
+      if (cycles.length > prevLen && prevLen > 0 && typeof playBeep === 'function') {
+        playBeep(523, 0.15);
+        setTimeout(function() { playBeep(659, 0.15); }, 150);
+        setTimeout(function() { playBeep(784, 0.2); }, 300);
+      }
+      lapStrip.setAttribute('data-cycle-count', String(cycles.length));
     }
   }
 

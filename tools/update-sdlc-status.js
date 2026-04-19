@@ -287,6 +287,38 @@ const HANDLERS = {
     return data;
   },
 
+  'cycle-complete': (data, opts) => {
+    data.cycles = data.cycles || [];
+    const nextId = data.cycles.length + 1;
+
+    const phaseDurations = {};
+    (data.phases || []).forEach(function(p) {
+      if (p.startedAt && p.completedAt) {
+        const ms = Date.parse(p.completedAt) - Date.parse(p.startedAt);
+        if (isFinite(ms) && ms >= 0) {
+          phaseDurations[p.name] = Math.round(ms / 1000);
+        }
+      }
+    });
+
+    const snapshot = {
+      id: nextId,
+      completedAt: nowISO(),
+      storiesCompleted: (data.metrics && data.metrics.storiesCompleted) || 0,
+      testsPassed: (data.metrics && data.metrics.testsPassed) || 0,
+      coveragePercent: (data.metrics && data.metrics.coveragePercent) || 0,
+      bugsFixed: (data.metrics && data.metrics.bugsFixed) || 0,
+      phaseDurations,
+    };
+    data.cycles.push(snapshot);
+
+    if (data.cycles.length > 50) data.cycles = data.cycles.slice(-50);
+
+    resetSession(data, '0');
+    appendLog(data, 'Conductor', `Cycle ${nextId} complete — ${snapshot.storiesCompleted} stories, ${snapshot.coveragePercent.toFixed(1)}% coverage`);
+    return data;
+  },
+
   'session-start': (data, opts) => {
     resetSession(data, opts.stories);
     appendLog(data, 'Conductor', `Session started — ${opts.stories || 0} stories planned`);

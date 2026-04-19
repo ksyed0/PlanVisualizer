@@ -147,6 +147,66 @@ describe('update-sdlc-status — story lifecycle', () => {
   });
 });
 
+describe('update-sdlc-status — cycle-complete', () => {
+  function stateWithActiveSession() {
+    const data = {
+      currentPhase: 0,
+      phases: [
+        { id: 1, name: 'Build', status: 'complete', startedAt: '2026-04-18T09:00:00.000Z', completedAt: '2026-04-18T10:30:00.000Z' },
+        { id: 2, name: 'Test',  status: 'complete', startedAt: '2026-04-18T10:30:00.000Z', completedAt: '2026-04-18T11:00:00.000Z' },
+      ],
+      agents: {},
+      stories: {},
+      cycles: [],
+      project: { name: 'TestProj', description: '', repoUrl: '', startDate: '2026-01-01' },
+      metrics: {
+        storiesCompleted: 4, storiesTotal: 4,
+        tasksCompleted: 12, tasksTotal: 0,
+        testsPassed: 200, testsFailed: 0, testsTotal: 200,
+        bugsOpen: 0, bugsFixed: 2, coveragePercent: 91.5,
+        reviewsApproved: 8, reviewsBlocked: 0,
+      },
+      log: [],
+    };
+    return data;
+  }
+
+  it('appends a cycle snapshot to cycles[]', () => {
+    const data = stateWithActiveSession();
+    HANDLERS['cycle-complete'](data, {});
+    expect(data.cycles).toHaveLength(1);
+    expect(data.cycles[0].id).toBe(1);
+    expect(data.cycles[0].storiesCompleted).toBe(4);
+    expect(data.cycles[0].coveragePercent).toBeCloseTo(91.5);
+    expect(data.cycles[0].completedAt).toBeTruthy();
+  });
+
+  it('captures phaseDurations in seconds', () => {
+    const data = stateWithActiveSession();
+    HANDLERS['cycle-complete'](data, {});
+    expect(data.cycles[0].phaseDurations.Build).toBe(5400); // 1.5h = 5400s
+    expect(data.cycles[0].phaseDurations.Test).toBe(1800);  // 0.5h = 1800s
+  });
+
+  it('resets runtime state after snapshotting', () => {
+    const data = stateWithActiveSession();
+    HANDLERS['cycle-complete'](data, {});
+    expect(data.metrics.storiesCompleted).toBe(0);
+    expect(data.stories).toEqual({});
+    expect(data.currentPhase).toBe(0);
+    expect(data.cycles).toHaveLength(1); // cycles preserved
+  });
+
+  it('increments cycle id across calls', () => {
+    const data = stateWithActiveSession();
+    HANDLERS['cycle-complete'](data, {});
+    data.metrics.storiesCompleted = 2;
+    HANDLERS['cycle-complete'](data, {});
+    expect(data.cycles).toHaveLength(2);
+    expect(data.cycles[1].id).toBe(2);
+  });
+});
+
 describe('update-sdlc-status — phase', () => {
   function seededPhaseState() {
     const data = baseState();
