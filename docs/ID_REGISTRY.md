@@ -6,9 +6,9 @@ Single source of truth for the next available ID in every artefact sequence.
 | **Sequence** | **Next Available ID** | **Last Assigned** |
 | ------------ | --------------------- | ----------------- |
 | EPIC         | EPIC-0020             | EPIC-0019         |
-| US           | US-0127               | US-0126           |
+| US           | US-0135               | US-0134           |
 | TASK         | TASK-0055             | TASK-0054         |
-| AC           | AC-0441               | AC-0440           |
+| AC           | AC-0488               | AC-0487           |
 | TC           | TC-0158               | TC-0157           |
 | BUG          | BUG-0183              | BUG-0182          |
 

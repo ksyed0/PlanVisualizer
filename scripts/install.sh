@@ -211,6 +211,28 @@ if [ -f "${TARGET}/docs/plan-status.json" ]; then
   fi
 fi
 
+# ── 7. Dashboard setup ────────────────────────────────────────────────────────
+if [ -f "${TARGET}/docs/dashboard.html" ]; then
+  echo "[install] §7 Dashboard setup: docs/dashboard.html already exists in target — skipping."
+else
+  echo ""
+  echo "[install] Agentic SDLC Dashboard setup"
+  read -p "[install] Copy dashboard files to ${TARGET}/docs? (y/n) " -n 1 -r REPLY; echo
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    mkdir -p "${TARGET}/docs" "${TARGET}/tools" "${TARGET}/orchestrator"
+    cp "${REPO_ROOT}/docs/dashboard.html" "${TARGET}/docs/dashboard.html"
+    echo "[install] Copied docs/dashboard.html"
+    for f in tools/update-sdlc-status.js tools/init-sdlc-status.js; do
+      [ -f "${REPO_ROOT}/${f}" ] && cp "${REPO_ROOT}/${f}" "${TARGET}/${f}" && echo "[install] Copied ${f}"
+    done
+    [ -f "${REPO_ROOT}/orchestrator/atomic-write.js" ] && \
+      cp "${REPO_ROOT}/orchestrator/atomic-write.js" "${TARGET}/orchestrator/atomic-write.js" && \
+      echo "[install] Copied orchestrator/atomic-write.js"
+    echo "[install] Run: node tools/init-sdlc-status.js   (after adding project/phases to agents.config.json)"
+    echo "[install] See: docs/dashboard-extraction.md for the full adoption guide"
+  fi
+fi
+
 echo ""
 echo "[install] Done. Next steps:"
 echo "  1. Edit plan-visualizer.config.json with your project name and file paths."

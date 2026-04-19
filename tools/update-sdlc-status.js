@@ -68,20 +68,13 @@ function parseArgs(argv) {
   return { cmd, opts };
 }
 
-function nowLocalHHMM() {
-  const d = new Date();
-  const hh = String(d.getHours()).padStart(2, '0');
-  const mm = String(d.getMinutes()).padStart(2, '0');
-  return `${hh}:${mm}`;
-}
-
 function nowISO() {
   return new Date().toISOString();
 }
 
 function appendLog(data, agent, message) {
   data.log = data.log || [];
-  data.log.push({ time: nowLocalHHMM(), agent: agent || 'Conductor', message });
+  data.log.push({ time: nowISO(), agent: agent || 'Conductor', message });
   // Keep log bounded at last 200 entries
   if (data.log.length > 200) data.log = data.log.slice(-200);
   return data;
@@ -103,8 +96,47 @@ function ensureStory(data, id) {
   return data.stories[id];
 }
 
+function requireAgent(opts) {
+  if (!opts.agent || opts.agent === 'undefined') {
+    throw new Error('[update-sdlc-status] --agent is required');
+  }
+}
+
+function resetSession(data, storiesTotal) {
+  const total = parseInt(storiesTotal || '0', 10);
+  if (Number.isNaN(total) || total < 0) {
+    throw new Error(`[update-sdlc-status] --stories must be a non-negative integer, got: ${storiesTotal}`);
+  }
+  data.stories = {};
+  data.currentPhase = 0;
+  if (Array.isArray(data.phases)) {
+    data.phases = data.phases.map((p) => ({
+      ...p,
+      status: 'pending',
+      startedAt: null,
+      completedAt: null,
+    }));
+  }
+  data.metrics = {
+    storiesCompleted: 0,
+    storiesTotal: total,
+    tasksCompleted: 0,
+    tasksTotal: 0,
+    testsPassed: 0,
+    testsFailed: 0,
+    testsTotal: 0,
+    bugsOpen: 0,
+    bugsFixed: 0,
+    coveragePercent: 0,
+    reviewsApproved: 0,
+    reviewsBlocked: 0,
+  };
+  return data;
+}
+
 const HANDLERS = {
   'agent-start': (data, opts) => {
+    requireAgent(opts);
     const agent = ensureAgent(data, opts.agent);
     agent.status = 'active';
     agent.currentTask = opts.task || `Working on ${opts.story || 'task'}`;
@@ -121,6 +153,7 @@ const HANDLERS = {
   },
 
   'agent-done': (data, opts) => {
+    requireAgent(opts);
     const agent = ensureAgent(data, opts.agent);
     agent.status = 'idle';
     agent.currentTask = null;
@@ -188,7 +221,6 @@ const HANDLERS = {
     story.epic = opts.epic || story.epic;
     story.startedAt = nowISO();
     data.metrics = data.metrics || {};
-    data.metrics.storiesTotal = Math.max(data.metrics.storiesTotal || 0, Object.keys(data.stories).length);
     appendLog(data, 'Conductor', `started ${opts.story}${opts.epic ? ' (' + opts.epic + ')' : ''}`);
     return data;
   },
@@ -198,44 +230,129 @@ const HANDLERS = {
     story.status = 'Complete';
     story.epic = opts.epic || story.epic;
     story.completedAt = nowISO();
+    const agentName = story.assignedAgent;
+    if (agentName && data.agents && data.agents[agentName]) {
+      data.agents[agentName].status = 'idle';
+      data.agents[agentName].currentTask = null;
+    }
     data.metrics = data.metrics || {};
     data.metrics.storiesCompleted = (data.metrics.storiesCompleted || 0) + 1;
     data.metrics.storiesTotal = Math.max(data.metrics.storiesTotal || 0, Object.keys(data.stories).length);
+    const epicId = opts.epic || story.epic;
+    if (epicId && data.epics && data.epics[epicId]) {
+      data.epics[epicId].storiesCompleted = (data.epics[epicId].storiesCompleted || 0) + 1;
+    }
     appendLog(data, 'Conductor', `completed ${opts.story}${opts.epic ? ' (' + opts.epic + ')' : ''}`);
     return data;
   },
 
+  'epic-start': (data, opts) => {
+    if (!opts.epic) throw new Error('[update-sdlc-status] epic-start requires --epic');
+    data.epics = data.epics || {};
+    data.epics[opts.epic] = {
+      name: opts.name || opts.epic,
+      status: 'in-progress',
+      startedAt: nowISO(),
+      completedAt: null,
+      storiesCompleted: 0,
+      storiesTotal: parseInt(opts.stories || '0', 10),
+    };
+    appendLog(data, 'Conductor', `Epic ${opts.epic} (${opts.name || opts.epic}) started`);
+    return data;
+  },
+
+  'epic-complete': (data, opts) => {
+    if (!opts.epic) throw new Error('[update-sdlc-status] epic-complete requires --epic');
+    data.epics = data.epics || {};
+    if (data.epics[opts.epic]) {
+      data.epics[opts.epic].status = 'complete';
+      data.epics[opts.epic].completedAt = nowISO();
+    }
+    appendLog(data, 'Conductor', `Epic ${opts.epic} complete`);
+    return data;
+  },
+
+  'bug-open': (data, opts) => {
+    data.metrics = data.metrics || {};
+    data.metrics.bugsOpen = (data.metrics.bugsOpen || 0) + 1;
+    appendLog(data, opts.agent || 'Conductor', `bug opened on ${opts.story || 'unknown story'}`);
+    return data;
+  },
+
+  'bug-fix': (data, opts) => {
+    data.metrics = data.metrics || {};
+    data.metrics.bugsOpen = Math.max(0, (data.metrics.bugsOpen || 0) - 1);
+    data.metrics.bugsFixed = (data.metrics.bugsFixed || 0) + 1;
+    appendLog(data, opts.agent || 'Conductor', `bug fixed on ${opts.story || 'unknown story'}`);
+    return data;
+  },
+
+  'cycle-complete': (data, opts) => {
+    data.cycles = data.cycles || [];
+    const nextId = data.cycles.length + 1;
+
+    const phaseDurations = {};
+    (data.phases || []).forEach(function (p) {
+      if (p.startedAt && p.completedAt) {
+        const ms = Date.parse(p.completedAt) - Date.parse(p.startedAt);
+        if (isFinite(ms) && ms >= 0) {
+          phaseDurations[p.name] = Math.round(ms / 1000);
+        }
+      }
+    });
+
+    const snapshot = {
+      id: nextId,
+      completedAt: nowISO(),
+      storiesCompleted: (data.metrics && data.metrics.storiesCompleted) || 0,
+      testsPassed: (data.metrics && data.metrics.testsPassed) || 0,
+      testsFailed: (data.metrics && data.metrics.testsFailed) || 0,
+      coveragePercent: (data.metrics && data.metrics.coveragePercent) || 0,
+      bugsFixed: (data.metrics && data.metrics.bugsFixed) || 0,
+      phaseDurations,
+    };
+    data.cycles.push(snapshot);
+
+    if (data.cycles.length > 50) data.cycles = data.cycles.slice(-50);
+
+    resetSession(data, '0');
+    appendLog(
+      data,
+      'Conductor',
+      `Cycle ${nextId} complete — ${snapshot.storiesCompleted} stories, ${snapshot.coveragePercent.toFixed(1)}% coverage`,
+    );
+    return data;
+  },
+
+  'session-start': (data, opts) => {
+    resetSession(data, opts.stories);
+    appendLog(data, 'Conductor', `Session started — ${opts.stories || 0} stories planned`);
+    return data;
+  },
+
   phase: (data, opts) => {
-    // Canonical DM_AGENT.md phase definitions
-    const PHASE_DEFS = [
-      { name: 'Blueprint', agents: ['Compass'], deliverables: ['refined ACs', 'priority list'] },
-      { name: 'Architect', agents: ['Keystone'], deliverables: ['scaffold', 'types', 'service stubs'] },
-      { name: 'Build', agents: ['Pixel', 'Forge', 'Palette'], deliverables: ['implementation', 'unit tests'] },
-      { name: 'Integration', agents: ['Pixel'], deliverables: ['wired services', 'e2e flows'] },
-      { name: 'Test', agents: ['Sentinel', 'Circuit'], deliverables: ['test report', 'coverage'] },
-      { name: 'Polish', agents: ['Pixel', 'Forge'], deliverables: ['bug fixes', 'demo prep'] },
-    ];
     const n = parseInt(opts.number, 10);
+    if (!Number.isInteger(n) || n < 1) {
+      throw new Error(`[update-sdlc-status] phase --number must be a positive integer, got: ${opts.number}`);
+    }
     const status = opts.status || 'in-progress';
     data.currentPhase = n;
     data.phases = data.phases || [];
-    // Auto-expand phases up to n, seeding with canonical name+agents
+    // Auto-expand if phases weren't seeded by init-sdlc-status.js
     while (data.phases.length < n) {
       const i = data.phases.length;
-      const def = PHASE_DEFS[i] || { name: `Phase ${i + 1}`, agents: [], deliverables: [] };
       data.phases.push({
+        id: i + 1,
+        name: `Phase ${i + 1}`,
+        agents: [],
+        deliverables: [],
         status: 'pending',
-        name: def.name,
-        agents: def.agents.slice(),
-        deliverables: def.deliverables.slice(),
+        startedAt: null,
+        completedAt: null,
       });
     }
     const phase = data.phases[n - 1];
     phase.status = status;
-    // Ensure name/agents/deliverables are populated on the active phase
-    if (!phase.name && PHASE_DEFS[n - 1]) phase.name = PHASE_DEFS[n - 1].name;
-    if (!phase.agents && PHASE_DEFS[n - 1]) phase.agents = PHASE_DEFS[n - 1].agents.slice();
-    if (!phase.deliverables && PHASE_DEFS[n - 1]) phase.deliverables = PHASE_DEFS[n - 1].deliverables.slice();
     if (status === 'in-progress' && !phase.startedAt) phase.startedAt = nowISO();
     if (status === 'complete' && !phase.completedAt) phase.completedAt = nowISO();
     appendLog(data, 'Conductor', `Phase ${n} (${phase.name}) → ${status}`);
@@ -282,4 +399,4 @@ if (require.main === module) {
   main();
 }
 
-module.exports = { HANDLERS, parseArgs };
+module.exports = { HANDLERS, parseArgs, resetSession };

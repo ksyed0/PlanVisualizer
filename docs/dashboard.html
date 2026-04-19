@@ -1,386 +1,9 @@
-#!/usr/bin/env node
-/**
- * SDLC Live Dashboard Generator
- * Reads sdlc-status.json and project files, generates a self-contained HTML dashboard.
- *
- * Usage:
- *   node tools/generate-dashboard.js          # Generate once
- *   node tools/generate-dashboard.js --watch   # Watch and regenerate on changes
- */
-
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process');
-// US-0125 (EPIC-0016): shared semantic badge helpers extracted from
-// tools/lib/render-html.js. Imported here so later stories
-// (US-0118/US-0119/US-0120) can wire the Agentic Dashboard's status
-// pills (agent-status, story-status, epic-status) into the same
-// semantic vocabulary as the Plan Visualizer. Existing pill rendering
-// is intentionally left inline until those stories add matching
-// .badge/.badge-* CSS scaffolding to dashboard.html — see US-0125
-// report notes for the rationale.
-// eslint-disable-next-line no-unused-vars
-const { badge, BADGE_TONE } = require('./lib/theme');
-
-const ROOT = path.resolve(__dirname, '..');
-const STATUS_PATH = path.join(ROOT, 'docs', 'sdlc-status.json');
-const PLAN_STATUS_PATH = path.join(ROOT, 'docs', 'plan-status.json');
-const OUTPUT_PATH = path.join(ROOT, 'docs', 'dashboard.html');
-
-// Git + version metadata (mirrors tools/generate-plan.js helpers) so the About
-// modal can display "This Project" / "Dashboard Tool" sections with parity
-// to the Plan Visualizer's About modal (US-0109).
-function getCommitSha() {
-  try {
-    return execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim();
-  } catch {
-    return 'unknown';
-  }
-}
-function getBuildNumber() {
-  try {
-    return execSync('git rev-list --count HEAD', { encoding: 'utf8' }).trim();
-  } catch {
-    return '0';
-  }
-}
-function getCurrentBranch() {
-  try {
-    return execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf8' }).trim();
-  } catch {
-    return 'unknown';
-  }
-}
-function getProjectPkg() {
-  try {
-    const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
-    return { name: pkg.name || 'project', version: pkg.version || '0.0.0' };
-  } catch {
-    return { name: 'project', version: '0.0.0' };
-  }
-}
-// The tool (PlanVisualizer) lives in the same repo for self-hosted use.
-// When installed into another project, the tool pkg is one level up from tools/.
-function getToolPkg() {
-  try {
-    const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'));
-    return { name: pkg.name || 'plan-visualizer', version: pkg.version || '0.0.0' };
-  } catch {
-    return { name: 'plan-visualizer', version: '0.0.0' };
-  }
-}
-
-// Load agent config (colors, icons, roles) from agents.config.json
-function loadAgentConfig() {
-  const cfgPath = path.join(ROOT, 'agents.config.json');
-  if (!fs.existsSync(cfgPath)) return {};
-  try {
-    return JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
-  } catch {
-    return {};
-  }
-}
-
-const AGENT_CONFIG = loadAgentConfig();
-
-// Dashboard title/subtitle/footer from config, defaulting to repo name from package.json
-function getDashboardMeta() {
-  const dashCfg = AGENT_CONFIG.dashboard || {};
-  let fallbackName = 'SDLC Dashboard';
-  try {
-    const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
-    if (pkg.name) fallbackName = pkg.name;
-  } catch {
-    /* ignore */
-  }
-  return {
-    title: dashCfg.title || fallbackName,
-    subtitle: dashCfg.subtitle || 'Agentic AI SDLC',
-    footer: dashCfg.footer || `Agentic AI SDLC | ${fallbackName}`,
-    repoUrl: dashCfg.repoUrl || '',
-    primaryColor: dashCfg.primaryColor || '#D52B1E',
-    platform: dashCfg.platform || 'Agentic AI',
-    agentCount: Object.keys(AGENT_CONFIG.agents || {}).length,
-    author: dashCfg.author || '',
-    authorTitle: dashCfg.authorTitle || '',
-  };
-}
-
-const DASH_META = getDashboardMeta();
-
-function esc(s) {
-  return String(s ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-// US-0121 AC-0411: Normalize a log time string to bracketed [HH:MM:SS].
-// sdlc-status.json log entries historically stored HH:MM; pad seconds so
-// the terminal-aesthetic format stays consistent for old and new rows.
-function formatLogTime(raw) {
-  const t = String(raw || '').trim();
-  if (!t) return '--:--:--';
-  // ISO format (contains 'T'): parse as Date and extract HH:MM:SS
-  if (t.includes('T')) {
-    const d = new Date(t);
-    if (!isNaN(d)) {
-      const h = String(d.getHours()).padStart(2, '0');
-      const m = String(d.getMinutes()).padStart(2, '0');
-      const s = String(d.getSeconds()).padStart(2, '0');
-      return `${h}:${m}:${s}`;
-    }
-  }
-  const parts = t.split(':');
-  if (parts.length < 2) return t;
-  const h = parts[0].padStart(2, '0');
-  const m = (parts[1] || '00').padStart(2, '0');
-  const s = (parts[2] || '00').padStart(2, '0');
-  return `${h}:${m}:${s}`;
-}
-
-// US-0121 AC-0413: Derive a filter category from the message body by
-// case-insensitive substring match. Order matters: "error" wins over the
-// rest so a "bug review error" row surfaces under the Errors chip first.
-function logCategory(message) {
-  const m = String(message || '').toLowerCase();
-  if (m.includes('error')) return 'errors';
-  if (m.includes('review')) return 'reviews';
-  if (m.includes('test')) return 'tests';
-  if (m.includes('bug')) return 'bugs';
-  return 'other';
-}
-
-// Read the Plan Visualizer's derived project data (produced by tools/generate-plan.js)
-// so the dashboard can show authoritative story/epic/task/bug counts instead of the
-// hand-maintained sdlc-status.json metric fields, which drift. Returns null if the
-// file is missing or malformed — callers must handle the null case.
-function loadPlanData() {
-  try {
-    return JSON.parse(fs.readFileSync(PLAN_STATUS_PATH, 'utf8'));
-  } catch {
-    return null;
-  }
-}
-
-function readJSON(filePath) {
-  try {
-    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
-  } catch {
-    return null;
-  }
-}
-
-// US-0120 AC-0408: format a duration between startedAt and now as "6h 23m",
-// "12m", or "45s". Returns null if the input is missing/invalid so callers can
-// choose whether to render the pill at all. Negative durations clamp to 0s so
-// clock-skew between the writer and this renderer never produces "-3m".
-function formatElapsed(startedAt, nowMs) {
-  if (!startedAt) return null;
-  const startMs = Date.parse(startedAt);
-  if (!Number.isFinite(startMs)) return null;
-  const deltaMs = Math.max(0, (typeof nowMs === 'number' ? nowMs : Date.now()) - startMs);
-  const totalSeconds = Math.floor(deltaMs / 1000);
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-  if (hours > 0) return `${hours}h ${minutes}m`;
-  if (minutes > 0) return `${minutes}m`;
-  return `${seconds}s`;
-}
-
-function generateHTML(status) {
-  const now = new Date().toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true,
-  });
-  // Build-time metadata for the About modal (US-0109 parity with plan-status.html)
-  const PROJECT_PKG = getProjectPkg();
-  const TOOL_PKG = getToolPkg();
-  const COMMIT_SHA = getCommitSha();
-  const BUILD_NUMBER = getBuildNumber();
-  const GIT_BRANCH = getCurrentBranch();
-  const agents = status.agents;
-  const phases = status.phases;
-  const metrics = { ...status.metrics };
-  const stories = status.stories;
-  const log = status.log || [];
-
-  // BUG-0164 / BUG-0166 — enrich with authoritative project data from plan-status.json.
-  // sdlc-status.json's metric fields and epic/story titles drift because nothing
-  // recomputes them; when plan-status.json is present we derive the truth instead.
-  const planData = loadPlanData();
-  const storyTitles = {};
-  const epicTitles = {};
-  if (planData) {
-    planData.stories.forEach((s) => {
-      storyTitles[s.id] = s.title;
-    });
-    planData.epics.forEach((e) => {
-      epicTitles[e.id] = e.title;
-    });
-    const isDone = (s) => /^(Complete|Done)$/i.test(s.status);
-    const isBugOpen = (b) => !/^(Fixed|Retired|Cancelled|Verified|Closed)/i.test(b.status);
-    const isBugFixed = (b) => /^(Fixed|Verified|Closed)/i.test(b.status);
-    metrics.storiesTotal = planData.stories.length;
-    metrics.storiesCompleted = planData.stories.filter(isDone).length;
-    metrics.tasksTotal = planData.tasks.length;
-    metrics.tasksCompleted = planData.tasks.filter(isDone).length;
-    metrics.bugsOpen = planData.bugs.filter(isBugOpen).length;
-    metrics.bugsFixed = planData.bugs.filter(isBugFixed).length;
-    if (
-      planData.coverage &&
-      planData.coverage.available !== false &&
-      typeof planData.coverage.statements === 'number'
-    ) {
-      metrics.coveragePercent = planData.coverage.statements;
-    }
-  }
-
-  // Agent colors, icons, roles, and avatars derived from agents.config.json
-  const agentColors = {};
-  const agentIcons = {};
-  const agentRoles = {};
-  const agentAvatars = {};
-  for (const [name, cfg] of Object.entries(AGENT_CONFIG.agents || {})) {
-    agentColors[name] = cfg.color || '#888';
-    agentIcons[name] = cfg.icon || '🤖';
-    agentRoles[name] = cfg.role || name;
-    agentAvatars[name] = cfg.avatar || name.toLowerCase();
-  }
-
-  const phasesComplete = phases.filter((p) => p.status === 'complete').length;
-  const pipelineComplete = phasesComplete === phases.length && phases.length > 0;
-
-  const phasePercent = phases.length > 0 ? Math.round((phasesComplete / phases.length) * 100) : 0;
-
-  // US-0114: compute current phase label for center zone
-  const currentPhaseObj =
-    phases.find((p) => p.status === 'in-progress') ||
-    (pipelineComplete ? null : phases.filter((p) => p.status === 'complete').pop());
-  const phaseLabel = pipelineComplete
-    ? 'COMPLETE'
-    : currentPhaseObj
-      ? `PHASE ${phases.indexOf(currentPhaseObj) + 1} / ${(currentPhaseObj.name || currentPhaseObj.id || '').toUpperCase()}`
-      : 'STANDBY';
-
-  // US-0114: detect if any agent or phase is BLOCKED for header accent
-  const anyBlocked =
-    phases.some((p) => p.status === 'blocked') || Object.values(agents || {}).some((a) => a && a.status === 'blocked');
-
-  const storyPercent =
-    metrics.storiesTotal > 0 ? Math.round((metrics.storiesCompleted / metrics.storiesTotal) * 100) : 0;
-
-  // US-0118 AC-0397: coverage threshold → semantic tone.
-  //   green  ≥ 80%
-  //   amber  60–80%
-  //   red    <  60%
-  const coveragePct = typeof metrics.coveragePercent === 'number' ? metrics.coveragePercent : 0;
-  const coverageTone = coveragePct >= 80 ? 'green' : coveragePct >= 60 ? 'amber' : 'red';
-
-  // US-0118 AC-0396: sparkline bar heights keyed to phase status. Complete
-  // phases render at full height, in-progress at ~60%, pending at a short
-  // baseline so the shape still reads as a mini chart.
-  const sparkHeights = phases.map((p) => {
-    if (p.status === 'complete') return 100;
-    if (p.status === 'in-progress') return 60;
-    return 18;
-  });
-
-  // US-0115 (EPIC-0016): cycle counter + per-phase fill ratio.
-  //
-  // Cycle N is defined as "completed stories + 1" (AC-0384). The active
-  // implementation target is the currently In Progress story (or null →
-  // "STANDBY"). The active-phase fill ratio (AC-0385) uses the same
-  // storiesCompleted / storiesTotal ratio; when totals are missing we fall
-  // back to 50% so the bar still reads as partial progress rather than
-  // empty. The cycle "elapsed HH:MM:SS" timer is kicked off client-side
-  // (see updateCycleElapsed() below) from a data-started-at attribute on
-  // #cycle-elapsed; the server renders 00:00:00 as a placeholder.
-  const cycleStories = (status && status.stories) || {};
-  const cycleStoryEntries = Object.entries(cycleStories).map(([id, s]) => ({ id, ...s }));
-  const cycleCompletedCount = cycleStoryEntries.filter((s) => /^(Complete|Done)$/i.test(s.status)).length;
-  const cycleNumber = cycleCompletedCount + 1;
-  const cycleActiveStory = cycleStoryEntries.find((s) => /^In[ -]?Progress$/i.test(s.status)) || null;
-  const cycleTargetId = cycleActiveStory ? cycleActiveStory.id : null;
-  const cycleLabel = cycleTargetId ? `CYCLE ${cycleNumber} \u00B7 IMPLEMENTING ${cycleTargetId}` : 'STANDBY';
-  // Partial fill ratio for the in-progress phase (AC-0385). Prefer story
-  // completion within the metrics object (authoritative after BUG-0166),
-  // fall back to 50% so the fill still reads as partial-progress when the
-  // source data hasn't caught up yet.
-  const cycleFillRatio =
-    metrics && metrics.storiesTotal > 0
-      ? Math.max(0.04, Math.min(1, metrics.storiesCompleted / metrics.storiesTotal))
-      : 0.5;
-  const cycleFillPct = Math.round(cycleFillRatio * 100);
-  // Elapsed-ms helper for completed phases (AC-0386). Returns a formatted
-  // "HH:MM:SS" string (with leading zeros) when both timestamps are valid,
-  // empty string otherwise. The client-side refresh never rewrites these
-  // strings — completed-phase elapsed is static.
-  function formatPhaseElapsed(startedAt, completedAt) {
-    if (!startedAt || !completedAt) return '';
-    const ms = Date.parse(completedAt) - Date.parse(startedAt);
-    if (!isFinite(ms) || ms < 0) return '';
-    const totalS = Math.floor(ms / 1000);
-    const h = Math.floor(totalS / 3600);
-    const m = Math.floor((totalS % 3600) / 60);
-    const s = totalS % 60;
-    const pad = (n) => (n < 10 ? '0' : '') + n;
-    return pad(h) + ':' + pad(m) + ':' + pad(s);
-  }
-
-  // AC-0384: ISO start for the cycle elapsed ticker. Prefer the active
-  // story's startedAt, fall back to the in-progress phase's startedAt,
-  // else empty string (client keeps 00:00:00).
-  const cycleStartedAt =
-    (cycleActiveStory && cycleActiveStory.startedAt) ||
-    (phases.find((p) => p.status === 'in-progress') || {}).startedAt ||
-    '';
-
-  // US-0118 AC-0398: pull the most recent review verdicts from status.log.
-  // Canonical messages emitted by tools/update-sdlc-status.js are
-  //   "approve review of US-XXXX" / "block review of US-XXXX".
-  // We also match the raw tokens "approved"/"blocked" for safety.
-  const reviewRegex = /^(approve|block)\s+review\s+of\s+(US-\d{4}|[A-Za-z0-9_-]+)/i;
-  const reviewEntries = [];
-  for (let i = log.length - 1; i >= 0 && reviewEntries.length < 5; i--) {
-    const entry = log[i] || {};
-    const msg = String(entry.message || '');
-    const m = msg.match(reviewRegex);
-    if (m) {
-      reviewEntries.push({
-        agent: entry.agent || 'Reviewer',
-        verdict: m[1].toLowerCase() === 'block' ? 'block' : 'approve',
-        target: m[2],
-        time: entry.time || '',
-      });
-    }
-  }
-
-  // US-0118 AC-0400: "LAST UPDATED HH:MM" footer stamp — server-rendered
-  // from current generation time. refreshState() rewrites it on each fetch.
-  const stampHHMM = new Date().toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  });
-
-  // SVG doughnut geometry. With r=15.9155 the circumference is exactly 100,
-  // so stroke-dasharray can be written as "<percent> 100" without extra math.
-  const doughnutOffset = (100 - Math.max(0, Math.min(100, coveragePct))).toFixed(2);
-
-  return `<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>${DASH_META.title} — SDLC Live Dashboard</title>
+<title>My Project — SDLC Live Dashboard</title>
 <!-- US-0110 AC-0361: Departure Mono (display numerics) + Geist (sans), font-display:swap via Google Fonts. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -389,7 +12,7 @@ function generateHTML(status) {
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap">
 <style>
   :root {
-    --brand-primary: ${DASH_META.primaryColor};
+    --brand-primary: #1565C0;
     /* US-0110 AC-0361: scoped font stacks — do NOT reassign existing typography
        to avoid cascade into unrelated surfaces; only .section-header opts in. */
     --font-display: 'Departure Mono', 'SF Mono', Menlo, Consolas, monospace;
@@ -1491,18 +1114,18 @@ function generateHTML(status) {
 </head>
 <body>
 
-<div class="header${anyBlocked ? ' header-blocked' : ''}" id="main-header">
+<div class="header" id="main-header">
   <div class="header-left">
-    <div class="header-title">${esc(DASH_META.title)}</div>
-    <div class="header-subtitle">${esc(DASH_META.subtitle)}</div>
+    <div class="header-title">My Project</div>
+    <div class="header-subtitle">Agentic AI SDLC</div>
   </div>
   <div class="header-center" id="header-phase-label">
     <span class="live-dot ok" aria-label="live" title="live" id="clock-live-dot"></span>
-    <span>${esc(phaseLabel)}</span>
+    <span>STANDBY</span>
   </div>
   <div class="header-right">
     <div class="clock">
-      <div class="time">${now}</div>
+      <div class="time">Apr 18, 2026, 11:17 PM</div>
       <div class="label">Last Updated</div>
       <!-- US-0111 AC-0366: live ticker in JetBrains Mono; refreshState() updates this every tick. -->
       <div id="last-updated-ticker" class="last-updated" aria-live="polite">Last updated: just now</div>
@@ -1519,18 +1142,7 @@ function generateHTML(status) {
 
 <div class="container">
 
-${
-  pipelineComplete
-    ? `<!-- Pipeline Complete Banner -->
-<div style="background: linear-gradient(135deg, #1a3a2a 0%, #0d2b1a 100%); border: 1px solid #2d6a4f; border-left: 4px solid #34A853; border-radius: 8px; padding: 14px 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 14px;">
-  <span style="font-size: 28px;">🎉</span>
-  <div>
-    <div style="color: #34A853; font-size: 16px; font-weight: 700; letter-spacing: 0.5px;">PIPELINE COMPLETE — v1.0.0-poc</div>
-    <div style="color: #aaa; font-size: 12px; margin-top: 2px;">All ${phases.length} phases complete · ${metrics.storiesCompleted}/${metrics.storiesTotal} stories · ${metrics.testsPassed} tests passing · ${metrics.coveragePercent}% coverage · ${metrics.bugsFixed} bugs fixed</div>
-  </div>
-</div>`
-    : ''
-}
+
 
 <!-- Phase Pipeline — US-0115: 6-phase timeline with cycle counter. -->
 <h2 class="section-header">PIPELINE</h2>
@@ -1540,41 +1152,71 @@ ${
 <div class="cycle-counter" id="cycle-counter" aria-live="polite">
   <span class="cycle-label">
     <span class="live-dot ok" aria-label="live" title="live"></span>
-    <span id="cycle-label-text">${esc(cycleLabel)}</span>
+    <span id="cycle-label-text">STANDBY</span>
   </span>
-  <span class="cycle-elapsed" id="cycle-elapsed" data-started-at="${esc(cycleStartedAt)}">00:00:00</span>
+  <span class="cycle-elapsed" id="cycle-elapsed" data-started-at="">00:00:00</span>
 </div>
 <div class="pipeline">
-${phases
-  .map((p, i) => {
-    const phaseNum = String(i + 1).padStart(2, '0');
-    const icon =
-      p.status === 'complete' ? '✅' : p.status === 'in-progress' ? '🔄' : p.status === 'blocked' ? '⚠️' : '⏳';
-    const elapsed = p.status === 'complete' ? formatPhaseElapsed(p.startedAt, p.completedAt) : '';
-    const hasElapsed = elapsed ? '1' : '0';
-    // AC-0385: the in-progress phase gets the partial-fill width; all
-    // other phases render the track with either 0 (pending/blocked) or
-    // 100 (complete, via CSS) so patchDOM() only needs to flip the class
-    // to transition states.
-    const fillWidth = p.status === 'in-progress' ? cycleFillPct : p.status === 'complete' ? 100 : 0;
-    const agents = Array.isArray(p.agents) ? p.agents : [];
-    const deliverables = Array.isArray(p.deliverables) ? p.deliverables : [];
-    // US-0111 AC-0364 + US-0115: stable IDs so refreshState() / patchDOM() can
-    // update only the changed phase nodes instead of reloading the page.
-    // New helper ids (-check, -elapsed, -fill, -num) support the timeline
-    // footer/fill elements added here.
-    return `  <div class="phase-block ${p.status}" id="phase-${p.id}" data-phase-status="${p.status}">
+  <div class="phase-block pending" id="phase-1" data-phase-status="pending">
     <div class="phase-beacon" aria-hidden="true"></div>
-    <div class="phase-status" id="phase-${p.id}-icon" aria-hidden="true">${icon}</div>
-    <div class="phase-number" id="phase-${p.id}-num">${phaseNum}</div>
-    <div class="phase-name">${p.name}</div>
-    <div class="phase-agents">${agents.join(' \u00B7 ')}</div>
-    <div class="phase-deliverables">${deliverables.join(' \u00B7 ')}</div>
-    <div class="phase-elapsed" id="phase-${p.id}-elapsed" data-has-elapsed="${hasElapsed}"><span class="phase-check" id="phase-${p.id}-check" aria-label="complete">\u2713</span>${esc(elapsed)}</div>
-    <div class="phase-fill-track"><div class="phase-fill-bar" id="phase-${p.id}-fill" style="width: ${fillWidth}%"></div></div>
-  </div>`;
-  })
-  .join('\n')}
+    <div class="phase-status" id="phase-1-icon" aria-hidden="true">⏳</div>
+    <div class="phase-number" id="phase-1-num">01</div>
+    <div class="phase-name">Blueprint</div>
+    <div class="phase-agents">Compass</div>
+    <div class="phase-deliverables">refined ACs · priority list</div>
+    <div class="phase-elapsed" id="phase-1-elapsed" data-has-elapsed="0"><span class="phase-check" id="phase-1-check" aria-label="complete">✓</span></div>
+    <div class="phase-fill-track"><div class="phase-fill-bar" id="phase-1-fill" style="width: 0%"></div></div>
+  </div>
+  <div class="phase-block pending" id="phase-2" data-phase-status="pending">
+    <div class="phase-beacon" aria-hidden="true"></div>
+    <div class="phase-status" id="phase-2-icon" aria-hidden="true">⏳</div>
+    <div class="phase-number" id="phase-2-num">02</div>
+    <div class="phase-name">Architect</div>
+    <div class="phase-agents">Keystone</div>
+    <div class="phase-deliverables">scaffold · types · service stubs</div>
+    <div class="phase-elapsed" id="phase-2-elapsed" data-has-elapsed="0"><span class="phase-check" id="phase-2-check" aria-label="complete">✓</span></div>
+    <div class="phase-fill-track"><div class="phase-fill-bar" id="phase-2-fill" style="width: 0%"></div></div>
+  </div>
+  <div class="phase-block pending" id="phase-3" data-phase-status="pending">
+    <div class="phase-beacon" aria-hidden="true"></div>
+    <div class="phase-status" id="phase-3-icon" aria-hidden="true">⏳</div>
+    <div class="phase-number" id="phase-3-num">03</div>
+    <div class="phase-name">Build</div>
+    <div class="phase-agents">Pixel · Forge · Palette</div>
+    <div class="phase-deliverables">implementation · unit tests</div>
+    <div class="phase-elapsed" id="phase-3-elapsed" data-has-elapsed="0"><span class="phase-check" id="phase-3-check" aria-label="complete">✓</span></div>
+    <div class="phase-fill-track"><div class="phase-fill-bar" id="phase-3-fill" style="width: 0%"></div></div>
+  </div>
+  <div class="phase-block pending" id="phase-4" data-phase-status="pending">
+    <div class="phase-beacon" aria-hidden="true"></div>
+    <div class="phase-status" id="phase-4-icon" aria-hidden="true">⏳</div>
+    <div class="phase-number" id="phase-4-num">04</div>
+    <div class="phase-name">Integration</div>
+    <div class="phase-agents">Pixel</div>
+    <div class="phase-deliverables">wired services · e2e flows</div>
+    <div class="phase-elapsed" id="phase-4-elapsed" data-has-elapsed="0"><span class="phase-check" id="phase-4-check" aria-label="complete">✓</span></div>
+    <div class="phase-fill-track"><div class="phase-fill-bar" id="phase-4-fill" style="width: 0%"></div></div>
+  </div>
+  <div class="phase-block pending" id="phase-5" data-phase-status="pending">
+    <div class="phase-beacon" aria-hidden="true"></div>
+    <div class="phase-status" id="phase-5-icon" aria-hidden="true">⏳</div>
+    <div class="phase-number" id="phase-5-num">05</div>
+    <div class="phase-name">Test</div>
+    <div class="phase-agents">Sentinel · Circuit</div>
+    <div class="phase-deliverables">test report · coverage</div>
+    <div class="phase-elapsed" id="phase-5-elapsed" data-has-elapsed="0"><span class="phase-check" id="phase-5-check" aria-label="complete">✓</span></div>
+    <div class="phase-fill-track"><div class="phase-fill-bar" id="phase-5-fill" style="width: 0%"></div></div>
+  </div>
+  <div class="phase-block pending" id="phase-6" data-phase-status="pending">
+    <div class="phase-beacon" aria-hidden="true"></div>
+    <div class="phase-status" id="phase-6-icon" aria-hidden="true">⏳</div>
+    <div class="phase-number" id="phase-6-num">06</div>
+    <div class="phase-name">Polish</div>
+    <div class="phase-agents">Pixel · Forge</div>
+    <div class="phase-deliverables">bug fixes · demo prep</div>
+    <div class="phase-elapsed" id="phase-6-elapsed" data-has-elapsed="0"><span class="phase-check" id="phase-6-check" aria-label="complete">✓</span></div>
+    <div class="phase-fill-track"><div class="phase-fill-bar" id="phase-6-fill" style="width: 0%"></div></div>
+  </div>
 </div>
 
 <!-- US-0130: Epic progress strip — rendered by patchDOM on each tick -->
@@ -1603,23 +1245,23 @@ ${phases
   <div class="card metric-card" id="card-phase-progress">
     <h2>Phase Progress</h2>
     <div class="metric-sub">Phases Complete</div>
-    <div class="metric-hero blue" id="metric-phaseHero"><span id="metric-phasesCompleteNum">${phases.filter((p) => p.status === 'complete').length}</span><span class="hero-sep">/</span><span class="hero-den" id="metric-phasesTotalNum">${phases.length}</span></div>
+    <div class="metric-hero blue" id="metric-phaseHero"><span id="metric-phasesCompleteNum">0</span><span class="hero-sep">/</span><span class="hero-den" id="metric-phasesTotalNum">6</span></div>
     <!-- Legacy ids preserved for patchDOM() compatibility. -->
-    <span id="metric-phasesComplete" hidden>${phases.filter((p) => p.status === 'complete').length} / ${phases.length}</span>
+    <span id="metric-phasesComplete" hidden>0 / 6</span>
     <div class="phase-sparkline" id="metric-phasesSparkline" aria-hidden="true">
-${phases
-  .map(
-    (p, i) =>
-      `      <div class="spark-bar ${p.status}" data-phase-id="${esc(p.id)}" data-phase-status="${esc(p.status)}" style="height: ${sparkHeights[i]}%" title="${esc(p.name)}: ${esc(p.status)}"></div>`,
-  )
-  .join('\n')}
+      <div class="spark-bar pending" data-phase-id="1" data-phase-status="pending" style="height: 18%" title="Blueprint: pending"></div>
+      <div class="spark-bar pending" data-phase-id="2" data-phase-status="pending" style="height: 18%" title="Architect: pending"></div>
+      <div class="spark-bar pending" data-phase-id="3" data-phase-status="pending" style="height: 18%" title="Build: pending"></div>
+      <div class="spark-bar pending" data-phase-id="4" data-phase-status="pending" style="height: 18%" title="Integration: pending"></div>
+      <div class="spark-bar pending" data-phase-id="5" data-phase-status="pending" style="height: 18%" title="Test: pending"></div>
+      <div class="spark-bar pending" data-phase-id="6" data-phase-status="pending" style="height: 18%" title="Polish: pending"></div>
     </div>
-    <div class="progress-bar"><div class="progress-fill blue" id="metric-phasesBar" style="width: ${phasePercent}%"></div></div>
-    <div class="metric-sub" style="margin-top: 14px">Stories Done · <span id="metric-storiesDone">${metrics.storiesCompleted} / ${metrics.storiesTotal}</span> · Tasks <span id="metric-tasksDone">${metrics.tasksTotal > 0 ? `${metrics.tasksCompleted} / ${metrics.tasksTotal}` : '—'}</span></div>
-    <div class="progress-bar"><div class="progress-fill green" id="metric-storiesBar" style="width: ${storyPercent}%"></div></div>
-    <div class="progress-bar" style="margin-top: 4px"><div class="progress-fill red" id="metric-tasksBar" style="width: ${metrics.tasksTotal > 0 ? Math.round((metrics.tasksCompleted / metrics.tasksTotal) * 100) : 0}%"></div></div>
+    <div class="progress-bar"><div class="progress-fill blue" id="metric-phasesBar" style="width: 0%"></div></div>
+    <div class="metric-sub" style="margin-top: 14px">Stories Done · <span id="metric-storiesDone">0 / 0</span> · Tasks <span id="metric-tasksDone">—</span></div>
+    <div class="progress-bar"><div class="progress-fill green" id="metric-storiesBar" style="width: 0%"></div></div>
+    <div class="progress-bar" style="margin-top: 4px"><div class="progress-fill red" id="metric-tasksBar" style="width: 0%"></div></div>
     <div class="card-footer">
-      <span class="stamp">Last updated <b id="stamp-phase-progress">${stampHHMM}</b></span>
+      <span class="stamp">Last updated <b id="stamp-phase-progress">23:17</b></span>
     </div>
   </div>
 
@@ -1628,14 +1270,14 @@ ${phases
   <div class="card metric-card" id="card-quality">
     <h2><span class="live-dot ok" aria-label="live" title="live" id="quality-live-dot"></span>Quality</h2>
     <div class="doughnut-wrap">
-      <div class="doughnut" id="metric-coverageDoughnut" data-coverage="${coveragePct}" data-tone="${coverageTone}" role="img" aria-label="Code coverage ${coveragePct}%">
+      <div class="doughnut" id="metric-coverageDoughnut" data-coverage="0" data-tone="red" role="img" aria-label="Code coverage 0%">
         <svg viewBox="0 0 36 36">
           <circle class="d-track" cx="18" cy="18" r="15.9155"></circle>
-          <circle class="d-fill ${coverageTone}" id="metric-coverageDoughnutFill" cx="18" cy="18" r="15.9155"
-                  stroke-dasharray="100 100" stroke-dashoffset="${doughnutOffset}"></circle>
+          <circle class="d-fill red" id="metric-coverageDoughnutFill" cx="18" cy="18" r="15.9155"
+                  stroke-dasharray="100 100" stroke-dashoffset="100.00"></circle>
         </svg>
         <div class="doughnut-center">
-          <div class="d-num ${coverageTone}" id="metric-coveragePercent">${coveragePct}%</div>
+          <div class="d-num red" id="metric-coveragePercent">0%</div>
           <div class="d-label">Coverage</div>
         </div>
       </div>
@@ -1643,20 +1285,20 @@ ${phases
     <div class="quality-stats">
       <div class="qs-cell">
         <span class="qs-label">Passed</span>
-        <span class="qs-val green" id="metric-testsPassed">${metrics.testsPassed}</span>
+        <span class="qs-val green" id="metric-testsPassed">0</span>
       </div>
       <div class="qs-cell">
         <span class="qs-label">Failed</span>
-        <span class="qs-val ${metrics.testsFailed > 0 ? 'red' : 'muted'}" id="metric-testsFailed">${metrics.testsFailed}</span>
+        <span class="qs-val muted" id="metric-testsFailed">0</span>
       </div>
       <div class="qs-cell">
         <span class="qs-label">Bugs Open</span>
-        <span class="qs-val ${metrics.bugsOpen > 0 ? 'red' : 'green'}" id="metric-bugsOpen">${metrics.bugsOpen}</span>
+        <span class="qs-val green" id="metric-bugsOpen">0</span>
       </div>
     </div>
-    <span id="metric-testsTotal" hidden>${metrics.testsTotal}</span>
+    <span id="metric-testsTotal" hidden>0</span>
     <div class="card-footer">
-      <span class="stamp">Last updated <b id="stamp-quality">${stampHHMM}</b></span>
+      <span class="stamp">Last updated <b id="stamp-quality">23:17</b></span>
     </div>
   </div>
 
@@ -1668,42 +1310,19 @@ ${phases
     <div class="reviews-summary">
       <div class="rs-cell rs-approved">
         <span class="rs-label">Approved</span>
-        <span class="rs-val" id="metric-reviewsApproved">${metrics.reviewsApproved}</span>
+        <span class="rs-val" id="metric-reviewsApproved">0</span>
       </div>
       <div class="rs-cell rs-blocked">
         <span class="rs-label">Blocked</span>
-        <span class="rs-val ${metrics.reviewsBlocked > 0 ? '' : 'zero'}" id="metric-reviewsBlocked">${metrics.reviewsBlocked}</span>
+        <span class="rs-val zero" id="metric-reviewsBlocked">0</span>
       </div>
     </div>
     <ul class="reviews-list" id="metric-reviewsList">
-${
-  reviewEntries.length === 0
-    ? `      <li class="reviews-empty">No reviews yet — awaiting first verdict.</li>`
-    : reviewEntries
-        .map((r) => {
-          const color = agentColors[r.agent] || '#888';
-          const icon = agentIcons[r.agent] || '🔍';
-          const avatar = agentAvatars[r.agent] || r.agent.toLowerCase();
-          const imgBase = 'agents/images';
-          const chipImg = `<img class="review-chip" src="${imgBase}/optimized/${esc(avatar)}-64.png" alt="${esc(r.agent)}" style="border-color: ${color}" onerror="this.onerror=function(){this.outerHTML='<div class=\\'review-chip-fallback\\' style=\\'border-color: ${color}\\'>${icon}</div>'};this.src='${imgBase}/headshots/${esc(r.agent.toLowerCase())}.png'">`;
-          return `      <li class="review-item">
-        ${chipImg}
-        <div class="review-body">
-          <div class="review-line">
-            <span class="review-agent" style="color: ${color}">${esc(r.agent)}</span>
-            <span class="review-target">${esc(r.target)}</span>
-          </div>
-          <div class="review-time">${esc(r.time)}</div>
-        </div>
-        <span class="review-verdict ${r.verdict}">${r.verdict === 'approve' ? 'Approve' : 'Block'}</span>
-      </li>`;
-        })
-        .join('\n')
-}
+      <li class="reviews-empty">No reviews yet — awaiting first verdict.</li>
     </ul>
-    <span id="metric-bugsFixed" hidden>${metrics.bugsFixed}</span>
+    <span id="metric-bugsFixed" hidden>0</span>
     <div class="card-footer">
-      <span class="stamp">Last updated <b id="stamp-reviews">${stampHHMM}</b></span>
+      <span class="stamp">Last updated <b id="stamp-reviews">23:17</b></span>
     </div>
   </div>
 </div>
@@ -1712,166 +1331,116 @@ ${
 <div class="grid-2">
   <div class="card">
     <h2 class="section-header">ACTIVE AGENT</h2>
-${(() => {
-  const roles = agentRoles;
-  const imgBase = 'agents/images';
-  // US-0119 AC-0401: Spotlight banner — broadcast stage for the current on-air
-  // agent. Prefer non-Conductor active agent (BUG-0079). Uses the 160px
-  // optimized portrait from US-0113's config, Geist 28px name, small-caps
-  // role, JetBrains Mono task line, and an elapsed-time ticker seeded from
-  // agent.startedAt (ISO 8601) when available — the client-side ticker in
-  // the main <script> block re-renders the elapsed text every second.
-  const dmAgentName = (AGENT_CONFIG.orchestrator || {}).dmAgent || 'Conductor';
-  const activeAgent =
-    Object.entries(agents).find(([name, a]) => a.status === 'active' && name !== dmAgentName) ||
-    Object.entries(agents).find(([, a]) => a.status === 'active');
-  let spotlight;
-  if (activeAgent) {
-    const [aName, aData] = activeAgent;
-    const aColor = agentColors[aName] || '#888';
-    const aAvatar = agentAvatars[aName] || aName.toLowerCase();
-    const startedAt = aData.startedAt || '';
-    const fullPortrait = `${imgBase}/optimized/${aAvatar}-320.png`;
-    spotlight = `    <div class="agent-spotlight" id="agent-spotlight" data-agent-name="${esc(aName)}" data-started-at="${esc(startedAt)}">
-      <div class="spotlight-portrait-wrap" style="border-color: ${aColor}"
-        onmouseenter="showAgentPortrait(this,'${fullPortrait}')" onmouseleave="hideAgentPortrait()">
-        <img class="spotlight-img" src="${imgBase}/optimized/${aAvatar}-160.png" alt="${esc(aName)}" onerror="this.onerror=null; this.src='${imgBase}/headshots/${esc(aName.toLowerCase())}.png'">
-      </div>
-      <div class="spotlight-info">
-        <div class="spotlight-name" id="agent-spotlight-name" style="color: ${aColor}"><span class="live-dot ok" aria-label="live" title="live" id="spotlight-live-dot"></span>${esc(aName)}</div>
-        <div class="spotlight-role" id="agent-spotlight-role">${esc(roles[aName] || aName)}</div>
-        <div class="spotlight-task" id="agent-spotlight-task">${esc(aData.currentTask || 'Awaiting assignment')}</div>
-        <div class="spotlight-elapsed" id="agent-spotlight-elapsed" data-started-at="${esc(startedAt)}">${startedAt ? '—' : 'IDLE'}</div>
-      </div>
-    </div>`;
-  } else {
-    spotlight = `    <div class="agent-spotlight no-active" id="agent-spotlight">
-      <div class="spotlight-waiting">Waiting for ${(AGENT_CONFIG.orchestrator || {}).dmAgent || 'orchestrator'} to activate agents...</div>
-    </div>`;
-  }
-  return spotlight;
-})()}
+    <div class="agent-spotlight no-active" id="agent-spotlight">
+      <div class="spotlight-waiting">Waiting for Conductor to activate agents...</div>
+    </div>
     <div class="agent-grid">
-${Object.entries(agents)
-  .map(([name, agent]) => {
-    const color = agentColors[name] || '#888';
-    const icon = agentIcons[name] || '🤖';
-    const imgBase = 'agents/images';
-    const statusBg = agent.status === 'active' ? 'rgba(52,168,83,0.2)' : 'rgba(136,136,136,0.15)';
-    const statusColor = agent.status === 'active' ? '#34A853' : agent.status === 'complete' ? '#1565C0' : '#888';
-    const roles = agentRoles;
-    // US-0119 AC-0402: vertical layout — 80x80 circle portrait with 2px
-    // agent-color ring on top, then name, role micro-copy, status pill.
-    // Active station (AC-0403) gets .active class → 3px agent-color glow
-    // box-shadow + pulsing green "now on air" live-dot. Idle stations
-    // (AC-0404) get .idle class → opacity 0.5. Hover (AC-0405) applies a
-    // 4px agent-color outline glow via --agent-color-ring CSS variable,
-    // replacing the previous filter:brightness(1.12) which was invisible
-    // in light mode (BUG-0161).
-    const avatar = agentAvatars[name] || name.toLowerCase();
-    const avatarImg = `<img class="agent-avatar" src="${imgBase}/optimized/${avatar}-64.png" alt="${esc(name)}" onerror="this.onerror=function(){this.outerHTML='<div class=\\'agent-avatar-fallback\\'>${icon}</div>'};this.src='${imgBase}/headshots/${esc(name.toLowerCase())}.png'">`;
-    const fullPortrait = `${imgBase}/optimized/${avatar}-320.png`;
-    const isActive = agent.status === 'active';
-    const isIdle =
-      !isActive && agent.status !== 'complete' && agent.status !== 'blocked' && agent.status !== 'needs-review';
-    const stationClasses = ['agent-card'];
-    if (isActive) stationClasses.push('active');
-    if (isIdle) stationClasses.push('idle');
-    // --agent-color drives the 3px active glow; --agent-color-ring is the
-    // translucent variant used for the 4px hover outline (AC-0405).
-    const styleVars = `--agent-color: ${color}; --agent-color-ring: ${color}40;`;
-    // US-0111 AC-0364: keep stable IDs on card + inner pills so patchDOM()
-    // can update status/task text without re-rendering the whole grid.
-    return `      <div class="${stationClasses.join(' ')}" id="agent-${esc(name)}" data-agent-name="${esc(name)}" data-agent-status="${esc(agent.status)}" style="${styleVars}"
-        onmouseenter="showAgentPortrait(this,'${fullPortrait}')" onmouseleave="hideAgentPortrait()">
+      <div class="agent-card idle" id="agent-Conductor" data-agent-name="Conductor" data-agent-status="idle" style="--agent-color: #D52B1E; --agent-color-ring: #D52B1E40;"
+        onmouseenter="showAgentPortrait(this,'agents/images/optimized/conductor-320.png')" onmouseleave="hideAgentPortrait()">
         <span class="live-dot ok on-air-dot" aria-label="now on air" title="now on air"></span>
-        ${avatarImg}
+        <img class="agent-avatar" src="agents/images/optimized/conductor-64.png" alt="Conductor" onerror="this.onerror=function(){this.outerHTML='<div class=\'agent-avatar-fallback\'>🎯</div>'};this.src='agents/images/headshots/conductor.png'">
         <div class="agent-info">
-          <div class="agent-name" style="color: ${color}">${esc(name)}</div>
-          <div class="agent-role">${esc(roles[name] || name)}</div>
-          <div class="agent-status" id="agent-${esc(name)}-status" style="background: ${statusBg}; color: ${statusColor}">${esc(agent.status)}</div>
-          <div class="agent-task" id="agent-${esc(name)}-task"${agent.currentTask ? '' : ' style="display:none"'}>${esc(agent.currentTask || '')}</div>
+          <div class="agent-name" style="color: #D52B1E">Conductor</div>
+          <div class="agent-role">Delivery Manager</div>
+          <div class="agent-status" id="agent-Conductor-status" style="background: rgba(136,136,136,0.15); color: #888">idle</div>
+          <div class="agent-task" id="agent-Conductor-task" style="display:none"></div>
         </div>
-      </div>`;
-  })
-  .join('\n')}
+      </div>
+      <div class="agent-card idle" id="agent-Compass" data-agent-name="Compass" data-agent-status="idle" style="--agent-color: #1565C0; --agent-color-ring: #1565C040;"
+        onmouseenter="showAgentPortrait(this,'agents/images/optimized/compass-320.png')" onmouseleave="hideAgentPortrait()">
+        <span class="live-dot ok on-air-dot" aria-label="now on air" title="now on air"></span>
+        <img class="agent-avatar" src="agents/images/optimized/compass-64.png" alt="Compass" onerror="this.onerror=function(){this.outerHTML='<div class=\'agent-avatar-fallback\'>🧭</div>'};this.src='agents/images/headshots/compass.png'">
+        <div class="agent-info">
+          <div class="agent-name" style="color: #1565C0">Compass</div>
+          <div class="agent-role">Product Owner</div>
+          <div class="agent-status" id="agent-Compass-status" style="background: rgba(136,136,136,0.15); color: #888">idle</div>
+          <div class="agent-task" id="agent-Compass-task" style="display:none"></div>
+        </div>
+      </div>
+      <div class="agent-card idle" id="agent-Keystone" data-agent-name="Keystone" data-agent-status="idle" style="--agent-color: #6A1B9A; --agent-color-ring: #6A1B9A40;"
+        onmouseenter="showAgentPortrait(this,'agents/images/optimized/keystone-320.png')" onmouseleave="hideAgentPortrait()">
+        <span class="live-dot ok on-air-dot" aria-label="now on air" title="now on air"></span>
+        <img class="agent-avatar" src="agents/images/optimized/keystone-64.png" alt="Keystone" onerror="this.onerror=function(){this.outerHTML='<div class=\'agent-avatar-fallback\'>🏗️</div>'};this.src='agents/images/headshots/keystone.png'">
+        <div class="agent-info">
+          <div class="agent-name" style="color: #6A1B9A">Keystone</div>
+          <div class="agent-role">Architect</div>
+          <div class="agent-status" id="agent-Keystone-status" style="background: rgba(136,136,136,0.15); color: #888">idle</div>
+          <div class="agent-task" id="agent-Keystone-task" style="display:none"></div>
+        </div>
+      </div>
+      <div class="agent-card idle" id="agent-Lens" data-agent-name="Lens" data-agent-status="idle" style="--agent-color: #F57C00; --agent-color-ring: #F57C0040;"
+        onmouseenter="showAgentPortrait(this,'agents/images/optimized/lens-320.png')" onmouseleave="hideAgentPortrait()">
+        <span class="live-dot ok on-air-dot" aria-label="now on air" title="now on air"></span>
+        <img class="agent-avatar" src="agents/images/optimized/lens-64.png" alt="Lens" onerror="this.onerror=function(){this.outerHTML='<div class=\'agent-avatar-fallback\'>🔍</div>'};this.src='agents/images/headshots/lens.png'">
+        <div class="agent-info">
+          <div class="agent-name" style="color: #F57C00">Lens</div>
+          <div class="agent-role">Code Reviewer</div>
+          <div class="agent-status" id="agent-Lens-status" style="background: rgba(136,136,136,0.15); color: #888">idle</div>
+          <div class="agent-task" id="agent-Lens-task" style="display:none"></div>
+        </div>
+      </div>
+      <div class="agent-card idle" id="agent-Palette" data-agent-name="Palette" data-agent-status="idle" style="--agent-color: #00897B; --agent-color-ring: #00897B40;"
+        onmouseenter="showAgentPortrait(this,'agents/images/optimized/palette-320.png')" onmouseleave="hideAgentPortrait()">
+        <span class="live-dot ok on-air-dot" aria-label="now on air" title="now on air"></span>
+        <img class="agent-avatar" src="agents/images/optimized/palette-64.png" alt="Palette" onerror="this.onerror=function(){this.outerHTML='<div class=\'agent-avatar-fallback\'>🎨</div>'};this.src='agents/images/headshots/palette.png'">
+        <div class="agent-info">
+          <div class="agent-name" style="color: #00897B">Palette</div>
+          <div class="agent-role">UI Designer</div>
+          <div class="agent-status" id="agent-Palette-status" style="background: rgba(136,136,136,0.15); color: #888">idle</div>
+          <div class="agent-task" id="agent-Palette-task" style="display:none"></div>
+        </div>
+      </div>
+      <div class="agent-card idle" id="agent-Forge" data-agent-name="Forge" data-agent-status="idle" style="--agent-color: #C62828; --agent-color-ring: #C6282840;"
+        onmouseenter="showAgentPortrait(this,'agents/images/optimized/forge-320.png')" onmouseleave="hideAgentPortrait()">
+        <span class="live-dot ok on-air-dot" aria-label="now on air" title="now on air"></span>
+        <img class="agent-avatar" src="agents/images/optimized/forge-64.png" alt="Forge" onerror="this.onerror=function(){this.outerHTML='<div class=\'agent-avatar-fallback\'>⚒️</div>'};this.src='agents/images/headshots/forge.png'">
+        <div class="agent-info">
+          <div class="agent-name" style="color: #C62828">Forge</div>
+          <div class="agent-role">Backend Developer</div>
+          <div class="agent-status" id="agent-Forge-status" style="background: rgba(136,136,136,0.15); color: #888">idle</div>
+          <div class="agent-task" id="agent-Forge-task" style="display:none"></div>
+        </div>
+      </div>
+      <div class="agent-card idle" id="agent-Pixel" data-agent-name="Pixel" data-agent-status="idle" style="--agent-color: #283593; --agent-color-ring: #28359340;"
+        onmouseenter="showAgentPortrait(this,'agents/images/optimized/pixel-320.png')" onmouseleave="hideAgentPortrait()">
+        <span class="live-dot ok on-air-dot" aria-label="now on air" title="now on air"></span>
+        <img class="agent-avatar" src="agents/images/optimized/pixel-64.png" alt="Pixel" onerror="this.onerror=function(){this.outerHTML='<div class=\'agent-avatar-fallback\'>📱</div>'};this.src='agents/images/headshots/pixel.png'">
+        <div class="agent-info">
+          <div class="agent-name" style="color: #283593">Pixel</div>
+          <div class="agent-role">Frontend Developer</div>
+          <div class="agent-status" id="agent-Pixel-status" style="background: rgba(136,136,136,0.15); color: #888">idle</div>
+          <div class="agent-task" id="agent-Pixel-task" style="display:none"></div>
+        </div>
+      </div>
+      <div class="agent-card idle" id="agent-Sentinel" data-agent-name="Sentinel" data-agent-status="idle" style="--agent-color: #2E7D32; --agent-color-ring: #2E7D3240;"
+        onmouseenter="showAgentPortrait(this,'agents/images/optimized/sentinel-320.png')" onmouseleave="hideAgentPortrait()">
+        <span class="live-dot ok on-air-dot" aria-label="now on air" title="now on air"></span>
+        <img class="agent-avatar" src="agents/images/optimized/sentinel-64.png" alt="Sentinel" onerror="this.onerror=function(){this.outerHTML='<div class=\'agent-avatar-fallback\'>🛡️</div>'};this.src='agents/images/headshots/sentinel.png'">
+        <div class="agent-info">
+          <div class="agent-name" style="color: #2E7D32">Sentinel</div>
+          <div class="agent-role">Functional Tester</div>
+          <div class="agent-status" id="agent-Sentinel-status" style="background: rgba(136,136,136,0.15); color: #888">idle</div>
+          <div class="agent-task" id="agent-Sentinel-task" style="display:none"></div>
+        </div>
+      </div>
+      <div class="agent-card idle" id="agent-Circuit" data-agent-name="Circuit" data-agent-status="idle" style="--agent-color: #4527A0; --agent-color-ring: #4527A040;"
+        onmouseenter="showAgentPortrait(this,'agents/images/optimized/circuit-320.png')" onmouseleave="hideAgentPortrait()">
+        <span class="live-dot ok on-air-dot" aria-label="now on air" title="now on air"></span>
+        <img class="agent-avatar" src="agents/images/optimized/circuit-64.png" alt="Circuit" onerror="this.onerror=function(){this.outerHTML='<div class=\'agent-avatar-fallback\'>⚡</div>'};this.src='agents/images/headshots/circuit.png'">
+        <div class="agent-info">
+          <div class="agent-name" style="color: #4527A0">Circuit</div>
+          <div class="agent-role">Automation Tester</div>
+          <div class="agent-status" id="agent-Circuit-status" style="background: rgba(136,136,136,0.15); color: #888">idle</div>
+          <div class="agent-task" id="agent-Circuit-task" style="display:none"></div>
+        </div>
+      </div>
     </div>
   </div>
 
   <div class="card">
     <h2>User Stories</h2>
     <div class="story-list">
-${(() => {
-  const epics = status.epics || {};
-  // Group stories by epic
-  const groups = {};
-  Object.entries(stories).forEach(([id, story]) => {
-    const epicId = story.epic || 'OTHER';
-    if (!groups[epicId]) groups[epicId] = [];
-    groups[epicId].push({ id, ...story });
-  });
-  return Object.entries(groups)
-    .map(([epicId, epicStories]) => {
-      const epicName = epicTitles[epicId] || epics[epicId] || '';
-      const nowMs = Date.now();
-      const storyRows = epicStories
-        .map((s) => {
-          const statusClass = s.status === 'In Progress' ? 'InProgress' : s.status;
-          // US-0120 AC-0407: map the story status to a status-strip modifier.
-          // Anything that isn't Complete/Done or In Progress falls through to
-          // "planned" so ToDo, Planned, Backlog, and unknown values all share
-          // the muted slate strip.
-          const isComplete = s.status === 'Complete' || s.status === 'Done';
-          const isInProgress = s.status === 'In Progress';
-          const stripClass = isComplete ? 'status-complete' : isInProgress ? 'status-inprogress' : 'status-planned';
-          const title = storyTitles[s.id] || s.title || '';
-          // US-0120 AC-0410: agent color-dot + initial next to the title.
-          // Only render when assignedAgent resolves to a known agent colour so
-          // legacy rows (assignedAgent: null, or a name we don't track) stay
-          // unchanged and patchDOM-friendly.
-          const agentName = s.assignedAgent || '';
-          const agentColor = agentName ? agentColors[agentName] : null;
-          const agentInitial = agentName ? agentName.charAt(0).toUpperCase() : '';
-          const agentChip =
-            agentName && agentColor
-              ? `<span class="story-agent" title="${esc(agentName)}"><span class="story-agent-dot" style="background:${agentColor}"></span><span class="story-agent-initial">${esc(agentInitial)}</span></span>`
-              : '';
-          // US-0120 AC-0408: elapsed-time pill for In Progress stories that
-          // carry a startedAt timestamp. Skipped silently otherwise.
-          const elapsed = isInProgress ? formatElapsed(s.startedAt, nowMs) : null;
-          const elapsedPill = elapsed
-            ? `<span class="story-elapsed" title="elapsed since startedAt">${esc(elapsed)}</span>`
-            : '';
-          return `        <div class="story-row ${stripClass}">
-          <span class="story-id">${s.id}</span>
-          <span class="story-title"><span class="story-title-text">${esc(title)}</span>${agentChip}</span>
-          ${elapsedPill}<span class="story-status ${statusClass}">${s.status}</span>
-        </div>`;
-        })
-        .join('\n');
-      const epicStoryStatuses = epicStories.map((s) => s.status);
-      const epicDone = epicStoryStatuses.every((s) => s === 'Complete' || s === 'Done');
-      const epicInProgress = !epicDone && epicStoryStatuses.some((s) => s === 'In Progress');
-      const epicStatus = epicDone ? 'Complete' : epicInProgress ? 'In Progress' : 'Planned';
-      const epicStatusColor = epicDone ? '#34A853' : epicInProgress ? '#F57C00' : '#888';
-      const epicStatusBg = epicDone
-        ? 'rgba(52,168,83,0.15)'
-        : epicInProgress
-          ? 'rgba(245,124,0,0.15)'
-          : 'rgba(136,136,136,0.15)';
-      return `      <div class="epic-group${epicDone ? ' collapsed' : ''}">
-        <div class="epic-header" onclick="this.closest('.epic-group').classList.toggle('collapsed')">
-          <span class="epic-id">${epicId}</span>${epicName ? ' ' + esc(epicName) : ''}
-          <span style="margin-left:8px; font-size:10px; padding:2px 8px; border-radius:10px; background:${epicStatusBg}; color:${epicStatusColor}; font-weight:600;">${epicStatus}</span>
-          <span class="epic-toggle">▼</span>
-        </div>
-        <div class="epic-stories">
-${storyRows}
-        </div>
-      </div>`;
-    })
-    .join('\n');
-})()}
+
     </div>
   </div>
 </div>
@@ -1897,29 +1466,7 @@ ${storyRows}
     </label>
   </div>
   <div class="log-scroll" id="log-scroll" data-active-filter="all">
-${
-  log.length > 0
-    ? log
-        .slice(-20)
-        .reverse()
-        .map((entry) => {
-          const agentColor = agentColors[entry.agent] || '#888';
-          // US-0111 AC-0364: data-log-key lets patchDOM() dedupe and prepend only new entries.
-          const key = `${entry.time || ''}|${entry.agent || ''}|${entry.message || ''}`;
-          const category = logCategory(entry.message);
-          const agentToken = entry.agent || 'System';
-          const timeFormatted = formatLogTime(entry.time);
-          return (
-            `    <div class="log-entry" data-log-key="${esc(key)}" data-category="${category}" style="border-left-color: ${agentColor}">` +
-            `<span class="log-time" data-log-time="${esc(entry.time || '')}">[${esc(timeFormatted)}]</span>` +
-            `<span class="log-agent" style="color: ${agentColor}">[${esc(agentToken)}]</span>` +
-            `<span class="log-msg">${esc(entry.message || '')}</span>` +
-            `</div>`
-          );
-        })
-        .join('\n')
-    : `    <div class="log-empty" id="log-empty"><span class="log-cursor" aria-hidden="true"></span><span>Awaiting agent activity&hellip;</span></div>`
-}
+    <div class="log-empty" id="log-empty"><span class="log-cursor" aria-hidden="true"></span><span>Awaiting agent activity&hellip;</span></div>
   </div>
 </div>
 
@@ -1937,52 +1484,94 @@ ${
       </div>
       <!-- AC-0422: right column — mission, roster, links, version info -->
       <div class="about-right">
-        <h3>${esc(DASH_META.title)}</h3>
-        <p>${esc(DASH_META.subtitle)}</p>
+        <h3>My Project</h3>
+        <p>Agentic AI SDLC</p>
         <p class="about-mission">
           An agentic SDLC mission-control dashboard. Nine role-specialised AI
           agents plan, build, review, and ship software across a six-phase
           pipeline — Blueprint, Architect, Build, Integration, Test, Polish —
           while this view surfaces live progress, blockers, and telemetry.
         </p>
-        ${DASH_META.repoUrl ? `<a class="repo-link" href="${esc(DASH_META.repoUrl)}" target="_blank" rel="noopener">View on GitHub</a>` : ''}
+        <a class="repo-link" href="https://github.com/yourorg/your-project" target="_blank" rel="noopener">View on GitHub</a>
         <div class="about-roster-title">Agent Roster</div>
         <ul class="about-roster">
-          ${Object.entries(AGENT_CONFIG.agents || {})
-            .map(([name, cfg]) => {
-              const avatar = cfg.avatar || name.toLowerCase();
-              const icon = cfg.icon || '🤖';
-              return `<li>
-            <img src="agents/images/optimized/${esc(avatar)}-64.png" alt="${esc(name)}" onerror="this.outerHTML='&lt;span class=&quot;about-roster-fallback&quot;&gt;${esc(icon)}&lt;/span&gt;'">
+          <li>
+            <img src="agents/images/optimized/conductor-64.png" alt="Conductor" onerror="this.outerHTML='&lt;span class=&quot;about-roster-fallback&quot;&gt;🎯&lt;/span&gt;'">
             <span class="about-roster-text">
-              <span class="about-roster-name">${esc(name)}</span>
-              <span class="about-roster-role">${esc(cfg.role || '')}</span>
+              <span class="about-roster-name">Conductor</span>
+              <span class="about-roster-role">Delivery Manager</span>
             </span>
-          </li>`;
-            })
-            .join('')}
+          </li><li>
+            <img src="agents/images/optimized/compass-64.png" alt="Compass" onerror="this.outerHTML='&lt;span class=&quot;about-roster-fallback&quot;&gt;🧭&lt;/span&gt;'">
+            <span class="about-roster-text">
+              <span class="about-roster-name">Compass</span>
+              <span class="about-roster-role">Product Owner</span>
+            </span>
+          </li><li>
+            <img src="agents/images/optimized/keystone-64.png" alt="Keystone" onerror="this.outerHTML='&lt;span class=&quot;about-roster-fallback&quot;&gt;🏗️&lt;/span&gt;'">
+            <span class="about-roster-text">
+              <span class="about-roster-name">Keystone</span>
+              <span class="about-roster-role">Architect</span>
+            </span>
+          </li><li>
+            <img src="agents/images/optimized/lens-64.png" alt="Lens" onerror="this.outerHTML='&lt;span class=&quot;about-roster-fallback&quot;&gt;🔍&lt;/span&gt;'">
+            <span class="about-roster-text">
+              <span class="about-roster-name">Lens</span>
+              <span class="about-roster-role">Code Reviewer</span>
+            </span>
+          </li><li>
+            <img src="agents/images/optimized/palette-64.png" alt="Palette" onerror="this.outerHTML='&lt;span class=&quot;about-roster-fallback&quot;&gt;🎨&lt;/span&gt;'">
+            <span class="about-roster-text">
+              <span class="about-roster-name">Palette</span>
+              <span class="about-roster-role">UI Designer</span>
+            </span>
+          </li><li>
+            <img src="agents/images/optimized/forge-64.png" alt="Forge" onerror="this.outerHTML='&lt;span class=&quot;about-roster-fallback&quot;&gt;⚒️&lt;/span&gt;'">
+            <span class="about-roster-text">
+              <span class="about-roster-name">Forge</span>
+              <span class="about-roster-role">Backend Developer</span>
+            </span>
+          </li><li>
+            <img src="agents/images/optimized/pixel-64.png" alt="Pixel" onerror="this.outerHTML='&lt;span class=&quot;about-roster-fallback&quot;&gt;📱&lt;/span&gt;'">
+            <span class="about-roster-text">
+              <span class="about-roster-name">Pixel</span>
+              <span class="about-roster-role">Frontend Developer</span>
+            </span>
+          </li><li>
+            <img src="agents/images/optimized/sentinel-64.png" alt="Sentinel" onerror="this.outerHTML='&lt;span class=&quot;about-roster-fallback&quot;&gt;🛡️&lt;/span&gt;'">
+            <span class="about-roster-text">
+              <span class="about-roster-name">Sentinel</span>
+              <span class="about-roster-role">Functional Tester</span>
+            </span>
+          </li><li>
+            <img src="agents/images/optimized/circuit-64.png" alt="Circuit" onerror="this.outerHTML='&lt;span class=&quot;about-roster-fallback&quot;&gt;⚡&lt;/span&gt;'">
+            <span class="about-roster-text">
+              <span class="about-roster-name">Circuit</span>
+              <span class="about-roster-role">Automation Tester</span>
+            </span>
+          </li>
         </ul>
         <div class="about-links-title">Links</div>
         <div class="about-links">
-          ${DASH_META.repoUrl ? `<div class="about-links-row"><span class="meta-label">Repo:</span> <a href="${esc(DASH_META.repoUrl)}" target="_blank" rel="noopener">${esc(DASH_META.repoUrl)}</a></div>` : ''}
+          <div class="about-links-row"><span class="meta-label">Repo:</span> <a href="https://github.com/yourorg/your-project" target="_blank" rel="noopener">https://github.com/yourorg/your-project</a></div>
           <div class="about-links-row"><span class="meta-label">Dashboard:</span> <a href="dashboard.html">dashboard.html</a></div>
           <div class="about-links-row"><span class="meta-label">Plan:</span> <a href="plan-status.html">plan-status.html</a></div>
         </div>
         <div class="meta-divider">
           <div class="meta-section">
             <div class="meta-supertitle">This Project</div>
-            <div class="meta-row"><span class="meta-label">Name:</span> <span class="meta-value">${esc(PROJECT_PKG.name)}</span></div>
-            <div class="meta-row"><span class="meta-label">Version:</span> <span class="meta-value">v${esc(PROJECT_PKG.version)}</span></div>
-            <div class="meta-row"><span class="meta-label">Branch:</span> <span class="meta-value">${esc(GIT_BRANCH)}</span></div>
-            <div class="meta-row"><span class="meta-label">Build:</span> <span class="meta-value">#${esc(BUILD_NUMBER)} ${esc(COMMIT_SHA)}</span></div>
+            <div class="meta-row"><span class="meta-label">Name:</span> <span class="meta-value">plan-visualizer</span></div>
+            <div class="meta-row"><span class="meta-label">Version:</span> <span class="meta-value">v1.5.25</span></div>
+            <div class="meta-row"><span class="meta-label">Branch:</span> <span class="meta-value">feature/epic-0019-effectiveness</span></div>
+            <div class="meta-row"><span class="meta-label">Build:</span> <span class="meta-value">#549 c33242b</span></div>
           </div>
           <div class="meta-section">
             <div class="meta-supertitle">Dashboard Tool</div>
             <div class="meta-row"><span class="meta-label">View:</span> <span class="meta-value">Agentic SDLC Dashboard</span></div>
-            <div class="meta-row"><span class="meta-label">Generated by:</span> <span class="meta-value">${esc(TOOL_PKG.name)} v${esc(TOOL_PKG.version)}</span></div>
-            <div class="meta-row"><span class="meta-label">Generated at:</span> <span class="meta-value">${esc(now)}</span></div>
+            <div class="meta-row"><span class="meta-label">Generated by:</span> <span class="meta-value">plan-visualizer v1.5.25</span></div>
+            <div class="meta-row"><span class="meta-label">Generated at:</span> <span class="meta-value">Apr 18, 2026, 11:17 PM</span></div>
           </div>
-          ${DASH_META.author ? `<div class="meta-attribution">Implemented by ${esc(DASH_META.author)}${DASH_META.authorTitle ? ', ' + esc(DASH_META.authorTitle) : ''}</div>` : ''}
+          <div class="meta-attribution">Implemented by Kamal Syed</div>
         </div>
       </div>
     </div>
@@ -1990,7 +1579,7 @@ ${
 </div>
 
 <div class="footer">
-  ${DASH_META.footer} | Last refreshed: ${now}
+  Claude Code Agentic AI SDLC | Last refreshed: Apr 18, 2026, 11:17 PM
 </div>
 
 <script>
@@ -2116,18 +1705,12 @@ function _applyLogFilter(filter) {
 // ── Dashboard Alert System ────────────────────────────────────────────────────
 // Detects state changes across page refreshes using localStorage, then plays
 // a Web Audio tone and fires a browser Notification when attention is needed.
-var DASH_SNAPSHOT = ${JSON.stringify({
-    currentPhase: status.currentPhase,
-    bugsOpen: metrics.bugsOpen,
-    agentStatuses: Object.fromEntries(Object.entries(agents).map(([k, v]) => [k, v.status])),
-    phaseStatuses: phases.map((p) => ({ id: p.id, status: p.status })),
-    pipelineComplete: phasesComplete === phases.length && phases.length > 0,
-  })};
+var DASH_SNAPSHOT = {"currentPhase":0,"bugsOpen":0,"agentStatuses":{"Conductor":"idle","Compass":"idle","Keystone":"idle","Lens":"idle","Palette":"idle","Forge":"idle","Pixel":"idle","Sentinel":"idle","Circuit":"idle"},"phaseStatuses":[{"id":1,"status":"pending"},{"id":2,"status":"pending"},{"id":3,"status":"pending"},{"id":4,"status":"pending"},{"id":5,"status":"pending"},{"id":6,"status":"pending"}],"pipelineComplete":false};
 
 // US-0111: expose agent colors to the client so patchDOM() can restyle
 // agent-status pills when an agent transitions between idle/active/blocked
 // without the server-side renderer being involved.
-var DASH_AGENT_COLORS = ${JSON.stringify(agentColors)};
+var DASH_AGENT_COLORS = {"Conductor":"#D52B1E","Compass":"#1565C0","Keystone":"#6A1B9A","Lens":"#F57C00","Palette":"#00897B","Forge":"#C62828","Pixel":"#283593","Sentinel":"#2E7D32","Circuit":"#4527A0"};
 
 // US-0122 AC-0419 / BUG-0160: Singleton AudioContext. Previously, every
 // playBeep() call instantiated a new AudioContext, leaking a context on each
@@ -2473,7 +2056,7 @@ function patchDOM(status) {
       });
     }
     if (!document._projectTitlePatched && proj.name) {
-      document.title = proj.name + ' \u2014 SDLC Live Dashboard';
+      document.title = proj.name + ' — SDLC Live Dashboard';
       document._projectTitlePatched = true;
     }
   }
@@ -2922,7 +2505,7 @@ function patchCycleCounter(status) {
     if (/^In[ -]?Progress$/i.test(entries[i].status)) { active = entries[i]; break; }
   }
   var cycleN = completedCount + 1;
-  var labelText = active ? ('CYCLE ' + cycleN + ' \u00B7 IMPLEMENTING ' + active.id) : 'STANDBY';
+  var labelText = active ? ('CYCLE ' + cycleN + ' · IMPLEMENTING ' + active.id) : 'STANDBY';
   var labelEl = document.getElementById('cycle-label-text');
   if (labelEl && labelEl.textContent !== labelText) labelEl.textContent = labelText;
   var elapsedEl = document.getElementById('cycle-elapsed');
@@ -2950,37 +2533,4 @@ setInterval(updateCycleElapsed, 1000);
 <div id="blocked-border" class="blocked-border"></div>
 
 </body>
-</html>`;
-}
-
-function generate() {
-  const status = readJSON(STATUS_PATH);
-  if (!status) {
-    console.error('Could not read', STATUS_PATH);
-    process.exit(1);
-  }
-  const html = generateHTML(status);
-  fs.writeFileSync(OUTPUT_PATH, html, 'utf8');
-  console.log(`[${new Date().toLocaleTimeString()}] Dashboard generated: ${OUTPUT_PATH}`);
-}
-
-// Main — only run the pipeline when invoked as a CLI, so tests and other
-// consumers can safely `require('tools/generate-dashboard')` to access
-// generateHTML without triggering file writes or fs.watch side-effects.
-if (require.main === module) {
-  generate();
-
-  if (process.argv.includes('--watch')) {
-    console.log('Watching for changes...');
-    let debounce = null;
-    fs.watch(STATUS_PATH, () => {
-      if (debounce) clearTimeout(debounce);
-      debounce = setTimeout(() => {
-        console.log(`[${new Date().toLocaleTimeString()}] Status changed, regenerating...`);
-        generate();
-      }, 500);
-    });
-  }
-}
-
-module.exports = { generateHTML, generate, formatElapsed };
+</html>

@@ -2412,7 +2412,7 @@ Dependencies: None
 EPIC-0017: Agentic Dashboard Effectiveness Review
 Description: Discovery / retrospective epic. Review the Agentic SDLC Dashboard (originally built for a hackathon demo, now extracted as a reusable component) and define what it takes to make it genuinely effective as a general-purpose agentic pipeline visualization. Output: a gap analysis and a set of implementation stories in a follow-on epic. Complements EPIC-0016 (Mission Control aesthetic redesign) by focusing on schema, data model, workflow coverage, and integration patterns — not just visual polish.
 Release Target: Release 2.0
-Status: Planned
+Status: Done
 Dependencies: EPIC-0013, EPIC-0016
 ```
 
@@ -2442,9 +2442,9 @@ Dependencies: EPIC-0013, EPIC-0016
 
 ```
 EPIC-0019: Dashboard Cycle History
-Description: Extends sdlc-status.json with a cycles[] history schema and renders it on the Agentic SDLC Dashboard as a lap-history strip (last 10 completed cycles) plus an aggregate telemetry row (avg cycle time, cycles today, incidents, success rate) and a cycle-completion animation. Requires a DM_AGENT.md protocol decision first (canonical: one cycle = one story). Split out of EPIC-0016 to keep the aesthetic redesign unblocked by schema-migration work.
+Description: Comprehensive effectiveness improvement for the Agentic SDLC Dashboard. Covers three tracks: (A) schema generalization — replacing hackathon framing with a project config block, externalizing phase definitions, and removing hardcoded project identity from the HTML; (B) CLI completeness — epic lifecycle commands, session reset, coverage/bug/phase wiring in DM_AGENT.md; (C) new features — cycle history lap strip, aggregate telemetry, and a dashboard extraction guide for adopting projects. Supersedes the original narrow cycle-history scope.
 Release Target: Release 1.11
-Status: Planned
+Status: Done
 Dependencies: EPIC-0016
 ```
 
@@ -2478,4 +2478,131 @@ Acceptance Criteria:
   - [ ] AC-0394: On cycle completion the dashboard plays a phase-6 flash, green sweep left-to-right, cycle-counter flip, and a new lap-bar push into Tier B
   - [ ] AC-0395: A 200ms ascending audio chime plays on cycle completion (respects user's alert-mute preference)
 Dependencies: US-0115, US-0116
+```
+
+```
+US-0127 (EPIC-0019): As a project adopter, I want sdlc-status.json to use a project config block instead of hackathon, so that the schema is meaningful for any ongoing project.
+Priority: High (P0)
+Estimate: S
+Status: Done
+Branch: feature/US-0127-schema-generalization
+Acceptance Criteria:
+  - [x] AC-0441: agents.config.json gains project section with name, description, repoUrl, startDate fields
+  - [x] AC-0442: init-sdlc-status.js reads config.project and writes it as sdlc-status.json.project
+  - [x] AC-0443: sdlc-status.json no longer contains a hackathon key
+  - [x] AC-0444: update-sdlc-status.js handlers preserve data.project on every mutation
+  - [x] AC-0445: sdlc-status.json migration maps hackathon.name → project.name, hackathon.date → project.startDate
+  - [x] AC-0446: init-sdlc-status.js exports buildStatus for unit testing; unit tests cover init and mutation preservation
+Dependencies: None
+```
+
+```
+US-0128 (EPIC-0019): As a project adopter, I want the dashboard to read its title and repo links from sdlc-status.json, so that I do not need to edit HTML to adopt it.
+Priority: High (P0)
+Estimate: S
+Status: Done
+Branch: feature/US-0128-dashboard-dynamic-identity
+Acceptance Criteria:
+  - [x] AC-0447: title tag is updated at page load from state.project.name on first successful fetch
+  - [x] AC-0448: header-title and header-subtitle elements are patched to project.name and project.description on each refreshState tick
+  - [x] AC-0449: about panel h3 and GitHub repo links read from project.name and project.repoUrl
+  - [x] AC-0450: log time field changed to ISO 8601 in update-sdlc-status.js; dashboard formats it as HH:MM for display
+  - [x] AC-0451: all hardcoded My Project and yourorg/your-project strings removed from dashboard.html
+  - [x] AC-0452: unit test covers patchDOM with mock state containing project fields
+Dependencies: US-0127
+```
+
+```
+US-0129 (EPIC-0019): As a project adopter, I want phase names and agents to come from agents.config.json, so that my project phases appear correctly without editing update-sdlc-status.js.
+Priority: High (P0)
+Estimate: M
+Status: Done
+Branch: feature/US-0129-phase-config-externalization
+Acceptance Criteria:
+  - [x] AC-0453: agents.config.json gains a phases array with name, agents, deliverables fields per phase
+  - [x] AC-0454: init-sdlc-status.js seeds sdlc-status.json.phases from config.phases with id, status:pending, startedAt:null, completedAt:null
+  - [x] AC-0455: update-sdlc-status.js phase handler reads definitions from data.phases (already seeded) with generic fallback
+  - [x] AC-0456: PHASE_DEFS constant is removed from update-sdlc-status.js
+  - [x] AC-0457: unit tests updated to pre-seed phases before calling phase handler
+Dependencies: US-0127
+```
+
+```
+US-0130 (EPIC-0019): As a Conductor agent, I want epic-start and epic-complete CLI commands, so that the dashboard shows epic-level progress alongside story progress.
+Priority: High (P0)
+Estimate: M
+Status: Done
+Branch: feature/US-0130-epic-lifecycle-commands
+Acceptance Criteria:
+  - [x] AC-0458: epic-start creates epics[id] entry with name, status:in-progress, startedAt, completedAt:null, storiesCompleted:0, storiesTotal:N
+  - [x] AC-0459: epic-complete sets status:complete and completedAt on epics[id]
+  - [x] AC-0460: story-complete with --epic increments epics[id].storiesCompleted if epic entry exists
+  - [x] AC-0461: dashboard renders a compact epic-progress strip showing name, storiesCompleted/storiesTotal, percent bar, status
+  - [x] AC-0462: DM_AGENT.md updated with epic-start and epic-complete Conductor calls
+  - [x] AC-0463: unit tests cover epic-start, epic-complete, and story-complete epic increment
+Dependencies: US-0127
+```
+
+```
+US-0131 (EPIC-0019): As a Conductor agent, I want a session-start command and validated required flags, so that each new pipeline session begins with clean state and ghost data cannot accumulate.
+Priority: High (P0)
+Estimate: M
+Status: Done
+Branch: feature/US-0131-session-reset
+Acceptance Criteria:
+  - [x] AC-0464: session-start --stories N resets phases, stories, metrics while preserving project, agents, epics, cycles, log
+  - [x] AC-0465: agent-start and agent-done exit non-zero with --agent is required if opts.agent is undefined or the string undefined
+  - [x] AC-0466: story-start no longer modifies storiesTotal; storiesTotal is set by session-start
+  - [x] AC-0467: DM_AGENT.md updated: Conductor calls session-start before first story of each epic
+  - [x] AC-0468: unit tests cover session-start reset, flag validation, and storiesTotal initialization
+Dependencies: US-0127
+```
+
+```
+US-0132 (EPIC-0019): As a Conductor agent, I want coverage, bug, and phase transition calls in the standard pipeline checklist, so that dashboard metrics reflect real execution state.
+Priority: High (P0)
+Estimate: S
+Status: Done
+Branch: feature/US-0132-metrics-wiring
+Acceptance Criteria:
+  - [x] AC-0469: bug-open --story US-XXXX increments metrics.bugsOpen
+  - [x] AC-0470: bug-fix --story US-XXXX decrements metrics.bugsOpen (floored at 0) and increments metrics.bugsFixed
+  - [x] AC-0471: story-complete auto-idles the story assignedAgent (status:idle, currentTask:null) if agent exists
+  - [x] AC-0472: DM_AGENT.md post-phase checklist gains phase command calls at start and complete of each phase
+  - [x] AC-0473: DM_AGENT.md Test-phase exit gains coverage command call with Circuit percent
+  - [x] AC-0474: unit tests cover bug-open, bug-fix (including floor guard), and story-complete agent auto-idle
+Dependencies: US-0130, US-0131
+```
+
+```
+US-0133 (EPIC-0019): As a Conductor reviewing pipeline performance, I want completed cycle snapshots in the dashboard, so that I can see lap history, average cycle time, and trend data.
+Priority: High (P0)
+Estimate: L
+Status: Done
+Branch: feature/US-0133-cycle-history
+Acceptance Criteria:
+  - [x] AC-0475: sdlc-status.json gains a cycles:[] array at root level
+  - [x] AC-0476: cycle-complete snapshots metrics (storiesCompleted, testsPassed, coveragePercent, bugsFixed, phaseDurations) into cycles[] with id and completedAt
+  - [x] AC-0477: phaseDurations computed from phase startedAt/completedAt in seconds
+  - [x] AC-0478: cycle-complete applies the same reset as session-start via shared resetSession() function (not recursive CLI call)
+  - [x] AC-0479: dashboard renders a lap-history strip of the last 10 cycles as compact cards
+  - [x] AC-0480: dashboard renders an aggregate telemetry row (total cycles, today count, avg cycle time, success rate)
+  - [x] AC-0481: a three-note audio animation plays when cycles.length increases between refreshState ticks
+  - [x] AC-0482: DM_AGENT.md updated: Conductor calls cycle-complete after all epic stories merge
+  - [x] AC-0483: unit tests cover cycle-complete snapshot, reset side-effect, phaseDurations computation
+Dependencies: US-0131
+```
+
+```
+US-0134 (EPIC-0019): As a developer adopting PlanVisualizer's dashboard for a new project, I want a documented extraction procedure and install step, so that I can set up the dashboard without manual search-and-replace.
+Priority: Medium (P1)
+Estimate: S
+Status: Done
+Branch: feature/US-0134-extraction-guide
+Acceptance Criteria:
+  - [x] AC-0484: docs/dashboard-extraction.md documents step-by-step adoption: copy files, populate agents.config.json project and phases, run init, open dashboard, wire Conductor
+  - [x] AC-0485: scripts/install.sh §7 copies dashboard.html, update-sdlc-status.js, init-sdlc-status.js, atomic-write.js to target; prompts user before copying
+  - [x] AC-0486: install.sh §7 is skipped (with note) if docs/dashboard.html already exists in target
+  - [x] AC-0487: docs/dashboard-extraction.md is linked from README.md under a Dashboard section
+Dependencies: US-0128, US-0129
 ```
