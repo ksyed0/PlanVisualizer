@@ -230,6 +230,11 @@ const HANDLERS = {
     story.status = 'Complete';
     story.epic = opts.epic || story.epic;
     story.completedAt = nowISO();
+    const agentName = story.assignedAgent;
+    if (agentName && data.agents && data.agents[agentName]) {
+      data.agents[agentName].status = 'idle';
+      data.agents[agentName].currentTask = null;
+    }
     data.metrics = data.metrics || {};
     data.metrics.storiesCompleted = (data.metrics.storiesCompleted || 0) + 1;
     data.metrics.storiesTotal = Math.max(data.metrics.storiesTotal || 0, Object.keys(data.stories).length);
@@ -264,6 +269,21 @@ const HANDLERS = {
       data.epics[opts.epic].completedAt = nowISO();
     }
     appendLog(data, 'Conductor', `Epic ${opts.epic} complete`);
+    return data;
+  },
+
+  'bug-open': (data, opts) => {
+    data.metrics = data.metrics || {};
+    data.metrics.bugsOpen = (data.metrics.bugsOpen || 0) + 1;
+    appendLog(data, opts.agent || 'Conductor', `bug opened on ${opts.story || 'unknown story'}`);
+    return data;
+  },
+
+  'bug-fix': (data, opts) => {
+    data.metrics = data.metrics || {};
+    data.metrics.bugsOpen = Math.max(0, (data.metrics.bugsOpen || 0) - 1);
+    data.metrics.bugsFixed = (data.metrics.bugsFixed || 0) + 1;
+    appendLog(data, opts.agent || 'Conductor', `bug fixed on ${opts.story || 'unknown story'}`);
     return data;
   },
 

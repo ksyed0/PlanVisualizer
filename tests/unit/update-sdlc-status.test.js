@@ -296,6 +296,46 @@ describe('update-sdlc-status — --agent validation', () => {
   });
 });
 
+describe('update-sdlc-status — bug metrics', () => {
+  it('bug-open increments bugsOpen', () => {
+    const data = baseState();
+    HANDLERS['bug-open'](data, { story: 'US-0127' });
+    expect(data.metrics.bugsOpen).toBe(1);
+    expect(data.log[0].message).toContain('bug opened');
+  });
+
+  it('bug-fix decrements bugsOpen and increments bugsFixed', () => {
+    const data = baseState();
+    data.metrics.bugsOpen = 2;
+    HANDLERS['bug-fix'](data, { story: 'US-0127' });
+    expect(data.metrics.bugsOpen).toBe(1);
+    expect(data.metrics.bugsFixed).toBe(1);
+  });
+
+  it('bug-fix floors bugsOpen at 0', () => {
+    const data = baseState();
+    data.metrics.bugsOpen = 0;
+    HANDLERS['bug-fix'](data, { story: 'US-0127' });
+    expect(data.metrics.bugsOpen).toBe(0);
+    expect(data.metrics.bugsFixed).toBe(1);
+  });
+});
+
+describe('update-sdlc-status — story-complete auto-idles agent', () => {
+  it('auto-idles the assignedAgent on story-complete', () => {
+    const data = baseState();
+    HANDLERS['agent-start'](data, { agent: 'Pixel', story: 'US-0127', task: 'implement' });
+    HANDLERS['story-complete'](data, { story: 'US-0127', epic: 'EPIC-0019' });
+    expect(data.agents.Pixel.status).toBe('idle');
+    expect(data.agents.Pixel.currentTask).toBeNull();
+  });
+
+  it('story-complete with no assignedAgent does not crash', () => {
+    const data = baseState();
+    expect(() => HANDLERS['story-complete'](data, { story: 'US-0127' })).not.toThrow();
+  });
+});
+
 describe('update-sdlc-status — log', () => {
   it('appends a generic log entry', () => {
     const data = baseState();
