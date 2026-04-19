@@ -2006,11 +2006,11 @@ Steps to Reproduce:
 2. Open DevTools console
    Expected: Clean console load
    Actual: "TypeError: Cannot read properties of null (reading 'addEventListener')" at plan-status.html:~20215 — search-body element lookup returns null before wire-up runs
-   Status: Open
-   Fix Branch:
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0157-search-body-null-fix
    Lesson Encoded: No
    Estimated Cost USD: 0.00
-   Notes: Found by Sentinel during US-0097 Playwright verification. Pre-existing — not introduced by US-0097. Likely in the EPIC-0011 global search module (US-0069); search-body DOM setup runs before the element exists or exists-but-null edge case.
+   Notes: Root cause: renderScripts() was called at line 224 of render-html.js, but #search-body is in the modal HTML at lines 225–232. Script ran synchronously, reached getElementById('search-body') before the element existed. Fix: moved modal HTML (search-backdrop, search-modal, aboutModal) to before renderScripts() call. Found by Sentinel during US-0097 Playwright verification.
 
 ---
 

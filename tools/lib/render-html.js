@@ -221,7 +221,6 @@ function renderHtml(data, options = {}) {
     </main>
   </div>
   ${renderRecentActivity(data)}
-  ${renderScripts(data, options)}
   <div id="search-backdrop" onclick="closeSearch()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(2px);z-index:200"></div>
   <div id="search-modal" role="dialog" aria-label="Search" aria-modal="true" style="display:none;position:fixed;top:20vh;left:50%;transform:translateX(-50%);width:min(560px,92vw);z-index:201;border-radius:12px;overflow:hidden;box-shadow:0 16px 48px rgba(0,0,0,.4);background:var(--clr-panel-bg);border:1px solid var(--clr-border);">
     <div style="position:relative">
@@ -267,6 +266,7 @@ function renderHtml(data, options = {}) {
       <p class="mt-5 text-slate-500 text-xs">Implemented by Kamal Syed, 2026</p>
     </div>
   </div>
+  ${renderScripts(data, options)}
 </body>
 </html>`;
 }
