@@ -4,6 +4,22 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
+## L-0039 — Spec reviewers without the actual spec file will hallucinate requirements
+
+**Rule:** A spec compliance reviewer given only the feature files (no plan document) will invent requirements that sound plausible but don't exist — e.g., fabricating "Section 1 must cover prerequisites" when the real AC is just "document the adoption steps". Always pass the reviewer the exact plan file path and the AC IDs to check. When reviewer findings feel surprising, cross-check against the plan file directly before acting on them.
+_Learned during EPIC-0019 Task 8 review: the reviewer invented section-numbering ACs (AC-0482: "Section 1 covers prerequisites", AC-0484: "Section 4 documents ≥5 commands") that don't exist. The real ACs were at different IDs with different requirements. Two unnecessary edits were almost made._
+**Date:** 2026-04-18
+
+---
+
+## L-0040 — Distribution artifacts must be unignored and committed; don't gitignore things you ship
+
+**Rule:** If a generated file is intended to be distributed to other projects (e.g., via an installer that does `cp source/file target/`), it must be committed to the repo — not gitignored. Gitignoring it means it won't exist in a fresh clone, and the installer silently fails or aborts. Audit `.gitignore` for any file referenced by install/copy scripts.
+_Learned when `docs/dashboard.html` was in `.gitignore` but `scripts/install.sh §7` tried to `cp` it to target projects. The file didn't exist in fresh clones, causing a `set -euo pipefail` abort mid-install. Fixed by removing it from `.gitignore` and committing it._
+**Date:** 2026-04-19
+
+---
+
 ## L-0036 — GitHub Actions CI does not trigger on pushes after a force-push in the same session
 
 **Rule:** After force-pushing a branch, subsequent regular pushes to the same branch sometimes do not trigger new GitHub Actions runs (zero check-runs on the new commit). Workaround: push an empty commit (`git commit --allow-empty`) to force a new `synchronize` event. Do not wait for CI that will never come — poll `gh api repos/.../commits/{sha}/check-runs` first; if `total_count` is 0 after 30+ seconds, use the empty-commit trigger.
