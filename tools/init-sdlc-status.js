@@ -10,8 +10,7 @@ const STATUS_PATH = path.join(ROOT, 'docs', 'sdlc-status.json');
 
 function loadConfig(configPath) {
   if (!fs.existsSync(configPath)) {
-    console.error(`[init-sdlc-status] ${configPath} not found.`);
-    process.exit(1);
+    throw new Error(`[init-sdlc-status] ${configPath} not found.`);
   }
   return JSON.parse(fs.readFileSync(configPath, 'utf8'));
 }
@@ -98,6 +97,13 @@ function main() {
   }
 }
 
-if (require.main === module) { main(); }
+if (require.main === module) {
+  try {
+    main();
+  } catch (err) {
+    console.error(err.message);
+    process.exit(1);
+  }
+}
 
 module.exports = { buildStatus, loadConfig };

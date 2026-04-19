@@ -240,7 +240,7 @@ describe('US-0121 terminal-aesthetic activity log', () => {
 describe('US-0120 stories panel polish', () => {
   function makeStoriesFixture() {
     const base = {
-      hackathon: { name: 'SDLC Dashboard', date: '2026-04-15', startTime: '09:00', endTime: '17:00' },
+      project: { name: 'SDLC Dashboard', description: 'Agentic AI SDLC', repoUrl: 'https://github.com/ksyed0/PlanVisualizer', startDate: '2026-04-15' },
       currentPhase: 3,
       phases: CANONICAL_PHASES.map((p, i) => ({
         ...p,
