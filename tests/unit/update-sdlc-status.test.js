@@ -152,19 +152,38 @@ describe('update-sdlc-status — cycle-complete', () => {
     const data = {
       currentPhase: 0,
       phases: [
-        { id: 1, name: 'Build', status: 'complete', startedAt: '2026-04-18T09:00:00.000Z', completedAt: '2026-04-18T10:30:00.000Z' },
-        { id: 2, name: 'Test',  status: 'complete', startedAt: '2026-04-18T10:30:00.000Z', completedAt: '2026-04-18T11:00:00.000Z' },
+        {
+          id: 1,
+          name: 'Build',
+          status: 'complete',
+          startedAt: '2026-04-18T09:00:00.000Z',
+          completedAt: '2026-04-18T10:30:00.000Z',
+        },
+        {
+          id: 2,
+          name: 'Test',
+          status: 'complete',
+          startedAt: '2026-04-18T10:30:00.000Z',
+          completedAt: '2026-04-18T11:00:00.000Z',
+        },
       ],
       agents: {},
       stories: {},
       cycles: [],
       project: { name: 'TestProj', description: '', repoUrl: '', startDate: '2026-01-01' },
       metrics: {
-        storiesCompleted: 4, storiesTotal: 4,
-        tasksCompleted: 12, tasksTotal: 0,
-        testsPassed: 200, testsFailed: 0, testsTotal: 200,
-        bugsOpen: 0, bugsFixed: 2, coveragePercent: 91.5,
-        reviewsApproved: 8, reviewsBlocked: 0,
+        storiesCompleted: 4,
+        storiesTotal: 4,
+        tasksCompleted: 12,
+        tasksTotal: 0,
+        testsPassed: 200,
+        testsFailed: 0,
+        testsTotal: 200,
+        bugsOpen: 0,
+        bugsFixed: 2,
+        coveragePercent: 91.5,
+        reviewsApproved: 8,
+        reviewsBlocked: 0,
       },
       log: [],
     };
@@ -186,7 +205,7 @@ describe('update-sdlc-status — cycle-complete', () => {
     const data = stateWithActiveSession();
     HANDLERS['cycle-complete'](data, {});
     expect(data.cycles[0].phaseDurations.Build).toBe(5400); // 1.5h = 5400s
-    expect(data.cycles[0].phaseDurations.Test).toBe(1800);  // 0.5h = 1800s
+    expect(data.cycles[0].phaseDurations.Test).toBe(1800); // 0.5h = 1800s
   });
 
   it('resets runtime state after snapshotting', () => {
@@ -212,12 +231,60 @@ describe('update-sdlc-status — phase', () => {
   function seededPhaseState() {
     const data = baseState();
     data.phases = [
-      { id: 1, name: 'Blueprint',   agents: ['Compass'],                 deliverables: ['refined ACs'],   status: 'pending', startedAt: null, completedAt: null },
-      { id: 2, name: 'Architect',   agents: ['Keystone'],                deliverables: ['scaffold'],      status: 'pending', startedAt: null, completedAt: null },
-      { id: 3, name: 'Build',       agents: ['Pixel', 'Forge', 'Palette'], deliverables: ['implementation'], status: 'pending', startedAt: null, completedAt: null },
-      { id: 4, name: 'Integration', agents: ['Pixel'],                   deliverables: ['e2e flows'],     status: 'pending', startedAt: null, completedAt: null },
-      { id: 5, name: 'Test',        agents: ['Sentinel', 'Circuit'],     deliverables: ['test report'],   status: 'pending', startedAt: null, completedAt: null },
-      { id: 6, name: 'Polish',      agents: ['Pixel', 'Forge'],          deliverables: ['bug fixes'],     status: 'pending', startedAt: null, completedAt: null },
+      {
+        id: 1,
+        name: 'Blueprint',
+        agents: ['Compass'],
+        deliverables: ['refined ACs'],
+        status: 'pending',
+        startedAt: null,
+        completedAt: null,
+      },
+      {
+        id: 2,
+        name: 'Architect',
+        agents: ['Keystone'],
+        deliverables: ['scaffold'],
+        status: 'pending',
+        startedAt: null,
+        completedAt: null,
+      },
+      {
+        id: 3,
+        name: 'Build',
+        agents: ['Pixel', 'Forge', 'Palette'],
+        deliverables: ['implementation'],
+        status: 'pending',
+        startedAt: null,
+        completedAt: null,
+      },
+      {
+        id: 4,
+        name: 'Integration',
+        agents: ['Pixel'],
+        deliverables: ['e2e flows'],
+        status: 'pending',
+        startedAt: null,
+        completedAt: null,
+      },
+      {
+        id: 5,
+        name: 'Test',
+        agents: ['Sentinel', 'Circuit'],
+        deliverables: ['test report'],
+        status: 'pending',
+        startedAt: null,
+        completedAt: null,
+      },
+      {
+        id: 6,
+        name: 'Polish',
+        agents: ['Pixel', 'Forge'],
+        deliverables: ['bug fixes'],
+        status: 'pending',
+        startedAt: null,
+        completedAt: null,
+      },
     ];
     return data;
   }
@@ -251,8 +318,12 @@ describe('update-sdlc-status — phase', () => {
 
   it('throws a clear error when --number is missing or invalid', () => {
     const data = baseState();
-    expect(() => HANDLERS.phase(data, { number: '0', status: 'in-progress' })).toThrow('--number must be a positive integer');
-    expect(() => HANDLERS.phase(data, { number: 'abc', status: 'in-progress' })).toThrow('--number must be a positive integer');
+    expect(() => HANDLERS.phase(data, { number: '0', status: 'in-progress' })).toThrow(
+      '--number must be a positive integer',
+    );
+    expect(() => HANDLERS.phase(data, { number: 'abc', status: 'in-progress' })).toThrow(
+      '--number must be a positive integer',
+    );
     expect(() => HANDLERS.phase(data, { status: 'in-progress' })).toThrow('--number must be a positive integer');
   });
 });
@@ -273,7 +344,15 @@ describe('update-sdlc-status — epic lifecycle', () => {
 
   it('epic-complete sets status and completedAt', () => {
     const data = baseState();
-    data.epics = { 'EPIC-0019': { status: 'in-progress', storiesCompleted: 8, storiesTotal: 8, startedAt: '2026-01-01T00:00:00Z', completedAt: null } };
+    data.epics = {
+      'EPIC-0019': {
+        status: 'in-progress',
+        storiesCompleted: 8,
+        storiesTotal: 8,
+        startedAt: '2026-01-01T00:00:00Z',
+        completedAt: null,
+      },
+    };
     HANDLERS['epic-complete'](data, { epic: 'EPIC-0019' });
     expect(data.epics['EPIC-0019'].status).toBe('complete');
     expect(data.epics['EPIC-0019'].completedAt).toBeTruthy();
@@ -281,7 +360,15 @@ describe('update-sdlc-status — epic lifecycle', () => {
 
   it('story-complete increments epic storiesCompleted when epic exists', () => {
     const data = baseState();
-    data.epics = { 'EPIC-0019': { status: 'in-progress', storiesCompleted: 2, storiesTotal: 8, startedAt: '2026-01-01T00:00:00Z', completedAt: null } };
+    data.epics = {
+      'EPIC-0019': {
+        status: 'in-progress',
+        storiesCompleted: 2,
+        storiesTotal: 8,
+        startedAt: '2026-01-01T00:00:00Z',
+        completedAt: null,
+      },
+    };
     HANDLERS['story-complete'](data, { story: 'US-0127', epic: 'EPIC-0019' });
     expect(data.epics['EPIC-0019'].storiesCompleted).toBe(3);
   });
@@ -308,7 +395,15 @@ describe('update-sdlc-status — session-start', () => {
     data.stories = { 'US-0001': { status: 'InProgress' } };
     data.metrics.storiesCompleted = 4;
     data.metrics.testsPassed = 100;
-    data.phases = [{ id: 1, name: 'Build', status: 'complete', startedAt: '2026-04-18T09:00:00Z', completedAt: '2026-04-18T10:00:00Z' }];
+    data.phases = [
+      {
+        id: 1,
+        name: 'Build',
+        status: 'complete',
+        startedAt: '2026-04-18T09:00:00Z',
+        completedAt: '2026-04-18T10:00:00Z',
+      },
+    ];
 
     HANDLERS['session-start'](data, { stories: '8' });
 
@@ -336,7 +431,9 @@ describe('update-sdlc-status — session-start', () => {
 
   it('throws when --stories is non-numeric', () => {
     const data = baseState();
-    expect(() => HANDLERS['session-start'](data, { stories: 'abc' })).toThrow('--stories must be a non-negative integer');
+    expect(() => HANDLERS['session-start'](data, { stories: 'abc' })).toThrow(
+      '--stories must be a non-negative integer',
+    );
   });
 });
 

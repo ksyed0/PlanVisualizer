@@ -12,13 +12,14 @@ Running log of session activity, errors, session activity, errors, test results,
 
 #### Stories shipped (3 PRs merged to develop)
 
-| PR | Description |
-|----|-------------|
-| #395 | US-0126: superpowers skills integration across all 9 agent files + install.sh + skills-integration.md |
-| #397 | Prettier fix: agent files + skills-integration.md |
+| PR   | Description                                                                                                                                                 |
+| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| #395 | US-0126: superpowers skills integration across all 9 agent files + install.sh + skills-integration.md                                                       |
+| #397 | Prettier fix: agent files + skills-integration.md                                                                                                           |
 | #399 | Prettier fix: remaining 10 pre-existing failures (LESSONS.md, plans, specs, TEST_CASES.md, progress.md, PROMPT_LOG.md, render-html.test.js, render-tabs.js) |
 
 #### Key deliverables
+
 - `scripts/install.sh` §0: detects superpowers plugin, prompts Y/N, prints slash command on Y, continues on N
 - All 9 `docs/agents/*.md` files: `## Superpowers Skills` section with per-agent skill/stage tables
 - `docs/skills-integration.md`: full agent × skill × stage reference (24 rows, 12-entry catalogue)
@@ -28,12 +29,14 @@ Running log of session activity, errors, session activity, errors, test results,
 - `CLAUDE.md`: session-close checklist item added for per-story RELEASE_PLAN audit
 
 #### Incidents
+
 - **ID conflict**: Memory said next US = US-0110 but 16 stories had shipped since that snapshot. Actual next was US-0126. Rule: always read ID_REGISTRY.md directly.
 - **Auto-merge race condition**: PR #395 auto-merged before Prettier fix could be pushed, requiring two follow-up PRs (#397, #399).
 - **GitHub CI not triggering**: After force-push, subsequent regular pushes did not trigger new CI runs — required empty-commit trigger. Root cause unclear (GitHub Actions event queue behavior).
 - **Prettier scope**: CI runs `prettier --check .` (whole repo), so pre-existing failures in unrelated files block the check even when changed files are clean.
 
 #### Test results
+
 - No application code changed; coverage unchanged (~92.7%, 437 tests passing).
 
 ---
@@ -46,23 +49,26 @@ Running log of session activity, errors, session activity, errors, test results,
 
 #### Stories shipped (4 PRs merged to develop)
 
-| Story | PR | Description |
-|-------|----|-------------|
+| Story   | PR   | Description                                                           |
+| ------- | ---- | --------------------------------------------------------------------- |
 | US-0101 | #386 | Kanban Polish: fix BUG-0112 (hover shadow CSS variable), TC-0140–0144 |
-| US-0102 | #385 | Traceability Redesign: TC-0145–0148 |
-| US-0103 | #387 | Status Tab Editorial: TC-0149–0152 |
-| US-0106 | #388 | Bugs Severity Triage: TC-0153–0157, BUG-0180 Retired |
+| US-0102 | #385 | Traceability Redesign: TC-0145–0148                                   |
+| US-0103 | #387 | Status Tab Editorial: TC-0149–0152                                    |
+| US-0106 | #388 | Bugs Severity Triage: TC-0153–0157, BUG-0180 Retired                  |
 
 #### Test results
+
 - 437 tests, 22 suites — all pass. Coverage: ~92.73% statements (gate: 80%)
 
 #### Key incidents
+
 - Phase-1 Sentinel QA filed 5 bugs (BUG-0176–0180); all were visual false positives at 900px viewport. Retired before Phase-2.
 - BUG-0112 had two components: `.story-card-hover:hover` box-shadow AND `.ksw-swim-hdr:hover filter: brightness`. Both fixed with CSS variable tokens.
 - Sequential merge cascade: each story branch modified TEST_CASES.md / ID_REGISTRY.md / RELEASE_PLAN.md, causing each successive branch to need a rebase after the previous PR merged. US-0102 needed 1 rebase, US-0103 needed 1, US-0106 needed 2.
 - Spec/code reviewers checked local files instead of PR branch content — verified via `git diff origin/develop...origin/feature/BRANCH`.
 
 #### EPIC status
+
 - EPIC-0015: **Done** (all 15 stories complete)
 - Next BUG: BUG-0181 | Next TC: TC-0158 | Next US: US-0110
 
@@ -76,24 +82,27 @@ Running log of session activity, errors, session activity, errors, test results,
 
 #### Stories shipped (5 PRs merged to develop)
 
-| Story | PR | Description |
-|-------|----|-------------|
-| US-0100, US-0107 | #371 | Housekeeping: mark Done (ACs already in codebase) |
-| US-0083 | #373 | GH Actions already at v6 — mark Done |
-| US-0098 | #374 | Staggered fadeInUp reveal extended to all tabs + re-trigger on tab switch |
-| US-0104 | #377 | Trends time-range filter (All/90d/30d/7d), supertitle groups, gradient fills |
-| US-0105 | #378 | Costs sparklines, delta arrows, .progress-bar component, currency-sign span |
-| US-0053 | #381 | Split render-html.js (2981L) into 4 modules: render-utils, render-shell, render-tabs, render-scripts |
+| Story            | PR   | Description                                                                                          |
+| ---------------- | ---- | ---------------------------------------------------------------------------------------------------- |
+| US-0100, US-0107 | #371 | Housekeeping: mark Done (ACs already in codebase)                                                    |
+| US-0083          | #373 | GH Actions already at v6 — mark Done                                                                 |
+| US-0098          | #374 | Staggered fadeInUp reveal extended to all tabs + re-trigger on tab switch                            |
+| US-0104          | #377 | Trends time-range filter (All/90d/30d/7d), supertitle groups, gradient fills                         |
+| US-0105          | #378 | Costs sparklines, delta arrows, .progress-bar component, currency-sign span                          |
+| US-0053          | #381 | Split render-html.js (2981L) into 4 modules: render-utils, render-shell, render-tabs, render-scripts |
 
 #### Test results
+
 - 419 tests, 22 suites — all pass. Coverage: ~91% statements (gate: 80%)
 
 #### Key incidents
+
 - PR #378 (US-0105) conflict: US-0104 merged first, both touched render-html.js CSS block and test describe blocks. Resolved manually — kept both CSS sections and both describe blocks properly closed.
 - Worktree base drift: isolation:worktree created US-0053 Pixel agent from old commit (893e4c3 vs current a317683). Aborted rebase, recreated branch from correct develop, did split directly in main repo.
 - sdlc-status.json is gitignored — agentic dashboard requires explicit `node tools/update-sdlc-status.js` calls at each pipeline transition. Dashboard showed stale/idle throughout session; updated manually after each wave.
 
 #### Blockers / remaining work
+
 - US-0101 (Kanban polish), US-0102 (Traceability), US-0103 (Charts editorial), US-0106 (Bug cards severity) still Planned in EPIC-0015. EPIC-0015 remains In Progress.
 - EPIC-0014 still In Progress (US-0053 Done, others ongoing).
 

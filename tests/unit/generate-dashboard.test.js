@@ -240,7 +240,12 @@ describe('US-0121 terminal-aesthetic activity log', () => {
 describe('US-0120 stories panel polish', () => {
   function makeStoriesFixture() {
     const base = {
-      project: { name: 'SDLC Dashboard', description: 'Agentic AI SDLC', repoUrl: 'https://github.com/ksyed0/PlanVisualizer', startDate: '2026-04-15' },
+      project: {
+        name: 'SDLC Dashboard',
+        description: 'Agentic AI SDLC',
+        repoUrl: 'https://github.com/ksyed0/PlanVisualizer',
+        startDate: '2026-04-15',
+      },
       currentPhase: 3,
       phases: CANONICAL_PHASES.map((p, i) => ({
         ...p,
@@ -390,7 +395,12 @@ describe('init-sdlc-status — buildStatus', () => {
   it('writes project block (not hackathon) to output', () => {
     const { buildStatus } = require('../../tools/init-sdlc-status');
     const cfgPath = writeConfig({
-      project: { name: 'TestProj', description: 'Desc', repoUrl: 'https://github.com/test/proj', startDate: '2026-01-01' },
+      project: {
+        name: 'TestProj',
+        description: 'Desc',
+        repoUrl: 'https://github.com/test/proj',
+        startDate: '2026-01-01',
+      },
       phases: [],
       agents: {},
     });
@@ -407,19 +417,29 @@ describe('init-sdlc-status — buildStatus', () => {
       project: { name: 'P', description: '', repoUrl: '', startDate: '2026-01-01' },
       phases: [
         { name: 'Build', agents: ['Dev'], deliverables: ['code'] },
-        { name: 'Test',  agents: ['QA'],  deliverables: ['report'] },
+        { name: 'Test', agents: ['QA'], deliverables: ['report'] },
       ],
       agents: {},
     });
     const status = buildStatus(cfgPath);
     expect(status.phases).toHaveLength(2);
-    expect(status.phases[0]).toMatchObject({ id: 1, name: 'Build', status: 'pending', startedAt: null, completedAt: null });
+    expect(status.phases[0]).toMatchObject({
+      id: 1,
+      name: 'Build',
+      status: 'pending',
+      startedAt: null,
+      completedAt: null,
+    });
     expect(status.phases[1]).toMatchObject({ id: 2, name: 'Test' });
   });
 
   it('initialises cycles as empty array', () => {
     const { buildStatus } = require('../../tools/init-sdlc-status');
-    const cfgPath = writeConfig({ project: { name: 'P', description: '', repoUrl: '', startDate: '' }, phases: [], agents: {} });
+    const cfgPath = writeConfig({
+      project: { name: 'P', description: '', repoUrl: '', startDate: '' },
+      phases: [],
+      agents: {},
+    });
     const status = buildStatus(cfgPath);
     expect(status.cycles).toEqual([]);
   });

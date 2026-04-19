@@ -548,6 +548,7 @@ git worktree remove <old-worktree-path> --force
 
 **Step 4 — Write back story status to RELEASE_PLAN.md (BUG-0181 fix):**
 After pulling, open `docs/RELEASE_PLAN.md` and update the merged story's block:
+
 - Change `Status: Planned` → `Status: Done`
 - Change all `- [ ] AC-XXXX:` → `- [x] AC-XXXX:`
 

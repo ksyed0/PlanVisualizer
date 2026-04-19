@@ -110,7 +110,7 @@ function resetSession(data, storiesTotal) {
   data.stories = {};
   data.currentPhase = 0;
   if (Array.isArray(data.phases)) {
-    data.phases = data.phases.map(p => ({
+    data.phases = data.phases.map((p) => ({
       ...p,
       status: 'pending',
       startedAt: null,
@@ -292,7 +292,7 @@ const HANDLERS = {
     const nextId = data.cycles.length + 1;
 
     const phaseDurations = {};
-    (data.phases || []).forEach(function(p) {
+    (data.phases || []).forEach(function (p) {
       if (p.startedAt && p.completedAt) {
         const ms = Date.parse(p.completedAt) - Date.parse(p.startedAt);
         if (isFinite(ms) && ms >= 0) {
@@ -316,7 +316,11 @@ const HANDLERS = {
     if (data.cycles.length > 50) data.cycles = data.cycles.slice(-50);
 
     resetSession(data, '0');
-    appendLog(data, 'Conductor', `Cycle ${nextId} complete — ${snapshot.storiesCompleted} stories, ${snapshot.coveragePercent.toFixed(1)}% coverage`);
+    appendLog(
+      data,
+      'Conductor',
+      `Cycle ${nextId} complete — ${snapshot.storiesCompleted} stories, ${snapshot.coveragePercent.toFixed(1)}% coverage`,
+    );
     return data;
   },
 

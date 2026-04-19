@@ -43,12 +43,12 @@ bash /path/to/PlanVisualizer/scripts/install.sh
     "startDate": "2026-01-01"
   },
   "phases": [
-    { "name": "Build",  "agents": ["Dev"],  "deliverables": ["implementation"] },
-    { "name": "Test",   "agents": ["QA"],   "deliverables": ["test report"] }
+    { "name": "Build", "agents": ["Dev"], "deliverables": ["implementation"] },
+    { "name": "Test", "agents": ["QA"], "deliverables": ["test report"] }
   ],
   "agents": {
-    "Dev":  { "role": "Backend Developer" },
-    "QA":   { "role": "Functional Tester" }
+    "Dev": { "role": "Backend Developer" },
+    "QA": { "role": "Functional Tester" }
   }
 }
 ```

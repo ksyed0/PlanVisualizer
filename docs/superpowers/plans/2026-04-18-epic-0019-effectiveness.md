@@ -12,26 +12,27 @@
 
 ## File Map
 
-| File | Action | Responsibility |
-|------|--------|---------------|
-| `agents.config.json` | Modify | Add `project` and `phases` top-level sections |
-| `tools/init-sdlc-status.js` | Modify | Read `project`/`phases` from config; write to `sdlc-status.json`; drop `hackathon` |
-| `tools/update-sdlc-status.js` | Modify | Remove `PHASE_DEFS`; add `session-start`, `epic-start`, `epic-complete`, `bug-open`, `bug-fix`, `cycle-complete`; fix log time to ISO; `story-complete` auto-idles agent |
-| `docs/sdlc-status.json` | Modify | Migrate `hackathon` → `project`; add `cycles: []`; add `epics` init |
-| `docs/dashboard.html` | Modify | Dynamic project identity via `patchDOM`; epic-progress strip; cycle history lap strip + telemetry |
-| `docs/agents/DM_AGENT.md` | Modify | Add `session-start`, `epic-start/complete`, `phase`, `coverage`, `bug-open/fix`, `cycle-complete` to Conductor checklists |
-| `docs/dashboard-extraction.md` | Create | Step-by-step adoption guide for other projects |
-| `scripts/install.sh` | Modify | Add §7 dashboard setup section |
-| `docs/RELEASE_PLAN.md` | Modify | Add US-0127–0134 under EPIC-0019; update EPIC-0019 description; mark EPIC-0017 Done |
-| `docs/ID_REGISTRY.md` | Modify | Advance US → US-0135, AC counter after write-back |
-| `tests/unit/update-sdlc-status.test.js` | Modify | Update broken tests (PHASE_DEFS, ISO time); add tests for all new commands |
-| `tests/unit/generate-dashboard.test.js` | Modify | Update `hackathon` fixture to `project` |
+| File                                    | Action | Responsibility                                                                                                                                                           |
+| --------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `agents.config.json`                    | Modify | Add `project` and `phases` top-level sections                                                                                                                            |
+| `tools/init-sdlc-status.js`             | Modify | Read `project`/`phases` from config; write to `sdlc-status.json`; drop `hackathon`                                                                                       |
+| `tools/update-sdlc-status.js`           | Modify | Remove `PHASE_DEFS`; add `session-start`, `epic-start`, `epic-complete`, `bug-open`, `bug-fix`, `cycle-complete`; fix log time to ISO; `story-complete` auto-idles agent |
+| `docs/sdlc-status.json`                 | Modify | Migrate `hackathon` → `project`; add `cycles: []`; add `epics` init                                                                                                      |
+| `docs/dashboard.html`                   | Modify | Dynamic project identity via `patchDOM`; epic-progress strip; cycle history lap strip + telemetry                                                                        |
+| `docs/agents/DM_AGENT.md`               | Modify | Add `session-start`, `epic-start/complete`, `phase`, `coverage`, `bug-open/fix`, `cycle-complete` to Conductor checklists                                                |
+| `docs/dashboard-extraction.md`          | Create | Step-by-step adoption guide for other projects                                                                                                                           |
+| `scripts/install.sh`                    | Modify | Add §7 dashboard setup section                                                                                                                                           |
+| `docs/RELEASE_PLAN.md`                  | Modify | Add US-0127–0134 under EPIC-0019; update EPIC-0019 description; mark EPIC-0017 Done                                                                                      |
+| `docs/ID_REGISTRY.md`                   | Modify | Advance US → US-0135, AC counter after write-back                                                                                                                        |
+| `tests/unit/update-sdlc-status.test.js` | Modify | Update broken tests (PHASE_DEFS, ISO time); add tests for all new commands                                                                                               |
+| `tests/unit/generate-dashboard.test.js` | Modify | Update `hackathon` fixture to `project`                                                                                                                                  |
 
 ---
 
 ## Task 1 — Schema Generalization: agents.config.json + init-sdlc-status.js (US-0127)
 
 **Files:**
+
 - Modify: `agents.config.json`
 - Modify: `tools/init-sdlc-status.js`
 - Modify: `tests/unit/generate-dashboard.test.js`
@@ -54,21 +55,24 @@ describe('init-sdlc-status — project and phases seeding', () => {
     statusPath = path.join(tmpDir, 'docs', 'sdlc-status.json');
     fs.mkdirSync(path.join(tmpDir, 'docs'), { recursive: true });
     // Write a minimal agents.config.json with project + phases
-    fs.writeFileSync(path.join(tmpDir, 'agents.config.json'), JSON.stringify({
-      project: {
-        name: 'TestProj',
-        description: 'A test project',
-        repoUrl: 'https://github.com/test/proj',
-        startDate: '2026-01-01',
-      },
-      phases: [
-        { name: 'Build', agents: ['Dev'], deliverables: ['code'] },
-        { name: 'Test', agents: ['QA'], deliverables: ['report'] },
-      ],
-      agents: {
-        Dev: { role: 'Backend Developer' },
-      },
-    }));
+    fs.writeFileSync(
+      path.join(tmpDir, 'agents.config.json'),
+      JSON.stringify({
+        project: {
+          name: 'TestProj',
+          description: 'A test project',
+          repoUrl: 'https://github.com/test/proj',
+          startDate: '2026-01-01',
+        },
+        phases: [
+          { name: 'Build', agents: ['Dev'], deliverables: ['code'] },
+          { name: 'Test', agents: ['QA'], deliverables: ['report'] },
+        ],
+        agents: {
+          Dev: { role: 'Backend Developer' },
+        },
+      }),
+    );
     initScript = require('../../tools/init-sdlc-status');
   });
 
@@ -80,9 +84,7 @@ describe('init-sdlc-status — project and phases seeding', () => {
   it('writes project block (not hackathon) to sdlc-status.json', () => {
     // Call the internal buildStatus function directly
     // (or re-require after setting process.env.STATUS_PATH)
-    const status = initScript.buildStatus(
-      path.join(tmpDir, 'agents.config.json'),
-    );
+    const status = initScript.buildStatus(path.join(tmpDir, 'agents.config.json'));
     expect(status.project).toBeDefined();
     expect(status.project.name).toBe('TestProj');
     expect(status.project.repoUrl).toBe('https://github.com/test/proj');
@@ -90,18 +92,20 @@ describe('init-sdlc-status — project and phases seeding', () => {
   });
 
   it('seeds phases from config with id, status:pending, startedAt:null', () => {
-    const status = initScript.buildStatus(
-      path.join(tmpDir, 'agents.config.json'),
-    );
+    const status = initScript.buildStatus(path.join(tmpDir, 'agents.config.json'));
     expect(status.phases).toHaveLength(2);
-    expect(status.phases[0]).toMatchObject({ id: 1, name: 'Build', status: 'pending', startedAt: null, completedAt: null });
+    expect(status.phases[0]).toMatchObject({
+      id: 1,
+      name: 'Build',
+      status: 'pending',
+      startedAt: null,
+      completedAt: null,
+    });
     expect(status.phases[1]).toMatchObject({ id: 2, name: 'Test', status: 'pending' });
   });
 
   it('seeds cycles as empty array', () => {
-    const status = initScript.buildStatus(
-      path.join(tmpDir, 'agents.config.json'),
-    );
+    const status = initScript.buildStatus(path.join(tmpDir, 'agents.config.json'));
     expect(status.cycles).toEqual([]);
   });
 });
@@ -342,6 +346,7 @@ git commit -m "feat: US-0127 schema generalization — replace hackathon with pr
 ## Task 2 — Dashboard Dynamic Project Identity (US-0128)
 
 **Files:**
+
 - Modify: `docs/dashboard.html` (lines 1112–1113 header, 1602 about panel, 1671 repo link, 2143 patchDOM)
 - Modify: `tools/update-sdlc-status.js` (log time → ISO)
 - Modify: `tests/unit/update-sdlc-status.test.js` (fix time format assertion)
@@ -398,29 +403,29 @@ In `docs/dashboard.html`, find the `patchDOM` function (line 2143) and add a pro
 // After: if (!status || typeof status !== 'object') return;
 // ADD:
 
-  // --- Project identity (US-0128) ------------------------------------------
-  var proj = status.project;
-  if (proj) {
-    var titleEl = document.querySelector('.header-title');
-    if (titleEl && proj.name) titleEl.textContent = proj.name;
-    var subtitleEl = document.querySelector('.header-subtitle');
-    if (subtitleEl && proj.description) subtitleEl.textContent = proj.description;
-    var aboutH3 = document.querySelector('.about-right h3');
-    if (aboutH3 && proj.name) aboutH3.textContent = proj.name;
-    var aboutDesc = document.querySelector('.about-right p');
-    if (aboutDesc && proj.description) aboutDesc.textContent = proj.description;
-    if (proj.repoUrl) {
-      document.querySelectorAll('a.repo-link, .about-links-row a[href*="yourorg"]').forEach(function(a) {
-        a.href = proj.repoUrl;
-        a.textContent = proj.repoUrl;
-      });
-    }
-    // Patch <title> on first render only
-    if (!document._projectTitlePatched && proj.name) {
-      document.title = proj.name + ' \u2014 SDLC Live Dashboard';
-      document._projectTitlePatched = true;
-    }
+// --- Project identity (US-0128) ------------------------------------------
+var proj = status.project;
+if (proj) {
+  var titleEl = document.querySelector('.header-title');
+  if (titleEl && proj.name) titleEl.textContent = proj.name;
+  var subtitleEl = document.querySelector('.header-subtitle');
+  if (subtitleEl && proj.description) subtitleEl.textContent = proj.description;
+  var aboutH3 = document.querySelector('.about-right h3');
+  if (aboutH3 && proj.name) aboutH3.textContent = proj.name;
+  var aboutDesc = document.querySelector('.about-right p');
+  if (aboutDesc && proj.description) aboutDesc.textContent = proj.description;
+  if (proj.repoUrl) {
+    document.querySelectorAll('a.repo-link, .about-links-row a[href*="yourorg"]').forEach(function (a) {
+      a.href = proj.repoUrl;
+      a.textContent = proj.repoUrl;
+    });
   }
+  // Patch <title> on first render only
+  if (!document._projectTitlePatched && proj.name) {
+    document.title = proj.name + ' \u2014 SDLC Live Dashboard';
+    document._projectTitlePatched = true;
+  }
+}
 ```
 
 - [ ] **Step 2.6: Patch log time display in patchDOM**
@@ -434,7 +439,7 @@ function fmtLogTime(t) {
   // ISO string: show HH:MM; legacy HH:MM string: pass through
   if (t.includes('T')) {
     var d = new Date(t);
-    return isNaN(d) ? t : (String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0'));
+    return isNaN(d) ? t : String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
   }
   return t;
 }
@@ -462,6 +467,7 @@ git commit -m "feat: US-0128 dashboard dynamic project identity — patchDOM rea
 ## Task 3 — Phase Config Externalization (US-0129)
 
 **Files:**
+
 - Modify: `tools/update-sdlc-status.js` (remove PHASE_DEFS, update phase handler)
 - Modify: `tests/unit/update-sdlc-status.test.js` (update phase tests to pre-seed phases)
 
@@ -475,12 +481,60 @@ describe('update-sdlc-status — phase', () => {
     const data = baseState();
     // Simulate phases seeded by init-sdlc-status.js from agents.config.json
     data.phases = [
-      { id: 1, name: 'Blueprint',   agents: ['Compass'],              deliverables: ['refined ACs'],  status: 'pending', startedAt: null, completedAt: null },
-      { id: 2, name: 'Architect',   agents: ['Keystone'],             deliverables: ['scaffold'],      status: 'pending', startedAt: null, completedAt: null },
-      { id: 3, name: 'Build',       agents: ['Pixel','Forge','Palette'], deliverables: ['implementation'], status: 'pending', startedAt: null, completedAt: null },
-      { id: 4, name: 'Integration', agents: ['Pixel'],                deliverables: ['e2e flows'],     status: 'pending', startedAt: null, completedAt: null },
-      { id: 5, name: 'Test',        agents: ['Sentinel','Circuit'],   deliverables: ['test report'],   status: 'pending', startedAt: null, completedAt: null },
-      { id: 6, name: 'Polish',      agents: ['Pixel','Forge'],        deliverables: ['bug fixes'],     status: 'pending', startedAt: null, completedAt: null },
+      {
+        id: 1,
+        name: 'Blueprint',
+        agents: ['Compass'],
+        deliverables: ['refined ACs'],
+        status: 'pending',
+        startedAt: null,
+        completedAt: null,
+      },
+      {
+        id: 2,
+        name: 'Architect',
+        agents: ['Keystone'],
+        deliverables: ['scaffold'],
+        status: 'pending',
+        startedAt: null,
+        completedAt: null,
+      },
+      {
+        id: 3,
+        name: 'Build',
+        agents: ['Pixel', 'Forge', 'Palette'],
+        deliverables: ['implementation'],
+        status: 'pending',
+        startedAt: null,
+        completedAt: null,
+      },
+      {
+        id: 4,
+        name: 'Integration',
+        agents: ['Pixel'],
+        deliverables: ['e2e flows'],
+        status: 'pending',
+        startedAt: null,
+        completedAt: null,
+      },
+      {
+        id: 5,
+        name: 'Test',
+        agents: ['Sentinel', 'Circuit'],
+        deliverables: ['test report'],
+        status: 'pending',
+        startedAt: null,
+        completedAt: null,
+      },
+      {
+        id: 6,
+        name: 'Polish',
+        agents: ['Pixel', 'Forge'],
+        deliverables: ['bug fixes'],
+        status: 'pending',
+        startedAt: null,
+        completedAt: null,
+      },
     ];
     return data;
   }
@@ -573,6 +627,7 @@ git commit -m "feat: US-0129 phase config externalization — remove PHASE_DEFS,
 ## Task 4 — Epic Lifecycle Commands (US-0130)
 
 **Files:**
+
 - Modify: `tools/update-sdlc-status.js` (add epic-start, epic-complete handlers; update story-complete)
 - Modify: `docs/dashboard.html` (add epic-progress strip HTML + patchDOM rendering)
 - Modify: `tests/unit/update-sdlc-status.test.js` (add epic tests)
@@ -598,7 +653,15 @@ describe('update-sdlc-status — epic lifecycle', () => {
 
   it('epic-complete sets status and completedAt', () => {
     const data = baseState();
-    data.epics = { 'EPIC-0019': { status: 'in-progress', storiesCompleted: 8, storiesTotal: 8, startedAt: '2026-01-01T00:00:00Z', completedAt: null } };
+    data.epics = {
+      'EPIC-0019': {
+        status: 'in-progress',
+        storiesCompleted: 8,
+        storiesTotal: 8,
+        startedAt: '2026-01-01T00:00:00Z',
+        completedAt: null,
+      },
+    };
     HANDLERS['epic-complete'](data, { epic: 'EPIC-0019' });
     expect(data.epics['EPIC-0019'].status).toBe('complete');
     expect(data.epics['EPIC-0019'].completedAt).toBeTruthy();
@@ -606,7 +669,15 @@ describe('update-sdlc-status — epic lifecycle', () => {
 
   it('story-complete increments epic storiesCompleted when epic exists', () => {
     const data = baseState();
-    data.epics = { 'EPIC-0019': { status: 'in-progress', storiesCompleted: 2, storiesTotal: 8, startedAt: '2026-01-01T00:00:00Z', completedAt: null } };
+    data.epics = {
+      'EPIC-0019': {
+        status: 'in-progress',
+        storiesCompleted: 2,
+        storiesTotal: 8,
+        startedAt: '2026-01-01T00:00:00Z',
+        completedAt: null,
+      },
+    };
     HANDLERS['story-complete'](data, { story: 'US-0127', epic: 'EPIC-0019' });
     expect(data.epics['EPIC-0019'].storiesCompleted).toBe(3);
   });
@@ -677,8 +748,15 @@ Find the pipeline section in `docs/dashboard.html` (search for `<div class="pipe
 
 ```html
 <!-- US-0130: Epic progress strip — rendered by patchDOM on each tick -->
-<div id="epic-strip" style="display:none; margin-bottom:16px; background:var(--bg-card); border:1px solid var(--bg-card-border); border-radius:10px; padding:10px 16px; font-family:var(--font-sans); font-size:12px;">
-  <div style="font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin-bottom:8px;">Epic Progress</div>
+<div
+  id="epic-strip"
+  style="display:none; margin-bottom:16px; background:var(--bg-card); border:1px solid var(--bg-card-border); border-radius:10px; padding:10px 16px; font-family:var(--font-sans); font-size:12px;"
+>
+  <div
+    style="font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin-bottom:8px;"
+  >
+    Epic Progress
+  </div>
   <div id="epic-strip-rows"></div>
 </div>
 ```
@@ -688,32 +766,52 @@ Find the pipeline section in `docs/dashboard.html` (search for `<div class="pipe
 In `docs/dashboard.html`, inside `patchDOM(status)`, add after the project identity block:
 
 ```js
-  // --- Epic progress strip (US-0130) ----------------------------------------
-  var epics = status.epics || {};
-  var epicKeys = Object.keys(epics);
-  var epicStripEl = document.getElementById('epic-strip');
-  var epicRowsEl = document.getElementById('epic-strip-rows');
-  if (epicStripEl && epicRowsEl) {
-    if (epicKeys.length === 0) {
-      epicStripEl.style.display = 'none';
-    } else {
-      epicStripEl.style.display = '';
-      epicRowsEl.innerHTML = epicKeys.map(function(id) {
+// --- Epic progress strip (US-0130) ----------------------------------------
+var epics = status.epics || {};
+var epicKeys = Object.keys(epics);
+var epicStripEl = document.getElementById('epic-strip');
+var epicRowsEl = document.getElementById('epic-strip-rows');
+if (epicStripEl && epicRowsEl) {
+  if (epicKeys.length === 0) {
+    epicStripEl.style.display = 'none';
+  } else {
+    epicStripEl.style.display = '';
+    epicRowsEl.innerHTML = epicKeys
+      .map(function (id) {
         var ep = epics[id];
         var pct = ep.storiesTotal > 0 ? Math.round((ep.storiesCompleted / ep.storiesTotal) * 100) : 0;
         var badgeColor = ep.status === 'complete' ? '#34A853' : ep.status === 'in-progress' ? '#F57C00' : '#888';
-        return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">'
-          + '<span style="font-weight:600;color:var(--text-primary);min-width:90px;">' + id + '</span>'
-          + '<span style="color:var(--text-secondary);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (ep.name || '') + '</span>'
-          + '<span style="min-width:60px;text-align:right;color:var(--text-muted);">' + ep.storiesCompleted + '/' + ep.storiesTotal + '</span>'
-          + '<div style="width:80px;height:4px;background:var(--bg-progress);border-radius:2px;overflow:hidden;">'
-          + '<div style="height:100%;width:' + pct + '%;background:' + badgeColor + ';border-radius:2px;transition:width 0.6s;"></div>'
-          + '</div>'
-          + '<span style="min-width:32px;text-align:right;color:' + badgeColor + ';font-weight:600;">' + pct + '%</span>'
-          + '</div>';
-      }).join('');
-    }
+        return (
+          '<div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">' +
+          '<span style="font-weight:600;color:var(--text-primary);min-width:90px;">' +
+          id +
+          '</span>' +
+          '<span style="color:var(--text-secondary);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' +
+          (ep.name || '') +
+          '</span>' +
+          '<span style="min-width:60px;text-align:right;color:var(--text-muted);">' +
+          ep.storiesCompleted +
+          '/' +
+          ep.storiesTotal +
+          '</span>' +
+          '<div style="width:80px;height:4px;background:var(--bg-progress);border-radius:2px;overflow:hidden;">' +
+          '<div style="height:100%;width:' +
+          pct +
+          '%;background:' +
+          badgeColor +
+          ';border-radius:2px;transition:width 0.6s;"></div>' +
+          '</div>' +
+          '<span style="min-width:32px;text-align:right;color:' +
+          badgeColor +
+          ';font-weight:600;">' +
+          pct +
+          '%</span>' +
+          '</div>'
+        );
+      })
+      .join('');
   }
+}
 ```
 
 - [ ] **Step 4.8: Run full suite**
@@ -736,6 +834,7 @@ git commit -m "feat: US-0130 epic lifecycle commands — epic-start/epic-complet
 ## Task 5 — Session Reset & CLI Validation (US-0131)
 
 **Files:**
+
 - Modify: `tools/update-sdlc-status.js` (add session-start handler, --agent validation)
 - Modify: `tests/unit/update-sdlc-status.test.js` (session-start tests, validation tests)
 
@@ -821,7 +920,7 @@ function resetSession(data, storiesTotal) {
   data.stories = {};
   data.currentPhase = 0;
   if (Array.isArray(data.phases)) {
-    data.phases = data.phases.map(p => ({
+    data.phases = data.phases.map((p) => ({
       ...p,
       status: 'pending',
       startedAt: null,
@@ -929,6 +1028,7 @@ git commit -m "feat: US-0131 session reset and CLI validation — session-start 
 ## Task 6 — Coverage, Bug Metrics & DM_AGENT.md Wiring (US-0132)
 
 **Files:**
+
 - Modify: `tools/update-sdlc-status.js` (bug-open, bug-fix, story-complete auto-idle)
 - Modify: `docs/agents/DM_AGENT.md` (add phase/coverage/bug/epic/session call sites)
 - Modify: `tests/unit/update-sdlc-status.test.js` (bug and auto-idle tests)
@@ -1034,35 +1134,41 @@ Expected: All tests pass.
 In `docs/agents/DM_AGENT.md`, find the update-sdlc-status command table (around line 243) and add the new commands:
 
 ```markdown
-| Session start         | `node tools/update-sdlc-status.js session-start --stories N`                                       |
-| Epic start            | `node tools/update-sdlc-status.js epic-start --epic EPIC-XXXX --name "..." --stories N`            |
-| Epic complete         | `node tools/update-sdlc-status.js epic-complete --epic EPIC-XXXX`                                  |
-| Bug opened            | `node tools/update-sdlc-status.js bug-open --story US-XXXX`                                        |
-| Bug fixed             | `node tools/update-sdlc-status.js bug-fix --story US-XXXX`                                         |
-| Cycle complete        | `node tools/update-sdlc-status.js cycle-complete`                                                  |
+| Session start | `node tools/update-sdlc-status.js session-start --stories N` |
+| Epic start | `node tools/update-sdlc-status.js epic-start --epic EPIC-XXXX --name "..." --stories N` |
+| Epic complete | `node tools/update-sdlc-status.js epic-complete --epic EPIC-XXXX` |
+| Bug opened | `node tools/update-sdlc-status.js bug-open --story US-XXXX` |
+| Bug fixed | `node tools/update-sdlc-status.js bug-fix --story US-XXXX` |
+| Cycle complete | `node tools/update-sdlc-status.js cycle-complete` |
 ```
 
 Find the "Post-merge checklist" or phase transition section and add:
 
 ```markdown
 **Before first story of a new epic:**
+
 1. `node tools/update-sdlc-status.js session-start --stories <N>`
 2. `node tools/update-sdlc-status.js epic-start --epic EPIC-XXXX --name "..." --stories <N>`
 
 **At each phase transition:**
+
 - Start: `node tools/update-sdlc-status.js phase --number <N> --status in-progress`
 - Complete: `node tools/update-sdlc-status.js phase --number <N> --status complete`
 
 **After Test phase (Circuit reports coverage):**
+
 - `node tools/update-sdlc-status.js coverage --agent Circuit --percent <N>`
 
 **When a bug is filed during the pipeline:**
+
 - `node tools/update-sdlc-status.js bug-open --story US-XXXX`
 
 **When a bug is resolved:**
+
 - `node tools/update-sdlc-status.js bug-fix --story US-XXXX`
 
 **After all stories in an epic merge:**
+
 - `node tools/update-sdlc-status.js epic-complete --epic EPIC-XXXX`
 - `node tools/update-sdlc-status.js cycle-complete`
 ```
@@ -1087,6 +1193,7 @@ git commit -m "feat: US-0132 coverage and bug metrics wiring — bug-open/fix co
 ## Task 7 — Cycle History (US-0133)
 
 **Files:**
+
 - Modify: `tools/update-sdlc-status.js` (add cycle-complete handler using resetSession)
 - Modify: `docs/dashboard.html` (lap-history strip HTML + CSS + patchDOM rendering + cycle animation)
 - Modify: `tests/unit/update-sdlc-status.test.js` (cycle-complete tests)
@@ -1102,13 +1209,34 @@ describe('update-sdlc-status — cycle-complete', () => {
     data.project = { name: 'TestProj', description: '', repoUrl: '', startDate: '2026-01-01' };
     data.cycles = [];
     data.metrics = {
-      storiesCompleted: 4, storiesTotal: 4, tasksCompleted: 12, tasksTotal: 0,
-      testsPassed: 200, testsFailed: 0, testsTotal: 200,
-      bugsOpen: 0, bugsFixed: 2, coveragePercent: 91.5, reviewsApproved: 8, reviewsBlocked: 0,
+      storiesCompleted: 4,
+      storiesTotal: 4,
+      tasksCompleted: 12,
+      tasksTotal: 0,
+      testsPassed: 200,
+      testsFailed: 0,
+      testsTotal: 200,
+      bugsOpen: 0,
+      bugsFixed: 2,
+      coveragePercent: 91.5,
+      reviewsApproved: 8,
+      reviewsBlocked: 0,
     };
     data.phases = [
-      { id: 1, name: 'Build', status: 'complete', startedAt: '2026-04-18T09:00:00Z', completedAt: '2026-04-18T10:30:00Z' },
-      { id: 2, name: 'Test', status: 'complete', startedAt: '2026-04-18T10:30:00Z', completedAt: '2026-04-18T11:00:00Z' },
+      {
+        id: 1,
+        name: 'Build',
+        status: 'complete',
+        startedAt: '2026-04-18T09:00:00Z',
+        completedAt: '2026-04-18T10:30:00Z',
+      },
+      {
+        id: 2,
+        name: 'Test',
+        status: 'complete',
+        startedAt: '2026-04-18T10:30:00Z',
+        completedAt: '2026-04-18T11:00:00Z',
+      },
     ];
     return data;
   }
@@ -1127,7 +1255,7 @@ describe('update-sdlc-status — cycle-complete', () => {
     const data = stateWithActiveSession();
     HANDLERS['cycle-complete'](data, {});
     expect(data.cycles[0].phaseDurations.Build).toBe(5400); // 1.5h = 5400s
-    expect(data.cycles[0].phaseDurations.Test).toBe(1800);  // 0.5h = 1800s
+    expect(data.cycles[0].phaseDurations.Test).toBe(1800); // 0.5h = 1800s
   });
 
   it('resets runtime state after snapshotting', () => {
@@ -1216,7 +1344,11 @@ Find the end of the main container section in `docs/dashboard.html` (search for 
 ```html
 <!-- US-0133: Cycle history — lap strip + telemetry row -->
 <div id="cycle-history-section" style="display:none; margin-bottom:24px;">
-  <div style="font-family:var(--font-display),monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin-bottom:8px;">Cycle History</div>
+  <div
+    style="font-family:var(--font-display),monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin-bottom:8px;"
+  >
+    Cycle History
+  </div>
   <!-- Telemetry row -->
   <div id="cycle-telemetry" style="display:flex; gap:16px; margin-bottom:10px; flex-wrap:wrap;"></div>
   <!-- Lap strip -->
@@ -1229,12 +1361,48 @@ Find the end of the main container section in `docs/dashboard.html` (search for 
 In the `<style>` block of `docs/dashboard.html`, add:
 
 ```css
-.cycle-card { flex:0 0 auto; background:var(--bg-card); border:1px solid var(--bg-card-border); border-radius:8px; padding:8px 12px; min-width:120px; font-family:var(--font-sans); font-size:11px; }
-.cycle-card-id { font-family:var(--font-display),monospace; font-size:18px; font-weight:700; color:var(--text-primary); }
-.cycle-card-stat { color:var(--text-muted); margin-top:2px; }
-.cycle-telemetry-tile { background:var(--bg-card); border:1px solid var(--bg-card-border); border-radius:8px; padding:8px 14px; text-align:center; font-family:var(--font-sans); min-width:100px; }
-.cycle-telemetry-tile .tile-value { font-family:var(--font-display),monospace; font-size:20px; font-weight:700; color:var(--text-primary); }
-.cycle-telemetry-tile .tile-label { font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin-top:2px; }
+.cycle-card {
+  flex: 0 0 auto;
+  background: var(--bg-card);
+  border: 1px solid var(--bg-card-border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  min-width: 120px;
+  font-family: var(--font-sans);
+  font-size: 11px;
+}
+.cycle-card-id {
+  font-family: var(--font-display), monospace;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.cycle-card-stat {
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.cycle-telemetry-tile {
+  background: var(--bg-card);
+  border: 1px solid var(--bg-card-border);
+  border-radius: 8px;
+  padding: 8px 14px;
+  text-align: center;
+  font-family: var(--font-sans);
+  min-width: 100px;
+}
+.cycle-telemetry-tile .tile-value {
+  font-family: var(--font-display), monospace;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.cycle-telemetry-tile .tile-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
 ```
 
 - [ ] **Step 7.7: Add cycle history rendering in patchDOM**
@@ -1242,52 +1410,88 @@ In the `<style>` block of `docs/dashboard.html`, add:
 In `docs/dashboard.html` inside `patchDOM(status)`, add after the epic strip block:
 
 ```js
-  // --- Cycle history (US-0133) -----------------------------------------------
-  var cycles = Array.isArray(status.cycles) ? status.cycles : [];
-  var cycleSection = document.getElementById('cycle-history-section');
-  var lapStrip = document.getElementById('cycle-lap-strip');
-  var telemetryRow = document.getElementById('cycle-telemetry');
-  if (cycleSection && lapStrip && telemetryRow) {
-    if (cycles.length === 0) {
-      cycleSection.style.display = 'none';
-    } else {
-      cycleSection.style.display = '';
-      // Telemetry
-      var avgMs = cycles.reduce(function(sum, c) {
-        var total = Object.values(c.phaseDurations || {}).reduce(function(a, b) { return a + b; }, 0);
+// --- Cycle history (US-0133) -----------------------------------------------
+var cycles = Array.isArray(status.cycles) ? status.cycles : [];
+var cycleSection = document.getElementById('cycle-history-section');
+var lapStrip = document.getElementById('cycle-lap-strip');
+var telemetryRow = document.getElementById('cycle-telemetry');
+if (cycleSection && lapStrip && telemetryRow) {
+  if (cycles.length === 0) {
+    cycleSection.style.display = 'none';
+  } else {
+    cycleSection.style.display = '';
+    // Telemetry
+    var avgMs =
+      cycles.reduce(function (sum, c) {
+        var total = Object.values(c.phaseDurations || {}).reduce(function (a, b) {
+          return a + b;
+        }, 0);
         return sum + total;
       }, 0) / cycles.length;
-      var avgMin = Math.round(avgMs / 60);
-      var today = new Date().toDateString();
-      var cyclesToday = cycles.filter(function(c) { return c.completedAt && new Date(c.completedAt).toDateString() === today; }).length;
-      var successRate = cycles.length > 0 ? Math.round((cycles.filter(function(c) { return (c.testsFailed || 0) === 0; }).length / cycles.length) * 100) : 0;
-      telemetryRow.innerHTML = [
-        { label: 'Cycles Total', value: cycles.length },
-        { label: 'Today', value: cyclesToday },
-        { label: 'Avg Cycle (min)', value: avgMin || '–' },
-        { label: 'Success Rate', value: successRate + '%' },
-      ].map(function(t) {
-        return '<div class="cycle-telemetry-tile"><div class="tile-value">' + t.value + '</div><div class="tile-label">' + t.label + '</div></div>';
-      }).join('');
-      // Lap strip — last 10 cycles, newest first
-      var recent = cycles.slice(-10).reverse();
-      var prevLen = parseInt(lapStrip.getAttribute('data-cycle-count') || '0', 10);
-      lapStrip.innerHTML = recent.map(function(c) {
-        return '<div class="cycle-card">'
-          + '<div class="cycle-card-id">#' + c.id + '</div>'
-          + '<div class="cycle-card-stat">' + c.storiesCompleted + ' stories</div>'
-          + '<div class="cycle-card-stat">' + (c.coveragePercent || 0).toFixed(1) + '% cov</div>'
-          + '</div>';
-      }).join('');
-      // Completion animation — play when cycle count increases
-      if (cycles.length > prevLen && prevLen > 0 && typeof playBeep === 'function') {
-        playBeep(523, 0.15); // C5
-        setTimeout(function() { playBeep(659, 0.15); }, 150); // E5
-        setTimeout(function() { playBeep(784, 0.2); }, 300);  // G5
-      }
-      lapStrip.setAttribute('data-cycle-count', String(cycles.length));
+    var avgMin = Math.round(avgMs / 60);
+    var today = new Date().toDateString();
+    var cyclesToday = cycles.filter(function (c) {
+      return c.completedAt && new Date(c.completedAt).toDateString() === today;
+    }).length;
+    var successRate =
+      cycles.length > 0
+        ? Math.round(
+            (cycles.filter(function (c) {
+              return (c.testsFailed || 0) === 0;
+            }).length /
+              cycles.length) *
+              100,
+          )
+        : 0;
+    telemetryRow.innerHTML = [
+      { label: 'Cycles Total', value: cycles.length },
+      { label: 'Today', value: cyclesToday },
+      { label: 'Avg Cycle (min)', value: avgMin || '–' },
+      { label: 'Success Rate', value: successRate + '%' },
+    ]
+      .map(function (t) {
+        return (
+          '<div class="cycle-telemetry-tile"><div class="tile-value">' +
+          t.value +
+          '</div><div class="tile-label">' +
+          t.label +
+          '</div></div>'
+        );
+      })
+      .join('');
+    // Lap strip — last 10 cycles, newest first
+    var recent = cycles.slice(-10).reverse();
+    var prevLen = parseInt(lapStrip.getAttribute('data-cycle-count') || '0', 10);
+    lapStrip.innerHTML = recent
+      .map(function (c) {
+        return (
+          '<div class="cycle-card">' +
+          '<div class="cycle-card-id">#' +
+          c.id +
+          '</div>' +
+          '<div class="cycle-card-stat">' +
+          c.storiesCompleted +
+          ' stories</div>' +
+          '<div class="cycle-card-stat">' +
+          (c.coveragePercent || 0).toFixed(1) +
+          '% cov</div>' +
+          '</div>'
+        );
+      })
+      .join('');
+    // Completion animation — play when cycle count increases
+    if (cycles.length > prevLen && prevLen > 0 && typeof playBeep === 'function') {
+      playBeep(523, 0.15); // C5
+      setTimeout(function () {
+        playBeep(659, 0.15);
+      }, 150); // E5
+      setTimeout(function () {
+        playBeep(784, 0.2);
+      }, 300); // G5
     }
+    lapStrip.setAttribute('data-cycle-count', String(cycles.length));
   }
+}
 ```
 
 - [ ] **Step 7.8: Run full suite**
@@ -1310,13 +1514,14 @@ git commit -m "feat: US-0133 cycle history — cycle-complete command with reset
 ## Task 8 — Dashboard Extraction Guide (US-0134)
 
 **Files:**
+
 - Create: `docs/dashboard-extraction.md`
 - Modify: `scripts/install.sh` (add §7 dashboard setup)
 - Modify: `README.md` (add Dashboard section with link)
 
 - [ ] **Step 8.1: Create docs/dashboard-extraction.md**
 
-```markdown
+````markdown
 # Dashboard Extraction Guide
 
 Step-by-step guide for adopting the Agentic SDLC Dashboard in another project.
@@ -1343,6 +1548,7 @@ cp /path/to/PlanVisualizer/tools/update-sdlc-status.js tools/
 cp /path/to/PlanVisualizer/tools/init-sdlc-status.js tools/
 cp /path/to/PlanVisualizer/orchestrator/atomic-write.js orchestrator/
 ```
+````
 
 ### 2. Add `project` and `phases` to agents.config.json
 
@@ -1355,12 +1561,12 @@ cp /path/to/PlanVisualizer/orchestrator/atomic-write.js orchestrator/
     "startDate": "2026-01-01"
   },
   "phases": [
-    { "name": "Build",  "agents": ["Dev"],  "deliverables": ["implementation"] },
-    { "name": "Test",   "agents": ["QA"],   "deliverables": ["test report"] }
+    { "name": "Build", "agents": ["Dev"], "deliverables": ["implementation"] },
+    { "name": "Test", "agents": ["QA"], "deliverables": ["test report"] }
   ],
   "agents": {
-    "Dev":  { "role": "Backend Developer" },
-    "QA":   { "role": "Functional Tester" }
+    "Dev": { "role": "Backend Developer" },
+    "QA": { "role": "Functional Tester" }
   }
 }
 ```
@@ -1407,7 +1613,8 @@ node tools/update-sdlc-status.js cycle-complete
 ```
 
 `cycle-complete` snapshots metrics into `cycles[]` and resets runtime state for the next session.
-```
+
+````
 
 - [ ] **Step 8.2: Add §7 to scripts/install.sh**
 
@@ -1435,7 +1642,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
   echo "[install] Run: node tools/init-sdlc-status.js   (after adding project/phases to agents.config.json)"
   echo "[install] See: docs/dashboard-extraction.md for full adoption guide"
 fi
-```
+````
 
 - [ ] **Step 8.3: Add Dashboard section to README.md**
 
@@ -1469,6 +1676,7 @@ git commit -m "feat: US-0134 dashboard extraction guide — adoption docs, insta
 ## Task 9 — RELEASE_PLAN.md Write-Back & EPIC-0017 Closure
 
 **Files:**
+
 - Modify: `docs/RELEASE_PLAN.md` (update EPIC-0019 description; add US-0127–US-0134; mark EPIC-0017 Done)
 - Modify: `docs/ID_REGISTRY.md` (advance US, AC, TC counters)
 
@@ -1612,10 +1820,10 @@ Status: Done
 Open `docs/ID_REGISTRY.md` and update:
 
 | Sequence | Next Available | Last Assigned |
-|----------|---------------|---------------|
-| US | US-0135 | US-0134 |
-| AC | AC-0488 | AC-0487 |
-| TC | TC-0158 | TC-0157 |
+| -------- | -------------- | ------------- |
+| US       | US-0135        | US-0134       |
+| AC       | AC-0488        | AC-0487       |
+| TC       | TC-0158        | TC-0157       |
 
 - [ ] **Step 9.5: Run full suite one final time**
 
@@ -1637,6 +1845,7 @@ git commit -m "docs: US-0127-0134 write-back to RELEASE_PLAN.md, EPIC-0017 marke
 ## Self-Review Checklist
 
 **Spec coverage:**
+
 - G1.1 (epics empty) → Task 4 ✅
 - G1.2 (undefined agent) → Task 5 ✅
 - G1.3 (tasksTotal 0) → Task 5 ✅

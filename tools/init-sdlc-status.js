@@ -18,9 +18,17 @@ function loadConfig(configPath) {
 function buildAgentStatus(role) {
   const base = { status: 'idle', currentTask: null, tasksCompleted: 0 };
   const lower = role.toLowerCase();
-  if (lower.includes('reviewer')) { base.reviewsCompleted = 0; base.blockers = 0; }
-  if (lower.includes('functional tester')) { base.testsPassed = 0; base.testsFailed = 0; }
-  if (lower.includes('automation tester')) { base.coveragePercent = 0; }
+  if (lower.includes('reviewer')) {
+    base.reviewsCompleted = 0;
+    base.blockers = 0;
+  }
+  if (lower.includes('functional tester')) {
+    base.testsPassed = 0;
+    base.testsFailed = 0;
+  }
+  if (lower.includes('automation tester')) {
+    base.coveragePercent = 0;
+  }
   return base;
 }
 
