@@ -123,6 +123,16 @@ function esc(s) {
 function formatLogTime(raw) {
   const t = String(raw || '').trim();
   if (!t) return '--:--:--';
+  // ISO format (contains 'T'): parse as Date and extract HH:MM:SS
+  if (t.includes('T')) {
+    const d = new Date(t);
+    if (!isNaN(d)) {
+      const h = String(d.getHours()).padStart(2, '0');
+      const m = String(d.getMinutes()).padStart(2, '0');
+      const s = String(d.getSeconds()).padStart(2, '0');
+      return `${h}:${m}:${s}`;
+    }
+  }
   const parts = t.split(':');
   if (parts.length < 2) return t;
   const h = parts[0].padStart(2, '0');
@@ -1988,9 +1998,27 @@ function updateToggleButton(theme) {
 
 // US-0121 helpers shared between page-load and patchDOM() so categories and
 // time formatting are computed in one place on the client.
+function fmtLogTime(t) {
+  if (!t) return '';
+  if (String(t).includes('T')) {
+    var d = new Date(t);
+    return isNaN(d) ? t : (String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0'));
+  }
+  return t; // legacy HH:MM strings pass through unchanged
+}
 function _formatLogTime(raw) {
   var t = String(raw || '').trim();
   if (!t) return '--:--:--';
+  // ISO format (contains 'T'): parse as Date and extract HH:MM:SS
+  if (t.indexOf('T') !== -1) {
+    var d = new Date(t);
+    if (!isNaN(d)) {
+      var h = ('00' + d.getHours()).slice(-2);
+      var m = ('00' + d.getMinutes()).slice(-2);
+      var s = ('00' + d.getSeconds()).slice(-2);
+      return h + ':' + m + ':' + s;
+    }
+  }
   var parts = t.split(':');
   if (parts.length < 2) return t;
   var h = ('00' + parts[0]).slice(-2);
@@ -2414,6 +2442,29 @@ function _agentStatusColors(stat) {
 
 function patchDOM(status) {
   if (!status || typeof status !== 'object') return;
+
+  // --- Project identity (US-0128) ------------------------------------------
+  var proj = status.project;
+  if (proj) {
+    var titleEl = document.querySelector('.header-title');
+    if (titleEl && proj.name) titleEl.textContent = proj.name;
+    var subtitleEl = document.querySelector('.header-subtitle');
+    if (subtitleEl && proj.description) subtitleEl.textContent = proj.description;
+    var aboutH3 = document.querySelector('.about-right h3');
+    if (aboutH3 && proj.name) aboutH3.textContent = proj.name;
+    var aboutDesc = document.querySelector('.about-right p');
+    if (aboutDesc && proj.description) aboutDesc.textContent = proj.description;
+    if (proj.repoUrl) {
+      document.querySelectorAll('a.repo-link, .about-links-row a[href*="yourorg"]').forEach(function(a) {
+        a.href = proj.repoUrl;
+        a.textContent = proj.repoUrl;
+      });
+    }
+    if (!document._projectTitlePatched && proj.name) {
+      document.title = proj.name + ' \u2014 SDLC Live Dashboard';
+      document._projectTitlePatched = true;
+    }
+  }
 
   // --- Phase timeline (US-0115) ---------------------------------------------
   // Toggle status class, swap status icon, flip blocked beacon, reveal

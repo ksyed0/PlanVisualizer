@@ -176,7 +176,7 @@ describe('update-sdlc-status — log', () => {
     expect(data.log).toHaveLength(1);
     expect(data.log[0].agent).toBe('Conductor');
     expect(data.log[0].message).toBe('spawned parallel testers');
-    expect(data.log[0].time).toMatch(/^\d{2}:\d{2}$/);
+    expect(data.log[0].time).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
   });
 
   it('trims log to 200 entries', () => {

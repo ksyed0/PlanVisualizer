@@ -81,7 +81,7 @@ function nowISO() {
 
 function appendLog(data, agent, message) {
   data.log = data.log || [];
-  data.log.push({ time: nowLocalHHMM(), agent: agent || 'Conductor', message });
+  data.log.push({ time: nowISO(), agent: agent || 'Conductor', message });
   // Keep log bounded at last 200 entries
   if (data.log.length > 200) data.log = data.log.slice(-200);
   return data;
