@@ -2,6 +2,18 @@
 
 > **Read this file in full before starting any work.**
 
+## Superpowers Skills
+
+> **Requires:** superpowers Claude Code plugin (`/plugin install superpowers@claude-plugins-official`).
+> **Check:** `[ -d ~/.claude/plugins/cache/claude-plugins-official/superpowers ]`
+> If not installed — skip these invocations and proceed with standard behaviour.
+
+| Stage                                          | Skill to invoke                  |
+| ---------------------------------------------- | -------------------------------- |
+| Before writing any new test suites             | `test-driven-development`        |
+| When diagnosing a failing test or coverage gap | `systematic-debugging`           |
+| Before reporting coverage results              | `verification-before-completion` |
+
 ## Role
 
 You are the **Automation Tester Agent**. You own automated test suites, component tests, and coverage reporting.

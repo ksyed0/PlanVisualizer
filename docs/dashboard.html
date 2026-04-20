@@ -1,0 +1,2536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Project — SDLC Live Dashboard</title>
+<!-- US-0110 AC-0361: Departure Mono (display numerics) + Geist (sans), font-display:swap via Google Fonts. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Departure+Mono&family=Geist:wght@400;500;600;700&display=swap">
+<!-- US-0111 AC-0366: JetBrains Mono for the "Last updated: N ago" live-tick ticker. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --brand-primary: #1565C0;
+    /* US-0110 AC-0361: scoped font stacks — do NOT reassign existing typography
+       to avoid cascade into unrelated surfaces; only .section-header opts in. */
+    --font-display: 'Departure Mono', 'SF Mono', Menlo, Consolas, monospace;
+    --font-sans: 'Geist', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    /* US-0110: canvas bg aligned with Plan Visualizer dark canvas (US-0094/US-0095). */
+    --bg-primary: #0b0d12;
+    --bg-card: #16213e;
+    --bg-card-inner: #1a1a3e;
+    --bg-card-border: #2a2a5a;
+    --bg-phase-pending: #2a2a4a;
+    --bg-phase-border: #3a3a5a;
+    --bg-phase-complete: #1a3a2a;
+    --bg-progress: #2a2a4a;
+    --text-primary: #e0e0e0;
+    --text-secondary: #aaa;
+    --text-muted: #999;
+    --text-dim: #777;
+    --divider: #2a2a4a;
+    --story-title: #ccc;
+    --footer-text: #666;
+    --status-planned-bg: #2a2a4a;
+    --status-planned-color: #888;
+    --status-inprogress-bg: #3a2a0a;
+    --status-complete-bg: #1a3a2a;
+  }
+  [data-theme="light"] {
+    --bg-primary: #f0f2f5;
+    --bg-card: #ffffff;
+    --bg-card-inner: #f5f5f5;
+    --bg-card-border: #e0e0e0;
+    --bg-phase-pending: #f5f5f5;
+    --bg-phase-border: #ddd;
+    --bg-phase-complete: #e8f5e9;
+    --bg-progress: #e0e0e0;
+    --text-primary: #1a1a2e;
+    --text-secondary: #555;
+    --text-muted: #666;
+    --text-dim: #999;
+    --divider: #e8e8e8;
+    --story-title: #333;
+    --footer-text: #999;
+    --status-planned-bg: #e8e8e8;
+    --status-planned-color: #666;
+    --status-inprogress-bg: #fff3e0;
+    --status-complete-bg: #e8f5e9;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--bg-primary);
+    /* US-0110 AC-0360: subtle dot-grid — scoped to dark theme only, visible but low-key. */
+    background-image: radial-gradient(circle, rgba(148,163,184,0.06) 1px, transparent 1px);
+    background-size: 24px 24px;
+    color: var(--text-primary);
+    min-height: 100vh;
+    transition: background 0.3s, color 0.3s;
+  }
+  [data-theme="light"] body { background-image: none; }
+
+  /* Header gradient — deep blue provides z-separation from dark body. */
+  .header { background: linear-gradient(135deg, #002060 0%, #003087 40%, #0050b3 100%); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 14px 32px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .header.header-blocked { border-top: 2px solid #ef4444; }
+  .header-left { display: flex; flex-direction: column; min-width: 0; }
+  .header-left .header-title { font-family: var(--font-sans); font-size: 14px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .header-left .header-subtitle { font-family: var(--font-display), 'Departure Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.6); letter-spacing: 0.04em; margin-top: 2px; }
+  .header-center { display: flex; align-items: center; gap: 8px; font-family: var(--font-display), 'Departure Mono', monospace; font-size: 12px; color: rgba(255,255,255,0.9); letter-spacing: 0.04em; white-space: nowrap; }
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  .header-right .clock { text-align: right; }
+  .header-right .clock .time { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 22px; font-weight: 600; color: #fff; font-variant-numeric: tabular-nums; }
+  .header-right .clock .label { font-size: 11px; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 1px; }
+  [data-theme="light"] .header { background: linear-gradient(135deg, #003087 0%, #0050b3 40%, #1976d2 100%); }
+  /* Light theme header keeps white text — gradient is blue in both modes. */
+  [data-theme="light"] .header-left .header-title { color: #fff; }
+  [data-theme="light"] .header-left .header-subtitle { color: rgba(255,255,255,0.75); }
+  [data-theme="light"] .header-center { color: rgba(255,255,255,0.9); }
+  [data-theme="light"] .header-right .clock .time { color: #fff; }
+  [data-theme="light"] .header-right .clock .label { color: rgba(255,255,255,0.75); }
+  [data-theme="light"] .btn-header { background: rgba(255,255,255,0.2); color: #fff; }
+  [data-theme="light"] .btn-header:hover { background: rgba(255,255,255,0.35); }
+  [data-theme="light"] #theme-toggle { background: rgba(255,255,255,0.2); color: #fff; }
+  [data-theme="light"] #theme-toggle:hover { background: rgba(255,255,255,0.35); }
+  #theme-toggle { background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px 14px; border-radius: 20px; cursor: pointer; font-size: 13px; transition: background 0.2s; }
+  #theme-toggle:hover { background: rgba(255,255,255,0.35); }
+
+  .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+
+  /* ===== US-0115 BEGIN: 6-phase pipeline timeline =====
+     Replaces the earlier .pipeline flex-row with a horizontal timeline of
+     phase "stations". Each station shows a phase number (Departure Mono
+     32px per AC-0383) above the phase name, a status icon/checkmark, and
+     either a partial-progress fill (active, AC-0385), an elapsed-time
+     footer in JetBrains Mono (complete, AC-0386), or a rotating beacon
+     (blocked, AC-0387). 1px rules connect adjacent stations.
+
+     The structural needle <div class="phase-name">[name]</div> is
+     preserved so the US-0124 harness (AC-0427) keeps passing, and stable
+     ids (phase-N, phase-N-icon/-check/-elapsed/-fill/-num) keep patchDOM()
+     from US-0111 able to mutate live without a page reload. */
+  .cycle-counter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-family: var(--font-display), 'Departure Mono', 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+  }
+  .cycle-counter .cycle-label { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+  .cycle-counter .cycle-elapsed {
+    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+  .cycle-counter .cycle-elapsed::before { content: 'ELAPSED '; color: var(--text-dim); margin-right: 6px; }
+
+  .pipeline {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    margin-bottom: 24px;
+    background: var(--bg-card);
+    border: 1px solid var(--bg-card-border);
+    border-radius: 12px;
+    padding: 16px 8px 14px;
+    position: relative;
+    overflow: hidden;
+  }
+  .phase-block {
+    flex: 1;
+    position: relative;
+    padding: 6px 10px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    min-width: 0;
+    transition: opacity 0.3s;
+    z-index: 1;
+  }
+  /* 1px horizontal rule connecting adjacent phase stations (AC-0383). The
+     connector sits at the vertical middle of the phase-number row. The
+     first station omits the left half of the connector. */
+  .phase-block::before {
+    content: '';
+    position: absolute;
+    top: 22px; /* centred on the ~32px phase-number line */
+    left: 0;
+    right: 50%;
+    height: 1px;
+    background: var(--bg-phase-border);
+    z-index: 0;
+  }
+  .phase-block::after {
+    content: '';
+    position: absolute;
+    top: 22px;
+    left: 50%;
+    right: 0;
+    height: 1px;
+    background: var(--bg-phase-border);
+    z-index: 0;
+  }
+  .phase-block:first-child::before { background: transparent; }
+  .phase-block:last-child::after { background: transparent; }
+  .phase-block.complete::before,
+  .phase-block.complete::after,
+  .phase-block.in-progress::before { background: #2E7D32; }
+
+  .phase-number {
+    font-family: var(--font-display), 'Departure Mono', 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 32px;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    padding: 0 8px;
+    background: var(--bg-card);
+    position: relative;
+    z-index: 2;
+  }
+  .phase-block.in-progress .phase-number { color: #F57C00; }
+  .phase-block.complete .phase-number { color: #34A853; }
+  [data-theme="light"] .phase-block.in-progress .phase-number { color: #E65100; }
+  [data-theme="light"] .phase-block.complete .phase-number { color: #2E7D32; }
+  .phase-block.blocked .phase-number { color: #ef4444; }
+
+  .phase-name {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+    position: relative;
+    z-index: 2;
+  }
+  .phase-block.pending .phase-name { color: var(--text-muted); }
+
+  .phase-status {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 14px;
+    opacity: 0.6;
+    z-index: 2;
+  }
+  .phase-agents { font-size: 10px; color: var(--text-muted); margin-top: 2px; letter-spacing: 0.04em; }
+  .phase-deliverables { font-size: 9px; color: var(--text-dim); margin-top: 4px; letter-spacing: 0.04em; }
+
+  /* AC-0385: partial-progress fill under the active phase. Width is set
+     inline from storiesCompleted/storiesTotal at render time and patched
+     by refreshState(). Rendered underneath the text so it reads as a
+     station "load bar", not a label. */
+  .phase-fill-track {
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    bottom: 4px;
+    height: 3px;
+    background: var(--bg-phase-pending);
+    border-radius: 2px;
+    overflow: hidden;
+    z-index: 1;
+  }
+  .phase-fill-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #F57C00, #FFB74D);
+    transition: width 0.6s ease;
+    border-radius: 2px;
+  }
+  .phase-block.complete .phase-fill-bar { background: linear-gradient(90deg, #2E7D32, #66BB6A); width: 100%; }
+
+  /* AC-0386: completed phase checkmark + elapsed footer. Shown only when
+     .complete class is present; hidden for pending/in-progress/blocked. */
+  .phase-check {
+    display: none;
+    font-size: 14px;
+    color: #34A853;
+    margin-right: 4px;
+  }
+  .phase-block.complete .phase-check { display: inline-block; }
+  [data-theme="light"] .phase-check { color: #2E7D32; }
+  .phase-elapsed {
+    display: none;
+    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
+    margin-top: 4px;
+  }
+  .phase-block.complete .phase-elapsed[data-has-elapsed="1"] { display: block; }
+
+  /* AC-0387: BLOCKED rotating beacon. A conic-gradient sweep rides over
+     the phase station on a 1s rotation. prefers-reduced-motion disables
+     the rotation and substitutes a static red overlay so the blocked
+     state is still perceivable without motion. */
+  .phase-block.blocked {
+    background: rgba(239, 68, 68, 0.08);
+    border-radius: 8px;
+  }
+  .phase-block.blocked::before,
+  .phase-block.blocked::after { background: #ef4444; }
+  .phase-block .phase-beacon {
+    display: none;
+    position: absolute;
+    inset: 0;
+    border-radius: 8px;
+    pointer-events: none;
+    z-index: 0;
+    background: conic-gradient(from 0deg, transparent 0deg, rgba(239, 68, 68, 0.35) 60deg, transparent 120deg, transparent 360deg);
+    opacity: 0.85;
+    mix-blend-mode: screen;
+  }
+  .phase-block.blocked .phase-beacon { display: block; }
+  @media (prefers-reduced-motion: no-preference) {
+    .phase-block.blocked .phase-beacon {
+      animation: phase-beacon-sweep 1s linear infinite;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .phase-block.blocked .phase-beacon {
+      animation: none;
+      background: rgba(239, 68, 68, 0.18);
+    }
+  }
+  @keyframes phase-beacon-sweep {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(245, 124, 0, 0.4); } 50% { box-shadow: 0 0 20px 4px rgba(245, 124, 0, 0.2); } }
+  /* ===== US-0115 END ===== */
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+  .grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
+  .grid-2 > * { min-width: 0; }
+
+  .card { background: var(--bg-card); border-radius: 12px; padding: 20px; border: 1px solid var(--bg-card-border); transition: background 0.3s, border-color 0.3s; }
+  .card h2 { font-size: 15px; font-weight: 700; margin-bottom: 16px; color: var(--brand-primary); text-transform: uppercase; letter-spacing: 1px; }
+
+  /* US-0110 AC-0362: tracked-out muted section label (Geist, 11px, 700, 0.14em).
+     Overrides .card h2 brand color/sizing when both classes apply. */
+  .section-header,
+  .card h2.section-header {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 0 0 12px;
+    display: block;
+  }
+
+  /* Metrics */
+  .metric-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--divider); }
+  .metric-row:last-child { border-bottom: none; }
+  .metric-label { font-size: 13px; color: var(--text-secondary); }
+  .metric-value { font-size: 20px; font-weight: 700; }
+  .metric-value.green { color: #34A853; }
+  .metric-value.red { color: var(--brand-primary); }
+  .metric-value.blue { color: #1565C0; }
+  .metric-value.orange { color: #F57C00; }
+  [data-theme="light"] .metric-value.orange { color: #E65100; }
+  [data-theme="light"] .metric-value.green { color: #2E7D32; }
+
+  /* Progress bars */
+  .progress-bar { height: 8px; background: var(--bg-progress); border-radius: 4px; overflow: hidden; margin-top: 6px; }
+  .progress-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+  .progress-fill.red { background: linear-gradient(90deg, var(--brand-primary), #F44336); }
+  .progress-fill.green { background: linear-gradient(90deg, #2E7D32, #4CAF50); }
+  .progress-fill.blue { background: linear-gradient(90deg, #1565C0, #42A5F5); }
+
+  /* US-0119 AC-0401: Agent spotlight banner — broadcast "on air" stage.
+     240px tall with a 160px portrait thumbnail, Geist Display 28px name,
+     small-caps role micro-copy, JetBrains Mono current-task and elapsed
+     ticker. Two-column flex layout (portrait | info) replaces the earlier
+     full-bleed background + absolute overlay so the composition is
+     legible at higher sizes without depending on a gradient to mask the
+     image. */
+  .agent-spotlight { position: relative; border-radius: 12px; overflow: hidden; margin-bottom: 14px; height: 240px; background: var(--bg-card-inner); display: flex; align-items: stretch; gap: 20px; padding: 20px; border: 1px solid var(--bg-card-border); }
+  .agent-spotlight.no-active { display: flex; align-items: center; justify-content: center; height: 100px; padding: 12px; }
+  .agent-spotlight.no-active .spotlight-waiting { color: var(--text-muted); font-size: 13px; font-style: italic; }
+  .spotlight-portrait-wrap { flex: 0 0 160px; width: 160px; height: 100%; border-radius: 10px; overflow: hidden; position: relative; border: 3px solid; background: var(--bg-primary); }
+  .spotlight-img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+  .spotlight-info { position: relative; flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 8px; justify-content: center; }
+  .spotlight-name { font-family: var(--font-sans); font-size: 28px; font-weight: 700; letter-spacing: -0.01em; color: var(--text-primary); display: flex; align-items: center; gap: 10px; line-height: 1.1; }
+  [data-theme="light"] .spotlight-name { color: var(--text-primary); }
+  .spotlight-role { font-family: var(--font-sans); font-size: 11px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-muted); }
+  .spotlight-task { font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace; font-size: 12px; color: var(--text-secondary); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
+  .spotlight-elapsed { font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace; font-size: 11px; color: var(--text-dim); letter-spacing: 0.04em; font-variant-numeric: tabular-nums; margin-top: 2px; }
+  .spotlight-elapsed::before { content: 'ELAPSED '; color: var(--text-muted); letter-spacing: 0.14em; }
+
+  /* US-0119 AC-0402/0403/0404/0405: Vertical station cards. Portrait on
+     top (80x80 circle, 2px agent-color ring), then name, role micro-copy,
+     status pill. Active station gets a 3px agent-color box-shadow glow
+     (variable --agent-color set inline per card) plus a pulsing green
+     "now on air" dot. Idle stations fade to 0.5 opacity. Hover replaces
+     the old filter:brightness(1.12) — invisible in light mode (BUG-0161)
+     — with a 4px agent-color outline glow. */
+  .agent-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .agent-card { position: relative; background: var(--bg-card-inner); border-radius: 10px; padding: 14px 10px; transition: transform 150ms ease, box-shadow 150ms ease, opacity 0.2s; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; border: 1px solid var(--bg-card-border); }
+  .agent-card.idle { opacity: 0.5; }
+  .agent-card:hover { transform: translateY(-1px); box-shadow: 0 0 0 4px var(--agent-color-ring, rgba(136,136,136,0.35)); opacity: 1; }
+  .agent-card.active { box-shadow: 0 0 0 3px var(--agent-color, #888), 0 6px 24px rgba(0,0,0,0.35); }
+  .agent-card.active:hover { box-shadow: 0 0 0 3px var(--agent-color, #888), 0 0 0 7px var(--agent-color-ring, rgba(136,136,136,0.35)); }
+  .agent-card .on-air-dot { position: absolute; top: 8px; right: 10px; display: none; }
+  .agent-card.active .on-air-dot { display: inline-block; }
+  #agent-portrait-popup { position: fixed; z-index: 999; width: 200px; border-radius: 14px; overflow: hidden; box-shadow: 0 12px 40px rgba(0,0,0,0.7); pointer-events: none; display: none; transition: opacity 0.15s; border: 2px solid rgba(255,255,255,0.12); }
+  #agent-portrait-popup img { width: 100%; display: block; border-radius: 12px; object-fit: cover; object-position: center top; }
+  .agent-avatar { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; object-position: center top; border: 2px solid var(--agent-color, #888); flex-shrink: 0; }
+  .agent-avatar-fallback { width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--agent-color, #888); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 32px; background: var(--bg-phase-pending); }
+  .agent-info { min-width: 0; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; }
+  .agent-name { font-family: var(--font-sans); font-size: 13px; font-weight: 700; letter-spacing: 0.01em; }
+  .agent-role { font-family: var(--font-sans); font-size: 9px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
+  .agent-status { font-size: 10px; font-weight: 600; padding: 2px 10px; border-radius: 10px; display: inline-block; text-transform: uppercase; letter-spacing: 0.06em; }
+  .agent-task { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10px; color: var(--text-secondary); margin-top: 4px; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* Story table */
+  .story-list { display: flex; flex-direction: column; gap: 10px; }
+  .epic-group { }
+  /* US-0120 AC-0409: epic header reuses .section-header tracked-out treatment
+     (Departure Mono-aligned via var(--font-display), uppercase, 0.14em) for
+     visual consistency with the other "SECTION" labels across the dashboard. */
+  .epic-header { font-family: var(--font-display), 'Departure Mono', 'SF Mono', Menlo, Consolas, monospace; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.14em; padding: 0 4px 4px; border-bottom: 1px solid var(--divider); margin-bottom: 4px; display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; }
+  .epic-header:hover { color: var(--text-secondary); }
+  .epic-toggle { font-size: 9px; margin-left: auto; opacity: 0.6; transition: transform 0.2s; }
+  .epic-group.collapsed .epic-toggle { transform: rotate(-90deg); }
+  .epic-group.collapsed .epic-stories { display: none; }
+  .epic-id { color: var(--brand-primary); font-size: 10px; font-weight: 600; letter-spacing: 0.04em; }
+  .epic-stories { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+  .epic-stories > * { min-width: 0; }
+  /* US-0120 AC-0407: 3px vertical status strip on the left of each story row.
+     Colour is swapped via .status-complete / .status-inprogress / .status-planned
+     modifiers so patchDOM() could later retune it without re-rendering. */
+  .story-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: var(--bg-card-inner); border-radius: 6px; font-size: 12px; transition: all 0.2s; min-width: 0; border-left: 3px solid #64748b; }
+  .story-row:hover { filter: brightness(1.1); }
+  .story-row.status-complete { border-left-color: #22c55e; }
+  .story-row.status-inprogress { border-left-color: #f59e0b; }
+  .story-row.status-planned { border-left-color: #64748b; }
+  .story-id { font-weight: 700; color: var(--brand-primary); width: 65px; flex-shrink: 0; }
+  /* US-0120 AC-0410: keep .story-title's min-width:0 intact (BUG-0164 fix) so
+     long titles still truncate correctly when an agent dot is present. */
+  .story-title { flex: 1; min-width: 0; color: var(--story-title); margin: 0 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px; }
+  .story-title-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .story-agent { display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0; font-size: 10px; font-weight: 600; color: var(--text-secondary); }
+  .story-agent-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+  /* US-0120 AC-0408: elapsed-time pill in JetBrains Mono next to the status
+     badge. Rendered only for In Progress stories that carry a startedAt stamp. */
+  .story-elapsed {
+    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+    flex-shrink: 0;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+    margin-right: 6px;
+  }
+  [data-theme="light"] .story-elapsed { color: #b45309; }
+  .story-status { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600; flex-shrink: 0; white-space: nowrap; }
+  .story-status.Planned { background: var(--status-planned-bg); color: var(--status-planned-color); }
+  .story-status.InProgress { background: var(--status-inprogress-bg); color: #F57C00; }
+  [data-theme="light"] .story-status.InProgress { color: #E65100; }
+  .story-status.Complete { background: var(--status-complete-bg); color: #34A853; }
+  [data-theme="light"] .story-status.Complete { color: #2E7D32; }
+
+  /* ===== US-0121 BEGIN: Terminal-aesthetic activity log ===== */
+  /* AC-0411..AC-0415: monospace log rows with agent-color left bar, bracketed
+     [HH:MM:SS] [AGENT] message format, filter chips, tail-mode toggle, and a
+     blinking-cursor empty state. Colors honour the three-token split
+     (AC-0412): muted gray timestamps, agent-color AGENT token, primary
+     foreground for the message body. */
+  .log-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+  }
+  .log-filters { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; min-width: 0; }
+  .log-filter-chip {
+    font-family: inherit;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 4px 10px;
+    border-radius: 10px;
+    border: 1px solid var(--divider);
+    background: var(--bg-card-inner);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .log-filter-chip:hover { color: var(--text-primary); border-color: var(--text-muted); }
+  .log-filter-chip.active {
+    background: rgba(66, 165, 245, 0.18);
+    color: #1565C0;
+    border-color: rgba(66, 165, 245, 0.55);
+  }
+  [data-theme="light"] .log-filter-chip.active { color: #0D47A1; background: rgba(21, 101, 192, 0.12); }
+  .log-tail-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: inherit;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    cursor: pointer;
+    user-select: none;
+  }
+  .log-tail-toggle input { margin: 0; cursor: pointer; }
+  .log-tail-toggle .tail-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--text-muted);
+    display: inline-block;
+  }
+  .log-tail-toggle.on .tail-dot { background: #34A853; box-shadow: 0 0 6px rgba(52, 168, 83, 0.6); }
+  [data-theme="light"] .log-tail-toggle.on .tail-dot { background: #2E7D32; }
+
+  .log-scroll {
+    max-height: 240px;
+    overflow-y: auto;
+    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .log-entry {
+    display: block;
+    padding: 4px 10px;
+    margin-bottom: 2px;
+    border-left: 3px solid #888;            /* AC-0411: agent-color left bar */
+    background: rgba(255, 255, 255, 0.02);
+    color: var(--text-primary);             /* AC-0412: message uses primary fg */
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-variant-numeric: tabular-nums;
+  }
+  [data-theme="light"] .log-entry { background: rgba(0, 0, 0, 0.02); }
+  .log-entry:last-child { margin-bottom: 0; }
+  .log-entry.log-hidden { display: none; }
+  .log-time { color: var(--text-muted); margin-right: 6px; }     /* AC-0412 */
+  .log-agent { font-weight: 700; margin-right: 6px; }            /* agent color inline */
+  .log-msg { color: var(--text-primary); }
+
+  /* AC-0415: empty state — blinking terminal cursor + waiting message. */
+  .log-empty {
+    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .log-cursor {
+    display: inline-block;
+    width: 0.55em;
+    height: 1em;
+    background: currentColor;
+    vertical-align: -0.1em;
+    margin-right: 2px;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .log-cursor { animation: blink-cursor 1.05s steps(2, start) infinite; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .log-cursor { animation: none; opacity: 0.85; }
+  }
+  @keyframes blink-cursor {
+    to { visibility: hidden; }
+  }
+  /* ===== US-0121 END ===== */
+
+  /* US-0111 AC-0366: live-fetch "Last updated" ticker. Rendered in JetBrains Mono
+     for a console/telemetry feel, with a .stale variant that turns red when
+     refreshState() can't reach sdlc-status.json. */
+  .last-updated {
+    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 11px;
+    color: rgba(255,255,255,0.75);
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .last-updated.stale { color: #f87171; }
+  [data-theme="light"] .last-updated { color: var(--text-muted); }
+  [data-theme="light"] .last-updated.stale { color: #dc2626; }
+
+  /* Footer */
+  .footer { text-align: center; padding: 16px; color: var(--footer-text); font-size: 11px; }
+  .footer span { color: var(--brand-primary); }
+  .footer a { color: var(--brand-primary); text-decoration: none; }
+  .footer a:hover { text-decoration: underline; }
+
+  /* About button */
+  .btn-header { background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px 14px; border-radius: 20px; cursor: pointer; font-size: 13px; transition: background 0.2s; }
+  .btn-header:hover { background: rgba(255,255,255,0.35); }
+
+  /* About modal */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--bg-card); border: 1px solid var(--bg-card-border); border-radius: 16px; padding: 28px; max-width: 720px; width: 92%; max-height: 88vh; overflow-y: auto; text-align: left; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+  .modal h3 { font-size: 18px; font-weight: 700; margin-bottom: 4px; color: var(--brand-primary); }
+  .modal p { font-size: 14px; color: var(--text-secondary); margin-bottom: 6px; }
+  .modal .author { font-size: 15px; font-weight: 600; color: var(--text-primary); margin: 16px 0 8px; }
+  .modal .repo-link { display: inline-block; margin: 10px 0 14px; background: var(--brand-primary); color: white; padding: 7px 16px; border-radius: 8px; text-decoration: none; font-size: 12px; font-weight: 600; transition: background 0.2s; }
+  .modal .repo-link:hover { filter: brightness(0.85); text-decoration: none; }
+
+  /* US-0123: two-column About modal (playbill image | mission + roster + meta) */
+  .modal .about-layout { display: grid; grid-template-columns: 200px 1fr; gap: 20px; align-items: start; }
+  .modal .about-playbill { border: 2px solid var(--divider); border-radius: 8px; padding: 8px; background: #0b0d12; display: flex; align-items: center; justify-content: center; }
+  .modal .about-playbill img { width: 100%; display: block; border-radius: 4px; }
+  .modal .about-right { min-width: 0; }
+  .modal .about-mission { font-size: 13px; color: var(--text-secondary); margin-bottom: 14px; line-height: 1.45; }
+  .modal .about-roster-title,
+  .modal .about-links-title { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted); margin: 0 0 6px; }
+  .modal .about-roster { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; margin-bottom: 14px; list-style: none; padding: 0; }
+  .modal .about-roster li { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-primary); min-width: 0; }
+  .modal .about-roster img,
+  .modal .about-roster .about-roster-fallback { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 1px solid var(--bg-card-border); background: var(--bg-card-inner); }
+  .modal .about-roster .about-roster-fallback { display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .modal .about-roster-name { font-weight: 600; font-size: 12px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .modal .about-roster-role { font-size: 10px; color: var(--text-muted); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .modal .about-roster-text { min-width: 0; display: flex; flex-direction: column; }
+  .modal .about-links { font-size: 12px; color: var(--text-secondary); margin-bottom: 14px; }
+  .modal .about-links a { color: var(--brand-primary); text-decoration: none; word-break: break-all; }
+  .modal .about-links a:hover { text-decoration: underline; }
+  .modal .about-links-row { margin-bottom: 2px; }
+
+  .modal .meta-divider { border-top: 1px solid var(--bg-card-border); padding-top: 14px; margin-top: 14px; text-align: left; font-size: 12px; color: var(--text-muted); }
+  .modal .meta-section { margin-bottom: 12px; }
+  .modal .meta-section:last-child { margin-bottom: 0; }
+  .modal .meta-supertitle { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted); margin-bottom: 6px; }
+  .modal .meta-row { padding-left: 8px; margin-bottom: 3px; }
+  .modal .meta-label { color: var(--text-muted); }
+  .modal .meta-value { color: var(--text-primary); font-family: 'JetBrains Mono', 'Menlo', monospace; font-size: 11px; }
+  .modal .meta-attribution { margin-top: 14px; font-size: 11px; color: var(--text-muted); text-align: center; }
+  .modal-close { position: absolute; top: 12px; right: 16px; background: none; border: none; color: var(--text-muted); font-size: 22px; cursor: pointer; line-height: 1; padding: 4px 8px; border-radius: 6px; transition: background 0.2s; }
+  .modal-close:hover { background: var(--bg-card-inner); color: var(--text-primary); }
+
+  /* US-0123: responsive fallback — single column below 640px */
+  @media (max-width: 640px) {
+    .modal { padding: 20px; }
+    .modal .about-layout { grid-template-columns: 1fr; gap: 14px; }
+    .modal .about-playbill { max-width: 240px; margin: 0 auto; }
+    .modal .about-roster { grid-template-columns: 1fr; }
+  }
+
+  /* ===== US-0112 BEGIN: .live-dot indicator (keep contiguous for mechanical rebase) ===== */
+  /* Reusable presence indicator — base dot + .ok/.warn/.err variants + pulse halo.
+     Color alone is not an accessibility signal (§16): callers must add aria-label+title. */
+  .live-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    vertical-align: middle;
+    margin-right: 6px;
+    background: #22c55e; /* default to ok-green so unset variant still renders */
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.3);
+    flex-shrink: 0;
+  }
+  /* OK — green #22c55e — contrast vs dark surface #16213e ≈ 6.3:1, vs light #ffffff ≈ 3.1:1 (AA large / non-text 3:1 pass) */
+  .live-dot.ok {
+    background: #22c55e;
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.3);
+  }
+  /* WARN — amber #f59e0b — contrast vs dark #16213e ≈ 7.8:1, vs light #ffffff ≈ 2.4:1 bg → uses darker halo in light mode via [data-theme="light"] override below */
+  .live-dot.warn {
+    background: #f59e0b;
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.3);
+  }
+  /* ERR — red #ef4444 — contrast vs dark #16213e ≈ 5.6:1, vs light #ffffff ≈ 3.8:1 */
+  .live-dot.err {
+    background: #ef4444;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.3);
+  }
+  /* Light-theme halo boost for warn (amber has low contrast on white) — swap halo for a slightly darker outline so the dot still reads at ≥3:1 */
+  [data-theme="light"] .live-dot.warn {
+    background: #d97706;
+    box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.35);
+  }
+  [data-theme="light"] .live-dot.ok {
+    background: #16a34a;
+    box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.35);
+  }
+  [data-theme="light"] .live-dot.err {
+    background: #dc2626;
+    box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.35);
+  }
+
+  @keyframes live-dot-pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50%      { transform: scale(1.18); opacity: 0.72; }
+  }
+
+  /* Animation only for users who haven't requested reduced motion (AGENTS.md §16). */
+  @media (prefers-reduced-motion: no-preference) {
+    .live-dot { animation: live-dot-pulse 2.4s ease-in-out infinite; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .live-dot { animation: none; }
+  }
+  /* ===== US-0112 END ===== */
+
+  /* ===== US-0122: BLOCKED full-viewport border + incident ticker ===== */
+  /* AC-0416: Red 4px border overlay shown whenever any agent or phase is
+     blocked. position:fixed + inset:0 + pointer-events:none guarantees it
+     does not intercept clicks or affect layout. Fades in/out on toggle and
+     pulses while active; prefers-reduced-motion disables the pulse. */
+  .blocked-border {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    border: 4px solid #ef4444;
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 180ms ease;
+  }
+  .blocked-border.active {
+    opacity: 1;
+    animation: blocked-border-pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes blocked-border-pulse {
+    0%, 100% { box-shadow: inset 0 0 0 0 rgba(239, 68, 68, 0.0); }
+    50%      { box-shadow: inset 0 0 24px 0 rgba(239, 68, 68, 0.35); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .blocked-border.active { animation: none; }
+  }
+
+  /* AC-0417: Incident ticker beneath the header. Uses --font-display
+     (Departure Mono from US-0110) for the terminal aesthetic, a red accent,
+     subtle shimmer while active, and display:none when hidden so it
+     collapses rather than leaves a blank strip. */
+  .incident-ticker {
+    font-family: var(--font-display), 'Departure Mono', 'SF Mono', Menlo, monospace;
+    color: #ef4444;
+    font-size: 12px;
+    padding: 6px 16px;
+    text-align: center;
+    background: rgba(239, 68, 68, 0.08);
+    border-bottom: 1px solid rgba(239, 68, 68, 0.25);
+    letter-spacing: 0.06em;
+    display: none;
+  }
+  .incident-ticker.active {
+    display: block;
+    animation: incident-shimmer 3s linear infinite;
+    background-size: 200% 100%;
+    background-image: linear-gradient(90deg, rgba(239,68,68,0.08) 0%, rgba(239,68,68,0.18) 50%, rgba(239,68,68,0.08) 100%);
+  }
+  @keyframes incident-shimmer {
+    0% { background-position: 0% 0; }
+    100% { background-position: -200% 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .incident-ticker.active { animation: none; background-image: none; }
+  }
+  /* ===== US-0122 END ===== */
+
+  /* ===== US-0118 BEGIN: Differentiated metric cards ===== */
+  /* Each of the three TELEMETRY cards tells its own story:
+     - Phase Progress: hero number + sparkline (six phase blocks),
+     - Quality: SVG doughnut keyed to coverage threshold,
+     - Reviews: avatar-chip list derived from status.log entries.
+     Semantic colors (AC-0399) match the same thresholds used by the
+     progress-fill gradients elsewhere in the dashboard. */
+  .metric-card { position: relative; display: flex; flex-direction: column; }
+  .metric-hero {
+    font-family: var(--font-display), 'Departure Mono', monospace;
+    font-size: 56px;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    margin: 4px 0 2px;
+    font-variant-numeric: tabular-nums;
+  }
+  .metric-hero .hero-sep { font-size: 36px; color: var(--text-muted); margin: 0 4px; }
+  .metric-hero .hero-den { font-size: 32px; color: var(--text-muted); }
+  .metric-hero.blue { color: #1565C0; }
+  .metric-hero.green { color: #34A853; }
+  .metric-hero.amber { color: #F57C00; }
+  .metric-hero.red { color: var(--brand-primary); }
+  [data-theme="light"] .metric-hero.green { color: #2E7D32; }
+  [data-theme="light"] .metric-hero.amber { color: #E65100; }
+
+  .metric-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    margin-bottom: 12px;
+  }
+
+  /* Sparkline: one bar per phase, height keyed to per-phase story-complete
+     ratio or a fixed "pending" baseline. Pure CSS, no Chart.js needed. */
+  .phase-sparkline { height: 32px; display: flex; gap: 4px; align-items: flex-end; margin-bottom: 12px; }
+  .phase-sparkline .spark-bar {
+    flex: 1;
+    min-height: 4px;
+    border-radius: 2px;
+    background: var(--bg-phase-pending);
+    transition: height 0.3s ease, background 0.3s ease;
+    position: relative;
+  }
+  .phase-sparkline .spark-bar.complete { background: linear-gradient(180deg, #42A5F5, #1565C0); }
+  .phase-sparkline .spark-bar.in-progress { background: linear-gradient(180deg, #F57C00, #E65100); }
+  @media (prefers-reduced-motion: no-preference) {
+    .phase-sparkline .spark-bar.in-progress { animation: spark-pulse 1.8s ease-in-out infinite; }
+  }
+  @keyframes spark-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+  /* Doughnut chart: SVG ring driven by stroke-dasharray.
+     viewBox 36x36 keeps circumference tidy (2*pi*15.9155 ~= 100). */
+  .doughnut-wrap { display: flex; justify-content: center; align-items: center; padding: 4px 0 6px; }
+  .doughnut { position: relative; width: 132px; height: 132px; }
+  .doughnut svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .doughnut .d-track { fill: none; stroke: var(--bg-phase-pending); stroke-width: 3.2; }
+  .doughnut .d-fill {
+    fill: none;
+    stroke-width: 3.2;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.6s ease, stroke 0.3s ease;
+  }
+  .doughnut .d-fill.green { stroke: #34A853; }
+  .doughnut .d-fill.amber { stroke: #F57C00; }
+  .doughnut .d-fill.red { stroke: var(--brand-primary); }
+  [data-theme="light"] .doughnut .d-fill.green { stroke: #2E7D32; }
+  [data-theme="light"] .doughnut .d-fill.amber { stroke: #E65100; }
+  .doughnut-center {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    pointer-events: none;
+  }
+  .doughnut-center .d-num {
+    font-family: var(--font-display), 'Departure Mono', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .doughnut-center .d-num.green { color: #34A853; }
+  .doughnut-center .d-num.amber { color: #F57C00; }
+  .doughnut-center .d-num.red { color: var(--brand-primary); }
+  [data-theme="light"] .doughnut-center .d-num.green { color: #2E7D32; }
+  [data-theme="light"] .doughnut-center .d-num.amber { color: #E65100; }
+  .doughnut-center .d-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    margin-top: 2px;
+  }
+
+  .quality-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-top: 6px;
+    text-align: center;
+  }
+  .quality-stats .qs-cell { padding: 4px 0; }
+  .quality-stats .qs-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    display: block;
+    margin-bottom: 3px;
+  }
+  .quality-stats .qs-val { font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .quality-stats .qs-val.green { color: #34A853; }
+  .quality-stats .qs-val.red { color: var(--brand-primary); }
+  .quality-stats .qs-val.muted { color: var(--text-secondary); }
+  [data-theme="light"] .quality-stats .qs-val.green { color: #2E7D32; }
+
+  /* Reviews list with avatar chips. Summary row on top, scrollable list below. */
+  .reviews-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .reviews-summary .rs-cell { padding: 6px 4px; border-radius: 6px; background: var(--bg-card-inner); }
+  .reviews-summary .rs-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    display: block;
+    margin-bottom: 2px;
+  }
+  .reviews-summary .rs-val {
+    font-family: var(--font-display), 'Departure Mono', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .reviews-summary .rs-approved .rs-val { color: #34A853; }
+  .reviews-summary .rs-blocked .rs-val { color: var(--brand-primary); }
+  [data-theme="light"] .reviews-summary .rs-approved .rs-val { color: #2E7D32; }
+  [data-theme="light"] .reviews-summary .rs-blocked .rs-val.zero { color: var(--text-muted); }
+  .reviews-list {
+    list-style: none; padding: 0; margin: 0;
+    display: flex; flex-direction: column; gap: 4px;
+    max-height: 172px; overflow-y: auto;
+  }
+  .review-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 2px;
+    border-bottom: 1px solid var(--divider);
+  }
+  .review-item:last-child { border-bottom: none; }
+  .review-chip {
+    width: 28px; height: 28px; border-radius: 50%;
+    object-fit: cover; object-position: center top;
+    border: 2px solid; flex-shrink: 0;
+  }
+  .review-chip-fallback {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 2px solid; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    background: var(--bg-phase-pending);
+  }
+  .review-body { flex: 1; min-width: 0; }
+  .review-line {
+    display: flex; align-items: baseline; gap: 6px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .review-agent { font-size: 12px; font-weight: 700; flex-shrink: 0; }
+  .review-target {
+    font-size: 11px; color: var(--text-secondary);
+    font-family: 'JetBrains Mono', monospace;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .review-time {
+    font-size: 10px; color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums;
+    margin-top: 1px;
+  }
+  .review-verdict {
+    font-size: 9px; font-weight: 700;
+    padding: 3px 8px; border-radius: 10px;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    font-family: 'JetBrains Mono', monospace;
+    flex-shrink: 0;
+  }
+  .review-verdict.approve { color: #34A853; background: rgba(52, 168, 83, 0.14); }
+  .review-verdict.block { color: var(--brand-primary); background: rgba(213, 43, 30, 0.16); }
+  [data-theme="light"] .review-verdict.approve { color: #2E7D32; background: rgba(46, 125, 50, 0.12); }
+  .reviews-empty {
+    font-size: 12px; color: var(--text-muted); font-style: italic;
+    padding: 16px 0; text-align: center;
+  }
+
+  /* AC-0400: hairline footer with "LAST UPDATED HH:MM" stamp. */
+  .card-footer {
+    margin-top: auto;
+    padding-top: 10px;
+    border-top: 1px solid var(--divider);
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+  }
+  .card-footer .stamp {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .card-footer .stamp b { color: var(--text-secondary); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  @media (max-width: 480px) {
+    .metric-hero { font-size: 40px; }
+    .metric-hero .hero-den { font-size: 22px; }
+    .doughnut { width: 108px; height: 108px; }
+    .doughnut-center .d-num { font-size: 22px; }
+    .reviews-summary .rs-val { font-size: 18px; }
+  }
+  /* ===== US-0118 END ===== */
+
+  /* ===== RESPONSIVE: Tablet portrait (768-1024px) ===== */
+  @media (max-width: 1024px) {
+    .header { padding: 12px 20px; }
+    .header-left .header-title { font-size: 13px; }
+    .header-center { font-size: 11px; }
+    .header-right .clock .time { font-size: 18px; }
+    .container { padding: 16px; }
+    .grid { grid-template-columns: 1fr 1fr; gap: 16px; }
+    .grid-2 { grid-template-columns: 1fr; gap: 16px; }
+    .agent-grid { grid-template-columns: repeat(3, 1fr); }
+    .epic-stories { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* ===== RESPONSIVE: Tablet landscape adjustments ===== */
+  @media (max-width: 1024px) and (orientation: landscape) {
+    .pipeline { flex-wrap: wrap; }
+    .phase-block { flex: 1 1 calc(33.33% - 4px); min-width: 120px; }
+    .phase-block::before, .phase-block::after { display: none; }
+    .grid { grid-template-columns: 1fr 1fr 1fr; }
+    .grid-2 { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* ===== RESPONSIVE: Phone landscape (up to 767px landscape) ===== */
+  @media (max-width: 767px) and (orientation: landscape) {
+    .header { padding: 10px 16px; }
+    .header-left .header-title { font-size: 13px; }
+    .header-left .header-subtitle { font-size: 10px; }
+    .header-right .clock .time { font-size: 18px; }
+    .container { padding: 10px; }
+    /* US-0115: at narrow widths wrap the 6 phases into two rows of 3 so
+       the Departure Mono 32px phase number still reads. */
+    .pipeline { flex-wrap: wrap; gap: 4px; padding: 10px 4px 8px; }
+    .phase-block { flex: 1 1 calc(33.33% - 4px); min-width: 80px; padding: 4px 6px 8px; }
+    .phase-number { font-size: 24px; }
+    .phase-name { font-size: 11px; }
+    .phase-agents { display: none; }
+    .phase-deliverables { display: none; }
+    /* 1px connector at wrap boundaries looks broken; hide on phone. */
+    .phase-block::before, .phase-block::after { display: none; }
+    .grid { grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    .grid-2 { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .card { padding: 12px; }
+    .card h2 { font-size: 12px; margin-bottom: 10px; }
+    /* US-0119: scale spotlight + station cards for phone landscape. */
+    .agent-spotlight { height: 160px; padding: 12px; gap: 12px; }
+    .spotlight-portrait-wrap { flex-basis: 110px; width: 110px; }
+    .spotlight-name { font-size: 20px; }
+    .spotlight-role { font-size: 10px; }
+    .agent-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .agent-card { padding: 10px 6px; gap: 6px; }
+    .agent-avatar, .agent-avatar-fallback { width: 56px; height: 56px; font-size: 24px; }
+    .agent-name { font-size: 11px; }
+    .epic-stories { grid-template-columns: 1fr; }
+    .log-scroll { max-height: 150px; }
+    .metric-value { font-size: 16px; }
+  }
+
+  /* ===== RESPONSIVE: Phone portrait (up to 480px) ===== */
+  @media (max-width: 480px) {
+    .header { padding: 10px 16px; flex-wrap: wrap; gap: 6px; }
+    .header-left .header-title { font-size: 13px; }
+    .header-left .header-subtitle { font-size: 10px; }
+    .header-center { display: none; }
+    .header-right { gap: 8px; }
+    .header-right .clock .time { font-size: 18px; }
+    .header-right .clock .label { font-size: 9px; }
+    .container { padding: 10px; }
+    /* US-0115: phone portrait — vertical timeline (row-per-phase), number
+       on left, name on right, 1px connectors hidden. */
+    .pipeline { flex-direction: column; gap: 6px; padding: 10px 10px; }
+    .phase-block { padding: 8px 10px; flex-direction: row; align-items: center; text-align: left; gap: 10px; }
+    .phase-block::before, .phase-block::after { display: none; }
+    .phase-number { font-size: 20px; margin-bottom: 0; padding: 0; background: transparent; }
+    .phase-block .phase-status { position: static; font-size: 16px; }
+    .phase-block .phase-name { margin-bottom: 0; font-size: 13px; flex: 1; }
+    .phase-block .phase-agents { display: none; }
+    .phase-block .phase-deliverables { display: none; }
+    .phase-fill-track { position: static; margin-left: auto; width: 40px; flex: 0 0 40px; }
+    .grid { grid-template-columns: 1fr; gap: 12px; margin-bottom: 12px; }
+    .grid-2 { grid-template-columns: 1fr; gap: 12px; }
+    .card { padding: 14px; border-radius: 10px; }
+    .card h2 { font-size: 13px; margin-bottom: 12px; }
+    /* US-0119: phone portrait — stack spotlight into vertical, smaller stations. */
+    .agent-spotlight { height: auto; min-height: 180px; padding: 12px; gap: 12px; flex-direction: column; align-items: center; }
+    .spotlight-portrait-wrap { flex-basis: 120px; width: 120px; height: 120px; }
+    .spotlight-info { align-items: center; text-align: center; }
+    .spotlight-name { font-size: 18px; }
+    .spotlight-role { font-size: 10px; }
+    .spotlight-task { display: none; }
+    .spotlight-elapsed { font-size: 10px; }
+    .agent-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .agent-card { padding: 10px 6px; gap: 6px; }
+    .agent-avatar, .agent-avatar-fallback { width: 52px; height: 52px; font-size: 22px; }
+    .agent-name { font-size: 11px; }
+    .agent-role { font-size: 9px; }
+    .agent-status { font-size: 9px; padding: 1px 6px; }
+    .agent-task { display: none; }
+    .story-grid { grid-template-columns: 1fr; gap: 4px; }
+    .story-row { padding: 8px 10px; }
+    .story-title { font-size: 11px; }
+    .metric-value { font-size: 18px; }
+    .metric-label { font-size: 12px; }
+    .log-scroll { max-height: 180px; }
+    .log-entry { font-size: 11px; }
+    .footer { font-size: 10px; padding: 12px; }
+    .modal { padding: 24px 20px; }
+  }
+
+  /* ===== RESPONSIVE: Small phone (up to 375px) ===== */
+  @media (max-width: 375px) {
+    .header-left .header-title { font-size: 12px; }
+    .agent-spotlight { min-height: 160px; }
+    .spotlight-portrait-wrap { flex-basis: 96px; width: 96px; height: 96px; }
+    .spotlight-name { font-size: 16px; }
+    .agent-grid { grid-template-columns: repeat(2, 1fr); }
+    .agent-avatar, .agent-avatar-fallback { width: 48px; height: 48px; font-size: 20px; }
+    .header-right .clock .time { font-size: 16px; }
+    #theme-toggle, .btn-header { font-size: 11px; padding: 4px 10px; }
+  }
+  /* US-0133: Cycle history cards */
+  .cycle-card { flex: 0 0 auto; background: var(--bg-card); border: 1px solid var(--bg-card-border); border-radius: 8px; padding: 8px 12px; min-width: 120px; font-family: var(--font-sans); font-size: 11px; }
+  .cycle-card-id { font-family: var(--font-display), monospace; font-size: 18px; font-weight: 700; color: var(--text-primary); }
+  .cycle-card-stat { color: var(--text-muted); margin-top: 2px; }
+  .cycle-telemetry-tile { background: var(--bg-card); border: 1px solid var(--bg-card-border); border-radius: 8px; padding: 8px 14px; text-align: center; font-family: var(--font-sans); min-width: 100px; }
+  .cycle-telemetry-tile .tile-value { font-family: var(--font-display), monospace; font-size: 20px; font-weight: 700; color: var(--text-primary); }
+  .cycle-telemetry-tile .tile-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<div class="header" id="main-header">
+  <div class="header-left">
+    <div class="header-title">My Project</div>
+    <div class="header-subtitle">Agentic AI SDLC</div>
+  </div>
+  <div class="header-center" id="header-phase-label">
+    <span class="live-dot ok" aria-label="live" title="live" id="clock-live-dot"></span>
+    <span>STANDBY</span>
+  </div>
+  <div class="header-right">
+    <div class="clock">
+      <div class="time">Apr 18, 2026, 11:17 PM</div>
+      <div class="label">Last Updated</div>
+      <!-- US-0111 AC-0366: live ticker in JetBrains Mono; refreshState() updates this every tick. -->
+      <div id="last-updated-ticker" class="last-updated" aria-live="polite">Last updated: just now</div>
+    </div>
+    <a href="plan-status.html" class="btn-header" style="text-decoration:none">&#8592; Plan Dashboard</a>
+    <button class="btn-header" onclick="document.getElementById('about-modal').classList.add('open')">ℹ️ About</button>
+    <button id="notif-btn" class="btn-header" onclick="requestAlerts()">🔔 Alerts</button>
+    <button id="theme-toggle" onclick="toggleTheme()">☀️ Light</button>
+  </div>
+</div>
+
+<!-- US-0122 AC-0417: incident ticker (hidden by default, .active shown beneath header when any agent/phase is blocked). -->
+<div id="incident-ticker" class="incident-ticker" aria-live="polite" aria-atomic="true"></div>
+
+<div class="container">
+
+
+
+<!-- Phase Pipeline — US-0115: 6-phase timeline with cycle counter. -->
+<h2 class="section-header">PIPELINE</h2>
+<!-- AC-0384: cycle counter above the timeline. The #cycle-elapsed node
+     carries data-started-at (ISO8601) and is re-rendered every second by
+     updateCycleElapsed() client-side so the HH:MM:SS ticks smoothly. -->
+<div class="cycle-counter" id="cycle-counter" aria-live="polite">
+  <span class="cycle-label">
+    <span class="live-dot ok" aria-label="live" title="live"></span>
+    <span id="cycle-label-text">STANDBY</span>
+  </span>
+  <span class="cycle-elapsed" id="cycle-elapsed" data-started-at="">00:00:00</span>
+</div>
+<div class="pipeline">
+  <div class="phase-block pending" id="phase-1" data-phase-status="pending">
+    <div class="phase-beacon" aria-hidden="true"></div>
+    <div class="phase-status" id="phase-1-icon" aria-hidden="true">⏳</div>
+    <div class="phase-number" id="phase-1-num">01</div>
+    <div class="phase-name">Blueprint</div>
+    <div class="phase-agents">Compass</div>
+    <div class="phase-deliverables">refined ACs · priority list</div>
+    <div class="phase-elapsed" id="phase-1-elapsed" data-has-elapsed="0"><span class="phase-check" id="phase-1-check" aria-label="complete">✓</span></div>
+    <div class="phase-fill-track"><div class="phase-fill-bar" id="phase-1-fill" style="width: 0%"></div></div>
+  </div>
+  <div class="phase-block pending" id="phase-2" data-phase-status="pending">
+    <div class="phase-beacon" aria-hidden="true"></div>
+    <div class="phase-status" id="phase-2-icon" aria-hidden="true">⏳</div>
+    <div class="phase-number" id="phase-2-num">02</div>
+    <div class="phase-name">Architect</div>
+    <div class="phase-agents">Keystone</div>
+    <div class="phase-deliverables">scaffold · types · service stubs</div>
+    <div class="phase-elapsed" id="phase-2-elapsed" data-has-elapsed="0"><span class="phase-check" id="phase-2-check" aria-label="complete">✓</span></div>
+    <div class="phase-fill-track"><div class="phase-fill-bar" id="phase-2-fill" style="width: 0%"></div></div>
+  </div>
+  <div class="phase-block pending" id="phase-3" data-phase-status="pending">
+    <div class="phase-beacon" aria-hidden="true"></div>
+    <div class="phase-status" id="phase-3-icon" aria-hidden="true">⏳</div>
+    <div class="phase-number" id="phase-3-num">03</div>
+    <div class="phase-name">Build</div>
+    <div class="phase-agents">Pixel · Forge · Palette</div>
+    <div class="phase-deliverables">implementation · unit tests</div>
+    <div class="phase-elapsed" id="phase-3-elapsed" data-has-elapsed="0"><span class="phase-check" id="phase-3-check" aria-label="complete">✓</span></div>
+    <div class="phase-fill-track"><div class="phase-fill-bar" id="phase-3-fill" style="width: 0%"></div></div>
+  </div>
+  <div class="phase-block pending" id="phase-4" data-phase-status="pending">
+    <div class="phase-beacon" aria-hidden="true"></div>
+    <div class="phase-status" id="phase-4-icon" aria-hidden="true">⏳</div>
+    <div class="phase-number" id="phase-4-num">04</div>
+    <div class="phase-name">Integration</div>
+    <div class="phase-agents">Pixel</div>
+    <div class="phase-deliverables">wired services · e2e flows</div>
+    <div class="phase-elapsed" id="phase-4-elapsed" data-has-elapsed="0"><span class="phase-check" id="phase-4-check" aria-label="complete">✓</span></div>
+    <div class="phase-fill-track"><div class="phase-fill-bar" id="phase-4-fill" style="width: 0%"></div></div>
+  </div>
+  <div class="phase-block pending" id="phase-5" data-phase-status="pending">
+    <div class="phase-beacon" aria-hidden="true"></div>
+    <div class="phase-status" id="phase-5-icon" aria-hidden="true">⏳</div>
+    <div class="phase-number" id="phase-5-num">05</div>
+    <div class="phase-name">Test</div>
+    <div class="phase-agents">Sentinel · Circuit</div>
+    <div class="phase-deliverables">test report · coverage</div>
+    <div class="phase-elapsed" id="phase-5-elapsed" data-has-elapsed="0"><span class="phase-check" id="phase-5-check" aria-label="complete">✓</span></div>
+    <div class="phase-fill-track"><div class="phase-fill-bar" id="phase-5-fill" style="width: 0%"></div></div>
+  </div>
+  <div class="phase-block pending" id="phase-6" data-phase-status="pending">
+    <div class="phase-beacon" aria-hidden="true"></div>
+    <div class="phase-status" id="phase-6-icon" aria-hidden="true">⏳</div>
+    <div class="phase-number" id="phase-6-num">06</div>
+    <div class="phase-name">Polish</div>
+    <div class="phase-agents">Pixel · Forge</div>
+    <div class="phase-deliverables">bug fixes · demo prep</div>
+    <div class="phase-elapsed" id="phase-6-elapsed" data-has-elapsed="0"><span class="phase-check" id="phase-6-check" aria-label="complete">✓</span></div>
+    <div class="phase-fill-track"><div class="phase-fill-bar" id="phase-6-fill" style="width: 0%"></div></div>
+  </div>
+</div>
+
+<!-- US-0130: Epic progress strip — rendered by patchDOM on each tick -->
+<div id="epic-strip" style="display:none; margin-bottom:16px; background:var(--bg-card); border:1px solid var(--bg-card-border); border-radius:10px; padding:10px 16px; font-family:var(--font-sans); font-size:12px;">
+  <div style="font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin-bottom:8px;">Epic Progress</div>
+  <div id="epic-strip-rows"></div>
+</div>
+
+<!-- US-0133: Cycle history — lap strip + telemetry -->
+<div id="cycle-history-section" style="display:none; margin-bottom:24px;">
+  <div style="font-family:var(--font-display),monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin-bottom:8px;">Cycle History</div>
+  <div id="cycle-telemetry" style="display:flex; gap:16px; margin-bottom:10px; flex-wrap:wrap;"></div>
+  <div id="cycle-lap-strip" style="display:flex; gap:8px; overflow-x:auto; padding-bottom:4px;"></div>
+</div>
+
+<!-- Metrics Row — US-0118 differentiated cards.
+     AC-0399: semantic color keyed to state: Phase=blue, Quality=green/amber/red
+     by coverage threshold, Reviews=green(approve)/red(block).
+     Metric IDs (id="metric-*") are preserved so patchDOM() from US-0111 can
+     mutate values in-place on live refresh. -->
+<h2 class="section-header">TELEMETRY</h2>
+<div class="grid">
+
+  <!-- AC-0396: Phase Progress card — hero number in Departure Mono 56px +
+       sparkline below (one bar per phase, height keyed to status). -->
+  <div class="card metric-card" id="card-phase-progress">
+    <h2>Phase Progress</h2>
+    <div class="metric-sub">Phases Complete</div>
+    <div class="metric-hero blue" id="metric-phaseHero"><span id="metric-phasesCompleteNum">0</span><span class="hero-sep">/</span><span class="hero-den" id="metric-phasesTotalNum">6</span></div>
+    <!-- Legacy ids preserved for patchDOM() compatibility. -->
+    <span id="metric-phasesComplete" hidden>0 / 6</span>
+    <div class="phase-sparkline" id="metric-phasesSparkline" aria-hidden="true">
+      <div class="spark-bar pending" data-phase-id="1" data-phase-status="pending" style="height: 18%" title="Blueprint: pending"></div>
+      <div class="spark-bar pending" data-phase-id="2" data-phase-status="pending" style="height: 18%" title="Architect: pending"></div>
+      <div class="spark-bar pending" data-phase-id="3" data-phase-status="pending" style="height: 18%" title="Build: pending"></div>
+      <div class="spark-bar pending" data-phase-id="4" data-phase-status="pending" style="height: 18%" title="Integration: pending"></div>
+      <div class="spark-bar pending" data-phase-id="5" data-phase-status="pending" style="height: 18%" title="Test: pending"></div>
+      <div class="spark-bar pending" data-phase-id="6" data-phase-status="pending" style="height: 18%" title="Polish: pending"></div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill blue" id="metric-phasesBar" style="width: 0%"></div></div>
+    <div class="metric-sub" style="margin-top: 14px">Stories Done · <span id="metric-storiesDone">0 / 0</span> · Tasks <span id="metric-tasksDone">—</span></div>
+    <div class="progress-bar"><div class="progress-fill green" id="metric-storiesBar" style="width: 0%"></div></div>
+    <div class="progress-bar" style="margin-top: 4px"><div class="progress-fill red" id="metric-tasksBar" style="width: 0%"></div></div>
+    <div class="card-footer">
+      <span class="stamp">Last updated <b id="stamp-phase-progress">23:17</b></span>
+    </div>
+  </div>
+
+  <!-- AC-0397: Quality card — SVG doughnut (circle + stroke-dasharray) with
+       center coverage number. Tint green ≥80%, amber 60–80%, red <60%. -->
+  <div class="card metric-card" id="card-quality">
+    <h2><span class="live-dot ok" aria-label="live" title="live" id="quality-live-dot"></span>Quality</h2>
+    <div class="doughnut-wrap">
+      <div class="doughnut" id="metric-coverageDoughnut" data-coverage="0" data-tone="red" role="img" aria-label="Code coverage 0%">
+        <svg viewBox="0 0 36 36">
+          <circle class="d-track" cx="18" cy="18" r="15.9155"></circle>
+          <circle class="d-fill red" id="metric-coverageDoughnutFill" cx="18" cy="18" r="15.9155"
+                  stroke-dasharray="100 100" stroke-dashoffset="100.00"></circle>
+        </svg>
+        <div class="doughnut-center">
+          <div class="d-num red" id="metric-coveragePercent">0%</div>
+          <div class="d-label">Coverage</div>
+        </div>
+      </div>
+    </div>
+    <div class="quality-stats">
+      <div class="qs-cell">
+        <span class="qs-label">Passed</span>
+        <span class="qs-val green" id="metric-testsPassed">0</span>
+      </div>
+      <div class="qs-cell">
+        <span class="qs-label">Failed</span>
+        <span class="qs-val muted" id="metric-testsFailed">0</span>
+      </div>
+      <div class="qs-cell">
+        <span class="qs-label">Bugs Open</span>
+        <span class="qs-val green" id="metric-bugsOpen">0</span>
+      </div>
+    </div>
+    <span id="metric-testsTotal" hidden>0</span>
+    <div class="card-footer">
+      <span class="stamp">Last updated <b id="stamp-quality">23:17</b></span>
+    </div>
+  </div>
+
+  <!-- AC-0398: Reviews card — compact list of recent review verdicts from
+       status.log, each row with an agent avatar chip (small circular image
+       from agents.config.json, path agents/images/optimized/AVATAR-64.png). -->
+  <div class="card metric-card" id="card-reviews">
+    <h2>Reviews</h2>
+    <div class="reviews-summary">
+      <div class="rs-cell rs-approved">
+        <span class="rs-label">Approved</span>
+        <span class="rs-val" id="metric-reviewsApproved">0</span>
+      </div>
+      <div class="rs-cell rs-blocked">
+        <span class="rs-label">Blocked</span>
+        <span class="rs-val zero" id="metric-reviewsBlocked">0</span>
+      </div>
+    </div>
+    <ul class="reviews-list" id="metric-reviewsList">
+      <li class="reviews-empty">No reviews yet — awaiting first verdict.</li>
+    </ul>
+    <span id="metric-bugsFixed" hidden>0</span>
+    <div class="card-footer">
+      <span class="stamp">Last updated <b id="stamp-reviews">23:17</b></span>
+    </div>
+  </div>
+</div>
+
+<!-- Agents + Stories -->
+<div class="grid-2">
+  <div class="card">
+    <h2 class="section-header">ACTIVE AGENT</h2>
+    <div class="agent-spotlight no-active" id="agent-spotlight">
+      <div class="spotlight-waiting">Waiting for Conductor to activate agents...</div>
+    </div>
+    <div class="agent-grid">
+      <div class="agent-card idle" id="agent-Conductor" data-agent-name="Conductor" data-agent-status="idle" style="--agent-color: #D52B1E; --agent-color-ring: #D52B1E40;"
+        onmouseenter="showAgentPortrait(this,'agents/images/optimized/conductor-320.png')" onmouseleave="hideAgentPortrait()">
+        <span class="live-dot ok on-air-dot" aria-label="now on air" title="now on air"></span>
+        <img class="agent-avatar" src="agents/images/optimized/conductor-64.png" alt="Conductor" onerror="this.onerror=function(){this.outerHTML='<div class=\'agent-avatar-fallback\'>🎯</div>'};this.src='agents/images/headshots/conductor.png'">
+        <div class="agent-info">
+          <div class="agent-name" style="color: #D52B1E">Conductor</div>
+          <div class="agent-role">Delivery Manager</div>
+          <div class="agent-status" id="agent-Conductor-status" style="background: rgba(136,136,136,0.15); color: #888">idle</div>
+          <div class="agent-task" id="agent-Conductor-task" style="display:none"></div>
+        </div>
+      </div>
+      <div class="agent-card idle" id="agent-Compass" data-agent-name="Compass" data-agent-status="idle" style="--agent-color: #1565C0; --agent-color-ring: #1565C040;"
+        onmouseenter="showAgentPortrait(this,'agents/images/optimized/compass-320.png')" onmouseleave="hideAgentPortrait()">
+        <span class="live-dot ok on-air-dot" aria-label="now on air" title="now on air"></span>
+        <img class="agent-avatar" src="agents/images/optimized/compass-64.png" alt="Compass" onerror="this.onerror=function(){this.outerHTML='<div class=\'agent-avatar-fallback\'>🧭</div>'};this.src='agents/images/headshots/compass.png'">
+        <div class="agent-info">
+          <div class="agent-name" style="color: #1565C0">Compass</div>
+          <div class="agent-role">Product Owner</div>
+          <div class="agent-status" id="agent-Compass-status" style="background: rgba(136,136,136,0.15); color: #888">idle</div>
+          <div class="agent-task" id="agent-Compass-task" style="display:none"></div>
+        </div>
+      </div>
+      <div class="agent-card idle" id="agent-Keystone" data-agent-name="Keystone" data-agent-status="idle" style="--agent-color: #6A1B9A; --agent-color-ring: #6A1B9A40;"
+        onmouseenter="showAgentPortrait(this,'agents/images/optimized/keystone-320.png')" onmouseleave="hideAgentPortrait()">
+        <span class="live-dot ok on-air-dot" aria-label="now on air" title="now on air"></span>
+        <img class="agent-avatar" src="agents/images/optimized/keystone-64.png" alt="Keystone" onerror="this.onerror=function(){this.outerHTML='<div class=\'agent-avatar-fallback\'>🏗️</div>'};this.src='agents/images/headshots/keystone.png'">
+        <div class="agent-info">
+          <div class="agent-name" style="color: #6A1B9A">Keystone</div>
+          <div class="agent-role">Architect</div>
+          <div class="agent-status" id="agent-Keystone-status" style="background: rgba(136,136,136,0.15); color: #888">idle</div>
+          <div class="agent-task" id="agent-Keystone-task" style="display:none"></div>
+        </div>
+      </div>
+      <div class="agent-card idle" id="agent-Lens" data-agent-name="Lens" data-agent-status="idle" style="--agent-color: #F57C00; --agent-color-ring: #F57C0040;"
+        onmouseenter="showAgentPortrait(this,'agents/images/optimized/lens-320.png')" onmouseleave="hideAgentPortrait()">
+        <span class="live-dot ok on-air-dot" aria-label="now on air" title="now on air"></span>
+        <img class="agent-avatar" src="agents/images/optimized/lens-64.png" alt="Lens" onerror="this.onerror=function(){this.outerHTML='<div class=\'agent-avatar-fallback\'>🔍</div>'};this.src='agents/images/headshots/lens.png'">
+        <div class="agent-info">
+          <div class="agent-name" style="color: #F57C00">Lens</div>
+          <div class="agent-role">Code Reviewer</div>
+          <div class="agent-status" id="agent-Lens-status" style="background: rgba(136,136,136,0.15); color: #888">idle</div>
+          <div class="agent-task" id="agent-Lens-task" style="display:none"></div>
+        </div>
+      </div>
+      <div class="agent-card idle" id="agent-Palette" data-agent-name="Palette" data-agent-status="idle" style="--agent-color: #00897B; --agent-color-ring: #00897B40;"
+        onmouseenter="showAgentPortrait(this,'agents/images/optimized/palette-320.png')" onmouseleave="hideAgentPortrait()">
+        <span class="live-dot ok on-air-dot" aria-label="now on air" title="now on air"></span>
+        <img class="agent-avatar" src="agents/images/optimized/palette-64.png" alt="Palette" onerror="this.onerror=function(){this.outerHTML='<div class=\'agent-avatar-fallback\'>🎨</div>'};this.src='agents/images/headshots/palette.png'">
+        <div class="agent-info">
+          <div class="agent-name" style="color: #00897B">Palette</div>
+          <div class="agent-role">UI Designer</div>
+          <div class="agent-status" id="agent-Palette-status" style="background: rgba(136,136,136,0.15); color: #888">idle</div>
+          <div class="agent-task" id="agent-Palette-task" style="display:none"></div>
+        </div>
+      </div>
+      <div class="agent-card idle" id="agent-Forge" data-agent-name="Forge" data-agent-status="idle" style="--agent-color: #C62828; --agent-color-ring: #C6282840;"
+        onmouseenter="showAgentPortrait(this,'agents/images/optimized/forge-320.png')" onmouseleave="hideAgentPortrait()">
+        <span class="live-dot ok on-air-dot" aria-label="now on air" title="now on air"></span>
+        <img class="agent-avatar" src="agents/images/optimized/forge-64.png" alt="Forge" onerror="this.onerror=function(){this.outerHTML='<div class=\'agent-avatar-fallback\'>⚒️</div>'};this.src='agents/images/headshots/forge.png'">
+        <div class="agent-info">
+          <div class="agent-name" style="color: #C62828">Forge</div>
+          <div class="agent-role">Backend Developer</div>
+          <div class="agent-status" id="agent-Forge-status" style="background: rgba(136,136,136,0.15); color: #888">idle</div>
+          <div class="agent-task" id="agent-Forge-task" style="display:none"></div>
+        </div>
+      </div>
+      <div class="agent-card idle" id="agent-Pixel" data-agent-name="Pixel" data-agent-status="idle" style="--agent-color: #283593; --agent-color-ring: #28359340;"
+        onmouseenter="showAgentPortrait(this,'agents/images/optimized/pixel-320.png')" onmouseleave="hideAgentPortrait()">
+        <span class="live-dot ok on-air-dot" aria-label="now on air" title="now on air"></span>
+        <img class="agent-avatar" src="agents/images/optimized/pixel-64.png" alt="Pixel" onerror="this.onerror=function(){this.outerHTML='<div class=\'agent-avatar-fallback\'>📱</div>'};this.src='agents/images/headshots/pixel.png'">
+        <div class="agent-info">
+          <div class="agent-name" style="color: #283593">Pixel</div>
+          <div class="agent-role">Frontend Developer</div>
+          <div class="agent-status" id="agent-Pixel-status" style="background: rgba(136,136,136,0.15); color: #888">idle</div>
+          <div class="agent-task" id="agent-Pixel-task" style="display:none"></div>
+        </div>
+      </div>
+      <div class="agent-card idle" id="agent-Sentinel" data-agent-name="Sentinel" data-agent-status="idle" style="--agent-color: #2E7D32; --agent-color-ring: #2E7D3240;"
+        onmouseenter="showAgentPortrait(this,'agents/images/optimized/sentinel-320.png')" onmouseleave="hideAgentPortrait()">
+        <span class="live-dot ok on-air-dot" aria-label="now on air" title="now on air"></span>
+        <img class="agent-avatar" src="agents/images/optimized/sentinel-64.png" alt="Sentinel" onerror="this.onerror=function(){this.outerHTML='<div class=\'agent-avatar-fallback\'>🛡️</div>'};this.src='agents/images/headshots/sentinel.png'">
+        <div class="agent-info">
+          <div class="agent-name" style="color: #2E7D32">Sentinel</div>
+          <div class="agent-role">Functional Tester</div>
+          <div class="agent-status" id="agent-Sentinel-status" style="background: rgba(136,136,136,0.15); color: #888">idle</div>
+          <div class="agent-task" id="agent-Sentinel-task" style="display:none"></div>
+        </div>
+      </div>
+      <div class="agent-card idle" id="agent-Circuit" data-agent-name="Circuit" data-agent-status="idle" style="--agent-color: #4527A0; --agent-color-ring: #4527A040;"
+        onmouseenter="showAgentPortrait(this,'agents/images/optimized/circuit-320.png')" onmouseleave="hideAgentPortrait()">
+        <span class="live-dot ok on-air-dot" aria-label="now on air" title="now on air"></span>
+        <img class="agent-avatar" src="agents/images/optimized/circuit-64.png" alt="Circuit" onerror="this.onerror=function(){this.outerHTML='<div class=\'agent-avatar-fallback\'>⚡</div>'};this.src='agents/images/headshots/circuit.png'">
+        <div class="agent-info">
+          <div class="agent-name" style="color: #4527A0">Circuit</div>
+          <div class="agent-role">Automation Tester</div>
+          <div class="agent-status" id="agent-Circuit-status" style="background: rgba(136,136,136,0.15); color: #888">idle</div>
+          <div class="agent-task" id="agent-Circuit-task" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>User Stories</h2>
+    <div class="story-list">
+
+    </div>
+  </div>
+</div>
+
+<!-- Activity Log — US-0121 terminal aesthetic -->
+<div class="card" style="margin-top: 24px">
+  <h2><span class="live-dot ok" aria-label="live" title="live" id="activity-live-dot"></span>Activity Log</h2>
+  <!-- US-0121 AC-0413/AC-0414: filter chips + tail-mode toggle. Chip clicks
+       toggle filtering via data-log-filter; tail-mode persists to
+       localStorage('dashboard-tail-mode'). -->
+  <div class="log-toolbar" role="toolbar" aria-label="Activity log controls">
+    <div class="log-filters" role="group" aria-label="Filter log entries">
+      <button class="log-filter-chip active" data-log-filter="all" aria-pressed="true">All</button>
+      <button class="log-filter-chip" data-log-filter="errors" aria-pressed="false">Errors</button>
+      <button class="log-filter-chip" data-log-filter="reviews" aria-pressed="false">Reviews</button>
+      <button class="log-filter-chip" data-log-filter="tests" aria-pressed="false">Tests</button>
+      <button class="log-filter-chip" data-log-filter="bugs" aria-pressed="false">Bugs</button>
+    </div>
+    <label class="log-tail-toggle on" id="log-tail-toggle">
+      <input type="checkbox" id="log-tail-checkbox" checked>
+      <span class="tail-dot" aria-hidden="true"></span>
+      <span>Tail mode</span>
+    </label>
+  </div>
+  <div class="log-scroll" id="log-scroll" data-active-filter="all">
+    <div class="log-empty" id="log-empty"><span class="log-cursor" aria-hidden="true"></span><span>Awaiting agent activity&hellip;</span></div>
+  </div>
+</div>
+
+</div>
+
+<!-- About Modal — US-0123: two-column (playbill image | mission + roster + meta).
+     Parity target: plan-status.html About modal (US-0109). -->
+<div id="about-modal" class="modal-overlay" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal">
+    <button class="modal-close" onclick="document.getElementById('about-modal').classList.remove('open')">&times;</button>
+    <div class="about-layout">
+      <!-- AC-0421: left column — playbill-framed team image -->
+      <div class="about-playbill">
+        <img src="agents/images/team.png" alt="Agent team" onerror="this.style.display='none'">
+      </div>
+      <!-- AC-0422: right column — mission, roster, links, version info -->
+      <div class="about-right">
+        <h3>My Project</h3>
+        <p>Agentic AI SDLC</p>
+        <p class="about-mission">
+          An agentic SDLC mission-control dashboard. Nine role-specialised AI
+          agents plan, build, review, and ship software across a six-phase
+          pipeline — Blueprint, Architect, Build, Integration, Test, Polish —
+          while this view surfaces live progress, blockers, and telemetry.
+        </p>
+        <a class="repo-link" href="https://github.com/yourorg/your-project" target="_blank" rel="noopener">View on GitHub</a>
+        <div class="about-roster-title">Agent Roster</div>
+        <ul class="about-roster">
+          <li>
+            <img src="agents/images/optimized/conductor-64.png" alt="Conductor" onerror="this.outerHTML='&lt;span class=&quot;about-roster-fallback&quot;&gt;🎯&lt;/span&gt;'">
+            <span class="about-roster-text">
+              <span class="about-roster-name">Conductor</span>
+              <span class="about-roster-role">Delivery Manager</span>
+            </span>
+          </li><li>
+            <img src="agents/images/optimized/compass-64.png" alt="Compass" onerror="this.outerHTML='&lt;span class=&quot;about-roster-fallback&quot;&gt;🧭&lt;/span&gt;'">
+            <span class="about-roster-text">
+              <span class="about-roster-name">Compass</span>
+              <span class="about-roster-role">Product Owner</span>
+            </span>
+          </li><li>
+            <img src="agents/images/optimized/keystone-64.png" alt="Keystone" onerror="this.outerHTML='&lt;span class=&quot;about-roster-fallback&quot;&gt;🏗️&lt;/span&gt;'">
+            <span class="about-roster-text">
+              <span class="about-roster-name">Keystone</span>
+              <span class="about-roster-role">Architect</span>
+            </span>
+          </li><li>
+            <img src="agents/images/optimized/lens-64.png" alt="Lens" onerror="this.outerHTML='&lt;span class=&quot;about-roster-fallback&quot;&gt;🔍&lt;/span&gt;'">
+            <span class="about-roster-text">
+              <span class="about-roster-name">Lens</span>
+              <span class="about-roster-role">Code Reviewer</span>
+            </span>
+          </li><li>
+            <img src="agents/images/optimized/palette-64.png" alt="Palette" onerror="this.outerHTML='&lt;span class=&quot;about-roster-fallback&quot;&gt;🎨&lt;/span&gt;'">
+            <span class="about-roster-text">
+              <span class="about-roster-name">Palette</span>
+              <span class="about-roster-role">UI Designer</span>
+            </span>
+          </li><li>
+            <img src="agents/images/optimized/forge-64.png" alt="Forge" onerror="this.outerHTML='&lt;span class=&quot;about-roster-fallback&quot;&gt;⚒️&lt;/span&gt;'">
+            <span class="about-roster-text">
+              <span class="about-roster-name">Forge</span>
+              <span class="about-roster-role">Backend Developer</span>
+            </span>
+          </li><li>
+            <img src="agents/images/optimized/pixel-64.png" alt="Pixel" onerror="this.outerHTML='&lt;span class=&quot;about-roster-fallback&quot;&gt;📱&lt;/span&gt;'">
+            <span class="about-roster-text">
+              <span class="about-roster-name">Pixel</span>
+              <span class="about-roster-role">Frontend Developer</span>
+            </span>
+          </li><li>
+            <img src="agents/images/optimized/sentinel-64.png" alt="Sentinel" onerror="this.outerHTML='&lt;span class=&quot;about-roster-fallback&quot;&gt;🛡️&lt;/span&gt;'">
+            <span class="about-roster-text">
+              <span class="about-roster-name">Sentinel</span>
+              <span class="about-roster-role">Functional Tester</span>
+            </span>
+          </li><li>
+            <img src="agents/images/optimized/circuit-64.png" alt="Circuit" onerror="this.outerHTML='&lt;span class=&quot;about-roster-fallback&quot;&gt;⚡&lt;/span&gt;'">
+            <span class="about-roster-text">
+              <span class="about-roster-name">Circuit</span>
+              <span class="about-roster-role">Automation Tester</span>
+            </span>
+          </li>
+        </ul>
+        <div class="about-links-title">Links</div>
+        <div class="about-links">
+          <div class="about-links-row"><span class="meta-label">Repo:</span> <a href="https://github.com/yourorg/your-project" target="_blank" rel="noopener">https://github.com/yourorg/your-project</a></div>
+          <div class="about-links-row"><span class="meta-label">Dashboard:</span> <a href="dashboard.html">dashboard.html</a></div>
+          <div class="about-links-row"><span class="meta-label">Plan:</span> <a href="plan-status.html">plan-status.html</a></div>
+        </div>
+        <div class="meta-divider">
+          <div class="meta-section">
+            <div class="meta-supertitle">This Project</div>
+            <div class="meta-row"><span class="meta-label">Name:</span> <span class="meta-value">plan-visualizer</span></div>
+            <div class="meta-row"><span class="meta-label">Version:</span> <span class="meta-value">v1.5.25</span></div>
+            <div class="meta-row"><span class="meta-label">Branch:</span> <span class="meta-value">feature/epic-0019-effectiveness</span></div>
+            <div class="meta-row"><span class="meta-label">Build:</span> <span class="meta-value">#549 c33242b</span></div>
+          </div>
+          <div class="meta-section">
+            <div class="meta-supertitle">Dashboard Tool</div>
+            <div class="meta-row"><span class="meta-label">View:</span> <span class="meta-value">Agentic SDLC Dashboard</span></div>
+            <div class="meta-row"><span class="meta-label">Generated by:</span> <span class="meta-value">plan-visualizer v1.5.25</span></div>
+            <div class="meta-row"><span class="meta-label">Generated at:</span> <span class="meta-value">Apr 18, 2026, 11:17 PM</span></div>
+          </div>
+          <div class="meta-attribution">Implemented by Kamal Syed</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  Claude Code Agentic AI SDLC | Last refreshed: Apr 18, 2026, 11:17 PM
+</div>
+
+<script>
+function toggleTheme() {
+  const html = document.documentElement;
+  const current = html.getAttribute('data-theme');
+  const next = current === 'light' ? 'dark' : 'light';
+  html.setAttribute('data-theme', next);
+  localStorage.setItem('dashboard-theme', next);
+  updateToggleButton(next);
+}
+function updateToggleButton(theme) {
+  const btn = document.getElementById('theme-toggle');
+  if (btn) btn.textContent = theme === 'light' ? '🌙 Dark' : '☀️ Light';
+}
+(function() {
+  var saved = localStorage.getItem('dashboard-theme') || 'dark';
+  if (saved === 'light') document.documentElement.setAttribute('data-theme', 'light');
+  updateToggleButton(saved);
+})();
+// Shared client-side helpers used by patchDOM() and related rendering code.
+// escH: HTML-escape a value before inserting into innerHTML (prevents XSS).
+function escH(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+// US-0121 helpers: _formatLogTime formats ISO timestamps as HH:MM:SS;
+// _logCategory classifies log entries for colour coding.
+function _formatLogTime(raw) {
+  var t = String(raw || '').trim();
+  if (!t) return '--:--:--';
+  // ISO format (contains 'T'): parse as Date and extract HH:MM:SS
+  if (t.indexOf('T') !== -1) {
+    var d = new Date(t);
+    if (!isNaN(d)) {
+      var h = ('00' + d.getHours()).slice(-2);
+      var m = ('00' + d.getMinutes()).slice(-2);
+      var s = ('00' + d.getSeconds()).slice(-2);
+      return h + ':' + m + ':' + s;
+    }
+  }
+  var parts = t.split(':');
+  if (parts.length < 2) return t;
+  var h = ('00' + parts[0]).slice(-2);
+  var m = ('00' + (parts[1] || '00')).slice(-2);
+  var s = ('00' + (parts[2] || '00')).slice(-2);
+  return h + ':' + m + ':' + s;
+}
+function _logCategory(message) {
+  var m = String(message || '').toLowerCase();
+  if (m.indexOf('error') !== -1) return 'errors';
+  if (m.indexOf('review') !== -1) return 'reviews';
+  if (m.indexOf('test') !== -1) return 'tests';
+  if (m.indexOf('bug') !== -1) return 'bugs';
+  return 'other';
+}
+
+// US-0121 AC-0414: Tail mode — scroll newest entries into view. Newest is
+// at the top in this log (server renders .slice(-20).reverse()), so tailing
+// means scrollTop = 0. Persisted in localStorage.
+function _isTailModeOn() {
+  var v = localStorage.getItem('dashboard-tail-mode');
+  // Default ON when unset.
+  return v === null || v === 'true';
+}
+function _applyTailIfOn() {
+  if (!_isTailModeOn()) return;
+  var scroll = document.getElementById('log-scroll');
+  if (scroll) scroll.scrollTop = 0;
+}
+
+// US-0121 AC-0413: Apply the currently-selected filter chip. Rows are shown
+// when data-category === active filter, or when filter === 'all'.
+function _applyLogFilter(filter) {
+  var scroll = document.getElementById('log-scroll');
+  if (!scroll) return;
+  scroll.setAttribute('data-active-filter', filter);
+  var rows = scroll.querySelectorAll('.log-entry');
+  for (var i = 0; i < rows.length; i++) {
+    var cat = rows[i].getAttribute('data-category') || 'other';
+    if (filter === 'all' || cat === filter) rows[i].classList.remove('log-hidden');
+    else rows[i].classList.add('log-hidden');
+  }
+}
+
+// Initialize filter chips + tail-mode toggle once the DOM is parsed.
+(function() {
+  function init() {
+    var chips = document.querySelectorAll('.log-filter-chip');
+    chips.forEach(function(chip) {
+      chip.addEventListener('click', function() {
+        var filter = chip.getAttribute('data-log-filter') || 'all';
+        chips.forEach(function(c) {
+          var on = c === chip;
+          c.classList.toggle('active', on);
+          c.setAttribute('aria-pressed', on ? 'true' : 'false');
+        });
+        _applyLogFilter(filter);
+      });
+    });
+
+    var tailOn = _isTailModeOn();
+    var toggleWrap = document.getElementById('log-tail-toggle');
+    var toggleBox = document.getElementById('log-tail-checkbox');
+    if (toggleWrap) toggleWrap.classList.toggle('on', tailOn);
+    if (toggleBox) {
+      toggleBox.checked = tailOn;
+      toggleBox.addEventListener('change', function() {
+        var on = !!toggleBox.checked;
+        localStorage.setItem('dashboard-tail-mode', on ? 'true' : 'false');
+        if (toggleWrap) toggleWrap.classList.toggle('on', on);
+        if (on) _applyTailIfOn();
+      });
+    }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+
+// ── Dashboard Alert System ────────────────────────────────────────────────────
+// Detects state changes across page refreshes using localStorage, then plays
+// a Web Audio tone and fires a browser Notification when attention is needed.
+var DASH_SNAPSHOT = {"currentPhase":0,"bugsOpen":0,"agentStatuses":{"Conductor":"idle","Compass":"idle","Keystone":"idle","Lens":"idle","Palette":"idle","Forge":"idle","Pixel":"idle","Sentinel":"idle","Circuit":"idle"},"phaseStatuses":[{"id":1,"status":"pending"},{"id":2,"status":"pending"},{"id":3,"status":"pending"},{"id":4,"status":"pending"},{"id":5,"status":"pending"},{"id":6,"status":"pending"}],"pipelineComplete":false};
+
+// US-0111: expose agent colors to the client so patchDOM() can restyle
+// agent-status pills when an agent transitions between idle/active/blocked
+// without the server-side renderer being involved.
+var DASH_AGENT_COLORS = {"Conductor":"#D52B1E","Compass":"#1565C0","Keystone":"#6A1B9A","Lens":"#F57C00","Palette":"#00897B","Forge":"#C62828","Pixel":"#283593","Sentinel":"#2E7D32","Circuit":"#4527A0"};
+
+// US-0122 AC-0419 / BUG-0160: Singleton AudioContext. Previously, every
+// playBeep() call instantiated a new AudioContext, leaking a context on each
+// invocation — over many BLOCKED transitions this accumulated dozens of
+// orphaned contexts. getAudioContext() lazily constructs a single module-level
+// context on first use, then reuses it for all subsequent beeps. If the
+// browser suspended the context due to its autoplay policy, we call resume()
+// on demand (any beep triggered by an alert state change implies a user-
+// initiated path they opted into).
+var _audioCtx = null;
+function getAudioContext() {
+  if (!_audioCtx) {
+    var Ctor = window.AudioContext || window.webkitAudioContext;
+    if (!Ctor) return null;
+    try {
+      _audioCtx = new Ctor();
+    } catch (e) {
+      return null;
+    }
+  }
+  return _audioCtx;
+}
+
+function playBeep(frequency, duration, type) {
+  try {
+    var ctx = getAudioContext();
+    if (!ctx) return;
+    if (ctx.state === 'suspended') { ctx.resume(); }
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = type || 'sine';
+    osc.frequency.value = frequency || 880;
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (duration || 0.5));
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + (duration || 0.5));
+  } catch(e) {}
+}
+
+function sendNotification(title, body) {
+  if (localStorage.getItem('dashboard-alerts-enabled') !== 'true') return;
+  if (Notification && Notification.permission === 'granted') {
+    new Notification(title, { body: body, icon: '' });
+  }
+}
+
+function _updateAlertBtn(enabled) {
+  var btn = document.getElementById('notif-btn');
+  if (!btn) return;
+  if (enabled) {
+    btn.textContent = '🔔 On';
+    btn.style.background = 'rgba(52,168,83,0.25)';
+  } else {
+    btn.textContent = '🔕 Off';
+    btn.style.background = '';
+  }
+}
+
+function requestAlerts() {
+  if (!('Notification' in window)) {
+    alert('Browser notifications not supported.');
+    return;
+  }
+  var currentlyEnabled = localStorage.getItem('dashboard-alerts-enabled') === 'true';
+  var perm = Notification.permission;
+
+  // If already enabled → turn off
+  if (currentlyEnabled) {
+    localStorage.setItem('dashboard-alerts-enabled', 'false');
+    _updateAlertBtn(false);
+    return;
+  }
+
+  // If permission denied by browser → inform user
+  if (perm === 'denied') {
+    alert('Notifications are blocked by your browser. Enable them in browser settings, then try again.');
+    return;
+  }
+
+  // Request permission if needed, then enable
+  function enable() {
+    localStorage.setItem('dashboard-alerts-enabled', 'true');
+    _updateAlertBtn(true);
+    playBeep(660, 0.2);
+    setTimeout(function() { playBeep(880, 0.3); }, 220);
+  }
+
+  if (perm === 'granted') {
+    enable();
+  } else {
+    Notification.requestPermission().then(function(p) {
+      if (p === 'granted') { enable(); }
+      else { alert('Notification permission denied.'); }
+    });
+  }
+}
+
+// US-0111 AC-0363: the alert-delta logic was previously an IIFE that ran once
+// at page load, reading DASH_SNAPSHOT from its closure. It is now a named
+// function callable on every refreshState() tick with the latest fetched
+// status, so notifications and audio cues continue to fire on live state
+// transitions — not only the first render.
+//
+// Input shape matches the DASH_SNAPSHOT structure produced at generate time:
+//   { currentPhase, bugsOpen, agentStatuses, phaseStatuses, pipelineComplete }
+// We derive it here from the raw sdlc-status.json on each tick so the function
+// is self-contained and callers can pass the untransformed fetch result.
+function buildSnapshotFromStatus(status) {
+  var phases = (status && status.phases) || [];
+  var agents = (status && status.agents) || {};
+  var metrics = (status && status.metrics) || {};
+  var complete = phases.filter(function(p) { return p.status === 'complete'; }).length;
+  var agentStatuses = {};
+  Object.keys(agents).forEach(function(k) { agentStatuses[k] = (agents[k] || {}).status; });
+  return {
+    currentPhase: status && status.currentPhase,
+    bugsOpen: typeof metrics.bugsOpen === 'number' ? metrics.bugsOpen : null,
+    agentStatuses: agentStatuses,
+    phaseStatuses: phases.map(function(p) { return { id: p.id, status: p.status }; }),
+    pipelineComplete: phases.length > 0 && complete === phases.length,
+  };
+}
+
+// US-0122 AC-0416/AC-0417: derive "is anything blocked right now?" from
+// either a raw sdlc-status.json object (agents keyed by name, phases array)
+// or a pre-built snapshot (agentStatuses / phaseStatuses maps). Returns
+// { blocked: bool, agent: string|null, story: string|null } so the ticker
+// can render "INCIDENT HH:MM:SS · <agent> blocked on <story>" with correct
+// first-blocked-wins selection. When multiple agents/phases are blocked we
+// report the FIRST one encountered (chosen for simplicity over rotation —
+// DM agent briefing called this out explicitly). Falls back through agent
+// currentStory → currentTask → 'unknown' per AC-0417.
+function _findFirstBlocked(status) {
+  if (!status) return { blocked: false, agent: null, story: null };
+  var agents = status.agents || null;
+  var agentStatuses = status.agentStatuses || null;
+  var phases = status.phases || null;
+  var phaseStatuses = status.phaseStatuses || null;
+
+  if (agents && typeof agents === 'object') {
+    var names = Object.keys(agents);
+    for (var i = 0; i < names.length; i++) {
+      var a = agents[names[i]] || {};
+      if (a.status === 'blocked') {
+        return {
+          blocked: true,
+          agent: names[i],
+          story: a.currentStory || a.currentTask || 'unknown',
+        };
+      }
+    }
+  } else if (agentStatuses && typeof agentStatuses === 'object') {
+    var keys = Object.keys(agentStatuses);
+    for (var j = 0; j < keys.length; j++) {
+      if (agentStatuses[keys[j]] === 'blocked') {
+        return { blocked: true, agent: keys[j], story: 'unknown' };
+      }
+    }
+  }
+
+  if (phases && phases.length) {
+    for (var k = 0; k < phases.length; k++) {
+      if (phases[k] && phases[k].status === 'blocked') {
+        return { blocked: true, agent: phases[k].id || 'phase', story: 'unknown' };
+      }
+    }
+  } else if (phaseStatuses && phaseStatuses.length) {
+    for (var m = 0; m < phaseStatuses.length; m++) {
+      if (phaseStatuses[m] && phaseStatuses[m].status === 'blocked') {
+        return { blocked: true, agent: phaseStatuses[m].id || 'phase', story: 'unknown' };
+      }
+    }
+  }
+
+  return { blocked: false, agent: null, story: null };
+}
+
+function _pad2(n) { return n < 10 ? '0' + n : String(n); }
+
+function _applyBlockedUI(info) {
+  var border = document.getElementById('blocked-border');
+  var ticker = document.getElementById('incident-ticker');
+  if (info.blocked) {
+    if (border) border.classList.add('active');
+    if (ticker) {
+      var d = new Date();
+      var hhmmss = _pad2(d.getHours()) + ':' + _pad2(d.getMinutes()) + ':' + _pad2(d.getSeconds());
+      ticker.textContent = 'INCIDENT ' + hhmmss + ' · ' + info.agent + ' blocked on ' + info.story;
+      ticker.classList.add('active');
+    }
+  } else {
+    if (border) border.classList.remove('active');
+    if (ticker) ticker.classList.remove('active');
+  }
+}
+
+function runAlertCheck(status) {
+  // US-0122 AC-0416/AC-0417: toggle the BLOCKED overlay + incident ticker on
+  // every tick, independent of the delta-alert path below. This runs first
+  // so the UI reflects current state even when no transition fired audio.
+  _applyBlockedUI(_findFirstBlocked(status));
+
+  var prevRaw = localStorage.getItem('dashboard-prev-snapshot');
+  // Accept either a pre-built snapshot (initial DASH_SNAPSHOT) or a raw
+  // sdlc-status.json object from refreshState().
+  var curr = (status && (status.phaseStatuses || status.agentStatuses))
+    ? status
+    : buildSnapshotFromStatus(status);
+
+  // Always save current as baseline for next refresh.
+  try {
+    localStorage.setItem('dashboard-prev-snapshot', JSON.stringify(curr));
+  } catch (e) {
+    // localStorage can be unavailable (Safari private mode, quota) — log
+    // but do not break the tick; alerts simply reset on the next load.
+    console.warn('[runAlertCheck] localStorage write failed', { t: new Date().toISOString(), err: String(e) });
+  }
+
+  if (!prevRaw) return; // first visit — no comparison yet
+  var prev;
+  try { prev = JSON.parse(prevRaw); } catch(e) { return; }
+
+  var alerts = [];
+
+  // Phase completion (a phase just became complete)
+  if (curr.phaseStatuses && prev.phaseStatuses) {
+    curr.phaseStatuses.forEach(function(p) {
+      var old = prev.phaseStatuses.find(function(x) { return x.id === p.id; });
+      if (old && old.status !== 'complete' && p.status === 'complete') {
+        alerts.push({ title: 'Phase ' + p.id + ' Complete', body: 'Phase ' + p.id + ' just finished — ready for your review.', urgent: false });
+      }
+    });
+  }
+
+  // Agent blocked or needs review
+  if (curr.agentStatuses && prev.agentStatuses) {
+    Object.keys(curr.agentStatuses).forEach(function(agent) {
+      var newStatus = curr.agentStatuses[agent];
+      var oldStatus = prev.agentStatuses[agent];
+      if (oldStatus !== newStatus && (newStatus === 'blocked' || newStatus === 'needs-review')) {
+        alerts.push({ title: agent + ' Needs Attention', body: agent + ' status changed to: ' + newStatus, urgent: true });
+      }
+    });
+  }
+
+  // Pipeline just completed
+  if (!prev.pipelineComplete && curr.pipelineComplete) {
+    alerts.push({ title: 'Pipeline Complete!', body: 'All phases done — pipeline finished. Return to terminal.', urgent: false });
+  }
+
+  // New bugs opened
+  if (typeof prev.bugsOpen === 'number' && typeof curr.bugsOpen === 'number' && curr.bugsOpen > prev.bugsOpen) {
+    var delta = curr.bugsOpen - prev.bugsOpen;
+    alerts.push({ title: delta + ' New Bug' + (delta > 1 ? 's' : '') + ' Opened', body: 'Bugs open: ' + curr.bugsOpen + '. Your attention may be needed.', urgent: false });
+  }
+
+  if (alerts.length === 0) return;
+
+  var hasUrgent = alerts.some(function(a) { return a.urgent; });
+
+  // Play audio: urgent = two-tone alarm, normal = single ding
+  if (hasUrgent) {
+    playBeep(440, 0.25, 'square');
+    setTimeout(function() { playBeep(880, 0.25, 'square'); }, 280);
+    setTimeout(function() { playBeep(440, 0.25, 'square'); }, 560);
+  } else {
+    playBeep(880, 0.3);
+    setTimeout(function() { playBeep(1046, 0.4); }, 350);
+  }
+
+  // Browser notifications
+  alerts.forEach(function(a) { sendNotification(a.title, a.body); });
+}
+
+// Page-load initialization: restore button state and fire initial delta check
+// against DASH_SNAPSHOT so behavior matches the previous IIFE exactly.
+(function() {
+  _updateAlertBtn(localStorage.getItem('dashboard-alerts-enabled') === 'true');
+  runAlertCheck(DASH_SNAPSHOT);
+})();
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Agent portrait popup
+var _portraitPopup = document.getElementById('agent-portrait-popup');
+var _portraitImg = _portraitPopup ? _portraitPopup.querySelector('img') : null;
+
+function showAgentPortrait(cardEl, imgSrc) {
+  if (!_portraitPopup || !_portraitImg) return;
+  _portraitImg.src = imgSrc;
+  _portraitPopup.style.display = 'block';
+  var rect = cardEl.getBoundingClientRect();
+  var popupW = 200;
+  var left = rect.right + 14;
+  if (left + popupW > window.innerWidth - 8) left = rect.left - popupW - 14;
+  var top = rect.top;
+  if (top + 200 > window.innerHeight - 8) top = window.innerHeight - 208;
+  _portraitPopup.style.left = left + 'px';
+  _portraitPopup.style.top = top + 'px';
+}
+
+function hideAgentPortrait() {
+  if (_portraitPopup) _portraitPopup.style.display = 'none';
+}
+
+// ── US-0111: Live fetch-and-patch ─────────────────────────────────────────────
+// Replaces the prior 30s location.reload() loop (BUG-0159). Every 5s we fetch
+// docs/sdlc-status.json, diff its fields against the current DOM, and patch
+// only the changed nodes — preserving scroll position, open modals, filter
+// chip state, and portrait popups (AC-0364, AC-0365, AC-0367, AC-0434).
+
+var _lastFetchedAt = Date.now();
+var _lastFetchOk = true;
+
+function _agentStatusColors(stat) {
+  // Mirrors the server-side renderer's pill color logic so patchDOM() can
+  // recompute styles client-side when an agent transitions. Keep in sync
+  // with the statusBg/statusColor ternaries in generateHTML.
+  if (stat === 'active') return { bg: 'rgba(52,168,83,0.2)', color: '#34A853' };
+  if (stat === 'complete') return { bg: 'rgba(21,101,192,0.15)', color: '#1565C0' };
+  if (stat === 'blocked' || stat === 'needs-review') return { bg: 'rgba(239,68,68,0.18)', color: '#ef4444' };
+  return { bg: 'rgba(136,136,136,0.15)', color: '#888' };
+}
+
+function patchDOM(status) {
+  if (!status || typeof status !== 'object') return;
+
+  // --- Project identity (US-0128) ------------------------------------------
+  var proj = status.project;
+  if (proj) {
+    var titleEl = document.querySelector('.header-title');
+    if (titleEl && proj.name) titleEl.textContent = proj.name;
+    var subtitleEl = document.querySelector('.header-subtitle');
+    if (subtitleEl && proj.description) subtitleEl.textContent = proj.description;
+    var aboutH3 = document.querySelector('.about-right h3');
+    if (aboutH3 && proj.name) aboutH3.textContent = proj.name;
+    var aboutDesc = document.querySelector('.about-right p');
+    if (aboutDesc && proj.description) aboutDesc.textContent = proj.description;
+    if (proj.repoUrl) {
+      document.querySelectorAll('a.repo-link, .about-links-row a[href*="yourorg"]').forEach(function(a) {
+        a.href = proj.repoUrl;
+      });
+    }
+    if (!document._projectTitlePatched && proj.name) {
+      document.title = proj.name + ' — SDLC Live Dashboard';
+      document._projectTitlePatched = true;
+    }
+  }
+
+  // --- Epic progress strip (US-0130) ----------------------------------------
+  var epics = status.epics || {};
+  var epicKeys = Object.keys(epics);
+  var epicStripEl = document.getElementById('epic-strip');
+  var epicRowsEl = document.getElementById('epic-strip-rows');
+  if (epicStripEl && epicRowsEl) {
+    if (epicKeys.length === 0) {
+      epicStripEl.style.display = 'none';
+    } else {
+      epicStripEl.style.display = '';
+      epicRowsEl.innerHTML = epicKeys.map(function(id) {
+        var ep = epics[id];
+        var pct = ep.storiesTotal > 0 ? Math.round((ep.storiesCompleted / ep.storiesTotal) * 100) : 0;
+        var badgeColor = ep.status === 'complete' ? '#34A853' : ep.status === 'in-progress' ? '#F57C00' : '#888';
+        return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">'
+          + '<span style="font-weight:600;color:var(--text-primary);min-width:90px;">' + escH(id) + '</span>'
+          + '<span style="color:var(--text-secondary);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escH(ep.name || '') + '</span>'
+          + '<span style="min-width:60px;text-align:right;color:var(--text-muted);">' + ep.storiesCompleted + '/' + ep.storiesTotal + '</span>'
+          + '<div style="width:80px;height:4px;background:var(--bg-progress);border-radius:2px;overflow:hidden;">'
+          + '<div style="height:100%;width:' + pct + '%;background:' + badgeColor + ';border-radius:2px;transition:width 0.6s;"></div>'
+          + '</div>'
+          + '<span style="min-width:32px;text-align:right;color:' + badgeColor + ';font-weight:600;">' + pct + '%</span>'
+          + '</div>';
+      }).join('');
+    }
+  }
+
+  // --- Cycle history (US-0133) -----------------------------------------------
+  var cycles = Array.isArray(status.cycles) ? status.cycles : [];
+  var cycleSection = document.getElementById('cycle-history-section');
+  var lapStrip = document.getElementById('cycle-lap-strip');
+  var telemetryRow = document.getElementById('cycle-telemetry');
+  if (cycleSection && lapStrip && telemetryRow) {
+    if (cycles.length === 0) {
+      cycleSection.style.display = 'none';
+    } else {
+      cycleSection.style.display = '';
+      var avgTotalSec = cycles.reduce(function(sum, c) {
+        var total = Object.values(c.phaseDurations || {}).reduce(function(a, b) { return a + b; }, 0);
+        return sum + total;
+      }, 0) / cycles.length;
+      var avgMin = Math.round(avgTotalSec / 60);
+      var today = new Date().toDateString();
+      var cyclesToday = cycles.filter(function(c) { return c.completedAt && new Date(c.completedAt).toDateString() === today; }).length;
+      var successRate = cycles.length > 0 ? Math.round((cycles.filter(function(c) { return (c.testsFailed || 0) === 0; }).length / cycles.length) * 100) : 0;
+      telemetryRow.innerHTML = [
+        { label: 'Cycles Total', value: cycles.length },
+        { label: 'Today', value: cyclesToday },
+        { label: 'Avg Cycle (min)', value: avgMin || '–' },
+        { label: 'Success Rate', value: successRate + '%' },
+      ].map(function(t) {
+        return '<div class="cycle-telemetry-tile"><div class="tile-value">' + escH(String(t.value)) + '</div><div class="tile-label">' + escH(t.label) + '</div></div>';
+      }).join('');
+      var recent = cycles.slice(-10).reverse();
+      var prevLen = parseInt(lapStrip.getAttribute('data-cycle-count') || '0', 10);
+      lapStrip.innerHTML = recent.map(function(c) {
+        return '<div class="cycle-card">'
+          + '<div class="cycle-card-id">#' + escH(String(c.id)) + '</div>'
+          + '<div class="cycle-card-stat">' + escH(String(c.storiesCompleted)) + ' stories</div>'
+          + '<div class="cycle-card-stat">' + escH((c.coveragePercent || 0).toFixed(1)) + '% cov</div>'
+          + '</div>';
+      }).join('');
+      if (cycles.length > prevLen && prevLen > 0 && typeof playBeep === 'function') {
+        playBeep(523, 0.15);
+        setTimeout(function() { playBeep(659, 0.15); }, 150);
+        setTimeout(function() { playBeep(784, 0.2); }, 300);
+      }
+      lapStrip.setAttribute('data-cycle-count', String(cycles.length));
+    }
+  }
+
+  // --- Phase timeline (US-0115) ---------------------------------------------
+  // Toggle status class, swap status icon, flip blocked beacon, reveal
+  // completed-phase checkmark + elapsed footer, and resize the active
+  // phase's partial-progress fill — all without remounting the block.
+  var phases = Array.isArray(status.phases) ? status.phases : [];
+  var _storiesTotal = (status.metrics && status.metrics.storiesTotal) || 0;
+  var _storiesDone = (status.metrics && status.metrics.storiesCompleted) || 0;
+  var _fillRatio = _storiesTotal > 0 ? Math.max(0.04, Math.min(1, _storiesDone / _storiesTotal)) : 0.5;
+  var _fillPct = Math.round(_fillRatio * 100);
+  phases.forEach(function(p) {
+    var el = document.getElementById('phase-' + p.id);
+    if (!el) return;
+    var prevStatus = el.getAttribute('data-phase-status');
+    if (prevStatus !== p.status) {
+      // Replace only the status class on the block — preserves the block
+      // element itself (and hence any inner elements, event listeners, ids).
+      el.classList.remove('pending', 'in-progress', 'complete', 'blocked');
+      el.classList.add(p.status);
+      el.setAttribute('data-phase-status', p.status);
+      var iconEl = document.getElementById('phase-' + p.id + '-icon');
+      if (iconEl) {
+        iconEl.textContent = p.status === 'complete' ? '✅'
+          : p.status === 'in-progress' ? '🔄'
+          : p.status === 'blocked' ? '⚠️'
+          : '⏳';
+      }
+    }
+    // US-0115 AC-0385/0386: patch fill width + elapsed-footer text.
+    var fillEl = document.getElementById('phase-' + p.id + '-fill');
+    if (fillEl) {
+      var newWidth = p.status === 'in-progress' ? _fillPct
+        : p.status === 'complete' ? 100
+        : 0;
+      fillEl.style.width = newWidth + '%';
+    }
+    var elapsedEl = document.getElementById('phase-' + p.id + '-elapsed');
+    if (elapsedEl) {
+      if (p.status === 'complete' && p.startedAt && p.completedAt) {
+        var ms = Date.parse(p.completedAt) - Date.parse(p.startedAt);
+        if (isFinite(ms) && ms >= 0) {
+          var totalS = Math.floor(ms / 1000);
+          var h = Math.floor(totalS / 3600);
+          var mi = Math.floor((totalS % 3600) / 60);
+          var se = totalS % 60;
+          function pad2(n) { return (n < 10 ? '0' : '') + n; }
+          var newElapsed = pad2(h) + ':' + pad2(mi) + ':' + pad2(se);
+          // Preserve the .phase-check span sibling; only rewrite the
+          // trailing text node so the ✓ keeps its styling.
+          var checkSpan = elapsedEl.querySelector('.phase-check');
+          elapsedEl.textContent = '';
+          if (checkSpan) elapsedEl.appendChild(checkSpan);
+          elapsedEl.appendChild(document.createTextNode(newElapsed));
+          elapsedEl.setAttribute('data-has-elapsed', '1');
+        }
+      } else if (p.status !== 'complete') {
+        elapsedEl.setAttribute('data-has-elapsed', '0');
+      }
+    }
+  });
+
+  // --- Agents ----------------------------------------------------------------
+  var agents = status.agents || {};
+  Object.keys(agents).forEach(function(name) {
+    var a = agents[name] || {};
+    var card = document.getElementById('agent-' + name);
+    if (!card) return;
+    var prevStatus = card.getAttribute('data-agent-status');
+    if (prevStatus !== a.status) {
+      card.setAttribute('data-agent-status', a.status || '');
+      // US-0119 AC-0403/0404: toggle active (3px color glow + on-air dot)
+      // and idle (0.5 opacity) classes so the station visually reflects
+      // the live status without re-rendering the card.
+      if (a.status === 'active') card.classList.add('active');
+      else card.classList.remove('active');
+      var isIdle = a.status !== 'active' && a.status !== 'complete'
+        && a.status !== 'blocked' && a.status !== 'needs-review';
+      if (isIdle) card.classList.add('idle');
+      else card.classList.remove('idle');
+      var pill = document.getElementById('agent-' + name + '-status');
+      if (pill) {
+        pill.textContent = a.status || '';
+        var colors = _agentStatusColors(a.status);
+        pill.style.background = colors.bg;
+        pill.style.color = colors.color;
+      }
+    }
+    var taskEl = document.getElementById('agent-' + name + '-task');
+    if (taskEl) {
+      var newTask = a.currentTask || '';
+      if (taskEl.textContent !== newTask) taskEl.textContent = newTask;
+      taskEl.style.display = newTask ? '' : 'none';
+    }
+  });
+
+  // --- Spotlight (US-0119 AC-0401) ------------------------------------------
+  // Keep the live spotlight panel in sync with the active (non-Conductor)
+  // agent. We only patch text/attribute fields — the portrait <img> is NOT
+  // swapped because the server-side renderer already chose the correct
+  // agent at generation time, and swapping image sources here would cause
+  // the 5s refresh loop to thrash the browser cache on every tick.
+  var spotlightEl = document.getElementById('agent-spotlight');
+  if (spotlightEl) {
+    var spotlightAgentName = spotlightEl.getAttribute('data-agent-name');
+    if (spotlightAgentName && agents[spotlightAgentName]) {
+      var sa = agents[spotlightAgentName];
+      var spotlightTask = document.getElementById('agent-spotlight-task');
+      if (spotlightTask) {
+        var newSpotlightTask = sa.currentTask || 'Awaiting assignment';
+        if (spotlightTask.textContent !== newSpotlightTask) spotlightTask.textContent = newSpotlightTask;
+      }
+      var spotlightElapsedEl = document.getElementById('agent-spotlight-elapsed');
+      if (spotlightElapsedEl && sa.startedAt) {
+        spotlightElapsedEl.setAttribute('data-started-at', sa.startedAt);
+      }
+    }
+  }
+
+  // --- Metrics ---------------------------------------------------------------
+  var m = status.metrics || {};
+  function setText(id, value) {
+    var el = document.getElementById(id);
+    if (el && el.textContent !== String(value)) el.textContent = String(value);
+  }
+  var phasesCompleteCount = phases.filter(function(p) { return p.status === 'complete'; }).length;
+  var phasePct = phases.length > 0 ? Math.round((phasesCompleteCount / phases.length) * 100) : 0;
+  setText('metric-phasesComplete', phasesCompleteCount + ' / ' + phases.length);
+  // US-0118: hero number (split across two spans) + sparkline bars keyed to phase status.
+  setText('metric-phasesCompleteNum', phasesCompleteCount);
+  setText('metric-phasesTotalNum', phases.length);
+  var spark = document.getElementById('metric-phasesSparkline');
+  if (spark) {
+    var bars = spark.querySelectorAll('.spark-bar');
+    phases.forEach(function(p, i) {
+      var bar = bars[i];
+      if (!bar) return;
+      var prevStatus = bar.getAttribute('data-phase-status');
+      if (prevStatus !== p.status) {
+        bar.setAttribute('data-phase-status', p.status || '');
+        bar.className = 'spark-bar ' + (p.status || 'pending');
+        var h = p.status === 'complete' ? 100 : p.status === 'in-progress' ? 60 : 18;
+        bar.style.height = h + '%';
+      }
+    });
+  }
+  var phasesBar = document.getElementById('metric-phasesBar');
+  if (phasesBar) phasesBar.style.width = phasePct + '%';
+
+  if (typeof m.storiesCompleted === 'number' && typeof m.storiesTotal === 'number') {
+    setText('metric-storiesDone', m.storiesCompleted + ' / ' + m.storiesTotal);
+    var storiesBar = document.getElementById('metric-storiesBar');
+    if (storiesBar) {
+      var sp = m.storiesTotal > 0 ? Math.round((m.storiesCompleted / m.storiesTotal) * 100) : 0;
+      storiesBar.style.width = sp + '%';
+    }
+  }
+  if (typeof m.tasksTotal === 'number') {
+    setText('metric-tasksDone', m.tasksTotal > 0 ? (m.tasksCompleted + ' / ' + m.tasksTotal) : '—');
+    var tasksBar = document.getElementById('metric-tasksBar');
+    if (tasksBar) {
+      var tp = m.tasksTotal > 0 ? Math.round((m.tasksCompleted / m.tasksTotal) * 100) : 0;
+      tasksBar.style.width = tp + '%';
+    }
+  }
+  if (typeof m.testsPassed === 'number') setText('metric-testsPassed', m.testsPassed);
+  if (typeof m.testsFailed === 'number') setText('metric-testsFailed', m.testsFailed);
+  if (typeof m.testsTotal === 'number') setText('metric-testsTotal', m.testsTotal);
+  if (typeof m.coveragePercent === 'number') {
+    setText('metric-coveragePercent', m.coveragePercent + '%');
+    // US-0118 AC-0397: re-tint the SVG doughnut + hero number by threshold.
+    var tone = m.coveragePercent >= 80 ? 'green' : m.coveragePercent >= 60 ? 'amber' : 'red';
+    var dough = document.getElementById('metric-coverageDoughnut');
+    var fill = document.getElementById('metric-coverageDoughnutFill');
+    var dnum = document.getElementById('metric-coveragePercent');
+    if (fill) {
+      fill.setAttribute('class', 'd-fill ' + tone);
+      var pct = Math.max(0, Math.min(100, m.coveragePercent));
+      fill.setAttribute('stroke-dashoffset', (100 - pct).toFixed(2));
+    }
+    if (dnum) dnum.className = 'd-num ' + tone;
+    if (dough) { dough.setAttribute('data-tone', tone); dough.setAttribute('data-coverage', String(m.coveragePercent)); dough.setAttribute('aria-label', 'Code coverage ' + m.coveragePercent + '%'); }
+  }
+  if (typeof m.bugsOpen === 'number') setText('metric-bugsOpen', m.bugsOpen);
+  if (typeof m.bugsFixed === 'number') setText('metric-bugsFixed', m.bugsFixed);
+  if (typeof m.reviewsApproved === 'number') setText('metric-reviewsApproved', m.reviewsApproved);
+  if (typeof m.reviewsBlocked === 'number') setText('metric-reviewsBlocked', m.reviewsBlocked);
+
+  // US-0118 AC-0400: bump the per-card "LAST UPDATED HH:MM" stamps each
+  // successful refresh. Uses the browser's local time (24h) for consistency
+  // with the header clock's tabular numerics.
+  var _hhmm = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+  ['stamp-phase-progress', 'stamp-quality', 'stamp-reviews'].forEach(function(id) { setText(id, _hhmm); });
+
+  // --- Activity log (append-only diff by data-log-key) -----------------------
+  // US-0121 AC-0411/AC-0413/AC-0414: terminal-aesthetic rows with
+  // data-category for filter chips, bracketed [HH:MM:SS] [AGENT] format, and
+  // tail-mode scroll-to-top when enabled.
+  var scroll = document.getElementById('log-scroll');
+  if (scroll && Array.isArray(status.log)) {
+    var existing = {};
+    scroll.querySelectorAll('[data-log-key]').forEach(function(el) {
+      existing[el.getAttribute('data-log-key')] = true;
+    });
+    // Server rendered newest-first (.slice(-20).reverse()). Match that ordering:
+    // prepend newer entries to the top so user-facing order stays identical.
+    var recent = status.log.slice(-20);
+    var toPrepend = [];
+    var activeFilter = scroll.getAttribute('data-active-filter') || 'all';
+    for (var i = recent.length - 1; i >= 0; i--) {
+      var entry = recent[i] || {};
+      var key = (entry.time || '') + '|' + (entry.agent || '') + '|' + (entry.message || '');
+      if (existing[key]) continue;
+      var color = (DASH_AGENT_COLORS && DASH_AGENT_COLORS[entry.agent]) || '#888';
+      var category = _logCategory(entry.message);
+      var timeDisplay = _formatLogTime(entry.time);
+      var agentToken = entry.agent || 'System';
+
+      var div = document.createElement('div');
+      div.className = 'log-entry';
+      div.setAttribute('data-log-key', key);
+      div.setAttribute('data-category', category);
+      div.style.borderLeftColor = color;
+
+      var timeSpan = document.createElement('span');
+      timeSpan.className = 'log-time';
+      timeSpan.setAttribute('data-log-time', entry.time || '');
+      timeSpan.textContent = '[' + timeDisplay + ']';
+
+      var agentSpan = document.createElement('span');
+      agentSpan.className = 'log-agent';
+      agentSpan.style.color = color;
+      agentSpan.textContent = '[' + agentToken + ']';
+
+      var msgSpan = document.createElement('span');
+      msgSpan.className = 'log-msg';
+      msgSpan.textContent = entry.message || '';
+
+      div.appendChild(timeSpan);
+      div.appendChild(agentSpan);
+      div.appendChild(msgSpan);
+
+      // Honour the currently-selected filter chip for newly-added rows.
+      if (activeFilter !== 'all' && category !== activeFilter) {
+        div.classList.add('log-hidden');
+      }
+      toPrepend.push(div);
+    }
+    if (toPrepend.length > 0) {
+      // First real entry replaces the empty-state placeholder.
+      var emptyEl = document.getElementById('log-empty');
+      if (emptyEl && emptyEl.parentNode) emptyEl.parentNode.removeChild(emptyEl);
+      // Insert newest-first at the very top.
+      toPrepend.reverse().forEach(function(el) {
+        scroll.insertBefore(el, scroll.firstChild);
+      });
+      _applyTailIfOn();
+    }
+  }
+}
+
+function _formatElapsed(ms) {
+  var s = Math.max(0, Math.floor(ms / 1000));
+  if (s < 5) return 'just now';
+  if (s < 60) return s + ' seconds ago';
+  var m = Math.floor(s / 60);
+  if (m < 60) return m + ' minute' + (m === 1 ? '' : 's') + ' ago';
+  var h = Math.floor(m / 60);
+  return h + ' hour' + (h === 1 ? '' : 's') + ' ago';
+}
+
+function updateLastUpdatedTicker(stale) {
+  var el = document.getElementById('last-updated-ticker');
+  if (!el) return;
+  var ago = _formatElapsed(Date.now() - _lastFetchedAt);
+  if (stale) {
+    el.textContent = 'Last updated: ' + ago + ' · STALE';
+    el.classList.add('stale');
+  } else {
+    el.textContent = 'Last updated: ' + ago;
+    el.classList.remove('stale');
+  }
+}
+
+async function refreshState() {
+  try {
+    var res = await fetch('./sdlc-status.json', { cache: 'no-store' });
+    if (!res || !res.ok) throw new Error('HTTP ' + (res ? res.status : 'no response'));
+    var newStatus = await res.json();
+    patchDOM(newStatus);
+    patchCycleCounter(newStatus);
+    runAlertCheck(newStatus);
+    _lastFetchedAt = Date.now();
+    _lastFetchOk = true;
+    updateLastUpdatedTicker(false);
+  } catch (e) {
+    _lastFetchOk = false;
+    // Structured warning per AGENTS.md §13/§18 — no silent failure.
+    console.warn('[refreshState] fetch failed', { t: new Date().toISOString(), err: String(e) });
+    updateLastUpdatedTicker(true);
+  }
+}
+
+// 5-second fetch tick (AC-0434 allows 5–10s; pick 5s for snappier feedback
+// on state transitions. US-0122 may tune further based on cost/battery impact).
+setInterval(refreshState, 5000);
+
+// 1-second ticker update for smooth "Last updated: N seconds ago" display
+// without re-fetching. Cheap DOM text update only.
+setInterval(function() { updateLastUpdatedTicker(!_lastFetchOk); }, 1000);
+
+// US-0119 AC-0401: spotlight elapsed-time ticker. Reads data-started-at
+// (ISO 8601) off #agent-spotlight-elapsed and re-renders "HH:MM:SS" every
+// second. When the field is absent/empty, the element shows IDLE so the
+// spotlight gracefully degrades before agents get a startedAt field.
+function _formatElapsedClock(ms) {
+  if (!isFinite(ms) || ms < 0) ms = 0;
+  var s = Math.floor(ms / 1000);
+  var h = Math.floor(s / 3600);
+  var m = Math.floor((s % 3600) / 60);
+  var sec = s % 60;
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  return pad(h) + ':' + pad(m) + ':' + pad(sec);
+}
+function updateSpotlightElapsed() {
+  var el = document.getElementById('agent-spotlight-elapsed');
+  if (!el) return;
+  var startedAt = el.getAttribute('data-started-at') || '';
+  if (!startedAt) {
+    if (el.textContent !== 'IDLE') el.textContent = 'IDLE';
+    return;
+  }
+  var startMs = Date.parse(startedAt);
+  if (isNaN(startMs)) {
+    if (el.textContent !== 'IDLE') el.textContent = 'IDLE';
+    return;
+  }
+  el.textContent = _formatElapsedClock(Date.now() - startMs);
+}
+// Run immediately so the first tick isn't a 1s delay of "—" text.
+updateSpotlightElapsed();
+setInterval(updateSpotlightElapsed, 1000);
+
+// US-0115 AC-0384: cycle-counter elapsed ticker.
+// The #cycle-elapsed node carries data-started-at (ISO 8601) set server-side
+// (see generateHTML cycleStartedAt). When present, render HH:MM:SS since
+// that instant; when absent, show 00:00:00 so the UI still has tabular
+// numerics instead of collapsing. patchCycleCounter() (called from
+// refreshState) keeps the label text + startedAt attr in sync with the
+// latest status.json without replacing the node.
+function updateCycleElapsed() {
+  var el = document.getElementById('cycle-elapsed');
+  if (!el) return;
+  var startedAt = el.getAttribute('data-started-at') || '';
+  if (!startedAt) {
+    if (el.textContent !== '00:00:00') el.textContent = '00:00:00';
+    return;
+  }
+  var startMs = Date.parse(startedAt);
+  if (isNaN(startMs)) {
+    if (el.textContent !== '00:00:00') el.textContent = '00:00:00';
+    return;
+  }
+  el.textContent = _formatElapsedClock(Date.now() - startMs);
+}
+function patchCycleCounter(status) {
+  if (!status || typeof status !== 'object') return;
+  var storiesMap = status.stories || {};
+  var entries = Object.keys(storiesMap).map(function(id) { return Object.assign({ id: id }, storiesMap[id] || {}); });
+  var completedCount = entries.filter(function(s) { return /^(Complete|Done)$/i.test(s.status); }).length;
+  var active = null;
+  for (var i = 0; i < entries.length; i++) {
+    if (/^In[ -]?Progress$/i.test(entries[i].status)) { active = entries[i]; break; }
+  }
+  var cycleN = completedCount + 1;
+  var labelText = active ? ('CYCLE ' + cycleN + ' · IMPLEMENTING ' + active.id) : 'STANDBY';
+  var labelEl = document.getElementById('cycle-label-text');
+  if (labelEl && labelEl.textContent !== labelText) labelEl.textContent = labelText;
+  var elapsedEl = document.getElementById('cycle-elapsed');
+  if (elapsedEl) {
+    // Prefer active story startedAt, fall back to the in-progress phase's startedAt.
+    var started = (active && active.startedAt) || '';
+    if (!started) {
+      var phases = Array.isArray(status.phases) ? status.phases : [];
+      for (var j = 0; j < phases.length; j++) {
+        if (phases[j].status === 'in-progress' && phases[j].startedAt) { started = phases[j].startedAt; break; }
+      }
+    }
+    var prev = elapsedEl.getAttribute('data-started-at') || '';
+    if (prev !== started) elapsedEl.setAttribute('data-started-at', started);
+  }
+}
+// Kick the ticker immediately and every second, mirroring updateSpotlightElapsed.
+updateCycleElapsed();
+setInterval(updateCycleElapsed, 1000);
+</script>
+
+<div id="agent-portrait-popup"><img src="" alt="Agent portrait" onerror="this.style.display='none'"></div>
+
+<!-- US-0122 AC-0416: full-viewport red border overlay toggled on BLOCKED state. -->
+<div id="blocked-border" class="blocked-border"></div>
+
+</body>
+</html>

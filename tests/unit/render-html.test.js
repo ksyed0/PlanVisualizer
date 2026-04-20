@@ -1,5 +1,5 @@
 'use strict';
-const { renderHtml, badge } = require('../../tools/lib/render-html');
+const { renderHtml, badge, sparkline } = require('../../tools/lib/render-html');
 
 const sampleData = {
   epics: [{ id: 'EPIC-0001', title: 'Code Editing', status: 'In Progress', releaseTarget: 'MVP', dependencies: [] }],
@@ -18,7 +18,17 @@ const sampleData = {
   ],
   tasks: [],
   testCases: [],
-  bugs: [],
+  bugs: [
+    {
+      id: 'BUG-0001',
+      title: 'Test critical bug',
+      severity: 'Critical',
+      status: 'Open',
+      relatedStory: 'US-0001',
+      fixBranch: 'bugfix/BUG-0001-test',
+      epicId: 'EPIC-0001',
+    },
+  ],
   lessons: [],
   costs: {
     'US-0001': { projectedUsd: 800, aiCostUsd: 0.47, inputTokens: 50000, outputTokens: 14000 },
@@ -46,7 +56,7 @@ describe('renderHtml', () => {
   it('includes project name', () => expect(html).toMatch(/NomadCode/));
   it('includes generated timestamp', () => expect(html).toMatch(/2026-03-10/));
   it('includes commit SHA', () => expect(html).toMatch(/abc1234/));
-  it('includes total projected cost', () => expect(html).toMatch(/\$800/));
+  it('includes total projected cost', () => expect(html).toMatch(/currency-sign[^>]*>\$<\/span>800/));
   it('includes coverage percent', () => expect(html).toMatch(/81/));
   it('includes epic filter option', () => expect(html).toMatch(/EPIC-0001/));
   it('includes all 7 tabs', () => {
@@ -59,6 +69,17 @@ describe('renderHtml', () => {
     expect(html).toMatch(/Lessons/);
   });
   it('marks at-risk story with warning', () => expect(html).toMatch(/at-risk|⚠/));
+  it('BUG-0157: search-body element appears before its addEventListener call in the script', () => {
+    const bodyPos = html.indexOf('id="search-body"');
+    const listenerPos = html.indexOf("getElementById('search-body').addEventListener");
+    expect(bodyPos).toBeGreaterThan(-1);
+    expect(listenerPos).toBeGreaterThan(-1);
+    expect(bodyPos).toBeLessThan(listenerPos);
+  });
+  it('BUG-0099: applyFilters uses nextElementSibling for TR bug-epic-headers', () => {
+    expect(html).toContain('nextElementSibling');
+    expect(html).not.toContain("header.closest('tbody') || header.closest('.bug-epic-card')");
+  });
 });
 
 describe('renderHtml — bugs tab', () => {
@@ -101,7 +122,7 @@ describe('renderHtml — traceability tab', () => {
     };
     const html = renderHtml(dataWithTCs);
     expect(html).toMatch(/TC-0001/);
-    expect(html).toMatch(/Not linked/);
+    expect(html).toMatch(/trace-caption/);
   });
 });
 
@@ -321,7 +342,7 @@ describe('renderHtml — traceability with Fail TC', () => {
       ],
     };
     const html = renderHtml(dataFailTC);
-    expect(html).toMatch(/bg-red-100/);
+    expect(html).toMatch(/tc-dot-danger/);
   });
 });
 
@@ -428,7 +449,7 @@ describe('renderHtml — sticky header (BUG-0004 regression)', () => {
 describe('renderHtml — projected cost from data.costs (BUG-0006)', () => {
   it('uses data.costs.projectedUsd not TSHIRT_HOURS', () => {
     const html = renderHtml(sampleData);
-    expect(html).toMatch(/\$800/);
+    expect(html).toMatch(/currency-sign[^>]*>\$<\/span>800/);
   });
 });
 
@@ -608,10 +629,10 @@ describe('renderHtml — Bugs tab lesson hyperlink (US-0032)', () => {
     lessonEncoded: 'No',
   };
 
-  it('renders ✓ L-0010 ↗ as link when lesson ID present', () => {
+  it('renders lesson-pill link when lesson ID present (AC-0354)', () => {
     const d = { ...sampleData, bugs: [bugWithLessonId] };
     const html = renderHtml(d);
-    expect(html).toMatch(/&#10003;.*L-0010.*&#8599;/);
+    expect(html).toMatch(/lesson-pill.*L-0010|L-0010.*lesson-pill/);
     expect(html).toContain("'lesson-col-'");
     expect(html).toContain("'L-0010'");
   });
@@ -620,7 +641,8 @@ describe('renderHtml — Bugs tab lesson hyperlink (US-0032)', () => {
     const d = { ...sampleData, bugs: [bugWithYesNoId] };
     const html = renderHtml(d);
     expect(html).toMatch(/&#10003;|✓/);
-    expect(html).not.toMatch(/&#8599;|↗/);
+    // No lesson-pill anchor should be present (only plain ✓ text)
+    expect(html).not.toMatch(/<span class="lesson-pill-id">/);
   });
 
   it('renders ○ when lesson not encoded', () => {
@@ -852,7 +874,10 @@ describe('renderHtml — hero numbers (US-0099)', () => {
 
   it('renders Coverage doughnut overlay using hero-num (default, not sm)', () => {
     // Inside the Test Coverage card: overlay div wraps the percentage in .hero-num.
-    const covOverlayMatch = html.match(/Test Coverage<\/h3>[\s\S]*?<div class="hero-num [^"]*">([^<]+)<\/div>/);
+    // US-0103: h3 replaced with chart-header-rule + display-title span
+    const covOverlayMatch = html.match(
+      /display-title[^>]*>Test Coverage[\s\S]*?<div class="hero-num [^"]*">([^<]+)<\/div>/,
+    );
     expect(covOverlayMatch).not.toBeNull();
     // Overlay uses the default (large) variant, not hero-num-sm.
     expect(covOverlayMatch[0]).not.toMatch(/hero-num-sm/);
@@ -876,13 +901,850 @@ describe('renderHtml — hero numbers (US-0099)', () => {
     };
     const budgetHtml = renderHtml(dataWithBudget);
     // Each of the three totals must be wrapped in hero-num.
-    expect(budgetHtml).toMatch(/Total Budget<\/div>\s*<div class="hero-num[^"]*">\$10,000<\/div>/);
-    expect(budgetHtml).toMatch(/Spent<\/div>\s*<div class="hero-num[^"]*">\$3,500<\/div>/);
-    expect(budgetHtml).toMatch(/Remaining<\/div>\s*<div class="hero-num[^"]*">\$6,500<\/div>/);
+    expect(budgetHtml).toMatch(
+      /Total Budget<\/div>\s*<div class="hero-num[^"]*"><span class="currency-sign">\$<\/span>10,000<\/div>/,
+    );
+    expect(budgetHtml).toMatch(
+      /Spent<\/div>\s*<div class="hero-num[^"]*"><span class="currency-sign">\$<\/span>3,500<\/div>/,
+    );
+    expect(budgetHtml).toMatch(
+      /Remaining<\/div>\s*<div class="hero-num[^"]*"><span class="currency-sign">\$<\/span>6,500<\/div>/,
+    );
   });
 
   it('omits budget hero-num block when hasBudget=false', () => {
     // sampleData has no budget key, so hasBudget is falsy → the Total Budget section must not render.
     expect(html).not.toMatch(/Total Budget<\/div>\s*<div class="hero-num/);
+  });
+});
+
+describe('US-0098 — staggered animation', () => {
+  it('rendered HTML contains @keyframes fadeInUp', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toMatch(/@keyframes fadeInUp/);
+  });
+
+  it('rendered HTML contains .anim-stagger with animation-delay calc', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toMatch(/\.anim-stagger/);
+    expect(html).toMatch(/animation-delay:\s*calc\(var\(--i/);
+  });
+
+  it('rendered HTML contains --i custom property on elements', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toMatch(/--i:/);
+  });
+
+  it('rendered HTML contains anim-stagger class', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toMatch(/anim-stagger/);
+  });
+
+  it('no JS animation library is used', () => {
+    const html = renderHtml(sampleData);
+    expect(html).not.toMatch(/gsap|anime\.js|framer/);
+  });
+
+  it('includes prefers-reduced-motion guard for .anim-stagger', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toContain('@media (prefers-reduced-motion: reduce)');
+    expect(html).toContain('.anim-stagger { animation: none');
+  });
+
+  it('costs tab epic accordion headers have anim-stagger', () => {
+    const html = renderHtml(sampleData);
+    const costsIdx = html.indexOf('id="tab-costs"');
+    const costsHtml = html.slice(costsIdx, costsIdx + 30000);
+    // accordion header rows are uniquely identifiable by cursor-pointer + select-none
+    expect(costsHtml).toMatch(/cursor-pointer select-none anim-stagger/);
+  });
+
+  it('traceability story rows have anim-stagger', () => {
+    const html = renderHtml({
+      ...sampleData,
+      testCases: [{ id: 'TC-0001', relatedStory: 'US-0001', status: 'Pass' }],
+    });
+    const traceIdx = html.indexOf('id="tab-traceability"');
+    const traceHtml = html.slice(traceIdx, traceIdx + 30000);
+    expect(traceHtml).toContain('anim-stagger');
+  });
+
+  it('bugs tab rows have anim-stagger', () => {
+    const html = renderHtml(sampleData);
+    const bugsIdx = html.indexOf('id="tab-bugs"');
+    const bugsHtml = html.slice(bugsIdx, bugsIdx + 20000);
+    expect(bugsHtml).toContain('anim-stagger');
+  });
+
+  it('lesson cards have anim-stagger', () => {
+    const html = renderHtml({
+      ...sampleData,
+      lessons: [{ id: 'L-0001', title: 'Test', rule: 'Do X', context: 'Ctx', date: '2026-01', bugIds: [] }],
+    });
+    const lessonsIdx = html.indexOf('id="tab-lessons"');
+    const lessonsHtml = html.slice(lessonsIdx, lessonsIdx + 20000);
+    expect(lessonsHtml).toContain('anim-stagger');
+  });
+
+  it('showTab JS re-triggers anim-stagger on tab switch', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toContain("classList.remove('anim-stagger')");
+    expect(html).toContain('offsetWidth');
+    expect(html).toContain("classList.add('anim-stagger')");
+  });
+});
+
+describe('US-0107 — Lessons card polish', () => {
+  const lessonData = {
+    ...sampleData,
+    lessons: [
+      {
+        id: 'L-0001',
+        title: 'Validate security tokens',
+        rule: 'Always validate security tokens before use',
+        context: 'Learned during auth implementation',
+        date: '2026-01',
+        bugIds: ['BUG-0001'],
+      },
+    ],
+    bugs: [
+      {
+        id: 'BUG-0001',
+        title: 'Token not validated',
+        severity: 'High',
+        status: 'Fixed',
+        relatedStory: 'US-0001',
+        fixBranch: 'bugfix/BUG-0001',
+        lessonEncoded: 'Yes — L-0001',
+      },
+    ],
+  };
+
+  it('lesson cards have lesson-accent-bar class', () => {
+    const html = renderHtml(lessonData);
+    expect(html).toMatch(/lesson-accent-bar/);
+  });
+
+  it('security keyword produces lock icon', () => {
+    const html = renderHtml(lessonData);
+    expect(html).toMatch(/🔒/);
+  });
+
+  it('lesson card has border-left accent style', () => {
+    const html = renderHtml(lessonData);
+    expect(html).toMatch(/border-left.*solid/);
+  });
+
+  it('related bug renders lesson-bug-inline details element', () => {
+    const html = renderHtml(lessonData);
+    expect(html).toMatch(/lesson-bug-inline/);
+  });
+
+  it('fallback icon for unmatched keyword is lightbulb', () => {
+    const genericData = {
+      ...sampleData,
+      lessons: [
+        {
+          id: 'L-0002',
+          title: 'Keep commits small',
+          rule: 'Keep commits small',
+          context: '',
+          date: '2026-01',
+          bugIds: [],
+        },
+      ],
+    };
+    const html = renderHtml(genericData);
+    expect(html).toMatch(/💡/);
+  });
+});
+
+describe('US-0100 — Hierarchy tab polish', () => {
+  it('epic ID renders with EPIC / split pattern', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toMatch(/epic-id-display/);
+    expect(html).toMatch(/EPIC \//);
+  });
+
+  it('epic progress rule div is present', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toMatch(/epic-progress-track/);
+    expect(html).toMatch(/epic-progress-fill/);
+  });
+
+  it('AC list has left-guide class', () => {
+    const dataWithACs = {
+      ...sampleData,
+      stories: [
+        {
+          ...sampleData.stories[0],
+          acs: [{ id: 'AC-0001', text: 'Should work', done: false }],
+        },
+      ],
+    };
+    const html = renderHtml(dataWithACs);
+    expect(html).toMatch(/ac-guide/);
+  });
+
+  it('card view story cards have accent dot', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toMatch(/epic-accent-dot/);
+  });
+
+  it('progress rule is 0% when no stories done', () => {
+    // sampleData story has status "In Progress" — doneCnt=0, so width should be 0%
+    const html = renderHtml(sampleData);
+    expect(html).toMatch(/width:0%/);
+  });
+});
+
+describe('US-0101 — Kanban board polish', () => {
+  it('rendered HTML contains ksw-inprogress class for In Progress column', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toMatch(/ksw-inprogress/);
+  });
+
+  it('rendered HTML contains kswPulse animation', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toMatch(/kswPulse/);
+  });
+
+  it('rendered HTML contains wip-pill class', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toMatch(/wip-pill/);
+  });
+
+  it('P0 story card has danger priority stripe', () => {
+    const p0Data = {
+      ...sampleData,
+      stories: [{ ...sampleData.stories[0], priority: 'P0', status: 'In Progress' }],
+    };
+    const html = renderHtml(p0Data);
+    expect(html).toMatch(/badge-danger-text|#dc2626/);
+  });
+
+  it('BUG-0112: kanban cards do not contain hardcoded bg-white class; use card-elev instead', () => {
+    const html = renderHtml(sampleData);
+    // Cards should use card-elev not hardcoded bg-white
+    expect(html).toMatch(/card-elev/);
+    expect(html).not.toMatch(/story-row story-card-hover bg-white/);
+  });
+});
+
+describe('US-0102 — Traceability matrix redesign', () => {
+  const tcData = {
+    ...sampleData,
+    testCases: [
+      {
+        id: 'TC-0010',
+        relatedStory: 'US-0001',
+        relatedAC: 'AC-0001',
+        status: 'Pass',
+        defect: 'None',
+        title: 'Pass test',
+        type: 'Functional',
+      },
+      {
+        id: 'TC-0011',
+        relatedStory: 'US-0001',
+        relatedAC: 'AC-0002',
+        status: 'Fail',
+        defect: 'BUG-0001',
+        title: 'Fail test',
+        type: 'Functional',
+      },
+      {
+        id: 'TC-0012',
+        relatedStory: 'US-0001',
+        relatedAC: 'AC-0003',
+        status: 'Not Run',
+        defect: 'None',
+        title: 'Not run test',
+        type: 'Functional',
+      },
+    ],
+  };
+
+  let html;
+  beforeAll(() => {
+    html = renderHtml(tcData);
+  });
+
+  it('Pass TC cell has tc-dot-success class', () => {
+    expect(html).toContain('tc-dot tc-dot-success');
+  });
+
+  it('Fail TC cell has tc-dot-danger class', () => {
+    expect(html).toContain('tc-dot tc-dot-danger');
+  });
+
+  it('Caption contains Pass/Fail/Not Run counts', () => {
+    expect(html).toMatch(/class="trace-caption"/);
+    expect(html).toMatch(/Pass: 1/);
+    expect(html).toMatch(/Fail: 1/);
+    expect(html).toMatch(/Not Run: 1/);
+  });
+
+  it('First td in story rows has trace-sticky-col class', () => {
+    expect(html).toMatch(/class="trace-sticky-col[^"]*"/);
+  });
+
+  it('TC header cells have data-col attribute', () => {
+    expect(html).toMatch(/data-col="TC-0010"/);
+    expect(html).toMatch(/data-col="TC-0011"/);
+    expect(html).toMatch(/data-col="TC-0012"/);
+  });
+});
+
+describe('US-0106 — Bug severity styling', () => {
+  it('severity badge cells have badge-sev class', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toMatch(/badge-sev/);
+  });
+
+  it('Critical bug card has border-left with danger token', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toMatch(/border-left:4px solid var\(--badge-danger-text/);
+  });
+
+  it('fix branch cell has title attribute', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toMatch(/class="truncate" title="/);
+  });
+
+  it('lesson link renders lesson-pill', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toMatch(/lesson-pill/);
+  });
+
+  it('compact view button and container are present', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toMatch(/bugs-compact-view/);
+    expect(html).toMatch(/setBugsView\('compact'\)/);
+  });
+
+  it('applyFilters targets bug-compact-row elements', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toMatch(/\.bug-row,\s*\.bug-compact-row/);
+  });
+});
+
+describe('US-0104 Trends', () => {
+  const trendsData = {
+    ...sampleData,
+    trends: {
+      dates: ['2026-01-01', '2026-01-15'],
+      doneCounts: [5, 10],
+      totalStories: [20, 20],
+      aiCosts: [1.5, 3.0],
+      coverage: [80, 85],
+      velocity: [3, 5],
+      openBugs: [2, 1],
+      atRisk: [1, 0],
+      inputTokens: [100000, 200000],
+      outputTokens: [30000, 60000],
+    },
+  };
+
+  it('renders Progress supertitle in Trends tab', () => {
+    const html = renderHtml(trendsData);
+    const idx = html.indexOf('id="tab-trends"');
+    const trendsHtml = html.slice(idx, idx + 30000);
+    expect(trendsHtml).toContain('Progress');
+    expect(trendsHtml).toContain('chart-trends-progress');
+  });
+
+  it('renders Cost & Spend supertitle in Trends tab', () => {
+    const html = renderHtml(trendsData);
+    const idx = html.indexOf('id="tab-trends"');
+    const trendsHtml = html.slice(idx, idx + 30000);
+    expect(trendsHtml).toMatch(/Cost.*Spend|Cost &amp; Spend/);
+    expect(trendsHtml).toContain('chart-trends-cost');
+  });
+
+  it('renders Quality supertitle in Trends tab', () => {
+    const html = renderHtml(trendsData);
+    const idx = html.indexOf('id="tab-trends"');
+    const trendsHtml = html.slice(idx, idx + 30000);
+    expect(trendsHtml).toContain('Quality');
+    expect(trendsHtml).toContain('chart-trends-coverage');
+  });
+
+  it('renders filter bar buttons in Trends tab', () => {
+    const html = renderHtml(trendsData);
+    const idx = html.indexOf('id="tab-trends"');
+    const trendsHtml = html.slice(idx, idx + 30000);
+    expect(trendsHtml).toContain('trends-filter-bar');
+    expect(trendsHtml).toContain('data-range="all"');
+    expect(trendsHtml).toContain('data-range="7"');
+    expect(trendsHtml).toContain('data-range="30"');
+    expect(trendsHtml).toContain('data-range="90"');
+  });
+
+  it('includes setTrendsRange function', () => {
+    const html = renderHtml(trendsData);
+    expect(html).toContain('function setTrendsRange');
+    expect(html).toContain("localStorage.setItem('pv-trends-range'");
+  });
+
+  it('restores trends range from localStorage', () => {
+    const html = renderHtml(trendsData);
+    expect(html).toContain("localStorage.getItem('pv-trends-range'");
+  });
+
+  it('applies gradient fills via createLinearGradient', () => {
+    const html = renderHtml(trendsData);
+    expect(html).toContain('createLinearGradient');
+    expect(html).toContain('addColorStop');
+  });
+});
+
+describe('US-0105 costs polish', () => {
+  it('sparkline() returns empty string for < 2 values', () => {
+    expect(sparkline([])).toBe('');
+    expect(sparkline([5])).toBe('');
+  });
+
+  it('sparkline() returns SVG polyline for >= 2 values', () => {
+    const svg = sparkline([1, 2, 3]);
+    expect(svg).toContain('<svg');
+    expect(svg).toContain('<polyline');
+    expect(svg).toContain('sparkline-svg');
+  });
+
+  it('usd() wraps $ in currency-sign span', () => {
+    const html = renderHtml(sampleData);
+    expect(html).toContain('<span class="currency-sign">$</span>');
+  });
+
+  it('renders delta arrow beside totalSpent when deltaSpend provided', () => {
+    const html = renderHtml({
+      ...sampleData,
+      deltaSpend: 5.5,
+      budget: {
+        hasBudget: true,
+        epicBudgets: [],
+        totalBudget: 100,
+        totalSpent: 50,
+        burnRate: 0,
+        daysRemaining: null,
+      },
+    });
+    const costsIdx = html.indexOf('id="tab-costs"');
+    const costsHtml = html.slice(costsIdx, costsIdx + 5000);
+    expect(costsHtml).toMatch(/delta-arrow|delta-up|delta-down|delta-flat/);
+  });
+
+  it('uses .progress-bar class instead of inline height/background style', () => {
+    const html = renderHtml({
+      ...sampleData,
+      budget: {
+        hasBudget: true,
+        epicBudgets: [{ id: 'EPIC-0001', budget: 100, spent: 50, remaining: 50, percentUsed: 50 }],
+        totalBudget: 100,
+        totalSpent: 50,
+        burnRate: 0,
+        daysRemaining: null,
+      },
+    });
+    expect(html).toContain('class="progress-bar"');
+    expect(html).not.toMatch(/style="width:60px;height:6px;background:#334155/);
+  });
+});
+
+describe('renderHtml — kanban tab US-0101', () => {
+  const kanbanData = {
+    ...sampleData,
+    stories: [
+      { ...sampleData.stories[0], id: 'US-0001', priority: 'P0', status: 'In Progress' },
+      { ...sampleData.stories[0], id: 'US-0002', priority: 'P1', status: 'Planned', branch: 'feature/US-0002' },
+      { ...sampleData.stories[0], id: 'US-0003', priority: 'P2', status: 'To Do', branch: 'feature/US-0003' },
+    ],
+    costs: {
+      'US-0001': { projectedUsd: 100, aiCostUsd: 0.1, inputTokens: 1000, outputTokens: 500 },
+      'US-0002': { projectedUsd: 100, aiCostUsd: 0.1, inputTokens: 1000, outputTokens: 500 },
+      'US-0003': { projectedUsd: 100, aiCostUsd: 0.1, inputTokens: 1000, outputTokens: 500 },
+      _totals: { costUsd: 0.3, inputTokens: 3000, outputTokens: 1500 },
+    },
+    atRisk: {},
+  };
+
+  let html;
+  beforeAll(() => {
+    html = renderHtml(kanbanData);
+  });
+
+  // TC-0140
+  it('TC-0140: kanban column headers have gradient and accent border', () => {
+    expect(html).toMatch(/ksw-status-cell/);
+    expect(html).toMatch(/border-bottom:\s*2px solid/);
+  });
+
+  // TC-0141
+  it('TC-0141: P0 card renders danger border-left; P1 renders warn border-left', () => {
+    expect(html).toMatch(/badge-danger-text[^)]*\)/);
+    expect(html).toMatch(/badge-warn-text[^)]*\)/);
+  });
+
+  // TC-0142
+  it('TC-0142: In-Progress column cell has ksw-inprogress class', () => {
+    expect(html).toMatch(/ksw-inprogress/);
+  });
+
+  // TC-0143
+  it('TC-0143: WIP pill element is present in kanban output', () => {
+    expect(html).toMatch(/wip-pill/);
+  });
+
+  // TC-0144
+  it('TC-0144: story-card-hover hover uses CSS variable not hardcoded rgba', () => {
+    expect(html).toMatch(/story-card-hover:hover[^}]*var\(--shadow-card-hover\)/);
+    expect(html).not.toMatch(/story-card-hover:hover[^}]*rgba\(0,0,0/);
+  });
+});
+
+describe('renderHtml — traceability tab US-0102', () => {
+  const tcData = {
+    ...sampleData,
+    testCases: [
+      {
+        id: 'TC-0001',
+        relatedStory: 'US-0001',
+        relatedAC: 'AC-0001',
+        status: 'Pass',
+        defect: 'None',
+        title: 'Passes',
+        type: 'Functional',
+      },
+      {
+        id: 'TC-0002',
+        relatedStory: 'US-0001',
+        relatedAC: 'AC-0001',
+        status: 'Fail',
+        defect: 'BUG-0001',
+        title: 'Fails',
+        type: 'Functional',
+      },
+      {
+        id: 'TC-0003',
+        relatedStory: 'US-0001',
+        relatedAC: 'AC-0001',
+        status: 'Not Run',
+        defect: 'None',
+        title: 'Pending',
+        type: 'Functional',
+      },
+    ],
+  };
+
+  let html;
+  beforeAll(() => {
+    html = renderHtml(tcData);
+  });
+
+  // TC-0145
+  it('TC-0145: TC cells render tc-dot class not letter text', () => {
+    expect(html).toMatch(/class="tc-dot tc-dot-success"/);
+    expect(html).toMatch(/class="tc-dot tc-dot-danger"/);
+    expect(html).toMatch(/class="tc-dot tc-dot-warn"/);
+    expect(html).not.toMatch(/<td[^>]*>\s*Pass\s*<\/td>/);
+    expect(html).not.toMatch(/<td[^>]*>\s*Fail\s*<\/td>/);
+  });
+
+  // TC-0146
+  it('TC-0146: first column th and story td have trace-sticky-col class', () => {
+    expect(html).toMatch(/class="[^"]*trace-sticky-col[^"]*"/);
+  });
+
+  // TC-0147
+  it('TC-0147: caption contains pass/fail/not-run counts', () => {
+    expect(html).toMatch(/trace-caption/);
+    expect(html).toMatch(/Pass:\s*\d/);
+    expect(html).toMatch(/Fail:\s*\d/);
+    expect(html).toMatch(/Not Run:\s*\d/);
+  });
+
+  // TC-0148
+  it('TC-0148: TC header th elements have data-col attributes', () => {
+    expect(html).toMatch(/data-col="TC-0001"/);
+    expect(html).toMatch(/data-col="TC-0002"/);
+  });
+});
+
+describe('renderHtml — status tab US-0103', () => {
+  let html;
+  beforeAll(() => {
+    html = renderHtml(sampleData);
+  });
+
+  // TC-0149
+  it('TC-0149: chart sections render chart-header-rule with display-title and chart-subtitle', () => {
+    expect(html).toMatch(/chart-header-rule/);
+    expect(html).toMatch(/display-title/);
+    expect(html).toMatch(/chart-subtitle/);
+  });
+
+  // TC-0150
+  it('TC-0150: status tab contains Delivery and Financial supertitle sections', () => {
+    expect(html).toMatch(/chart-supertitle/);
+    expect(html).toMatch(/Delivery/);
+    expect(html).toMatch(/Financial/);
+  });
+
+  // TC-0151
+  it('TC-0151: doughnut chart containers include chart-center-overlay with hero-num', () => {
+    expect(html).toMatch(/chart-center-overlay/);
+    expect(html).toMatch(/hero-num/);
+  });
+
+  // TC-0152
+  it('TC-0152: Chart.js config includes Inter font family', () => {
+    expect(html).toMatch(/'Inter',\s*sans-serif/);
+  });
+});
+
+describe('renderHtml — bugs tab US-0106', () => {
+  const bugsData = {
+    ...sampleData,
+    bugs: [
+      {
+        id: 'BUG-0001',
+        title: 'Critical crash',
+        severity: 'Critical',
+        status: 'Open',
+        relatedStory: 'US-0001',
+        fixBranch: 'bugfix/BUG-0001-fix',
+        lessonEncoded: 'Yes — see docs/LESSONS.md L-0001',
+        epicId: 'EPIC-0001',
+      },
+      {
+        id: 'BUG-0002',
+        title: 'Medium lag',
+        severity: 'Medium',
+        status: 'Open',
+        relatedStory: 'US-0001',
+        fixBranch: 'bugfix/BUG-0002-lag',
+        lessonEncoded: '',
+        epicId: 'EPIC-0001',
+      },
+      {
+        id: 'BUG-0003',
+        title: 'Low cosmetic',
+        severity: 'Low',
+        status: 'Fixed',
+        relatedStory: 'US-0001',
+        fixBranch: '',
+        lessonEncoded: '',
+        epicId: 'EPIC-0001',
+      },
+    ],
+  };
+
+  let html;
+  beforeAll(() => {
+    html = renderHtml(bugsData);
+  });
+
+  // TC-0153
+  it('TC-0153: severity badge renders badge-sev class alongside badge tone class', () => {
+    expect(html).toMatch(/badge[^"]*badge-sev/);
+  });
+
+  // TC-0154
+  it('TC-0154: bug rows and cards render border-left:4px solid', () => {
+    expect(html).toMatch(/border-left:4px solid/);
+  });
+
+  // TC-0155
+  it('TC-0155: fix branch cell has title attribute and copy-btn element', () => {
+    expect(html).toMatch(/title="bugfix\/BUG-0001-fix"/);
+    expect(html).toMatch(/copy-btn/);
+  });
+
+  // TC-0156
+  it('TC-0156: lesson link renders as lesson-pill with ID and arrow', () => {
+    expect(html).toMatch(/lesson-pill/);
+    expect(html).toMatch(/↗/);
+  });
+
+  // TC-0157
+  it('TC-0157: bugs tab renders all three view toggle buttons', () => {
+    expect(html).toMatch(/bugs-col-btn/);
+    expect(html).toMatch(/bugs-card-btn/);
+    expect(html).toMatch(/bugs-compact-btn/);
+  });
+});
+
+describe('renderHtml — risk badges (US-0064)', () => {
+  const riskData = {
+    ...sampleData,
+    risk: {
+      byStory: new Map([['US-0001', { score: 2.3, level: 'High' }]]),
+      byEpic: new Map([
+        [
+          'EPIC-0001',
+          { avgScore: 2.3, maxScore: 2.3, level: 'High', counts: { Low: 0, Medium: 0, High: 1, Critical: 0 } },
+        ],
+      ]),
+    },
+  };
+
+  it('shows risk score badge on In-Progress story', () => {
+    const h = renderHtml(riskData);
+    expect(h).toContain('High');
+    expect(h).toContain('2.3');
+    expect(h).toContain('risk-score-badge');
+    expect(h).toContain('#f59e0b');
+  });
+
+  it('does not show numeric risk badge on Done story', () => {
+    const doneData = {
+      ...riskData,
+      stories: [{ ...sampleData.stories[0], status: 'Done' }],
+      risk: {
+        byStory: new Map([['US-0001', { score: 0.4, level: 'Low' }]]),
+        byEpic: new Map(),
+      },
+    };
+    const h = renderHtml(doneData);
+    expect(h).not.toContain('risk-score-badge');
+  });
+});
+
+describe('renderHtml — Trends tab avgRisk (US-0065)', () => {
+  it('Trends tab HTML references avgRisk data series', () => {
+    const h = renderHtml(sampleData, {
+      trends: {
+        dates: ['2026-01-01T00:00:00Z', '2026-02-01T00:00:00Z'],
+        doneCounts: [1, 2],
+        totalStories: [5, 5],
+        aiCosts: [1.0, 2.0],
+        coverage: [80, 85],
+        velocity: [3, 5],
+        openBugs: [2, 1],
+        atRisk: [1, 0],
+        inputTokens: [1000, 2000],
+        outputTokens: [500, 1000],
+        avgRisk: [1.8, 1.5],
+      },
+    });
+    expect(h).toContain('avgRisk');
+    expect(h).toContain('Avg Risk Score');
+  });
+});
+
+describe('renderHtml — completion banner (US-0066)', () => {
+  it('shows completion banner when data.completion is set', () => {
+    const d = {
+      ...sampleData,
+      completion: { likelyDate: 'May 14', rangeStart: 'Apr 28', rangeEnd: 'Jun 3', velocityWeeks: 4 },
+    };
+    const h = renderHtml(d);
+    expect(h).toContain('completion-banner');
+    expect(h).toContain('May 14');
+    expect(h).toContain('Apr 28');
+    expect(h).toContain('Jun 3');
+    expect(h).toContain('4-wk velocity');
+  });
+
+  it('omits completion banner when data.completion is null', () => {
+    const d = { ...sampleData, completion: null };
+    expect(renderHtml(d)).not.toContain('completion-banner');
+  });
+});
+
+describe('renderHtml — Status tab risk charts (US-0064)', () => {
+  const riskData = {
+    ...sampleData,
+    risk: {
+      byStory: new Map([['US-0001', { score: 2.3, level: 'High' }]]),
+      byEpic: new Map([
+        [
+          'EPIC-0001',
+          { avgScore: 2.3, maxScore: 2.3, level: 'High', counts: { Low: 0, Medium: 0, High: 1, Critical: 0 } },
+        ],
+      ]),
+    },
+  };
+
+  it('Status tab contains Risk Score by Epic heading', () => {
+    const h = renderHtml(riskData);
+    expect(h).toContain('Risk Score by Epic');
+  });
+
+  it('Status tab contains Story Risk Distribution heading', () => {
+    const h = renderHtml(riskData);
+    expect(h).toContain('Story Risk Distribution');
+  });
+
+  it('Status tab contains chart-risk-distribution canvas', () => {
+    const h = renderHtml(riskData);
+    expect(h).toContain('chart-risk-distribution');
+  });
+
+  it('Status tab contains Avg score and High + Critical KPI tiles', () => {
+    const h = renderHtml(riskData);
+    expect(h).toContain('Avg score');
+    expect(h).toContain('High + Critical');
+  });
+
+  it('Status tab risk chart shows No risk data when risk is absent', () => {
+    const h = renderHtml({ ...sampleData, risk: null });
+    expect(h).toContain('No risk data');
+  });
+});
+
+describe('renderHtml — at-risk epic summary (US-0067)', () => {
+  it('Status tab shows At-Risk Epics heading when epics score >= 2.0', () => {
+    const d = {
+      ...sampleData,
+      risk: {
+        byStory: new Map([['US-0001', { score: 2.3, level: 'High' }]]),
+        byEpic: new Map([
+          [
+            'EPIC-0001',
+            { avgScore: 2.3, maxScore: 2.3, level: 'High', counts: { Low: 0, Medium: 0, High: 1, Critical: 0 } },
+          ],
+        ]),
+      },
+    };
+    expect(renderHtml(d)).toContain('At-Risk Epics');
+    // Entry should show epic ID, score, level badge, and H+C count
+    expect(renderHtml(d)).toContain('EPIC-0001');
+    expect(renderHtml(d)).toContain('2.3');
+    expect(renderHtml(d)).toContain('>High</span>');
+    expect(renderHtml(d)).toContain('1 High+Critical stories');
+  });
+
+  it('Status tab shows At-Risk Epics when avgScore is exactly 2.0 (inclusive boundary)', () => {
+    const d = {
+      ...sampleData,
+      risk: {
+        byStory: new Map([['US-0001', { score: 2.0, level: 'High' }]]),
+        byEpic: new Map([
+          [
+            'EPIC-0001',
+            { avgScore: 2.0, maxScore: 2.0, level: 'High', counts: { Low: 0, Medium: 0, High: 1, Critical: 0 } },
+          ],
+        ]),
+      },
+    };
+    expect(renderHtml(d)).toContain('At-Risk Epics');
+  });
+
+  it('Status tab omits At-Risk Epics section when all epics score < 2.0', () => {
+    const d = {
+      ...sampleData,
+      risk: {
+        byStory: new Map([['US-0001', { score: 0.7, level: 'Low' }]]),
+        byEpic: new Map([
+          [
+            'EPIC-0001',
+            { avgScore: 0.7, maxScore: 0.7, level: 'Low', counts: { Low: 1, Medium: 0, High: 0, Critical: 0 } },
+          ],
+        ]),
+      },
+    };
+    expect(renderHtml(d)).not.toContain('At-Risk Epics');
   });
 });

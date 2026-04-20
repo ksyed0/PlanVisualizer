@@ -123,6 +123,16 @@ function esc(s) {
 function formatLogTime(raw) {
   const t = String(raw || '').trim();
   if (!t) return '--:--:--';
+  // ISO format (contains 'T'): parse as Date and extract HH:MM:SS
+  if (t.includes('T')) {
+    const d = new Date(t);
+    if (!isNaN(d)) {
+      const h = String(d.getHours()).padStart(2, '0');
+      const m = String(d.getMinutes()).padStart(2, '0');
+      const s = String(d.getSeconds()).padStart(2, '0');
+      return `${h}:${m}:${s}`;
+    }
+  }
   const parts = t.split(':');
   if (parts.length < 2) return t;
   const h = parts[0].padStart(2, '0');
@@ -440,27 +450,28 @@ function generateHTML(status) {
   }
   [data-theme="light"] body { background-image: none; }
 
-  /* US-0114: 3-zone header — neutral canvas, no gradient (BUG-0162 fix). */
-  .header { background: #0b0d12; border-bottom: 1px solid var(--divider); padding: 14px 32px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  /* Header gradient — deep blue provides z-separation from dark body. */
+  .header { background: linear-gradient(135deg, #002060 0%, #003087 40%, #0050b3 100%); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 14px 32px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
   .header.header-blocked { border-top: 2px solid #ef4444; }
   .header-left { display: flex; flex-direction: column; min-width: 0; }
   .header-left .header-title { font-family: var(--font-sans); font-size: 14px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .header-left .header-subtitle { font-family: var(--font-display), 'Departure Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.6); letter-spacing: 0.04em; margin-top: 2px; }
-  .header-center { display: flex; align-items: center; gap: 8px; font-family: var(--font-display), 'Departure Mono', monospace; font-size: 12px; color: rgba(255,255,255,0.8); letter-spacing: 0.04em; white-space: nowrap; }
+  .header-center { display: flex; align-items: center; gap: 8px; font-family: var(--font-display), 'Departure Mono', monospace; font-size: 12px; color: rgba(255,255,255,0.9); letter-spacing: 0.04em; white-space: nowrap; }
   .header-right { display: flex; align-items: center; gap: 12px; }
   .header-right .clock { text-align: right; }
   .header-right .clock .time { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 22px; font-weight: 600; color: #fff; font-variant-numeric: tabular-nums; }
   .header-right .clock .label { font-size: 11px; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 1px; }
-  [data-theme="light"] .header { background: #f0f2f5; }
-  [data-theme="light"] .header-left .header-title { color: var(--text-primary); }
-  [data-theme="light"] .header-left .header-subtitle { color: var(--text-muted); }
-  [data-theme="light"] .header-center { color: var(--text-secondary); }
-  [data-theme="light"] .header-right .clock .time { color: var(--text-primary); }
-  [data-theme="light"] .header-right .clock .label { color: var(--text-muted); }
-  [data-theme="light"] .btn-header { background: rgba(0,0,0,0.08); color: var(--text-primary); }
-  [data-theme="light"] .btn-header:hover { background: rgba(0,0,0,0.15); }
-  [data-theme="light"] #theme-toggle { background: rgba(0,0,0,0.08); color: var(--text-primary); }
-  [data-theme="light"] #theme-toggle:hover { background: rgba(0,0,0,0.15); }
+  [data-theme="light"] .header { background: linear-gradient(135deg, #003087 0%, #0050b3 40%, #1976d2 100%); }
+  /* Light theme header keeps white text — gradient is blue in both modes. */
+  [data-theme="light"] .header-left .header-title { color: #fff; }
+  [data-theme="light"] .header-left .header-subtitle { color: rgba(255,255,255,0.75); }
+  [data-theme="light"] .header-center { color: rgba(255,255,255,0.9); }
+  [data-theme="light"] .header-right .clock .time { color: #fff; }
+  [data-theme="light"] .header-right .clock .label { color: rgba(255,255,255,0.75); }
+  [data-theme="light"] .btn-header { background: rgba(255,255,255,0.2); color: #fff; }
+  [data-theme="light"] .btn-header:hover { background: rgba(255,255,255,0.35); }
+  [data-theme="light"] #theme-toggle { background: rgba(255,255,255,0.2); color: #fff; }
+  [data-theme="light"] #theme-toggle:hover { background: rgba(255,255,255,0.35); }
   #theme-toggle { background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px 14px; border-radius: 20px; cursor: pointer; font-size: 13px; transition: background 0.2s; }
   #theme-toggle:hover { background: rgba(255,255,255,0.35); }
 
@@ -1469,6 +1480,13 @@ function generateHTML(status) {
     .header-right .clock .time { font-size: 16px; }
     #theme-toggle, .btn-header { font-size: 11px; padding: 4px 10px; }
   }
+  /* US-0133: Cycle history cards */
+  .cycle-card { flex: 0 0 auto; background: var(--bg-card); border: 1px solid var(--bg-card-border); border-radius: 8px; padding: 8px 12px; min-width: 120px; font-family: var(--font-sans); font-size: 11px; }
+  .cycle-card-id { font-family: var(--font-display), monospace; font-size: 18px; font-weight: 700; color: var(--text-primary); }
+  .cycle-card-stat { color: var(--text-muted); margin-top: 2px; }
+  .cycle-telemetry-tile { background: var(--bg-card); border: 1px solid var(--bg-card-border); border-radius: 8px; padding: 8px 14px; text-align: center; font-family: var(--font-sans); min-width: 100px; }
+  .cycle-telemetry-tile .tile-value { font-family: var(--font-display), monospace; font-size: 20px; font-weight: 700; color: var(--text-primary); }
+  .cycle-telemetry-tile .tile-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); margin-top: 2px; }
 </style>
 </head>
 <body>
@@ -1557,6 +1575,19 @@ ${phases
   </div>`;
   })
   .join('\n')}
+</div>
+
+<!-- US-0130: Epic progress strip — rendered by patchDOM on each tick -->
+<div id="epic-strip" style="display:none; margin-bottom:16px; background:var(--bg-card); border:1px solid var(--bg-card-border); border-radius:10px; padding:10px 16px; font-family:var(--font-sans); font-size:12px;">
+  <div style="font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin-bottom:8px;">Epic Progress</div>
+  <div id="epic-strip-rows"></div>
+</div>
+
+<!-- US-0133: Cycle history — lap strip + telemetry -->
+<div id="cycle-history-section" style="display:none; margin-bottom:24px;">
+  <div style="font-family:var(--font-display),monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin-bottom:8px;">Cycle History</div>
+  <div id="cycle-telemetry" style="display:flex; gap:16px; margin-bottom:10px; flex-wrap:wrap;"></div>
+  <div id="cycle-lap-strip" style="display:flex; gap:8px; overflow-x:auto; padding-bottom:4px;"></div>
 </div>
 
 <!-- Metrics Row — US-0118 differentiated cards.
@@ -1980,16 +2011,27 @@ function updateToggleButton(theme) {
   if (saved === 'light') document.documentElement.setAttribute('data-theme', 'light');
   updateToggleButton(saved);
 })();
-// US-0121 (supersedes BUG-0083/0088 legacy 12h converter): Log times render
-// bracketed as [HH:MM:SS] in the terminal aesthetic. The server emits the
-// final-formatted text directly, so no client-side rewriting is needed —
-// kept as a no-op stub intentionally for traceability.
-
-// US-0121 helpers shared between page-load and patchDOM() so categories and
-// time formatting are computed in one place on the client.
+// Shared client-side helpers used by patchDOM() and related rendering code.
+// escH: HTML-escape a value before inserting into innerHTML (prevents XSS).
+function escH(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+// US-0121 helpers: _formatLogTime formats ISO timestamps as HH:MM:SS;
+// _logCategory classifies log entries for colour coding.
 function _formatLogTime(raw) {
   var t = String(raw || '').trim();
   if (!t) return '--:--:--';
+  // ISO format (contains 'T'): parse as Date and extract HH:MM:SS
+  if (t.indexOf('T') !== -1) {
+    var d = new Date(t);
+    if (!isNaN(d)) {
+      var h = ('00' + d.getHours()).slice(-2);
+      var m = ('00' + d.getMinutes()).slice(-2);
+      var s = ('00' + d.getSeconds()).slice(-2);
+      return h + ':' + m + ':' + s;
+    }
+  }
   var parts = t.split(':');
   if (parts.length < 2) return t;
   var h = ('00' + parts[0]).slice(-2);
@@ -2413,6 +2455,99 @@ function _agentStatusColors(stat) {
 
 function patchDOM(status) {
   if (!status || typeof status !== 'object') return;
+
+  // --- Project identity (US-0128) ------------------------------------------
+  var proj = status.project;
+  if (proj) {
+    var titleEl = document.querySelector('.header-title');
+    if (titleEl && proj.name) titleEl.textContent = proj.name;
+    var subtitleEl = document.querySelector('.header-subtitle');
+    if (subtitleEl && proj.description) subtitleEl.textContent = proj.description;
+    var aboutH3 = document.querySelector('.about-right h3');
+    if (aboutH3 && proj.name) aboutH3.textContent = proj.name;
+    var aboutDesc = document.querySelector('.about-right p');
+    if (aboutDesc && proj.description) aboutDesc.textContent = proj.description;
+    if (proj.repoUrl) {
+      document.querySelectorAll('a.repo-link, .about-links-row a[href*="yourorg"]').forEach(function(a) {
+        a.href = proj.repoUrl;
+      });
+    }
+    if (!document._projectTitlePatched && proj.name) {
+      document.title = proj.name + ' \u2014 SDLC Live Dashboard';
+      document._projectTitlePatched = true;
+    }
+  }
+
+  // --- Epic progress strip (US-0130) ----------------------------------------
+  var epics = status.epics || {};
+  var epicKeys = Object.keys(epics);
+  var epicStripEl = document.getElementById('epic-strip');
+  var epicRowsEl = document.getElementById('epic-strip-rows');
+  if (epicStripEl && epicRowsEl) {
+    if (epicKeys.length === 0) {
+      epicStripEl.style.display = 'none';
+    } else {
+      epicStripEl.style.display = '';
+      epicRowsEl.innerHTML = epicKeys.map(function(id) {
+        var ep = epics[id];
+        var pct = ep.storiesTotal > 0 ? Math.round((ep.storiesCompleted / ep.storiesTotal) * 100) : 0;
+        var badgeColor = ep.status === 'complete' ? '#34A853' : ep.status === 'in-progress' ? '#F57C00' : '#888';
+        return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">'
+          + '<span style="font-weight:600;color:var(--text-primary);min-width:90px;">' + escH(id) + '</span>'
+          + '<span style="color:var(--text-secondary);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escH(ep.name || '') + '</span>'
+          + '<span style="min-width:60px;text-align:right;color:var(--text-muted);">' + ep.storiesCompleted + '/' + ep.storiesTotal + '</span>'
+          + '<div style="width:80px;height:4px;background:var(--bg-progress);border-radius:2px;overflow:hidden;">'
+          + '<div style="height:100%;width:' + pct + '%;background:' + badgeColor + ';border-radius:2px;transition:width 0.6s;"></div>'
+          + '</div>'
+          + '<span style="min-width:32px;text-align:right;color:' + badgeColor + ';font-weight:600;">' + pct + '%</span>'
+          + '</div>';
+      }).join('');
+    }
+  }
+
+  // --- Cycle history (US-0133) -----------------------------------------------
+  var cycles = Array.isArray(status.cycles) ? status.cycles : [];
+  var cycleSection = document.getElementById('cycle-history-section');
+  var lapStrip = document.getElementById('cycle-lap-strip');
+  var telemetryRow = document.getElementById('cycle-telemetry');
+  if (cycleSection && lapStrip && telemetryRow) {
+    if (cycles.length === 0) {
+      cycleSection.style.display = 'none';
+    } else {
+      cycleSection.style.display = '';
+      var avgTotalSec = cycles.reduce(function(sum, c) {
+        var total = Object.values(c.phaseDurations || {}).reduce(function(a, b) { return a + b; }, 0);
+        return sum + total;
+      }, 0) / cycles.length;
+      var avgMin = Math.round(avgTotalSec / 60);
+      var today = new Date().toDateString();
+      var cyclesToday = cycles.filter(function(c) { return c.completedAt && new Date(c.completedAt).toDateString() === today; }).length;
+      var successRate = cycles.length > 0 ? Math.round((cycles.filter(function(c) { return (c.testsFailed || 0) === 0; }).length / cycles.length) * 100) : 0;
+      telemetryRow.innerHTML = [
+        { label: 'Cycles Total', value: cycles.length },
+        { label: 'Today', value: cyclesToday },
+        { label: 'Avg Cycle (min)', value: avgMin || '–' },
+        { label: 'Success Rate', value: successRate + '%' },
+      ].map(function(t) {
+        return '<div class="cycle-telemetry-tile"><div class="tile-value">' + escH(String(t.value)) + '</div><div class="tile-label">' + escH(t.label) + '</div></div>';
+      }).join('');
+      var recent = cycles.slice(-10).reverse();
+      var prevLen = parseInt(lapStrip.getAttribute('data-cycle-count') || '0', 10);
+      lapStrip.innerHTML = recent.map(function(c) {
+        return '<div class="cycle-card">'
+          + '<div class="cycle-card-id">#' + escH(String(c.id)) + '</div>'
+          + '<div class="cycle-card-stat">' + escH(String(c.storiesCompleted)) + ' stories</div>'
+          + '<div class="cycle-card-stat">' + escH((c.coveragePercent || 0).toFixed(1)) + '% cov</div>'
+          + '</div>';
+      }).join('');
+      if (cycles.length > prevLen && prevLen > 0 && typeof playBeep === 'function') {
+        playBeep(523, 0.15);
+        setTimeout(function() { playBeep(659, 0.15); }, 150);
+        setTimeout(function() { playBeep(784, 0.2); }, 300);
+      }
+      lapStrip.setAttribute('data-cycle-count', String(cycles.length));
+    }
+  }
 
   // --- Phase timeline (US-0115) ---------------------------------------------
   // Toggle status class, swap status icon, flip blocked beacon, reveal

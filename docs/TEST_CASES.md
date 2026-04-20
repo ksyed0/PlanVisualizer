@@ -2293,3 +2293,292 @@ Steps:
    Status: [x] Pass
    Defect Raised: None
    Notes:
+
+---
+
+TC-0140: Kanban column headers render with gradient background and 2px accent border-bottom
+Related Story: US-0101
+Related Task:
+Related AC: AC-0329
+Type: Visual
+Preconditions: renderHtml called with at least one story
+Steps:
+
+1. Call renderHtml() with story data
+2. Check output HTML for ksw-status-cell class and border-bottom:2px solid
+   Expected Result: HTML contains ksw-status-cell and the 2px accent bottom border ruleTC-0141: P0 story cards render danger-color left stripe; P1 renders warn-color left stripe
+   Related Story: US-0101
+   Related Task:
+   Related AC: AC-0330
+   Type: Visual
+   Preconditions: renderHtml called with P0 and P1 priority stories
+   Steps:
+
+3. Call renderHtml() with stories having P0 and P1 priorities
+4. Check output HTML for badge-danger-text color on P0 border-left; badge-warn-text on P1
+   Expected Result: P0 stories have the danger CSS variable in their border-left style; P1 stories have the warn CSS variableTC-0142: In-Progress column cell renders with ksw-inprogress pulse class
+   Related Story: US-0101
+   Related Task:
+   Related AC: AC-0331
+   Type: Functional
+   Preconditions: renderHtml called with at least one In Progress story
+   Steps:
+
+5. Call renderHtml() with a story in In Progress status
+6. Check output HTML for ksw-inprogress class on the column cell
+   Expected Result: The In-Progress column cell element has the ksw-inprogress class appliedTC-0143: WIP count pill element is present in kanban output
+   Related Story: US-0101
+   Related Task:
+   Related AC: AC-0332
+   Type: Functional
+   Preconditions: renderHtml called with story data
+   Steps:
+
+7. Call renderHtml() with story data
+8. Check output HTML for wip-pill class
+   Expected Result: HTML contains an element with wip-pill class showing the WIP count
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0144: story-card-hover hover box-shadow uses CSS variable not hardcoded rgba
+Related Story: US-0101
+Related Task:
+Related AC: AC-0333
+Type: Functional
+Preconditions: renderHtml called with any data
+Steps:
+
+1. Call renderHtml() and inspect the embedded CSS for .story-card-hover:hover
+2. Check that box-shadow value references var(--shadow-card-hover), not rgba(0,0,0,...)
+   Expected Result: CSS rule uses var(--shadow-card-hover); no hardcoded rgba shadow present on hover rule
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0145: Traceability matrix cells render as colored dots not letter text
+Related Story: US-0102
+Related Task:
+Related AC: AC-0334
+Type: Visual
+Preconditions: renderHtml called with testCases having Pass, Fail, and Not Run statuses
+Steps:
+
+1. Call renderHtml() with Pass/Fail/Not Run test cases
+2. Check output HTML for tc-dot tc-dot-success, tc-dot-danger, tc-dot-warn classes
+3. Confirm no raw "Pass", "Fail", "Not Run" text appears as cell content
+   Expected Result: Cells use tc-dot classes with CSS pseudo-element circles; no letter abbreviationsTC-0146: Traceability first column has trace-sticky-col class on header and data cells
+   Related Story: US-0102
+   Related Task:
+   Related AC: AC-0337
+   Type: Functional
+   Preconditions: renderHtml called with testCases present
+   Steps:
+
+4. Call renderHtml() with test case data
+5. Check output HTML for trace-sticky-col class on the Story column header th and each story td
+   Expected Result: First column th and td elements carry the trace-sticky-col class for sticky positioning
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0147: Traceability caption contains live pass/fail/not-run counts with tc-dot icons
+Related Story: US-0102
+Related Task:
+Related AC: AC-0336
+Type: Functional
+Preconditions: renderHtml called with mixed Pass/Fail/Not Run test cases
+Steps:
+
+1. Call renderHtml() with Pass, Fail, and Not Run test cases
+2. Check output HTML for trace-caption class and numeric counts for each status
+   Expected Result: Caption renders "Pass: N · Fail: N · Not Run: N" with tc-dot icon elements
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0148: Traceability TC column headers carry data-col attributes for crosshair JS
+Related Story: US-0102
+Related Task:
+Related AC: AC-0335
+Type: Functional
+Preconditions: renderHtml called with testCases
+Steps:
+
+1. Call renderHtml() with test cases TC-0001 and TC-0002
+2. Check output HTML for data-col="TC-0001" and data-col="TC-0002" on header th elements
+   Expected Result: Each TC column header th has a data-col attribute matching the TC ID
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0149: Status tab chart sections render with chart-header-rule, display-title, and chart-subtitle
+Related Story: US-0103
+Related Task:
+Related AC: AC-0338
+Type: Visual
+Preconditions: renderHtml called with any story/cost data
+Steps:
+
+1. Call renderHtml() with sample data
+2. Check output HTML for chart-header-rule, display-title, and chart-subtitle classes
+   Expected Result: Each chart block uses the editorial header pattern: hairline rule, display face title, subtitle
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0150: Status tab contains "Delivery" and "Financial" section supertitles
+Related Story: US-0103
+Related Task:
+Related AC: AC-0339
+Type: Visual
+Preconditions: renderHtml called with any data
+Steps:
+
+1. Call renderHtml() with sample data
+2. Search output HTML for elements with chart-supertitle class containing "Delivery" and "Financial"
+   Expected Result: Two supertitle headings group the charts into Delivery and Financial sections
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0151: Doughnut chart containers include chart-center-overlay with hero-num child
+Related Story: US-0103
+Related Task:
+Related AC: AC-0340
+Type: Visual
+Preconditions: renderHtml called with any data
+Steps:
+
+1. Call renderHtml() with sample data
+2. Check output HTML for chart-center-overlay elements containing hero-num class
+   Expected Result: Doughnut charts have a centered overlay element displaying the hero number
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0152: Chart.js configuration specifies Inter font family in legend options
+Related Story: US-0103
+Related Task:
+Related AC: AC-0341
+Type: Functional
+Preconditions: renderHtml called with any data
+Steps:
+
+1. Call renderHtml() with sample data
+2. Check output HTML/JS for Inter font string in Chart.js legend font configuration
+   Expected Result: Chart.js legend config includes font.family set to "Inter" or "'Inter', sans-serif"
+
+---
+
+TC-0153: Severity badge renders with badge-sev class giving distinct shape from status badge
+Related Story: US-0106
+Related Task:
+Related AC: AC-0351
+Type: Visual
+Preconditions: renderHtml called with bugs of varying severity
+Steps:
+
+1. Call renderHtml() with Critical, Medium, and Low severity bugs
+2. Check output HTML for badge-sev class alongside the severity badge tone class
+   Expected Result: Severity badges carry badge-sev class (2px border-radius, small-caps) distinguishing them from standard status badges
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0154: Bug rows and cards render a 4px left severity stripe via inline border-left style
+Related Story: US-0106
+Related Task:
+Related AC: AC-0352
+Type: Visual
+Preconditions: renderHtml called with bugs of varying severity
+Steps:
+
+1. Call renderHtml() with bug data
+2. Check output HTML for "border-left:4px solid" inline style on bug row/card elements
+   Expected Result: Every bug row, card, and compact row has a 4px left border in the severity-mapped color
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0155: Fix Branch cell renders title attribute and copy-btn element for hover copy
+Related Story: US-0106
+Related Task:
+Related AC: AC-0353
+Type: Functional
+Preconditions: renderHtml called with a bug that has a fixBranch value
+Steps:
+
+1. Call renderHtml() with a bug having fixBranch set to "bugfix/BUG-0001-fix"
+2. Check output HTML for title="bugfix/BUG-0001-fix" and an element with copy-btn class
+   Expected Result: Fix Branch cell has title attribute and a copy-btn child element
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0156: Lesson link renders as full lesson-pill with lesson ID and arrow icon
+Related Story: US-0106
+Related Task:
+Related AC: AC-0354
+Type: Visual
+Preconditions: renderHtml called with a bug having lessonEncoded set to a lesson ID
+Steps:
+
+1. Call renderHtml() with a bug where lessonEncoded = "Yes — see docs/LESSONS.md L-0001"
+2. Check output HTML for lesson-pill class and "↗" arrow character
+   Expected Result: Lesson link renders as a styled pill showing the lesson ID with ↗ arrow
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0157: Bugs tab renders three view mode toggle buttons (column, card, compact)
+Related Story: US-0106
+Related Task:
+Related AC: AC-0355
+Type: Functional
+Preconditions: renderHtml called with any bug data
+Steps:
+
+1. Call renderHtml() with bug data
+2. Check output HTML for bugs-col-btn, bugs-card-btn, and bugs-compact-btn classes
+   Expected Result: All three view toggle buttons are present
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:

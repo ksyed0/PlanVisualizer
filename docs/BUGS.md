@@ -1106,8 +1106,8 @@ Steps to Reproduce:
 3. Click the Bugs tab and apply a status filter
    Expected: Open bug count excludes Retired and Cancelled bugs; shows only truly open bugs
    Actual: Bugs with status "Retired" are counted as open because filter uses !/^Fixed/i which passes Retired
-   Status: Open
-   Fix Branch:
+   Status: Fixed
+   Fix Branch: develop (fixed in Session 16 — render-shell.js:20 + render-tabs.js:1254; BUGS.md status was stale)
    Lesson Encoded: No
 
 ---
@@ -1122,8 +1122,8 @@ Steps to Reproduce:
 3. Observe the epic group header
    Expected: Epic group headers with zero visible children are hidden; counts reflect filtered results
    Actual: Epic group headers remain visible even when all children are hidden by filters; counts show original totals
-   Status: Open
-   Fix Branch:
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0099-epic-header-filter-visibility
    Lesson Encoded: No
 
 ---
@@ -1281,7 +1281,8 @@ Steps to Reproduce:
 2. Hover over any epic swimlane header
    Expected: Clear visual hover affordance (background-color shift or similar)
    Actual: Hover uses `filter: brightness(1.05)` which on already-light backgrounds produces almost no visible change; users can't tell which row they're about to click
-   Status: Open
+   Fix: Replaced `filter: brightness(1.05)` with `background: var(--clr-row-hover)` on `.ksw-swim-hdr:hover` — provides visible background-color shift in both light and dark modes
+   Status: Fixed
    Fix Branch: feature/US-0101-kanban-polish
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2005,11 +2006,11 @@ Steps to Reproduce:
 2. Open DevTools console
    Expected: Clean console load
    Actual: "TypeError: Cannot read properties of null (reading 'addEventListener')" at plan-status.html:~20215 — search-body element lookup returns null before wire-up runs
-   Status: Open
-   Fix Branch:
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0157-search-body-null-fix
    Lesson Encoded: No
    Estimated Cost USD: 0.00
-   Notes: Found by Sentinel during US-0097 Playwright verification. Pre-existing — not introduced by US-0097. Likely in the EPIC-0011 global search module (US-0069); search-body DOM setup runs before the element exists or exists-but-null edge case.
+   Notes: Root cause: renderScripts() was called at line 224 of render-html.js, but #search-body is in the modal HTML at lines 225–232. Script ran synchronously, reached getElementById('search-body') before the element existed. Fix: moved modal HTML (search-backdrop, search-modal, aboutModal) to before renderScripts() call. Found by Sentinel during US-0097 Playwright verification.
 
 ---
 
@@ -2318,3 +2319,108 @@ Steps to Reproduce:
    Lesson Encoded: Yes — see docs/LESSONS.md
    Estimated Cost USD: 0.00
    Notes: Shipped `tools/migrate-config.js` — an idempotent schema migrator that adds missing required fields (currently `docs.lessons` and `agents.<name>.avatar`) to existing configs while preserving every user value. Invoked automatically from `scripts/install.sh` step 4.5 in `--auto` mode (silent unless it actually migrates something). Also exposed as `npm run plan:migrate-config` / `plan:migrate-config:dry` for explicit user invocation. Updated `plan-visualizer.config.example.json` and `agents.config.example.json` so future first-time installs start on the current schema without needing migration. 10 unit tests in `tests/unit/migrate-config.test.js` cover the ensureKey primitive, happy-path migrations, idempotency, missing-file fallbacks, invalid-JSON graceful skip, and user-value preservation.
+
+BUG-0176: Kanban column headers allegedly show no gradient background or 2px accent border
+Severity: Low
+Related Story: US-0101
+Steps to Reproduce:
+
+1. Generate dashboard and inspect Kanban tab at small viewport
+2. Check column header styling
+   Expected: Headers show gradient background and 2px accent border-bottom
+   Actual: QA screenshot appeared to show plain headers
+   Status: Retired
+   Fix Branch: feature/US-0101-kanban-polish
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Retired: CSS/HTML confirmed present; screenshot resolution artifact. `.ksw-status-cell` CSS rule contains `linear-gradient` and `border-bottom: 2px solid` in generated HTML.
+
+BUG-0177: Kanban story cards allegedly show no P0/P1 priority left stripe
+Severity: Low
+Related Story: US-0101
+Steps to Reproduce:
+
+1. Generate dashboard and inspect Kanban tab cards at small viewport
+2. Check priority stripe styling on P0/P1 cards
+   Expected: P0 cards show danger-color left stripe; P1 show warn-color left stripe
+   Actual: QA screenshot appeared to show cards without color stripes
+   Status: Retired
+   Fix Branch: feature/US-0101-kanban-polish
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Retired: CSS/HTML confirmed present; screenshot resolution artifact. Card elements have `border-left:3px solid var(--badge-danger-text,#dc2626)` inline styles for P0/P1 in generated HTML.
+
+BUG-0178: Kanban WIP count allegedly shows no colored pill styling
+Severity: Low
+Related Story: US-0101
+Steps to Reproduce:
+
+1. Generate dashboard and inspect Kanban column header WIP count at small viewport
+2. Check WIP count element styling
+   Expected: WIP count shows as a styled colored pill element
+   Actual: QA screenshot appeared to show plain text WIP count
+   Status: Retired
+   Fix Branch: feature/US-0101-kanban-polish
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Retired: CSS/HTML confirmed present; screenshot resolution artifact. `.wip-pill` CSS class and `<span class="wip-pill...">` elements are present in generated HTML.
+
+BUG-0179: Status tab missing "Financial" section grouping — only "Delivery" section rendered
+Severity: Medium
+Status: Retired
+Related Story: US-0103
+Fix Branch:
+Description: Expected two named section groupings on the Status tab — "Delivery" (epic progress + test results charts) and "Financial" (budget/cost charts) — per the US-0103 AC. Observed in charts-light.png and charts-dark.png: only the "DELIVERY" section heading is visible with the epic progress bars and doughnut chart. No "FINANCIAL" section heading or financial charts (budget by epic, AI cost) appear in the viewport. The section may be absent from the rendered output or not reached by the screenshot viewport.
+Retired: Financial section confirmed present in HTML (grep returns 11 matches for "Financial" in plan-status.html); screenshot viewport limitation only.
+
+BUG-0180: Bugs tab table view renders no bug rows despite 142 bugs counted in header
+Severity: Low
+Related Story: US-0106
+Steps to Reproduce:
+
+1. Open plan-status.html → Bugs tab → Column view
+2. Observe bug rows in the table body
+   Expected: Bug rows are visible in the table with epic header rows showing even in collapsed state
+   Actual: QA screenshot appeared to show no bug rows rendered (report from Sentinel QA pass)
+   Root Cause: False positive. Bugs tab defaults to collapsed epic sections — bug rows are hidden behind collapsed accordions until user expands an epic. The bug-epic-header rows (57) and bug-row elements (291) are confirmed present in the generated HTML. This is the intended UX, not a rendering failure.
+   Status: Retired
+   Fix Branch:
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Retired: Bug rows confirmed present in HTML (57 epic headers, 291 bug rows); default collapsed epic sections are by design — not a rendering failure. Investigated in US-0106 closure.
+
+---
+
+BUG-0181: DM_AGENT post-merge step missing RELEASE_PLAN.md story status write-back
+Severity: Medium
+Related Story: US-0126
+Steps to Reproduce:
+
+1. Run any story through the DM_AGENT canonical pipeline (Pixel → Lens → Sentinel → Circuit → PR merge)
+2. After gh pr merge --auto --squash --delete-branch completes, inspect docs/RELEASE_PLAN.md
+   Expected: Story block shows Status: Done with all ACs checked ([x])
+   Actual: Story block still shows Status: Planned with all ACs unchecked ([ ]) — no agent in the pipeline writes back to RELEASE_PLAN.md after the PR merges
+   Root Cause: The "Post-merge — sync main repo" section of DM_AGENT.md contains only 3 git commands (checkout develop, pull, worktree remove). There is no step instructing the Conductor to update the merged story's Status field and AC checkboxes in RELEASE_PLAN.md.
+   Status: Fixed
+   Fix Branch: chore/session-20-close
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed by adding explicit Conductor step 4 in the "Post-merge — sync main repo" section of docs/agents/DM_AGENT.md: after pulling develop, open RELEASE_PLAN.md and change Status: Planned → Status: Done and all [ ] ACs → [x] for the merged story. This is the authoritative write-back that per-story PRs cannot do (agents only write code, not doc status).
+
+---
+
+BUG-0182: Session close checklist missing per-story RELEASE_PLAN.md audit
+Severity: Low
+Related Story: US-0126
+Steps to Reproduce:
+
+1. Complete an epic (all story PRs merged to develop)
+2. Execute the session close checklist (CLAUDE.md "Session Close Checklist")
+   Expected: Checklist includes a step to verify all merged stories show Status: Done in RELEASE_PLAN.md
+   Actual: Checklist covers progress.md, MEMORY.md, PROMPT_LOG.md, MIGRATION_LOG.md, LESSONS.md, and coverage — but has no step to audit RELEASE_PLAN.md story statuses against merged PRs. The EPIC-0016 session close (PR #338) updated the epic-level Status: Complete but all 13 story blocks remained Planned.
+   Root Cause: The session close procedure was designed before the PR-based merge workflow (adopted 2026-04-14). It predates the pattern where per-story PRs ship code without updating the RELEASE_PLAN.md markdown.
+   Status: Fixed
+   Fix Branch: chore/session-20-close
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed by adding a RELEASE_PLAN.md audit step to the Session Close Checklist in CLAUDE.md: "Verify all stories shipped this session show Status: Done and have all ACs checked in docs/RELEASE_PLAN.md."

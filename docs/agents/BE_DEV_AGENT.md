@@ -2,6 +2,19 @@
 
 > **Read this file in full before starting any work.**
 
+## Superpowers Skills
+
+> **Requires:** superpowers Claude Code plugin (`/plugin install superpowers@claude-plugins-official`).
+> **Check:** `[ -d ~/.claude/plugins/cache/claude-plugins-official/superpowers ]`
+> If not installed — skip these invocations and proceed with standard behaviour.
+
+| Stage                                         | Skill to invoke                  |
+| --------------------------------------------- | -------------------------------- |
+| Before writing any implementation code        | `test-driven-development`        |
+| When working through assigned tasks           | `executing-plans`                |
+| Before pushing the final commit on the branch | `finishing-a-development-branch` |
+| Before reporting implementation complete      | `verification-before-completion` |
+
 ## Role
 
 You are the **Backend Developer Agent**. You own service implementations, data persistence, mock data creation, and state provider logic.

@@ -1,5 +1,7 @@
 'use strict';
 
+const { computeAllRisk } = require('./compute-risk');
+
 const fs = require('fs');
 const path = require('path');
 
@@ -149,6 +151,16 @@ function extractTrends(snapshots) {
     return Object.values(costs).reduce((sum, c) => sum + (c.outputTokens || 0), 0);
   });
 
+  const avgRisk = snapshots.map((s) => {
+    const stories = s.data.stories || [];
+    const bugs = s.data.bugs || [];
+    const active = stories.filter((st) => st.status !== 'Done' && st.status !== 'Retired');
+    if (active.length === 0) return 0;
+    const { byStory } = computeAllRisk(stories, bugs);
+    const scores = active.map((st) => (byStory.get(st.id) || { score: 0 }).score);
+    return scores.reduce((a, v) => a + v, 0) / scores.length;
+  });
+
   return {
     dates,
     doneCounts,
@@ -160,6 +172,7 @@ function extractTrends(snapshots) {
     atRisk,
     inputTokens,
     outputTokens,
+    avgRisk,
   };
 }
 

@@ -240,6 +240,9 @@ Common events (all append a log entry and mutate relevant state):
 
 | When                 | Command                                                                                                          |
 | -------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Session start        | `node tools/update-sdlc-status.js session-start --stories N`                                                     |
+| Epic start           | `node tools/update-sdlc-status.js epic-start --epic EPIC-XXXX --name "..." --stories N`                          |
+| Epic complete        | `node tools/update-sdlc-status.js epic-complete --epic EPIC-XXXX`                                                |
 | Starting a story     | `node tools/update-sdlc-status.js story-start --story US-XXXX --epic EPIC-YYYY`                                  |
 | Spawning Pixel/Forge | `node tools/update-sdlc-status.js agent-start --agent Pixel --story US-XXXX --task "<brief>"`                    |
 | Agent finishes       | `node tools/update-sdlc-status.js agent-done --agent Pixel --story US-XXXX`                                      |
@@ -247,8 +250,54 @@ Common events (all append a log entry and mutate relevant state):
 | Test results         | `node tools/update-sdlc-status.js test-pass --agent Sentinel --story US-XXXX --count N`                          |
 | Coverage             | `node tools/update-sdlc-status.js coverage --agent Circuit --percent 90.82`                                      |
 | Story complete       | `node tools/update-sdlc-status.js story-complete --story US-XXXX --epic EPIC-YYYY`                               |
+| Bug opened           | `node tools/update-sdlc-status.js bug-open --story US-XXXX`                                                      |
+| Bug fixed            | `node tools/update-sdlc-status.js bug-fix --story US-XXXX`                                                       |
 | Phase transition     | `node tools/update-sdlc-status.js phase --number 3 --status in-progress\|complete`                               |
+| Cycle complete       | `node tools/update-sdlc-status.js cycle-complete`                                                                |
 | Generic log          | `node tools/update-sdlc-status.js log --agent Conductor --message "..."`                                         |
+
+### Conductor Pipeline Checklists
+
+**Before first story of a new epic:**
+
+```bash
+node tools/update-sdlc-status.js session-start --stories <N>
+node tools/update-sdlc-status.js epic-start --epic EPIC-XXXX --name "Epic Name" --stories <N>
+```
+
+**At each phase transition:**
+
+```bash
+# Start:
+node tools/update-sdlc-status.js phase --number <N> --status in-progress
+# Complete:
+node tools/update-sdlc-status.js phase --number <N> --status complete
+```
+
+**After Test phase (Circuit reports coverage):**
+
+```bash
+node tools/update-sdlc-status.js coverage --agent Circuit --percent <N>
+```
+
+**When a bug is filed during the pipeline:**
+
+```bash
+node tools/update-sdlc-status.js bug-open --story US-XXXX
+```
+
+**When a bug is resolved:**
+
+```bash
+node tools/update-sdlc-status.js bug-fix --story US-XXXX
+```
+
+**After all stories in an epic merge:**
+
+```bash
+node tools/update-sdlc-status.js epic-complete --epic EPIC-XXXX
+node tools/update-sdlc-status.js cycle-complete
+```
 
 After any state change, regenerate the dashboard so it reflects the new state:
 
@@ -496,6 +545,14 @@ git checkout develop
 git pull origin develop  # gets the squashed commit
 git worktree remove <old-worktree-path> --force
 ```
+
+**Step 4 — Write back story status to RELEASE_PLAN.md (BUG-0181 fix):**
+After pulling, open `docs/RELEASE_PLAN.md` and update the merged story's block:
+
+- Change `Status: Planned` → `Status: Done`
+- Change all `- [ ] AC-XXXX:` → `- [x] AC-XXXX:`
+
+This is the authoritative write-back. Per-story PRs (Pixel, Lens, Sentinel, Circuit) only commit code — none of them update the RELEASE_PLAN.md story block. If this step is skipped, the story will show as Planned indefinitely until a manual audit.
 
 **Why `git worktree remove` is mandatory**: When a worktree holds a feature branch, `gh pr merge --delete-branch` deletes the remote branch but the local ref stays (the worktree locks it). Skipping this step accumulates `.claude/worktrees/agent-*` directories and orphaned `worktree-agent-*` branches — one per sub-agent spawn. A 14-story epic with 2 Pixel retries leaves 16+ worktrees if you forget.
 

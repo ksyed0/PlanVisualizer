@@ -4,6 +4,102 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
+## L-0041 — Chart.js has no built-in data labels; use HTML bar charts when text annotations are required
+
+**Rule:** When a spec requires text labels (score values, badges) alongside chart bars, do not use Chart.js canvas — it requires the `chartjs-plugin-datalabels` external dependency which is not in this project. Use an HTML/CSS bar chart instead: `<div style="width:${pct}%;background:${col}">` rows with adjacent text spans. This is simpler, controllable, and produces exactly the required output without adding a dependency.
+_Learned during EPIC-0010 Task 5: the initial canvas implementation produced bars with no text at all. The spec reviewer flagged score labels and level badges as missing. Replaced with HTML bar chart in one pass._
+**Date:** 2026-04-19
+
+---
+
+## L-0042 — STATUS_WEIGHTS must handle both 'In-Progress' (hyphen) and 'In Progress' (space)
+
+**Rule:** The RELEASE*PLAN.md parser emits story status as `'In Progress'` (with a space), but design specs and weight tables often write it as `'In-Progress'` (with a hyphen). Any STATUS_WEIGHTS map must include both: `{ 'In-Progress': 2, 'In Progress': 2, ... }`. Missing the space variant silently defaults to weight 1 for all In Progress stories, skewing risk scores.
+\_Learned during EPIC-0010 compute-risk.js implementation — the code quality reviewer caught the missing alias during review.*
+**Date:** 2026-04-19
+
+---
+
+## L-0043 — Pure computation modules should duplicate small utility functions to avoid render-layer deps
+
+**Rule:** `compute-risk.js` implements its own `_normalizeRef` instead of importing `normalizeStoryRef` from `render-utils.js`. This is correct: pulling a render-layer utility into a pure data module would create a cross-layer dependency and make the module harder to test in isolation. When a pure module needs a small utility that exists elsewhere, prefer duplicating the minimal logic rather than importing from a higher layer.
+_Observed during EPIC-0010 final review. The tradeoff: regex changes in render-utils.js won't propagate to compute-risk.js. Document the duplication with a comment._
+**Date:** 2026-04-19
+
+---
+
+## L-0039 — Spec reviewers without the actual spec file will hallucinate requirements
+
+**Rule:** A spec compliance reviewer given only the feature files (no plan document) will invent requirements that sound plausible but don't exist — e.g., fabricating "Section 1 must cover prerequisites" when the real AC is just "document the adoption steps". Always pass the reviewer the exact plan file path and the AC IDs to check. When reviewer findings feel surprising, cross-check against the plan file directly before acting on them.
+_Learned during EPIC-0019 Task 8 review: the reviewer invented section-numbering ACs (AC-0482: "Section 1 covers prerequisites", AC-0484: "Section 4 documents ≥5 commands") that don't exist. The real ACs were at different IDs with different requirements. Two unnecessary edits were almost made._
+**Date:** 2026-04-18
+
+---
+
+## L-0040 — Distribution artifacts must be unignored and committed; don't gitignore things you ship
+
+**Rule:** If a generated file is intended to be distributed to other projects (e.g., via an installer that does `cp source/file target/`), it must be committed to the repo — not gitignored. Gitignoring it means it won't exist in a fresh clone, and the installer silently fails or aborts. Audit `.gitignore` for any file referenced by install/copy scripts.
+_Learned when `docs/dashboard.html` was in `.gitignore` but `scripts/install.sh §7` tried to `cp` it to target projects. The file didn't exist in fresh clones, causing a `set -euo pipefail` abort mid-install. Fixed by removing it from `.gitignore` and committing it._
+**Date:** 2026-04-19
+
+---
+
+## L-0036 — GitHub Actions CI does not trigger on pushes after a force-push in the same session
+
+**Rule:** After force-pushing a branch, subsequent regular pushes to the same branch sometimes do not trigger new GitHub Actions runs (zero check-runs on the new commit). Workaround: push an empty commit (`git commit --allow-empty`) to force a new `synchronize` event. Do not wait for CI that will never come — poll `gh api repos/.../commits/{sha}/check-runs` first; if `total_count` is 0 after 30+ seconds, use the empty-commit trigger.
+_Learned during US-0126 CI remediation: after force-pushing the rebased branch, the Prettier fix push produced no CI runs. Empty commit unblocked it._
+**Date:** 2026-04-18
+
+---
+
+## L-0037 — Auto-merge fires immediately on MERGEABLE; Prettier fix must be in the same push
+
+**Rule:** When `gh pr merge --auto --squash` is set and the PR becomes MERGEABLE (e.g., after resolving conflicts), GitHub auto-merge can fire within seconds — before a follow-up Prettier fix can be pushed. Mitigate: always run `npx prettier --write .` and commit BEFORE rebasing and pushing, so the fix is included in the same force-push that resolves the conflict. Never rely on a second push to the same PR to catch a Prettier failure.
+_Learned when PR #395 auto-merged at commit 333243a before the Prettier fix at 9be4c87 could be included, requiring two additional PRs (#397, #399) to clean up._
+**Date:** 2026-04-18
+
+---
+
+## L-0038 — Memory ID snapshots go stale fast; always read ID_REGISTRY.md directly
+
+**Rule:** MEMORY.md ID snapshots (US next, AC next, etc.) are frozen at the time of the last memory write. If multiple stories shipped between sessions, the snapshot is wrong. Always `cat docs/ID_REGISTRY.md` before creating any artefact — never rely on memory for ID values.
+_Learned when memory said next US = US-0110 but 16 stories had shipped since Session 17 (next was actually US-0126). Would have created a duplicate ID._
+**Date:** 2026-04-18
+
+---
+
+## L-0034 — Sequential-merge cascade: pre-allocate ID ranges and expect per-PR rebases
+
+**Rule:** When closing multiple stories that all write to the same docs files (TEST*CASES.md, ID_REGISTRY.md, RELEASE_PLAN.md, BUGS.md), pre-allocate non-overlapping ID ranges in the plan so branches can be written in parallel. Accept that each branch will need at least one rebase after the previous PR merges — budget for this in the pipeline. Keep rebase conflict resolution simple: always combine all changes from both sides additively (all TCs in sequential order, ID counters at the max value).
+\_Learned when closing EPIC-0015 (4 stories, 18 TCs): US-0102 needed 1 rebase, US-0103 needed 1, US-0106 needed 2, due to each successive develop advance after merging the prior story.*
+**Date:** 2026-04-18
+
+---
+
+## L-0035 — Spec/code reviewers check local files; verify actual PR content via git diff
+
+**Rule:** When a spec reviewer reports all deliverables missing, confirm whether it's checking the local develop/chore branch or the actual PR feature branch. Use `git diff origin/develop...origin/feature/BRANCH` to see the true PR diff. Reviewer agents dispatched without explicit branch context will default to whatever's checked out locally.
+_Learned when spec reviewers for US-0101 and US-0106 reported all TCs/fixes missing — they were checking local files on a non-feature branch. The PR branches were correct._
+**Date:** 2026-04-18
+
+---
+
+## L-0032 — isolation:worktree uses main repo HEAD at spawn time; always be on develop before spawning
+
+**Rule:** Before dispatching any Agent with `isolation: "worktree"`, verify the main repo's current HEAD is the correct base branch (develop). Run `pwd && git branch --show-current && git log --oneline -1` before spawning. If the shell's CWD has drifted to a worktree directory, commands run against the wrong repo state.
+_Learned when Pixel agent for US-0053 was spawned but the CWD was `.claude/worktrees/agent-a394fc02` (an old base at 893e4c3) rather than the main repo on develop (a317683). The split was done on stale code, test counts diverged (370 vs 419), and the rebase produced an unresolvable conflict. Fix: always `cd /path/to/main/repo` and confirm branch before spawning._
+**Date:** 2026-04-18
+
+---
+
+## L-0033 — Parallel-wave merge conflicts: keep all CSS and test describe blocks from both sides
+
+**Rule:** When two parallel stories both modify `render-html.js` CSS and the same test file, the merge conflict resolution is always additive: include BOTH CSS blocks (different class names = no overlap) and BOTH describe blocks (each properly closed). Git's conflict representation places closing `});` after `>>>>>>>` as shared suffix — re-add them explicitly to each block.
+_Learned when US-0104 (Trends CSS) and US-0105 (Costs CSS) both modified render-html.js CSS section and tests/unit/render-html.test.js. PR #378 showed CONFLICTING; resolved by keeping both CSS sections and both describe blocks with correct closing braces._
+**Date:** 2026-04-18
+
+---
+
 ## L-0001 — Jest upgrade eliminates transitive deprecation warnings
 
 **Rule:** Always upgrade Jest to the latest stable major when transitive dependencies emit deprecation warnings — do not attempt to override or suppress them with resolutions.

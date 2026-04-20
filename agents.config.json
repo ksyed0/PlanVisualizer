@@ -1,4 +1,18 @@
 {
+  "project": {
+    "name": "PlanVisualizer",
+    "description": "Agentic AI SDLC",
+    "repoUrl": "https://github.com/ksyed0/PlanVisualizer",
+    "startDate": "2026-03-10"
+  },
+  "phases": [
+    { "name": "Blueprint", "agents": ["Compass"], "deliverables": ["refined ACs", "priority list"] },
+    { "name": "Architect", "agents": ["Keystone"], "deliverables": ["scaffold", "types", "service stubs"] },
+    { "name": "Build", "agents": ["Pixel", "Forge", "Palette"], "deliverables": ["implementation", "unit tests"] },
+    { "name": "Integration", "agents": ["Pixel"], "deliverables": ["wired services", "e2e flows"] },
+    { "name": "Test", "agents": ["Sentinel", "Circuit"], "deliverables": ["test report", "coverage"] },
+    { "name": "Polish", "agents": ["Pixel", "Forge"], "deliverables": ["bug fixes", "demo prep"] }
+  ],
   "agents": {
     "Conductor": {
       "role": "Delivery Manager",

@@ -4,6 +4,205 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 23 — 2026-04-19
+
+### What Was Done
+
+1. **Bug fixes (3 PRs opened, PRs #403–#405):**
+   - BUG-0157: Fixed search-body null TypeError by moving `renderScripts` after modal HTML in `render-html.js`
+   - BUG-0099: Fixed Lessons tab link — used `nextElementSibling` on tbody to find bug row section
+   - BUG-0098: Closed stale Open status (filter was already correct since Session 16)
+
+2. **EPIC-0010 Risk Analytics — full implementation (all on branch `bugfix/BUG-0098-stale-open-status`, PR #405):**
+   - Brainstormed design using `superpowers:brainstorming` — wrote design spec + implementation plan
+   - Implemented 9 tasks via `superpowers:subagent-driven-development`
+   - New module: `tools/lib/compute-risk.js` — pure risk computation (computeStoryRisk, computeAllRisk, weight tables)
+   - US-0064: Hierarchy tab risk badges + Status tab risk charts (HTML bar + column distribution)
+   - US-0065: `avgRisk` in snapshot.js `extractTrends()` + Trends tab Avg Risk Score line chart
+   - US-0066: Velocity-based completion date banner in `render-shell.js` below topbar
+   - US-0067: At-Risk Epics summary widget in Status tab (epics with avgScore ≥ 2.0)
+   - US-0068 (Monte Carlo): Deferred — ±20% confidence range used instead
+
+### Test Results
+
+- 953 tests pass, 45 suites, 0 failures
+- Statement coverage: 93.07% (gate: 80%)
+- Branch: `bugfix/BUG-0098-stale-open-status`, PR #405 → develop
+
+3. **PR merges (session resumed):**
+   - PR #403 (BUG-0157) — merged, branch deleted
+   - PR #404 (BUG-0099) — merged after two rebases (develop advanced twice with version bumps), branch deleted
+   - PR #405 (EPIC-0010 + BUG-0098) — merged via `--auto` after rebase + PROMPT_LOG conflict resolution, branch deleted
+   - EPIC-0010 status updated to Done in RELEASE_PLAN.md
+
+### Test Results
+
+- 953 tests pass, 45 suites, 0 failures
+- Statement coverage: 93.07% (gate: 80%)
+- All 3 PRs merged to develop ✓
+
+### Blockers / Notes
+
+- AC-0190, AC-0193, AC-0201–0203 left unchecked in RELEASE_PLAN.md — not in final design spec scope.
+- `_normalizeRef` in compute-risk.js intentionally duplicates `normalizeStoryRef` from render-utils.js to keep compute module free of render-layer deps.
+- Next: EPIC-0012 Stakeholder View (6 stories, Release 1.8).
+
+---
+
+## Session 22 — 2026-04-18
+
+### What Was Done
+
+**EPIC-0019 — Dashboard Effectiveness** — all 8 stories shipped via subagent-driven development. PR #401 opened to develop.
+
+#### Stories shipped (1 PR, 20 commits)
+
+| Story   | Description                                                     |
+| ------- | --------------------------------------------------------------- |
+| US-0127 | Schema generalization — `hackathon` → `project` config block    |
+| US-0128 | Dynamic project identity in dashboard patchDOM                  |
+| US-0129 | Phase config externalization — remove PHASE_DEFS                |
+| US-0130 | Epic lifecycle commands (epic-start, epic-complete)             |
+| US-0131 | Session reset & CLI validation (session-start, --agent guard)   |
+| US-0132 | Coverage, bug metrics, DM_AGENT.md wiring                       |
+| US-0133 | Cycle history — cycle-complete, lap strip, telemetry, animation |
+| US-0134 | Dashboard extraction guide + install.sh §7                      |
+
+#### Key deliverables
+
+- `tools/update-sdlc-status.js`: 10 new/updated commands — `session-start`, `epic-start`, `epic-complete`, `bug-open`, `bug-fix`, `cycle-complete`; `requireAgent()`, `resetSession()` helpers; ISO timestamps; `phase` reads from seeded data
+- `tools/generate-dashboard.js`: `escH()` for XSS safety; project identity patchDOM; epic-progress strip; cycle history lap strip + telemetry row + audio animation
+- `tools/init-sdlc-status.js`: reads `project` + `phases` from agents.config.json; exports `buildStatus`, `loadConfig`
+- `agents.config.json`: `project` section + 6-phase `phases` array added
+- `docs/agents/DM_AGENT.md`: Conductor Pipeline Checklists with all 10 CLI commands
+- `docs/dashboard-extraction.md`: 6-step adoption guide
+- `scripts/install.sh`: §7 dashboard setup with idempotency guard (skips entire section if dashboard.html already exists in target)
+- `docs/dashboard.html`: committed to repo (removed from .gitignore)
+- `docs/RELEASE_PLAN.md`: US-0127–0134 written back; EPIC-0017 → Done; EPIC-0019 description updated
+- `docs/ID_REGISTRY.md`: US → US-0135, AC → AC-0488
+
+#### Test results
+
+- 462 tests passing, 22 suites
+- Statement coverage: ~91%
+
+#### Incidents / Notable Fixes
+
+- Task 2: `fmtLogTime` dead code (was never called; `_formatLogTime` was the real helper) removed
+- Task 3: NaN crash in `phase --number` when arg missing — fixed with `Number.isInteger` guard
+- Task 4: XSS in epic-strip innerHTML — fixed with `escH()` added to embedded client-side JS
+- Task 5: silent NaN in `resetSession` when `--stories` non-numeric — fixed with throw
+- Task 7: `testsFailed` missing from cycle snapshot — fixed; success rate telemetry was permanently 100%
+- Task 8: AC-0486 — entire §7 must be skipped (not just dashboard.html copy) when target already has file — fixed
+- Task 8 quality: `dashboard.html` was gitignored; removed from .gitignore and committed so installer can copy it
+- Task 8: spec reviewer hallucinated section-numbering requirements that don't exist in actual spec — cross-checked against plan file directly
+
+---
+
+## Session 21 — 2026-04-18
+
+### What Was Done
+
+**US-0126 (EPIC-0017) — Superpowers Skills Integration** — fully shipped via brainstorming → writing-plans → subagent-driven-development pipeline.
+
+#### Stories shipped (3 PRs merged to develop)
+
+| PR   | Description                                                                                                                                                 |
+| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| #395 | US-0126: superpowers skills integration across all 9 agent files + install.sh + skills-integration.md                                                       |
+| #397 | Prettier fix: agent files + skills-integration.md                                                                                                           |
+| #399 | Prettier fix: remaining 10 pre-existing failures (LESSONS.md, plans, specs, TEST_CASES.md, progress.md, PROMPT_LOG.md, render-html.test.js, render-tabs.js) |
+
+#### Key deliverables
+
+- `scripts/install.sh` §0: detects superpowers plugin, prompts Y/N, prints slash command on Y, continues on N
+- All 9 `docs/agents/*.md` files: `## Superpowers Skills` section with per-agent skill/stage tables
+- `docs/skills-integration.md`: full agent × skill × stage reference (24 rows, 12-entry catalogue)
+- `docs/RELEASE_PLAN.md`: EPIC-0014 and EPIC-0016 status corrected to Done; US-0126 registered and marked Done
+- `docs/BUGS.md`: BUG-0181 (DM_AGENT missing post-merge RELEASE_PLAN write-back) and BUG-0182 (session-close checklist gap) filed and fixed
+- `DM_AGENT.md`: Step 4 post-merge write-back procedure added
+- `CLAUDE.md`: session-close checklist item added for per-story RELEASE_PLAN audit
+
+#### Incidents
+
+- **ID conflict**: Memory said next US = US-0110 but 16 stories had shipped since that snapshot. Actual next was US-0126. Rule: always read ID_REGISTRY.md directly.
+- **Auto-merge race condition**: PR #395 auto-merged before Prettier fix could be pushed, requiring two follow-up PRs (#397, #399).
+- **GitHub CI not triggering**: After force-push, subsequent regular pushes did not trigger new CI runs — required empty-commit trigger. Root cause unclear (GitHub Actions event queue behavior).
+- **Prettier scope**: CI runs `prettier --check .` (whole repo), so pre-existing failures in unrelated files block the check even when changed files are clean.
+
+#### Test results
+
+- No application code changed; coverage unchanged (~92.7%, 437 tests passing).
+
+---
+
+## Session 20 — 2026-04-18
+
+### What Was Done
+
+**EPIC-0015 full closure** — closed all 4 remaining Planned stories via superpowers brainstorming → writing-plans → subagent-driven-development pipeline.
+
+#### Stories shipped (4 PRs merged to develop)
+
+| Story   | PR   | Description                                                           |
+| ------- | ---- | --------------------------------------------------------------------- |
+| US-0101 | #386 | Kanban Polish: fix BUG-0112 (hover shadow CSS variable), TC-0140–0144 |
+| US-0102 | #385 | Traceability Redesign: TC-0145–0148                                   |
+| US-0103 | #387 | Status Tab Editorial: TC-0149–0152                                    |
+| US-0106 | #388 | Bugs Severity Triage: TC-0153–0157, BUG-0180 Retired                  |
+
+#### Test results
+
+- 437 tests, 22 suites — all pass. Coverage: ~92.73% statements (gate: 80%)
+
+#### Key incidents
+
+- Phase-1 Sentinel QA filed 5 bugs (BUG-0176–0180); all were visual false positives at 900px viewport. Retired before Phase-2.
+- BUG-0112 had two components: `.story-card-hover:hover` box-shadow AND `.ksw-swim-hdr:hover filter: brightness`. Both fixed with CSS variable tokens.
+- Sequential merge cascade: each story branch modified TEST_CASES.md / ID_REGISTRY.md / RELEASE_PLAN.md, causing each successive branch to need a rebase after the previous PR merged. US-0102 needed 1 rebase, US-0103 needed 1, US-0106 needed 2.
+- Spec/code reviewers checked local files instead of PR branch content — verified via `git diff origin/develop...origin/feature/BRANCH`.
+
+#### EPIC status
+
+- EPIC-0015: **Done** (all 15 stories complete)
+- Next BUG: BUG-0181 | Next TC: TC-0158 | Next US: US-0110
+
+---
+
+## Session 19 — 2026-04-17 through 2026-04-18
+
+### What Was Done
+
+**EPIC-0014 + EPIC-0015 partial close** — 6 stories across 4 waves delivered via DM_AGENT pipeline.
+
+#### Stories shipped (5 PRs merged to develop)
+
+| Story            | PR   | Description                                                                                          |
+| ---------------- | ---- | ---------------------------------------------------------------------------------------------------- |
+| US-0100, US-0107 | #371 | Housekeeping: mark Done (ACs already in codebase)                                                    |
+| US-0083          | #373 | GH Actions already at v6 — mark Done                                                                 |
+| US-0098          | #374 | Staggered fadeInUp reveal extended to all tabs + re-trigger on tab switch                            |
+| US-0104          | #377 | Trends time-range filter (All/90d/30d/7d), supertitle groups, gradient fills                         |
+| US-0105          | #378 | Costs sparklines, delta arrows, .progress-bar component, currency-sign span                          |
+| US-0053          | #381 | Split render-html.js (2981L) into 4 modules: render-utils, render-shell, render-tabs, render-scripts |
+
+#### Test results
+
+- 419 tests, 22 suites — all pass. Coverage: ~91% statements (gate: 80%)
+
+#### Key incidents
+
+- PR #378 (US-0105) conflict: US-0104 merged first, both touched render-html.js CSS block and test describe blocks. Resolved manually — kept both CSS sections and both describe blocks properly closed.
+- Worktree base drift: isolation:worktree created US-0053 Pixel agent from old commit (893e4c3 vs current a317683). Aborted rebase, recreated branch from correct develop, did split directly in main repo.
+- sdlc-status.json is gitignored — agentic dashboard requires explicit `node tools/update-sdlc-status.js` calls at each pipeline transition. Dashboard showed stale/idle throughout session; updated manually after each wave.
+
+#### Blockers / remaining work
+
+- US-0101 (Kanban polish), US-0102 (Traceability), US-0103 (Charts editorial), US-0106 (Bug cards severity) still Planned in EPIC-0015. EPIC-0015 remains In Progress.
+- EPIC-0014 still In Progress (US-0053 Done, others ongoing).
+
+---
+
 ## Session 18 — 2026-04-15 through 2026-04-16
 
 ### What Was Done

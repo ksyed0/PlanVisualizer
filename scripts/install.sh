@@ -15,6 +15,30 @@ TARGET="${1:-$(pwd)}"
 
 echo "[install] Installing PlanVisualizer into: $TARGET"
 
+# ── 0. Check superpowers plugin ─────────────────────────────────────────────
+# superpowers enhances agent workflows via structured skill invocations.
+# Cannot be auto-installed — it requires a Claude Code slash command.
+SP_BASE="$HOME/.claude/plugins/cache/claude-plugins-official/superpowers"
+if [ ! -d "$SP_BASE" ]; then
+  echo ""
+  echo "[install] superpowers plugin not detected at $SP_BASE"
+  read -p "[install] Install superpowers for enhanced agent workflows? (y/n) " -n 1 -r; echo
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    echo ""
+    echo "[install] Run the following inside a Claude Code session, then re-run install.sh:"
+    echo ""
+    echo "  /plugin install superpowers@claude-plugins-official"
+    echo ""
+    exit 0
+  else
+    echo "[install] Skipping superpowers. Agent files note skills are optional when not installed."
+    echo ""
+  fi
+else
+  SP_VER=$(ls "$SP_BASE" | sort -V | tail -1)
+  echo "[install] superpowers plugin detected (v${SP_VER}) ✓"
+fi
+
 # ── 1. Copy tool files ──────────────────────────────────────────────────────
 echo "[install] Copying tools/ ..."
 cp -r "${REPO_ROOT}/tools" "${TARGET}/"
@@ -184,6 +208,28 @@ if [ -f "${TARGET}/docs/plan-status.json" ]; then
     " || echo "[install] Warning: Failed to run backfill — this is normal on first install."
   else
     echo "[install] Skipping historical backfill. History will build naturally from real generations."
+  fi
+fi
+
+# ── 7. Dashboard setup ────────────────────────────────────────────────────────
+if [ -f "${TARGET}/docs/dashboard.html" ]; then
+  echo "[install] §7 Dashboard setup: docs/dashboard.html already exists in target — skipping."
+else
+  echo ""
+  echo "[install] Agentic SDLC Dashboard setup"
+  read -p "[install] Copy dashboard files to ${TARGET}/docs? (y/n) " -n 1 -r REPLY; echo
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    mkdir -p "${TARGET}/docs" "${TARGET}/tools" "${TARGET}/orchestrator"
+    cp "${REPO_ROOT}/docs/dashboard.html" "${TARGET}/docs/dashboard.html"
+    echo "[install] Copied docs/dashboard.html"
+    for f in tools/update-sdlc-status.js tools/init-sdlc-status.js; do
+      [ -f "${REPO_ROOT}/${f}" ] && cp "${REPO_ROOT}/${f}" "${TARGET}/${f}" && echo "[install] Copied ${f}"
+    done
+    [ -f "${REPO_ROOT}/orchestrator/atomic-write.js" ] && \
+      cp "${REPO_ROOT}/orchestrator/atomic-write.js" "${TARGET}/orchestrator/atomic-write.js" && \
+      echo "[install] Copied orchestrator/atomic-write.js"
+    echo "[install] Run: node tools/init-sdlc-status.js   (after adding project/phases to agents.config.json)"
+    echo "[install] See: docs/dashboard-extraction.md for the full adoption guide"
   fi
 fi
 
