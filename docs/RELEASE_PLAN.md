@@ -78,7 +78,7 @@ Dependencies: EPIC-0008
 EPIC-0010: Risk Analytics
 Description: Composite risk scoring per story, risk trend charts, velocity-based completion prediction, at-risk epic summary, and Monte Carlo delivery simulation.
 Release Target: Release 1.6
-Status: Planned
+Status: Done
 Dependencies: EPIC-0009
 
 EPIC-0011: Search
@@ -1326,7 +1326,7 @@ Dependencies: US-0059, US-0079
 EPIC-0010: Risk Analytics
 Description: More sophisticated risk scoring weighted by priority and severity. Risk trend chart over time. Predict project completion date based on velocity.
 Release Target: Release 1.6
-Status: Planned
+Status: Done
 Dependencies: EPIC-0009
 ```
 

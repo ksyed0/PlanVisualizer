@@ -29,11 +29,23 @@ Running log of session activity, errors, session activity, errors, test results,
 - Statement coverage: 93.07% (gate: 80%)
 - Branch: `bugfix/BUG-0098-stale-open-status`, PR #405 → develop
 
+3. **PR merges (session resumed):**
+   - PR #403 (BUG-0157) — merged, branch deleted
+   - PR #404 (BUG-0099) — merged after two rebases (develop advanced twice with version bumps), branch deleted
+   - PR #405 (EPIC-0010 + BUG-0098) — merged via `--auto` after rebase + PROMPT_LOG conflict resolution, branch deleted
+   - EPIC-0010 status updated to Done in RELEASE_PLAN.md
+
+### Test Results
+
+- 953 tests pass, 45 suites, 0 failures
+- Statement coverage: 93.07% (gate: 80%)
+- All 3 PRs merged to develop ✓
+
 ### Blockers / Notes
 
-- None. PR #405 is ready to merge pending CI.
 - AC-0190, AC-0193, AC-0201–0203 left unchecked in RELEASE_PLAN.md — not in final design spec scope.
 - `_normalizeRef` in compute-risk.js intentionally duplicates `normalizeStoryRef` from render-utils.js to keep compute module free of render-layer deps.
+- Next: EPIC-0012 Stakeholder View (6 stories, Release 1.8).
 
 ---
 
