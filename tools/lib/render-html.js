@@ -2,7 +2,14 @@
 
 const { generateCssTokens } = require('./theme');
 const { esc, sparkline, BADGE_TONE, badge } = require('./render-utils');
-const { renderTopBar, renderFilterBar, renderSidebar, renderCompletionBanner } = require('./render-shell');
+const {
+  renderTopBar,
+  renderFilterBar,
+  renderSidebar,
+  renderCompletionBanner,
+  renderModeBadge,
+  renderMasthead,
+} = require('./render-shell');
 const {
   renderHierarchyTab,
   renderKanbanTab,
@@ -191,6 +198,122 @@ function renderHtml(data, options = {}) {
       #sidebar { width: 200px; }
       .nav-label { display: flex !important; }
     }
+
+    /* US-0138: Mode badge */
+    .mode-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 10px 5px 8px;
+      border-radius: 999px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+    }
+    .mode-badge .pip {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      display: inline-block;
+    }
+    .mode-report .pip {
+      background: var(--plan-accent);
+      box-shadow: 0 0 0 3px var(--plan-accent-soft);
+    }
+    .mode-live .pip {
+      background: var(--live-accent);
+      box-shadow: 0 0 0 3px var(--live-accent-soft);
+      animation: pv-pulse 1.6s ease-in-out infinite;
+    }
+    @keyframes pv-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.35; }
+    }
+    /* US-0136: Masthead */
+    .pv-masthead {
+      display: grid;
+      grid-template-columns: minmax(0, auto) 1fr;
+      align-items: center;
+      column-gap: 20px;
+      padding: 12px 18px;
+      margin: 0 0 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+    .pv-eyebrow {
+      font-size: 10.5px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-mute);
+      font-weight: 600;
+      font-family: var(--font-sans);
+    }
+    .pv-masthead-title {
+      margin: 2px 0 0;
+      font-family: var(--font-display);
+      font-size: 24px;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      font-weight: 600;
+    }
+    .pv-masthead-title em {
+      font-style: normal;
+      color: var(--plan-accent-ink);
+      font-weight: 500;
+      font-size: 0.62em;
+      vertical-align: middle;
+      padding: 2px 7px;
+      margin-left: 8px;
+      border: 1px solid var(--plan-accent);
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    .pv-masthead-meta {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 4px 18px;
+      justify-content: flex-end;
+      align-items: center;
+    }
+    .pv-meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      align-items: flex-end;
+    }
+    .pv-meta-lbl {
+      font-size: 9.5px;
+      letter-spacing: 0.1em;
+      color: var(--text-mute);
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+    }
+    .pv-meta-val {
+      font-size: 12px;
+      color: var(--text);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .tnum {
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: 'tnum' 1;
+    }
+    @media (max-width: 820px) {
+      .pv-meta-item--hide-sm { display: none; }
+    }
+    @media (max-width: 680px) {
+      .pv-masthead { grid-template-columns: 1fr; }
+      .pv-masthead-meta { justify-content: flex-start; flex-wrap: wrap; }
+    }
   </style>
   ${renderPrintCSS()}
 </head>
@@ -209,10 +332,12 @@ function renderHtml(data, options = {}) {
       : ''
   }
   ${renderTopBar(data)}
+  ${renderModeBadge('report')}
   ${renderCompletionBanner(data)}
   <div id="app-shell">
     ${renderSidebar()}
     <main id="main-content" role="main">
+      ${renderMasthead(data)}
       <div id="filter-sticky">
         ${renderFilterBar(data)}
       </div>

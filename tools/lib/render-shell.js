@@ -96,6 +96,54 @@ function renderTopBar(data) {
   </header>`;
 }
 
+// US-0138: Mode badge — REPORT (static pip) or LIVE (pulsing pip).
+// Plan-Status always renders REPORT. Agentic renders LIVE in generate-dashboard.js.
+function renderModeBadge(mode = 'report') {
+  const isLive = mode === 'live';
+  const label = isLive ? 'LIVE' : 'REPORT';
+  const cls = isLive ? 'mode-live' : 'mode-report';
+  return `<span class="mode-badge ${cls}" aria-label="Mode: ${isLive ? 'Live' : 'Report'}" tabindex="0">
+    <span class="pip" aria-hidden="true"></span>${label}
+  </span>`;
+}
+
+// US-0136: Per-tab masthead — editorial header with project identity and inline stats.
+// Replaces the stat tiles previously embedded in the topbar.
+function renderMasthead(data) {
+  const activeStories = data.stories.filter((s) => s.status !== 'Retired');
+  const done = activeStories.filter((s) => s.status === 'Done').length;
+  const cov = data.coverage;
+  const covLabel = cov && cov.available !== false ? `${cov.overall.toFixed(1)}%` : 'N/A';
+  const totalAI = (data.costs && data.costs._totals && data.costs._totals.costUsd) || 0;
+  const openBugs = (data.bugs || []).filter((b) => !/^(Fixed|Retired|Cancelled)/i.test(b.status)).length;
+
+  return `
+  <div class="pv-masthead">
+    <div class="pv-masthead-head">
+      <span class="pv-eyebrow">${esc(data.projectName || '')}&thinsp;&middot;&thinsp;${esc(data.release || '')}</span>
+      <h1 class="pv-masthead-title">Status <em>report</em></h1>
+    </div>
+    <div class="pv-masthead-meta">
+      <div class="pv-meta-item">
+        <span class="pv-meta-lbl">Stories</span>
+        <span class="pv-meta-val tnum">${done}/${activeStories.length}</span>
+      </div>
+      <div class="pv-meta-item">
+        <span class="pv-meta-lbl">Coverage</span>
+        <span class="pv-meta-val tnum">${covLabel}</span>
+      </div>
+      <div class="pv-meta-item">
+        <span class="pv-meta-lbl">Open bugs</span>
+        <span class="pv-meta-val tnum">${openBugs}</span>
+      </div>
+      <div class="pv-meta-item pv-meta-item--hide-sm">
+        <span class="pv-meta-lbl">AI spend</span>
+        <span class="pv-meta-val tnum">${usd(totalAI)}</span>
+      </div>
+    </div>
+  </div>`;
+}
+
 function renderFilterBar(data) {
   const epicOptions = data.epics
     .map((e) => `<option value="${esc(e.id)}">${esc(e.id)}: ${esc(e.title)}</option>`)
@@ -214,4 +262,11 @@ function renderCompletionBanner(data) {
   </div>`;
 }
 
-module.exports = { renderTopBar, renderFilterBar, renderSidebar, renderCompletionBanner };
+module.exports = {
+  renderTopBar,
+  renderFilterBar,
+  renderSidebar,
+  renderCompletionBanner,
+  renderModeBadge,
+  renderMasthead,
+};

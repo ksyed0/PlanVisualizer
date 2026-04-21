@@ -82,6 +82,29 @@ describe('renderHtml', () => {
   });
 });
 
+describe('renderHtml — US-0138 mode badge', () => {
+  let html;
+  beforeAll(() => {
+    html = renderHtml(sampleData);
+  });
+
+  it('renders a mode-badge element', () => {
+    expect(html).toContain('mode-badge');
+  });
+
+  it('renders REPORT label on Plan-Status', () => {
+    expect(html).toContain('REPORT');
+  });
+
+  it('renders static indigo pip (mode-report class)', () => {
+    expect(html).toContain('mode-report');
+  });
+
+  it('badge has aria-label "Mode: Report"', () => {
+    expect(html).toContain('aria-label="Mode: Report"');
+  });
+});
+
 describe('renderHtml — bugs tab', () => {
   it('renders bug rows when bugs present', () => {
     const dataWithBug = {
