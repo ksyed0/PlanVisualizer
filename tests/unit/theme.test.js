@@ -85,3 +85,54 @@ describe('theme.js — parity with render-html re-export', () => {
     expect(renderHtml.badge).toBe(badge);
   });
 });
+
+describe('theme.js — OKLCH palette tokens (US-0137)', () => {
+  const { palette, chartColors, generateCssTokens } = require('../../tools/lib/theme');
+
+  it('exports palette object', () => {
+    expect(typeof palette).toBe('object');
+    expect(palette).not.toBeNull();
+  });
+
+  it('palette contains planAccent and liveAccent keys', () => {
+    expect(palette).toHaveProperty('planAccent');
+    expect(palette).toHaveProperty('liveAccent');
+    expect(palette.planAccent).toMatch(/oklch/);
+    expect(palette.liveAccent).toMatch(/oklch/);
+  });
+
+  it('palette contains all 11 ink stops (ink0 through ink10)', () => {
+    for (let i = 0; i <= 10; i++) {
+      expect(palette).toHaveProperty(`ink${i}`);
+    }
+  });
+
+  it('palette contains semantic tokens ok/warn/risk/info', () => {
+    ['ok', 'warn', 'risk', 'info'].forEach((k) => {
+      expect(palette).toHaveProperty(k);
+      expect(palette[k]).toMatch(/oklch/);
+    });
+  });
+
+  it('exports chartColors with required keys', () => {
+    expect(typeof chartColors).toBe('object');
+    ['ok', 'warn', 'risk', 'info', 'accent', 'mute'].forEach((k) => {
+      expect(chartColors).toHaveProperty(k);
+    });
+  });
+
+  it('exports generateCssTokens as a function returning a string', () => {
+    expect(typeof generateCssTokens).toBe('function');
+    const css = generateCssTokens();
+    expect(typeof css).toBe('string');
+    expect(css).toContain('--plan-accent');
+    expect(css).toContain('--live-accent');
+    expect(css).toContain('[data-theme="light"]');
+    expect(css).toContain('[data-theme="dark"]');
+  });
+
+  it('generateCssTokens output contains no bare hex literals', () => {
+    const css = generateCssTokens();
+    expect(css).not.toMatch(/#[0-9a-fA-F]{3,8}(?![0-9a-fA-F*])/);
+  });
+});
