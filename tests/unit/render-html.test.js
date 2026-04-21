@@ -1782,4 +1782,18 @@ describe('renderHtml — US-0137/0141 token system', () => {
   it('emits --live-accent CSS variable', () => {
     expect(html).toContain('--live-accent');
   });
+
+  it('loads JetBrains Mono font', () => {
+    expect(html).toContain('JetBrains+Mono');
+  });
+
+  it('theme init uses setAttribute not classList', () => {
+    expect(html).toContain("setAttribute('data-theme'");
+    expect(html).not.toContain("classList.add('dark')");
+  });
+
+  it('includes migration shim from old theme key', () => {
+    expect(html).toContain("localStorage.getItem('theme')");
+    expect(html).toContain("localStorage.removeItem('theme')");
+  });
 });
