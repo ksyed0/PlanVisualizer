@@ -97,8 +97,16 @@ describe('theme.js — OKLCH palette tokens (US-0137)', () => {
   it('palette contains planAccent and liveAccent keys', () => {
     expect(palette).toHaveProperty('planAccent');
     expect(palette).toHaveProperty('liveAccent');
+    expect(palette).toHaveProperty('planAccentSoft');
+    expect(palette).toHaveProperty('planAccentInk');
+    expect(palette).toHaveProperty('liveAccentSoft');
+    expect(palette).toHaveProperty('liveAccentInk');
     expect(palette.planAccent).toMatch(/oklch/);
     expect(palette.liveAccent).toMatch(/oklch/);
+    expect(palette.planAccentSoft).toMatch(/oklch/);
+    expect(palette.planAccentInk).toMatch(/oklch/);
+    expect(palette.liveAccentSoft).toMatch(/oklch/);
+    expect(palette.liveAccentInk).toMatch(/oklch/);
   });
 
   it('palette contains all 11 ink stops (ink0 through ink10)', () => {
@@ -127,6 +135,10 @@ describe('theme.js — OKLCH palette tokens (US-0137)', () => {
     expect(typeof css).toBe('string');
     expect(css).toContain('--plan-accent');
     expect(css).toContain('--live-accent');
+    expect(css).toContain('--ok');
+    expect(css).toContain('--warn');
+    expect(css).toContain('--risk');
+    expect(css).toContain('--info');
     expect(css).toContain('[data-theme="light"]');
     expect(css).toContain('[data-theme="dark"]');
   });
