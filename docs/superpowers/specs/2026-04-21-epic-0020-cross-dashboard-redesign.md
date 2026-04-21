@@ -119,6 +119,8 @@ Key changes from `theme` → `pv-theme` (AC-0513).
 
 `renderChrome()` replaces `renderTopBar()` in `render-shell.js`.
 
+**EPIC-0010 preservation:** `render-shell.js` also exports `renderCompletionBanner()` (added in EPIC-0010, Session 23). This function is called independently of `renderTopBar()` and must be preserved unchanged. The new `renderChrome()` sits in the same position as the old topbar; `renderCompletionBanner()` continues to render immediately below it. Do not remove or alter `renderCompletionBanner()` as part of this work.
+
 **Visual:** Frosted-glass neutral surface. `backdrop-filter: blur(12px) saturate(1.2)`. 1px bottom border. No gradient. Height ≤ 52px.
 
 **Layout (left → right):**
@@ -142,7 +144,7 @@ Key changes from `theme` → `pv-theme` (AC-0513).
 
 ## 6. Status Tab (US-0135 + US-0139 + US-0140)
 
-Three additions rendered above existing charts in `render-tabs.js` `renderStatusTab()`.
+Three additions rendered **above** the existing EPIC-0010 charts in `render-tabs.js` `renderStatusTab()`. All existing Status tab content (Risk Score by Epic HTML bar chart, risk badge logic) is preserved below the new widgets — nothing is removed.
 
 ### 6.1 Status Hero Card (US-0135)
 
@@ -248,7 +250,24 @@ Before beginning implementation, apply handoff bundle content:
 
 ---
 
-## 10. Out of Scope
+## 10. EPIC-0010 Preservation Contract
+
+The following EPIC-0010 artifacts are **not touched** by this redesign. Implementers must not remove or regress them:
+
+| Artifact                       | Location                         | Notes                                               |
+| ------------------------------ | -------------------------------- | --------------------------------------------------- |
+| `renderCompletionBanner()`     | `render-shell.js`                | Called below chrome; keep position and logic intact |
+| Risk Score by Epic chart       | `render-tabs.js` → Status tab    | Preserved below new hero/widget additions           |
+| avgRisk trend line             | `render-tabs.js` → Trends tab    | Not in scope; no changes                            |
+| Risk badges on story cards     | `render-tabs.js` → Hierarchy tab | Not in scope; no changes                            |
+| `compute-risk.js`              | `tools/lib/`                     | Pure compute module; not touched                    |
+| `data.risk`, `data.completion` | `generate-plan.js`               | Data pipeline; not touched                          |
+
+The Status hero card (US-0135) reads `data.completion` to populate its Forecast stat block — this is a read-only dependency, not a modification.
+
+---
+
+## 11. Out of Scope
 
 - Parser layer (`parse-*.js`) — no changes
 - CLI entry point (`generate-plan.js`) — no changes
