@@ -759,31 +759,31 @@ describe('renderHtml — CSS tokens (US-0096 zebra striping)', () => {
     html = renderHtml(sampleData);
   });
 
-  // Extract :root { ... } block (stops at closing brace of root block, before html.dark)
+  // Extract [data-theme="light"] { ... } block (US-0137: token system migrated to data-theme)
   const rootBlock = () => {
-    const m = html.match(/:root\s*\{([\s\S]*?)\n\s{2}\}/);
+    const m = html.match(/\[data-theme="light"\]\s*\{([\s\S]*?)\}/);
     return m ? m[1] : '';
   };
-  // Extract html.dark { ... } block
+  // Extract [data-theme="dark"] { ... } block
   const darkBlock = () => {
-    const m = html.match(/html\.dark\s*\{([\s\S]*?)\n\s{2}\}/);
+    const m = html.match(/\[data-theme="dark"\]\s*\{([\s\S]*?)\}/);
     return m ? m[1] : '';
   };
 
-  it('declares --clr-row-alt in :root (light mode)', () => {
-    expect(rootBlock()).toMatch(/--clr-row-alt:\s*rgba\(148,163,184,0\.04\)/);
+  it('declares --bg in [data-theme="light"] (light mode, US-0137)', () => {
+    expect(rootBlock()).toMatch(/--bg:/);
   });
 
-  it('declares --clr-row-hover in :root (light mode)', () => {
-    expect(rootBlock()).toMatch(/--clr-row-hover:\s*rgba\(148,163,184,0\.09\)/);
+  it('declares --text in [data-theme="light"] (light mode, US-0137)', () => {
+    expect(rootBlock()).toMatch(/--text:/);
   });
 
-  it('declares --clr-row-alt in html.dark (dark mode)', () => {
-    expect(darkBlock()).toMatch(/--clr-row-alt:\s*rgba\(255,255,255,0\.02\)/);
+  it('declares --bg in [data-theme="dark"] (dark mode, US-0137)', () => {
+    expect(darkBlock()).toMatch(/--bg:/);
   });
 
-  it('declares --clr-row-hover in html.dark (dark mode)', () => {
-    expect(darkBlock()).toMatch(/--clr-row-hover:\s*rgba\(255,255,255,0\.05\)/);
+  it('declares --text in [data-theme="dark"] (dark mode, US-0137)', () => {
+    expect(darkBlock()).toMatch(/--text:/);
   });
 
   it('emits .scroll-table tbody tr:nth-child(even) rule using --clr-row-alt', () => {
@@ -812,8 +812,8 @@ describe('renderHtml — hero numbers (US-0099)', () => {
     return m ? m[1] : '';
   };
 
-  it('declares .hero-num with Instrument Serif font stack', () => {
-    expect(heroNumBlock()).toMatch(/font-family:\s*'Instrument Serif'/);
+  it('declares .hero-num with display font variable (US-0137: Instrument Serif replaced by var(--font-display))', () => {
+    expect(heroNumBlock()).toMatch(/font-family:\s*var\(--font-display/);
   });
 
   it('declares .hero-num with clamp() responsive font-size', () => {
@@ -1746,5 +1746,40 @@ describe('renderHtml — at-risk epic summary (US-0067)', () => {
       },
     };
     expect(renderHtml(d)).not.toContain('At-Risk Epics');
+  });
+});
+
+describe('renderHtml — US-0137/0141 token system', () => {
+  let html;
+  beforeAll(() => {
+    html = renderHtml(sampleData);
+  });
+
+  it('loads Inter Tight font (not plain Inter)', () => {
+    expect(html).toContain('Inter+Tight');
+    expect(html).not.toContain('family=Inter:wght');
+  });
+
+  it('does not load Instrument Serif or Fraunces', () => {
+    expect(html).not.toContain('Instrument+Serif');
+    expect(html).not.toContain('Fraunces');
+  });
+
+  it('uses data-theme attribute for theming', () => {
+    expect(html).toContain('data-theme');
+    expect(html).toContain('[data-theme="light"]');
+    expect(html).toContain('[data-theme="dark"]');
+  });
+
+  it('reads pv-theme from localStorage (not bare theme key)', () => {
+    expect(html).toContain('pv-theme');
+  });
+
+  it('emits --plan-accent CSS variable', () => {
+    expect(html).toContain('--plan-accent');
+  });
+
+  it('emits --live-accent CSS variable', () => {
+    expect(html).toContain('--live-accent');
   });
 });

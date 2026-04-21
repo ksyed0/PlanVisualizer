@@ -1,5 +1,6 @@
 'use strict';
 
+const { generateCssTokens } = require('./theme');
 const { esc, sparkline, BADGE_TONE, badge } = require('./render-utils');
 const { renderTopBar, renderFilterBar, renderSidebar, renderCompletionBanner } = require('./render-shell');
 const {
@@ -22,24 +23,30 @@ function renderHtml(data, options = {}) {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${esc(data.projectName)} — Plan Status</title>
-  <script>(function(){var t=localStorage.getItem('theme');if(t==='dark'||(t==null&&window.matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');}})()</script>
+  <script>(function(){
+  var old=localStorage.getItem('theme');
+  if(old&&!localStorage.getItem('pv-theme')){localStorage.setItem('pv-theme',old);localStorage.removeItem('theme');}
+  var t=localStorage.getItem('pv-theme');
+  var dark=t==='dark'||(t==null&&window.matchMedia('(prefers-color-scheme:dark)').matches);
+  document.documentElement.setAttribute('data-theme',dark?'dark':'light');
+})()</script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>tailwind.config={darkMode:'class'}</script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     /* === Base === */
-    body { font-family: 'Inter', sans-serif; padding-top: 72px; background-color: var(--clr-body-bg); color: var(--clr-text-primary); }
+    body { font-family: var(--font-sans, 'Inter Tight', sans-serif); padding-top: 72px; background-color: var(--clr-body-bg); color: var(--clr-text-primary); }
     body.has-alert { padding-top: 100px; }
     #topbar-fixed.has-alert { top: 28px; }
     #sidebar.has-alert { top: 100px; height: calc(100vh - 100px); }
-    code, .font-mono { font-family: 'JetBrains Mono', monospace; }
+    code, .font-mono { font-family: var(--font-mono, 'JetBrains Mono', monospace); }
 
     /* === Typography utilities (US-0094) === */
-    .font-display { font-family: 'Instrument Serif', 'Iowan Old Style', Georgia, serif; font-weight: 400; letter-spacing: -0.005em; }
-    .display-title { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--clr-text-muted); }
+    .font-display { font-family: var(--font-display, 'Inter Tight', sans-serif); font-weight: 400; letter-spacing: -0.005em; }
+    .display-title { font-family: var(--font-sans, 'Inter Tight', sans-serif); font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--clr-text-muted); }
     .tabular-nums, .usd, .num { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1, "ss01" 1; }
     /* Apply tabular-nums to currency/number-heavy elements automatically */
     td.num, td.cost, .topbar-tile .tile-value, .hero-num,
@@ -59,7 +66,7 @@ function renderHtml(data, options = {}) {
     }
     .topbar-inner { display: flex; align-items: center; gap: 12px; width: 100%; min-width: 0; }
     .topbar-project { flex: 1; min-width: 0; }
-    .topbar-title { font-family: 'Instrument Serif', 'Iowan Old Style', Georgia, serif; font-size: 1.4rem; font-weight: 400; letter-spacing: -0.005em; color: #ffffff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1; }
+    .topbar-title { font-family: var(--font-display, 'Inter Tight', sans-serif); font-size: 1.4rem; font-weight: 400; letter-spacing: -0.005em; color: #ffffff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1; }
     .topbar-tagline { font-size: 11px; color: rgba(255,255,255,0.72); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 1px; }
     .topbar-btn { background: rgba(255,255,255,0.18); border: none; color: #ffffff; border-radius: 20px; padding: 5px 14px; font-size: 13px; cursor: pointer; transition: background 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
     .topbar-btn:hover { background: rgba(255,255,255,0.30); color: #ffffff; }
@@ -95,7 +102,7 @@ function renderHtml(data, options = {}) {
     /* === Hero numbers (US-0099) === */
     /* Default hero-num: large display treatment for prominent KPIs (budget totals, coverage %, bug counts). */
     .hero-num {
-      font-family: 'Instrument Serif', 'Iowan Old Style', Georgia, serif;
+      font-family: var(--font-display, 'Inter Tight', sans-serif);
       font-size: clamp(28px, 4vw, 44px);
       font-weight: 500;
       letter-spacing: -0.02em;

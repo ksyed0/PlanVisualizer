@@ -501,7 +501,7 @@ function _mkTrend(id, cfg) {
 }
 function initTrendsCharts() {
   var tc = chartTextColor();
-  var gc = document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0';
+  var gc = document.documentElement.getAttribute('data-theme') === 'dark' ? 'rgba(255,255,255,0.07)' : '#e2e8f0';
   var labels = _trendsAllLabels; if (labels.length < 2) return;
   var xA = { ticks:{ color:tc, maxTicksLimit:8, callback:function(v){ var d=new Date(this.getLabelForValue(v)); return isNaN(d)?v:(d.getMonth()+1)+'/'+d.getDate(); }}, grid:{color:gc} };
   var yA = function(o){ return Object.assign({ticks:{color:tc},grid:{color:gc},beginAtZero:true},o||{}); };
