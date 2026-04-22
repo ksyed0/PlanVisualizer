@@ -790,8 +790,6 @@ function renderPrintCSS() {
     body { padding: 0 !important; }
     #app-shell { display: block !important; }
     #main-content { display: block !important; }
-    #tab-hierarchy, #tab-costs { display: block !important; }
-    #tab-kanban, #tab-traceability, #tab-charts, #tab-bugs, #tab-lessons { display: none !important; }
     body { font-size: 11pt; }
     .bg-slate-900 { background: white !important; color: black !important; }
     .text-white, .text-blue-400, .text-slate-400 { color: black !important; }
