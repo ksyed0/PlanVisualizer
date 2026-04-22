@@ -566,7 +566,7 @@ function _renderStatusHero(data) {
   const blockedStories = activeStories.filter((s) => s.status === 'Blocked').length;
 
   let verdict, verdictTone, narrative;
-  if (criticalBugs > 0 && blockedStories > 1) {
+  if (criticalBugs > 0 || blockedStories > 1) {
     verdict = 'Off track';
     verdictTone = 'risk';
     narrative = `${criticalBugs} critical/high ${criticalBugs === 1 ? 'bug' : 'bugs'} and ${blockedStories} blocked ${blockedStories === 1 ? 'story' : 'stories'} require immediate attention.`;
