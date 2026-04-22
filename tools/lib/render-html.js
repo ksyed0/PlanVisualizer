@@ -3,12 +3,10 @@
 const { generateCssTokens } = require('./theme');
 const { esc, sparkline, BADGE_TONE, badge } = require('./render-utils');
 const {
-  renderTopBar,
   renderChrome,
   renderFilterBar,
   renderSidebar,
   renderCompletionBanner,
-  renderModeBadge,
   renderMasthead,
 } = require('./render-shell');
 const {

@@ -2,100 +2,6 @@
 
 const { esc, jsEsc, usd } = require('./render-utils');
 
-function renderTopBar(data) {
-  const totalAI = data.costs._totals.costUsd || 0;
-  const storyProjected = data.stories.reduce(
-    (s, st) => s + (data.costs[st.id] ? data.costs[st.id].projectedUsd || 0 : 0),
-    0,
-  );
-  const bugProjected = Object.entries(data.costs._bugs || {})
-    .filter(([k]) => k !== '_totals')
-    .reduce((s, [, v]) => s + (v ? v.projectedUsd || 0 : 0), 0);
-  const projectedTotal = storyProjected + bugProjected;
-  const activeStories = data.stories.filter((s) => s.status !== 'Retired');
-  const done = activeStories.filter((s) => s.status === 'Done').length;
-  const inProgress = activeStories.filter((s) => s.status === 'In Progress').length;
-  const cov = data.coverage;
-  const covLabel = cov.available !== false ? `${cov.overall.toFixed(1)}%` : 'N/A';
-  const openBugs = (data.bugs || []).filter((b) => !/^(Fixed|Retired|Cancelled)/i.test(b.status));
-  const critHighBugs = openBugs.filter((b) => ['Critical', 'High'].includes(b.severity)).length;
-  const bugValueCls = openBugs.length === 0 ? '' : critHighBugs > 0 ? ' tile-danger' : ' tile-warn';
-  const covValueCls = cov.available !== false && !cov.meetsTarget ? ' tile-danger' : '';
-  const genAt = data.generatedAt;
-
-  const budget = data.budget || {};
-  const hasBudget = budget.hasBudget;
-  const pct = budget.percentUsed;
-  let budgetTile = '';
-  if (hasBudget && pct !== null) {
-    let barColor = '#22c55e';
-    let warnIcon = '';
-    if (pct >= 90) {
-      barColor = '#ef4444';
-      warnIcon = '&#9888;';
-    } else if (pct >= 75) {
-      barColor = '#f97316';
-      warnIcon = '&#9888;';
-    } else if (pct >= 50) {
-      barColor = '#eab308';
-    }
-    const clampedPct = Math.min(100, pct);
-    budgetTile = `
-        <div class="topbar-tile" style="min-width:90px">
-          <span class="tile-value font-mono">${warnIcon} ${pct}%</span>
-          <span class="tile-label">${usd(budget.totalSpent)} / ${usd(budget.totalBudget)}</span>
-          <div style="width:100%;height:3px;background:#334155;margin-top:4px;border-radius:2px;overflow:hidden">
-            <div style="width:${clampedPct}%;height:100%;background:${barColor};transition:width 0.3s"></div>
-          </div>
-        </div>`;
-  }
-
-  return `
-  <header id="topbar-fixed" class="${data.budget && data.budget.crossedThresholds && data.budget.crossedThresholds.length > 0 ? 'has-alert' : ''}">
-    <div class="topbar-inner">
-      <div class="topbar-project">
-        <div class="flex items-center gap-2 flex-wrap">
-          <h1 class="topbar-title">${esc(data.projectName)}</h1>
-          <span class="topbar-btn-group">
-            <button onclick="openSearch()" id="search-pill" class="topbar-btn" aria-label="Open search (⌘K)">🔍 <span id="search-pill-shortcut">⌘K</span></button>
-            <button onclick="openAbout()" class="topbar-btn">ℹ️ About</button>
-            <a href="dashboard.html" class="topbar-btn">&#8592; Agentic Dashboard</a>
-            <button onclick="toggleTheme()" id="theme-toggle" class="topbar-btn" aria-label="Toggle dark/light mode">☀️ Light</button>
-          </span>
-        </div>
-        <p class="topbar-tagline">${esc(data.tagline)}&nbsp;·&nbsp;Generated <span id="gen-time" data-iso="${genAt}"></span>${data.branch ? `&nbsp;·&nbsp;from <code class="font-mono" style="font-size:10px" title="Project branch">${esc(data.branch)}</code>&nbsp;<code class="font-mono" style="font-size:10px" title="Project commit">${esc(data.commitSha)}</code>` : `&nbsp;·&nbsp;<code class="font-mono" style="font-size:10px">${esc(data.commitSha)}</code>`}</p>
-      </div>
-      <div class="topbar-tiles">
-        ${budgetTile}
-        <div class="topbar-tile">
-          <span class="tile-value">&#128203; ${done}/${activeStories.length}</span>
-          <span class="tile-label">Stories</span>
-        </div>
-        <div class="topbar-tile">
-          <span class="tile-value">&#9889; ${inProgress}</span>
-          <span class="tile-label">In Progress</span>
-        </div>
-        <div class="topbar-tile">
-          <span class="tile-value hero-num hero-num-sm tile-bugs${bugValueCls}">&#128027; ${openBugs.length}</span>
-          <span class="tile-label">Bugs Open</span>
-        </div>
-        <div class="topbar-tile tile-coverage">
-          <span class="tile-value hero-num hero-num-sm tile-cov${covValueCls}">${covLabel}</span>
-          <span class="tile-label">Coverage</span>
-        </div>
-        <div class="topbar-tile tile-ai-cost">
-          <span class="tile-value hero-num hero-num-sm">${usd(totalAI)}</span>
-          <span class="tile-label">AI Cost</span>
-        </div>
-        <div class="topbar-tile tile-projected">
-          <span class="tile-value font-mono">${usd(projectedTotal)}</span>
-          <span class="tile-label">Estimated</span>
-        </div>
-      </div>
-    </div>
-  </header>`;
-}
-
 // US-0138: Mode badge — REPORT (static pip) or LIVE (pulsing pip).
 // Plan-Status always renders REPORT. Agentic renders LIVE in generate-dashboard.js.
 function renderModeBadge(mode = 'report') {
@@ -290,7 +196,6 @@ function renderCompletionBanner(data) {
 }
 
 module.exports = {
-  renderTopBar,
   renderChrome,
   renderFilterBar,
   renderSidebar,

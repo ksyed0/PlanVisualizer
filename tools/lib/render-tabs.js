@@ -993,7 +993,7 @@ function renderChartsTab(data) {
       type: 'bar',
       data: { labels: ${epicLabels}, datasets: [
         { label: 'Projected ($)', data: ${epicProjected}, backgroundColor: pvChartColors.warn, yAxisID: 'yProjected' },
-        { label: 'AI Cost ($)', data: ${epicAI}, backgroundColor: '#0d9488', yAxisID: 'yAI' },
+        { label: 'AI Cost ($)', data: ${epicAI}, backgroundColor: pvChartColors.info, yAxisID: 'yAI' },
       ]},
       options: {
         responsive: true, maintainAspectRatio: false,
@@ -1012,7 +1012,7 @@ function renderChartsTab(data) {
     });
     _charts.aiTimeline = new Chart(document.getElementById('chart-ai-timeline'), {
       type: 'line',
-      data: { labels: ${sessionDates}, datasets: [{ label: 'Cumulative AI Cost ($)', data: ${sessionCosts}, borderColor: '#0d9488', tension: 0.3, fill: true, backgroundColor: 'rgba(13,148,136,0.1)' }] },
+      data: { labels: ${sessionDates}, datasets: [{ label: 'Cumulative AI Cost ($)', data: ${sessionCosts}, borderColor: pvChartColors.info, tension: 0.3, fill: true, backgroundColor: pvChartColors.mute }] },
       options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true } } }, scales: { x: { ticks: { color: tc } }, y: { ticks: { color: tc } } } }
     });
     _charts.burndown = new Chart(document.getElementById('chart-burndown'), {
@@ -1022,7 +1022,7 @@ function renderChartsTab(data) {
     });
     _charts.burnRate = new Chart(document.getElementById('chart-burn-rate'), {
       type: 'bar',
-      data: { labels: ${sessionDates}, datasets: [{ label: 'Session AI Spend ($)', data: ${sessionPerCosts}, backgroundColor: '#6366f1' }] },
+      data: { labels: ${sessionDates}, datasets: [{ label: 'Session AI Spend ($)', data: ${sessionPerCosts}, backgroundColor: pvChartColors.accent }] },
       options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true } } }, scales: { x: { ticks: { color: tc } }, y: { ticks: { color: tc } } } }
     });
     if (document.getElementById('chart-risk-distribution')) {
