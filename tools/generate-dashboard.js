@@ -414,6 +414,16 @@ function generateHTML(status) {
     --status-planned-color: #888;
     --status-inprogress-bg: #3a2a0a;
     --status-complete-bg: #1a3a2a;
+    --live-accent:      oklch(72% 0.19 38);
+    --live-accent-soft: oklch(72% 0.19 38 / 0.18);
+    --live-accent-ink:  oklch(55% 0.18 38);
+    --plan-accent:      oklch(62% 0.19 268);
+    --plan-accent-soft: oklch(62% 0.19 268 / 0.14);
+    --plan-accent-ink:  oklch(42% 0.18 268);
+    --ok:               oklch(68% 0.15 150);
+    --warn:             oklch(74% 0.16 78);
+    --risk:             oklch(64% 0.20 25);
+    --info:             oklch(66% 0.14 240);
   }
   [data-theme="light"] {
     --bg-primary: #f0f2f5;
@@ -770,14 +780,14 @@ function generateHTML(status) {
   .agent-card .on-air-dot { position: absolute; top: 8px; right: 10px; display: none; }
   .agent-card.active .on-air-dot { display: inline-block; }
   /* US-0142: status-class prominence — is-active tinted bg + accent border */
-  .agent-card.is-active { border-color: #34A853; background: rgba(52,168,83,0.08); box-shadow: 0 0 0 1px #34A853, 0 4px 16px rgba(52,168,83,0.18); }
+  .agent-card.is-active { border-color: var(--live-accent); background: color-mix(in oklab, var(--live-accent) 6%, var(--surface, #16213e)); box-shadow: 0 0 0 1px var(--live-accent), var(--shadow, 0 4px 16px rgba(0,0,0,0.3)); }
   .agent-card.is-blocked { border-color: rgba(234,67,53,0.5); }
   .agent-card.is-review { border-color: rgba(66,133,244,0.4); }
   /* US-0142: left accent rail — position absolute, requires overflow:hidden on card */
-  .agent-rail { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: #34A853; border-radius: 10px 0 0 10px; }
+  .agent-rail { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--live-accent); border-radius: 10px 0 0 10px; }
   /* US-0142: pulsing live dot for active agents */
   .agent-live-dot { width: 8px; height: 8px; border-radius: 999px; background: var(--text-muted, #999); }
-  .dot-pulse { background: #34A853 !important; box-shadow: 0 0 0 3px rgba(52,168,83,0.3); animation: pv-pulse 1.4s ease-in-out infinite; }
+  .dot-pulse { background: var(--live-accent) !important; box-shadow: 0 0 0 3px var(--live-accent-soft); animation: pv-pulse 1.4s ease-in-out infinite; }
   @keyframes pv-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
   #agent-portrait-popup { position: fixed; z-index: 999; width: 200px; border-radius: 14px; overflow: hidden; box-shadow: 0 12px 40px rgba(0,0,0,0.7); pointer-events: none; display: none; transition: opacity 0.15s; border: 2px solid rgba(255,255,255,0.12); }
   #agent-portrait-popup img { width: 100%; display: block; border-radius: 12px; object-fit: cover; object-position: center top; }
