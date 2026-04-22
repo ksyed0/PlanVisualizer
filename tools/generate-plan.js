@@ -30,6 +30,15 @@ const TOKEN_RATES = { input: 3, output: 15 };
 
 const ROOT = path.join(__dirname, '..');
 
+// Load agents config (agents.config.json) — used by About modal + Agent Workload widget.
+let AGENTS_CONFIG = {};
+try {
+  const agentsCfgPath = path.join(ROOT, 'agents.config.json');
+  if (fs.existsSync(agentsCfgPath)) AGENTS_CONFIG = JSON.parse(fs.readFileSync(agentsCfgPath, 'utf8'));
+} catch (e) {
+  console.warn('[generate-plan] Could not load agents.config.json:', e.message);
+}
+
 const DEFAULTS = {
   project: { name: 'NomadCode', tagline: 'Code from anywhere.' },
   docs: {
@@ -317,6 +326,7 @@ function main() {
     appName: app.name,
     appVersion: app.version,
     githubUrl: config.project.githubUrl ?? '',
+    agents: AGENTS_CONFIG.agents || {},
   };
 
   console.log('[generate-plan] Saving snapshot...');
