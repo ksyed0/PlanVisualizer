@@ -11,7 +11,7 @@ function renderScripts(data, options = {}) {
   const ALL_DATA = ${allData};
   const SEARCH_INDEX = ${JSON.stringify(buildSearchIndex(data)).replace(/<\/script>/gi, '<\\/script>')};
 
-  const VALID_TABS = ['hierarchy','kanban','traceability','charts','trends','costs','bugs','lessons'];
+  const VALID_TABS = ['status','hierarchy','kanban','traceability','charts','trends','costs','bugs','lessons'];
 
   function downloadBudgetCSV() {
     const csv = ${JSON.stringify(options.budgetCSV || '')};
@@ -31,6 +31,7 @@ function renderScripts(data, options = {}) {
     const showStory = name === 'hierarchy' || name === 'kanban';
     const showBug = name === 'bugs';
     const showSearch = name === 'traceability' || name === 'lessons';
+    // 'status' tab has no filter bar
     bar.classList.toggle('hidden', !showStory && !showBug && !showSearch);
     storyGrp.classList.toggle('hidden', !showStory);
     bugGrp.classList.toggle('hidden', !showBug);
@@ -259,7 +260,7 @@ function renderScripts(data, options = {}) {
 
     // Restore active tab from URL hash or localStorage
     const hash = window.location.hash.replace('#', '');
-    const savedTab = VALID_TABS.includes(hash) ? hash : (VALID_TABS.includes(localStorage.getItem('activeTab')) ? localStorage.getItem('activeTab') : 'hierarchy');
+    const savedTab = VALID_TABS.includes(hash) ? hash : (VALID_TABS.includes(localStorage.getItem('activeTab')) ? localStorage.getItem('activeTab') : 'status');
     showTab(savedTab);
 
     // Restore hierarchy view preference
@@ -308,6 +309,8 @@ function renderScripts(data, options = {}) {
 
   function setTheme(t) {
     document.documentElement.setAttribute('data-theme', t);
+    /* BUG-0190: Tailwind darkMode:'class' requires .dark on <html> */
+    document.documentElement.classList.toggle('dark', t === 'dark');
     localStorage.setItem('pv-theme', t);
     var lb = document.getElementById('theme-btn-light');
     var db = document.getElementById('theme-btn-dark');
@@ -763,7 +766,8 @@ function renderPrintCSS() {
   .trace-hover-row td { background: var(--clr-accent-subtle, rgba(124,58,237,0.06)); }
   .trace-hover-col { background: var(--clr-accent-subtle, rgba(124,58,237,0.06)) !important; }
   .trace-sticky-col { position: sticky; left: 0; z-index: 5; background: var(--clr-panel-bg); }
-  .trace-caption { caption-side: bottom; text-align: left; font-size: 12px; color: var(--clr-text-muted, rgba(255,255,255,0.5)); padding: 8px 4px 0; }
+  /* BUG-0197: fallback was rgba(255,255,255,0.5) — invisible on light bg */
+  .trace-caption { caption-side: bottom; text-align: left; font-size: 12px; color: var(--clr-text-muted, #64748b); padding: 8px 4px 0; }
   /* US-0106: Bug severity styling */
   .badge-sev { border-radius: 2px; font-variant: small-caps; letter-spacing: 0.05em; }
   .copy-btn { opacity: 0; transition: opacity 150ms; background: none; border: none; cursor: pointer; font-size: 12px; color: var(--clr-text-muted); padding: 0 2px; vertical-align: middle; }

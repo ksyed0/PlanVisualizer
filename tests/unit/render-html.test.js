@@ -1794,9 +1794,11 @@ describe('renderHtml — US-0137/0141 token system', () => {
     expect(html).toContain('JetBrains+Mono');
   });
 
-  it('theme init uses setAttribute not classList', () => {
+  it('theme init uses setAttribute and also toggles .dark class for Tailwind', () => {
+    // BUG-0190: Tailwind darkMode:'class' requires .dark on <html>.
+    // Both setAttribute('data-theme') AND classList.add('dark') must be present.
     expect(html).toContain("setAttribute('data-theme'");
-    expect(html).not.toContain("classList.add('dark')");
+    expect(html).toContain("classList.add('dark')");
   });
 
   it('includes migration shim from old theme key', () => {

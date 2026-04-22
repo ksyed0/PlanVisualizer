@@ -10,6 +10,7 @@ const {
   renderMasthead,
 } = require('./render-shell');
 const {
+  renderStatusTab,
   renderHierarchyTab,
   renderKanbanTab,
   renderTraceabilityTab,
@@ -35,6 +36,8 @@ function renderHtml(data, options = {}) {
   var t=localStorage.getItem('pv-theme');
   var dark=t==='dark'||(t==null&&window.matchMedia('(prefers-color-scheme:dark)').matches);
   document.documentElement.setAttribute('data-theme',dark?'dark':'light');
+  /* BUG-0190: Tailwind darkMode:'class' needs .dark on <html> */
+  if(dark) document.documentElement.classList.add('dark');
 })()</script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>tailwind.config={darkMode:'class'}</script>
@@ -44,9 +47,9 @@ function renderHtml(data, options = {}) {
   <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     /* === Base === */
-    body { font-family: var(--font-sans, 'Inter Tight', sans-serif); padding-top: 52px; background-color: var(--clr-body-bg); color: var(--clr-text-primary); }
-    body.has-alert { padding-top: 80px; }
-    #topbar-fixed.has-alert { top: 28px; }
+    /* BUG-0191: padding-top was for old position:fixed topbar; chrome is now sticky (in flow) */
+    body { font-family: var(--font-sans, 'Inter Tight', sans-serif); padding-top: 0; background-color: var(--clr-body-bg); color: var(--clr-text-primary); }
+    body.has-alert { padding-top: 28px; }
     #sidebar.has-alert { top: 80px; height: calc(100vh - 80px); }
     code, .font-mono { font-family: var(--font-mono, 'JetBrains Mono', monospace); }
 
@@ -247,22 +250,16 @@ function renderHtml(data, options = {}) {
     @media (max-height: 500px) and (orientation: landscape) { #activity-toggle { top: 44px !important; } }
     @media (max-width: 479px) { #activity-toggle { top: auto !important; bottom: 16px; } }
 
-    /* Phone portrait (<480px) — topbar in flow, tiles trimmed */
+    /* Phone portrait (<480px) */
     @media (max-width: 479px) {
-      #topbar-fixed { position: relative; height: auto; min-height: 56px; padding: 8px 12px 6px; flex-wrap: wrap; align-items: flex-start; box-shadow: none; border-bottom: 1px solid rgba(0,80,179,0.4); }
-      body { padding-top: 0; }
       #app-shell { min-height: 100vh; }
-      #sidebar { top: 0; height: 100vh; }
-      #filter-sticky { top: 0; }
+      #sidebar { top: 52px; height: calc(100vh - 52px); }
       .tile-coverage, .tile-ai-cost { display: none !important; }
       .topbar-project { width: 100%; }
-      .topbar-tiles { padding-top: 4px; }
     }
 
-    /* Phone landscape — compact topbar (short height) */
+    /* Phone landscape — compact chrome */
     @media (max-height: 500px) and (orientation: landscape) {
-      #topbar-fixed { height: 40px; }
-      body { padding-top: 40px; }
       #sidebar { top: 40px; height: calc(100vh - 40px); }
       #filter-sticky { top: 40px; }
       .nav-item { padding: 7px 0; }
@@ -492,6 +489,7 @@ function renderHtml(data, options = {}) {
         ${renderFilterBar(data)}
       </div>
       <div id="tab-content">
+        ${renderStatusTab(data)}
         ${renderHierarchyTab(data)}
         ${renderKanbanTab(data)}
         ${renderTraceabilityTab(data)}

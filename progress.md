@@ -4,6 +4,43 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 24 — 2026-04-21
+
+### What Was Done
+
+1. **Branch cleanup:** Removed orphaned remote branches (stale bugfix/_ and feature/_ that had already merged to develop).
+
+2. **UI regression sweep — BUG-0190 through BUG-0201 (branch `bugfix/BUG-0190-0197-ui-fixes`, PR #414):**
+   - **BUG-0190 (High):** Dark mode applied only to topbar/sidebar — body/content stayed light. Root cause: EPIC-0020 renamed CSS tokens (--clr-_ → OKLCH-based names) but left all consumers referencing old names. Also, Tailwind darkMode:'class' requires `.dark` on `<html>` but setTheme() only set data-theme attribute. Fixed: added --clr-_ backward-compat aliases in theme.js generateCssTokens(), plus classList.toggle('dark') in setTheme() and inline theme-init script.
+   - **BUG-0191 (Medium):** 52px blank white gap at top — stale `body { padding-top: 52px }` left from when .pv-chrome was position:fixed. Changed to 0.
+   - **BUG-0192 / BUG-0196 (Medium):** Story title rows wrapped; status column had no min-width floor. Fixed with flex layout constraints and min-width:5.5rem on status badge.
+   - **BUG-0193 (Medium):** Global search ⌘K button missing from masthead. Added to renderChrome() between mode badge and About button.
+   - **BUG-0194 (High):** Card-view epic headers disappeared on filter — applyFilters scoped to `.mb-8` but card wrappers used `.mb-4`. Changed wrapper to `.mb-8`.
+   - **BUG-0195 (Low):** Estimated budget missing from masthead. Added totalProjected meta tile to renderMasthead().
+   - **BUG-0197 (Medium):** Traceability legend text invisible (white-on-white fallback in light mode). Changed .trace-caption fallback to #64748b.
+   - **BUG-0198 (Medium):** Trends range button text invisible. Resolved as side-effect of BUG-0190 alias fix.
+   - **BUG-0199 (Low):** Costs Bugs section always-expanded. Wrapped in toggleSection() collapsible, defaulting to hidden.
+   - **BUG-0200 (Medium):** Long parenthetical status strings broke Costs tab layout. Split badge call on first space/paren; full text in title attribute.
+   - **BUG-0201 (Critical):** Status tab entirely absent — EPIC-0020 marked Done but renderStatusTab() was never written. Implemented full US-0135/US-0139 scope: verdict hero card, forecast/velocity/budget stats, 14-week progress mini-bars, 30-day coverage dots, decision widgets grid, quality section.
+   - **Status tab is now the default first tab** (per user request — previously Hierarchy).
+   - BADGE_TONE vocabulary extended 17 → 20 (added Rejected, Cancelled, Retired as neutral).
+   - theme.test.js and render-html.test.js updated to match new invariants.
+
+### Test Results
+
+- **1164 tests pass, 48 suites** — statement coverage ~93% (gate: 80%)
+- Prettier and ESLint clean (pre-commit hooks passed)
+
+### Blockers
+
+None.
+
+### PR Opened
+
+- PR #414: `bugfix/BUG-0190-0197-ui-fixes` → `develop` — 12 bugs fixed, 1164 tests green
+
+---
+
 ## Session 23 — 2026-04-19
 
 ### What Was Done

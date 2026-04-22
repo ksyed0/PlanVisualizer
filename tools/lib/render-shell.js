@@ -1,6 +1,6 @@
 'use strict';
 
-const { esc, jsEsc, usd } = require('./render-utils');
+const { esc, jsEsc, usd, normalizeStoryRef } = require('./render-utils');
 
 // US-0138: Mode badge — REPORT (static pip) or LIVE (pulsing pip).
 // Plan-Status always renders REPORT. Agentic renders LIVE in generate-dashboard.js.
@@ -21,7 +21,12 @@ function renderMasthead(data) {
   const cov = data.coverage;
   const covLabel = cov && cov.available !== false ? `${cov.overall.toFixed(1)}%` : 'N/A';
   const totalAI = (data.costs && data.costs._totals && data.costs._totals.costUsd) || 0;
-  const openBugs = (data.bugs || []).filter((b) => !/^(Fixed|Retired|Cancelled)/i.test(b.status)).length;
+  const openBugs = (data.bugs || []).filter((b) => !/^(Fixed|Retired|Cancelled|Rejected)/i.test(b.status)).length;
+  /* BUG-0195: add projected budget total */
+  const totalProjected = activeStories.reduce(
+    (sum, st) => sum + ((data.costs && data.costs[st.id] && data.costs[st.id].projectedUsd) || 0),
+    0,
+  );
 
   return `
   <div class="pv-masthead">
@@ -41,6 +46,10 @@ function renderMasthead(data) {
       <div class="pv-meta-item">
         <span class="pv-meta-lbl">Open bugs</span>
         <span class="pv-meta-val tnum">${openBugs}</span>
+      </div>
+      <div class="pv-meta-item pv-meta-item--hide-sm">
+        <span class="pv-meta-lbl">Est. budget</span>
+        <span class="pv-meta-val tnum">${usd(totalProjected)}</span>
       </div>
       <div class="pv-meta-item pv-meta-item--hide-sm">
         <span class="pv-meta-lbl">AI spend</span>
@@ -96,6 +105,11 @@ function svgIcon(path) {
 
 function renderSidebar() {
   const items = [
+    {
+      id: 'status',
+      label: 'Status',
+      path: 'M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z',
+    },
     {
       id: 'hierarchy',
       label: 'Hierarchy',
@@ -172,6 +186,10 @@ function renderChrome(data) {
     </div>
     <div class="pv-chrome-spacer"></div>
     ${renderModeBadge('report')}
+    <!-- BUG-0193: Search button restored to chrome -->
+    <button class="pv-iconbtn" onclick="openSearch && openSearch()" aria-label="Search (⌘K)" id="search-btn" style="gap:5px">
+      <span aria-hidden="true" style="font-size:13px">⌘K</span>
+    </button>
     <button class="pv-iconbtn" onclick="openAbout && openAbout()" aria-label="About">
       <span aria-hidden="true">ⓘ</span> About
     </button>
