@@ -159,6 +159,39 @@ describe('generate-dashboard.js baseline harness (US-0124)', () => {
   });
 });
 
+describe('generate-dashboard — US-0142 active agent prominence', () => {
+  const { generateHTML } = require('../../tools/generate-dashboard.js');
+
+  function makeFixtureWithAgentStatus(status) {
+    const fixture = makeHealthyFixture();
+    // Replace Pixel (the default active agent) with our test status
+    fixture.agents.Pixel = { status, currentTask: 'US-0142 test', tasksCompleted: 1 };
+    return fixture;
+  }
+
+  it('active agent card has is-active class', () => {
+    const html = generateHTML(makeFixtureWithAgentStatus('active'));
+    // The card div for Pixel must carry is-active
+    expect(html).toMatch(/class="[^"]*agent-card[^"]*is-active[^"]*"/);
+  });
+
+  it('active agent card has agent-rail element', () => {
+    const html = generateHTML(makeFixtureWithAgentStatus('active'));
+    expect(html).toContain('agent-rail');
+  });
+
+  it('idle agent card does not have is-active class', () => {
+    const html = generateHTML(makeFixtureWithAgentStatus('idle'));
+    // idle Pixel card should NOT carry is-active
+    expect(html).not.toMatch(/class="[^"]*agent-card[^"]*is-active[^"]*"/);
+  });
+
+  it('active agent live-dot has dot-pulse class', () => {
+    const html = generateHTML(makeFixtureWithAgentStatus('active'));
+    expect(html).toContain('dot-pulse');
+  });
+});
+
 describe('US-0121 terminal-aesthetic activity log', () => {
   // AC-0411: Log entries render with agent-color left bar and bracketed
   // [HH:MM:SS] [AGENT] message format.

@@ -769,6 +769,16 @@ function generateHTML(status) {
   .agent-card.active:hover { box-shadow: 0 0 0 3px var(--agent-color, #888), 0 0 0 7px var(--agent-color-ring, rgba(136,136,136,0.35)); }
   .agent-card .on-air-dot { position: absolute; top: 8px; right: 10px; display: none; }
   .agent-card.active .on-air-dot { display: inline-block; }
+  /* US-0142: status-class prominence — is-active tinted bg + accent border */
+  .agent-card.is-active { border-color: #34A853; background: rgba(52,168,83,0.08); box-shadow: 0 0 0 1px #34A853, 0 4px 16px rgba(52,168,83,0.18); }
+  .agent-card.is-blocked { border-color: rgba(234,67,53,0.5); }
+  .agent-card.is-review { border-color: rgba(66,133,244,0.4); }
+  /* US-0142: left accent rail — position absolute, requires overflow:hidden on card */
+  .agent-rail { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: #34A853; border-radius: 10px 0 0 10px; }
+  /* US-0142: pulsing live dot for active agents */
+  .agent-live-dot { width: 8px; height: 8px; border-radius: 999px; background: var(--text-muted, #999); }
+  .dot-pulse { background: #34A853 !important; box-shadow: 0 0 0 3px rgba(52,168,83,0.3); animation: pv-pulse 1.4s ease-in-out infinite; }
+  @keyframes pv-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
   #agent-portrait-popup { position: fixed; z-index: 999; width: 200px; border-radius: 14px; overflow: hidden; box-shadow: 0 12px 40px rgba(0,0,0,0.7); pointer-events: none; display: none; transition: opacity 0.15s; border: 2px solid rgba(255,255,255,0.12); }
   #agent-portrait-popup img { width: 100%; display: block; border-radius: 12px; object-fit: cover; object-position: center top; }
   .agent-avatar { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; object-position: center top; border: 2px solid var(--agent-color, #888); flex-shrink: 0; }
@@ -1774,17 +1784,29 @@ ${Object.entries(agents)
     const isActive = agent.status === 'active';
     const isIdle =
       !isActive && agent.status !== 'complete' && agent.status !== 'blocked' && agent.status !== 'needs-review';
-    const stationClasses = ['agent-card'];
+    // US-0142: status-specific CSS classes for visual prominence
+    const statusCls =
+      agent.status === 'active'
+        ? 'is-active'
+        : agent.status === 'blocked'
+          ? 'is-blocked'
+          : agent.status === 'needs-review'
+            ? 'is-review'
+            : 'is-idle';
+    const stationClasses = ['agent-card', statusCls];
     if (isActive) stationClasses.push('active');
     if (isIdle) stationClasses.push('idle');
     // --agent-color drives the 3px active glow; --agent-color-ring is the
     // translucent variant used for the 4px hover outline (AC-0405).
     const styleVars = `--agent-color: ${color}; --agent-color-ring: ${color}40;`;
+    // US-0142: accent rail (only when active) and pulsing dot class
+    const rail = isActive ? '<div class="agent-rail"></div>' : '';
+    const dotCls = isActive ? 'dot-pulse' : '';
     // US-0111 AC-0364: keep stable IDs on card + inner pills so patchDOM()
     // can update status/task text without re-rendering the whole grid.
     return `      <div class="${stationClasses.join(' ')}" id="agent-${esc(name)}" data-agent-name="${esc(name)}" data-agent-status="${esc(agent.status)}" style="${styleVars}"
         onmouseenter="showAgentPortrait(this,'${fullPortrait}')" onmouseleave="hideAgentPortrait()">
-        <span class="live-dot ok on-air-dot" aria-label="now on air" title="now on air"></span>
+        ${rail}<span class="live-dot ok on-air-dot${dotCls ? ' ' + dotCls : ''}" aria-label="now on air" title="now on air"></span>
         ${avatarImg}
         <div class="agent-info">
           <div class="agent-name" style="color: ${color}">${esc(name)}</div>
