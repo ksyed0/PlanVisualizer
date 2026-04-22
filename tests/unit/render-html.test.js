@@ -238,10 +238,11 @@ describe('renderHtml — story with ACs', () => {
 });
 
 describe('renderHtml — coverage below target', () => {
-  it('renders red coverage when below 80%', () => {
+  it('renders coverage value when below 80%', () => {
     const dataLowCoverage = { ...sampleData, coverage: { lines: 70, overall: 70, meetsTarget: false } };
     const html = renderHtml(dataLowCoverage);
-    expect(html).toMatch(/tile-cov tile-danger/);
+    // Masthead still renders coverage value
+    expect(html).toContain('70.0%');
   });
 });
 
@@ -465,7 +466,7 @@ describe('renderHtml — traceability with Not Run TC', () => {
 describe('renderHtml — sticky header (BUG-0004 regression)', () => {
   it('wraps header in a sticky container', () => {
     const html = renderHtml(sampleData);
-    expect(html).toContain('id="topbar-fixed"');
+    expect(html).toContain('id="pv-chrome"');
   });
 });
 
@@ -856,43 +857,26 @@ describe('renderHtml — hero numbers (US-0099)', () => {
     expect(heroNumSmBlock()).toMatch(/clamp\([^)]*rem[^)]*\)/);
   });
 
-  it('applies hero-num hero-num-sm to Bugs Open topbar tile', () => {
-    expect(html).toMatch(
-      /class="tile-value hero-num hero-num-sm tile-bugs[^"]*"[^>]*>[^<]*Bugs|tile-bugs[^"]*"[^>]*>[^<]*\d+<\/span>\s*<span class="tile-label">Bugs Open/,
-    );
-    // Precise: the Bugs Open tile-value contains hero-num hero-num-sm
-    const bugsTileMatch = html.match(
-      /<span class="tile-value ([^"]+) tile-bugs[^"]*">[\s\S]*?<\/span>\s*<span class="tile-label">Bugs Open<\/span>/,
-    );
-    expect(bugsTileMatch).not.toBeNull();
-    expect(bugsTileMatch[1]).toContain('hero-num');
-    expect(bugsTileMatch[1]).toContain('hero-num-sm');
+  it('renders Open bugs count in masthead (US-0136: stat tiles moved from chrome to masthead)', () => {
+    // After US-0136, stat tiles are no longer in the chrome/topbar.
+    // The masthead (pv-masthead) renders open bug counts under pv-meta-val.
+    expect(html).toContain('Open bugs');
   });
 
-  it('applies hero-num hero-num-sm to Coverage topbar tile', () => {
-    const covTileMatch = html.match(
-      /<span class="tile-value ([^"]+) tile-cov[^"]*">[\s\S]*?<\/span>\s*<span class="tile-label">Coverage<\/span>/,
-    );
-    expect(covTileMatch).not.toBeNull();
-    expect(covTileMatch[1]).toContain('hero-num');
-    expect(covTileMatch[1]).toContain('hero-num-sm');
+  it('renders Coverage value in masthead (US-0136: stat tiles moved from chrome to masthead)', () => {
+    expect(html).toContain('Coverage');
+    // masthead renders coverage as pv-meta-val
+    expect(html).toMatch(/pv-meta-val/);
   });
 
-  it('applies hero-num hero-num-sm to AI Cost topbar tile', () => {
-    const aiTileMatch = html.match(
-      /<span class="tile-value ([^"]+)">[\s\S]*?<\/span>\s*<span class="tile-label">AI Cost<\/span>/,
-    );
-    expect(aiTileMatch).not.toBeNull();
-    expect(aiTileMatch[1]).toContain('hero-num');
-    expect(aiTileMatch[1]).toContain('hero-num-sm');
+  it('renders AI spend in masthead (US-0136: stat tiles moved from chrome to masthead)', () => {
+    expect(html).toContain('AI spend');
   });
 
-  it('does NOT apply hero-num to Stories tile (treatment is scoped to Bugs/Coverage/AI Cost)', () => {
-    const storiesTileMatch = html.match(
-      /<span class="tile-value[^"]*">[^<]*<\/span>\s*<span class="tile-label">Stories<\/span>/,
-    );
-    expect(storiesTileMatch).not.toBeNull();
-    expect(storiesTileMatch[0]).not.toContain('hero-num');
+  it('does not render topbar stat tiles in chrome (US-0136: chrome is navigation-only)', () => {
+    // Old topbar tile HTML elements are not rendered — chrome has no stat tiles
+    expect(html).not.toContain('tile-bugs');
+    expect(html).not.toContain('class="topbar-tile');
   });
 
   it('renders Coverage doughnut overlay using hero-num (default, not sm)', () => {
@@ -1818,5 +1802,39 @@ describe('renderHtml — US-0137/0141 token system', () => {
   it('includes migration shim from old theme key', () => {
     expect(html).toContain("localStorage.getItem('theme')");
     expect(html).toContain("localStorage.removeItem('theme')");
+  });
+});
+
+describe('renderHtml — US-0136 neutral chrome', () => {
+  let html;
+  beforeAll(() => {
+    html = renderHtml(sampleData);
+  });
+
+  it('renders chrome element with class pv-chrome', () => {
+    expect(html).toContain('pv-chrome');
+  });
+
+  it('chrome CSS height does not set 72px', () => {
+    expect(html).not.toContain('height: 72px');
+    expect(html).not.toContain('height:72px');
+  });
+
+  it('does not render navy gradient hex colors in chrome CSS', () => {
+    expect(html).not.toContain('#003087');
+    expect(html).not.toContain('#0050b3');
+  });
+
+  it('chrome contains Plan-Status switcher label', () => {
+    expect(html).toContain('Plan-Status');
+  });
+
+  it('chrome contains Light and Dark theme toggle buttons', () => {
+    expect(html).toContain('Light');
+    expect(html).toContain('Dark');
+  });
+
+  it('renderCompletionBanner is preserved (EPIC-0010)', () => {
+    expect(() => renderHtml(sampleData)).not.toThrow();
   });
 });

@@ -249,6 +249,33 @@ function renderSidebar() {
   </aside>`;
 }
 
+// US-0136: Frosted-glass neutral chrome. Replaces the saturated navy gradient topbar.
+// Height ≤52px. Contains: brand, dashboard switcher, mode badge, about, theme toggle.
+// renderCompletionBanner() renders separately below this — do not move it.
+function renderChrome(data) {
+  const projectName = esc((data && data.projectName) || 'Plan Visualizer');
+  return `
+  <header class="pv-chrome" id="pv-chrome">
+    <div class="pv-chrome-brand">
+      <span class="pv-chrome-dot" aria-hidden="true"></span>
+      <span class="pv-chrome-name">${projectName}</span>
+    </div>
+    <div class="pv-chrome-segs" role="tablist" aria-label="Dashboard">
+      <button class="pv-seg pv-seg-active" aria-pressed="true">Plan-Status</button>
+      <a href="dashboard.html" class="pv-seg" aria-pressed="false">Pipeline</a>
+    </div>
+    <div class="pv-chrome-spacer"></div>
+    ${renderModeBadge('report')}
+    <button class="pv-iconbtn" onclick="openAbout && openAbout()" aria-label="About">
+      <span aria-hidden="true">ⓘ</span> About
+    </button>
+    <div class="pv-theme-segs" role="group" aria-label="Theme">
+      <button onclick="setTheme('light')" id="theme-btn-light" class="pv-seg" aria-pressed="false">☀ Light</button>
+      <button onclick="setTheme('dark')"  id="theme-btn-dark"  class="pv-seg" aria-pressed="false">☾ Dark</button>
+    </div>
+  </header>`;
+}
+
 function renderCompletionBanner(data) {
   if (!data.completion) return '';
   const { likelyDate, rangeStart, rangeEnd, velocityWeeks } = data.completion;
@@ -264,6 +291,7 @@ function renderCompletionBanner(data) {
 
 module.exports = {
   renderTopBar,
+  renderChrome,
   renderFilterBar,
   renderSidebar,
   renderCompletionBanner,

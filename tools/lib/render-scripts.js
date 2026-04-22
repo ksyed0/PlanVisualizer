@@ -306,14 +306,26 @@ function renderScripts(data, options = {}) {
   document.addEventListener('DOMContentLoaded', setStickyTop);
   window.addEventListener('resize', setStickyTop);
 
+  function setTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    localStorage.setItem('pv-theme', t);
+    var lb = document.getElementById('theme-btn-light');
+    var db = document.getElementById('theme-btn-dark');
+    if (lb) lb.setAttribute('aria-pressed', t === 'light' ? 'true' : 'false');
+    if (db) db.setAttribute('aria-pressed', t === 'dark' ? 'true' : 'false');
+    updateChartTheme();
+  }
+  (function () {
+    var t = localStorage.getItem('pv-theme') || 'light';
+    setTheme(t);
+  })();
+
   function toggleTheme() {
     var html = document.documentElement;
     var isDark = html.getAttribute('data-theme') !== 'dark';
-    html.setAttribute('data-theme', isDark ? 'dark' : 'light');
-    localStorage.setItem('pv-theme', isDark ? 'dark' : 'light');
+    setTheme(isDark ? 'dark' : 'light');
     var themeBtn2 = document.getElementById('theme-toggle');
     if (themeBtn2) themeBtn2.textContent = isDark ? '☀️ Light' : '🌙 Dark';
-    updateChartTheme();
   }
 
   function openAbout() {
