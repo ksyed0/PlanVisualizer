@@ -190,6 +190,7 @@ function renderChrome(data) {
       <a href="dashboard.html" class="pv-seg" aria-pressed="false">Pipeline</a>
     </div>
     <div class="pv-chrome-spacer"></div>
+    <span id="gen-time" data-iso="${esc((data && data.generatedAt) || '')}" style="font-size:11px;color:var(--text-mute);white-space:nowrap"></span>
     ${renderModeBadge('report')}
     <!-- BUG-0193: Search button restored to chrome -->
     <button class="pv-iconbtn" onclick="openSearch && openSearch()" aria-label="Search (⌘K)" id="search-btn" style="gap:5px">

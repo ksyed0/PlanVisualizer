@@ -23,7 +23,20 @@ const { execSync } = require('child_process');
 const { badge, BADGE_TONE } = require('./lib/theme');
 
 const ROOT = path.resolve(__dirname, '..');
-const STATUS_PATH = path.join(ROOT, 'docs', 'sdlc-status.json');
+
+// sdlc-status.json is gitignored and only exists in the main repo checkout,
+// not in worktrees. Walk up to the git root so worktree invocations find it.
+function findGitRoot(start) {
+  let dir = start;
+  while (true) {
+    if (fs.existsSync(path.join(dir, '.git'))) return dir;
+    const parent = path.dirname(dir);
+    if (parent === dir) return start; // filesystem root — fall back
+    dir = parent;
+  }
+}
+const GIT_ROOT = findGitRoot(ROOT);
+const STATUS_PATH = path.join(GIT_ROOT, 'docs', 'sdlc-status.json');
 const PLAN_STATUS_PATH = path.join(ROOT, 'docs', 'plan-status.json');
 const OUTPUT_PATH = path.join(ROOT, 'docs', 'dashboard.html');
 
