@@ -504,3 +504,31 @@ describe('generate-dashboard — US-0143 conductor dispatch hold', () => {
     expect(src).toContain('appendEventLog');
   });
 });
+
+describe('generate-dashboard — US-0145 event log', () => {
+  it('dashboard HTML contains pv-event-log element', () => {
+    const src = require('fs').readFileSync(
+      require('path').join(__dirname, '../../tools/generate-dashboard.js'),
+      'utf8',
+    );
+    expect(src).toContain('pv-event-log');
+  });
+
+  it('dashboard JS contains appendEventLog function', () => {
+    const src = require('fs').readFileSync(
+      require('path').join(__dirname, '../../tools/generate-dashboard.js'),
+      'utf8',
+    );
+    expect(src).toContain('appendEventLog');
+  });
+
+  it('event log has evt-time, evt-agent, evt-msg columns', () => {
+    const src = require('fs').readFileSync(
+      require('path').join(__dirname, '../../tools/generate-dashboard.js'),
+      'utf8',
+    );
+    expect(src).toContain('evt-time');
+    expect(src).toContain('evt-agent');
+    expect(src).toContain('evt-msg');
+  });
+});

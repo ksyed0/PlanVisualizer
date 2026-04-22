@@ -1507,6 +1507,20 @@ function generateHTML(status) {
   .cycle-telemetry-tile { background: var(--bg-card); border: 1px solid var(--bg-card-border); border-radius: 8px; padding: 8px 14px; text-align: center; font-family: var(--font-sans); min-width: 100px; }
   .cycle-telemetry-tile .tile-value { font-family: var(--font-display), monospace; font-size: 20px; font-weight: 700; color: var(--text-primary); }
   .cycle-telemetry-tile .tile-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); margin-top: 2px; }
+  /* US-0145: Event log primary column widget */
+  .pv-event-log { margin-bottom: 16px; }
+  .pv-log-row { display: grid; grid-template-columns: 72px 90px 1fr; gap: 10px; padding: 4px 14px; border-bottom: 1px dashed rgba(255,255,255,0.06); font-size: 12px; }
+  .pv-log-row:last-child { border-bottom: 0; }
+  .evt-time { color: var(--text-muted); font-family: monospace; }
+  .evt-agent { color: var(--text-secondary); font-weight: 600; }
+  .evt-msg { color: var(--text-secondary); }
+  .evt-start .evt-agent { color: var(--live-accent-ink, oklch(55% 0.18 38)); }
+  .evt-done .evt-agent { color: var(--ok, oklch(68% 0.15 150)); }
+  .evt-block .evt-agent { color: var(--risk, oklch(64% 0.20 25)); }
+  .evt-review .evt-agent { color: var(--info, oklch(66% 0.14 240)); }
+  .pv-log-status { font-family: monospace; font-size: 10px; letter-spacing: 0.1em; padding: 2px 6px; border-radius: 4px; background: var(--live-accent, oklch(72% 0.19 38)); color: #1a0f00; margin-left: auto; }
+  .card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .card-head h3 { margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; }
 </style>
 </head>
 <body>
@@ -1908,6 +1922,15 @@ ${storyRows}
   </div>
 </div>
 
+<!-- US-0145: Event Log — primary column widget with monospace rows, auto-scroll, pause-on-hover -->
+<div class="card pv-event-log" id="pv-event-log">
+  <div class="card-head">
+    <h3>Event Log</h3>
+    <span class="pv-log-status" id="pv-log-status">LIVE</span>
+  </div>
+  <div class="pv-log-body" id="pv-log-body" style="max-height:360px;overflow:auto;font-family:var(--font-sans);font-size:12px;line-height:1.55;"></div>
+</div>
+
 <!-- Activity Log — US-0121 terminal aesthetic -->
 <div class="card" style="margin-top: 24px">
   <h2><span class="live-dot ok" aria-label="live" title="live" id="activity-live-dot"></span>Activity Log</h2>
@@ -2067,6 +2090,21 @@ function appendEventLog(entry) {
   body.insertBefore(row, body.firstChild);
   if (!body.dataset.paused) body.scrollTop = 0;
 }
+
+// US-0145: pause event log scroll on hover so user can read entries
+(function () {
+  // Runs after DOM is ready
+  document.addEventListener('DOMContentLoaded', function () {
+    var lb = document.getElementById('pv-log-body');
+    if (!lb) return;
+    lb.addEventListener('mouseenter', function () {
+      this.dataset.paused = '1';
+    });
+    lb.addEventListener('mouseleave', function () {
+      delete this.dataset.paused;
+    });
+  });
+})();
 
 function setConductorActive(dispatchMsg) {
   var card = document.querySelector('[data-agent="Conductor"]');
