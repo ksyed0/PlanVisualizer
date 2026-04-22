@@ -1521,6 +1521,9 @@ function generateHTML(status) {
   .pv-log-status { font-family: monospace; font-size: 10px; letter-spacing: 0.1em; padding: 2px 6px; border-radius: 4px; background: var(--live-accent, oklch(72% 0.19 38)); color: #1a0f00; margin-left: auto; }
   .card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
   .card-head h3 { margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; }
+  /* US-0144: Simplified phase fill bar — number/name/group/fill only */
+  .pv-phase-fill-bg { height: 4px; background: var(--bg-progress, rgba(255,255,255,0.1)); border-radius: 3px; overflow: hidden; margin-top: auto; }
+  .pv-phase-fill { height: 100%; border-radius: 3px; background: var(--ok, oklch(68% 0.15 150)); transition: width 0.3s; }
 </style>
 </head>
 <body>
@@ -1605,7 +1608,7 @@ ${phases
     <div class="phase-agents">${agents.join(' \u00B7 ')}</div>
     <div class="phase-deliverables">${deliverables.join(' \u00B7 ')}</div>
     <div class="phase-elapsed" id="phase-${p.id}-elapsed" data-has-elapsed="${hasElapsed}"><span class="phase-check" id="phase-${p.id}-check" aria-label="complete">\u2713</span>${esc(elapsed)}</div>
-    <div class="phase-fill-track"><div class="phase-fill-bar" id="phase-${p.id}-fill" style="width: ${fillWidth}%"></div></div>
+    <div class="phase-fill-track"><div class="phase-fill-bar pv-phase-fill" id="phase-${p.id}-fill" style="width: ${fillWidth}%"></div></div>
   </div>`;
   })
   .join('\n')}

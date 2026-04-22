@@ -532,3 +532,21 @@ describe('generate-dashboard — US-0145 event log', () => {
     expect(src).toContain('evt-msg');
   });
 });
+
+describe('generate-dashboard — US-0144 pipeline scope', () => {
+  it('dashboard HTML contains pv-phase-fill element', () => {
+    const src = require('fs').readFileSync(
+      require('path').join(__dirname, '../../tools/generate-dashboard.js'),
+      'utf8',
+    );
+    expect(src).toContain('pv-phase-fill');
+  });
+
+  it('phase cards do not contain pv-phase-agent-task class', () => {
+    const src = require('fs').readFileSync(
+      require('path').join(__dirname, '../../tools/generate-dashboard.js'),
+      'utf8',
+    );
+    expect(src).not.toContain('pv-phase-agent-task');
+  });
+});
