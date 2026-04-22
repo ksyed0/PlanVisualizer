@@ -2049,6 +2049,41 @@ function escH(s) {
   return String(s == null ? '' : s)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
+// US-0143: Conductor dispatch hold — keeps Conductor card in is-active state
+// for conductorHoldMs ms after each dispatch, then reverts to is-idle.
+var conductorHoldMs = 3000;
+var _conductorHoldTimer = null;
+
+function appendEventLog(entry) {
+  var body = document.getElementById('pv-log-body');
+  if (!body) return;
+  var tag = entry.tag || 'start';
+  var tone = tag === 'done' ? 'evt-done' : tag === 'block' ? 'evt-block' : tag === 'review' ? 'evt-review' : 'evt-start';
+  var row = document.createElement('div');
+  row.className = 'pv-log-row ' + tone;
+  row.innerHTML = '<span class="evt-time">' + escH(entry.t || '') + '</span>' +
+    '<span class="evt-agent">' + escH(entry.a || '') + '</span>' +
+    '<span class="evt-msg">' + escH(entry.m || '') + '</span>';
+  body.insertBefore(row, body.firstChild);
+  if (!body.dataset.paused) body.scrollTop = 0;
+}
+
+function setConductorActive(dispatchMsg) {
+  var card = document.querySelector('[data-agent="Conductor"]');
+  if (card) {
+    card.classList.add('is-active');
+    card.classList.remove('is-idle');
+  }
+  appendEventLog({ t: new Date().toLocaleTimeString(), a: 'Conductor', m: dispatchMsg || 'Dispatched task', tag: 'dispatch' });
+  clearTimeout(_conductorHoldTimer);
+  _conductorHoldTimer = setTimeout(function () {
+    if (card) {
+      card.classList.remove('is-active');
+      card.classList.add('is-idle');
+    }
+  }, conductorHoldMs);
+}
+
 // US-0121 helpers: _formatLogTime formats ISO timestamps as HH:MM:SS;
 // _logCategory classifies log entries for colour coding.
 function _formatLogTime(raw) {

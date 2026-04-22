@@ -477,3 +477,30 @@ describe('init-sdlc-status — buildStatus', () => {
     expect(status.cycles).toEqual([]);
   });
 });
+
+describe('generate-dashboard — US-0143 conductor dispatch hold', () => {
+  it('dashboard JS includes conductorHoldMs = 3000', () => {
+    const src = require('fs').readFileSync(
+      require('path').join(__dirname, '../../tools/generate-dashboard.js'),
+      'utf8',
+    );
+    expect(src).toContain('conductorHoldMs');
+    expect(src).toContain('3000');
+  });
+
+  it('dashboard JS includes setConductorActive function', () => {
+    const src = require('fs').readFileSync(
+      require('path').join(__dirname, '../../tools/generate-dashboard.js'),
+      'utf8',
+    );
+    expect(src).toContain('setConductorActive');
+  });
+
+  it('setConductorActive calls appendEventLog', () => {
+    const src = require('fs').readFileSync(
+      require('path').join(__dirname, '../../tools/generate-dashboard.js'),
+      'utf8',
+    );
+    expect(src).toContain('appendEventLog');
+  });
+});
