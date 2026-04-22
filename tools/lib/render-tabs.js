@@ -1073,6 +1073,7 @@ function renderCostsTab(data, options = {}) {
     const brDisplay = br > 0 ? `Burn Rate: $${br.toFixed(2)}/day` : 'No recent spend data';
     const exDisplay = days !== null ? `Exhaustion: ${days} days remaining` : br > 0 ? 'Budget unlimited' : '';
 
+    // BUG-0208: Per-Epic Budget rows are now expandable to show per-story details
     const epicRows = budget.epicBudgets
       .map((eb, i) => {
         const accent = EPIC_ACCENT_COLORS[i % EPIC_ACCENT_COLORS.length];
@@ -1089,15 +1090,33 @@ function renderCostsTab(data, options = {}) {
             : eb.percentUsed !== null && eb.percentUsed >= 75
               ? 'pb-warn'
               : 'pb-ok';
-        return `<tr class="border-t border-slate-100 dark:border-slate-700 anim-stagger" style="--i:${Math.min(i, 19)}">
-        <td class="px-3 py-2"><span class="font-mono text-xs font-bold" style="color:${accent.border}">${eb.id}</span></td>
+        const barHtml = `<div class="flex items-center gap-2"><div class="progress-bar"><div class="pb-fill ${pbClass}" style="width:${barPct}%"></div></div><span class="text-xs" style="color:${barColor}">${eb.percentUsed}%</span></div>`;
+        const budEid = `budget-ep-${eb.id.replace(/[^a-zA-Z0-9]/g, '-')}`;
+        const epicStories = data.stories.filter((s) => s.epicId === eb.id);
+        const storySubRows = epicStories
+          .map((story) => {
+            const sc = data.costs[story.id] || {};
+            return `<tr class="border-t border-slate-100 dark:border-slate-700">
+          <td class="px-3 py-2 pl-8 font-mono text-xs text-slate-500 whitespace-nowrap">${esc(story.id)}</td>
+          <td class="px-3 py-2 text-sm dark:text-slate-200 truncate max-w-xs">${esc(story.title)}</td>
+          <td class="px-3 py-2 text-center text-xs text-slate-500">${esc(story.estimate || '?')}</td>
+          <td class="px-3 py-2 text-right text-sm dark:text-slate-200">${sc.projectedUsd > 0 ? usd(sc.projectedUsd) : '—'}</td>
+          <td class="px-3 py-2 text-right text-sm text-teal-700 dark:text-teal-400">${sc.costUsd > 0 ? usd(sc.costUsd) : '—'}</td>
+        </tr>`;
+          })
+          .join('');
+        return `<tbody>
+      <tr class="border-t-2 border-slate-300 dark:border-slate-600 cursor-pointer select-none anim-stagger" style="--i:${Math.min(i, 19)};background:${accent.bg};border-left:4px solid ${accent.border}" onclick="toggleSection('${budEid}','${budEid}-arrow')">
+        <td class="px-3 py-2">
+          <span id="${budEid}-arrow" class="text-slate-400 text-xs mr-2">&#9654;</span>
+          <span class="epic-id-display font-mono text-xs font-bold uppercase"><span class="epic-id-label">EPIC /</span> <span class="epic-id-num" style="color:${accent.border}">${esc(eb.id.replace('EPIC-', ''))}</span></span>
+        </td>
         <td class="px-3 py-2 text-sm dark:text-slate-200">${eb.budget !== null ? usd(eb.budget) : '—'}</td>
         <td class="px-3 py-2 text-sm dark:text-slate-200">${usd(eb.spent)}</td>
         <td class="px-3 py-2 text-sm dark:text-slate-200">${eb.remaining !== null ? usd(eb.remaining) : '—'}</td>
-        <td class="px-3 py-2">
-          ${eb.percentUsed !== null ? `<div class="flex items-center gap-2"><div class="progress-bar"><div class="pb-fill ${pbClass}" style="width:${barPct}%"></div></div><span class="text-xs" style="color:${barColor}">${eb.percentUsed}%</span></div>` : '—'}
-        </td>
-      </tr>`;
+        <td class="px-3 py-2">${eb.percentUsed !== null ? barHtml : '—'}</td>
+      </tr>
+      </tbody><tbody id="${budEid}" class="hidden">${storySubRows || '<tr><td colspan="5" class="px-3 py-2 text-xs text-slate-400 pl-8">No stories.</td></tr>'}</tbody>`;
       })
       .join('');
 
@@ -1128,18 +1147,18 @@ function renderCostsTab(data, options = {}) {
           <div class="hero-num text-slate-800 dark:text-slate-100">${remaining !== null ? usd(remaining) : '—'}</div>
         </div>
       </div>
-      <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Per-Epic Budget</h3>
+      <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Per-Epic Budget <span class="text-xs font-normal text-slate-400">(click epic to expand stories)</span></h3>
       <table class="w-full text-left text-sm">
         <thead class="text-xs uppercase bg-slate-50 dark:bg-slate-700">
           <tr>
-            <th class="px-3 py-2">Epic</th>
-            <th class="px-3 py-2">Budget</th>
-            <th class="px-3 py-2">Spent</th>
+            <th class="px-3 py-2">Epic / Story</th>
+            <th class="px-3 py-2">Budget / Est.</th>
+            <th class="px-3 py-2">Spent / AI</th>
             <th class="px-3 py-2">Remaining</th>
             <th class="px-3 py-2">% Used</th>
           </tr>
         </thead>
-        <tbody>${epicRows}</tbody>
+        ${epicRows}
       </table>
       <div class="mt-4">
         <button ${csvDownload} class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm font-medium">Export Budget CSV</button>
@@ -1178,10 +1197,10 @@ function renderCostsTab(data, options = {}) {
         })
         .join('');
       return `<tbody>
-    <tr class="border-t-2 border-slate-300 dark:border-slate-600 cursor-pointer select-none anim-stagger" style="--i:${Math.min(epicIdx, 19)};background:${accent.bg}" onclick="toggleSection('${ceid}','${ceid}-arrow')">
+    <tr class="border-t-2 border-slate-300 dark:border-slate-600 cursor-pointer select-none anim-stagger" style="--i:${Math.min(epicIdx, 19)};background:${accent.bg};border-left:4px solid ${accent.border}" onclick="toggleSection('${ceid}','${ceid}-arrow')">
       <td colspan="4" class="px-3 py-2">
         <span id="${ceid}-arrow" class="text-slate-400 text-xs mr-2">&#9654;</span>
-        <span class="font-mono text-xs font-bold" style="color:${accent.border}">${epic.id}</span>
+        <span class="epic-id-display font-mono text-xs font-bold uppercase"><span class="epic-id-label">EPIC /</span> <span class="epic-id-num" style="color:${accent.border}">${esc(epic.id.replace('EPIC-', ''))}</span></span>
         <span class="text-sm font-semibold ml-2 text-slate-700 dark:text-slate-200">${esc(epic.title)}</span>
         <span class="ml-2">${badge(epic.status)}</span>
       </td>
@@ -1272,7 +1291,7 @@ function renderCostsTab(data, options = {}) {
         })
         .join('');
       return `<tbody>
-    <tr class="border-t-2 border-slate-300 dark:border-slate-600 cursor-pointer select-none bug-epic-header" data-epic="${esc(epicId)}" style="background:${accent.bg}" onclick="toggleSection('${jsEsc(bceid)}','${jsEsc(bceid)}-arrow')">
+    <tr class="border-t-2 border-slate-300 dark:border-slate-600 cursor-pointer select-none bug-epic-header" data-epic="${esc(epicId)}" style="background:${accent.bg};border-left:4px solid ${accent.border}" onclick="toggleSection('${jsEsc(bceid)}','${jsEsc(bceid)}-arrow')">
       <td colspan="6" class="px-3 py-2">
         <span id="${bceid}-arrow" class="text-slate-400 text-xs mr-2">&#9660;</span>
         <span class="font-mono text-xs font-bold" style="color:${accent.border}">${label}</span>
@@ -2098,6 +2117,24 @@ function renderStatusTab(data) {
     .slice(0, 2)
     .forEach((s) => risks.push({ level: 'MED', label: esc(s.title), sub: `${esc(s.id)} · Blocked` }));
   if (budgetPct > 80) risks.push({ level: 'LOW', label: 'Budget approaching cap', sub: `${budgetPct}% consumed` });
+  // BUG-0204: openBugs.length > 3 can trigger "At risk" verdict without any
+  // High/Critical bugs — add medium-severity bugs as MED risk items so the
+  // Top Risks widget is never empty when the verdict is "At risk".
+  if (risks.length === 0 && openBugs.length > 3) {
+    const medBugs = openBugs.filter((b) => b.severity === 'Medium');
+    medBugs
+      .slice(0, 3)
+      .forEach((b) =>
+        risks.push({ level: 'MED', label: esc(b.title), sub: `${esc(b.id)} · ${esc(b.relatedStory || 'no story')}` }),
+      );
+    if (medBugs.length === 0) {
+      risks.push({
+        level: 'MED',
+        label: `${openBugs.length} open bugs require attention`,
+        sub: 'Review and prioritise open bug list',
+      });
+    }
+  }
   const riskColors = { HIGH: 'var(--risk)', MED: 'var(--warn)', LOW: 'var(--ok)' };
   const riskItems =
     risks

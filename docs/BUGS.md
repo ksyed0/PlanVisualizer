@@ -2742,3 +2742,129 @@ Steps to Reproduce:
    Lesson Encoded: No
    Estimated Cost USD: 0.00
    Notes: Fixed by implementing renderStatusTab(data) in render-tabs.js with the full US-0135/US-0139 scope: verdict computation from open bugs/blocked stories/budget, Release Health Hero card, 14-week progress mini-bars from trends data, 30-day coverage dots from coverage history, Decision Widgets grid (Overall Progress, Epic Progress, Top Risks cards), and Quality + Snapshot row. Function exported and called as first tab in render-html.js.
+
+---
+
+BUG-0202: Dark mode surface/background contrast too low — panels indistinguishable from page background
+Severity: High
+Related Story: US-0135 (EPIC-0020)
+Steps to Reproduce:
+
+1. Open plan-status.html in dark mode
+2. Compare the page background colour to panel/card surface colours
+   Expected: Cards and panels are visibly lighter than the page background — distinct layering
+   Actual: --surface (ink9, oklch(10%)) sits only 4 percentage points above --bg (ink10, oklch(6%)) — imperceptible contrast at typical viewing distances; panels appear to float on an identical-tone background
+   Root Cause: EPIC-0020 chose ink9/ink8 for dark surface/surface-2, producing ~1.2:1 contrast ratio between layers. Good dark-mode layering requires at least 1.4:1 per layer step.
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0202-0208-ui-polish
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed by bumping dark theme tokens in theme.js: --surface from ink9(10%) to ink8(16%), --surface-2 from ink8(16%) to ink7(24%), --border from oklch(22%) to oklch(28%). Gives ~1.45:1 contrast between bg and surface — visually distinct but still clearly dark.
+
+---
+
+BUG-0203: Plan-Status About modal is a narrow single-column card — doesn't match the wider two-column About design used on the agentic dashboard
+Severity: Low
+Related Story: US-0135 (EPIC-0020)
+Steps to Reproduce:
+
+1. Open plan-status.html → click the About button
+2. Compare the modal to the agentic dashboard About modal
+   Expected: Wide two-column modal with branding panel on left (icon, tool version, GitHub link) and project details on right (name, tagline, version, branch, build, generated-at)
+   Actual: Narrow max-w-sm text-center single-column card with minimal project metadata — inconsistent with the unified About design implemented in the agentic dashboard (US-0123)
+   Root Cause: render-html.js About modal was never updated to match the generate-dashboard.js two-column design adopted in US-0123.
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0202-0208-ui-polish
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed by rewriting the About modal in render-html.js to use a two-column sm:grid layout: left panel has branding icon + tool version + GitHub link; right panel has project name, tagline, version/branch/build rows, and generated-at. Max width bumped from max-w-sm to max-w-2xl.
+
+---
+
+BUG-0204: Top Risks widget shows "No active risks" when release health verdict is "At risk"
+Severity: Medium
+Related Story: US-0139 (EPIC-0020)
+Steps to Reproduce:
+
+1. Open plan-status.html → Status tab
+2. Observe the Release Health hero (verdict "At risk") and the Top Risks decision widget
+   Expected: Top Risks shows risk items consistent with the "At risk" verdict
+   Actual: "No active risks — looking good 🎉" is displayed even though the verdict is "At risk" — completely contradictory
+   Root Cause: The verdict's "At risk" condition triggers when openBugs.length > 3 even if all open bugs are Medium severity. The Top Risks widget only collects High/Critical bugs and blocked stories. When all open bugs are Medium-or-lower, the risks array is empty and the fallback message is displayed.
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0202-0208-ui-polish
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed in renderStatusTab() in render-tabs.js: after collecting criticalBugs/highBugs/blockedStories, if risks is still empty and hasRisk is true (i.e., openBugs.length > 3), add Medium-severity open bugs (up to 3) as MED risk items. If no Medium bugs either, add an aggregate "N open bugs require attention" item. This ensures the Top Risks widget is never empty when the verdict is At risk.
+
+---
+
+BUG-0205: Column / Card view toggle has no visual active-state — impossible to tell which view is selected
+Severity: Medium
+Related Story: US-0131 (EPIC-0019)
+Steps to Reproduce:
+
+1. Open plan-status.html → Hierarchy tab
+2. Look at the Column / Card toggle buttons in the top-right of the tab
+   Expected: The active view button is highlighted (filled background, contrasting text)
+   Actual: Both buttons look identical — same border, same text, same background; no visual cue for active state
+   Root Cause: setHierarchyView() applies classList.toggle('active-view', ...) correctly, but no CSS rule for button.active-view was ever defined — the class is toggled but has no visual effect.
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0202-0208-ui-polish
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed by adding button.active-view { background: var(--clr-accent) !important; color: #fff !important; border-color: var(--clr-accent) !important; } to the embedded CSS in render-scripts.js.
+
+---
+
+BUG-0206: Hierarchy tab epics all expanded by default — should start collapsed
+Severity: Low
+Related Story: US-0131 (EPIC-0019)
+Steps to Reproduce:
+
+1. Open plan-status.html → Hierarchy tab → Column view
+2. Observe the epic sections on first load
+   Expected: All epic sections are collapsed; user expands epics of interest
+   Actual: Only Done-status epics auto-collapse; all active/in-progress epics are fully expanded, producing a very long page on initial load
+   Root Cause: The DOMContentLoaded handler in render-scripts.js only collapsed epics matching [data-epic-status="Done"]. Active epics were intentionally left expanded by the original design but user preference is for all-collapsed.
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0202-0208-ui-polish
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed by extending the auto-collapse logic to target ALL epic-stories-_ and epic-cards-_ elements (not just Done ones) in the DOMContentLoaded handler in render-scripts.js.
+
+---
+
+BUG-0207: Epic section headers use inconsistent styling across tabs — Costs/Bugs lack the accent left-border used in Hierarchy
+Severity: Low
+Related Story: US-0131 (EPIC-0019)
+Steps to Reproduce:
+
+1. Open plan-status.html → Hierarchy tab. Note epic headers: accent left-border + EPIC / XXXX format
+2. Open Costs tab (story section) and Costs tab (bug section). Note epic headers: only border-t-2, no accent border-left, no EPIC/XXXX format — visual inconsistency
+   Expected: Epic headers across all tabs share the same accent left-border style and EPIC / XXXX ID format
+   Actual: Hierarchy has 4px left-border accent + "EPIC / 0001" style; Costs and Bugs epic headers use only a top border and raw epic ID string — different look and feel
+   Root Cause: The Costs and Bugs tab epic header tr elements were written before the Hierarchy unified epic header style was established.
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0202-0208-ui-polish
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed by adding border-left:4px solid ${accent.border} and the EPIC / XXXX format to the story-costs epic headers and bug-costs epic headers in render-tabs.js.
+
+---
+
+BUG-0208: Costs tab Per-Epic Budget table is flat — cannot expand an epic to see per-story cost breakdown
+Severity: Medium
+Related Story: US-0116 (EPIC-0016)
+Steps to Reproduce:
+
+1. Open plan-status.html → Costs tab → Per-Epic Budget section
+2. Click on an epic row
+   Expected: Epic row expands to reveal per-story rows (Story ID, title, estimate, projected cost, AI cost) — same expand pattern as the Bugs tab epic sections
+   Actual: Epic rows are static table rows with no click handler and no expand behaviour; per-story data is only visible in the separate "Story Costs" section further down the page
+   Root Cause: The Per-Epic Budget section was designed as a summary-only view. The expand/collapse pattern existed in the Story Costs section below but was never added to the budget summary table.
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0202-0208-ui-polish
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed by converting the Per-Epic Budget table from a flat tbody to a series of expandable tbody pairs (header row + hidden story sub-rows) using toggleSection(). Each epic header now expands to show per-story rows with Story ID, title, estimate, projected cost, and AI cost columns. Column headers updated to "Epic / Story", "Budget / Est.", "Spent / AI", "Remaining", "% Used" to reflect the dual-level data.

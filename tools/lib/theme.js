@@ -177,9 +177,9 @@ function generateCssTokens() {
   [data-theme="dark"] {
     --bg:          ${palette.ink10};
     --bg-sunk:     oklch(4% 0.018 95);
-    --surface:     ${palette.ink9};
-    --surface-2:   ${palette.ink8};
-    --border:      oklch(22% 0.018 95);
+    --surface:     ${palette.ink8};
+    --surface-2:   ${palette.ink7};
+    --border:      oklch(28% 0.018 95);
     --border-soft: oklch(22% 0.018 95 / 0.5);
     --text:        ${palette.ink1};
     --text-dim:    ${palette.ink4};
