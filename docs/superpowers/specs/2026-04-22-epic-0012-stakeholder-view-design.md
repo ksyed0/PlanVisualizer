@@ -103,7 +103,7 @@ Three vertical sections, top-to-bottom:
 **Tile 2 — Budget Health**
 
 - Traffic-light dot (green/amber/red based on spend vs budget cap thresholds: <50% green, 50–80% amber, >80% red)
-- Status label inline to right on same baseline: `On track · Est. $4,280 · AI spend $312.40 · At current pace, budget lasts 18 more weeks`
+- Status label inline to right on same baseline: `On track · Est. $4,280 USD · AI spend $312.40 USD · At current pace, budget lasts 18 more weeks`
 - If no `budget.totalUsd` configured: dot omitted, show spend figures only
 
 **Tile 3 — Open Risks**
@@ -124,7 +124,7 @@ Epic rows wrapped in a flex column container at **4px gap**. Each row:
 
 - **Colour dot** matches status: green (ok), amber (warn), blue (info), grey (mute)
 - **EPIC-ID** in JetBrains Mono, `--text-dim`, prefixed inline before name
-- **Cost line** — second line under name: `Est. $NNN · AI spend $NNN` in 10px mono, `--text-mute` labels / `--text-dim` values. Hidden if no cost data.
+- **Cost line** — second line under name: `Est. $NNN USD · AI spend $NNN USD` in 10px mono, `--text-mute` labels / `--text-dim` values. Hidden if no cost data.
 - **Progress bar** — 72px wide, 6px tall, fills in status colour
 - **%** — JetBrains Mono, coloured to match status
 - **Status chip** — plain language label, themed chip
@@ -256,3 +256,7 @@ Target: ≥15 new tests. Overall coverage must remain above 80% statements gate.
 - US-0078 (password gate) — deferred, deployment-level access control sufficient
 - Story-level cost display — deferred, epic-level sufficient for stakeholders
 - html2pdf.js — future roadmap item
+
+## Future Stories
+
+**Customisable currency support** — all cost figures in the Stakeholder View currently display in USD (hardcoded postfix). A future story should add a `costs.currency` field to `plan-visualizer.config.json` (default: `"USD"`) and an optional `costs.currencySymbol` (default: `"$"`). The `usd()` helper in `render-utils.js` should be updated to read from config so all cost surfaces — Stakeholder View, Costs tab, masthead tile — honour the configured currency without requiring per-call changes. This story should also consider locale-aware number formatting via `Intl.NumberFormat`.
