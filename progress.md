@@ -37,6 +37,7 @@ None. PR #416 is open and green.
 ### PR Updated
 
 - PR #416: `bugfix/BUG-0202-0208-ui-polish` → `develop` — 3 additional commits: Costs epic header unification, UI consistency sweep, US-0147 story + ID registry
+- PR #416 squash-merged and remote branch deleted. Develop fast-forwarded to `faf4997`. Local branch and orphaned remotes pruned.
 
 ---
 
