@@ -312,6 +312,42 @@ function renderHtml(data, options = {}) {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.35; }
     }
+    /* US-0135: Status hero */
+    .pv-hero { padding: 0; overflow: hidden; }
+    .pv-hero-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 16px 10px;
+      flex-wrap: wrap;
+    }
+    .pv-hero-verdict { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+    .pv-hero-narrative { margin: 0; font-size: 13px; color: var(--text-dim); line-height: 1.4; }
+    .pv-hero-stats { display: flex; gap: 24px; flex-shrink: 0; }
+    .pv-stat { display: flex; flex-direction: column; gap: 3px; align-items: flex-end; }
+    .pv-stat-lbl { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-mute); font-family: var(--font-mono); }
+    .pv-stat-val { font-family: var(--font-display); font-size: 20px; font-weight: 500; letter-spacing: -0.01em; color: var(--text); }
+    .pv-delta { font-size: 11px; font-weight: 500; }
+    .pv-delta.up { color: var(--ok); }
+    .pv-delta.dn { color: var(--risk); }
+    .pv-hero-vizrow { padding: 0 16px 14px; }
+    .pv-heat { display: grid; grid-template-columns: repeat(30, 1fr); gap: 2px; }
+    .pv-heat-cell { aspect-ratio: 1; border-radius: 2px; background: var(--surface-2); }
+    /* chip component */
+    .chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: var(--font-mono); font-size: 10.5px;
+      padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border);
+      font-weight: 500; letter-spacing: 0.04em;
+    }
+    .chip .d { width: 5px; height: 5px; border-radius: 999px; background: currentColor; }
+    .chip.ok { color: var(--ok); border-color: color-mix(in oklab, var(--ok) 40%, var(--border)); background: color-mix(in oklab, var(--ok) 8%, transparent); }
+    .chip.warn { color: var(--warn); border-color: color-mix(in oklab, var(--warn) 40%, var(--border)); background: color-mix(in oklab, var(--warn) 8%, transparent); }
+    .chip.risk { color: var(--risk); border-color: color-mix(in oklab, var(--risk) 40%, var(--border)); background: color-mix(in oklab, var(--risk) 10%, transparent); }
+    .chip.info { color: var(--info); border-color: color-mix(in oklab, var(--info) 40%, var(--border)); background: color-mix(in oklab, var(--info) 8%, transparent); }
+    /* card shared primitive */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); }
     /* US-0136: Masthead */
     .pv-masthead {
       display: grid;

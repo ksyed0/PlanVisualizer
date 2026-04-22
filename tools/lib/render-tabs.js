@@ -553,6 +553,94 @@ function setTrendsRange(btn, range) {
 </script>`;
 }
 
+// US-0135: Status hero card — answers "is the release on track?" in one glance.
+// Read-only dependency on data.completion (EPIC-0010 artifact) — not modified.
+function _renderStatusHero(data) {
+  const activeStories = data.stories.filter((s) => s.status !== 'Retired');
+  const done = activeStories.filter((s) => s.status === 'Done').length;
+  const total = activeStories.length;
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+  const openBugs = (data.bugs || []).filter((b) => !/^(Fixed|Retired|Cancelled)/i.test(b.status));
+  const criticalBugs = openBugs.filter((b) => ['Critical', 'High'].includes(b.severity)).length;
+  const blockedStories = activeStories.filter((s) => s.status === 'Blocked').length;
+
+  let verdict, verdictTone, narrative;
+  if (criticalBugs > 0 && blockedStories > 1) {
+    verdict = 'Off track';
+    verdictTone = 'risk';
+    narrative = `${criticalBugs} critical/high ${criticalBugs === 1 ? 'bug' : 'bugs'} and ${blockedStories} blocked ${blockedStories === 1 ? 'story' : 'stories'} require immediate attention.`;
+  } else if (criticalBugs > 0 || blockedStories > 0 || pct < 50) {
+    verdict = 'At risk';
+    verdictTone = 'warn';
+    narrative = `Release is progressing at ${pct}% with minor blockers to resolve.`;
+  } else {
+    verdict = 'On track';
+    verdictTone = 'ok';
+    narrative = `Release is ${pct}% complete with no critical blockers.`;
+  }
+
+  // Forecast — from EPIC-0010 data.completion (read-only)
+  const comp = data.completion;
+  const forecastHtml =
+    comp && comp.likelyDate
+      ? `<span class="pv-stat-val tnum">${esc(comp.likelyDate)}</span>`
+      : '<span class="pv-stat-val">—</span>';
+
+  // Velocity
+  const velocityArr = (data.trends && data.trends.velocity) || [];
+  const lastVel = velocityArr.length > 0 ? velocityArr[velocityArr.length - 1] : null;
+  const prevVel = velocityArr.length > 1 ? velocityArr[velocityArr.length - 2] : null;
+  const velDelta = lastVel !== null && prevVel !== null ? lastVel - prevVel : null;
+  const velHtml =
+    lastVel !== null
+      ? `<span class="pv-stat-val tnum">${lastVel.toFixed(1)} <span class="pv-delta ${velDelta !== null && velDelta >= 0 ? 'up' : 'dn'}">${velDelta !== null && velDelta >= 0 ? '▲' : '▼'} ${Math.abs(velDelta || 0).toFixed(1)}</span></span>`
+      : '<span class="pv-stat-val">—</span>';
+
+  // Budget
+  const budget = data.budget || {};
+  const budgetHtml =
+    budget.hasBudget && budget.percentUsed !== null
+      ? `<span class="pv-stat-val tnum">${budget.percentUsed}%</span>`
+      : '<span class="pv-stat-val">—</span>';
+
+  // 30-day coverage heat strip
+  const covHistory = (data.trends && data.trends.coverage) || [];
+  const cells30 = Array.from({ length: 30 }, (_, i) => {
+    const val = covHistory[covHistory.length - 30 + i];
+    if (val === null || val === undefined) return '<span class="pv-heat-cell" style="opacity:0.15"></span>';
+    const tone = val >= 80 ? 'var(--ok)' : val >= 60 ? 'var(--warn)' : 'var(--risk)';
+    return `<span class="pv-heat-cell" style="background:${tone};opacity:${(0.3 + (val / 100) * 0.7).toFixed(2)}" title="${val.toFixed(1)}%"></span>`;
+  }).join('');
+
+  return `
+  <div class="pv-hero card" style="margin-bottom:16px">
+    <div class="pv-hero-head">
+      <div class="pv-hero-verdict">
+        <span class="chip ${verdictTone}"><span class="d"></span>${esc(verdict)}</span>
+        <p class="pv-hero-narrative">${esc(narrative)}</p>
+      </div>
+      <div class="pv-hero-stats">
+        <div class="pv-stat">
+          <span class="pv-stat-lbl">Forecast</span>
+          ${forecastHtml}
+        </div>
+        <div class="pv-stat">
+          <span class="pv-stat-lbl">Velocity</span>
+          ${velHtml}
+        </div>
+        <div class="pv-stat">
+          <span class="pv-stat-lbl">Budget</span>
+          ${budgetHtml}
+        </div>
+      </div>
+    </div>
+    <div class="pv-hero-vizrow">
+      <div class="pv-heat" aria-label="30-day coverage heat strip">${cells30}</div>
+    </div>
+  </div>`;
+}
+
 function renderChartsTab(data) {
   const epicLabels = JSON.stringify(data.epics.map((e) => e.id));
   const epicDone = JSON.stringify(
@@ -620,6 +708,7 @@ function renderChartsTab(data) {
 
   return `
   <div id="tab-charts" class="p-6 hidden" role="tabpanel" aria-labelledby="tab-btn-charts">
+    ${_renderStatusHero(data)}
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
       <div class="chart-supertitle">Delivery</div>

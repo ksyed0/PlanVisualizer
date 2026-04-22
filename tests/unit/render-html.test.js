@@ -1838,3 +1838,34 @@ describe('renderHtml — US-0136 neutral chrome', () => {
     expect(() => renderHtml(sampleData)).not.toThrow();
   });
 });
+
+describe('renderHtml — US-0135 status hero card', () => {
+  let html;
+  beforeAll(() => {
+    html = renderHtml(sampleData);
+  });
+
+  it('renders a pv-hero element in the Status tab', () => {
+    expect(html).toContain('pv-hero');
+  });
+
+  it('renders a verdict chip', () => {
+    expect(html).toMatch(/on.track|at.risk|off.track/i);
+  });
+
+  it('renders Forecast stat block', () => {
+    expect(html).toContain('Forecast');
+  });
+
+  it('renders Velocity stat block', () => {
+    expect(html).toContain('Velocity');
+  });
+
+  it('renders Budget stat block', () => {
+    expect(html).toContain('Budget');
+  });
+
+  it('renders a 30-cell coverage heat strip', () => {
+    expect(html).toContain('pv-heat');
+  });
+});
