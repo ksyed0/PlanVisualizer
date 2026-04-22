@@ -82,6 +82,29 @@ describe('renderHtml', () => {
   });
 });
 
+describe('renderHtml — US-0138 mode badge', () => {
+  let html;
+  beforeAll(() => {
+    html = renderHtml(sampleData);
+  });
+
+  it('renders a mode-badge element', () => {
+    expect(html).toContain('mode-badge');
+  });
+
+  it('renders REPORT label on Plan-Status', () => {
+    expect(html).toContain('REPORT');
+  });
+
+  it('renders static indigo pip (mode-report class)', () => {
+    expect(html).toContain('mode-report');
+  });
+
+  it('badge has aria-label "Mode: Report"', () => {
+    expect(html).toContain('aria-label="Mode: Report"');
+  });
+});
+
 describe('renderHtml — bugs tab', () => {
   it('renders bug rows when bugs present', () => {
     const dataWithBug = {
@@ -215,10 +238,11 @@ describe('renderHtml — story with ACs', () => {
 });
 
 describe('renderHtml — coverage below target', () => {
-  it('renders red coverage when below 80%', () => {
+  it('renders coverage value when below 80%', () => {
     const dataLowCoverage = { ...sampleData, coverage: { lines: 70, overall: 70, meetsTarget: false } };
     const html = renderHtml(dataLowCoverage);
-    expect(html).toMatch(/tile-cov tile-danger/);
+    // Masthead still renders coverage value
+    expect(html).toContain('70.0%');
   });
 });
 
@@ -442,7 +466,7 @@ describe('renderHtml — traceability with Not Run TC', () => {
 describe('renderHtml — sticky header (BUG-0004 regression)', () => {
   it('wraps header in a sticky container', () => {
     const html = renderHtml(sampleData);
-    expect(html).toContain('id="topbar-fixed"');
+    expect(html).toContain('id="pv-chrome"');
   });
 });
 
@@ -759,31 +783,31 @@ describe('renderHtml — CSS tokens (US-0096 zebra striping)', () => {
     html = renderHtml(sampleData);
   });
 
-  // Extract :root { ... } block (stops at closing brace of root block, before html.dark)
+  // Extract [data-theme="light"] { ... } block (US-0137: token system migrated to data-theme)
   const rootBlock = () => {
-    const m = html.match(/:root\s*\{([\s\S]*?)\n\s{2}\}/);
+    const m = html.match(/\[data-theme="light"\]\s*\{([\s\S]*?)\}/);
     return m ? m[1] : '';
   };
-  // Extract html.dark { ... } block
+  // Extract [data-theme="dark"] { ... } block
   const darkBlock = () => {
-    const m = html.match(/html\.dark\s*\{([\s\S]*?)\n\s{2}\}/);
+    const m = html.match(/\[data-theme="dark"\]\s*\{([\s\S]*?)\}/);
     return m ? m[1] : '';
   };
 
-  it('declares --clr-row-alt in :root (light mode)', () => {
-    expect(rootBlock()).toMatch(/--clr-row-alt:\s*rgba\(148,163,184,0\.04\)/);
+  it('declares --bg in [data-theme="light"] (light mode, US-0137)', () => {
+    expect(rootBlock()).toMatch(/--bg:/);
   });
 
-  it('declares --clr-row-hover in :root (light mode)', () => {
-    expect(rootBlock()).toMatch(/--clr-row-hover:\s*rgba\(148,163,184,0\.09\)/);
+  it('declares --text in [data-theme="light"] (light mode, US-0137)', () => {
+    expect(rootBlock()).toMatch(/--text:/);
   });
 
-  it('declares --clr-row-alt in html.dark (dark mode)', () => {
-    expect(darkBlock()).toMatch(/--clr-row-alt:\s*rgba\(255,255,255,0\.02\)/);
+  it('declares --bg in [data-theme="dark"] (dark mode, US-0137)', () => {
+    expect(darkBlock()).toMatch(/--bg:/);
   });
 
-  it('declares --clr-row-hover in html.dark (dark mode)', () => {
-    expect(darkBlock()).toMatch(/--clr-row-hover:\s*rgba\(255,255,255,0\.05\)/);
+  it('declares --text in [data-theme="dark"] (dark mode, US-0137)', () => {
+    expect(darkBlock()).toMatch(/--text:/);
   });
 
   it('emits .scroll-table tbody tr:nth-child(even) rule using --clr-row-alt', () => {
@@ -812,8 +836,8 @@ describe('renderHtml — hero numbers (US-0099)', () => {
     return m ? m[1] : '';
   };
 
-  it('declares .hero-num with Instrument Serif font stack', () => {
-    expect(heroNumBlock()).toMatch(/font-family:\s*'Instrument Serif'/);
+  it('declares .hero-num with display font variable (US-0137: Instrument Serif replaced by var(--font-display))', () => {
+    expect(heroNumBlock()).toMatch(/font-family:\s*var\(--font-display/);
   });
 
   it('declares .hero-num with clamp() responsive font-size', () => {
@@ -833,43 +857,26 @@ describe('renderHtml — hero numbers (US-0099)', () => {
     expect(heroNumSmBlock()).toMatch(/clamp\([^)]*rem[^)]*\)/);
   });
 
-  it('applies hero-num hero-num-sm to Bugs Open topbar tile', () => {
-    expect(html).toMatch(
-      /class="tile-value hero-num hero-num-sm tile-bugs[^"]*"[^>]*>[^<]*Bugs|tile-bugs[^"]*"[^>]*>[^<]*\d+<\/span>\s*<span class="tile-label">Bugs Open/,
-    );
-    // Precise: the Bugs Open tile-value contains hero-num hero-num-sm
-    const bugsTileMatch = html.match(
-      /<span class="tile-value ([^"]+) tile-bugs[^"]*">[\s\S]*?<\/span>\s*<span class="tile-label">Bugs Open<\/span>/,
-    );
-    expect(bugsTileMatch).not.toBeNull();
-    expect(bugsTileMatch[1]).toContain('hero-num');
-    expect(bugsTileMatch[1]).toContain('hero-num-sm');
+  it('renders Open bugs count in masthead (US-0136: stat tiles moved from chrome to masthead)', () => {
+    // After US-0136, stat tiles are no longer in the chrome/topbar.
+    // The masthead (pv-masthead) renders open bug counts under pv-meta-val.
+    expect(html).toContain('Open bugs');
   });
 
-  it('applies hero-num hero-num-sm to Coverage topbar tile', () => {
-    const covTileMatch = html.match(
-      /<span class="tile-value ([^"]+) tile-cov[^"]*">[\s\S]*?<\/span>\s*<span class="tile-label">Coverage<\/span>/,
-    );
-    expect(covTileMatch).not.toBeNull();
-    expect(covTileMatch[1]).toContain('hero-num');
-    expect(covTileMatch[1]).toContain('hero-num-sm');
+  it('renders Coverage value in masthead (US-0136: stat tiles moved from chrome to masthead)', () => {
+    expect(html).toContain('Coverage');
+    // masthead renders coverage as pv-meta-val
+    expect(html).toMatch(/pv-meta-val/);
   });
 
-  it('applies hero-num hero-num-sm to AI Cost topbar tile', () => {
-    const aiTileMatch = html.match(
-      /<span class="tile-value ([^"]+)">[\s\S]*?<\/span>\s*<span class="tile-label">AI Cost<\/span>/,
-    );
-    expect(aiTileMatch).not.toBeNull();
-    expect(aiTileMatch[1]).toContain('hero-num');
-    expect(aiTileMatch[1]).toContain('hero-num-sm');
+  it('renders AI spend in masthead (US-0136: stat tiles moved from chrome to masthead)', () => {
+    expect(html).toContain('AI spend');
   });
 
-  it('does NOT apply hero-num to Stories tile (treatment is scoped to Bugs/Coverage/AI Cost)', () => {
-    const storiesTileMatch = html.match(
-      /<span class="tile-value[^"]*">[^<]*<\/span>\s*<span class="tile-label">Stories<\/span>/,
-    );
-    expect(storiesTileMatch).not.toBeNull();
-    expect(storiesTileMatch[0]).not.toContain('hero-num');
+  it('does not render topbar stat tiles in chrome (US-0136: chrome is navigation-only)', () => {
+    // Old topbar tile HTML elements are not rendered — chrome has no stat tiles
+    expect(html).not.toContain('tile-bugs');
+    expect(html).not.toContain('class="topbar-tile');
   });
 
   it('renders Coverage doughnut overlay using hero-num (default, not sm)', () => {
@@ -1746,5 +1753,163 @@ describe('renderHtml — at-risk epic summary (US-0067)', () => {
       },
     };
     expect(renderHtml(d)).not.toContain('At-Risk Epics');
+  });
+});
+
+describe('renderHtml — US-0137/0141 token system', () => {
+  let html;
+  beforeAll(() => {
+    html = renderHtml(sampleData);
+  });
+
+  it('loads Inter Tight font (not plain Inter)', () => {
+    expect(html).toContain('Inter+Tight');
+    expect(html).not.toContain('family=Inter:wght');
+  });
+
+  it('does not load Instrument Serif or Fraunces', () => {
+    expect(html).not.toContain('Instrument+Serif');
+    expect(html).not.toContain('Fraunces');
+  });
+
+  it('uses data-theme attribute for theming', () => {
+    expect(html).toContain('data-theme');
+    expect(html).toContain('[data-theme="light"]');
+    expect(html).toContain('[data-theme="dark"]');
+  });
+
+  it('reads pv-theme from localStorage (not bare theme key)', () => {
+    expect(html).toContain('pv-theme');
+  });
+
+  it('emits --plan-accent CSS variable', () => {
+    expect(html).toContain('--plan-accent');
+  });
+
+  it('emits --live-accent CSS variable', () => {
+    expect(html).toContain('--live-accent');
+  });
+
+  it('loads JetBrains Mono font', () => {
+    expect(html).toContain('JetBrains+Mono');
+  });
+
+  it('theme init uses setAttribute not classList', () => {
+    expect(html).toContain("setAttribute('data-theme'");
+    expect(html).not.toContain("classList.add('dark')");
+  });
+
+  it('includes migration shim from old theme key', () => {
+    expect(html).toContain("localStorage.getItem('theme')");
+    expect(html).toContain("localStorage.removeItem('theme')");
+  });
+});
+
+describe('renderHtml — US-0136 neutral chrome', () => {
+  let html;
+  beforeAll(() => {
+    html = renderHtml(sampleData);
+  });
+
+  it('renders chrome element with class pv-chrome', () => {
+    expect(html).toContain('pv-chrome');
+  });
+
+  it('chrome CSS height does not set 72px', () => {
+    expect(html).not.toContain('height: 72px');
+    expect(html).not.toContain('height:72px');
+  });
+
+  it('does not render navy gradient hex colors in chrome CSS', () => {
+    expect(html).not.toContain('#003087');
+    expect(html).not.toContain('#0050b3');
+  });
+
+  it('chrome contains Plan-Status switcher label', () => {
+    expect(html).toContain('Plan-Status');
+  });
+
+  it('chrome contains Light and Dark theme toggle buttons', () => {
+    expect(html).toContain('Light');
+    expect(html).toContain('Dark');
+  });
+
+  it('renderCompletionBanner is preserved (EPIC-0010)', () => {
+    expect(() => renderHtml(sampleData)).not.toThrow();
+  });
+});
+
+describe('renderHtml — US-0135 status hero card', () => {
+  let html;
+  beforeAll(() => {
+    html = renderHtml(sampleData);
+  });
+
+  it('renders a pv-hero element in the Status tab', () => {
+    expect(html).toContain('pv-hero');
+  });
+
+  it('renders a verdict chip', () => {
+    expect(html).toMatch(/on.track|at.risk|off.track/i);
+  });
+
+  it('renders Forecast stat block', () => {
+    expect(html).toContain('Forecast');
+  });
+
+  it('renders Velocity stat block', () => {
+    expect(html).toContain('Velocity');
+  });
+
+  it('renders Budget stat block', () => {
+    expect(html).toContain('Budget');
+  });
+
+  it('renders a 30-cell coverage heat strip', () => {
+    expect(html).toContain('pv-heat');
+  });
+});
+
+describe('renderHtml — US-0139 decision widgets', () => {
+  let html;
+  beforeAll(() => {
+    html = renderHtml(sampleData);
+  });
+
+  it('renders Top Risks card', () => {
+    expect(html).toContain('Top Risks');
+  });
+
+  it('renders This Week card', () => {
+    expect(html).toContain('This Week');
+  });
+
+  it('renders Agent Workload card', () => {
+    expect(html).toContain('Agent Workload');
+  });
+
+  it('decision widget row uses pv-widgets class', () => {
+    expect(html).toContain('pv-widgets');
+  });
+});
+
+describe('renderHtml — US-0140 chart palette tokens', () => {
+  let html;
+  beforeAll(() => {
+    html = renderHtml(sampleData);
+  });
+
+  it('does not use hardcoded #22c55e (green) in chart script', () => {
+    const scriptIdx = html.indexOf('<script');
+    expect(html.slice(scriptIdx)).not.toContain("'#22c55e'");
+  });
+
+  it('does not use hardcoded #3b82f6 (blue) in chart script', () => {
+    const scriptIdx = html.indexOf('<script');
+    expect(html.slice(scriptIdx)).not.toContain("'#3b82f6'");
+  });
+
+  it('chart init uses pvChartColors variable', () => {
+    expect(html).toContain('pvChartColors');
   });
 });

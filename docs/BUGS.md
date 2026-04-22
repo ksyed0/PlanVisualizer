@@ -4,6 +4,104 @@ Append-only defect log. Never delete entries. Mark resolved bugs as Fixed or Clo
 
 ---
 
+BUG-0183: Plan-Status Status tab is sparse — lacks release-health summary and forecast
+Severity: Low
+Related Story: US-0135 (EPIC-0020)
+Steps to Reproduce:
+
+1. Open docs/plan-status.html → Status tab
+   Expected: A single-glance answer to "is the release on track?" with forecast, velocity, and top risks
+   Actual: The tab leans on stat tiles and the Charts-style doughnut without an editorial hero summary; users have to visit 3+ tabs to infer health
+   Status: Open
+   Notes: Tracked as visual/IA change under EPIC-0020 (CD-Redesign). See US-0135 Status Hero card.
+
+---
+
+BUG-0184: Chart palette drifts between Status, Charts and Trends tabs
+Severity: Low
+Related Story: US-0140 (EPIC-0020)
+Steps to Reproduce:
+
+1. Open Status → doughnut (green/grey)
+2. Open Charts → Epic progress bars (chart.js default green/amber)
+3. Open Trends → Coverage line (blue)
+   Expected: All charts share a single semantic palette (ok/warn/risk/info/accent) so the same color always means the same thing
+   Actual: Each tab uses a different legend and fill palette; "Done" is several different greens across tabs
+   Status: Open
+   Notes: Fix by routing every chart through a shared palette token map (see AC in US-0140).
+
+---
+
+BUG-0185: Active agents are hard to pick out on the Agentic dashboard at a glance
+Severity: Medium
+Related Story: US-0142 (EPIC-0020)
+Steps to Reproduce:
+
+1. Open docs/dashboard.html with 2–4 active agents
+2. Glance at the agent grid
+   Expected: A 2-second glance identifies who is currently working
+   Actual: All 9 agent cards carry the same visual weight; status pill is small, and the "now on air" dot is subtle; the currently-executing agent is not visually promoted
+   Status: Open
+   Notes: Fix by adding a left accent rail, tinted background, and outline glow on is-active cards; see US-0142.
+
+---
+
+BUG-0186: Conductor rarely shown as Active because dispatches complete in milliseconds
+Severity: Medium
+Related Story: US-0143 (EPIC-0020)
+Steps to Reproduce:
+
+1. Watch docs/dashboard.html during a live dispatch cycle
+2. Observe the Conductor agent card
+   Expected: Conductor's role in each hand-off is visible (it did just dispatch a task)
+   Actual: Conductor transitions to active and back to idle faster than the 1s refresh can render, so the card is near-permanently idle and hand-offs appear to happen by magic
+   Status: Open
+   Notes: Fix by holding a visible "dispatching" state for a minimum of N seconds, and by promoting the most recent dispatch into the event ticker. See US-0143.
+
+---
+
+BUG-0187: Timeline pipeline and agent roster encode overlapping information
+Severity: Low
+Related Story: US-0144 (EPIC-0020)
+Steps to Reproduce:
+
+1. Open docs/dashboard.html
+2. Compare the 6-phase Pipeline strip and the Agent Roster
+   Expected: Each widget earns its space — pipeline shows macro phase progress, roster shows micro agent state
+   Actual: Both widgets double-encode which agent is doing what right now (phase.agents field duplicates the active agent card); the pipeline loses its job as a cycle-progress artifact
+   Status: Open
+   Notes: Fix by trimming the pipeline to phase name + elapsed + partial fill, and letting the roster own "who is doing what." See US-0144.
+
+---
+
+BUG-0188: Activity events are buried in the right rail on the Agentic dashboard
+Severity: Low
+Related Story: US-0145 (EPIC-0020)
+Steps to Reproduce:
+
+1. Open docs/dashboard.html
+2. Look for a chronological log of what the agents just did
+   Expected: Event log is one of the most prominent artefacts on a mission-control surface
+   Actual: The "recent activity" pane is a 320px sidebar card with low contrast and no dedicated terminal-style event stream
+   Status: Open
+   Notes: Fix by promoting the stream to a full-width Event Log card in the main column with terminal monospace styling, while keeping a compressed feed in the rail. See US-0145.
+
+---
+
+BUG-0189: Corporate navy gradient header is the dominant visual element on both dashboards
+Severity: Low
+Related Story: US-0136 (EPIC-0020)
+Steps to Reproduce:
+
+1. Open either dashboard
+2. Observe the first ~72px of page chrome
+   Expected: Chrome is quiet; content leads
+   Actual: Saturated navy gradient overpowers content — especially in light mode — and makes the two dashboards hard to distinguish because the header dominates identity
+   Status: Open
+   Notes: Fix by replacing with a thin neutral chrome + mode badge (REPORT / LIVE) and per-dashboard accent ornaments. See US-0136.
+
+---
+
 BUG-0100: Coverage Over Time chart showed fabricated data — linear ramp from 2% to 61% instead of realistic values
 Severity: High
 Related Story: US-0084

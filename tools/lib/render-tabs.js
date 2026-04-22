@@ -474,6 +474,18 @@ function renderTrendsTab(data, options = {}) {
   </div>
 </div>
 <script>
+var pvChartColors = (function() {
+  var cs = getComputedStyle(document.documentElement);
+  function tok(v, fb) { var r = cs.getPropertyValue(v).trim(); return r || fb; }
+  return {
+    ok:     tok('--ok',          'oklch(68% 0.15 150)'),
+    warn:   tok('--warn',        'oklch(74% 0.16 78)'),
+    risk:   tok('--risk',        'oklch(64% 0.20 25)'),
+    info:   tok('--info',        'oklch(66% 0.14 240)'),
+    accent: tok('--plan-accent', 'oklch(62% 0.19 268)'),
+    mute:   tok('--text-mute',   'oklch(70% 0.012 95)'),
+  };
+})();
 var _trendsAllLabels = ${datesJson};
 var _trendsAllData = {
   done: ${doneJson}, total: ${totalJson}, cost: ${costJson},
@@ -483,8 +495,15 @@ var _trendsAllData = {
   avgRisk: ${avgRiskJson}
 };
 var _trendsChartRefs = {};
-function _trendGrad(ctx, hex) {
-  var r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+function _cssToRgb(color) {
+  var c = document.createElement('canvas'); c.width = c.height = 1;
+  var x = c.getContext('2d'); x.fillStyle = color; x.fillRect(0,0,1,1);
+  var d = x.getImageData(0,0,1,1).data;
+  return { r: d[0], g: d[1], b: d[2] };
+}
+function _trendGrad(ctx, color) {
+  var rgb = _cssToRgb(color);
+  var r = rgb.r, g = rgb.g, b = rgb.b;
   var grad = ctx.createLinearGradient(0,0,0,200);
   grad.addColorStop(0,'rgba('+r+','+g+','+b+',0.35)');
   grad.addColorStop(1,'rgba('+r+','+g+','+b+',0.0)');
@@ -501,36 +520,36 @@ function _mkTrend(id, cfg) {
 }
 function initTrendsCharts() {
   var tc = chartTextColor();
-  var gc = document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.07)' : '#e2e8f0';
+  var gc = document.documentElement.getAttribute('data-theme') === 'dark' ? 'rgba(255,255,255,0.07)' : '#e2e8f0';
   var labels = _trendsAllLabels; if (labels.length < 2) return;
   var xA = { ticks:{ color:tc, maxTicksLimit:8, callback:function(v){ var d=new Date(this.getLabelForValue(v)); return isNaN(d)?v:(d.getMonth()+1)+'/'+d.getDate(); }}, grid:{color:gc} };
   var yA = function(o){ return Object.assign({ticks:{color:tc},grid:{color:gc},beginAtZero:true},o||{}); };
   var leg = { labels:{color:tc, font:{family:"'Inter',sans-serif",size:12}, pointStyle:'circle', usePointStyle:true }};
   _mkTrend('chart-trends-progress', {type:'line', data:{labels:labels, datasets:[
-    {label:'Done', data:_trendsAllData.done, borderColor:'#22c55e', _gc:'#22c55e', fill:true, tension:0.3},
-    {label:'Total', data:_trendsAllData.total, borderColor:'#64748b', backgroundColor:'transparent', borderDash:[5,5], tension:0.3}
+    {label:'Done', data:_trendsAllData.done, borderColor:pvChartColors.ok, _gc:pvChartColors.ok, fill:true, tension:0.3},
+    {label:'Total', data:_trendsAllData.total, borderColor:pvChartColors.mute, backgroundColor:'transparent', borderDash:[5,5], tension:0.3}
   ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:leg}, scales:{x:xA,y:yA()}}});
   _mkTrend('chart-trends-velocity', {type:'bar', data:{labels:labels, datasets:[
-    {label:'Story Points', data:_trendsAllData.velocity, backgroundColor:'#3b82f6'}
+    {label:'Story Points', data:_trendsAllData.velocity, backgroundColor:pvChartColors.info}
   ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:leg}, scales:{x:xA,y:yA()}}});
   _mkTrend('chart-trends-cost', {type:'line', data:{labels:labels, datasets:[
-    {label:'Total Cost ($)', data:_trendsAllData.cost, borderColor:'#f59e0b', _gc:'#f59e0b', fill:true, tension:0.3}
+    {label:'Total Cost ($)', data:_trendsAllData.cost, borderColor:pvChartColors.warn, _gc:pvChartColors.warn, fill:true, tension:0.3}
   ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:leg}, scales:{x:xA,y:yA()}}});
   _mkTrend('chart-trends-tokens', {type:'line', data:{labels:labels, datasets:[
-    {label:'Input', data:_trendsAllData.inputTokens, borderColor:'#06b6d4', _gc:'#06b6d4', fill:true},
-    {label:'Output', data:_trendsAllData.outputTokens, borderColor:'#ec4899', _gc:'#ec4899', fill:true}
+    {label:'Input', data:_trendsAllData.inputTokens, borderColor:pvChartColors.info, _gc:pvChartColors.info, fill:true},
+    {label:'Output', data:_trendsAllData.outputTokens, borderColor:pvChartColors.accent, _gc:pvChartColors.accent, fill:true}
   ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:leg}, scales:{x:xA,y:yA({ticks:{color:tc,callback:function(v){return v>=1e6?(v/1e6).toFixed(0)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':v;}}})}}});
   _mkTrend('chart-trends-coverage', {type:'line', data:{labels:labels, datasets:[
-    {label:'Coverage %', data:_trendsAllData.coverage, borderColor:'#8b5cf6', _gc:'#8b5cf6', fill:true, tension:0.3}
+    {label:'Coverage %', data:_trendsAllData.coverage, borderColor:pvChartColors.accent, _gc:pvChartColors.accent, fill:true, tension:0.3}
   ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:leg}, scales:{x:xA,y:yA({min:0,max:100})}}});
   _mkTrend('chart-trends-bugs', {type:'line', data:{labels:labels, datasets:[
-    {label:'Open Bugs', data:_trendsAllData.bugs, borderColor:'#ef4444', _gc:'#ef4444', fill:true, tension:0.3}
+    {label:'Open Bugs', data:_trendsAllData.bugs, borderColor:pvChartColors.risk, _gc:pvChartColors.risk, fill:true, tension:0.3}
   ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:leg}, scales:{x:xA,y:yA()}}});
   _mkTrend('chart-trends-risk', {type:'line', data:{labels:labels, datasets:[
-    {label:'At-Risk', data:_trendsAllData.risk, borderColor:'#f97316', _gc:'#f97316', fill:true, tension:0.3}
+    {label:'At-Risk', data:_trendsAllData.risk, borderColor:pvChartColors.warn, _gc:pvChartColors.warn, fill:true, tension:0.3}
   ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:leg}, scales:{x:xA,y:yA({suggestedMax:5})}}});
   _mkTrend('chart-trends-avg-risk', {type:'line', data:{labels:labels, datasets:[
-    {label:'Avg Risk Score', data:_trendsAllData.avgRisk, borderColor:'#f59e0b', _gc:'#f59e0b', fill:true, tension:0.3}
+    {label:'Avg Risk Score', data:_trendsAllData.avgRisk, borderColor:pvChartColors.warn, _gc:pvChartColors.warn, fill:true, tension:0.3}
   ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:leg}, scales:{x:xA,y:yA({min:0,suggestedMax:4})}}});
   var saved = localStorage.getItem('pv-trends-range');
   if (saved && saved !== 'all') {
@@ -551,6 +570,178 @@ function setTrendsRange(btn, range) {
   });
 }
 </script>`;
+}
+
+// US-0135: Status hero card — answers "is the release on track?" in one glance.
+// Read-only dependency on data.completion (EPIC-0010 artifact) — not modified.
+function _renderStatusHero(data) {
+  const activeStories = data.stories.filter((s) => s.status !== 'Retired');
+  const done = activeStories.filter((s) => s.status === 'Done').length;
+  const total = activeStories.length;
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+  const openBugs = (data.bugs || []).filter((b) => !/^(Fixed|Retired|Cancelled)/i.test(b.status));
+  const criticalBugs = openBugs.filter((b) => ['Critical', 'High'].includes(b.severity)).length;
+  const blockedStories = activeStories.filter((s) => s.status === 'Blocked').length;
+
+  let verdict, verdictTone, narrative;
+  if (criticalBugs > 0 || blockedStories > 1) {
+    verdict = 'Off track';
+    verdictTone = 'risk';
+    narrative = `${criticalBugs} critical/high ${criticalBugs === 1 ? 'bug' : 'bugs'} and ${blockedStories} blocked ${blockedStories === 1 ? 'story' : 'stories'} require immediate attention.`;
+  } else if (criticalBugs > 0 || blockedStories > 0 || pct < 50) {
+    verdict = 'At risk';
+    verdictTone = 'warn';
+    narrative = `Release is progressing at ${pct}% with minor blockers to resolve.`;
+  } else {
+    verdict = 'On track';
+    verdictTone = 'ok';
+    narrative = `Release is ${pct}% complete with no critical blockers.`;
+  }
+
+  // Forecast — from EPIC-0010 data.completion (read-only)
+  const comp = data.completion;
+  const forecastHtml =
+    comp && comp.likelyDate
+      ? `<span class="pv-stat-val tnum">${esc(comp.likelyDate)}</span>`
+      : '<span class="pv-stat-val">—</span>';
+
+  // Velocity
+  const velocityArr = (data.trends && data.trends.velocity) || [];
+  const lastVel = velocityArr.length > 0 ? velocityArr[velocityArr.length - 1] : null;
+  const prevVel = velocityArr.length > 1 ? velocityArr[velocityArr.length - 2] : null;
+  const velDelta = lastVel !== null && prevVel !== null ? lastVel - prevVel : null;
+  const velHtml =
+    lastVel !== null
+      ? `<span class="pv-stat-val tnum">${lastVel.toFixed(1)} <span class="pv-delta ${velDelta !== null && velDelta >= 0 ? 'up' : 'dn'}">${velDelta !== null && velDelta >= 0 ? '▲' : '▼'} ${Math.abs(velDelta || 0).toFixed(1)}</span></span>`
+      : '<span class="pv-stat-val">—</span>';
+
+  // Budget
+  const budget = data.budget || {};
+  const budgetHtml =
+    budget.hasBudget && budget.percentUsed !== null
+      ? `<span class="pv-stat-val tnum">${budget.percentUsed}%</span>`
+      : '<span class="pv-stat-val">—</span>';
+
+  // 30-day coverage heat strip
+  const covHistory = (data.trends && data.trends.coverage) || [];
+  const cells30 = Array.from({ length: 30 }, (_, i) => {
+    const val = covHistory[covHistory.length - 30 + i];
+    if (val === null || val === undefined) return '<span class="pv-heat-cell" style="opacity:0.15"></span>';
+    const tone = val >= 80 ? 'var(--ok)' : val >= 60 ? 'var(--warn)' : 'var(--risk)';
+    return `<span class="pv-heat-cell" style="background:${tone};opacity:${(0.3 + (val / 100) * 0.7).toFixed(2)}" title="${val.toFixed(1)}%"></span>`;
+  }).join('');
+
+  return `
+  <div class="pv-hero card" style="margin-bottom:16px">
+    <div class="pv-hero-head">
+      <div class="pv-hero-verdict">
+        <span class="chip ${verdictTone}"><span class="d"></span>${esc(verdict)}</span>
+        <p class="pv-hero-narrative">${esc(narrative)}</p>
+      </div>
+      <div class="pv-hero-stats">
+        <div class="pv-stat">
+          <span class="pv-stat-lbl">Forecast</span>
+          ${forecastHtml}
+        </div>
+        <div class="pv-stat">
+          <span class="pv-stat-lbl">Velocity</span>
+          ${velHtml}
+        </div>
+        <div class="pv-stat">
+          <span class="pv-stat-lbl">Budget</span>
+          ${budgetHtml}
+        </div>
+      </div>
+    </div>
+    <div class="pv-hero-vizrow">
+      <div class="pv-heat" aria-label="30-day coverage heat strip">${cells30}</div>
+    </div>
+  </div>`;
+}
+
+function _renderDecisionWidgets(data) {
+  const openBugs = (data.bugs || []).filter((b) => !/^(Fixed|Retired|Cancelled)/i.test(b.status));
+  const critHighBugs = openBugs.filter((b) => ['Critical', 'High'].includes(b.severity));
+  const activeStories = data.stories.filter((s) => s.status !== 'Retired');
+  const blockedStories = activeStories.filter((s) => s.status === 'Blocked');
+  const now = Date.now();
+  const overdueEpics = (data.epics || []).filter((e) => {
+    if (e.status === 'Done') return false;
+    if (!e.releaseTarget) return false;
+    const d = new Date(e.releaseTarget);
+    return !isNaN(d) && d < now;
+  });
+
+  const riskItems = [
+    ...critHighBugs
+      .slice(0, 3)
+      .map(
+        (b) =>
+          `<div class="pv-risk-item"><span class="chip risk">${esc(b.severity)}</span><span class="pv-risk-label">${esc(b.id)}: ${esc(b.title)}</span></div>`,
+      ),
+    ...blockedStories
+      .slice(0, 2)
+      .map(
+        (s) =>
+          `<div class="pv-risk-item"><span class="chip warn">Blocked</span><span class="pv-risk-label">${esc(s.id)}: ${esc(s.title)}</span></div>`,
+      ),
+    ...overdueEpics
+      .slice(0, 2)
+      .map(
+        (e) =>
+          `<div class="pv-risk-item"><span class="chip warn">Overdue</span><span class="pv-risk-label">${esc(e.id)}: ${esc(e.title)}</span></div>`,
+      ),
+  ];
+  const riskContent =
+    riskItems.length > 0 ? riskItems.join('') : '<p class="pv-widget-empty">No critical risks detected.</p>';
+
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const recentDone = (data.recentActivity || []).filter((a) => a.date && new Date(a.date) >= sevenDaysAgo);
+  const totalAI = (data.costs && data.costs._totals && data.costs._totals.costUsd) || 0;
+  const weekContent = `
+    <div class="pv-kv"><span class="pv-kv-k">Stories shipped</span><span class="pv-kv-v tnum">${recentDone.length}</span></div>
+    <div class="pv-kv"><span class="pv-kv-k">Open bugs</span><span class="pv-kv-v tnum">${openBugs.length}</span></div>
+    <div class="pv-kv"><span class="pv-kv-k">AI spend (total)</span><span class="pv-kv-v tnum">$${totalAI.toFixed(2)}</span></div>`;
+
+  const agentMap = {};
+  activeStories.forEach((s) => {
+    const agent = s.assignedAgent || s.agent || 'Unassigned';
+    agentMap[agent] = (agentMap[agent] || 0) + (s.status !== 'Done' ? 1 : 0);
+  });
+  const agentEntries = Object.entries(agentMap)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6);
+  const maxCount = agentEntries.length > 0 ? agentEntries[0][1] : 1;
+  const workloadContent =
+    agentEntries.length > 0
+      ? agentEntries
+          .map(
+            ([name, count]) =>
+              `<div class="pv-wl-row">
+          <span class="pv-wl-name">${esc(name)}</span>
+          <div class="pv-wl-bar-bg"><div class="pv-wl-bar" style="width:${Math.round(((count || 0) / (maxCount || 1)) * 100)}%"></div></div>
+          <span class="pv-wl-count tnum">${count}</span>
+        </div>`,
+          )
+          .join('')
+      : '<p class="pv-widget-empty">No active assignments.</p>';
+
+  return `
+  <div class="pv-widgets" style="margin-bottom:16px">
+    <div class="card">
+      <div class="card-head"><h3>Top Risks</h3></div>
+      <div class="card-body pv-risk-list">${riskContent}</div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>This Week</h3></div>
+      <div class="card-body">${weekContent}</div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>Agent Workload</h3></div>
+      <div class="card-body">${workloadContent}</div>
+    </div>
+  </div>`;
 }
 
 function renderChartsTab(data) {
@@ -620,6 +811,8 @@ function renderChartsTab(data) {
 
   return `
   <div id="tab-charts" class="p-6 hidden" role="tabpanel" aria-labelledby="tab-btn-charts">
+    ${_renderStatusHero(data)}
+    ${_renderDecisionWidgets(data)}
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
       <div class="chart-supertitle">Delivery</div>
@@ -767,6 +960,18 @@ function renderChartsTab(data) {
     </div>
   </div>
   <script>
+  var pvChartColors = (function() {
+    var cs = getComputedStyle(document.documentElement);
+    function tok(v, fb) { var r = cs.getPropertyValue(v).trim(); return r || fb; }
+    return {
+      ok:     tok('--ok',          'oklch(68% 0.15 150)'),
+      warn:   tok('--warn',        'oklch(74% 0.16 78)'),
+      risk:   tok('--risk',        'oklch(64% 0.20 25)'),
+      info:   tok('--info',        'oklch(66% 0.14 240)'),
+      accent: tok('--plan-accent', 'oklch(62% 0.19 268)'),
+      mute:   tok('--text-mute',   'oklch(70% 0.012 95)'),
+    };
+  })();
   var _charts = {};
   function chartTextColor() {
     return getComputedStyle(document.documentElement).getPropertyValue('--clr-chart-text').trim() || '#475569';
@@ -776,9 +981,9 @@ function renderChartsTab(data) {
     _charts.epicProgress = new Chart(document.getElementById('chart-epic-progress'), {
       type: 'bar',
       data: { labels: ${epicLabels}, datasets: [
-        { label: 'Done', data: ${epicDone}, backgroundColor: '#22c55e' },
-        { label: 'In Progress', data: ${epicInProgress}, backgroundColor: '#3b82f6' },
-        { label: 'Planned/To Do', data: ${epicPlanned}, backgroundColor: '#cbd5e1' },
+        { label: 'Done', data: ${epicDone}, backgroundColor: pvChartColors.ok },
+        { label: 'In Progress', data: ${epicInProgress}, backgroundColor: pvChartColors.info },
+        { label: 'Planned/To Do', data: ${epicPlanned}, backgroundColor: pvChartColors.mute },
       ]},
       options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
         plugins: { legend: { labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true } } },
@@ -787,8 +992,8 @@ function renderChartsTab(data) {
     _charts.costBreakdown = new Chart(document.getElementById('chart-cost-breakdown'), {
       type: 'bar',
       data: { labels: ${epicLabels}, datasets: [
-        { label: 'Projected ($)', data: ${epicProjected}, backgroundColor: '#f59e0b', yAxisID: 'yProjected' },
-        { label: 'AI Cost ($)', data: ${epicAI}, backgroundColor: '#0d9488', yAxisID: 'yAI' },
+        { label: 'Projected ($)', data: ${epicProjected}, backgroundColor: pvChartColors.warn, yAxisID: 'yProjected' },
+        { label: 'AI Cost ($)', data: ${epicAI}, backgroundColor: pvChartColors.info, yAxisID: 'yAI' },
       ]},
       options: {
         responsive: true, maintainAspectRatio: false,
@@ -802,28 +1007,28 @@ function renderChartsTab(data) {
     });
     _charts.coverage = new Chart(document.getElementById('chart-coverage'), {
       type: 'doughnut',
-      data: { labels: ['Covered', 'Gap'], datasets: [{ data: [${coveragePctNum}, ${coverageGap}], backgroundColor: ['${coveragePct !== null ? '#22c55e' : '#94a3b8'}','#cbd5e1'], borderWidth: 0 }] },
+      data: { labels: ['Covered', 'Gap'], datasets: [{ data: [${coveragePctNum}, ${coverageGap}], backgroundColor: [${coveragePct !== null ? 'pvChartColors.ok' : 'pvChartColors.mute'},pvChartColors.mute], borderWidth: 0 }] },
       options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: true, position: 'bottom', labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true } } } }
     });
     _charts.aiTimeline = new Chart(document.getElementById('chart-ai-timeline'), {
       type: 'line',
-      data: { labels: ${sessionDates}, datasets: [{ label: 'Cumulative AI Cost ($)', data: ${sessionCosts}, borderColor: '#0d9488', tension: 0.3, fill: true, backgroundColor: 'rgba(13,148,136,0.1)' }] },
+      data: { labels: ${sessionDates}, datasets: [{ label: 'Cumulative AI Cost ($)', data: ${sessionCosts}, borderColor: pvChartColors.info, tension: 0.3, fill: true, backgroundColor: pvChartColors.mute }] },
       options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true } } }, scales: { x: { ticks: { color: tc } }, y: { ticks: { color: tc } } } }
     });
     _charts.burndown = new Chart(document.getElementById('chart-burndown'), {
       type: 'doughnut',
-      data: { labels: ['Done','In Progress','Planned','To Do','Blocked'], datasets: [{ data: ${statusCounts}, backgroundColor: ['#22c55e','#3b82f6','#94a3b8','#f59e0b','#ef4444'], borderWidth: 1 }] },
+      data: { labels: ['Done','In Progress','Planned','To Do','Blocked'], datasets: [{ data: ${statusCounts}, backgroundColor: [pvChartColors.ok,pvChartColors.info,pvChartColors.mute,pvChartColors.warn,pvChartColors.risk], borderWidth: 1 }] },
       options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true } } } }
     });
     _charts.burnRate = new Chart(document.getElementById('chart-burn-rate'), {
       type: 'bar',
-      data: { labels: ${sessionDates}, datasets: [{ label: 'Session AI Spend ($)', data: ${sessionPerCosts}, backgroundColor: '#6366f1' }] },
+      data: { labels: ${sessionDates}, datasets: [{ label: 'Session AI Spend ($)', data: ${sessionPerCosts}, backgroundColor: pvChartColors.accent }] },
       options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true } } }, scales: { x: { ticks: { color: tc } }, y: { ticks: { color: tc } } } }
     });
     if (document.getElementById('chart-risk-distribution')) {
       _charts.riskDist = new Chart(document.getElementById('chart-risk-distribution'), {
         type: 'bar',
-        data: { labels: ['Low','Medium','High','Critical'], datasets: [{ data: ${riskDistCounts}, backgroundColor: ['${RISK_LEVEL_COLORS.Low}','${RISK_LEVEL_COLORS.Medium}','${RISK_LEVEL_COLORS.High}','${RISK_LEVEL_COLORS.Critical}'] }] },
+        data: { labels: ['Low','Medium','High','Critical'], datasets: [{ data: ${riskDistCounts}, backgroundColor: [pvChartColors.ok, pvChartColors.info, pvChartColors.warn, pvChartColors.risk] }] },
         options: { responsive: true, maintainAspectRatio: false,
           plugins: { legend: { display: false } },
           scales: { x: { ticks: { color: tc } }, y: { ticks: { color: tc }, beginAtZero: true } } }
@@ -870,10 +1075,10 @@ function renderCostsTab(data, options = {}) {
       .map((eb, i) => {
         const accent = EPIC_ACCENT_COLORS[i % EPIC_ACCENT_COLORS.length];
         const barPct = eb.percentUsed !== null ? Math.min(100, eb.percentUsed) : 0;
-        let barColor = '#22c55e';
+        let barColor = 'var(--ok, #22c55e)';
         if (eb.percentUsed !== null) {
-          if (eb.percentUsed >= 90) barColor = '#ef4444';
-          else if (eb.percentUsed >= 75) barColor = '#f97316';
+          if (eb.percentUsed >= 90) barColor = 'var(--risk, #ef4444)';
+          else if (eb.percentUsed >= 75) barColor = 'var(--warn, #f97316)';
           else if (eb.percentUsed >= 50) barColor = '#eab308';
         }
         const pbClass =

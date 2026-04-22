@@ -2,98 +2,52 @@
 
 const { esc, jsEsc, usd } = require('./render-utils');
 
-function renderTopBar(data) {
-  const totalAI = data.costs._totals.costUsd || 0;
-  const storyProjected = data.stories.reduce(
-    (s, st) => s + (data.costs[st.id] ? data.costs[st.id].projectedUsd || 0 : 0),
-    0,
-  );
-  const bugProjected = Object.entries(data.costs._bugs || {})
-    .filter(([k]) => k !== '_totals')
-    .reduce((s, [, v]) => s + (v ? v.projectedUsd || 0 : 0), 0);
-  const projectedTotal = storyProjected + bugProjected;
+// US-0138: Mode badge — REPORT (static pip) or LIVE (pulsing pip).
+// Plan-Status always renders REPORT. Agentic renders LIVE in generate-dashboard.js.
+function renderModeBadge(mode = 'report') {
+  const isLive = mode === 'live';
+  const label = isLive ? 'LIVE' : 'REPORT';
+  const cls = isLive ? 'mode-live' : 'mode-report';
+  return `<span class="mode-badge ${cls}" aria-label="Mode: ${isLive ? 'Live' : 'Report'}" tabindex="0">
+    <span class="pip" aria-hidden="true"></span>${label}
+  </span>`;
+}
+
+// US-0136: Per-tab masthead — editorial header with project identity and inline stats.
+// Replaces the stat tiles previously embedded in the topbar.
+function renderMasthead(data) {
   const activeStories = data.stories.filter((s) => s.status !== 'Retired');
   const done = activeStories.filter((s) => s.status === 'Done').length;
-  const inProgress = activeStories.filter((s) => s.status === 'In Progress').length;
   const cov = data.coverage;
-  const covLabel = cov.available !== false ? `${cov.overall.toFixed(1)}%` : 'N/A';
-  const openBugs = (data.bugs || []).filter((b) => !/^(Fixed|Retired|Cancelled)/i.test(b.status));
-  const critHighBugs = openBugs.filter((b) => ['Critical', 'High'].includes(b.severity)).length;
-  const bugValueCls = openBugs.length === 0 ? '' : critHighBugs > 0 ? ' tile-danger' : ' tile-warn';
-  const covValueCls = cov.available !== false && !cov.meetsTarget ? ' tile-danger' : '';
-  const genAt = data.generatedAt;
-
-  const budget = data.budget || {};
-  const hasBudget = budget.hasBudget;
-  const pct = budget.percentUsed;
-  let budgetTile = '';
-  if (hasBudget && pct !== null) {
-    let barColor = '#22c55e';
-    let warnIcon = '';
-    if (pct >= 90) {
-      barColor = '#ef4444';
-      warnIcon = '&#9888;';
-    } else if (pct >= 75) {
-      barColor = '#f97316';
-      warnIcon = '&#9888;';
-    } else if (pct >= 50) {
-      barColor = '#eab308';
-    }
-    const clampedPct = Math.min(100, pct);
-    budgetTile = `
-        <div class="topbar-tile" style="min-width:90px">
-          <span class="tile-value font-mono">${warnIcon} ${pct}%</span>
-          <span class="tile-label">${usd(budget.totalSpent)} / ${usd(budget.totalBudget)}</span>
-          <div style="width:100%;height:3px;background:#334155;margin-top:4px;border-radius:2px;overflow:hidden">
-            <div style="width:${clampedPct}%;height:100%;background:${barColor};transition:width 0.3s"></div>
-          </div>
-        </div>`;
-  }
+  const covLabel = cov && cov.available !== false ? `${cov.overall.toFixed(1)}%` : 'N/A';
+  const totalAI = (data.costs && data.costs._totals && data.costs._totals.costUsd) || 0;
+  const openBugs = (data.bugs || []).filter((b) => !/^(Fixed|Retired|Cancelled)/i.test(b.status)).length;
 
   return `
-  <header id="topbar-fixed" class="${data.budget && data.budget.crossedThresholds && data.budget.crossedThresholds.length > 0 ? 'has-alert' : ''}">
-    <div class="topbar-inner">
-      <div class="topbar-project">
-        <div class="flex items-center gap-2 flex-wrap">
-          <h1 class="topbar-title">${esc(data.projectName)}</h1>
-          <span class="topbar-btn-group">
-            <button onclick="openSearch()" id="search-pill" class="topbar-btn" aria-label="Open search (⌘K)">🔍 <span id="search-pill-shortcut">⌘K</span></button>
-            <button onclick="openAbout()" class="topbar-btn">ℹ️ About</button>
-            <a href="dashboard.html" class="topbar-btn">&#8592; Agentic Dashboard</a>
-            <button onclick="toggleTheme()" id="theme-toggle" class="topbar-btn" aria-label="Toggle dark/light mode">☀️ Light</button>
-          </span>
-        </div>
-        <p class="topbar-tagline">${esc(data.tagline)}&nbsp;·&nbsp;Generated <span id="gen-time" data-iso="${genAt}"></span>${data.branch ? `&nbsp;·&nbsp;from <code class="font-mono" style="font-size:10px" title="Project branch">${esc(data.branch)}</code>&nbsp;<code class="font-mono" style="font-size:10px" title="Project commit">${esc(data.commitSha)}</code>` : `&nbsp;·&nbsp;<code class="font-mono" style="font-size:10px">${esc(data.commitSha)}</code>`}</p>
+  <div class="pv-masthead">
+    <div class="pv-masthead-head">
+      <span class="pv-eyebrow">${esc(data.projectName || '')}&thinsp;&middot;&thinsp;${esc(data.release || '')}</span>
+      <h1 class="pv-masthead-title">Status <em>report</em></h1>
+    </div>
+    <div class="pv-masthead-meta">
+      <div class="pv-meta-item">
+        <span class="pv-meta-lbl">Stories</span>
+        <span class="pv-meta-val tnum">${done}/${activeStories.length}</span>
       </div>
-      <div class="topbar-tiles">
-        ${budgetTile}
-        <div class="topbar-tile">
-          <span class="tile-value">&#128203; ${done}/${activeStories.length}</span>
-          <span class="tile-label">Stories</span>
-        </div>
-        <div class="topbar-tile">
-          <span class="tile-value">&#9889; ${inProgress}</span>
-          <span class="tile-label">In Progress</span>
-        </div>
-        <div class="topbar-tile">
-          <span class="tile-value hero-num hero-num-sm tile-bugs${bugValueCls}">&#128027; ${openBugs.length}</span>
-          <span class="tile-label">Bugs Open</span>
-        </div>
-        <div class="topbar-tile tile-coverage">
-          <span class="tile-value hero-num hero-num-sm tile-cov${covValueCls}">${covLabel}</span>
-          <span class="tile-label">Coverage</span>
-        </div>
-        <div class="topbar-tile tile-ai-cost">
-          <span class="tile-value hero-num hero-num-sm">${usd(totalAI)}</span>
-          <span class="tile-label">AI Cost</span>
-        </div>
-        <div class="topbar-tile tile-projected">
-          <span class="tile-value font-mono">${usd(projectedTotal)}</span>
-          <span class="tile-label">Estimated</span>
-        </div>
+      <div class="pv-meta-item">
+        <span class="pv-meta-lbl">Coverage</span>
+        <span class="pv-meta-val tnum">${covLabel}</span>
+      </div>
+      <div class="pv-meta-item">
+        <span class="pv-meta-lbl">Open bugs</span>
+        <span class="pv-meta-val tnum">${openBugs}</span>
+      </div>
+      <div class="pv-meta-item pv-meta-item--hide-sm">
+        <span class="pv-meta-lbl">AI spend</span>
+        <span class="pv-meta-val tnum">${usd(totalAI)}</span>
       </div>
     </div>
-  </header>`;
+  </div>`;
 }
 
 function renderFilterBar(data) {
@@ -201,6 +155,33 @@ function renderSidebar() {
   </aside>`;
 }
 
+// US-0136: Frosted-glass neutral chrome. Replaces the saturated navy gradient topbar.
+// Height ≤52px. Contains: brand, dashboard switcher, mode badge, about, theme toggle.
+// renderCompletionBanner() renders separately below this — do not move it.
+function renderChrome(data) {
+  const projectName = esc((data && data.projectName) || 'Plan Visualizer');
+  return `
+  <header class="pv-chrome" id="pv-chrome">
+    <div class="pv-chrome-brand">
+      <span class="pv-chrome-dot" aria-hidden="true"></span>
+      <span class="pv-chrome-name">${projectName}</span>
+    </div>
+    <div class="pv-chrome-segs" role="tablist" aria-label="Dashboard">
+      <button class="pv-seg pv-seg-active" aria-pressed="true">Plan-Status</button>
+      <a href="dashboard.html" class="pv-seg" aria-pressed="false">Pipeline</a>
+    </div>
+    <div class="pv-chrome-spacer"></div>
+    ${renderModeBadge('report')}
+    <button class="pv-iconbtn" onclick="openAbout && openAbout()" aria-label="About">
+      <span aria-hidden="true">ⓘ</span> About
+    </button>
+    <div class="pv-theme-segs" role="group" aria-label="Theme">
+      <button onclick="setTheme('light')" id="theme-btn-light" class="pv-seg" aria-pressed="false">☀ Light</button>
+      <button onclick="setTheme('dark')"  id="theme-btn-dark"  class="pv-seg" aria-pressed="false">☾ Dark</button>
+    </div>
+  </header>`;
+}
+
 function renderCompletionBanner(data) {
   if (!data.completion) return '';
   const { likelyDate, rangeStart, rangeEnd, velocityWeeks } = data.completion;
@@ -214,4 +195,11 @@ function renderCompletionBanner(data) {
   </div>`;
 }
 
-module.exports = { renderTopBar, renderFilterBar, renderSidebar, renderCompletionBanner };
+module.exports = {
+  renderChrome,
+  renderFilterBar,
+  renderSidebar,
+  renderCompletionBanner,
+  renderModeBadge,
+  renderMasthead,
+};

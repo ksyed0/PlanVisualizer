@@ -159,6 +159,39 @@ describe('generate-dashboard.js baseline harness (US-0124)', () => {
   });
 });
 
+describe('generate-dashboard — US-0142 active agent prominence', () => {
+  const { generateHTML } = require('../../tools/generate-dashboard.js');
+
+  function makeFixtureWithAgentStatus(status) {
+    const fixture = makeHealthyFixture();
+    // Replace Pixel (the default active agent) with our test status
+    fixture.agents.Pixel = { status, currentTask: 'US-0142 test', tasksCompleted: 1 };
+    return fixture;
+  }
+
+  it('active agent card has is-active class', () => {
+    const html = generateHTML(makeFixtureWithAgentStatus('active'));
+    // The card div for Pixel must carry is-active
+    expect(html).toMatch(/class="[^"]*agent-card[^"]*is-active[^"]*"/);
+  });
+
+  it('active agent card has agent-rail element', () => {
+    const html = generateHTML(makeFixtureWithAgentStatus('active'));
+    expect(html).toContain('agent-rail');
+  });
+
+  it('idle agent card does not have is-active class', () => {
+    const html = generateHTML(makeFixtureWithAgentStatus('idle'));
+    // idle Pixel card should NOT carry is-active
+    expect(html).not.toMatch(/class="[^"]*agent-card[^"]*is-active[^"]*"/);
+  });
+
+  it('active agent live-dot has dot-pulse class', () => {
+    const html = generateHTML(makeFixtureWithAgentStatus('active'));
+    expect(html).toContain('dot-pulse');
+  });
+});
+
 describe('US-0121 terminal-aesthetic activity log', () => {
   // AC-0411: Log entries render with agent-color left bar and bracketed
   // [HH:MM:SS] [AGENT] message format.
@@ -442,5 +475,104 @@ describe('init-sdlc-status — buildStatus', () => {
     });
     const status = buildStatus(cfgPath);
     expect(status.cycles).toEqual([]);
+  });
+});
+
+describe('generate-dashboard — US-0143 conductor dispatch hold', () => {
+  it('dashboard JS includes conductorHoldMs = 3000', () => {
+    const src = require('fs').readFileSync(
+      require('path').join(__dirname, '../../tools/generate-dashboard.js'),
+      'utf8',
+    );
+    expect(src).toContain('conductorHoldMs');
+    expect(src).toContain('3000');
+  });
+
+  it('dashboard JS includes setConductorActive function', () => {
+    const src = require('fs').readFileSync(
+      require('path').join(__dirname, '../../tools/generate-dashboard.js'),
+      'utf8',
+    );
+    expect(src).toContain('setConductorActive');
+  });
+
+  it('setConductorActive calls appendEventLog', () => {
+    const src = require('fs').readFileSync(
+      require('path').join(__dirname, '../../tools/generate-dashboard.js'),
+      'utf8',
+    );
+    expect(src).toContain('appendEventLog');
+  });
+});
+
+describe('generate-dashboard — US-0145 event log', () => {
+  it('dashboard HTML contains pv-event-log element', () => {
+    const src = require('fs').readFileSync(
+      require('path').join(__dirname, '../../tools/generate-dashboard.js'),
+      'utf8',
+    );
+    expect(src).toContain('pv-event-log');
+  });
+
+  it('dashboard JS contains appendEventLog function', () => {
+    const src = require('fs').readFileSync(
+      require('path').join(__dirname, '../../tools/generate-dashboard.js'),
+      'utf8',
+    );
+    expect(src).toContain('appendEventLog');
+  });
+
+  it('event log has evt-time, evt-agent, evt-msg columns', () => {
+    const src = require('fs').readFileSync(
+      require('path').join(__dirname, '../../tools/generate-dashboard.js'),
+      'utf8',
+    );
+    expect(src).toContain('evt-time');
+    expect(src).toContain('evt-agent');
+    expect(src).toContain('evt-msg');
+  });
+});
+
+describe('generate-dashboard — US-0144 pipeline scope', () => {
+  it('dashboard HTML contains pv-phase-fill element', () => {
+    const src = require('fs').readFileSync(
+      require('path').join(__dirname, '../../tools/generate-dashboard.js'),
+      'utf8',
+    );
+    expect(src).toContain('pv-phase-fill');
+  });
+
+  it('phase cards do not contain pv-phase-agent-task class', () => {
+    const src = require('fs').readFileSync(
+      require('path').join(__dirname, '../../tools/generate-dashboard.js'),
+      'utf8',
+    );
+    expect(src).not.toContain('pv-phase-agent-task');
+  });
+});
+
+describe('generate-dashboard — US-0146 live bar', () => {
+  it('dashboard HTML contains pv-live-bar element', () => {
+    const src = require('fs').readFileSync(
+      require('path').join(__dirname, '../../tools/generate-dashboard.js'),
+      'utf8',
+    );
+    expect(src).toContain('pv-live-bar');
+  });
+
+  it('live bar contains ON AIR chip', () => {
+    const src = require('fs').readFileSync(
+      require('path').join(__dirname, '../../tools/generate-dashboard.js'),
+      'utf8',
+    );
+    expect(src).toContain('ON AIR');
+  });
+
+  it('live bar contains pv-live-clock element', () => {
+    const src = require('fs').readFileSync(
+      require('path').join(__dirname, '../../tools/generate-dashboard.js'),
+      'utf8',
+    );
+    expect(src).toContain('pv-live-clock');
   });
 });

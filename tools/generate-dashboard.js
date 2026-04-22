@@ -414,6 +414,16 @@ function generateHTML(status) {
     --status-planned-color: #888;
     --status-inprogress-bg: #3a2a0a;
     --status-complete-bg: #1a3a2a;
+    --live-accent:      oklch(72% 0.19 38);
+    --live-accent-soft: oklch(72% 0.19 38 / 0.18);
+    --live-accent-ink:  oklch(55% 0.18 38);
+    --plan-accent:      oklch(62% 0.19 268);
+    --plan-accent-soft: oklch(62% 0.19 268 / 0.14);
+    --plan-accent-ink:  oklch(42% 0.18 268);
+    --ok:               oklch(68% 0.15 150);
+    --warn:             oklch(74% 0.16 78);
+    --risk:             oklch(64% 0.20 25);
+    --info:             oklch(66% 0.14 240);
   }
   [data-theme="light"] {
     --bg-primary: #f0f2f5;
@@ -769,6 +779,16 @@ function generateHTML(status) {
   .agent-card.active:hover { box-shadow: 0 0 0 3px var(--agent-color, #888), 0 0 0 7px var(--agent-color-ring, rgba(136,136,136,0.35)); }
   .agent-card .on-air-dot { position: absolute; top: 8px; right: 10px; display: none; }
   .agent-card.active .on-air-dot { display: inline-block; }
+  /* US-0142: status-class prominence — is-active tinted bg + accent border */
+  .agent-card.is-active { border-color: var(--live-accent); background: color-mix(in oklab, var(--live-accent) 6%, var(--surface, #16213e)); box-shadow: 0 0 0 1px var(--live-accent), var(--shadow, 0 4px 16px rgba(0,0,0,0.3)); }
+  .agent-card.is-blocked { border-color: rgba(234,67,53,0.5); }
+  .agent-card.is-review { border-color: rgba(66,133,244,0.4); }
+  /* US-0142: left accent rail — position absolute, requires overflow:hidden on card */
+  .agent-rail { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--live-accent); border-radius: 10px 0 0 10px; }
+  /* US-0142: pulsing live dot for active agents */
+  .agent-live-dot { width: 8px; height: 8px; border-radius: 999px; background: var(--text-muted, #999); }
+  .dot-pulse { background: var(--live-accent) !important; box-shadow: 0 0 0 3px var(--live-accent-soft); animation: pv-pulse 1.4s ease-in-out infinite; }
+  @keyframes pv-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
   #agent-portrait-popup { position: fixed; z-index: 999; width: 200px; border-radius: 14px; overflow: hidden; box-shadow: 0 12px 40px rgba(0,0,0,0.7); pointer-events: none; display: none; transition: opacity 0.15s; border: 2px solid rgba(255,255,255,0.12); }
   #agent-portrait-popup img { width: 100%; display: block; border-radius: 12px; object-fit: cover; object-position: center top; }
   .agent-avatar { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; object-position: center top; border: 2px solid var(--agent-color, #888); flex-shrink: 0; }
@@ -1487,6 +1507,30 @@ function generateHTML(status) {
   .cycle-telemetry-tile { background: var(--bg-card); border: 1px solid var(--bg-card-border); border-radius: 8px; padding: 8px 14px; text-align: center; font-family: var(--font-sans); min-width: 100px; }
   .cycle-telemetry-tile .tile-value { font-family: var(--font-display), monospace; font-size: 20px; font-weight: 700; color: var(--text-primary); }
   .cycle-telemetry-tile .tile-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); margin-top: 2px; }
+  /* US-0145: Event log primary column widget */
+  .pv-event-log { margin-bottom: 16px; }
+  .pv-log-row { display: grid; grid-template-columns: 72px 90px 1fr; gap: 10px; padding: 4px 14px; border-bottom: 1px dashed rgba(255,255,255,0.06); font-size: 12px; }
+  .pv-log-row:last-child { border-bottom: 0; }
+  .evt-time { color: var(--text-muted); font-family: monospace; }
+  .evt-agent { color: var(--text-secondary); font-weight: 600; }
+  .evt-msg { color: var(--text-secondary); }
+  .evt-start .evt-agent { color: var(--live-accent-ink, oklch(55% 0.18 38)); }
+  .evt-done .evt-agent { color: var(--ok, oklch(68% 0.15 150)); }
+  .evt-block .evt-agent { color: var(--risk, oklch(64% 0.20 25)); }
+  .evt-review .evt-agent { color: var(--info, oklch(66% 0.14 240)); }
+  .pv-log-status { font-family: monospace; font-size: 10px; letter-spacing: 0.1em; padding: 2px 6px; border-radius: 4px; background: var(--live-accent, oklch(72% 0.19 38)); color: #1a0f00; margin-left: auto; }
+  .card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .card-head h3 { margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; }
+  /* US-0144: Simplified phase fill bar — number/name/group/fill only */
+  .pv-phase-fill-bg { height: 4px; background: var(--bg-progress, rgba(255,255,255,0.1)); border-radius: 3px; overflow: hidden; margin-top: auto; }
+  .pv-phase-fill { height: 100%; border-radius: 3px; background: var(--ok, oklch(68% 0.15 150)); transition: width 0.3s; }
+  /* US-0146: Live bar — ON AIR chip, cycle display, ticker, HH:MM:SS clock */
+  .pv-live-bar { display: flex; align-items: center; gap: 14px; padding: 8px 18px; background: linear-gradient(90deg, color-mix(in oklab, var(--live-accent, oklch(72% 0.19 38)) 14%, transparent) 0%, transparent 80%); border-bottom: 1px solid var(--bg-card-border, #2a2a5a); min-height: 48px; border-left: 3px solid var(--live-accent, oklch(72% 0.19 38)); margin-bottom: 0; }
+  .pv-on-air { font-family: monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; padding: 4px 8px; background: var(--live-accent, oklch(72% 0.19 38)); color: #1a0f00; border-radius: 4px; flex-shrink: 0; }
+  .pv-live-cycle { font-family: monospace; font-size: 12.5px; color: var(--text-secondary, #aaa); flex-shrink: 0; }
+  .pv-live-ticker { flex: 1; font-family: monospace; font-size: 12px; color: var(--text-secondary, #aaa); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 14px; border-left: 1px solid var(--divider, #2a2a4a); }
+  .pv-live-clock { font-family: monospace; font-size: 14px; font-weight: 600; color: var(--text-primary, #e0e0e0); flex-shrink: 0; }
+  @media (prefers-reduced-motion: reduce) { .pv-live-ticker { animation: none; } }
 </style>
 </head>
 <body>
@@ -1516,6 +1560,14 @@ function generateHTML(status) {
 
 <!-- US-0122 AC-0417: incident ticker (hidden by default, .active shown beneath header when any agent/phase is blocked). -->
 <div id="incident-ticker" class="incident-ticker" aria-live="polite" aria-atomic="true"></div>
+
+<!-- US-0146: Live bar — always visible ON AIR status strip -->
+<div class="pv-live-bar" id="pv-live-bar" role="status" aria-live="polite">
+  <span class="pv-on-air">ON AIR</span>
+  <div class="pv-live-cycle" id="pv-live-cycle">CYCLE — · —:——</div>
+  <div class="pv-live-ticker" id="pv-live-ticker" aria-hidden="true"></div>
+  <div class="pv-live-clock" id="pv-live-clock">00:00:00</div>
+</div>
 
 <div class="container">
 
@@ -1571,7 +1623,7 @@ ${phases
     <div class="phase-agents">${agents.join(' \u00B7 ')}</div>
     <div class="phase-deliverables">${deliverables.join(' \u00B7 ')}</div>
     <div class="phase-elapsed" id="phase-${p.id}-elapsed" data-has-elapsed="${hasElapsed}"><span class="phase-check" id="phase-${p.id}-check" aria-label="complete">\u2713</span>${esc(elapsed)}</div>
-    <div class="phase-fill-track"><div class="phase-fill-bar" id="phase-${p.id}-fill" style="width: ${fillWidth}%"></div></div>
+    <div class="phase-fill-track"><div class="phase-fill-bar pv-phase-fill" id="phase-${p.id}-fill" style="width: ${fillWidth}%"></div></div>
   </div>`;
   })
   .join('\n')}
@@ -1774,17 +1826,29 @@ ${Object.entries(agents)
     const isActive = agent.status === 'active';
     const isIdle =
       !isActive && agent.status !== 'complete' && agent.status !== 'blocked' && agent.status !== 'needs-review';
-    const stationClasses = ['agent-card'];
+    // US-0142: status-specific CSS classes for visual prominence
+    const statusCls =
+      agent.status === 'active'
+        ? 'is-active'
+        : agent.status === 'blocked'
+          ? 'is-blocked'
+          : agent.status === 'needs-review'
+            ? 'is-review'
+            : 'is-idle';
+    const stationClasses = ['agent-card', statusCls];
     if (isActive) stationClasses.push('active');
     if (isIdle) stationClasses.push('idle');
     // --agent-color drives the 3px active glow; --agent-color-ring is the
     // translucent variant used for the 4px hover outline (AC-0405).
     const styleVars = `--agent-color: ${color}; --agent-color-ring: ${color}40;`;
+    // US-0142: accent rail (only when active) and pulsing dot class
+    const rail = isActive ? '<div class="agent-rail"></div>' : '';
+    const dotCls = isActive ? 'dot-pulse' : '';
     // US-0111 AC-0364: keep stable IDs on card + inner pills so patchDOM()
     // can update status/task text without re-rendering the whole grid.
     return `      <div class="${stationClasses.join(' ')}" id="agent-${esc(name)}" data-agent-name="${esc(name)}" data-agent-status="${esc(agent.status)}" style="${styleVars}"
         onmouseenter="showAgentPortrait(this,'${fullPortrait}')" onmouseleave="hideAgentPortrait()">
-        <span class="live-dot ok on-air-dot" aria-label="now on air" title="now on air"></span>
+        ${rail}<span class="live-dot ok on-air-dot${dotCls ? ' ' + dotCls : ''}" aria-label="now on air" title="now on air"></span>
         ${avatarImg}
         <div class="agent-info">
           <div class="agent-name" style="color: ${color}">${esc(name)}</div>
@@ -1874,6 +1938,15 @@ ${storyRows}
 })()}
     </div>
   </div>
+</div>
+
+<!-- US-0145: Event Log — primary column widget with monospace rows, auto-scroll, pause-on-hover -->
+<div class="card pv-event-log" id="pv-event-log">
+  <div class="card-head">
+    <h3>Event Log</h3>
+    <span class="pv-log-status" id="pv-log-status">LIVE</span>
+  </div>
+  <div class="pv-log-body" id="pv-log-body" style="max-height:360px;overflow:auto;font-family:var(--font-sans);font-size:12px;line-height:1.55;"></div>
 </div>
 
 <!-- Activity Log — US-0121 terminal aesthetic -->
@@ -2017,6 +2090,56 @@ function escH(s) {
   return String(s == null ? '' : s)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
+// US-0143: Conductor dispatch hold — keeps Conductor card in is-active state
+// for conductorHoldMs ms after each dispatch, then reverts to is-idle.
+var conductorHoldMs = 3000;
+var _conductorHoldTimer = null;
+
+function appendEventLog(entry) {
+  var body = document.getElementById('pv-log-body');
+  if (!body) return;
+  var tag = entry.tag || 'start';
+  var tone = tag === 'done' ? 'evt-done' : tag === 'block' ? 'evt-block' : tag === 'review' ? 'evt-review' : 'evt-start';
+  var row = document.createElement('div');
+  row.className = 'pv-log-row ' + tone;
+  row.innerHTML = '<span class="evt-time">' + escH(entry.t || '') + '</span>' +
+    '<span class="evt-agent">' + escH(entry.a || '') + '</span>' +
+    '<span class="evt-msg">' + escH(entry.m || '') + '</span>';
+  body.insertBefore(row, body.firstChild);
+  if (!body.dataset.paused) body.scrollTop = 0;
+}
+
+// US-0145: pause event log scroll on hover so user can read entries
+(function () {
+  // Runs after DOM is ready
+  document.addEventListener('DOMContentLoaded', function () {
+    var lb = document.getElementById('pv-log-body');
+    if (!lb) return;
+    lb.addEventListener('mouseenter', function () {
+      this.dataset.paused = '1';
+    });
+    lb.addEventListener('mouseleave', function () {
+      delete this.dataset.paused;
+    });
+  });
+})();
+
+function setConductorActive(dispatchMsg) {
+  var card = document.querySelector('[data-agent="Conductor"]');
+  if (card) {
+    card.classList.add('is-active');
+    card.classList.remove('is-idle');
+  }
+  appendEventLog({ t: new Date().toLocaleTimeString(), a: 'Conductor', m: dispatchMsg || 'Dispatched task', tag: 'dispatch' });
+  clearTimeout(_conductorHoldTimer);
+  _conductorHoldTimer = setTimeout(function () {
+    if (card) {
+      card.classList.remove('is-active');
+      card.classList.add('is-idle');
+    }
+  }, conductorHoldMs);
+}
+
 // US-0121 helpers: _formatLogTime formats ISO timestamps as HH:MM:SS;
 // _logCategory classifies log entries for colour coding.
 function _formatLogTime(raw) {
@@ -2942,6 +3065,21 @@ function patchCycleCounter(status) {
 // Kick the ticker immediately and every second, mirroring updateSpotlightElapsed.
 updateCycleElapsed();
 setInterval(updateCycleElapsed, 1000);
+
+// US-0146: Live bar HH:MM:SS clock — ticks every second.
+(function startLiveClock() {
+  function tick() {
+    var el = document.getElementById('pv-live-clock');
+    if (!el) return;
+    var n = new Date();
+    el.textContent =
+      String(n.getHours()).padStart(2, '0') + ':' +
+      String(n.getMinutes()).padStart(2, '0') + ':' +
+      String(n.getSeconds()).padStart(2, '0');
+  }
+  tick();
+  setInterval(tick, 1000);
+})();
 </script>
 
 <div id="agent-portrait-popup"><img src="" alt="Agent portrait" onerror="this.style.display='none'"></div>
