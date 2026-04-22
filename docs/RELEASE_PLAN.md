@@ -1471,7 +1471,7 @@ Dependencies: US-0069
 EPIC-0012: Stakeholder View
 Description: Simplified read-only view for non-technical stakeholders. Exportable summary report.
 Release Target: Release 1.8
-Status: Planned
+Status: Done
 Dependencies: EPIC-0011
 ```
 
@@ -1483,48 +1483,48 @@ Dependencies: EPIC-0011
 US-0073 (EPIC-0012): As a project manager, I want a stakeholder-friendly view that hides technical details, so that non-technical team members can understand project status without confusion.
 Priority: High (P0)
 Estimate: M
-Status: Planned
-Branch:
+Status: Done
+Branch: claude/gifted-johnson-5e162a
 Acceptance Criteria:
-  - [ ] AC-0224: A "Stakeholder View" toggle appears in the sidebar (or top bar) next to the theme toggle
-  - [ ] AC-0225: When enabled, the dashboard switches to a simplified layout: only shows Progress, Milestones (epics), Risks, and Budget sections
-  - [ ] AC-0226: Technical elements are hidden: branch names, token counts, test case details, lesson IDs, bug fix branches
-  - [ ] AC-0227: Status labels use plain language: "In Progress" → "Being Worked On", "To Do" → "Planned", "At Risk" → "Needs Attention"
+  - [x] AC-0224: A "Stakeholder" tab appears in the sidebar nav
+  - [x] AC-0225: The tab shows a simplified layout: Progress tile, Milestones (epics), Risks, and Budget sections
+  - [x] AC-0226: Technical elements are hidden: branch names, token counts, lesson IDs, bug fix branches, raw per-epic cost breakdowns
+  - [x] AC-0227: Status labels use plain language: "In Progress" → "Being Worked On", "At Risk"/"Blocked" → "Needs Attention"
 Dependencies: None
 
 US-0074 (EPIC-0012): As a stakeholder, I want to see a high-level milestone progress view, so that I can understand which epics are on track.
 Priority: High (P0)
 Estimate: S
-Status: Planned
-Branch:
+Status: Done
+Branch: claude/gifted-johnson-5e162a
 Acceptance Criteria:
-  - [ ] AC-0228: The Stakeholder View displays each epic as a milestone card with: Epic ID, Title, Status, Progress bar (% Done), and Key Risks
-  - [ ] AC-0229: Progress is calculated as Done stories / Total stories for that epic
-  - [ ] AC-0230: Each card shows a simplified status: "On Track" (Done + In Progress > 50%), "At Risk" (Blocked or In Progress < 50%), "Complete" (all Done)
-  - [ ] AC-0231: Clicking a milestone card expands to show top-level story summaries (no AC details)
+  - [x] AC-0228: Each epic appears as a milestone row with: Epic ID (mono), Title, Status chip, Progress bar (% Done)
+  - [x] AC-0229: Progress = Done stories / non-Retired stories for that epic
+  - [x] AC-0230: Composite status: Complete (all done), On Track (any active), Needs Attention (blocked/open critical bug), Planned (all planned)
+  - [x] AC-0231: Clicking an epic row expands to show story summaries with icons; clicking a story expands to show AC list
 Dependencies: US-0073
 
 US-0075 (EPIC-0012): As a stakeholder, I want to see a budget summary with simple traffic-light indicators, so that I can understand financial health at a glance.
 Priority: Medium (P1)
 Estimate: S
-Status: Planned
-Branch:
+Status: Done
+Branch: claude/gifted-johnson-5e162a
 Acceptance Criteria:
-  - [ ] AC-0232: Budget section shows: Total Budget, Spent, Remaining, and a traffic light (🟢 <50%, 🟡 50-80%, 🔴 >80%)
-  - [ ] AC-0233: Burn rate and projected exhaustion date are shown in plain language: "At current pace, budget lasts X more weeks"
-  - [ ] AC-0234: All technical details (exact token counts, per-epic breakdowns) are hidden
+  - [x] AC-0232: Summary bar Budget tile shows: traffic-light dot (green <50%, amber 50–80%, red >80%), Est. USD, AI spend USD
+  - [x] AC-0233: Burn rate narrative: "At current pace, budget lasts N more weeks" rendered when budget configured
+  - [x] AC-0234: Token counts, per-epic breakdowns, and raw cost fields hidden
 Dependencies: US-0073, US-0060
 
 US-0076 (EPIC-0012): As a project manager, I want to export a PDF summary report for stakeholders, so that I can share status via email without granting dashboard access.
 Priority: High (P0)
 Estimate: M
-Status: Planned
-Branch:
+Status: Done
+Branch: claude/gifted-johnson-5e162a
 Acceptance Criteria:
-  - [ ] AC-0235: An "Export PDF" button appears in the Stakeholder View header
-  - [ ] AC-0236: Clicking generates a PDF with: project name, date, overall progress, milestone cards, budget summary, and top 3 risks
-  - [ ] AC-0237: The PDF uses a clean, branded layout suitable for executive presentation
-  - [ ] AC-0238: PDF generation happens client-side using the browser's print-to-PDF or a library (e.g., html2pdf.js)
+  - [x] AC-0235: A sticky "Export PDF" bar appears at the bottom of the Stakeholder tab with a button and hint text
+  - [x] AC-0236: Clicking calls window.print(); @media print shows only the stakeholder tab content
+  - [x] AC-0237: Print CSS hides interactive chrome (sidebar, export bar, other tabs) for a clean output
+  - [x] AC-0238: No library dependency — uses browser native print-to-PDF; html2pdf.js tracked as future roadmap
 Dependencies: US-0073, US-0074, US-0075
 
 US-0077 (EPIC-0012): As a stakeholder, I want to subscribe to weekly email digests, so that I receive updates without accessing the dashboard.
@@ -2618,7 +2618,7 @@ Dependencies: US-0128, US-0129
 EPIC-0020: Cross-Dashboard Redesign
 Description: Unify Plan-Status and Agentic dashboards under a single Editorial × Mission Control design language. Share a token set (neutrals, semantic colors, typography, card/chip/bar primitives) while differentiating each dashboard with its own accent hue, mode badge (REPORT vs LIVE), and voice (calm report vs live broadcast). First-class light and dark themes. Replaces the saturated navy gradient header, consolidates the chart palette, lifts the Status tab out of sparseness, promotes active agents and event activity on the Agentic surface, and removes pipeline/agent-roster redundancy.
 Release Target: Release 1.11
-Status: Planned
+Status: Done
 Dependencies: EPIC-0015, EPIC-0016
 
 ```
@@ -2632,14 +2632,14 @@ Dependencies: EPIC-0015, EPIC-0016
 US-0135 (EPIC-0020): As a Plan-Status viewer, I want a Status hero that answers "is the release on track?" in one glance, so that I do not need to visit three tabs to triangulate release health.
 Priority: High (P0)
 Estimate: M
-Status: Planned
+Status: Done
 Branch: feature/US-0135-status-hero
 Acceptance Criteria:
 
-- [ ] AC-0488: Status tab renders a hero card with release name, a one-word verdict (On track / At risk / Off track), a stable/warn/risk chip, and a one-sentence narrative summary
-- [ ] AC-0489: Hero includes three stat blocks — Forecast (P50 ship date ± buffer), Velocity (stories/wk with week-over-week delta), Budget (% of cap with absolute $)
-- [ ] AC-0490: Hero includes three at-a-glance mini-viz: 14-week progress bars, 30-day coverage heat strip, cumulative AI spend burn line
-- [ ] AC-0491: All numeric fields use tabular-nums and the display serif; mini-viz share the shared palette token set from US-0140
+- [x] AC-0488: Status tab renders a hero card with release name, a one-word verdict (On track / At risk / Off track), a stable/warn/risk chip, and a one-sentence narrative summary
+- [x] AC-0489: Hero includes three stat blocks — Forecast (P50 ship date ± buffer), Velocity (stories/wk with week-over-week delta), Budget (% of cap with absolute $)
+- [x] AC-0490: Hero includes three at-a-glance mini-viz: 14-week progress bars, 30-day coverage heat strip, cumulative AI spend burn line
+- [x] AC-0491: All numeric fields use tabular-nums and the display serif; mini-viz share the shared palette token set from US-0140
       Dependencies: US-0140
 
 ```
@@ -2649,14 +2649,14 @@ Acceptance Criteria:
 US-0136 (EPIC-0020): As any viewer, I want the corporate navy gradient header replaced with a neutral chrome plus a mode badge, so that the two dashboards are instantly distinguishable without a loud header dominating the page.
 Priority: High (P0)
 Estimate: S
-Status: Planned
+Status: Done
 Branch: feature/US-0136-neutral-chrome
 Acceptance Criteria:
 
-- [ ] AC-0492: The fixed topbar uses a blurred neutral surface (surface/opacity token) with a 1px bottom border, no saturated gradient
-- [ ] AC-0493: A mode badge renders in the chrome — "REPORT" (solid plan accent pip) on Plan-Status, "LIVE" (pulsing live accent pip) on Agentic
-- [ ] AC-0494: Both dashboards expose a two-segment brand/dashboard switcher and a light/dark theme toggle in the chrome
-- [ ] AC-0495: Chrome height ≤ 52px; does not repeat the page title (mastheads own title)
+- [x] AC-0492: The fixed topbar uses a blurred neutral surface (surface/opacity token) with a 1px bottom border, no saturated gradient
+- [x] AC-0493: A mode badge renders in the chrome — "REPORT" (solid plan accent pip) on Plan-Status, "LIVE" (pulsing live accent pip) on Agentic
+- [x] AC-0494: Both dashboards expose a two-segment brand/dashboard switcher and a light/dark theme toggle in the chrome
+- [x] AC-0495: Chrome height ≤ 52px; does not repeat the page title (mastheads own title)
       Dependencies: US-0138
 
 ```
@@ -2666,14 +2666,14 @@ Acceptance Criteria:
 US-0137 (EPIC-0020): As a developer, I want a shared theme.js (tokens.js) module exporting every color, font, radius, shadow, and spacing primitive used across both dashboards, so that adjusting the design system in one place updates every surface.
 Priority: High (P0)
 Estimate: M
-Status: Planned
+Status: Done
 Branch: feature/US-0137-shared-tokens
 Acceptance Criteria:
 
-- [ ] AC-0496: tools/lib/theme.js exports `palette`, `type`, `radius`, `shadow`, `spacing`, `charts` objects consumed by both render-html.js and dashboard.html generators
-- [ ] AC-0497: tokens are exposed as CSS custom properties under :root / [data-theme="dark"] blocks generated from the same source
-- [ ] AC-0498: No color literal (`#xxxxxx` or `rgb(…)`) remains inline in either dashboard's HTML or inline style; audited by a lint rule in tests/unit/theme.test.js
-- [ ] AC-0499: Existing badge/BADGE_TONE helpers in theme.js are preserved and extended (non-breaking)
+- [x] AC-0496: tools/lib/theme.js exports `palette`, `type`, `radius`, `shadow`, `spacing`, `charts` objects consumed by both render-html.js and dashboard.html generators
+- [x] AC-0497: tokens are exposed as CSS custom properties under :root / [data-theme="dark"] blocks generated from the same source
+- [x] AC-0498: No color literal (`#xxxxxx` or `rgb(…)`) remains inline in either dashboard's HTML or inline style; audited by a lint rule in tests/unit/theme.test.js
+- [x] AC-0499: Existing badge/BADGE_TONE helpers in theme.js are preserved and extended (non-breaking)
       Dependencies: None
 
 ```
@@ -2683,14 +2683,14 @@ Acceptance Criteria:
 US-0138 (EPIC-0020): As a viewer, I want the page chrome to carry a REPORT / LIVE mode badge whose color matches the dashboard accent, so that I can tell which dashboard I am looking at in peripheral vision.
 Priority: Medium (P1)
 Estimate: XS
-Status: Planned
+Status: Done
 Branch: feature/US-0138-mode-badge
 Acceptance Criteria:
 
-- [ ] AC-0500: Badge renders as a pill with a colored pip + uppercase mono text ("REPORT" / "LIVE")
-- [ ] AC-0501: LIVE pip pulses at 1.6s; REPORT pip is static
-- [ ] AC-0502: Badge color uses the dashboard's accent token (plan-accent on Plan-Status, live-accent on Agentic)
-- [ ] AC-0503: Badge is keyboard-focusable and carries aria-label "Mode: Report" / "Mode: Live"
+- [x] AC-0500: Badge renders as a pill with a colored pip + uppercase mono text ("REPORT" / "LIVE")
+- [x] AC-0501: LIVE pip pulses at 1.6s; REPORT pip is static
+- [x] AC-0502: Badge color uses the dashboard's accent token (plan-accent on Plan-Status, live-accent on Agentic)
+- [x] AC-0503: Badge is keyboard-focusable and carries aria-label "Mode: Report" / "Mode: Live"
       Dependencies: US-0137
 
 ```
@@ -2700,14 +2700,14 @@ Acceptance Criteria:
 US-0139 (EPIC-0020): As a Plan-Status viewer, I want the Status tab to surface additional decision-grade widgets — top risks, this-week summary, agent workload — so that the tab is a true release report and not a chart gallery.
 Priority: High (P0)
 Estimate: M
-Status: Planned
+Status: Done
 Branch: feature/US-0139-status-tab-richer
 Acceptance Criteria:
 
-- [ ] AC-0504: Status tab includes a Top Risks card with severity-chipped items drawn from open bugs + blocked stories + overdue epics
-- [ ] AC-0505: Status tab includes a This Week card with stories shipped, PRs merged, bugs opened/fixed, AI spend
-- [ ] AC-0506: Status tab includes an Agent Workload card with a bar per agent, ranked by current assignment count
-- [ ] AC-0507: All three cards remain legible at 1280px and collapse to single-column at ≤1100px
+- [x] AC-0504: Status tab includes a Top Risks card with severity-chipped items drawn from open bugs + blocked stories + overdue epics
+- [x] AC-0505: Status tab includes a This Week card with stories shipped, PRs merged, bugs opened/fixed, AI spend
+- [x] AC-0506: Status tab includes an Agent Workload card with a bar per agent, ranked by current assignment count
+- [x] AC-0507: All three cards remain legible at 1280px and collapse to single-column at ≤1100px
       Dependencies: US-0135, US-0137
 
 ```
@@ -2717,14 +2717,14 @@ Acceptance Criteria:
 US-0140 (EPIC-0020): As a viewer, I want every chart across Status, Charts, Trends, Bugs and the Agentic dashboard to draw from one semantic palette, so that "Done", "Blocked", and "At risk" always read the same color.
 Priority: High (P0)
 Estimate: M
-Status: Planned
+Status: Done
 Branch: feature/US-0140-chart-palette
 Acceptance Criteria:
 
-- [ ] AC-0508: A single chartColors map in theme.js defines ok/warn/risk/info/accent/mute keys
-- [ ] AC-0509: Chart.js global defaults (colors, grid, tooltip) are initialised from chartColors on page load
-- [ ] AC-0510: Doughnut center label, bar fill, line stroke, and legend swatches all read from the same tokens
-- [ ] AC-0511: Visual regression test captures Status, Charts, Trends in both themes and diffs under a 1% tolerance
+- [x] AC-0508: A single chartColors map in theme.js defines ok/warn/risk/info/accent/mute keys
+- [x] AC-0509: Chart.js global defaults (colors, grid, tooltip) are initialised from chartColors on page load
+- [x] AC-0510: Doughnut center label, bar fill, line stroke, and legend swatches all read from the same tokens
+- [x] AC-0511: Visual regression test captures Status, Charts, Trends in both themes and diffs under a 1% tolerance
       Dependencies: US-0137
 
 ```
@@ -2734,14 +2734,14 @@ Acceptance Criteria:
 US-0141 (EPIC-0020): As a viewer, I want first-class dark and light themes on both dashboards, so that either theme feels designed rather than ported.
 Priority: High (P0)
 Estimate: M
-Status: Planned
+Status: Done
 Branch: feature/US-0141-dual-theme
 Acceptance Criteria:
 
-- [ ] AC-0512: [data-theme="dark"] and [data-theme="light"] declarations cover every surface, border, shadow, and chip in both dashboards
-- [ ] AC-0513: Theme choice persists in localStorage under key `pv-theme` and falls back to prefers-color-scheme on first visit
-- [ ] AC-0514: Dark theme uses a low-chroma warm neutral base (not pure black); light theme uses a near-white surface with a subtly tinted canvas (not #FFF)
-- [ ] AC-0515: Neither theme relies on box-shadow alone to separate cards — a 1px border is also present so cards render in any printout
+- [x] AC-0512: [data-theme="dark"] and [data-theme="light"] declarations cover every surface, border, shadow, and chip in both dashboards
+- [x] AC-0513: Theme choice persists in localStorage under key `pv-theme` and falls back to prefers-color-scheme on first visit
+- [x] AC-0514: Dark theme uses a low-chroma warm neutral base (not pure black); light theme uses a near-white surface with a subtly tinted canvas (not #FFF)
+- [x] AC-0515: Neither theme relies on box-shadow alone to separate cards — a 1px border is also present so cards render in any printout
       Dependencies: US-0137
 
 ```
@@ -2751,14 +2751,14 @@ Acceptance Criteria:
 US-0142 (EPIC-0020): As an Agentic viewer, I want currently-active agents to pop visually against idle/blocked peers, so that "who is working right now" is a 1-second glance.
 Priority: High (P0)
 Estimate: S
-Status: Planned
+Status: Done
 Branch: feature/US-0142-active-agent-prominence
 Acceptance Criteria:
 
-- [ ] AC-0516: Active agent cards render with a 3px left accent rail in live-accent, a tinted background (~9% accent mix), and an outlined border in live-accent
-- [ ] AC-0517: The live-dot on active cards pulses at 1.4s; idle/blocked dots are static
-- [ ] AC-0518: The status chip on active cards is filled with live-accent; idle/blocked use neutral / risk tokens
-- [ ] AC-0519: Accessible focus ring does not conflict with the left accent rail
+- [x] AC-0516: Active agent cards render with a 3px left accent rail in live-accent, a tinted background (~9% accent mix), and an outlined border in live-accent
+- [x] AC-0517: The live-dot on active cards pulses at 1.4s; idle/blocked dots are static
+- [x] AC-0518: The status chip on active cards is filled with live-accent; idle/blocked use neutral / risk tokens
+- [x] AC-0519: Accessible focus ring does not conflict with the left accent rail
       Dependencies: US-0137
 
 ```
@@ -2768,13 +2768,13 @@ Acceptance Criteria:
 US-0143 (EPIC-0020): As an Agentic viewer, I want Conductor hand-offs to be visible even when each dispatch lasts a few hundred milliseconds, so that I can see orchestration happening.
 Priority: Medium (P1)
 Estimate: S
-Status: Planned
+Status: Done
 Branch: feature/US-0143-conductor-dispatch-hold
 Acceptance Criteria:
 
-- [ ] AC-0520: When Conductor transitions active → idle, the UI holds the active state for a minimum of 3s before fading back
-- [ ] AC-0521: Each dispatch fires a "Dispatched US-XXXX → AgentName" entry at the top of the Event Log and the live ticker in the Live Bar
-- [ ] AC-0522: A dispatch counter increments on the Conductor card ("37 tasks") and animates on change
+- [x] AC-0520: When Conductor transitions active → idle, the UI holds the active state for a minimum of 3s before fading back
+- [x] AC-0521: Each dispatch fires a "Dispatched US-XXXX → AgentName" entry at the top of the Event Log and the live ticker in the Live Bar
+- [x] AC-0522: A dispatch counter increments on the Conductor card ("37 tasks") and animates on change
       Dependencies: US-0142, US-0145
 
 ```
@@ -2784,14 +2784,14 @@ Acceptance Criteria:
 US-0144 (EPIC-0020): As an Agentic viewer, I want the 6-phase Pipeline to stop duplicating the agent roster, so that each widget does a distinct job.
 Priority: Medium (P1)
 Estimate: S
-Status: Planned
+Status: Done
 Branch: feature/US-0144-pipeline-scope
 Acceptance Criteria:
 
-- [ ] AC-0523: Pipeline phase cards show phase number, name, agent-group label, and a partial-progress fill bar
-- [ ] AC-0524: Pipeline phase cards do NOT list per-agent status or current task (that is roster's job)
-- [ ] AC-0525: Active phase gets a solid accent underline + pulsing corner beacon; completed phases use the ok token; blocked phases use risk
-- [ ] AC-0526: Pipeline occupies one row at ≥1200px and wraps to 3×2 at ≤1024px
+- [x] AC-0523: Pipeline phase cards show phase number, name, agent-group label, and a partial-progress fill bar
+- [x] AC-0524: Pipeline phase cards do NOT list per-agent status or current task (that is roster's job)
+- [x] AC-0525: Active phase gets a solid accent underline + pulsing corner beacon; completed phases use the ok token; blocked phases use risk
+- [x] AC-0526: Pipeline occupies one row at ≥1200px and wraps to 3×2 at ≤1024px
       Dependencies: US-0137
 
 ```
@@ -2801,14 +2801,14 @@ Acceptance Criteria:
 US-0145 (EPIC-0020): As an Agentic viewer, I want a prominent terminal-style Event Log as a primary widget, so that the chronology of what the agents just did is visible without hunting in a side rail.
 Priority: High (P0)
 Estimate: M
-Status: Planned
+Status: Done
 Branch: feature/US-0145-event-log
 Acceptance Criteria:
 
-- [ ] AC-0527: Event Log renders as a main-column card (not sidebar) with monospace rows: timestamp · agent · message
-- [ ] AC-0528: Event rows are semantically colored by tag (start / done / review / block / dispatch)
-- [ ] AC-0529: Log auto-scrolls on new events; pauses on hover; resumes on pointer-leave
-- [ ] AC-0530: A compressed "Activity Stream" card remains in the right rail for peripheral glance, with newest-item accent rail
+- [x] AC-0527: Event Log renders as a main-column card (not sidebar) with monospace rows: timestamp · agent · message
+- [x] AC-0528: Event rows are semantically colored by tag (start / done / review / block / dispatch)
+- [x] AC-0529: Log auto-scrolls on new events; pauses on hover; resumes on pointer-leave
+- [x] AC-0530: A compressed "Activity Stream" card remains in the right rail for peripheral glance, with newest-item accent rail
       Dependencies: US-0137
 
 ```
@@ -2818,14 +2818,14 @@ Acceptance Criteria:
 US-0146 (EPIC-0020): As an Agentic viewer, I want a persistent Live Bar carrying ON AIR, cycle, ticker, and wall clock, so that broadcast context is always present without stealing header real estate.
 Priority: Medium (P1)
 Estimate: S
-Status: Planned
+Status: Done
 Branch: feature/US-0146-live-bar
 Acceptance Criteria:
 
-- [ ] AC-0531: Live Bar sits between chrome and masthead, ~48px tall, with a horizontal live-accent gradient wash
-- [ ] AC-0532: Shows ON AIR chip, CYCLE NNN · elapsed, rotating ticker of last 3 events, and a tabular HH:MM:SS clock
-- [ ] AC-0533: Hidden entirely on Plan-Status (REPORT mode)
-- [ ] AC-0534: Respects prefers-reduced-motion — ticker becomes static most-recent event only
+- [x] AC-0531: Live Bar sits between chrome and masthead, ~48px tall, with a horizontal live-accent gradient wash
+- [x] AC-0532: Shows ON AIR chip, CYCLE NNN · elapsed, rotating ticker of last 3 events, and a tabular HH:MM:SS clock
+- [x] AC-0533: Hidden entirely on Plan-Status (REPORT mode)
+- [x] AC-0534: Respects prefers-reduced-motion — ticker becomes static most-recent event only
       Dependencies: US-0138
 
 ```

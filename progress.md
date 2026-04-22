@@ -4,6 +4,40 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 26 — 2026-04-22
+
+### What Was Done
+
+1. **EPIC-0012 Stakeholder View — fully implemented and merged (PR #420)**
+   - `renderStakeholderTab(data)` added to `tools/lib/render-tabs.js` (~515 lines): 3-tile summary bar (progress, budget, risks), expandable epic milestone rows, story/AC drill-down, plain-language status mapping, OKLCH token colours
+   - Sidebar nav entry added to `renderSidebar()` in `tools/lib/render-shell.js`
+   - `.sh-*` CSS block (44 rules) + `@media print` stakeholder rules added to `tools/lib/render-scripts.js`; `'stakeholder'` added to `VALID_TABS`
+   - `renderStakeholderTab` wired into tab-content block in `tools/lib/render-html.js`
+   - 15 new tests in `tests/unit/render-tabs.test.js` — all passing
+   - Rebase conflict resolved (EPIC-0020 had advanced develop before this branch could merge)
+
+2. **Generation timestamp in plan-status chrome header**
+   - `renderChrome()` now includes `<span id="gen-time" data-iso="...">` between spacer and mode badge
+   - Formatted to local timezone by the existing JS loop in `render-scripts.js` (no new JS needed)
+
+3. **`generate-dashboard.js` git-root walk for `sdlc-status.json`**
+   - Added `findGitRoot()` helper that walks directory ancestors until it finds `.git`
+   - Fixes blank/stale agentic dashboard when script is invoked from a git worktree
+
+4. **Session close — RELEASE_PLAN.md, progress.md, PROMPT_LOG.md, MEMORY.md updated**
+
+### Test Results
+
+- **597 tests pass, 25 suites** — statement coverage ~93% (gate: 80% ✅)
+- All 10 CI checks on PR #420 passed before merge
+
+### Blockers / Notes
+
+- EPIC-0012 plan checkboxes in `docs/superpowers/plans/` remain unchecked (subagents committed code but didn't tick the plan doc — cosmetic only)
+- `sdlc-status.json` worktree fix covers invocation from worktrees; for live agentic dashboard, Conductor should still run from the main repo checkout where the file exists at runtime
+
+---
+
 ## Session 25 — 2026-04-22
 
 ### What Was Done
