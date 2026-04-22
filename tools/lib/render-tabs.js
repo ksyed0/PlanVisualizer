@@ -1007,7 +1007,7 @@ function renderChartsTab(data) {
     });
     _charts.coverage = new Chart(document.getElementById('chart-coverage'), {
       type: 'doughnut',
-      data: { labels: ['Covered', 'Gap'], datasets: [{ data: [${coveragePctNum}, ${coverageGap}], backgroundColor: [${coveragePct !== null ? 'pvChartColors.ok' : "'#94a3b8'"},pvChartColors.mute], borderWidth: 0 }] },
+      data: { labels: ['Covered', 'Gap'], datasets: [{ data: [${coveragePctNum}, ${coverageGap}], backgroundColor: [${coveragePct !== null ? 'pvChartColors.ok' : 'pvChartColors.mute'},pvChartColors.mute], borderWidth: 0 }] },
       options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: true, position: 'bottom', labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true } } } }
     });
     _charts.aiTimeline = new Chart(document.getElementById('chart-ai-timeline'), {
@@ -1017,7 +1017,7 @@ function renderChartsTab(data) {
     });
     _charts.burndown = new Chart(document.getElementById('chart-burndown'), {
       type: 'doughnut',
-      data: { labels: ['Done','In Progress','Planned','To Do','Blocked'], datasets: [{ data: ${statusCounts}, backgroundColor: [pvChartColors.ok,pvChartColors.info,'#94a3b8',pvChartColors.warn,pvChartColors.risk], borderWidth: 1 }] },
+      data: { labels: ['Done','In Progress','Planned','To Do','Blocked'], datasets: [{ data: ${statusCounts}, backgroundColor: [pvChartColors.ok,pvChartColors.info,pvChartColors.mute,pvChartColors.warn,pvChartColors.risk], borderWidth: 1 }] },
       options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true } } } }
     });
     _charts.burnRate = new Chart(document.getElementById('chart-burn-rate'), {
