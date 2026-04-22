@@ -19,6 +19,7 @@ const {
   renderBugsTab,
   renderLessonsTab,
   renderRecentActivity,
+  renderStakeholderTab,
 } = require('./render-tabs');
 const { renderScripts, renderPrintCSS } = require('./render-scripts');
 
@@ -504,6 +505,7 @@ function renderHtml(data, options = {}) {
         ${renderCostsTab(data, options)}
         ${renderBugsTab(data)}
         ${renderLessonsTab(data)}
+        ${renderStakeholderTab(data)}
       </div>
     </main>
   </div>
