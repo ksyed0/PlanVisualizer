@@ -4,6 +4,23 @@ Timestamped log of every user prompt across all sessions. Append-only. Never edi
 
 ---
 
+## Session 25 — 2026-04-22
+
+| #   | Timestamp            | Prompt                                                                                                                                                                          |
+| --- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | 2026-04-22T00:00:00Z | [Context resumed] this should be the common About box for both dashboards (from the agentic dashboard) [screenshot of agentic dashboard About modal]                            |
+| 2   | 2026-04-22T00:05:00Z | why are you ignoring that the new render mockup design for the agentic dashboard was not implemented at all?                                                                    |
+| 3   | 2026-04-22T00:08:00Z | on the hierarchy tab, the epic bar spacing for column view and card view are not the same, I prefer the column view spacing [screenshot of hierarchy epics]                     |
+| 4   | 2026-04-22T00:10:00Z | where is this data supposed to come from? [screenshot of Agent Workload widget showing "Unassigned 21"]                                                                         |
+| 5   | 2026-04-22T00:12:00Z | the epic bar formatting and spacing for Lessons should be the same as for Bugs [screenshot of Lessons tab epic headers]                                                         |
+| 6   | 2026-04-22T00:14:00Z | on all tabs, the selected view (card, column, compact) should be obvious (blue highlight)                                                                                       |
+| 7   | 2026-04-22T00:30:00Z | Lets update @docs/RELEASE_PLAN.md to add this new redesign as future work                                                                                                       |
+| 8   | 2026-04-22T00:31:00Z | is the agentic dashboard redesign already captured in the @docs/RELEASE_PLAN.md?                                                                                                |
+| 9   | 2026-04-22T00:35:00Z | If the stories are passed back and forth between the named agents during planning and implementation, does it make sense to have an assigned value in the @docs/RELEASE_PLAN.md |
+| 10  | 2026-04-22T00:40:00Z | ok update all documentation and prepare to close the session                                                                                                                    |
+
+---
+
 ## Session 24 — 2026-04-21
 
 | #   | Timestamp            | Prompt                                                                                                                                                                                                                                                                                                                                                                                     |

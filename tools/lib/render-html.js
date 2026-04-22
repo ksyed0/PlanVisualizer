@@ -10,7 +10,6 @@ const {
   renderMasthead,
 } = require('./render-shell');
 const {
-  renderStatusTab,
   renderHierarchyTab,
   renderKanbanTab,
   renderTraceabilityTab,
@@ -36,8 +35,7 @@ function renderHtml(data, options = {}) {
   var t=localStorage.getItem('pv-theme');
   var dark=t==='dark'||(t==null&&window.matchMedia('(prefers-color-scheme:dark)').matches);
   document.documentElement.setAttribute('data-theme',dark?'dark':'light');
-  /* BUG-0190: Tailwind darkMode:'class' needs .dark on <html> */
-  if(dark) document.documentElement.classList.add('dark');
+  if(dark){document.documentElement.classList.add('dark');}else{document.documentElement.classList.remove('dark');}
 })()</script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>tailwind.config={darkMode:'class'}</script>
@@ -47,9 +45,9 @@ function renderHtml(data, options = {}) {
   <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     /* === Base === */
-    /* BUG-0191: padding-top was for old position:fixed topbar; chrome is now sticky (in flow) */
-    body { font-family: var(--font-sans, 'Inter Tight', sans-serif); padding-top: 0; background-color: var(--clr-body-bg); color: var(--clr-text-primary); }
-    body.has-alert { padding-top: 28px; }
+    body { font-family: var(--font-sans, 'Inter Tight', sans-serif); padding-top: 52px; background-color: var(--clr-body-bg); color: var(--clr-text-primary); }
+    body.has-alert { padding-top: 80px; }
+    #topbar-fixed.has-alert { top: 28px; }
     #sidebar.has-alert { top: 80px; height: calc(100vh - 80px); }
     code, .font-mono { font-family: var(--font-mono, 'JetBrains Mono', monospace); }
 
@@ -217,6 +215,8 @@ function renderHtml(data, options = {}) {
     .nav-item:last-child { border-bottom: none; }
     .nav-item:hover { color: var(--clr-text-primary); background: rgba(139,92,246,0.08); }
     .nav-item.nav-active { color: var(--clr-accent); background: rgba(139,92,246,0.12); border-left-color: var(--clr-accent); font-weight: 600; }
+    /* Active view-toggle button (column / card / compact) — all tabs */
+    button.active-view { background: var(--clr-accent) !important; color: #fff !important; border-color: var(--clr-accent) !important; font-weight: 600 !important; }
     .nav-item svg { flex-shrink: 0; }
     .nav-label { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
@@ -250,16 +250,22 @@ function renderHtml(data, options = {}) {
     @media (max-height: 500px) and (orientation: landscape) { #activity-toggle { top: 44px !important; } }
     @media (max-width: 479px) { #activity-toggle { top: auto !important; bottom: 16px; } }
 
-    /* Phone portrait (<480px) */
+    /* Phone portrait (<480px) — topbar in flow, tiles trimmed */
     @media (max-width: 479px) {
+      #topbar-fixed { position: relative; height: auto; min-height: 56px; padding: 8px 12px 6px; flex-wrap: wrap; align-items: flex-start; box-shadow: none; border-bottom: 1px solid rgba(0,80,179,0.4); }
+      body { padding-top: 0; }
       #app-shell { min-height: 100vh; }
-      #sidebar { top: 52px; height: calc(100vh - 52px); }
+      #sidebar { top: 0; height: 100vh; }
+      #filter-sticky { top: 0; }
       .tile-coverage, .tile-ai-cost { display: none !important; }
       .topbar-project { width: 100%; }
+      .topbar-tiles { padding-top: 4px; }
     }
 
-    /* Phone landscape — compact chrome */
+    /* Phone landscape — compact topbar (short height) */
     @media (max-height: 500px) and (orientation: landscape) {
+      #topbar-fixed { height: 40px; }
+      body { padding-top: 40px; }
       #sidebar { top: 40px; height: calc(100vh - 40px); }
       #filter-sticky { top: 40px; }
       .nav-item { padding: 7px 0; }
@@ -489,7 +495,6 @@ function renderHtml(data, options = {}) {
         ${renderFilterBar(data)}
       </div>
       <div id="tab-content">
-        ${renderStatusTab(data)}
         ${renderHierarchyTab(data)}
         ${renderKanbanTab(data)}
         ${renderTraceabilityTab(data)}
@@ -514,37 +519,72 @@ function renderHtml(data, options = {}) {
   </div>
   <div id="aboutModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
     <div onclick="closeAbout()" class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
-    <div class="relative z-10 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl shadow-2xl w-full max-w-sm p-6 text-center">
-      <button onclick="closeAbout()" class="absolute top-3 right-4 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white text-xl leading-none" aria-label="Close">&#x2715;</button>
-      <h2 class="text-2xl font-bold mb-1" style="color:var(--clr-accent)">${esc(data.projectName)}</h2>
-      <p class="text-slate-500 dark:text-slate-400 text-sm mb-4">${esc(data.tagline)}</p>
-      <a href="${/^https?:\/\//.test(data.githubUrl || '') ? esc(data.githubUrl) : ''}" target="_blank" rel="noopener noreferrer"
-         class="inline-flex items-center gap-1.5 text-sm underline underline-offset-2 mb-5" style="color:var(--clr-accent)">
-        GitHub Repository
-      </a>
-      <div class="border-t border-slate-200 dark:border-slate-700 pt-4 text-slate-500 text-xs space-y-3 text-left">
-        <div>
-          <p class="text-[10px] uppercase tracking-wider text-slate-400 dark:text-slate-500 font-semibold mb-1">This Project</p>
-          <div class="space-y-1 pl-2">
-            <p><span class="text-slate-500">Name:</span> <span class="text-slate-700 dark:text-slate-300 font-mono">${esc(data.projectName)}</span></p>
-            <p><span class="text-slate-500">Version:</span> <span class="text-slate-700 dark:text-slate-300 font-mono">v${esc(data.version)}</span></p>
-            ${data.branch ? `<p><span class="text-slate-500">Branch:</span> <span class="text-slate-700 dark:text-slate-300 font-mono">${esc(data.branch)}</span></p>` : ''}
-            <p><span class="text-slate-500">Build:</span> <span class="text-slate-700 dark:text-slate-300 font-mono">#${esc(data.buildNumber)}</span>&nbsp;<code class="text-slate-500 dark:text-slate-600">${esc(data.commitSha)}</code></p>
+    <div class="relative z-10 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl shadow-2xl w-full max-w-2xl" style="max-height:calc(100vh - 2rem);overflow-y:auto">
+      <button onclick="closeAbout()" class="sticky top-3 float-right mr-4 z-10 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white text-xl leading-none" aria-label="Close">&#x2715;</button>
+      <div class="p-6 pt-5">
+        <div class="grid grid-cols-1 sm:grid-cols-[200px_1fr] gap-5 items-start">
+          <div class="rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-700">
+            <img src="agents/images/team.png" alt="Agent team" class="w-full object-cover" onerror="this.closest('div').style.display='none'">
+          </div>
+          <div>
+            <h2 class="text-2xl font-bold leading-tight" style="color:var(--clr-accent)">${esc(data.projectName)}</h2>
+            <p class="text-slate-500 dark:text-slate-400 text-sm mt-0.5">${esc(data.tagline)}</p>
+            ${
+              /^https?:\/\//.test(data.githubUrl || '')
+                ? `<a href="${esc(data.githubUrl)}" target="_blank" rel="noopener noreferrer"
+               class="inline-flex items-center gap-1.5 mt-3 px-4 py-1.5 text-sm font-semibold rounded-lg text-white"
+               style="background:var(--clr-accent)">View on GitHub</a>`
+                : ''
+            }
+            ${
+              data.agents && Object.keys(data.agents).length > 0
+                ? `
+            <p class="text-[10px] uppercase tracking-wider text-slate-400 dark:text-slate-500 font-semibold mt-4 mb-2">Agent Roster</p>
+            <ul class="grid grid-cols-2 gap-x-4 gap-y-2">
+              ${Object.entries(data.agents)
+                .map(([name, cfg]) => {
+                  const avatar = cfg.avatar || name.toLowerCase();
+                  const icon = esc(cfg.icon || '🤖');
+                  return `<li class="flex items-center gap-2">
+                  <img src="agents/images/optimized/${esc(avatar)}-64.png" alt="${esc(name)}" class="w-8 h-8 rounded-full object-cover flex-shrink-0" onerror="this.outerHTML='&lt;span class=&quot;text-lg flex-shrink-0&quot;&gt;${icon}&lt;/span&gt;'">
+                  <span>
+                    <p class="text-sm font-semibold text-slate-700 dark:text-slate-200 leading-none">${esc(name)}</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">${esc(cfg.role || '')}</p>
+                  </span>
+                </li>`;
+                })
+                .join('')}
+            </ul>`
+                : ''
+            }
+            <p class="text-[10px] uppercase tracking-wider text-slate-400 dark:text-slate-500 font-semibold mt-4 mb-1">Links</p>
+            <div class="text-sm space-y-0.5 text-slate-500 dark:text-slate-400">
+              ${/^https?:\/\//.test(data.githubUrl || '') ? `<div>Repo: <a href="${esc(data.githubUrl)}" target="_blank" rel="noopener" class="text-blue-600 dark:text-blue-400 hover:underline">${esc(data.githubUrl)}</a></div>` : ''}
+              <div>Plan: <a href="plan-status.html" class="text-blue-600 dark:text-blue-400 hover:underline">plan-status.html</a></div>
+            </div>
           </div>
         </div>
-        ${
-          data.appName
-            ? `<div>
-          <p class="text-[10px] uppercase tracking-wider text-slate-400 dark:text-slate-500 font-semibold mb-1">Dashboard Tool</p>
-          <div class="space-y-1 pl-2">
-            <p><span class="text-slate-500">Generated by:</span> <span class="text-slate-700 dark:text-slate-300 font-mono">${esc(data.appName)} v${esc(data.appVersion)}</span></p>
-            <p><span class="text-slate-500">Generated at:</span> <span id="about-gen-time" data-iso="${data.generatedAt}" class="text-slate-700 dark:text-slate-300"></span></p>
+        <div class="mt-5 pt-4 border-t border-slate-200 dark:border-slate-700 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+          <div>
+            <p class="text-[10px] uppercase tracking-wider text-slate-400 dark:text-slate-500 font-semibold mb-2">This Project</p>
+            <div class="space-y-1 text-slate-500 dark:text-slate-400">
+              <div>Name: <span class="font-mono text-slate-700 dark:text-slate-200">${esc(data.projectName)}</span></div>
+              <div>Version: <span class="font-mono text-slate-700 dark:text-slate-200">v${esc(data.version)}</span></div>
+              ${data.branch ? `<div>Branch: <span class="font-mono text-slate-700 dark:text-slate-200">${esc(data.branch)}</span></div>` : ''}
+              <div>Build: <span class="font-mono text-slate-700 dark:text-slate-200">#${esc(data.buildNumber)} ${esc(data.commitSha)}</span></div>
+            </div>
           </div>
-        </div>`
-            : `<p><span class="text-slate-500">Generated at:</span> <span id="about-gen-time" data-iso="${data.generatedAt}" class="text-slate-700 dark:text-slate-300"></span></p>`
-        }
+          <div>
+            <p class="text-[10px] uppercase tracking-wider text-slate-400 dark:text-slate-500 font-semibold mb-2">Dashboard Tool</p>
+            <div class="space-y-1 text-slate-500 dark:text-slate-400">
+              <div>View: <span class="font-mono text-slate-700 dark:text-slate-200">Plan Status</span></div>
+              ${data.appName ? `<div>Generated by: <span class="font-mono text-slate-700 dark:text-slate-200">${esc(data.appName)} v${esc(data.appVersion)}</span></div>` : ''}
+              <div>Generated at: <span id="about-gen-time" data-iso="${data.generatedAt}" class="font-mono text-slate-700 dark:text-slate-200"></span></div>
+            </div>
+          </div>
+        </div>
+        <p class="mt-4 text-center text-xs text-slate-400">Implemented by Kamal Syed</p>
       </div>
-      <p class="mt-5 text-slate-500 text-xs">Implemented by Kamal Syed, 2026</p>
     </div>
   </div>
   ${renderScripts(data, options)}

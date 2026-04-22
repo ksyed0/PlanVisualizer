@@ -4,6 +4,42 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 25 — 2026-04-22
+
+### What Was Done
+
+1. **UI consistency sweep (PR #416 — `bugfix/BUG-0202-0208-ui-polish`, continued from Session 24):**
+   - **BUG-0209 (Low):** Hierarchy tab card view used `mb-4` between epic groups; column view used `mb-2`. Fixed: changed card view wrapper to `mb-2`.
+   - **BUG-0210 (Low):** Lessons tab epic group headers used an old concatenated label string (`"EPIC-0003: Title"`). Updated both column and card view to match Bugs tab format: monospaced `EPIC-XXXX` + `badge(status)` + title span + count, with `border-left:4px solid ${accent}` accent bar. Card view wrapper changed from `mb-6` to `mb-2`.
+   - **BUG-0205 follow-up:** `.active-view` CSS class was defined but `setCostsView`, `setBugsView`, and `setLessonsView` still used inline `style.fontWeight/background`. Updated all three to `classList.toggle('active-view', …)` to match `setHierarchyView`.
+   - **BUG-0203 follow-up:** Plan-status.html About modal redesigned to match the agentic dashboard's unified About box: `max-w-2xl`, scrollable, two-column layout (team image left | project name + agent roster grid + links + project/tool meta right).
+   - **Agents config plumbing:** `generate-plan.js` now loads `agents.config.json` and passes `data.agents` so the About modal and future widgets can render the agent roster without needing separate config reads in the renderer.
+   - **Tailwind dark class:** Added `classList.add/remove('dark')` to the inline theme-init script alongside `setAttribute('data-theme', …)` — required for `darkMode:'class'` (BUG-0190 root cause fully resolved).
+   - **Worktree test sync:** Updated the worktree's stale `render-html.test.js` assertion from `.not.toContain("classList.add('dark')")` to `.toContain(…)` to match the implementation.
+
+2. **Architecture decision — Agent Workload widget data source:**
+   - Discussed why a static `Assignee:` field in RELEASE_PLAN.md doesn't fit the multi-agent pipeline model (stories flow through 4–6 agents sequentially).
+   - Decided: Agent Workload widget should read from `docs/sdlc-status.json` (live, maintained by `update-sdlc-status.js`) instead.
+   - Captured as **US-0147 (EPIC-0020)** in RELEASE_PLAN.md.
+
+3. **Agentic dashboard redesign status clarified:**
+   - The visual redesign (active agent prominence, pipeline widget, Event Log, Live Bar) is already captured as US-0142–0146 (EPIC-0020, all `Status: Planned`). No duplicate stories added.
+
+### Test Results
+
+- **1164 tests pass, 48 suites** — statement coverage ~93% (gate: 80%)
+- Prettier and ESLint clean (pre-commit hooks passed on all commits)
+
+### Blockers
+
+None. PR #416 is open and green.
+
+### PR Updated
+
+- PR #416: `bugfix/BUG-0202-0208-ui-polish` → `develop` — 3 additional commits: Costs epic header unification, UI consistency sweep, US-0147 story + ID registry
+
+---
+
 ## Session 24 — 2026-04-21
 
 ### What Was Done

@@ -117,21 +117,28 @@ Branch name in `AI_COST_LOG.md` row must exactly match `Branch:` field in story 
 
 ---
 
-## Project Completion Status (as of 2026-04-19 Session 23)
+## Project Completion Status (as of 2026-04-22 Session 25)
 
-20 EPICs (EPIC-0010/0014/0015/0016/0017/0019 Done; EPIC-0020 next), 134 active stories, 182 bugs.
-Open PRs: #401 (EPIC-0019 → develop), #405 (EPIC-0010 + BUG-0098/0099/0157 → develop).
-Next IDs: EPIC-0020, US-0135, TASK-0055, AC-0488, TC-0158, BUG-0183.
+20 EPICs active (EPIC-0010/0014/0015/0016/0017/0019 Done; EPIC-0020 in progress), 147 active stories, 210 bugs.
+Open PRs: #416 (bugfix/BUG-0202-0208-ui-polish → develop) — 12 UI bugs fixed across Sessions 24–25.
+Next IDs: EPIC-0021, US-0148, TASK-0055, AC-0539, TC-0158, BUG-0211.
 
-Key new module: `tools/lib/compute-risk.js` — pure risk scoring (computeStoryRisk, computeAllRisk).
-`data.risk` and `data.completion` added to generate-plan.js data object and consumed by all render modules.
+Key additions (Session 25):
+
+- `data.agents` added to generate-plan.js data object (loaded from `agents.config.json`) — consumed by About modal agent roster.
+- `classList.add/remove('dark')` added to inline theme-init script (Tailwind darkMode:'class' requires it — BUG-0190 fully resolved).
+- All view-toggle functions (setCostsView, setBugsView, setLessonsView) migrated from inline styles to `classList.toggle('active-view', …)`.
+- Lessons tab epic headers now match Bugs tab format across column and card views.
+- US-0147 (EPIC-0020): Agent Workload widget to read from sdlc-status.json — added as Planned.
+
+Architecture decision: `Assignee:` field in RELEASE_PLAN.md stories is not meaningful for the multi-agent pipeline. Agent Workload widget should read from `docs/sdlc-status.json` instead.
 
 ---
 
 ## Coverage Thresholds
 
 Jest coverage gate: 80% statements (global).
-Current coverage (2026-04-19 Session 23): 93.07% statements, 79.69% branches, 94.53% functions. 953 tests, 45 suites.
+Current coverage (2026-04-22 Session 25): ~93% statements, ~80% branches, ~94% functions. 1164 tests, 48 suites.
 
 ---
 
@@ -177,6 +184,10 @@ Current coverage (2026-04-19 Session 23): 93.07% statements, 79.69% branches, 94
 - **Pure computation modules should duplicate tiny utilities** rather than import from render-layer modules — avoids cross-layer deps and keeps the module independently testable. (L-0043, 2026-04-19)
 - **peaceiris/actions-gh-pages deploys the full filesystem.** Never add a `git add / commit` step for the generated artifact — it's gitignored and the deploy action works directly from disk.
 - **Add workflow_dispatch to any workflow with path filters.** This is the only way to trigger the workflow manually when the changed files don't match the path filter (e.g. when editing the workflow file itself).
+- **Worktree test files are picked up by jest in the main repo.** The worktree lives inside the repo directory and is not excluded by jest globs. When source files change, sync the worktree test assertions too or the main `npx jest` run will fail. (2026-04-22 Session 25)
+- **View-toggle active state must use a CSS class, not inline styles.** `classList.toggle('active-view', bool)` is the correct pattern — `style.fontWeight/background` inline is invisible to devtools cascade and cannot be overridden by themes or media queries. (2026-04-22)
+- **Multi-agent pipeline: `Assignee:` per story is the wrong model.** Stories pass through 4–6 agents; no single one "owns" it. Agent Workload widget should read from `docs/sdlc-status.json` (live) not a static field. Captured as US-0147. (2026-04-22)
+- **Tab-level patterns need a shared helper from the moment they appear in a second tab.** Epic group headers were invented in Bugs; Lessons duplicated them manually and drifted. Extract to a named function immediately. (2026-04-22)
 - **Always update TEST_CASES.md Status fields when a story is marked Done.** The parser is correct; stale Not Run statuses are a data problem. (L-0010, BUG-0003, 2026-03-10)
 - **Sticky header: wrap renderTopBar + renderFilterBar + renderTabs in `<div class="sticky top-0 z-30">` in renderHtml().** Activity panel uses z-index:50, so z-30 keeps header below it. (L-0009, BUG-0004, 2026-03-10)
 - **HTML-escape all user-supplied strings before interpolation into HTML template literals.** Use a single `esc()` helper; apply to every title, summary, AC text, epic description, bug branch. Do NOT escape internally-generated fields (SHA, timestamps). (L-0011, BUG-0005, 2026-03-10)

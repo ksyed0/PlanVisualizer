@@ -266,11 +266,15 @@ function renderScripts(data, options = {}) {
     // Restore hierarchy view preference
     setHierarchyView(localStorage.getItem('hierarchyView') || 'column');
 
-    // Auto-collapse Done epics in column view
-    document.querySelectorAll('#hier-column-view .epic-block[data-epic-status="Done"]').forEach(function(block) {
-      var id = block.querySelector('[id^="epic-stories-"]');
-      var arrow = block.querySelector('[id^="epic-arrow-"]');
-      if (id && !id.classList.contains('hidden')) toggleSection(id.id, arrow && arrow.id);
+    // BUG-0206: Collapse ALL epics by default in both column and card view
+    // (was Done-only; all views start collapsed — user expands on demand)
+    document.querySelectorAll('#hier-column-view [id^="epic-stories-"]').forEach(function(el) {
+      var epicId = el.id.replace('epic-stories-', '');
+      if (!el.classList.contains('hidden')) toggleSection(el.id, 'epic-arrow-' + epicId);
+    });
+    document.querySelectorAll('#hier-card-view [id^="epic-cards-"]').forEach(function(el) {
+      var epicId = el.id.replace('epic-cards-', '');
+      if (!el.classList.contains('hidden')) toggleSection(el.id, 'epic-card-arrow-' + epicId);
     });
 
     // Restore filter state (bug status intentionally not restored — bug status changes between sessions)
@@ -650,6 +654,8 @@ function renderPrintCSS() {
   [data-theme="dark"] #activity-panel { background-color: var(--clr-panel-bg) !important; border-color: var(--clr-border) !important; color: var(--clr-text-primary) !important; }
   [data-theme="dark"] #activity-panel li { border-color: var(--clr-border) !important; }
   /* === Hover transforms === */
+  /* BUG-0205: column/card view toggle — active state */
+  button.active-view { background: var(--clr-accent, var(--plan-accent)) !important; color: #fff !important; border-color: var(--clr-accent, var(--plan-accent)) !important; }
   .story-card-hover { transition: transform 150ms ease, box-shadow 150ms ease; }
   .story-card-hover:hover { transform: scale(1.02); box-shadow: var(--shadow-card-hover); }
   /* Tabs that should fill the full viewport height */
