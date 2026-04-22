@@ -1892,3 +1892,24 @@ describe('renderHtml — US-0139 decision widgets', () => {
     expect(html).toContain('pv-widgets');
   });
 });
+
+describe('renderHtml — US-0140 chart palette tokens', () => {
+  let html;
+  beforeAll(() => {
+    html = renderHtml(sampleData);
+  });
+
+  it('does not use hardcoded #22c55e (green) in chart script', () => {
+    const scriptIdx = html.indexOf('<script');
+    expect(html.slice(scriptIdx)).not.toContain("'#22c55e'");
+  });
+
+  it('does not use hardcoded #3b82f6 (blue) in chart script', () => {
+    const scriptIdx = html.indexOf('<script');
+    expect(html.slice(scriptIdx)).not.toContain("'#3b82f6'");
+  });
+
+  it('chart init uses pvChartColors variable', () => {
+    expect(html).toContain('pvChartColors');
+  });
+});

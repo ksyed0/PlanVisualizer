@@ -474,6 +474,18 @@ function renderTrendsTab(data, options = {}) {
   </div>
 </div>
 <script>
+var pvChartColors = (function() {
+  var cs = getComputedStyle(document.documentElement);
+  function tok(v, fb) { var r = cs.getPropertyValue(v).trim(); return r || fb; }
+  return {
+    ok:     tok('--ok',          'oklch(68% 0.15 150)'),
+    warn:   tok('--warn',        'oklch(74% 0.16 78)'),
+    risk:   tok('--risk',        'oklch(64% 0.20 25)'),
+    info:   tok('--info',        'oklch(66% 0.14 240)'),
+    accent: tok('--plan-accent', 'oklch(62% 0.19 268)'),
+    mute:   tok('--text-mute',   'oklch(70% 0.012 95)'),
+  };
+})();
 var _trendsAllLabels = ${datesJson};
 var _trendsAllData = {
   done: ${doneJson}, total: ${totalJson}, cost: ${costJson},
@@ -483,8 +495,15 @@ var _trendsAllData = {
   avgRisk: ${avgRiskJson}
 };
 var _trendsChartRefs = {};
-function _trendGrad(ctx, hex) {
-  var r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+function _cssToRgb(color) {
+  var c = document.createElement('canvas'); c.width = c.height = 1;
+  var x = c.getContext('2d'); x.fillStyle = color; x.fillRect(0,0,1,1);
+  var d = x.getImageData(0,0,1,1).data;
+  return { r: d[0], g: d[1], b: d[2] };
+}
+function _trendGrad(ctx, color) {
+  var rgb = _cssToRgb(color);
+  var r = rgb.r, g = rgb.g, b = rgb.b;
   var grad = ctx.createLinearGradient(0,0,0,200);
   grad.addColorStop(0,'rgba('+r+','+g+','+b+',0.35)');
   grad.addColorStop(1,'rgba('+r+','+g+','+b+',0.0)');
@@ -507,30 +526,30 @@ function initTrendsCharts() {
   var yA = function(o){ return Object.assign({ticks:{color:tc},grid:{color:gc},beginAtZero:true},o||{}); };
   var leg = { labels:{color:tc, font:{family:"'Inter',sans-serif",size:12}, pointStyle:'circle', usePointStyle:true }};
   _mkTrend('chart-trends-progress', {type:'line', data:{labels:labels, datasets:[
-    {label:'Done', data:_trendsAllData.done, borderColor:'#22c55e', _gc:'#22c55e', fill:true, tension:0.3},
-    {label:'Total', data:_trendsAllData.total, borderColor:'#64748b', backgroundColor:'transparent', borderDash:[5,5], tension:0.3}
+    {label:'Done', data:_trendsAllData.done, borderColor:pvChartColors.ok, _gc:pvChartColors.ok, fill:true, tension:0.3},
+    {label:'Total', data:_trendsAllData.total, borderColor:pvChartColors.mute, backgroundColor:'transparent', borderDash:[5,5], tension:0.3}
   ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:leg}, scales:{x:xA,y:yA()}}});
   _mkTrend('chart-trends-velocity', {type:'bar', data:{labels:labels, datasets:[
-    {label:'Story Points', data:_trendsAllData.velocity, backgroundColor:'#3b82f6'}
+    {label:'Story Points', data:_trendsAllData.velocity, backgroundColor:pvChartColors.info}
   ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:leg}, scales:{x:xA,y:yA()}}});
   _mkTrend('chart-trends-cost', {type:'line', data:{labels:labels, datasets:[
-    {label:'Total Cost ($)', data:_trendsAllData.cost, borderColor:'#f59e0b', _gc:'#f59e0b', fill:true, tension:0.3}
+    {label:'Total Cost ($)', data:_trendsAllData.cost, borderColor:pvChartColors.warn, _gc:pvChartColors.warn, fill:true, tension:0.3}
   ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:leg}, scales:{x:xA,y:yA()}}});
   _mkTrend('chart-trends-tokens', {type:'line', data:{labels:labels, datasets:[
-    {label:'Input', data:_trendsAllData.inputTokens, borderColor:'#06b6d4', _gc:'#06b6d4', fill:true},
-    {label:'Output', data:_trendsAllData.outputTokens, borderColor:'#ec4899', _gc:'#ec4899', fill:true}
+    {label:'Input', data:_trendsAllData.inputTokens, borderColor:pvChartColors.info, _gc:pvChartColors.info, fill:true},
+    {label:'Output', data:_trendsAllData.outputTokens, borderColor:pvChartColors.accent, _gc:pvChartColors.accent, fill:true}
   ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:leg}, scales:{x:xA,y:yA({ticks:{color:tc,callback:function(v){return v>=1e6?(v/1e6).toFixed(0)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':v;}}})}}});
   _mkTrend('chart-trends-coverage', {type:'line', data:{labels:labels, datasets:[
-    {label:'Coverage %', data:_trendsAllData.coverage, borderColor:'#8b5cf6', _gc:'#8b5cf6', fill:true, tension:0.3}
+    {label:'Coverage %', data:_trendsAllData.coverage, borderColor:pvChartColors.accent, _gc:pvChartColors.accent, fill:true, tension:0.3}
   ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:leg}, scales:{x:xA,y:yA({min:0,max:100})}}});
   _mkTrend('chart-trends-bugs', {type:'line', data:{labels:labels, datasets:[
-    {label:'Open Bugs', data:_trendsAllData.bugs, borderColor:'#ef4444', _gc:'#ef4444', fill:true, tension:0.3}
+    {label:'Open Bugs', data:_trendsAllData.bugs, borderColor:pvChartColors.risk, _gc:pvChartColors.risk, fill:true, tension:0.3}
   ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:leg}, scales:{x:xA,y:yA()}}});
   _mkTrend('chart-trends-risk', {type:'line', data:{labels:labels, datasets:[
-    {label:'At-Risk', data:_trendsAllData.risk, borderColor:'#f97316', _gc:'#f97316', fill:true, tension:0.3}
+    {label:'At-Risk', data:_trendsAllData.risk, borderColor:pvChartColors.warn, _gc:pvChartColors.warn, fill:true, tension:0.3}
   ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:leg}, scales:{x:xA,y:yA({suggestedMax:5})}}});
   _mkTrend('chart-trends-avg-risk', {type:'line', data:{labels:labels, datasets:[
-    {label:'Avg Risk Score', data:_trendsAllData.avgRisk, borderColor:'#f59e0b', _gc:'#f59e0b', fill:true, tension:0.3}
+    {label:'Avg Risk Score', data:_trendsAllData.avgRisk, borderColor:pvChartColors.warn, _gc:pvChartColors.warn, fill:true, tension:0.3}
   ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:leg}, scales:{x:xA,y:yA({min:0,suggestedMax:4})}}});
   var saved = localStorage.getItem('pv-trends-range');
   if (saved && saved !== 'all') {
@@ -941,6 +960,18 @@ function renderChartsTab(data) {
     </div>
   </div>
   <script>
+  var pvChartColors = (function() {
+    var cs = getComputedStyle(document.documentElement);
+    function tok(v, fb) { var r = cs.getPropertyValue(v).trim(); return r || fb; }
+    return {
+      ok:     tok('--ok',          'oklch(68% 0.15 150)'),
+      warn:   tok('--warn',        'oklch(74% 0.16 78)'),
+      risk:   tok('--risk',        'oklch(64% 0.20 25)'),
+      info:   tok('--info',        'oklch(66% 0.14 240)'),
+      accent: tok('--plan-accent', 'oklch(62% 0.19 268)'),
+      mute:   tok('--text-mute',   'oklch(70% 0.012 95)'),
+    };
+  })();
   var _charts = {};
   function chartTextColor() {
     return getComputedStyle(document.documentElement).getPropertyValue('--clr-chart-text').trim() || '#475569';
@@ -950,9 +981,9 @@ function renderChartsTab(data) {
     _charts.epicProgress = new Chart(document.getElementById('chart-epic-progress'), {
       type: 'bar',
       data: { labels: ${epicLabels}, datasets: [
-        { label: 'Done', data: ${epicDone}, backgroundColor: '#22c55e' },
-        { label: 'In Progress', data: ${epicInProgress}, backgroundColor: '#3b82f6' },
-        { label: 'Planned/To Do', data: ${epicPlanned}, backgroundColor: '#cbd5e1' },
+        { label: 'Done', data: ${epicDone}, backgroundColor: pvChartColors.ok },
+        { label: 'In Progress', data: ${epicInProgress}, backgroundColor: pvChartColors.info },
+        { label: 'Planned/To Do', data: ${epicPlanned}, backgroundColor: pvChartColors.mute },
       ]},
       options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
         plugins: { legend: { labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true } } },
@@ -961,7 +992,7 @@ function renderChartsTab(data) {
     _charts.costBreakdown = new Chart(document.getElementById('chart-cost-breakdown'), {
       type: 'bar',
       data: { labels: ${epicLabels}, datasets: [
-        { label: 'Projected ($)', data: ${epicProjected}, backgroundColor: '#f59e0b', yAxisID: 'yProjected' },
+        { label: 'Projected ($)', data: ${epicProjected}, backgroundColor: pvChartColors.warn, yAxisID: 'yProjected' },
         { label: 'AI Cost ($)', data: ${epicAI}, backgroundColor: '#0d9488', yAxisID: 'yAI' },
       ]},
       options: {
@@ -976,7 +1007,7 @@ function renderChartsTab(data) {
     });
     _charts.coverage = new Chart(document.getElementById('chart-coverage'), {
       type: 'doughnut',
-      data: { labels: ['Covered', 'Gap'], datasets: [{ data: [${coveragePctNum}, ${coverageGap}], backgroundColor: ['${coveragePct !== null ? '#22c55e' : '#94a3b8'}','#cbd5e1'], borderWidth: 0 }] },
+      data: { labels: ['Covered', 'Gap'], datasets: [{ data: [${coveragePctNum}, ${coverageGap}], backgroundColor: [${coveragePct !== null ? 'pvChartColors.ok' : "'#94a3b8'"},pvChartColors.mute], borderWidth: 0 }] },
       options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: true, position: 'bottom', labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true } } } }
     });
     _charts.aiTimeline = new Chart(document.getElementById('chart-ai-timeline'), {
@@ -986,7 +1017,7 @@ function renderChartsTab(data) {
     });
     _charts.burndown = new Chart(document.getElementById('chart-burndown'), {
       type: 'doughnut',
-      data: { labels: ['Done','In Progress','Planned','To Do','Blocked'], datasets: [{ data: ${statusCounts}, backgroundColor: ['#22c55e','#3b82f6','#94a3b8','#f59e0b','#ef4444'], borderWidth: 1 }] },
+      data: { labels: ['Done','In Progress','Planned','To Do','Blocked'], datasets: [{ data: ${statusCounts}, backgroundColor: [pvChartColors.ok,pvChartColors.info,'#94a3b8',pvChartColors.warn,pvChartColors.risk], borderWidth: 1 }] },
       options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true } } } }
     });
     _charts.burnRate = new Chart(document.getElementById('chart-burn-rate'), {
@@ -997,7 +1028,7 @@ function renderChartsTab(data) {
     if (document.getElementById('chart-risk-distribution')) {
       _charts.riskDist = new Chart(document.getElementById('chart-risk-distribution'), {
         type: 'bar',
-        data: { labels: ['Low','Medium','High','Critical'], datasets: [{ data: ${riskDistCounts}, backgroundColor: ['${RISK_LEVEL_COLORS.Low}','${RISK_LEVEL_COLORS.Medium}','${RISK_LEVEL_COLORS.High}','${RISK_LEVEL_COLORS.Critical}'] }] },
+        data: { labels: ['Low','Medium','High','Critical'], datasets: [{ data: ${riskDistCounts}, backgroundColor: [pvChartColors.ok, pvChartColors.info, pvChartColors.warn, pvChartColors.risk] }] },
         options: { responsive: true, maintainAspectRatio: false,
           plugins: { legend: { display: false } },
           scales: { x: { ticks: { color: tc } }, y: { ticks: { color: tc }, beginAtZero: true } } }
@@ -1044,10 +1075,10 @@ function renderCostsTab(data, options = {}) {
       .map((eb, i) => {
         const accent = EPIC_ACCENT_COLORS[i % EPIC_ACCENT_COLORS.length];
         const barPct = eb.percentUsed !== null ? Math.min(100, eb.percentUsed) : 0;
-        let barColor = '#22c55e';
+        let barColor = 'var(--ok, #22c55e)';
         if (eb.percentUsed !== null) {
-          if (eb.percentUsed >= 90) barColor = '#ef4444';
-          else if (eb.percentUsed >= 75) barColor = '#f97316';
+          if (eb.percentUsed >= 90) barColor = 'var(--risk, #ef4444)';
+          else if (eb.percentUsed >= 75) barColor = 'var(--warn, #f97316)';
           else if (eb.percentUsed >= 50) barColor = '#eab308';
         }
         const pbClass =
