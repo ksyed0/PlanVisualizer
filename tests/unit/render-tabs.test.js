@@ -140,6 +140,7 @@ describe('renderStakeholderTab', () => {
     expect(html).not.toMatch(/feature\/|bugfix\//);
     expect(html).not.toMatch(/inputTokens|outputTokens|token.count/i);
     expect(html).not.toMatch(/TC-\d{4}/);
+    expect(html).not.toMatch(/LESSON-\d+/);
   });
 
   // Test 13

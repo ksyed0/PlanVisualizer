@@ -2266,7 +2266,7 @@ function shEpicCompositeStatus(epicId, stories, bugs) {
   const allPlanned = epicStories.every((s) => /^planned$/i.test(s.status));
 
   if (allDone) return { label: 'Complete', chipClass: 'chip-ok', dotKey: 'ok' };
-  if (anyBlocked || hasOpenCritical) return { label: 'Needs Attention', chipClass: 'chip-warn', dotKey: 'warn' };
+  if (anyBlocked || hasOpenCritical) return { label: 'Needs Attention', chipClass: 'chip-risk', dotKey: 'warn' };
   if (anyActive) return { label: 'On Track', chipClass: 'chip-info', dotKey: 'info' };
   if (allPlanned) return { label: 'Planned', chipClass: 'chip-mute', dotKey: 'mute' };
   return { label: 'In Progress', chipClass: 'chip-warn', dotKey: 'warn' };
