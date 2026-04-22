@@ -348,6 +348,45 @@ function renderHtml(data, options = {}) {
     .chip.info { color: var(--info); border-color: color-mix(in oklab, var(--info) 40%, var(--border)); background: color-mix(in oklab, var(--info) 8%, transparent); }
     /* card shared primitive */
     .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); }
+    /* US-0139: Decision widgets */
+    .card-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border-soft);
+    }
+    .card-head h3 {
+      margin: 0;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+    .card-body { padding: 14px; }
+    .pv-widgets {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+    @media (max-width: 1100px) {
+      .pv-widgets { grid-template-columns: minmax(0, 1fr); }
+    }
+    .pv-risk-list { display: flex; flex-direction: column; gap: 8px; }
+    .pv-risk-item { display: flex; align-items: center; gap: 8px; font-size: 12.5px; }
+    .pv-risk-label { color: var(--text-dim); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pv-widget-empty { margin: 0; font-size: 12.5px; color: var(--text-mute); }
+    .pv-kv { display: flex; justify-content: space-between; align-items: baseline; padding: 5px 0; border-bottom: 1px solid var(--border-soft); font-size: 12.5px; }
+    .pv-kv:last-child { border-bottom: 0; }
+    .pv-kv-k { color: var(--text-dim); }
+    .pv-kv-v { font-family: var(--font-mono); font-weight: 600; color: var(--text); }
+    .pv-wl-row { display: grid; grid-template-columns: 90px 1fr 28px; gap: 8px; align-items: center; margin-bottom: 8px; font-size: 12px; }
+    .pv-wl-row:last-child { margin-bottom: 0; }
+    .pv-wl-name { color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pv-wl-bar-bg { background: var(--surface-2); border-radius: 3px; height: 6px; overflow: hidden; }
+    .pv-wl-bar { height: 100%; border-radius: 3px; background: var(--plan-accent); opacity: 0.85; }
+    .pv-wl-count { font-family: var(--font-mono); font-size: 11px; color: var(--text-mute); text-align: right; }
     /* US-0136: Masthead */
     .pv-masthead {
       display: grid;

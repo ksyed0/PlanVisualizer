@@ -1869,3 +1869,26 @@ describe('renderHtml — US-0135 status hero card', () => {
     expect(html).toContain('pv-heat');
   });
 });
+
+describe('renderHtml — US-0139 decision widgets', () => {
+  let html;
+  beforeAll(() => {
+    html = renderHtml(sampleData);
+  });
+
+  it('renders Top Risks card', () => {
+    expect(html).toContain('Top Risks');
+  });
+
+  it('renders This Week card', () => {
+    expect(html).toContain('This Week');
+  });
+
+  it('renders Agent Workload card', () => {
+    expect(html).toContain('Agent Workload');
+  });
+
+  it('decision widget row uses pv-widgets class', () => {
+    expect(html).toContain('pv-widgets');
+  });
+});

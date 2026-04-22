@@ -641,6 +641,90 @@ function _renderStatusHero(data) {
   </div>`;
 }
 
+function _renderDecisionWidgets(data) {
+  const openBugs = (data.bugs || []).filter((b) => !/^(Fixed|Retired|Cancelled)/i.test(b.status));
+  const critHighBugs = openBugs.filter((b) => ['Critical', 'High'].includes(b.severity));
+  const activeStories = data.stories.filter((s) => s.status !== 'Retired');
+  const blockedStories = activeStories.filter((s) => s.status === 'Blocked');
+  const now = Date.now();
+  const overdueEpics = (data.epics || []).filter((e) => {
+    if (e.status === 'Done') return false;
+    if (!e.releaseTarget) return false;
+    const d = new Date(e.releaseTarget);
+    return !isNaN(d) && d < now;
+  });
+
+  const riskItems = [
+    ...critHighBugs
+      .slice(0, 3)
+      .map(
+        (b) =>
+          `<div class="pv-risk-item"><span class="chip risk">${esc(b.severity)}</span><span class="pv-risk-label">${esc(b.id)}: ${esc(b.title)}</span></div>`,
+      ),
+    ...blockedStories
+      .slice(0, 2)
+      .map(
+        (s) =>
+          `<div class="pv-risk-item"><span class="chip warn">Blocked</span><span class="pv-risk-label">${esc(s.id)}: ${esc(s.title)}</span></div>`,
+      ),
+    ...overdueEpics
+      .slice(0, 2)
+      .map(
+        (e) =>
+          `<div class="pv-risk-item"><span class="chip warn">Overdue</span><span class="pv-risk-label">${esc(e.id)}: ${esc(e.title)}</span></div>`,
+      ),
+  ];
+  const riskContent =
+    riskItems.length > 0 ? riskItems.join('') : '<p class="pv-widget-empty">No critical risks detected.</p>';
+
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const recentDone = (data.recentActivity || []).filter((a) => a.date && new Date(a.date) >= sevenDaysAgo);
+  const totalAI = (data.costs && data.costs._totals && data.costs._totals.costUsd) || 0;
+  const weekContent = `
+    <div class="pv-kv"><span class="pv-kv-k">Stories shipped</span><span class="pv-kv-v tnum">${recentDone.length}</span></div>
+    <div class="pv-kv"><span class="pv-kv-k">Open bugs</span><span class="pv-kv-v tnum">${openBugs.length}</span></div>
+    <div class="pv-kv"><span class="pv-kv-k">AI spend (total)</span><span class="pv-kv-v tnum">$${totalAI.toFixed(2)}</span></div>`;
+
+  const agentMap = {};
+  activeStories.forEach((s) => {
+    const agent = s.assignedAgent || s.agent || 'Unassigned';
+    agentMap[agent] = (agentMap[agent] || 0) + (s.status !== 'Done' ? 1 : 0);
+  });
+  const agentEntries = Object.entries(agentMap)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6);
+  const maxCount = agentEntries.length > 0 ? agentEntries[0][1] : 1;
+  const workloadContent =
+    agentEntries.length > 0
+      ? agentEntries
+          .map(
+            ([name, count]) =>
+              `<div class="pv-wl-row">
+          <span class="pv-wl-name">${esc(name)}</span>
+          <div class="pv-wl-bar-bg"><div class="pv-wl-bar" style="width:${Math.round(((count || 0) / (maxCount || 1)) * 100)}%"></div></div>
+          <span class="pv-wl-count tnum">${count}</span>
+        </div>`,
+          )
+          .join('')
+      : '<p class="pv-widget-empty">No active assignments.</p>';
+
+  return `
+  <div class="pv-widgets" style="margin-bottom:16px">
+    <div class="card">
+      <div class="card-head"><h3>Top Risks</h3></div>
+      <div class="card-body pv-risk-list">${riskContent}</div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>This Week</h3></div>
+      <div class="card-body">${weekContent}</div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>Agent Workload</h3></div>
+      <div class="card-body">${workloadContent}</div>
+    </div>
+  </div>`;
+}
+
 function renderChartsTab(data) {
   const epicLabels = JSON.stringify(data.epics.map((e) => e.id));
   const epicDone = JSON.stringify(
@@ -709,6 +793,7 @@ function renderChartsTab(data) {
   return `
   <div id="tab-charts" class="p-6 hidden" role="tabpanel" aria-labelledby="tab-btn-charts">
     ${_renderStatusHero(data)}
+    ${_renderDecisionWidgets(data)}
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
       <div class="chart-supertitle">Delivery</div>
