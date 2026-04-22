@@ -2868,3 +2868,41 @@ Steps to Reproduce:
    Lesson Encoded: No
    Estimated Cost USD: 0.00
    Notes: Fixed by converting the Per-Epic Budget table from a flat tbody to a series of expandable tbody pairs (header row + hidden story sub-rows) using toggleSection(). Each epic header now expands to show per-story rows with Story ID, title, estimate, projected cost, and AI cost columns. Column headers updated to "Epic / Story", "Budget / Est.", "Spent / AI", "Remaining", "% Used" to reflect the dual-level data.
+
+---
+
+BUG-0209: Hierarchy tab — card view epic spacing wider than column view
+Severity: Low
+Related Story: US-0002 (EPIC-0002)
+Steps to Reproduce:
+
+1. Open plan-status.html → Hierarchy tab
+2. Switch to Card view — note the gap between each epic group
+3. Switch to Column view — gap is noticeably smaller
+   Expected: Card and column views use the same vertical spacing between epic groups
+   Actual: Card view wrapper used mb-4; column view used mb-2
+   Root Cause: Card view template was written independently and never synced to column view spacing conventions.
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0202-0208-ui-polish
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Changed mb-4 to mb-2 on the card view epic group wrapper div.
+
+---
+
+BUG-0210: Lessons tab — epic group headers don't match Bugs tab format
+Severity: Low
+Related Story: US-0107 (EPIC-0013)
+Steps to Reproduce:
+
+1. Open plan-status.html → Lessons tab (column or card view)
+2. Observe the epic group headers: "EPIC-0003: Installation and Distribution (1)"
+3. Compare to Bugs tab epic headers: "EPIC-0003 [Done] Installation and Distribution · N open · M total" with left accent bar
+   Expected: Lessons epic headers use the same format as Bugs — EPIC-XXXX monospaced id + status badge + title + count, with border-left accent bar
+   Actual: Lessons headers used a plain concatenated label string with no badge, no accent border, and old formatting
+   Root Cause: Lessons tab was developed before the Bugs tab established the shared epic-header pattern; the pattern was never backported.
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0202-0208-ui-polish
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Updated both lessonColGroups and lessonCardGroups to use the Bugs tab format: font-mono epic id + badge(epic.status) + title span + count, with border-left:4px solid ${accent.border} on the cell. Card view wrapper changed from mb-6 to mb-2 to match Bugs card view spacing.

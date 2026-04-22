@@ -419,3 +419,21 @@ _Learned from BUG-0173 (self-inflicted) — first version of `scripts/cleanup-br
 ### **Every schema-bearing config file needs a paired migrator script, invoked on install/upgrade.**
 
 _Learned during the post-EPIC-0016 cleanup audit (BUG-0175) — US-0113 added `agents.<name>.avatar` and an earlier change required `docs.lessons` in `plan-visualizer.config.json`, but `scripts/install.sh` only created configs from the example when absent; upgrading an existing install quietly skipped both. Target projects on older configs silently lost features. Rule: whenever a field becomes required (code dereferences it without a sane undefined-path), add it to the corresponding example AND to `tools/migrate-config.js` at the same commit. The migrator must be idempotent (re-runnable), preserve user values, and run automatically from install.sh. Expose `plan:migrate-config:dry` so users can preview before applying._
+
+## Session 25 lessons (UI consistency, agentic pipeline design)
+
+### **Worktree test files are included in the main repo's jest run — they must stay in sync with the implementation.**
+
+_Learned from BUG-0190 re-fix — the worktree lives at `.claude/worktrees/<name>/` inside the main repo directory, which is not excluded by jest's testMatch globs. After updating render-html.js to add `classList.add('dark')`, the worktree's stale test (`.not.toContain(...)`) caused a suite-level failure in the main repo's `npx jest` run. Rule: when you update a source file that also exists in the worktree, check whether the worktree's test file has a conflicting assertion and update it immediately._
+
+### **Static `Assignee:` in RELEASE_PLAN.md does not fit the multi-agent pipeline model.**
+
+_Raised during session 25 Agent Workload discussion — in a traditional board, one person owns a story. In the agentic pipeline, a single story passes through 4–6 agents (Compass → Keystone → Pixel/Forge → Lens → Sentinel/Circuit). A single static `Assignee:` field only captures one phase and goes stale immediately. Rule: for the Agent Workload widget, read live data from `docs/sdlc-status.json` (maintained by `tools/update-sdlc-status.js`) rather than any field in RELEASE_PLAN.md. Captured as US-0147 (EPIC-0020)._
+
+### **All view-toggle JS functions must use `classList.toggle('active-view', …)` — never inline `style.fontWeight/background`.**
+
+_Learned from BUG-0205 re-audit — `setHierarchyView` was already updated to use `classList.toggle('active-view', ...)` in render-scripts.js, but `setCostsView`, `setBugsView`, and `setLessonsView` in render-tabs.js still used `style.fontWeight` / `style.background` inline. The `.active-view` CSS class was defined in render-html.js and should be the single definition point. Inline styles are invisible in devtools CSS cascade and can't be overridden by media queries or themes. Rule: any active/selected button state must use a CSS class, never inline styles, so the CSS lives in one place and the JS remains a toggle operation._
+
+### **Tabs developed independently will drift from each other's header conventions — enforce a shared pattern early.**
+
+_Learned from BUG-0210 — Lessons and Bugs tabs both have epic group headers, but were developed at different times. Bugs established the definitive format (monospaced EPIC-XXXX + badge + title + accent border), but Lessons was never updated. The pattern should have been extracted to a shared helper function `_epicGroupHeader(epicId, epic, accent, countLabel)` from the start. Rule: whenever a second tab adopts a pattern pioneered by the first, immediately extract it into a shared helper and wire both tabs to it — don't leave duplication to drift._
