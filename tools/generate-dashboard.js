@@ -1524,6 +1524,13 @@ function generateHTML(status) {
   /* US-0144: Simplified phase fill bar — number/name/group/fill only */
   .pv-phase-fill-bg { height: 4px; background: var(--bg-progress, rgba(255,255,255,0.1)); border-radius: 3px; overflow: hidden; margin-top: auto; }
   .pv-phase-fill { height: 100%; border-radius: 3px; background: var(--ok, oklch(68% 0.15 150)); transition: width 0.3s; }
+  /* US-0146: Live bar — ON AIR chip, cycle display, ticker, HH:MM:SS clock */
+  .pv-live-bar { display: flex; align-items: center; gap: 14px; padding: 8px 18px; background: linear-gradient(90deg, color-mix(in oklab, var(--live-accent, oklch(72% 0.19 38)) 14%, transparent) 0%, transparent 80%); border-bottom: 1px solid var(--bg-card-border, #2a2a5a); min-height: 48px; border-left: 3px solid var(--live-accent, oklch(72% 0.19 38)); margin-bottom: 0; }
+  .pv-on-air { font-family: monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; padding: 4px 8px; background: var(--live-accent, oklch(72% 0.19 38)); color: #1a0f00; border-radius: 4px; flex-shrink: 0; }
+  .pv-live-cycle { font-family: monospace; font-size: 12.5px; color: var(--text-secondary, #aaa); flex-shrink: 0; }
+  .pv-live-ticker { flex: 1; font-family: monospace; font-size: 12px; color: var(--text-secondary, #aaa); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 14px; border-left: 1px solid var(--divider, #2a2a4a); }
+  .pv-live-clock { font-family: monospace; font-size: 14px; font-weight: 600; color: var(--text-primary, #e0e0e0); flex-shrink: 0; }
+  @media (prefers-reduced-motion: reduce) { .pv-live-ticker { animation: none; } }
 </style>
 </head>
 <body>
@@ -1553,6 +1560,14 @@ function generateHTML(status) {
 
 <!-- US-0122 AC-0417: incident ticker (hidden by default, .active shown beneath header when any agent/phase is blocked). -->
 <div id="incident-ticker" class="incident-ticker" aria-live="polite" aria-atomic="true"></div>
+
+<!-- US-0146: Live bar — always visible ON AIR status strip -->
+<div class="pv-live-bar" id="pv-live-bar" role="status" aria-live="polite">
+  <span class="pv-on-air">ON AIR</span>
+  <div class="pv-live-cycle" id="pv-live-cycle">CYCLE — · —:——</div>
+  <div class="pv-live-ticker" id="pv-live-ticker" aria-hidden="true"></div>
+  <div class="pv-live-clock" id="pv-live-clock">00:00:00</div>
+</div>
 
 <div class="container">
 
@@ -3050,6 +3065,21 @@ function patchCycleCounter(status) {
 // Kick the ticker immediately and every second, mirroring updateSpotlightElapsed.
 updateCycleElapsed();
 setInterval(updateCycleElapsed, 1000);
+
+// US-0146: Live bar HH:MM:SS clock — ticks every second.
+(function startLiveClock() {
+  function tick() {
+    var el = document.getElementById('pv-live-clock');
+    if (!el) return;
+    var n = new Date();
+    el.textContent =
+      String(n.getHours()).padStart(2, '0') + ':' +
+      String(n.getMinutes()).padStart(2, '0') + ':' +
+      String(n.getSeconds()).padStart(2, '0');
+  }
+  tick();
+  setInterval(tick, 1000);
+})();
 </script>
 
 <div id="agent-portrait-popup"><img src="" alt="Agent portrait" onerror="this.style.display='none'"></div>

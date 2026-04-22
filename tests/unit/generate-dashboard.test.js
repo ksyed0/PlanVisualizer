@@ -550,3 +550,29 @@ describe('generate-dashboard — US-0144 pipeline scope', () => {
     expect(src).not.toContain('pv-phase-agent-task');
   });
 });
+
+describe('generate-dashboard — US-0146 live bar', () => {
+  it('dashboard HTML contains pv-live-bar element', () => {
+    const src = require('fs').readFileSync(
+      require('path').join(__dirname, '../../tools/generate-dashboard.js'),
+      'utf8',
+    );
+    expect(src).toContain('pv-live-bar');
+  });
+
+  it('live bar contains ON AIR chip', () => {
+    const src = require('fs').readFileSync(
+      require('path').join(__dirname, '../../tools/generate-dashboard.js'),
+      'utf8',
+    );
+    expect(src).toContain('ON AIR');
+  });
+
+  it('live bar contains pv-live-clock element', () => {
+    const src = require('fs').readFileSync(
+      require('path').join(__dirname, '../../tools/generate-dashboard.js'),
+      'utf8',
+    );
+    expect(src).toContain('pv-live-clock');
+  });
+});
