@@ -1092,6 +1092,7 @@ function renderCostsTab(data, options = {}) {
               : 'pb-ok';
         const barHtml = `<div class="flex items-center gap-2"><div class="progress-bar"><div class="pb-fill ${pbClass}" style="width:${barPct}%"></div></div><span class="text-xs" style="color:${barColor}">${eb.percentUsed}%</span></div>`;
         const budEid = `budget-ep-${eb.id.replace(/[^a-zA-Z0-9]/g, '-')}`;
+        const epicDef = data.epics.find((e) => e.id === eb.id);
         const epicStories = data.stories.filter((s) => s.epicId === eb.id);
         const storySubRows = epicStories
           .map((story) => {
@@ -1110,6 +1111,7 @@ function renderCostsTab(data, options = {}) {
         <td class="px-3 py-2">
           <span id="${budEid}-arrow" class="text-slate-400 text-xs mr-2">&#9654;</span>
           <span class="epic-id-display font-mono text-xs font-bold uppercase"><span class="epic-id-label">EPIC /</span> <span class="epic-id-num" style="color:${accent.border}">${esc(eb.id.replace('EPIC-', ''))}</span></span>
+          ${epicDef ? `<span class="text-sm font-semibold ml-2 text-slate-700 dark:text-slate-200">${esc(epicDef.title)}</span><span class="ml-2">${badge(epicDef.status)}</span>` : ''}
         </td>
         <td class="px-3 py-2 text-sm dark:text-slate-200">${eb.budget !== null ? usd(eb.budget) : '—'}</td>
         <td class="px-3 py-2 text-sm dark:text-slate-200">${usd(eb.spent)}</td>
@@ -1294,7 +1296,13 @@ function renderCostsTab(data, options = {}) {
     <tr class="border-t-2 border-slate-300 dark:border-slate-600 cursor-pointer select-none bug-epic-header" data-epic="${esc(epicId)}" style="background:${accent.bg};border-left:4px solid ${accent.border}" onclick="toggleSection('${jsEsc(bceid)}','${jsEsc(bceid)}-arrow')">
       <td colspan="6" class="px-3 py-2">
         <span id="${bceid}-arrow" class="text-slate-400 text-xs mr-2">&#9660;</span>
-        <span class="font-mono text-xs font-bold" style="color:${accent.border}">${label}</span>
+        ${
+          epic
+            ? `<span class="epic-id-display font-mono text-xs font-bold uppercase"><span class="epic-id-label">EPIC /</span> <span class="epic-id-num" style="color:${accent.border}">${esc(epicId.replace('EPIC-', ''))}</span></span>
+           <span class="text-sm font-semibold ml-2 text-slate-700 dark:text-slate-200">${esc(epic.title)}</span>
+           <span class="ml-2">${badge(epic.status)}</span>`
+            : `<span class="font-mono text-xs font-bold" style="color:${accent.border}">${label}</span>`
+        }
         <span class="ml-2 text-xs text-slate-500 bug-count">(${bugs.length})</span>
       </td>
       <td class="px-3 py-2 text-right text-sm font-medium dark:text-slate-200">${epicProjected > 0 ? usd(epicProjected) : '—'}</td>
