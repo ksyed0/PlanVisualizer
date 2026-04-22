@@ -9,7 +9,10 @@ function LiveBar() {
       <div className="exec">
         <div className="exec-lbl">Now executing</div>
         <div className="exec-body">
-          <span className="exec-plan">R1.10 <span className="exec-sep">›</span> EPIC-0020 <span className="exec-sep">›</span> <strong>US-0133 · Status masthead</strong></span>
+          <span className="exec-plan">
+            R1.10 <span className="exec-sep">›</span> EPIC-0020 <span className="exec-sep">›</span>{' '}
+            <strong>US-0133 · Status masthead</strong>
+          </span>
         </div>
       </div>
       <div className="heartbeat">
@@ -26,9 +29,18 @@ function LiveBar() {
         </div>
       </div>
       <div className="bar-meta">
-        <div><span className="bar-meta-lbl">Elapsed</span><span className="bar-meta-val tnum">00:42:18</span></div>
-        <div><span className="bar-meta-lbl">Cycle</span><span className="bar-meta-val tnum">#012</span></div>
-        <div><span className="bar-meta-lbl">Clock</span><span className="bar-meta-val tnum">14:28:04</span></div>
+        <div>
+          <span className="bar-meta-lbl">Elapsed</span>
+          <span className="bar-meta-val tnum">00:42:18</span>
+        </div>
+        <div>
+          <span className="bar-meta-lbl">Cycle</span>
+          <span className="bar-meta-val tnum">#012</span>
+        </div>
+        <div>
+          <span className="bar-meta-lbl">Clock</span>
+          <span className="bar-meta-val tnum">14:28:04</span>
+        </div>
       </div>
     </div>
   );
@@ -37,14 +49,14 @@ function LiveBar() {
 function LiveMasthead() {
   const D = window.DATA;
   const stats = [
-    { lbl: "Phase",       val: "03 / 06",      tone: "text",  foot: "Build"                     },
-    { lbl: "Active",      val: "4",            tone: "live",  foot: "of 9 agents",  dot: "live" },
-    { lbl: "Queue",       val: "7",            tone: "text",  foot: "stories" },
-    { lbl: "Reviews",     val: "2",            tone: "info",  foot: "awaiting verdict" },
-    { lbl: "Blocked",     val: "1",            tone: "risk",  foot: "Circuit · fixture" },
-    { lbl: "Tests",       val: "312/312",      tone: "ok",    foot: "14:26 · Sentinel" },
-    { lbl: "Coverage",    val: "82.4%",        tone: "text",  foot: "▲ +0.4%" },
-    { lbl: "AI spend",    val: "$38.20",       tone: "text",  foot: "today" },
+    { lbl: 'Phase', val: '03 / 06', tone: 'text', foot: 'Build' },
+    { lbl: 'Active', val: '4', tone: 'live', foot: 'of 9 agents', dot: 'live' },
+    { lbl: 'Queue', val: '7', tone: 'text', foot: 'stories' },
+    { lbl: 'Reviews', val: '2', tone: 'info', foot: 'awaiting verdict' },
+    { lbl: 'Blocked', val: '1', tone: 'risk', foot: 'Circuit · fixture' },
+    { lbl: 'Tests', val: '312/312', tone: 'ok', foot: '14:26 · Sentinel' },
+    { lbl: 'Coverage', val: '82.4%', tone: 'text', foot: '▲ +0.4%' },
+    { lbl: 'AI spend', val: '$38.20', tone: 'text', foot: 'today' },
   ];
   return (
     <header className="masthead live-masthead">
@@ -57,9 +69,11 @@ function LiveMasthead() {
             <span className="sep">›</span>
             <span>EPIC-0020</span>
             <span className="sep">›</span>
-            <span style={{color: "var(--text)"}}>US-0133 · Status masthead</span>
+            <span style={{ color: 'var(--text)' }}>US-0133 · Status masthead</span>
           </div>
-          <h1 className="mh-title lm-title">Mission Control<em>LIVE</em></h1>
+          <h1 className="mh-title lm-title">
+            Mission Control<em>LIVE</em>
+          </h1>
         </div>
         <div className="lm-signal">
           <span className="lm-sig-dot" />
@@ -68,7 +82,7 @@ function LiveMasthead() {
         </div>
       </div>
       <div className="lm-stats">
-        {stats.map(s => (
+        {stats.map((s) => (
           <div className="lm-stat" key={s.lbl} data-tone={s.tone}>
             <span className="lm-stat-lbl">{s.lbl}</span>
             <span className="lm-stat-val tnum">
@@ -87,7 +101,7 @@ function Pipeline() {
   const D = window.DATA;
   return (
     <div>
-      <div className="row" style={{marginBottom: 8, justifyContent: "space-between"}}>
+      <div className="row" style={{ marginBottom: 8, justifyContent: 'space-between' }}>
         <div className="eyebrow">Pipeline</div>
         <div className="mono-eye">Cycle 012 · 00:42:18</div>
       </div>
@@ -106,19 +120,21 @@ function Pipeline() {
 
 function AgentsGrid() {
   const D = window.DATA;
-  const active = D.agents.filter(a => a.status === "active");
+  const active = D.agents.filter((a) => a.status === 'active');
   return (
     <div>
-      <div className="row" style={{marginBottom: 8, justifyContent: "space-between"}}>
+      <div className="row" style={{ marginBottom: 8, justifyContent: 'space-between' }}>
         <div className="eyebrow">Roster</div>
         <div className="mono-eye">
-          <span style={{color: "var(--live-accent-ink)"}}>● {active.length} ACTIVE</span>
-          <span style={{marginLeft: 10}}>○ {D.agents.filter(a=>a.status==="idle").length} idle</span>
-          <span style={{marginLeft: 10, color: "var(--risk)"}}>! {D.agents.filter(a=>a.status==="blocked").length} blocked</span>
+          <span style={{ color: 'var(--live-accent-ink)' }}>● {active.length} ACTIVE</span>
+          <span style={{ marginLeft: 10 }}>○ {D.agents.filter((a) => a.status === 'idle').length} idle</span>
+          <span style={{ marginLeft: 10, color: 'var(--risk)' }}>
+            ! {D.agents.filter((a) => a.status === 'blocked').length} blocked
+          </span>
         </div>
       </div>
       <div className="agents">
-        {D.agents.map(a => (
+        {D.agents.map((a) => (
           <div key={a.name} id={`agent-${a.name}`} className={`agent is-${a.status}`}>
             <div className="port">
               <span className="glyph">{a.name[0]}</span>
@@ -130,7 +146,7 @@ function AgentsGrid() {
                 <span className="dot-sep">·</span>
                 <span className="role">{a.role}</span>
                 <span className={`flag flag-${a.status}`}>
-                  {a.status === "active"  && <span className="flag-pulse" />}
+                  {a.status === 'active' && <span className="flag-pulse" />}
                   {a.status}
                 </span>
               </div>
@@ -141,10 +157,15 @@ function AgentsGrid() {
                     <span className="em-dash">—</span>
                     <span className="branch" title={a.branch}>
                       <svg width="10" height="10" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                        <path d="M5 3v10M11 7v6M5 7a3 3 0 0 0 3 3h3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                        <circle cx="5" cy="3" r="1.5" fill="currentColor"/>
-                        <circle cx="11" cy="5" r="1.5" fill="currentColor"/>
-                        <circle cx="5" cy="13" r="1.5" fill="currentColor"/>
+                        <path
+                          d="M5 3v10M11 7v6M5 7a3 3 0 0 0 3 3h3"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                        />
+                        <circle cx="5" cy="3" r="1.5" fill="currentColor" />
+                        <circle cx="11" cy="5" r="1.5" fill="currentColor" />
+                        <circle cx="5" cy="13" r="1.5" fill="currentColor" />
                       </svg>
                       <span>{a.branch}</span>
                     </span>
@@ -161,26 +182,50 @@ function AgentsGrid() {
 
 function LiveKpiRow() {
   return (
-    <div className="kpi-row" style={{marginTop: 16}}>
+    <div className="kpi-row" style={{ marginTop: 16 }}>
       <div className="kpi">
         <div className="k-lbl">Phases complete</div>
-        <div className="k-val"><span className="big tnum">2</span><span className="small">/ 6</span></div>
-        <div className="k-foot"><span className="trend-up">▲ Build in progress</span></div>
+        <div className="k-val">
+          <span className="big tnum">2</span>
+          <span className="small">/ 6</span>
+        </div>
+        <div className="k-foot">
+          <span className="trend-up">▲ Build in progress</span>
+        </div>
       </div>
       <div className="kpi">
         <div className="k-lbl">Tests passing</div>
-        <div className="k-val"><span className="big tnum" style={{color: "var(--ok)"}}>312</span><span className="small">/ 312</span></div>
-        <div className="k-foot"><span style={{color: "var(--text-mute)"}}>14:26 · Sentinel</span></div>
+        <div className="k-val">
+          <span className="big tnum" style={{ color: 'var(--ok)' }}>
+            312
+          </span>
+          <span className="small">/ 312</span>
+        </div>
+        <div className="k-foot">
+          <span style={{ color: 'var(--text-mute)' }}>14:26 · Sentinel</span>
+        </div>
       </div>
       <div className="kpi">
         <div className="k-lbl">Coverage</div>
-        <div className="k-val"><span className="big tnum">82.4</span><span className="small">%</span></div>
-        <div className="k-foot"><span className="trend-up">▲ +0.4%</span></div>
+        <div className="k-val">
+          <span className="big tnum">82.4</span>
+          <span className="small">%</span>
+        </div>
+        <div className="k-foot">
+          <span className="trend-up">▲ +0.4%</span>
+        </div>
       </div>
       <div className="kpi">
         <div className="k-lbl">Incidents</div>
-        <div className="k-val"><span className="big tnum" style={{color: "var(--risk)"}}>1</span><span className="small">open</span></div>
-        <div className="k-foot"><span style={{color: "var(--risk)"}}>Circuit · fixture missing</span></div>
+        <div className="k-val">
+          <span className="big tnum" style={{ color: 'var(--risk)' }}>
+            1
+          </span>
+          <span className="small">open</span>
+        </div>
+        <div className="k-foot">
+          <span style={{ color: 'var(--risk)' }}>Circuit · fixture missing</span>
+        </div>
       </div>
     </div>
   );
@@ -189,8 +234,8 @@ function LiveKpiRow() {
 function EventLog() {
   const D = window.DATA;
   return (
-    <div style={{marginTop: 16}} id="event-log">
-      <div className="row" style={{marginBottom: 8, justifyContent: "space-between"}}>
+    <div style={{ marginTop: 16 }} id="event-log">
+      <div className="row" style={{ marginBottom: 8, justifyContent: 'space-between' }}>
         <div className="eyebrow">Event Log</div>
         <div className="mono-eye">Last 10 events · auto-scroll</div>
       </div>
@@ -211,18 +256,20 @@ function LiveFeed() {
   // Right rail — "Needs attention", complementary to the chronological Event Log.
   // Holds blocked agents, open incidents, pending reviews, flagged risks.
   const items = [
-    { kind: "block",   who: "Circuit",   title: "Coverage fixture missing",   meta: "BLOCKED · 16m",  chip: "risk" },
-    { kind: "review",  who: "Lens",      title: "PR #413 awaiting verdict",   meta: "QUEUED · 4m",    chip: "info" },
-    { kind: "review",  who: "Lens",      title: "PR #414 awaiting verdict",   meta: "QUEUED · 1m",    chip: "info" },
-    { kind: "bug",     who: "Sentinel",  title: "BUG-0187 · pipeline/roster overlap", meta: "HIGH",   chip: "warn" },
-    { kind: "bug",     who: "Sentinel",  title: "BUG-0186 · Conductor invisible",     meta: "MED",    chip: "warn" },
-    { kind: "risk",    who: "Compass",   title: "EPIC-0012 unstarted",         meta: "3 stories",     chip: "mute" },
+    { kind: 'block', who: 'Circuit', title: 'Coverage fixture missing', meta: 'BLOCKED · 16m', chip: 'risk' },
+    { kind: 'review', who: 'Lens', title: 'PR #413 awaiting verdict', meta: 'QUEUED · 4m', chip: 'info' },
+    { kind: 'review', who: 'Lens', title: 'PR #414 awaiting verdict', meta: 'QUEUED · 1m', chip: 'info' },
+    { kind: 'bug', who: 'Sentinel', title: 'BUG-0187 · pipeline/roster overlap', meta: 'HIGH', chip: 'warn' },
+    { kind: 'bug', who: 'Sentinel', title: 'BUG-0186 · Conductor invisible', meta: 'MED', chip: 'warn' },
+    { kind: 'risk', who: 'Compass', title: 'EPIC-0012 unstarted', meta: '3 stories', chip: 'mute' },
   ];
   return (
     <>
       <div className="head">
         <h3>Needs Attention</h3>
-        <span className="mono-eye"><span style={{color: "var(--risk)"}}>●</span> 1 blocked · 2 review</span>
+        <span className="mono-eye">
+          <span style={{ color: 'var(--risk)' }}>●</span> 1 blocked · 2 review
+        </span>
       </div>
       <div className="feed">
         {items.map((it, i) => (
@@ -242,26 +289,80 @@ function LiveFeed() {
 
 // Shared attention items — used by both the top banner and the right-rail "Needs Attention".
 const ATTN_ITEMS = [
-  { id: "attn-block-circuit", kind: "block",  who: "Circuit",  title: "Coverage fixture missing",            meta: "BLOCKED · 16m", target: "agent-Circuit",  tone: "risk", cta: "View agent" },
-  { id: "attn-review-413",    kind: "review", who: "Lens",     title: "PR #413 awaiting verdict",            meta: "QUEUED · 4m",   target: "agent-Lens",     tone: "info", cta: "Review" },
-  { id: "attn-review-414",    kind: "review", who: "Lens",     title: "PR #414 awaiting verdict",            meta: "QUEUED · 1m",   target: "agent-Lens",     tone: "info", cta: "Review" },
-  { id: "attn-bug-187",       kind: "bug",    who: "Sentinel", title: "BUG-0187 · pipeline/roster overlap",  meta: "HIGH",          target: "event-log",      tone: "warn", cta: "Open bug" },
-  { id: "attn-bug-186",       kind: "bug",    who: "Sentinel", title: "BUG-0186 · Conductor invisible",      meta: "MED",           target: "event-log",      tone: "warn", cta: "Open bug" },
-  { id: "attn-risk-epic12",   kind: "risk",   who: "Compass",  title: "EPIC-0012 unstarted",                 meta: "3 stories",     target: "agent-Compass",  tone: "mute", cta: "View plan" },
+  {
+    id: 'attn-block-circuit',
+    kind: 'block',
+    who: 'Circuit',
+    title: 'Coverage fixture missing',
+    meta: 'BLOCKED · 16m',
+    target: 'agent-Circuit',
+    tone: 'risk',
+    cta: 'View agent',
+  },
+  {
+    id: 'attn-review-413',
+    kind: 'review',
+    who: 'Lens',
+    title: 'PR #413 awaiting verdict',
+    meta: 'QUEUED · 4m',
+    target: 'agent-Lens',
+    tone: 'info',
+    cta: 'Review',
+  },
+  {
+    id: 'attn-review-414',
+    kind: 'review',
+    who: 'Lens',
+    title: 'PR #414 awaiting verdict',
+    meta: 'QUEUED · 1m',
+    target: 'agent-Lens',
+    tone: 'info',
+    cta: 'Review',
+  },
+  {
+    id: 'attn-bug-187',
+    kind: 'bug',
+    who: 'Sentinel',
+    title: 'BUG-0187 · pipeline/roster overlap',
+    meta: 'HIGH',
+    target: 'event-log',
+    tone: 'warn',
+    cta: 'Open bug',
+  },
+  {
+    id: 'attn-bug-186',
+    kind: 'bug',
+    who: 'Sentinel',
+    title: 'BUG-0186 · Conductor invisible',
+    meta: 'MED',
+    target: 'event-log',
+    tone: 'warn',
+    cta: 'Open bug',
+  },
+  {
+    id: 'attn-risk-epic12',
+    kind: 'risk',
+    who: 'Compass',
+    title: 'EPIC-0012 unstarted',
+    meta: '3 stories',
+    target: 'agent-Compass',
+    tone: 'mute',
+    cta: 'View plan',
+  },
 ];
 
 function scrollToTarget(id) {
   const el = document.getElementById(id);
   if (!el) return;
-  el.scrollIntoView({ behavior: "smooth", block: "center" });
-  el.classList.add("attn-flash");
-  setTimeout(() => el.classList.remove("attn-flash"), 1600);
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  el.classList.add('attn-flash');
+  setTimeout(() => el.classList.remove('attn-flash'), 1600);
 }
 
 function AttentionBanner() {
-  const blocked = ATTN_ITEMS.filter(i => i.kind === "block");
-  const reviews = ATTN_ITEMS.filter(i => i.kind === "review");
-  const bugs    = ATTN_ITEMS.filter(i => i.kind === "bug");
+  const blocked = ATTN_ITEMS.filter((i) => i.kind === 'block');
+  const reviews = ATTN_ITEMS.filter((i) => i.kind === 'review');
+  const bugs = ATTN_ITEMS.filter((i) => i.kind === 'bug');
   const top = blocked[0] || reviews[0] || bugs[0];
   if (!top) return null;
   return (
@@ -285,9 +386,19 @@ function AttentionBanner() {
       <div className="ab-actions">
         <button className="ab-btn primary" onClick={() => scrollToTarget(top.target)}>
           Jump to {top.who}
-          <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M8 2v11M3 8l5 5 5-5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
+            <path
+              d="M8 2v11M3 8l5 5 5-5"
+              stroke="currentColor"
+              strokeWidth="1.75"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </button>
-        <button className="ab-btn" onClick={() => scrollToTarget("attn-list")}>All {ATTN_ITEMS.length}</button>
+        <button className="ab-btn" onClick={() => scrollToTarget('attn-list')}>
+          All {ATTN_ITEMS.length}
+        </button>
       </div>
     </div>
   );
@@ -300,13 +411,13 @@ function LiveDashboard() {
         <LiveBar />
         <LiveMasthead />
         <Pipeline />
-        <div style={{height: 16}} />
+        <div style={{ height: 16 }} />
         <AgentsGrid />
       </main>
       <aside className="live-aside" id="attn-list">
         <AttentionBanner />
         <LiveFeed />
-        <div style={{height: 20}} />
+        <div style={{ height: 20 }} />
         <EventLog />
       </aside>
     </div>
