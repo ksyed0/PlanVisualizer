@@ -58,13 +58,15 @@ function renderHierarchyTab(data) {
         return `
       <div id="story-${esc(story.id)}" class="story-row ml-6 border-l-2 border-slate-200 dark:border-slate-600 pl-4 py-2"
            data-epic="${esc(story.epicId)}" data-status="${esc(story.status)}" data-priority="${esc(story.priority)}">
-        <div class="flex flex-wrap items-center gap-2 cursor-pointer" onclick="toggleACs('${jsEsc(story.id)}')">
-          <span class="font-mono text-xs text-slate-500 whitespace-nowrap">${story.id}</span>
-          ${badge(story.status)} ${badge(story.priority)}
-          <span class="text-sm font-medium">${esc(story.title)}</span>
-          ${riskBadge}
-          ${riskScoreBadge}
-          <span class="ml-auto text-xs text-slate-500">${esc(story.estimate || '?')} · ${usd((data.costs[story.id] && data.costs[story.id].projectedUsd) || 0)}</span>
+        <div class="flex items-center gap-2 min-w-0 cursor-pointer" onclick="toggleACs('${jsEsc(story.id)}')">
+          <span class="font-mono text-xs text-slate-500 whitespace-nowrap flex-shrink-0" style="min-width:5.5rem">${story.id}</span>
+          <span class="flex-shrink-0" style="min-width:5.5rem">${badge(story.status)}</span>
+          <span class="flex-shrink-0">${badge(story.priority)}</span>
+          <span class="text-sm font-medium min-w-0 truncate" title="${esc(story.title)}">${esc(story.title)}</span>
+          <span class="ml-auto flex-shrink-0 flex items-center gap-1">
+            ${riskBadge}${riskScoreBadge}
+            <span class="text-xs text-slate-500 whitespace-nowrap">${esc(story.estimate || '?')} · ${usd((data.costs[story.id] && data.costs[story.id].projectedUsd) || 0)}</span>
+          </span>
         </div>
         <ul id="acs-${story.id}" class="ac-guide mt-2 hidden">${acItems || '<li class="text-xs text-slate-500 pl-4">No ACs yet</li>'}</ul>
       </div>`;
@@ -151,7 +153,7 @@ function renderHierarchyTab(data) {
   const cardView = epicBlocks
     .map(
       ({ epic, accent, epicProjected, storyCards, doneCnt, totalCnt }, epicIdx) => `
-    <div class="mb-4 anim-stagger" style="--i:${Math.min(epicIdx, 19)}">
+    <div class="mb-8 anim-stagger" style="--i:${Math.min(epicIdx, 19)}">
       <div class="epic-block border border-slate-200 dark:border-slate-700 rounded-t-lg px-3 py-2 mb-0 cursor-pointer select-none" style="border-left:4px solid ${accent.border};background:${accent.bg}" onclick="toggleSection('epic-cards-${jsEsc(epic.id)}','epic-card-arrow-${jsEsc(epic.id)}')">
         <div class="flex flex-wrap items-center gap-3">
           <span id="epic-card-arrow-${esc(epic.id)}" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9660;</span>
@@ -1260,7 +1262,7 @@ function renderCostsTab(data, options = {}) {
         <td class="px-3 py-2 pl-8 font-mono text-xs text-slate-500 whitespace-nowrap">${esc(bug.id)}</td>
         <td class="px-3 py-2 text-sm dark:text-slate-200">${esc(bug.title)}</td>
         <td class="px-3 py-2 text-center">${badge(bug.severity)}</td>
-        <td class="px-3 py-2 text-center">${badge(bug.status)}</td>
+        <td class="px-3 py-2 text-center" title="${esc(bug.status)}">${badge((bug.status || '').split(/[\s(]/)[0])}</td>
         <td class="px-3 py-2 text-xs text-slate-500">${esc(bug.relatedStory || '—')}</td>
         <td class="px-3 py-2 text-xs text-slate-500">${esc(bug.fixBranch || '—')}</td>
         <td class="px-3 py-2 text-right text-sm dark:text-slate-200">${bc.projectedUsd > 0 ? usd(bc.projectedUsd) : '—'}</td>
@@ -1362,7 +1364,7 @@ function renderCostsTab(data, options = {}) {
           return `<div class="card-elev rounded-lg p-4 flex flex-col gap-2">
         <div class="flex items-center gap-2 flex-wrap">
           <span class="font-mono text-xs text-slate-500 whitespace-nowrap">${esc(bug.id)}</span>
-          ${badge(bug.severity)} ${badge(bug.status)}
+          ${badge(bug.severity)} <span title="${esc(bug.status)}">${badge((bug.status || '').split(/[\s(]/)[0])}</span>
         </div>
         <p class="text-sm font-medium dark:text-slate-200">${esc(bug.title)}</p>
         <div class="text-xs text-slate-500">Story: <span class="font-mono">${esc(bug.relatedStory || '—')}</span></div>
@@ -1393,37 +1395,55 @@ function renderCostsTab(data, options = {}) {
     })
     .join('');
 
+  /* BUG-0199: Bug Fix Costs section starts collapsed by default */
   const bugFixColumnSection = data.bugs.length
     ? `
-    <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mt-4 mb-2 flex-shrink-0">Bug Fix Costs</h3>
-    <div class="scroll-table">
-    <table class="w-full text-left text-sm border-collapse">
-      <thead class="text-xs uppercase">
-        <tr>
-          <th class="px-3 py-2">Bug</th><th class="px-3 py-2">Title</th><th class="px-3 py-2 text-center">Severity</th>
-          <th class="px-3 py-2 text-center">Status</th><th class="px-3 py-2">Story</th>
-          <th class="px-3 py-2">Fix Branch</th><th class="px-3 py-2 text-right">Projected</th>
-          <th class="px-3 py-2 text-right">AI Cost</th>
-          <th class="px-3 py-2 text-right tokens-col">Tokens (in/out)</th>
-        </tr>
-      </thead>
-      ${bugColGroups}
-      <tfoot class="bg-slate-50 dark:bg-slate-700 font-semibold border-t-2 border-slate-300 dark:border-slate-600">
-        <tr>
-          <td colspan="6" class="px-3 py-2 text-right text-sm dark:text-slate-200">Totals</td>
-          <td class="px-3 py-2 text-right text-sm dark:text-slate-200">${usd(bugTotalProjected)}</td>
-          <td class="px-3 py-2 text-right text-sm text-teal-700 dark:text-teal-400">${usd(bugTotalAI)}</td>
-          <td class="px-3 py-2 text-right text-xs text-slate-500 tokens-col">${fmtNum(bugTotalIn)} / ${fmtNum(bugTotalOut)}</td>
-        </tr>
-      </tfoot>
-    </table>
+    <div class="mt-4 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden flex-shrink-0">
+      <div class="flex items-center gap-2 px-3 py-2 cursor-pointer select-none bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700"
+           onclick="toggleSection('costs-bugs-col-body','costs-bugs-col-arrow')">
+        <span id="costs-bugs-col-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9654;</span>
+        <span class="text-sm font-semibold text-slate-700 dark:text-slate-200">Bug Fix Costs</span>
+        <span class="text-xs text-slate-500 ml-1">(${data.bugs.length})</span>
+        <span class="ml-auto text-xs text-slate-500">${usd(bugTotalProjected)} est · <span class="text-teal-700 dark:text-teal-400">${usd(bugTotalAI)} AI</span></span>
+      </div>
+      <div id="costs-bugs-col-body" class="hidden">
+        <div class="scroll-table">
+        <table class="w-full text-left text-sm border-collapse">
+          <thead class="text-xs uppercase">
+            <tr>
+              <th class="px-3 py-2">Bug</th><th class="px-3 py-2">Title</th><th class="px-3 py-2 text-center">Severity</th>
+              <th class="px-3 py-2 text-center">Status</th><th class="px-3 py-2">Story</th>
+              <th class="px-3 py-2">Fix Branch</th><th class="px-3 py-2 text-right">Projected</th>
+              <th class="px-3 py-2 text-right">AI Cost</th>
+              <th class="px-3 py-2 text-right tokens-col">Tokens (in/out)</th>
+            </tr>
+          </thead>
+          ${bugColGroups}
+          <tfoot class="bg-slate-50 dark:bg-slate-700 font-semibold border-t-2 border-slate-300 dark:border-slate-600">
+            <tr>
+              <td colspan="6" class="px-3 py-2 text-right text-sm dark:text-slate-200">Totals</td>
+              <td class="px-3 py-2 text-right text-sm dark:text-slate-200">${usd(bugTotalProjected)}</td>
+              <td class="px-3 py-2 text-right text-sm text-teal-700 dark:text-teal-400">${usd(bugTotalAI)}</td>
+              <td class="px-3 py-2 text-right text-xs text-slate-500 tokens-col">${fmtNum(bugTotalIn)} / ${fmtNum(bugTotalOut)}</td>
+            </tr>
+          </tfoot>
+        </table>
+        </div>
+      </div>
     </div>`
     : '';
 
   const bugFixCardSection = data.bugs.length
     ? `
-    <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mt-6 mb-3">Bug Fix Costs</h3>
-    ${bugCardEpicBlocks}`
+    <div class="mt-6 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+      <div class="flex items-center gap-2 px-3 py-2 cursor-pointer select-none bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700"
+           onclick="toggleSection('costs-bugs-card-body','costs-bugs-card-arrow')">
+        <span id="costs-bugs-card-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9654;</span>
+        <span class="text-sm font-semibold text-slate-700 dark:text-slate-200">Bug Fix Costs</span>
+        <span class="text-xs text-slate-500 ml-1">(${data.bugs.length})</span>
+      </div>
+      <div id="costs-bugs-card-body" class="hidden p-3">${bugCardEpicBlocks}</div>
+    </div>`
     : '';
 
   return `
@@ -1571,7 +1591,7 @@ function renderBugsTab(data) {
     <div id="bug-card-${esc(bug.id)}" class="bug-row story-card-hover card-elev rounded-lg p-4 flex flex-col gap-2 anim-stagger" style="--i:${Math.min(bugIdx, 19)};border-left:4px solid ${severityStripeColor(bug.severity)}" data-status="${esc(bug.status)}" data-epic="${esc(epicId)}" data-severity="${esc(bug.severity)}">
       <div class="flex items-center gap-2 flex-wrap">
         <span class="font-mono text-xs text-slate-500 whitespace-nowrap">${esc(bug.id)}</span>
-        ${sevBadge(bug.severity)} ${badge(bug.status)}
+        ${sevBadge(bug.severity)} <span title="${esc(bug.status)}">${badge((bug.status || '').split(/[\s(]/)[0])}</span>
       </div>
       <p class="text-sm font-medium dark:text-slate-200">${esc(bug.title)}</p>
       <div class="text-xs text-slate-500 flex flex-col gap-0.5">
@@ -1964,7 +1984,254 @@ function renderRecentActivity(data) {
   </div>`;
 }
 
+// ─── US-0135/US-0139: Status tab — release health hero + decision widgets ───
+function renderStatusTab(data) {
+  const activeStories = data.stories.filter((s) => s.status !== 'Retired');
+  const doneStories = activeStories.filter((s) => s.status === 'Done');
+  const inProgress = activeStories.filter((s) => s.status === 'In Progress' || s.status === 'In-Progress');
+  const openBugs = (data.bugs || []).filter((b) => !/^(Fixed|Retired|Cancelled|Rejected)/i.test(b.status));
+  const criticalBugs = openBugs.filter((b) => b.severity === 'Critical');
+  const highBugs = openBugs.filter((b) => b.severity === 'High');
+  const blockedStories = activeStories.filter((s) => s.status === 'Blocked');
+  const cov = data.coverage;
+  const covPct = cov && cov.available !== false ? cov.overall : null;
+  const totalAI = (data.costs && data.costs._totals && data.costs._totals.costUsd) || 0;
+  const totalProjected = activeStories.reduce(
+    (s, st) => s + ((data.costs && data.costs[st.id] && data.costs[st.id].projectedUsd) || 0),
+    0,
+  );
+  const budgetPct = totalProjected > 0 ? Math.round((totalAI / totalProjected) * 100) : 0;
+  const donePct = activeStories.length > 0 ? Math.round((doneStories.length / activeStories.length) * 100) : 0;
+
+  // Release health verdict
+  const hasBlocker = blockedStories.length > 0 || criticalBugs.length > 0;
+  const hasRisk = highBugs.length > 0 || openBugs.length > 3 || budgetPct > 80;
+  const verdict = hasBlocker ? 'Off track' : hasRisk ? 'At risk' : 'On track';
+  const verdictColor = hasBlocker ? 'var(--risk)' : hasRisk ? 'var(--warn)' : 'var(--ok)';
+  const chipCls = hasBlocker ? 'risk' : hasRisk ? 'warn' : 'ok';
+  const narrative = hasBlocker
+    ? `${criticalBugs.length} critical bug${criticalBugs.length !== 1 ? 's' : ''} or blocked stories need immediate attention.`
+    : hasRisk
+      ? `${openBugs.length} open bug${openBugs.length !== 1 ? 's' : ''} and ${100 - donePct}% of stories remaining — watch velocity closely.`
+      : `${doneStories.length} of ${activeStories.length} stories done at ${covPct !== null ? covPct.toFixed(1) + '% coverage' : 'unknown coverage'}. Release is on track.`;
+
+  // ── Completion data ───────────────────────────────────────────────
+  const comp = data.completion;
+  const forecastLabel = comp ? `${comp.likelyDate}` : '—';
+  const rangeLabel = comp ? `${comp.rangeStart} – ${comp.rangeEnd}` : '—';
+  const velocityLabel = comp ? `${comp.velocityWeeks}wk` : '—';
+
+  // ── 14-week progress mini-bar ─────────────────────────────────────
+  const trends = data.trends;
+  const progressBars = (() => {
+    if (!trends || !trends.dates || trends.dates.length < 2)
+      return '<span class="text-xs text-slate-400">No history</span>';
+    const recent = trends.dates.slice(-14);
+    const doneCounts = (trends.doneCounts || []).slice(-14);
+    const totalCounts = (trends.totalStories || []).slice(-14);
+    const maxDone = Math.max(...doneCounts, 1);
+    return recent
+      .map((d, i) => {
+        const pct = Math.round((doneCounts[i] / maxDone) * 100);
+        return `<div title="${d}: ${doneCounts[i]}/${totalCounts[i]} done"
+        style="width:8px;background:color-mix(in oklab,var(--plan-accent) ${Math.max(pct, 8)}%,var(--border));border-radius:2px;height:${Math.max(Math.round((doneCounts[i] / maxDone) * 32), 4)}px;align-self:flex-end;flex-shrink:0"></div>`;
+      })
+      .join('');
+  })();
+
+  // ── 30-day coverage dots ──────────────────────────────────────────
+  const coverageDots = (() => {
+    if (!trends || !trends.dates || trends.dates.length < 2)
+      return '<span class="text-xs text-slate-400">No history</span>';
+    const recent30 = trends.dates.slice(-30);
+    const covVals = (trends.coveragePcts || []).slice(-30);
+    return recent30
+      .map((d, i) => {
+        const v = covVals[i] || 0;
+        const good = v >= 80;
+        const warn = v >= 60 && v < 80;
+        const color = good ? 'var(--ok)' : warn ? 'var(--warn)' : 'var(--risk)';
+        return `<span title="${d}: ${v.toFixed(1)}%" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${color};margin:1px;opacity:${v > 0 ? 0.85 : 0.2}"></span>`;
+      })
+      .join('');
+  })();
+
+  // ── Epic progress list ────────────────────────────────────────────
+  const epicProgress = data.epics
+    .filter(
+      (e) =>
+        e.status !== 'Done' ||
+        data.stories.some((s) => s.epicId === e.id && s.status !== 'Done' && s.status !== 'Retired'),
+    )
+    .slice(0, 8)
+    .map((epic, i) => {
+      const accent = EPIC_ACCENT_COLORS[data.epics.indexOf(epic) % EPIC_ACCENT_COLORS.length];
+      const epicStories = data.stories.filter((s) => s.epicId === epic.id && s.status !== 'Retired');
+      const epicDone = epicStories.filter((s) => s.status === 'Done').length;
+      const pct = epicStories.length > 0 ? Math.round((epicDone / epicStories.length) * 100) : 0;
+      return `
+      <div class="pv-wl-row" style="grid-template-columns:110px 1fr 36px">
+        <span class="pv-wl-name" style="color:${accent.text}" title="${esc(epic.title)}">${esc(epic.id)}: ${esc(epic.title)}</span>
+        <div class="pv-wl-bar-bg"><div class="pv-wl-bar" style="width:${pct}%;background:${accent.border}"></div></div>
+        <span class="pv-wl-count">${pct}%</span>
+      </div>`;
+    })
+    .join('');
+
+  // ── This week stats (last 7 days from trends if available) ────────
+  const thisWeekStories = inProgress.length;
+  const weekBugsOpen = openBugs.filter((b) => b.severity === 'Critical' || b.severity === 'High').length;
+
+  // ── Top risks list ────────────────────────────────────────────────
+  const risks = [];
+  criticalBugs
+    .slice(0, 2)
+    .forEach((b) =>
+      risks.push({ level: 'HIGH', label: esc(b.title), sub: `${esc(b.id)} · ${esc(b.relatedStory || 'no story')}` }),
+    );
+  highBugs
+    .slice(0, 2)
+    .forEach((b) =>
+      risks.push({ level: 'MED', label: esc(b.title), sub: `${esc(b.id)} · ${esc(b.relatedStory || 'no story')}` }),
+    );
+  blockedStories
+    .slice(0, 2)
+    .forEach((s) => risks.push({ level: 'MED', label: esc(s.title), sub: `${esc(s.id)} · Blocked` }));
+  if (budgetPct > 80) risks.push({ level: 'LOW', label: 'Budget approaching cap', sub: `${budgetPct}% consumed` });
+  const riskColors = { HIGH: 'var(--risk)', MED: 'var(--warn)', LOW: 'var(--ok)' };
+  const riskItems =
+    risks
+      .slice(0, 5)
+      .map(
+        (r) =>
+          `<div class="pv-risk-item">
+      <span class="chip ${r.level === 'HIGH' ? 'risk' : r.level === 'MED' ? 'warn' : 'ok'}" style="font-size:10px;padding:1px 6px"><span class="d"></span>${r.level}</span>
+      <span class="pv-risk-label"><strong>${r.label}</strong><br><span style="font-size:11px;opacity:.7">${r.sub}</span></span>
+    </div>`,
+      )
+      .join('') || '<p class="pv-widget-empty">No active risks — looking good 🎉</p>';
+
+  // ── Test quality ──────────────────────────────────────────────────
+  const allTCs = data.testCases || [];
+  const passed = allTCs.filter((t) => t.status === 'Pass').length;
+  const failed = allTCs.filter((t) => t.status === 'Fail').length;
+  const notRun = allTCs.filter((t) => t.status === 'Not Run').length;
+  const passRate = allTCs.length > 0 ? Math.round((passed / allTCs.length) * 100) : 0;
+
+  return `
+  <div id="tab-status" class="p-6" role="tabpanel" aria-labelledby="tab-btn-status">
+
+    <!-- Release Health Hero -->
+    <div class="card mb-6 p-0 overflow-hidden">
+      <div class="pv-hero-head">
+        <div class="pv-hero-verdict">
+          <p class="pv-eyebrow">Release Health</p>
+          <h2 style="margin:4px 0 6px;font-family:var(--font-display);font-size:clamp(28px,4vw,44px);font-weight:600;letter-spacing:-0.02em;line-height:1;color:${verdictColor}">${verdict}</h2>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span class="chip ${chipCls}"><span class="d"></span>${hasBlocker ? 'BLOCKED' : hasRisk ? 'AT RISK' : 'STABLE'}</span>
+            <p class="pv-hero-narrative">${narrative}</p>
+          </div>
+        </div>
+        <div class="pv-hero-stats">
+          <div class="pv-stat">
+            <span class="pv-stat-lbl">Forecast</span>
+            <span class="pv-stat-val">${esc(forecastLabel)}</span>
+            <span class="pv-delta" style="color:var(--text-mute);font-size:11px">${esc(rangeLabel)}</span>
+          </div>
+          <div class="pv-stat">
+            <span class="pv-stat-lbl">Velocity</span>
+            <span class="pv-stat-val">${esc(velocityLabel)}</span>
+            <span class="pv-delta" style="color:var(--text-mute);font-size:11px">stories/wk</span>
+          </div>
+          <div class="pv-stat">
+            <span class="pv-stat-lbl">Budget</span>
+            <span class="pv-stat-val" style="color:${budgetPct > 90 ? 'var(--risk)' : budgetPct > 75 ? 'var(--warn)' : 'inherit'}">${budgetPct}%</span>
+            <span class="pv-delta" style="color:var(--text-mute);font-size:11px">${usd(totalAI)} / ${usd(totalProjected)}</span>
+          </div>
+        </div>
+      </div>
+      <!-- Mini-viz row -->
+      <div class="pv-hero-vizrow" style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div>
+          <p class="pv-eyebrow" style="margin-bottom:6px">Progress · Past 14 weeks</p>
+          <div style="display:flex;align-items:flex-end;gap:3px;height:36px">${progressBars}</div>
+        </div>
+        <div>
+          <p class="pv-eyebrow" style="margin-bottom:6px">Coverage · Last 30 days</p>
+          <div style="line-height:1;display:flex;flex-wrap:wrap;align-items:center">${coverageDots}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Decision widgets row -->
+    <div class="pv-widgets mb-6">
+      <!-- Overall progress KPIs -->
+      <div class="card">
+        <div class="card-head">
+          <h3>Overall Progress</h3>
+          <span style="margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--text-mute)">${doneStories.length}/${activeStories.length} stories</span>
+        </div>
+        <div class="card-body">
+          <div style="margin-bottom:12px">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
+              <span style="font-size:12px;color:var(--text-dim)">Completion</span>
+              <span style="font-family:var(--font-mono);font-size:13px;font-weight:600">${donePct}%</span>
+            </div>
+            <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden">
+              <div style="height:100%;width:${donePct}%;background:${donePct === 100 ? 'var(--ok)' : 'var(--plan-accent)'};border-radius:3px;transition:width 0.4s"></div>
+            </div>
+          </div>
+          <div class="pv-kv"><span class="pv-kv-k">In Progress</span><span class="pv-kv-v">${inProgress.length}</span></div>
+          <div class="pv-kv"><span class="pv-kv-k">Blocked</span><span class="pv-kv-v" style="color:${blockedStories.length > 0 ? 'var(--risk)' : 'inherit'}">${blockedStories.length}</span></div>
+          <div class="pv-kv"><span class="pv-kv-k">Coverage</span><span class="pv-kv-v">${covPct !== null ? covPct.toFixed(1) + '%' : 'N/A'}</span></div>
+          <div class="pv-kv" style="border-bottom:0"><span class="pv-kv-k">Open bugs</span><span class="pv-kv-v" style="color:${openBugs.length > 0 ? 'var(--risk)' : 'inherit'}">${openBugs.length}</span></div>
+        </div>
+      </div>
+
+      <!-- Epic progress -->
+      <div class="card">
+        <div class="card-head"><h3>Epic Progress</h3><span style="margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--text-mute)">${data.epics.filter((e) => e.status === 'Done').length}/${data.epics.length} done</span></div>
+        <div class="card-body">
+          ${epicProgress || '<p class="pv-widget-empty">All epics done!</p>'}
+        </div>
+      </div>
+
+      <!-- Top Risks -->
+      <div class="card">
+        <div class="card-head"><h3>Top Risks</h3></div>
+        <div class="card-body">
+          <div class="pv-risk-list">${riskItems}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quality + This-week row -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div class="card">
+        <div class="card-head"><h3>Quality</h3><span style="margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--text-mute)">${allTCs.length} TCs</span></div>
+        <div class="card-body">
+          <div class="pv-kv"><span class="pv-kv-k">Pass rate</span><span class="pv-kv-v" style="color:${passRate >= 90 ? 'var(--ok)' : passRate >= 70 ? 'var(--warn)' : 'var(--risk)'}">${passRate}%</span></div>
+          <div class="pv-kv"><span class="pv-kv-k">Passed</span><span class="pv-kv-v">${passed}</span></div>
+          <div class="pv-kv"><span class="pv-kv-k">Failed</span><span class="pv-kv-v" style="color:${failed > 0 ? 'var(--risk)' : 'inherit'}">${failed}</span></div>
+          <div class="pv-kv" style="border-bottom:0"><span class="pv-kv-k">Not Run</span><span class="pv-kv-v">${notRun}</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Snapshot</h3></div>
+        <div class="card-body">
+          <div class="pv-kv"><span class="pv-kv-k">Stories done</span><span class="pv-kv-v">${doneStories.length}</span></div>
+          <div class="pv-kv"><span class="pv-kv-k">In progress</span><span class="pv-kv-v">${thisWeekStories}</span></div>
+          <div class="pv-kv"><span class="pv-kv-k">Critical + High bugs</span><span class="pv-kv-v" style="color:${weekBugsOpen > 0 ? 'var(--risk)' : 'inherit'}">${weekBugsOpen}</span></div>
+          <div class="pv-kv"><span class="pv-kv-k">AI spend</span><span class="pv-kv-v">${usd(totalAI)}</span></div>
+          <div class="pv-kv" style="border-bottom:0"><span class="pv-kv-k">Est. budget</span><span class="pv-kv-v">${usd(totalProjected)}</span></div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
 module.exports = {
+  renderStatusTab,
   renderHierarchyTab,
   renderKanbanTab,
   renderTraceabilityTab,

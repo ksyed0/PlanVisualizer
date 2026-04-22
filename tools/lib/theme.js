@@ -39,6 +39,9 @@ const BADGE_TONE = {
   Planned: 'neutral',
   Low: 'neutral',
   P2: 'neutral',
+  Rejected: 'neutral',
+  Cancelled: 'neutral',
+  Retired: 'neutral',
 };
 
 // Local HTML-escape helper. Kept in-module so theme.js has no runtime
@@ -113,6 +116,12 @@ function generateCssTokens() {
     --warn: ${palette.warn};
     --risk: ${palette.risk};
     --info: ${palette.info};
+
+    /* BUG-0190/BUG-0198: --clr-* aliases (accent + shadow are theme-independent) */
+    --clr-accent:        var(--plan-accent);
+    --clr-accent-subtle: color-mix(in oklab, var(--plan-accent) 10%, transparent);
+    --shadow-card:       var(--shadow);
+    --shadow-card-hover: var(--shadow-lg);
   }
 
   [data-theme="light"] {
@@ -128,6 +137,41 @@ function generateCssTokens() {
     --shadow:      0 1px 0 rgba(15,15,20,.03), 0 4px 16px -8px rgba(15,15,20,.08);
     --shadow-lg:   0 2px 0 rgba(15,15,20,.04), 0 12px 32px -12px rgba(15,15,20,.12);
     --grid-dot:    rgba(30,30,40,0.08);
+
+    /* BUG-0190/BUG-0198: --clr-* compatibility aliases for light theme */
+    --clr-body-bg:      var(--bg);
+    --clr-text-primary: var(--text);
+    --clr-text-secondary: var(--text-dim);
+    --clr-text-muted:   var(--text-mute);
+    --clr-panel-bg:     var(--surface);
+    --clr-surface:      var(--surface);
+    --clr-surface-raised: var(--surface-2);
+    --clr-border:       var(--border);
+    --clr-border-mid:   var(--border);
+    --clr-header-bg:    var(--surface-2);
+    --clr-header-text:  var(--text);
+    --clr-row-alt:      color-mix(in oklab, var(--border) 25%, transparent);
+    --clr-row-hover:    color-mix(in oklab, var(--plan-accent) 6%, transparent);
+    --clr-sidebar-bg:   var(--surface);
+    --clr-input-bg:     var(--surface);
+    --clr-input-border: var(--border);
+    --clr-input-text:   var(--text);
+    /* Badge tokens */
+    --badge-success-bg:     color-mix(in oklab, var(--ok)   12%, transparent);
+    --badge-success-text:   oklch(45% 0.15 150);
+    --badge-success-border: color-mix(in oklab, var(--ok)   30%, transparent);
+    --badge-warn-bg:        color-mix(in oklab, var(--warn)  12%, transparent);
+    --badge-warn-text:      oklch(48% 0.16 78);
+    --badge-warn-border:    color-mix(in oklab, var(--warn)  30%, transparent);
+    --badge-danger-bg:      color-mix(in oklab, var(--risk)  10%, transparent);
+    --badge-danger-text:    oklch(48% 0.20 25);
+    --badge-danger-border:  color-mix(in oklab, var(--risk)  25%, transparent);
+    --badge-info-bg:        color-mix(in oklab, var(--info)  10%, transparent);
+    --badge-info-text:      oklch(45% 0.14 240);
+    --badge-info-border:    color-mix(in oklab, var(--info)  25%, transparent);
+    --badge-neutral-bg:     var(--surface-2);
+    --badge-neutral-text:   var(--text-dim);
+    --badge-neutral-border: var(--border);
   }
 
   [data-theme="dark"] {
@@ -143,6 +187,41 @@ function generateCssTokens() {
     --shadow:      0 1px 0 rgba(0,0,0,.35), 0 6px 20px -8px rgba(0,0,0,.5);
     --shadow-lg:   0 2px 0 rgba(0,0,0,.4), 0 18px 36px -14px rgba(0,0,0,.55);
     --grid-dot:    rgba(200,210,230,0.06);
+
+    /* BUG-0190/BUG-0198: --clr-* compatibility aliases for dark theme */
+    --clr-body-bg:      var(--bg);
+    --clr-text-primary: var(--text);
+    --clr-text-secondary: var(--text-dim);
+    --clr-text-muted:   var(--text-mute);
+    --clr-panel-bg:     var(--surface);
+    --clr-surface:      var(--surface);
+    --clr-surface-raised: var(--surface-2);
+    --clr-border:       var(--border);
+    --clr-border-mid:   var(--border);
+    --clr-header-bg:    var(--surface-2);
+    --clr-header-text:  var(--text);
+    --clr-row-alt:      color-mix(in oklab, var(--border) 30%, transparent);
+    --clr-row-hover:    color-mix(in oklab, var(--plan-accent) 8%, transparent);
+    --clr-sidebar-bg:   var(--surface);
+    --clr-input-bg:     var(--surface-2);
+    --clr-input-border: var(--border);
+    --clr-input-text:   var(--text);
+    /* Badge tokens - dark mode */
+    --badge-success-bg:     color-mix(in oklab, var(--ok)   15%, transparent);
+    --badge-success-text:   var(--ok);
+    --badge-success-border: color-mix(in oklab, var(--ok)   35%, transparent);
+    --badge-warn-bg:        color-mix(in oklab, var(--warn)  15%, transparent);
+    --badge-warn-text:      var(--warn);
+    --badge-warn-border:    color-mix(in oklab, var(--warn)  35%, transparent);
+    --badge-danger-bg:      color-mix(in oklab, var(--risk)  15%, transparent);
+    --badge-danger-text:    var(--risk);
+    --badge-danger-border:  color-mix(in oklab, var(--risk)  30%, transparent);
+    --badge-info-bg:        color-mix(in oklab, var(--info)  15%, transparent);
+    --badge-info-text:      var(--info);
+    --badge-info-border:    color-mix(in oklab, var(--info)  30%, transparent);
+    --badge-neutral-bg:     var(--surface-2);
+    --badge-neutral-text:   var(--text-dim);
+    --badge-neutral-border: var(--border);
   }`.trim();
 }
 

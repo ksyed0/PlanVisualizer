@@ -329,10 +329,11 @@ Steps to Reproduce:
 3. Inspect result[0].date
    Expected: Most recent session is always first regardless of file order (AC-0013 requires reverse-chronological)
    Actual: Sessions are returned in the order they appear in the file — if appended at bottom, oldest appears first
-   Status: Fixed (false positive — progress.md is written newest-first; regression test added)
+   Status: Rejected
    Fix Branch: bugfix/BUG-0007-0011-parser-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.25
+   Notes: Rejected as false positive — progress.md is written newest-first by convention; no parser change needed. Regression test added to confirm ordering.
 
 BUG-0012: GitHub Actions workflow steps pinned to mutable version tags, not commit digests
 Severity: High
@@ -2522,3 +2523,222 @@ Steps to Reproduce:
    Lesson Encoded: No
    Estimated Cost USD: 0.00
    Notes: Fixed by adding a RELEASE_PLAN.md audit step to the Session Close Checklist in CLAUDE.md: "Verify all stories shipped this session show Status: Done and have all ACs checked in docs/RELEASE_PLAN.md."
+
+---
+
+BUG-0190: Dark mode applies only to topbar/sidebar — body and content areas remain light
+Severity: High
+Related Story: US-0135 (EPIC-0020)
+Steps to Reproduce:
+
+1. Open plan-status.html in a browser with system dark mode preference OR click the moon icon
+2. Observe the page appearance
+   Expected: All surfaces (body background, panels, tab content, cards) switch to dark palette
+   Actual: Only the topbar/sidebar update; the main content area stays white (uses --clr-_ tokens unresolved to any value)
+   Root Cause: Two compounding defects: (1) EPIC-0020 replaced --clr-_ CSS variable names with new OKLCH tokens (--bg, --text, --surface, --border, etc.) but left all CSS consumers still referencing the old --clr-_ names, so those resolved to empty strings. (2) Tailwind darkMode:'class' requires a .dark class on <html>, but setTheme() only set data-theme attribute — making all dark:_ Tailwind variants no-ops.
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0190-0197-ui-fixes
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed by: (a) Adding --clr-\* backward-compat alias variables in generateCssTokens() in theme.js, mapping each old token to its new OKLCH equivalent in both [data-theme="light"] and [data-theme="dark"] blocks; (b) Adding classList.toggle('dark', t==='dark') in setTheme() in render-scripts.js; (c) Adding classList.add('dark') in the inline theme-init script in render-html.js.
+
+---
+
+BUG-0191: Blank white area (52px) appears at top of page below topbar
+Severity: Medium
+Related Story: US-0135 (EPIC-0020)
+Steps to Reproduce:
+
+1. Open plan-status.html in any browser
+2. Observe the space between the topbar and the first content element
+   Expected: Content starts immediately below the sticky topbar with no gap
+   Actual: A blank 52px white strip appears between the topbar and content, caused by stale body { padding-top: 52px } left over from when .pv-chrome was position:fixed
+   Root Cause: EPIC-0020 changed .pv-chrome from position:fixed to position:sticky (in-flow layout), eliminating the need for body padding-top offset. The padding rule was not removed during the migration.
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0190-0197-ui-fixes
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed by changing body { padding-top: 52px } to body { padding-top: 0 } in the embedded CSS block in render-html.js and removing redundant responsive padding-top overrides.
+
+---
+
+BUG-0192: Story title wraps instead of truncating with ellipsis in hierarchy column view
+Severity: Medium
+Related Story: US-0131 (EPIC-0019)
+Steps to Reproduce:
+
+1. Open plan-status.html → Hierarchy tab → Column view
+2. Find any story with a long title (e.g., "Implement cross-tab filter persistence and deep-link support")
+3. Observe the story row
+   Expected: Title truncates at available width with trailing ellipsis; badge labels appear at line end on a single row
+   Actual: The full title wraps onto multiple lines, pushing labels to a new line and misaligning the row with its fixed-width sibling columns
+   Root Cause: Row container used flex flex-wrap allowing unconstrained width; title element lacked min-w-0 + truncate constraints; status/ID columns lacked min-width floor; labels lacked ml-auto + flex-shrink-0 anchoring.
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0190-0197-ui-fixes
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed in render-tabs.js story row template: changed wrapper to flex items-center gap-2 min-w-0, added flex-shrink-0 on ID/status/epic columns, added min-width:5.5rem floor on ID/status, applied min-w-0 truncate with title attribute on the story title span, and ml-auto flex-shrink-0 on the right-side labels group.
+
+---
+
+BUG-0193: Global search (⌘K) button missing from page header
+Severity: Medium
+Related Story: US-0131 (EPIC-0019)
+Steps to Reproduce:
+
+1. Open plan-status.html
+2. Look at the top-right area of the header/topbar
+   Expected: A search button (⌘K keyboard shortcut affordance) is visible between the mode badge and the About button
+   Actual: No search button rendered; the searchBox element exists in DOM but has no visible trigger in the masthead
+   Root Cause: renderChrome() in render-shell.js never included the ⌘K trigger button in the masthead markup; it was designed but omitted during the EPIC-0020 shell refactor.
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0190-0197-ui-fixes
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed by adding a <button id="searchBtn"> with ⌘K label and SVG icon between the mode badge and About button in renderChrome() in render-shell.js.
+
+---
+
+BUG-0194: Card view epic headers disappear when any filter is applied
+Severity: High
+Related Story: US-0106 (EPIC-0015)
+Steps to Reproduce:
+
+1. Open plan-status.html → Hierarchy tab → Card view
+2. Apply any filter (e.g., status = "In Progress")
+3. Observe epic section headers
+   Expected: Epic headers remain visible; only story cards outside the filter are hidden
+   Actual: All epic headers vanish — the entire card view becomes an empty page with only matching story cards and no grouping headers
+   Root Cause: applyFilters() scoped story-row searches via block.closest('.mb-8') to find the ancestor epic wrapper. Card view wrappers used class mb-4 (not mb-8), so closest('.mb-8') returned null for every story — the filter logic resolved to a scope of 0 rows per header, hiding every epic section.
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0190-0197-ui-fixes
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed by changing the card view epic wrapper class from mb-4 to mb-8 in the renderHierarchyCardView template in render-tabs.js, matching the class applyFilters() expects.
+
+---
+
+BUG-0195: Estimated project cost missing from page masthead
+Severity: Low
+Related Story: US-0135 (EPIC-0020)
+Steps to Reproduce:
+
+1. Open plan-status.html
+2. Inspect the metadata row in the masthead (below the project name/tagline)
+   Expected: A meta tile labelled "Est. budget" shows the total projected USD cost derived from t-shirt sizing
+   Actual: The meta row shows Stories, Open Bugs, Coverage, and Last Updated — but no cost figure
+   Root Cause: renderMasthead() in render-shell.js did not compute or render a budget meta tile; the feature was specified in US-0135 ACs but omitted during EPIC-0020 implementation.
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0190-0197-ui-fixes
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed by computing totalProjected (sum of data.costs[st.id].projectedUsd across active stories) in renderMasthead() and adding a pv-meta-item tile with pv-meta-item--hide-sm class to keep it off small viewports.
+
+---
+
+BUG-0196: Status badge column too narrow — "In Progress" and "Planned" text overflows into title column
+Severity: Medium
+Related Story: US-0131 (EPIC-0019)
+Steps to Reproduce:
+
+1. Open plan-status.html → Hierarchy tab → Column view
+2. Scroll to any story with status "In Progress" or "Planned"
+3. Observe alignment relative to stories with shorter statuses like "Done"
+   Expected: All status badges align in a fixed-width column; title column begins at the same x-position for every row
+   Actual: "In Progress" text overflows the status column and pushes the story title to the right (or causes wrap); "Planned" likewise overflows
+   Root Cause: Status span had no min-width floor — it shrank to fit "Done" and then overflowed for longer strings. Combined with BUG-0192 flex-wrap issue, rows were visually misaligned.
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0190-0197-ui-fixes
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed as part of BUG-0192 row layout overhaul: added inline style min-width:5.5rem on the status badge span in render-tabs.js, ensuring all rows reserve the same floor width for the status column regardless of text length.
+
+---
+
+BUG-0197: Traceability tab legend text is invisible (white-on-white in light mode)
+Severity: Medium
+Related Story: US-0131 (EPIC-0019)
+Steps to Reproduce:
+
+1. Open plan-status.html → Traceability tab → Light mode
+2. Observe the legend at the bottom of the SVG canvas
+   Expected: Legend labels (e.g., "Story", "Test Case", "Bug") are readable in a dark-on-light colour
+   Actual: Legend text renders in white (CSS class trace-caption used rgba(255,255,255,0.5) as its fallback colour) and is invisible against the white panel background
+   Root Cause: render-scripts.js set .trace-caption colour fallback to rgba(255,255,255,0.5) — visible only in dark mode. The EPIC-0020 token migration broke the light-mode value; --clr-text-secondary was unresolved (see BUG-0190 root cause).
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0190-0197-ui-fixes
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed by changing the .trace-caption fallback colour in render-scripts.js from rgba(255,255,255,0.5) to #64748b (slate-500), which is readable in both light and dark modes as a secondary text tone.
+
+---
+
+BUG-0198: Trends tab date-range selector button text is invisible
+Severity: Medium
+Related Story: US-0131 (EPIC-0019)
+Steps to Reproduce:
+
+1. Open plan-status.html → Trends tab
+2. Observe the date-range selector buttons (4W / 8W / 12W / All)
+   Expected: Button labels are clearly readable; selected range button has a highlighted background
+   Actual: Button text is invisible (white text on white/near-white background); unselected state offers no contrast
+   Root Cause: Range button styles relied on --clr-text-primary which was unresolved due to the BUG-0190 EPIC-0020 token migration gap. The active-range class also lost its background reference.
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0190-0197-ui-fixes
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed as a side effect of BUG-0190 --clr-\* alias restoration in theme.js. The --clr-text-primary alias maps to var(--text) in both themes, resolving button text colour. No separate CSS change was required.
+
+---
+
+BUG-0199: Bugs section on Costs tab expanded by default — should be collapsed like Stories
+Severity: Low
+Related Story: US-0116 (EPIC-0016)
+Steps to Reproduce:
+
+1. Open plan-status.html → Costs tab
+2. Observe the Bug Fix Costs section
+   Expected: Bug Fix Costs section is collapsed by default, consistent with the Stories section; user clicks to expand
+   Actual: Bug Fix Costs section is fully expanded on page load, adding excessive scroll depth to the Costs tab
+   Root Cause: The bug-fix cost section markup had no collapsible wrapper or toggleSection() handler — it was rendered as an always-visible block, inconsistent with the collapsible-by-default pattern used for the Stories section.
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0190-0197-ui-fixes
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed by wrapping the bug fix column and card sections in a collapsible panel with a toggleSection() handler in render-tabs.js. The section body element has the hidden class set by default, matching the collapsed-by-default behaviour of the Stories section.
+
+---
+
+BUG-0200: Long bug status text (e.g., "Fixed (false positive…)") breaks Costs tab column layout
+Severity: Medium
+Related Story: US-0116 (EPIC-0016)
+Steps to Reproduce:
+
+1. Open plan-status.html → Costs tab → Bug Fix Costs section
+2. Find bug BUG-0011 (or any bug with a parenthetical explanation in its Status field)
+   Expected: Status cell shows a short badge keyword ("Fixed", "Rejected", etc.); full explanation is accessible via tooltip/title
+   Actual: The entire status string including the parenthetical explanation renders in the badge, expanding the status column to 300px+ and misaligning all other rows
+   Root Cause: badge() is called with the full status string including parenthetical suffixes. BUGS.md allows freeform status fields (e.g., "Fixed (false positive — …)").
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0190-0197-ui-fixes
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed in two parts: (1) BUG-0011 in docs/BUGS.md was updated — status changed to "Rejected" with a Notes: field containing the full explanation, removing the inline parenthetical from the status string. (2) All badge(bug.status) calls in render-tabs.js now use badge((bug.status||'').split(/[\s(]/)[0]) with a title attribute carrying the full status text for accessibility/tooltip display.
+
+---
+
+BUG-0201: Status tab (release-health hero, decision widgets, epic progress) never implemented despite EPIC-0020 being marked Done
+Severity: Critical
+Related Story: US-0135 (EPIC-0020)
+Steps to Reproduce:
+
+1. Open plan-status.html → Status tab (first nav item)
+2. Compare against the EPIC-0020 design mockup / US-0135 ACs
+   Expected: Release health editorial landing page with: verdict hero card (On track / At risk / Off track), forecast/velocity/budget stats, 14-week progress mini-bars, 30-day coverage sparkline, decision-widgets grid (Overall Progress, Epic Progress, Top Risks), quality/snapshot row
+   Actual: The Status tab renders only a minimal placeholder — no hero, no charts, no decision widgets, no quality section. The tab was entirely absent from the render-tabs.js module.
+   Root Cause: EPIC-0020 (PR #412) marked all US-0135–US-0146 stories as Done but the renderStatusTab() function was never written. The tab section in the HTML output contained no content. The gap was not caught by CI because no acceptance tests asserted on Status tab content rendering.
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0190-0197-ui-fixes
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed by implementing renderStatusTab(data) in render-tabs.js with the full US-0135/US-0139 scope: verdict computation from open bugs/blocked stories/budget, Release Health Hero card, 14-week progress mini-bars from trends data, 30-day coverage dots from coverage history, Decision Widgets grid (Overall Progress, Epic Progress, Top Risks cards), and Quality + Snapshot row. Function exported and called as first tab in render-html.js.

@@ -28,11 +28,10 @@ describe('theme.js — export surface', () => {
     expect(BADGE_TONE['In Progress']).toBe('info');
   });
 
-  it('maps exactly 17 known labels', () => {
-    // Locks the extracted vocabulary at 17 entries (the full set defined
-    // in US-0097). Additions are fine but must be deliberate — this test
-    // forces a test update alongside any vocabulary growth.
-    expect(Object.keys(BADGE_TONE)).toHaveLength(17);
+  it('maps exactly 20 known labels', () => {
+    // BUG-0190 update: Added Rejected, Cancelled, Retired (neutral) so
+    // bug statuses render as short-keyword badges. Vocabulary 17 → 20.
+    expect(Object.keys(BADGE_TONE)).toHaveLength(20);
   });
 });
 
