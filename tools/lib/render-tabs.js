@@ -2230,17 +2230,18 @@ const STATUS_LABELS = {
 };
 
 const STATUS_CHIP = {
-  Done: 'chip-ok',
-  'In Progress': 'chip-warn',
-  'In-Progress': 'chip-warn',
-  Planned: 'chip-mute',
-  Blocked: 'chip-risk',
-  'At Risk': 'chip-risk',
+  Done: 'ok',
+  'In Progress': 'warn',
+  'In-Progress': 'warn',
+  Planned: 'mute',
+  Blocked: 'risk',
+  'At Risk': 'risk',
 };
 
 const SH_DOT_COLOR = {
   ok: 'var(--ok)',
   warn: 'var(--warn)',
+  risk: 'var(--risk)',
   info: 'var(--info)',
   mute: 'var(--text-mute)',
 };
@@ -2249,12 +2250,12 @@ function shStoryLabel(status) {
   return STATUS_LABELS[status] || esc(status);
 }
 function shStoryChip(status) {
-  return STATUS_CHIP[status] || 'chip-mute';
+  return STATUS_CHIP[status] || 'mute';
 }
 
 function shEpicCompositeStatus(epicId, stories, bugs) {
   const epicStories = stories.filter((s) => s.epicId === epicId && s.status !== 'Retired');
-  if (!epicStories.length) return { label: 'Planned', chipClass: 'chip-mute', dotKey: 'mute' };
+  if (!epicStories.length) return { label: 'Planned', chipClass: 'mute', dotKey: 'mute' };
 
   const allDone = epicStories.every((s) => /^done$/i.test(s.status));
   const anyBlocked = epicStories.some((s) => /^blocked$/i.test(s.status));
@@ -2262,16 +2263,17 @@ function shEpicCompositeStatus(epicId, stories, bugs) {
     (b) =>
       b.epicId === epicId && /^(Critical|High)$/i.test(b.severity) && !/^(Fixed|Retired|Cancelled)/i.test(b.status),
   );
-  const anyActive = epicStories.some((s) => /^(done|in.progress)$/i.test(s.status));
+  const anyActive = epicStories.some((s) => /^(done|in[ -]progress)$/i.test(s.status));
   const allPlanned = epicStories.every((s) => /^planned$/i.test(s.status));
 
-  if (allDone) return { label: 'Complete', chipClass: 'chip-ok', dotKey: 'ok' };
-  if (anyBlocked || hasOpenCritical) return { label: 'Needs Attention', chipClass: 'chip-risk', dotKey: 'warn' };
-  if (anyActive) return { label: 'On Track', chipClass: 'chip-info', dotKey: 'info' };
-  if (allPlanned) return { label: 'Planned', chipClass: 'chip-mute', dotKey: 'mute' };
-  return { label: 'In Progress', chipClass: 'chip-warn', dotKey: 'warn' };
+  if (allDone) return { label: 'Complete', chipClass: 'ok', dotKey: 'ok' };
+  if (anyBlocked || hasOpenCritical) return { label: 'Needs Attention', chipClass: 'risk', dotKey: 'risk' };
+  if (anyActive) return { label: 'On Track', chipClass: 'info', dotKey: 'info' };
+  if (allPlanned) return { label: 'Planned', chipClass: 'mute', dotKey: 'mute' };
+  return { label: 'In Progress', chipClass: 'warn', dotKey: 'warn' };
 }
 
+// Plain-text USD formatter for stakeholder tab — appends " USD" postfix instead of the <span> wrapper used by usd() elsewhere.
 function shUsdLabel(n) {
   const num = Number(n);
   if (num >= 1000) return '$' + Math.round(num).toLocaleString('en-US') + ' USD';
@@ -2378,7 +2380,7 @@ function renderStakeholderTab(data) {
         chipClass,
         dotKey,
       } = isUngrouped
-        ? { label: 'Planned', chipClass: 'chip-mute', dotKey: 'mute' }
+        ? { label: 'Planned', chipClass: 'mute', dotKey: 'mute' }
         : shEpicCompositeStatus(epic.id, stories, bugs);
 
       const epicDone = epicStories.filter((s) => /^done$/i.test(s.status)).length;

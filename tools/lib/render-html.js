@@ -347,6 +347,7 @@ function renderHtml(data, options = {}) {
     .chip.warn { color: var(--warn); border-color: color-mix(in oklab, var(--warn) 40%, var(--border)); background: color-mix(in oklab, var(--warn) 8%, transparent); }
     .chip.risk { color: var(--risk); border-color: color-mix(in oklab, var(--risk) 40%, var(--border)); background: color-mix(in oklab, var(--risk) 10%, transparent); }
     .chip.info { color: var(--info); border-color: color-mix(in oklab, var(--info) 40%, var(--border)); background: color-mix(in oklab, var(--info) 8%, transparent); }
+    .chip.mute { color: var(--text-mute); border-color: var(--border); background: color-mix(in oklab, var(--text-mute) 8%, transparent); }
     /* card shared primitive */
     .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); }
     /* US-0139: Decision widgets */
