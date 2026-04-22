@@ -1972,6 +1972,521 @@ function renderRecentActivity(data) {
   </div>`;
 }
 
+// ─── US-0135/US-0139: Status tab — release health hero + decision widgets ───
+function renderStatusTab(data) {
+  const activeStories = data.stories.filter((s) => s.status !== 'Retired');
+  const doneStories = activeStories.filter((s) => s.status === 'Done');
+  const inProgress = activeStories.filter((s) => s.status === 'In Progress' || s.status === 'In-Progress');
+  const openBugs = (data.bugs || []).filter((b) => !/^(Fixed|Retired|Cancelled|Rejected)/i.test(b.status));
+  const criticalBugs = openBugs.filter((b) => b.severity === 'Critical');
+  const highBugs = openBugs.filter((b) => b.severity === 'High');
+  const blockedStories = activeStories.filter((s) => s.status === 'Blocked');
+  const cov = data.coverage;
+  const covPct = cov && cov.available !== false ? cov.overall : null;
+  const totalAI = (data.costs && data.costs._totals && data.costs._totals.costUsd) || 0;
+  const totalProjected = activeStories.reduce(
+    (s, st) => s + ((data.costs && data.costs[st.id] && data.costs[st.id].projectedUsd) || 0),
+    0,
+  );
+  const budgetPct = totalProjected > 0 ? Math.round((totalAI / totalProjected) * 100) : 0;
+  const donePct = activeStories.length > 0 ? Math.round((doneStories.length / activeStories.length) * 100) : 0;
+
+  // Release health verdict
+  const hasBlocker = blockedStories.length > 0 || criticalBugs.length > 0;
+  const hasRisk = highBugs.length > 0 || openBugs.length > 3 || budgetPct > 80;
+  const verdict = hasBlocker ? 'Off track' : hasRisk ? 'At risk' : 'On track';
+  const verdictColor = hasBlocker ? 'var(--risk)' : hasRisk ? 'var(--warn)' : 'var(--ok)';
+  const chipCls = hasBlocker ? 'risk' : hasRisk ? 'warn' : 'ok';
+  const narrative = hasBlocker
+    ? `${criticalBugs.length} critical bug${criticalBugs.length !== 1 ? 's' : ''} or blocked stories need immediate attention.`
+    : hasRisk
+      ? `${openBugs.length} open bug${openBugs.length !== 1 ? 's' : ''} and ${100 - donePct}% of stories remaining — watch velocity closely.`
+      : `${doneStories.length} of ${activeStories.length} stories done at ${covPct !== null ? covPct.toFixed(1) + '% coverage' : 'unknown coverage'}. Release is on track.`;
+
+  // ── Completion data ───────────────────────────────────────────────
+  const comp = data.completion;
+  const forecastLabel = comp ? `${comp.likelyDate}` : '—';
+  const rangeLabel = comp ? `${comp.rangeStart} – ${comp.rangeEnd}` : '—';
+  const velocityLabel = comp ? `${comp.velocityWeeks}wk` : '—';
+
+  // ── 14-week progress mini-bar ─────────────────────────────────────
+  const trends = data.trends;
+  const progressBars = (() => {
+    if (!trends || !trends.dates || trends.dates.length < 2)
+      return '<span class="text-xs text-slate-400">No history</span>';
+    const recent = trends.dates.slice(-14);
+    const doneCounts = (trends.doneCounts || []).slice(-14);
+    const totalCounts = (trends.totalStories || []).slice(-14);
+    const maxDone = Math.max(...doneCounts, 1);
+    return recent
+      .map((d, i) => {
+        const pct = Math.round((doneCounts[i] / maxDone) * 100);
+        return `<div title="${d}: ${doneCounts[i]}/${totalCounts[i]} done"
+        style="width:8px;background:color-mix(in oklab,var(--plan-accent) ${Math.max(pct, 8)}%,var(--border));border-radius:2px;height:${Math.max(Math.round((doneCounts[i] / maxDone) * 32), 4)}px;align-self:flex-end;flex-shrink:0"></div>`;
+      })
+      .join('');
+  })();
+
+  // ── 30-day coverage dots ──────────────────────────────────────────
+  const coverageDots = (() => {
+    if (!trends || !trends.dates || trends.dates.length < 2)
+      return '<span class="text-xs text-slate-400">No history</span>';
+    const recent30 = trends.dates.slice(-30);
+    const covVals = (trends.coveragePcts || []).slice(-30);
+    return recent30
+      .map((d, i) => {
+        const v = covVals[i] || 0;
+        const good = v >= 80;
+        const warn = v >= 60 && v < 80;
+        const color = good ? 'var(--ok)' : warn ? 'var(--warn)' : 'var(--risk)';
+        return `<span title="${d}: ${v.toFixed(1)}%" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${color};margin:1px;opacity:${v > 0 ? 0.85 : 0.2}"></span>`;
+      })
+      .join('');
+  })();
+
+  // ── Epic progress list ────────────────────────────────────────────
+  const epicProgress = data.epics
+    .filter(
+      (e) =>
+        e.status !== 'Done' ||
+        data.stories.some((s) => s.epicId === e.id && s.status !== 'Done' && s.status !== 'Retired'),
+    )
+    .slice(0, 8)
+    .map((epic, i) => {
+      const accent = EPIC_ACCENT_COLORS[data.epics.indexOf(epic) % EPIC_ACCENT_COLORS.length];
+      const epicStories = data.stories.filter((s) => s.epicId === epic.id && s.status !== 'Retired');
+      const epicDone = epicStories.filter((s) => s.status === 'Done').length;
+      const pct = epicStories.length > 0 ? Math.round((epicDone / epicStories.length) * 100) : 0;
+      return `
+      <div class="pv-wl-row" style="grid-template-columns:110px 1fr 36px">
+        <span class="pv-wl-name" style="color:${accent.text}" title="${esc(epic.title)}">${esc(epic.id)}: ${esc(epic.title)}</span>
+        <div class="pv-wl-bar-bg"><div class="pv-wl-bar" style="width:${pct}%;background:${accent.border}"></div></div>
+        <span class="pv-wl-count">${pct}%</span>
+      </div>`;
+    })
+    .join('');
+
+  // ── This week stats (last 7 days from trends if available) ────────
+  const thisWeekStories = inProgress.length;
+  const weekBugsOpen = openBugs.filter((b) => b.severity === 'Critical' || b.severity === 'High').length;
+
+  // ── Top risks list ────────────────────────────────────────────────
+  const risks = [];
+  criticalBugs
+    .slice(0, 2)
+    .forEach((b) =>
+      risks.push({ level: 'HIGH', label: esc(b.title), sub: `${esc(b.id)} · ${esc(b.relatedStory || 'no story')}` }),
+    );
+  highBugs
+    .slice(0, 2)
+    .forEach((b) =>
+      risks.push({ level: 'MED', label: esc(b.title), sub: `${esc(b.id)} · ${esc(b.relatedStory || 'no story')}` }),
+    );
+  blockedStories
+    .slice(0, 2)
+    .forEach((s) => risks.push({ level: 'MED', label: esc(s.title), sub: `${esc(s.id)} · Blocked` }));
+  if (budgetPct > 80) risks.push({ level: 'LOW', label: 'Budget approaching cap', sub: `${budgetPct}% consumed` });
+  const riskColors = { HIGH: 'var(--risk)', MED: 'var(--warn)', LOW: 'var(--ok)' };
+  const riskItems =
+    risks
+      .slice(0, 5)
+      .map(
+        (r) =>
+          `<div class="pv-risk-item">
+      <span class="chip ${r.level === 'HIGH' ? 'risk' : r.level === 'MED' ? 'warn' : 'ok'}" style="font-size:10px;padding:1px 6px"><span class="d"></span>${r.level}</span>
+      <span class="pv-risk-label"><strong>${r.label}</strong><br><span style="font-size:11px;opacity:.7">${r.sub}</span></span>
+    </div>`,
+      )
+      .join('') || '<p class="pv-widget-empty">No active risks — looking good 🎉</p>';
+
+  // ── Test quality ──────────────────────────────────────────────────
+  const allTCs = data.testCases || [];
+  const passed = allTCs.filter((t) => t.status === 'Pass').length;
+  const failed = allTCs.filter((t) => t.status === 'Fail').length;
+  const notRun = allTCs.filter((t) => t.status === 'Not Run').length;
+  const passRate = allTCs.length > 0 ? Math.round((passed / allTCs.length) * 100) : 0;
+
+  return `
+  <div id="tab-status" class="p-6" role="tabpanel" aria-labelledby="tab-btn-status">
+
+    <!-- Release Health Hero -->
+    <div class="card mb-6 p-0 overflow-hidden">
+      <div class="pv-hero-head">
+        <div class="pv-hero-verdict">
+          <p class="pv-eyebrow">Release Health</p>
+          <h2 style="margin:4px 0 6px;font-family:var(--font-display);font-size:clamp(28px,4vw,44px);font-weight:600;letter-spacing:-0.02em;line-height:1;color:${verdictColor}">${verdict}</h2>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span class="chip ${chipCls}"><span class="d"></span>${hasBlocker ? 'BLOCKED' : hasRisk ? 'AT RISK' : 'STABLE'}</span>
+            <p class="pv-hero-narrative">${narrative}</p>
+          </div>
+        </div>
+        <div class="pv-hero-stats">
+          <div class="pv-stat">
+            <span class="pv-stat-lbl">Forecast</span>
+            <span class="pv-stat-val">${esc(forecastLabel)}</span>
+            <span class="pv-delta" style="color:var(--text-mute);font-size:11px">${esc(rangeLabel)}</span>
+          </div>
+          <div class="pv-stat">
+            <span class="pv-stat-lbl">Velocity</span>
+            <span class="pv-stat-val">${esc(velocityLabel)}</span>
+            <span class="pv-delta" style="color:var(--text-mute);font-size:11px">stories/wk</span>
+          </div>
+          <div class="pv-stat">
+            <span class="pv-stat-lbl">Budget</span>
+            <span class="pv-stat-val" style="color:${budgetPct > 90 ? 'var(--risk)' : budgetPct > 75 ? 'var(--warn)' : 'inherit'}">${budgetPct}%</span>
+            <span class="pv-delta" style="color:var(--text-mute);font-size:11px">${usd(totalAI)} / ${usd(totalProjected)}</span>
+          </div>
+        </div>
+      </div>
+      <!-- Mini-viz row -->
+      <div class="pv-hero-vizrow" style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div>
+          <p class="pv-eyebrow" style="margin-bottom:6px">Progress · Past 14 weeks</p>
+          <div style="display:flex;align-items:flex-end;gap:3px;height:36px">${progressBars}</div>
+        </div>
+        <div>
+          <p class="pv-eyebrow" style="margin-bottom:6px">Coverage · Last 30 days</p>
+          <div style="line-height:1;display:flex;flex-wrap:wrap;align-items:center">${coverageDots}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Decision widgets row -->
+    <div class="pv-widgets mb-6">
+      <!-- Overall progress KPIs -->
+      <div class="card">
+        <div class="card-head">
+          <h3>Overall Progress</h3>
+          <span style="margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--text-mute)">${doneStories.length}/${activeStories.length} stories</span>
+        </div>
+        <div class="card-body">
+          <div style="margin-bottom:12px">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
+              <span style="font-size:12px;color:var(--text-dim)">Completion</span>
+              <span style="font-family:var(--font-mono);font-size:13px;font-weight:600">${donePct}%</span>
+            </div>
+            <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden">
+              <div style="height:100%;width:${donePct}%;background:${donePct === 100 ? 'var(--ok)' : 'var(--plan-accent)'};border-radius:3px;transition:width 0.4s"></div>
+            </div>
+          </div>
+          <div class="pv-kv"><span class="pv-kv-k">In Progress</span><span class="pv-kv-v">${inProgress.length}</span></div>
+          <div class="pv-kv"><span class="pv-kv-k">Blocked</span><span class="pv-kv-v" style="color:${blockedStories.length > 0 ? 'var(--risk)' : 'inherit'}">${blockedStories.length}</span></div>
+          <div class="pv-kv"><span class="pv-kv-k">Coverage</span><span class="pv-kv-v">${covPct !== null ? covPct.toFixed(1) + '%' : 'N/A'}</span></div>
+          <div class="pv-kv" style="border-bottom:0"><span class="pv-kv-k">Open bugs</span><span class="pv-kv-v" style="color:${openBugs.length > 0 ? 'var(--risk)' : 'inherit'}">${openBugs.length}</span></div>
+        </div>
+      </div>
+
+      <!-- Epic progress -->
+      <div class="card">
+        <div class="card-head"><h3>Epic Progress</h3><span style="margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--text-mute)">${data.epics.filter((e) => e.status === 'Done').length}/${data.epics.length} done</span></div>
+        <div class="card-body">
+          ${epicProgress || '<p class="pv-widget-empty">All epics done!</p>'}
+        </div>
+      </div>
+
+      <!-- Top Risks -->
+      <div class="card">
+        <div class="card-head"><h3>Top Risks</h3></div>
+        <div class="card-body">
+          <div class="pv-risk-list">${riskItems}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quality + This-week row -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div class="card">
+        <div class="card-head"><h3>Quality</h3><span style="margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--text-mute)">${allTCs.length} TCs</span></div>
+        <div class="card-body">
+          <div class="pv-kv"><span class="pv-kv-k">Pass rate</span><span class="pv-kv-v" style="color:${passRate >= 90 ? 'var(--ok)' : passRate >= 70 ? 'var(--warn)' : 'var(--risk)'}">${passRate}%</span></div>
+          <div class="pv-kv"><span class="pv-kv-k">Passed</span><span class="pv-kv-v">${passed}</span></div>
+          <div class="pv-kv"><span class="pv-kv-k">Failed</span><span class="pv-kv-v" style="color:${failed > 0 ? 'var(--risk)' : 'inherit'}">${failed}</span></div>
+          <div class="pv-kv" style="border-bottom:0"><span class="pv-kv-k">Not Run</span><span class="pv-kv-v">${notRun}</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Snapshot</h3></div>
+        <div class="card-body">
+          <div class="pv-kv"><span class="pv-kv-k">Stories done</span><span class="pv-kv-v">${doneStories.length}</span></div>
+          <div class="pv-kv"><span class="pv-kv-k">In progress</span><span class="pv-kv-v">${thisWeekStories}</span></div>
+          <div class="pv-kv"><span class="pv-kv-k">Critical + High bugs</span><span class="pv-kv-v" style="color:${weekBugsOpen > 0 ? 'var(--risk)' : 'inherit'}">${weekBugsOpen}</span></div>
+          <div class="pv-kv"><span class="pv-kv-k">AI spend</span><span class="pv-kv-v">${usd(totalAI)}</span></div>
+          <div class="pv-kv" style="border-bottom:0"><span class="pv-kv-k">Est. budget</span><span class="pv-kv-v">${usd(totalProjected)}</span></div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── EPIC-0012: Stakeholder View ──────────────────────────────────────────────
+
+const STATUS_LABELS = {
+  Done: 'Complete',
+  'In Progress': 'Being Worked On',
+  'In-Progress': 'Being Worked On',
+  Planned: 'Planned',
+  Blocked: 'Needs Attention',
+  'At Risk': 'Needs Attention',
+};
+
+const STATUS_CHIP = {
+  Done: 'ok',
+  'In Progress': 'warn',
+  'In-Progress': 'warn',
+  Planned: 'mute',
+  Blocked: 'risk',
+  'At Risk': 'risk',
+};
+
+const SH_DOT_COLOR = {
+  ok: 'var(--ok)',
+  warn: 'var(--warn)',
+  risk: 'var(--risk)',
+  info: 'var(--info)',
+  mute: 'var(--text-mute)',
+};
+
+function shStoryLabel(status) {
+  return STATUS_LABELS[status] || esc(status);
+}
+function shStoryChip(status) {
+  return STATUS_CHIP[status] || 'mute';
+}
+
+function shEpicCompositeStatus(epicId, stories, bugs) {
+  const epicStories = stories.filter((s) => s.epicId === epicId && s.status !== 'Retired');
+  if (!epicStories.length) return { label: 'Planned', chipClass: 'mute', dotKey: 'mute' };
+
+  const allDone = epicStories.every((s) => /^done$/i.test(s.status));
+  const anyBlocked = epicStories.some((s) => /^blocked$/i.test(s.status));
+  const hasOpenCritical = (bugs || []).some(
+    (b) =>
+      b.epicId === epicId && /^(Critical|High)$/i.test(b.severity) && !/^(Fixed|Retired|Cancelled)/i.test(b.status),
+  );
+  const anyActive = epicStories.some((s) => /^(done|in[ -]progress)$/i.test(s.status));
+  const allPlanned = epicStories.every((s) => /^planned$/i.test(s.status));
+
+  if (allDone) return { label: 'Complete', chipClass: 'ok', dotKey: 'ok' };
+  if (anyBlocked || hasOpenCritical) return { label: 'Needs Attention', chipClass: 'risk', dotKey: 'risk' };
+  if (anyActive) return { label: 'On Track', chipClass: 'info', dotKey: 'info' };
+  if (allPlanned) return { label: 'Planned', chipClass: 'mute', dotKey: 'mute' };
+  return { label: 'In Progress', chipClass: 'warn', dotKey: 'warn' };
+}
+
+// Plain-text USD formatter for stakeholder tab — appends " USD" postfix instead of the <span> wrapper used by usd() elsewhere.
+function shUsdLabel(n) {
+  const num = Number(n);
+  if (num >= 1000) return '$' + Math.round(num).toLocaleString('en-US') + ' USD';
+  if (num > 0) return '$' + num.toFixed(2) + ' USD';
+  return '$0.00 USD';
+}
+
+function renderStakeholderTab(data) {
+  const costs = data.costs || null;
+  const budget = data.budget || {};
+  const stories = data.stories || [];
+  const epics = data.epics || [];
+  const bugs = data.bugs || [];
+
+  // ── Summary bar ─────────────────────────────────────────────────────────────
+  const nonRetired = stories.filter((s) => s.status !== 'Retired');
+  const doneCnt = nonRetired.filter((s) => /^done$/i.test(s.status)).length;
+  const totalCnt = nonRetired.length;
+  const overallPct = totalCnt ? Math.round((doneCnt / totalCnt) * 100) : 0;
+
+  const pctUsed = budget.percentUsed !== null && budget.percentUsed !== undefined ? budget.percentUsed : null;
+  let tlColor = 'var(--ok)';
+  let tlLabel = 'On track';
+  if (pctUsed !== null && pctUsed > 80) {
+    tlColor = 'var(--risk)';
+    tlLabel = 'At risk';
+  } else if (pctUsed !== null && pctUsed >= 50) {
+    tlColor = 'var(--warn)';
+    tlLabel = 'Watch';
+  }
+
+  const totalSpent = (costs && costs._totals && costs._totals.costUsd) || 0;
+  const totalProjected = costs
+    ? Object.entries(costs)
+        .filter(([k]) => k !== '_totals')
+        .reduce((sum, [, c]) => sum + (c && c.projectedUsd ? c.projectedUsd : 0), 0)
+    : 0;
+
+  let budgetLine = '';
+  if (budget.hasBudget) {
+    budgetLine = `${esc(tlLabel)} · Est. ${shUsdLabel(totalProjected)} · AI spend ${shUsdLabel(totalSpent)}`;
+    if (budget.daysRemaining !== null && budget.daysRemaining !== undefined && budget.burnRate > 0) {
+      const wks = Math.round(budget.daysRemaining / 7);
+      if (wks >= 1) budgetLine += ` · At current pace, budget lasts ${wks} more week${wks !== 1 ? 's' : ''}`;
+    }
+  } else if (costs) {
+    budgetLine = `Est. ${shUsdLabel(totalProjected)} · AI spend ${shUsdLabel(totalSpent)}`;
+  }
+
+  const openHighBugs = bugs.filter(
+    (b) => /^(Critical|High)$/i.test(b.severity) && !/^(Fixed|Retired|Cancelled)/i.test(b.status),
+  );
+  const blockedStoriesCnt = stories.filter((s) => /^blocked$/i.test(s.status)).length;
+
+  const summaryBar = `
+  <div class="sh-summary-bar">
+    <div class="sh-tile">
+      <div class="sh-tile-label">Overall Progress</div>
+      <div class="sh-tile-value">
+        <span class="sh-big-num">${overallPct}%</span>
+        <span class="sh-tile-sub">${doneCnt} of ${totalCnt} stories done</span>
+      </div>
+    </div>
+    <div class="sh-tile sh-tile-wide">
+      <div class="sh-tile-label">Budget Health</div>
+      <div class="sh-tile-value">
+        ${budget.hasBudget ? `<span class="sh-tl-dot" style="background:${tlColor}"></span>` : ''}
+        <span class="sh-tile-sub">${budgetLine}</span>
+      </div>
+    </div>
+    <div class="sh-tile">
+      <div class="sh-tile-label">Open Risks</div>
+      <div class="sh-tile-value">
+        <span class="sh-big-num">${openHighBugs.length + blockedStoriesCnt}</span>
+        <span class="sh-tile-sub">${openHighBugs.length} high bug${openHighBugs.length !== 1 ? 's' : ''} · ${blockedStoriesCnt} blocked ${blockedStoriesCnt !== 1 ? 'stories' : 'story'}</span>
+      </div>
+    </div>
+  </div>`;
+
+  // ── Milestones ───────────────────────────────────────────────────────────────
+  const activeEpics = epics.filter((e) => e.status !== 'Retired');
+  activeEpics.sort((a, b) => {
+    if (a.id === '_ungrouped') return 1;
+    if (b.id === '_ungrouped') return -1;
+    return a.id.localeCompare(b.id);
+  });
+
+  const ungroupedStories = stories.filter((s) => !s.epicId && s.status !== 'Retired');
+  const epicGroups = [
+    ...activeEpics.map((e) => ({
+      epic: e,
+      epicStories: stories.filter((s) => s.epicId === e.id && s.status !== 'Retired'),
+    })),
+    ...(ungroupedStories.length
+      ? [{ epic: { id: '_ungrouped', title: 'No Epic' }, epicStories: ungroupedStories }]
+      : []),
+  ];
+
+  const epicRows = epicGroups
+    .map(({ epic, epicStories }) => {
+      const isUngrouped = epic.id === '_ungrouped';
+      const {
+        label: statusLabel,
+        chipClass,
+        dotKey,
+      } = isUngrouped
+        ? { label: 'Planned', chipClass: 'mute', dotKey: 'mute' }
+        : shEpicCompositeStatus(epic.id, stories, bugs);
+
+      const epicDone = epicStories.filter((s) => /^done$/i.test(s.status)).length;
+      const epicTotal = epicStories.length;
+      const pct = epicTotal ? Math.round((epicDone / epicTotal) * 100) : 0;
+
+      let costLine = '';
+      if (costs) {
+        const epicProjected = epicStories.reduce((s, st) => s + ((costs[st.id] && costs[st.id].projectedUsd) || 0), 0);
+        const epicSpent = epicStories.reduce((s, st) => s + ((costs[st.id] && costs[st.id].costUsd) || 0), 0);
+        costLine = `<div class="sh-epic-costs epic-costs">
+          <span><span class="sh-cost-label">Est.</span>&nbsp;<span class="sh-cost-val">${shUsdLabel(epicProjected)}</span></span>
+          <span><span class="sh-cost-label">AI spend</span>&nbsp;<span class="sh-cost-val">${shUsdLabel(epicSpent)}</span></span>
+        </div>`;
+      }
+
+      const epicRowId = `sh-epic-${esc(epic.id.replace(/[^a-zA-Z0-9]/g, '-'))}`;
+      const storiesId = `${epicRowId}-stories`;
+      const toggleId = `${epicRowId}-toggle`;
+
+      const storyRows = epicStories
+        .map((story) => {
+          const icon = /^done$/i.test(story.status) ? '✓' : '○';
+          const iconColor = /^done$/i.test(story.status)
+            ? 'var(--ok)'
+            : /^blocked$/i.test(story.status)
+              ? 'var(--risk)'
+              : 'var(--warn)';
+          const chipHtml =
+            story.status === 'Done'
+              ? ''
+              : `<span class="chip ${shStoryChip(story.status)}">${shStoryLabel(story.status)}</span>`;
+
+          const acsId = `sh-acs-${esc(story.id)}`;
+          const acRows = (story.acs || [])
+            .map(
+              (ac) =>
+                `<div class="sh-ac-row"><span class="sh-ac-id">${esc(ac.id)}</span>${ac.done ? '✓ ' : ''}${esc(ac.text)}</div>`,
+            )
+            .join('');
+          const acToggle =
+            story.acs && story.acs.length
+              ? `<button class="sh-ac-toggle" onclick="shToggle('${jsEsc(acsId)}',this)">&#9658; ${story.acs.length} AC${story.acs.length !== 1 ? 's' : ''}</button>`
+              : '';
+          const acsArea =
+            story.acs && story.acs.length
+              ? `<div id="${esc(acsId)}" class="sh-acs-area" style="display:none">${acRows}</div>`
+              : '';
+
+          return `<div class="sh-story-row">
+            <div class="sh-story-header">
+              <span class="sh-story-icon" style="color:${iconColor}">${icon}</span>
+              <div class="sh-story-name"><span class="sh-story-id">${esc(story.id)}</span>${esc(story.title)}</div>
+              ${chipHtml}
+              ${acToggle}
+            </div>
+            ${acsArea}
+          </div>`;
+        })
+        .join('');
+
+      return `<div class="sh-epic-row epic-row">
+        <div class="sh-epic-header" onclick="shToggle('${jsEsc(storiesId)}', document.getElementById('${jsEsc(toggleId)}'))">
+          <span class="sh-dot" style="background:${SH_DOT_COLOR[dotKey]}"></span>
+          <div class="sh-epic-name-block">
+            <div class="sh-epic-name"><span class="sh-epic-id">${esc(epic.id)}</span>${esc(epic.title)}</div>
+            ${costLine}
+          </div>
+          <div class="sh-progress-track"><div class="sh-progress-fill" style="width:${pct}%;background:${SH_DOT_COLOR[dotKey]}"></div></div>
+          <span class="sh-pct" style="color:${SH_DOT_COLOR[dotKey]}">${pct}%</span>
+          <span class="chip ${chipClass}">${statusLabel}</span>
+          <span id="${esc(toggleId)}" class="sh-toggle">&#9658;</span>
+        </div>
+        <div id="${esc(storiesId)}" class="sh-stories-area" style="display:none">
+          <div class="sh-stories-label">Stories</div>
+          ${storyRows || '<div class="sh-story-empty">No stories</div>'}
+        </div>
+      </div>`;
+    })
+    .join('');
+
+  return `
+  <div id="tab-stakeholder" class="p-6 hidden tab-fill" role="tabpanel" aria-labelledby="tab-btn-stakeholder">
+    ${summaryBar}
+    <div class="sh-milestone-section">
+      <div class="sh-section-label">Milestones</div>
+      <div class="sh-epics-list">
+        ${epicRows}
+      </div>
+    </div>
+    <div class="stakeholder-export-bar">
+      <span class="sh-export-hint">Opens your browser's Save as PDF dialog</span>
+      <button class="sh-export-btn" onclick="window.print()">Export PDF</button>
+    </div>
+  </div>
+  <script>
+  function shToggle(id, toggleEl) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    var open = el.style.display !== 'none';
+    el.style.display = open ? 'none' : '';
+    if (toggleEl) toggleEl.innerHTML = open ? '&#9658;' : '&#9660;';
+  }
+  </script>`;
+}
+
 module.exports = {
   renderHierarchyTab,
   renderKanbanTab,
@@ -1982,4 +2497,5 @@ module.exports = {
   renderBugsTab,
   renderLessonsTab,
   renderRecentActivity,
+  renderStakeholderTab,
 };

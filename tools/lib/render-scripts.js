@@ -11,7 +11,7 @@ function renderScripts(data, options = {}) {
   const ALL_DATA = ${allData};
   const SEARCH_INDEX = ${JSON.stringify(buildSearchIndex(data)).replace(/<\/script>/gi, '<\\/script>')};
 
-  const VALID_TABS = ['status','hierarchy','kanban','traceability','charts','trends','costs','bugs','lessons'];
+  const VALID_TABS = ['status','hierarchy','kanban','traceability','charts','trends','costs','bugs','lessons','stakeholder'];
 
   function downloadBudgetCSV() {
     const csv = ${JSON.stringify(options.budgetCSV || '')};
@@ -743,16 +743,61 @@ function renderPrintCSS() {
   .lesson-cat-icon { font-size: 1em; margin-right: 4px; }
   .lesson-bug-inline summary::-webkit-details-marker { display: none; }
   .lesson-bug-inline summary { display: flex; }
+  /* EPIC-0012: Stakeholder tab ───────────────────────────── */
+  .sh-summary-bar { display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 12px; margin-bottom: 20px; }
+  .sh-tile { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; }
+  .sh-tile-wide { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; }
+  .sh-tile-label { font-size: 9px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-mute); margin-bottom: 4px; }
+  .sh-tile-value { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .sh-big-num { font-family: var(--font-mono); font-size: 22px; font-weight: 600; color: var(--text); }
+  .sh-tile-sub { font-size: 12px; color: var(--text-dim); }
+  .sh-tl-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; display: inline-block; }
+  .sh-section-label { font-size: 9px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-mute); margin-bottom: 8px; }
+  .sh-epics-list { display: flex; flex-direction: column; gap: 4px; }
+  .sh-epic-row { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .sh-epic-header { display: flex; align-items: center; gap: 10px; padding: 10px 14px; cursor: pointer; }
+  .sh-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .sh-epic-name-block { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .sh-epic-name { font-size: 12px; font-weight: 600; color: var(--text); }
+  .sh-epic-id { font-family: var(--font-mono); font-size: 10px; font-weight: 500; color: var(--text-dim); margin-right: 5px; }
+  .sh-epic-costs { display: flex; gap: 10px; font-size: 10px; color: var(--text-mute); }
+  .sh-cost-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .sh-cost-val { font-family: var(--font-mono); font-size: 10px; font-weight: 500; color: var(--text-dim); }
+  .sh-progress-track { width: 72px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; flex-shrink: 0; }
+  .sh-progress-fill { height: 100%; border-radius: 3px; }
+  .sh-pct { font-family: var(--font-mono); font-size: 11px; font-weight: 600; min-width: 32px; text-align: right; flex-shrink: 0; }
+  .sh-toggle { font-size: 11px; color: var(--text-mute); flex-shrink: 0; }
+  .sh-stories-area { padding: 10px 14px 12px; background: var(--bg-sunk); border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 5px; }
+  .sh-stories-label { font-size: 9px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-mute); margin-bottom: 3px; }
+  .sh-story-row { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+  .sh-story-header { display: flex; align-items: center; gap: 8px; padding: 7px 10px; cursor: default; }
+  .sh-story-icon { font-size: 12px; flex-shrink: 0; }
+  .sh-story-name { flex: 1; font-size: 11px; color: var(--text); min-width: 0; }
+  .sh-story-id { font-family: var(--font-mono); font-size: 9px; font-weight: 500; color: var(--text-dim); margin-right: 4px; }
+  .sh-ac-toggle { font-size: 10px; color: var(--text-mute); white-space: nowrap; flex-shrink: 0; background: none; border: none; cursor: pointer; padding: 0; }
+  .sh-acs-area { padding: 7px 10px 8px 26px; background: var(--bg-sunk); border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 4px; }
+  .sh-ac-row { font-size: 10px; color: var(--text); line-height: 1.4; }
+  .sh-ac-id { font-family: var(--font-mono); font-size: 9px; font-weight: 500; color: var(--text-dim); margin-right: 4px; }
+  .sh-milestone-section { margin-bottom: 80px; }
+  .stakeholder-export-bar { position: fixed; bottom: 0; left: 54px; right: 0; display: none; align-items: center; justify-content: space-between; padding: 10px 20px; background: var(--surface); border-top: 1px solid var(--border); z-index: 30; }
+  .sh-export-hint { font-size: 11px; color: var(--text-mute); }
+  .sh-export-btn { background: var(--plan-accent); color: #fff; border: none; border-radius: 6px; padding: 6px 16px; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .sh-export-btn:hover { opacity: 0.88; }
+  #tab-stakeholder:not(.hidden) .stakeholder-export-bar { display: flex; }
+  /* ─────────────────────────────────────────────────────── */
   @media print {
     #filter-bar, #sidebar, #topbar-fixed, .fixed, .activity-panel { display: none !important; }
     body { padding: 0 !important; }
     #app-shell { display: block !important; }
     #main-content { display: block !important; }
-    #tab-hierarchy, #tab-costs { display: block !important; }
-    #tab-kanban, #tab-traceability, #tab-charts, #tab-bugs, #tab-lessons { display: none !important; }
     body { font-size: 11pt; }
     .bg-slate-900 { background: white !important; color: black !important; }
     .text-white, .text-blue-400, .text-slate-400 { color: black !important; }
+    /* EPIC-0012 Stakeholder print rules */
+    #tab-stakeholder { display: block !important; }
+    #tab-status, #tab-hierarchy, #tab-costs, #tab-kanban, #tab-traceability, #tab-charts, #tab-bugs, #tab-trends, #tab-lessons { display: none !important; }
+    .stakeholder-export-bar { display: none !important; }
+    .epic-costs { display: flex !important; }
   }
   /* US-0100: Hierarchy tab polish */
   .epic-id-display { font-family: var(--font-display, inherit); letter-spacing: 0.08em; text-transform: uppercase; }
