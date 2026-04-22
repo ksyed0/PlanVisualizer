@@ -21,7 +21,7 @@
     "migrate-config:dry": "node tools/migrate-config.js --dry-run"
   },
   "lint-staged": {
-    "*.{js,json,md,yml,yaml}": "prettier --write",
+    "*.{js,jsx,ts,tsx,json,md,yml,yaml,html,css}": "prettier --write",
     "*.js": "eslint --fix"
   },
   "devDependencies": {
