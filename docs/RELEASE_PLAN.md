@@ -2827,3 +2827,20 @@ Acceptance Criteria:
 - [ ] AC-0533: Hidden entirely on Plan-Status (REPORT mode)
 - [ ] AC-0534: Respects prefers-reduced-motion — ticker becomes static most-recent event only
       Dependencies: US-0138
+
+```
+
+```
+
+US-0147 (EPIC-0020): As an Agentic viewer, I want the Agent Workload widget to reflect live pipeline assignments from sdlc-status.json rather than static Assignee fields in RELEASE_PLAN.md, so that the workload display stays accurate as stories pass through multiple agents.
+Priority: Medium (P1)
+Estimate: S
+Status: Planned
+Branch: feature/US-0147-agent-workload-live-data
+Acceptance Criteria:
+
+- [ ] AC-0535: Agent Workload widget reads from data.sdlcStatus (derived from docs/sdlc-status.json) — not story.assignee — and shows in-flight story count per named agent
+- [ ] AC-0536: Agent rows use colour and icon from agents.config.json so each agent is visually distinct
+- [ ] AC-0537: Stories counted as "active" for an agent while that agent's phase is in progress; completed stories are excluded from the bar length but shown as a "(N done)" sub-label
+- [ ] AC-0538: When sdlc-status.json is absent or unparseable the widget falls back gracefully to a "No live data" empty state rather than the old Assignee-derived "Unassigned N" row
+      Dependencies: US-0142, US-0145
