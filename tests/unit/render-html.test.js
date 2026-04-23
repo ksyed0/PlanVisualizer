@@ -80,6 +80,54 @@ describe('renderHtml', () => {
     expect(html).toContain('nextElementSibling');
     expect(html).not.toContain("header.closest('tbody') || header.closest('.bug-epic-card')");
   });
+
+  describe('US-0140 — Unified Chart Palette', () => {
+    test('rendered HTML wires Chart.defaults.color to CSS variable', () => {
+      expect(html).toContain("Chart.defaults.color = 'var(--text-muted)'");
+    });
+    test('rendered HTML wires Chart.defaults.borderColor to CSS variable', () => {
+      expect(html).toContain("Chart.defaults.borderColor = 'var(--border)'");
+    });
+  });
+
+  describe('US-0135 — Status Hero Card', () => {
+    test('Status tab contains density toggle with L M S buttons', () => {
+      expect(html).toContain('pv-hero-density');
+      expect(html).toContain('data-density="L"');
+      expect(html).toContain('data-density="M"');
+      expect(html).toContain('data-density="S"');
+    });
+    test('default M button has pv-hero-active class', () => {
+      expect(html).toMatch(/data-density="M"[^>]*pv-hero-active|pv-hero-active[^>]*data-density="M"/);
+    });
+    test('toggle is inside verdict section', () => {
+      const verdictIdx = html.indexOf('pv-hero-verdict');
+      const toggleIdx = html.indexOf('pv-hero-density');
+      const statsIdx = html.indexOf('pv-hero-stats');
+      expect(verdictIdx).toBeGreaterThanOrEqual(0);
+      expect(toggleIdx).toBeGreaterThan(verdictIdx);
+      expect(toggleIdx).toBeLessThan(statsIdx);
+    });
+    test('hero contains stats and viz sections', () => {
+      expect(html).toContain('pv-hero-stats');
+      expect(html).toContain('pv-hero-viz');
+    });
+  });
+
+  describe('US-0139 — Rich Status Tab', () => {
+    test('Status tab has top-risks widget', () => {
+      expect(html).toContain('pv-widget-top-risks');
+    });
+    test('Status tab has this-week widget', () => {
+      expect(html).toContain('pv-widget-this-week');
+    });
+    test('Status tab has agent-workload widget', () => {
+      expect(html).toContain('pv-widget-agent-workload');
+    });
+    test('widgets collapse to single column at 1100px via CSS', () => {
+      expect(html).toContain('@media(max-width:1100px)');
+    });
+  });
 });
 
 describe('renderHtml — US-0138 mode badge', () => {
