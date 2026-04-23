@@ -641,7 +641,8 @@ function _renderStatusHero(data) {
   return `
   <div class="pv-hero card" style="margin-bottom:16px">
     <div class="pv-hero-head">
-      <div class="pv-hero-verdict">
+      <div class="pv-hero-verdict" style="position:relative">
+        <div class="pv-hero-toggle" role="group" aria-label="Density">${['L', 'M', 'S'].map((d) => `<button class="pv-hero-density-btn${d === 'M' ? ' pv-hero-active' : ''}" data-density="${d}" onclick="pvHeroDensity('${d}')">${d}</button>`).join('')}</div>
         <span class="chip ${verdictTone}"><span class="d"></span>${esc(verdict)}</span>
         <p class="pv-hero-narrative">${esc(narrative)}</p>
       </div>
@@ -660,7 +661,7 @@ function _renderStatusHero(data) {
         </div>
       </div>
     </div>
-    <div class="pv-hero-vizrow">
+    <div class="pv-hero-vizrow pv-hero-viz">
       <div class="pv-heat" aria-label="30-day coverage heat strip">${cells30}</div>
     </div>
   </div>`;
@@ -734,16 +735,17 @@ function _renderDecisionWidgets(data) {
       : '<p class="pv-widget-empty">No active assignments.</p>';
 
   return `
+  <style>@media(max-width:1100px){.pv-widgets{grid-template-columns:minmax(0,1fr)}}</style>
   <div class="pv-widgets" style="margin-bottom:16px">
-    <div class="card">
+    <div class="card pv-widget-top-risks">
       <div class="card-head"><h3>Top Risks</h3></div>
       <div class="card-body pv-risk-list">${riskContent}</div>
     </div>
-    <div class="card">
+    <div class="card pv-widget-this-week">
       <div class="card-head"><h3>This Week</h3></div>
       <div class="card-body">${weekContent}</div>
     </div>
-    <div class="card">
+    <div class="card pv-widget-agent-workload">
       <div class="card-head"><h3>Agent Workload</h3></div>
       <div class="card-body">${workloadContent}</div>
     </div>
@@ -2117,7 +2119,8 @@ function renderStatusTab(data) {
     <!-- Release Health Hero -->
     <div class="card mb-6 p-0 overflow-hidden">
       <div class="pv-hero-head">
-        <div class="pv-hero-verdict">
+        <div class="pv-hero-verdict" style="position:relative">
+          <div class="pv-hero-toggle" role="group" aria-label="Density">${['L', 'M', 'S'].map((d) => `<button class="pv-hero-density-btn${d === 'M' ? ' pv-hero-active' : ''}" data-density="${d}" onclick="pvHeroDensity('${d}')">${d}</button>`).join('')}</div>
           <p class="pv-eyebrow">Release Health</p>
           <h2 style="margin:4px 0 6px;font-family:var(--font-display);font-size:clamp(28px,4vw,44px);font-weight:600;letter-spacing:-0.02em;line-height:1;color:${verdictColor}">${verdict}</h2>
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
@@ -2144,7 +2147,7 @@ function renderStatusTab(data) {
         </div>
       </div>
       <!-- Mini-viz row -->
-      <div class="pv-hero-vizrow" style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div class="pv-hero-vizrow pv-hero-viz" style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
         <div>
           <p class="pv-eyebrow" style="margin-bottom:6px">Progress · Past 14 weeks</p>
           <div style="display:flex;align-items:flex-end;gap:3px;height:36px">${progressBars}</div>
@@ -2190,7 +2193,7 @@ function renderStatusTab(data) {
       </div>
 
       <!-- Top Risks -->
-      <div class="card">
+      <div class="card pv-widget-top-risks">
         <div class="card-head"><h3>Top Risks</h3></div>
         <div class="card-body">
           <div class="pv-risk-list">${riskItems}</div>
@@ -2209,8 +2212,8 @@ function renderStatusTab(data) {
           <div class="pv-kv" style="border-bottom:0"><span class="pv-kv-k">Not Run</span><span class="pv-kv-v">${notRun}</span></div>
         </div>
       </div>
-      <div class="card">
-        <div class="card-head"><h3>Snapshot</h3></div>
+      <div class="card pv-widget-this-week">
+        <div class="card-head"><h3>This Week</h3></div>
         <div class="card-body">
           <div class="pv-kv"><span class="pv-kv-k">Stories done</span><span class="pv-kv-v">${doneStories.length}</span></div>
           <div class="pv-kv"><span class="pv-kv-k">In progress</span><span class="pv-kv-v">${thisWeekStories}</span></div>
@@ -2219,8 +2222,33 @@ function renderStatusTab(data) {
           <div class="pv-kv" style="border-bottom:0"><span class="pv-kv-k">Est. budget</span><span class="pv-kv-v">${usd(totalProjected)}</span></div>
         </div>
       </div>
+      <div class="card pv-widget-agent-workload">
+        <div class="card-head"><h3>Agent Workload</h3></div>
+        <div class="card-body">
+          <p class="pv-widget-empty" style="font-size:12px;color:var(--text-mute)">No live data</p>
+        </div>
+      </div>
     </div>
-  </div>`;
+  </div>
+  <style>
+  .pv-hero-toggle{position:absolute;top:8px;right:10px;display:flex;gap:2px}
+  .pv-hero-density-btn{padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600;
+    border:1px solid oklch(100% 0 0 / 0.2);background:none;color:inherit;cursor:pointer;opacity:.6}
+  .pv-hero-density-btn.pv-hero-active{opacity:1;background:oklch(100% 0 0 / 0.15)}
+  @media(max-width:1100px){.pv-widgets{grid-template-columns:1fr}}
+  </style>
+  <script>
+  (function(){var s=localStorage.getItem('pv-hero-density')||'M';pvHeroDensity(s)})();
+  function pvHeroDensity(d){
+    localStorage.setItem('pv-hero-density',d);
+    var h=document.querySelector('#tab-status .pv-hero-head');
+    if(h)h.setAttribute('data-density',d);
+    document.querySelectorAll('.pv-hero-density-btn').forEach(function(b){
+      b.classList.toggle('pv-hero-active',b.dataset.density===d);
+    });
+  }
+  window.pvHeroDensity=pvHeroDensity;
+  </script>`;
 }
 
 // ── EPIC-0012: Stakeholder View ──────────────────────────────────────────────

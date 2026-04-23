@@ -326,6 +326,11 @@ function renderHtml(data, options = {}) {
     }
     .pv-hero-verdict { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
     .pv-hero-narrative { margin: 0; font-size: 13px; color: var(--text-dim); line-height: 1.4; }
+    /* US-0135: Density toggle */
+    .pv-hero-toggle { position: absolute; top: 8px; right: 10px; display: flex; gap: 2px; }
+    .pv-hero-density-btn { padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600;
+      border: 1px solid var(--border); background: none; color: inherit; cursor: pointer; opacity: .6; }
+    .pv-hero-density-btn.pv-hero-active { opacity: 1; background: var(--surface-2); }
     .pv-hero-stats { display: flex; gap: 24px; flex-shrink: 0; }
     .pv-stat { display: flex; flex-direction: column; gap: 3px; align-items: flex-end; }
     .pv-stat-lbl { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-mute); font-family: var(--font-mono); }
