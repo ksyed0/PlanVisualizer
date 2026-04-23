@@ -2402,6 +2402,20 @@ Acceptance Criteria:
   - [x] AC-0432: tools/generate-dashboard.js imports the same module and uses the shared helpers wherever badges render (status pills, severity chips, review state)
   - [x] AC-0433: A new tests/unit/theme.test.js asserts the export surface (BADGE_TONE keys, badge() output for 3 representative labels) so drift is detected at test time
 Dependencies: None
+
+US-0148 (EPIC-0016): As a user, I want the Agentic Dashboard to display a Mission Control layout with a roster row per agent, stat tile strip, pipeline phase cards, and a right-side attention + event-log panel, so that the dashboard matches the original Mission Control design intent for EPIC-0016.
+Priority: High (P0)
+Estimate: L
+Status: Done
+Branch: feature/US-0148-mission-control-redesign
+Acceptance Criteria:
+  - [x] AC-0539: A sticky 42px topbar shows ON AIR badge, current epic/story breadcrumb, assigned agent name, elapsed HH:MM:SS, cycle number, clock, LIVE badge, and Light/Dark toggle
+  - [x] AC-0540: A Mission Control hero section shows 8 stat tiles (Phase, Active, Queue, Reviews, Blocked, Tests, Coverage, AI Spend) in a responsive row
+  - [x] AC-0541: The Pipeline section renders each phase as a horizontal card with phase name and active agent names; the active phase is visually highlighted
+  - [x] AC-0542: The Roster section renders each agent as a full-width row (colored initial circle, name + role, task/branch text, status badge) replacing the agent circle grid
+  - [x] AC-0543: A right sidebar panel contains a Needs Attention section (blocked/review/bug chips and alert items) and an Event Log (last 10 timestamped entries)
+  - [x] AC-0544: All existing dashboard tests continue to pass (1867 tests green)
+Dependencies: EPIC-0016
 ```
 
 ---
