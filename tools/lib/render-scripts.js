@@ -252,6 +252,28 @@ function renderScripts(data, options = {}) {
     }
   }
 
+  // US-0140: Wire Chart.js global defaults to CSS custom properties
+  if (typeof Chart !== 'undefined') {
+    Chart.defaults.color = 'var(--text-muted)';
+    Chart.defaults.borderColor = 'var(--border)';
+  }
+  function cssVar(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+  window.cssVar = cssVar;
+
+  // US-0135: Hero density toggle
+  function pvHeroDensity(d) {
+    localStorage.setItem('pv-hero-density', d);
+    var heroes = document.querySelectorAll('.pv-hero, #tab-status .pv-hero-head');
+    heroes.forEach(function(h) { h.setAttribute('data-density', d); });
+    document.querySelectorAll('.pv-hero-density-btn').forEach(function(b) {
+      b.classList.toggle('pv-hero-active', b.dataset.density === d);
+    });
+  }
+  window.pvHeroDensity = pvHeroDensity;
+  (function() { var s = localStorage.getItem('pv-hero-density') || 'M'; pvHeroDensity(s); })();
+
   document.addEventListener('DOMContentLoaded', function() {
     var themeBtn = document.getElementById('theme-toggle');
     if (themeBtn) themeBtn.textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️ Light' : '🌙 Dark';
