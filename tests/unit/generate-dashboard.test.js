@@ -578,6 +578,33 @@ describe('generate-dashboard — US-0146 live bar', () => {
   });
 });
 
+describe('generate-dashboard — US-0147 agent workload live data', () => {
+  it('renders pv-workload-bar when stories have assigned agents', () => {
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    const fixture = makeHealthyFixture();
+    fixture.stories['US-0001'] = { title: 'Foo', status: 'In Progress', epic: 'EPIC-0016', agent: 'Pixel' };
+    fixture.stories['US-0002'] = { title: 'Bar', status: 'Done', epic: 'EPIC-0016', agent: 'Pixel' };
+    const html = generateHTML(fixture);
+    expect(html).toContain('pv-workload-bar');
+  });
+
+  it('renders agent workload section with agent names', () => {
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    const fixture = makeHealthyFixture();
+    fixture.stories['US-0003'] = { title: 'Baz', status: 'In Progress', epic: 'EPIC-0016', agent: 'Forge' };
+    const html = generateHTML(fixture);
+    expect(html).toContain('pv-workload-section');
+  });
+
+  it('does not throw when no stories have agent field', () => {
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    const fixture = makeHealthyFixture();
+    // stories without agent field
+    Object.values(fixture.stories).forEach((s) => delete s.agent);
+    expect(() => generateHTML(fixture)).not.toThrow();
+  });
+});
+
 // AC-0498: generated dashboard HTML must contain zero hex color literals
 // (#RGB / #RRGGBB), rgb(), or rgba() calls. All colours must use oklch(),
 // color-mix(in oklab, ...) or CSS custom properties.

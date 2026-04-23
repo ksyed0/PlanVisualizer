@@ -205,6 +205,31 @@ function formatElapsed(startedAt, nowMs) {
   return `${seconds}s`;
 }
 
+// US-0147: Agent Workload — builds per-agent bar chart from sdlcStatus.stories
+function renderAgentWorkload(agents, stories) {
+  const agentNames = Object.keys(agents || {}).filter((n) => !/conductor/i.test(n));
+  if (agentNames.length === 0) {
+    return `<div class="pv-workload-section"><div class="pv-workload-empty">No agents configured.</div></div>`;
+  }
+  const storyList = Object.values(stories || {});
+  const rows = agentNames
+    .map((name) => {
+      const assigned = storyList.filter((s) => s.agent === name);
+      const inFlight = assigned.filter((s) => !/done|complete/i.test(s.status || '')).length;
+      const total = assigned.length;
+      const pct = total > 0 ? Math.round((inFlight / total) * 100) : 0;
+      return (
+        `<div class="pv-workload-row">` +
+        `<span class="pv-workload-name">${esc(name)}</span>` +
+        `<div class="pv-workload-track"><div class="pv-workload-bar" style="width:${pct}%"></div></div>` +
+        `<span class="pv-workload-count">${inFlight}</span>` +
+        `</div>`
+      );
+    })
+    .join('');
+  return `<div class="pv-workload-section">${rows}</div>`;
+}
+
 function generateHTML(status) {
   const now = new Date().toLocaleString('en-US', {
     month: 'short',
@@ -1524,6 +1549,14 @@ function generateHTML(status) {
   .pv-live-ticker { flex: 1; font-family: monospace; font-size: 12px; color: var(--text-secondary, var(--text-secondary)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 14px; border-left: 1px solid var(--divider, oklch(22% 0.025 255)); }
   .pv-live-clock { font-family: monospace; font-size: 14px; font-weight: 600; color: var(--text-primary, oklch(88% 0.006 220)); flex-shrink: 0; }
   @media (prefers-reduced-motion: reduce) { .pv-live-ticker { animation: none; } }
+  /* US-0147: Agent Workload — live assignment bars from stories */
+  .pv-workload-section { margin-bottom: 16px; }
+  .pv-workload-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+  .pv-workload-name { min-width: 80px; font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
+  .pv-workload-track { flex: 1; height: 6px; background: var(--bg-progress, oklch(100% 0 0 / 10%)); border-radius: 3px; overflow: hidden; }
+  .pv-workload-bar { height: 100%; background: var(--live-accent, oklch(72% 0.19 38)); border-radius: 3px; transition: width 0.3s; }
+  .pv-workload-count { font-size: 11px; color: var(--text-muted); min-width: 24px; text-align: right; }
+  .pv-workload-empty { font-size: 12px; color: var(--text-muted); padding: 8px 0; }
 </style>
 </head>
 <body>
@@ -1915,6 +1948,14 @@ ${storyRows}
 })()}
     </div>
   </div>
+</div>
+
+<!-- US-0147: Agent Workload — live assignment counts from sdlcStatus.stories -->
+<div class="card" style="margin-bottom:16px;">
+  <div class="card-head">
+    <h3>Agent Workload</h3>
+  </div>
+  ${renderAgentWorkload(status.agents, status.stories)}
 </div>
 
 <!-- US-0145: Event Log — primary column widget with monospace rows, auto-scroll, pause-on-hover -->
