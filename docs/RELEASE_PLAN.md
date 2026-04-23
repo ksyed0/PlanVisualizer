@@ -2618,7 +2618,7 @@ Dependencies: US-0128, US-0129
 EPIC-0020: Cross-Dashboard Redesign
 Description: Unify Plan-Status and Agentic dashboards under a single Editorial × Mission Control design language. Share a token set (neutrals, semantic colors, typography, card/chip/bar primitives) while differentiating each dashboard with its own accent hue, mode badge (REPORT vs LIVE), and voice (calm report vs live broadcast). First-class light and dark themes. Replaces the saturated navy gradient header, consolidates the chart palette, lifts the Status tab out of sparseness, promotes active agents and event activity on the Agentic surface, and removes pipeline/agent-roster redundancy.
 Release Target: Release 1.11
-Status: Done
+Status: In Progress
 Dependencies: EPIC-0015, EPIC-0016
 
 ```
@@ -2632,8 +2632,8 @@ Dependencies: EPIC-0015, EPIC-0016
 US-0135 (EPIC-0020): As a Plan-Status viewer, I want a Status hero that answers "is the release on track?" in one glance, so that I do not need to visit three tabs to triangulate release health.
 Priority: High (P0)
 Estimate: M
-Status: Done
-Branch: feature/US-0135-status-hero
+Status: Planned
+Branch: feature/EPIC-0020-cross-dashboard-redesign
 Acceptance Criteria:
 
 - [x] AC-0488: Status tab renders a hero card with release name, a one-word verdict (On track / At risk / Off track), a stable/warn/risk chip, and a one-sentence narrative summary
@@ -2650,7 +2650,7 @@ US-0136 (EPIC-0020): As any viewer, I want the corporate navy gradient header re
 Priority: High (P0)
 Estimate: S
 Status: Done
-Branch: feature/US-0136-neutral-chrome
+Branch: feature/EPIC-0020-cross-dashboard-redesign
 Acceptance Criteria:
 
 - [x] AC-0492: The fixed topbar uses a blurred neutral surface (surface/opacity token) with a 1px bottom border, no saturated gradient
@@ -2667,7 +2667,7 @@ US-0137 (EPIC-0020): As a developer, I want a shared theme.js (tokens.js) module
 Priority: High (P0)
 Estimate: M
 Status: Done
-Branch: feature/US-0137-shared-tokens
+Branch: feature/EPIC-0020-cross-dashboard-redesign
 Acceptance Criteria:
 
 - [x] AC-0496: tools/lib/theme.js exports `palette`, `type`, `radius`, `shadow`, `spacing`, `charts` objects consumed by both render-html.js and dashboard.html generators
@@ -2684,7 +2684,7 @@ US-0138 (EPIC-0020): As a viewer, I want the page chrome to carry a REPORT / LIV
 Priority: Medium (P1)
 Estimate: XS
 Status: Done
-Branch: feature/US-0138-mode-badge
+Branch: feature/EPIC-0020-cross-dashboard-redesign
 Acceptance Criteria:
 
 - [x] AC-0500: Badge renders as a pill with a colored pip + uppercase mono text ("REPORT" / "LIVE")
@@ -2700,8 +2700,8 @@ Acceptance Criteria:
 US-0139 (EPIC-0020): As a Plan-Status viewer, I want the Status tab to surface additional decision-grade widgets — top risks, this-week summary, agent workload — so that the tab is a true release report and not a chart gallery.
 Priority: High (P0)
 Estimate: M
-Status: Done
-Branch: feature/US-0139-status-tab-richer
+Status: Planned
+Branch: feature/EPIC-0020-cross-dashboard-redesign
 Acceptance Criteria:
 
 - [x] AC-0504: Status tab includes a Top Risks card with severity-chipped items drawn from open bugs + blocked stories + overdue epics
@@ -2717,8 +2717,8 @@ Acceptance Criteria:
 US-0140 (EPIC-0020): As a viewer, I want every chart across Status, Charts, Trends, Bugs and the Agentic dashboard to draw from one semantic palette, so that "Done", "Blocked", and "At risk" always read the same color.
 Priority: High (P0)
 Estimate: M
-Status: Done
-Branch: feature/US-0140-chart-palette
+Status: Planned
+Branch: feature/EPIC-0020-cross-dashboard-redesign
 Acceptance Criteria:
 
 - [x] AC-0508: A single chartColors map in theme.js defines ok/warn/risk/info/accent/mute keys
@@ -2735,7 +2735,7 @@ US-0141 (EPIC-0020): As a viewer, I want first-class dark and light themes on bo
 Priority: High (P0)
 Estimate: M
 Status: Done
-Branch: feature/US-0141-dual-theme
+Branch: feature/EPIC-0020-cross-dashboard-redesign
 Acceptance Criteria:
 
 - [x] AC-0512: [data-theme="dark"] and [data-theme="light"] declarations cover every surface, border, shadow, and chip in both dashboards
@@ -2751,8 +2751,8 @@ Acceptance Criteria:
 US-0142 (EPIC-0020): As an Agentic viewer, I want currently-active agents to pop visually against idle/blocked peers, so that "who is working right now" is a 1-second glance.
 Priority: High (P0)
 Estimate: S
-Status: Done
-Branch: feature/US-0142-active-agent-prominence
+Status: Planned
+Branch: feature/EPIC-0020-cross-dashboard-redesign
 Acceptance Criteria:
 
 - [x] AC-0516: Active agent cards render with a 3px left accent rail in live-accent, a tinted background (~9% accent mix), and an outlined border in live-accent
@@ -2768,8 +2768,8 @@ Acceptance Criteria:
 US-0143 (EPIC-0020): As an Agentic viewer, I want Conductor hand-offs to be visible even when each dispatch lasts a few hundred milliseconds, so that I can see orchestration happening.
 Priority: Medium (P1)
 Estimate: S
-Status: Done
-Branch: feature/US-0143-conductor-dispatch-hold
+Status: Planned
+Branch: feature/EPIC-0020-cross-dashboard-redesign
 Acceptance Criteria:
 
 - [x] AC-0520: When Conductor transitions active → idle, the UI holds the active state for a minimum of 3s before fading back
@@ -2784,8 +2784,8 @@ Acceptance Criteria:
 US-0144 (EPIC-0020): As an Agentic viewer, I want the 6-phase Pipeline to stop duplicating the agent roster, so that each widget does a distinct job.
 Priority: Medium (P1)
 Estimate: S
-Status: Done
-Branch: feature/US-0144-pipeline-scope
+Status: Planned
+Branch: feature/EPIC-0020-cross-dashboard-redesign
 Acceptance Criteria:
 
 - [x] AC-0523: Pipeline phase cards show phase number, name, agent-group label, and a partial-progress fill bar
@@ -2801,8 +2801,8 @@ Acceptance Criteria:
 US-0145 (EPIC-0020): As an Agentic viewer, I want a prominent terminal-style Event Log as a primary widget, so that the chronology of what the agents just did is visible without hunting in a side rail.
 Priority: High (P0)
 Estimate: M
-Status: Done
-Branch: feature/US-0145-event-log
+Status: Planned
+Branch: feature/EPIC-0020-cross-dashboard-redesign
 Acceptance Criteria:
 
 - [x] AC-0527: Event Log renders as a main-column card (not sidebar) with monospace rows: timestamp · agent · message
@@ -2818,8 +2818,8 @@ Acceptance Criteria:
 US-0146 (EPIC-0020): As an Agentic viewer, I want a persistent Live Bar carrying ON AIR, cycle, ticker, and wall clock, so that broadcast context is always present without stealing header real estate.
 Priority: Medium (P1)
 Estimate: S
-Status: Done
-Branch: feature/US-0146-live-bar
+Status: Planned
+Branch: feature/EPIC-0020-cross-dashboard-redesign
 Acceptance Criteria:
 
 - [x] AC-0531: Live Bar sits between chrome and masthead, ~48px tall, with a horizontal live-accent gradient wash
