@@ -17,63 +17,63 @@
     "Conductor": {
       "role": "Delivery Manager",
       "icon": "🎯",
-      "color": "#D52B1E",
+      "color": "oklch(52% 0.22 25)",
       "avatar": "conductor",
       "instructionFile": "docs/agents/DM_AGENT.md"
     },
     "Compass": {
       "role": "Product Owner",
       "icon": "🧭",
-      "color": "#1565C0",
+      "color": "oklch(50% 0.20 264)",
       "avatar": "compass",
       "instructionFile": "docs/agents/PO_AGENT.md"
     },
     "Keystone": {
       "role": "Architect",
       "icon": "🏗️",
-      "color": "#6A1B9A",
+      "color": "oklch(44% 0.22 310)",
       "avatar": "keystone",
       "instructionFile": "docs/agents/ARCHITECT_AGENT.md"
     },
     "Lens": {
       "role": "Code Reviewer",
       "icon": "🔍",
-      "color": "#F57C00",
+      "color": "oklch(72% 0.19 46)",
       "avatar": "lens",
       "instructionFile": "docs/agents/CODE_REVIEWER_AGENT.md"
     },
     "Palette": {
       "role": "UI Designer",
       "icon": "🎨",
-      "color": "#00897B",
+      "color": "oklch(60% 0.14 185)",
       "avatar": "palette",
       "instructionFile": "docs/agents/UI_DESIGNER_AGENT.md"
     },
     "Forge": {
       "role": "Backend Developer",
       "icon": "⚒️",
-      "color": "#C62828",
+      "color": "oklch(44% 0.22 25)",
       "avatar": "forge",
       "instructionFile": "docs/agents/BE_DEV_AGENT.md"
     },
     "Pixel": {
       "role": "Frontend Developer",
       "icon": "📱",
-      "color": "#283593",
+      "color": "oklch(38% 0.20 270)",
       "avatar": "pixel",
       "instructionFile": "docs/agents/FE_DEV_AGENT.md"
     },
     "Sentinel": {
       "role": "Functional Tester",
       "icon": "🛡️",
-      "color": "#2E7D32",
+      "color": "oklch(50% 0.17 145)",
       "avatar": "sentinel",
       "instructionFile": "docs/agents/FUNCTIONAL_TESTER_AGENT.md"
     },
     "Circuit": {
       "role": "Automation Tester",
       "icon": "⚡",
-      "color": "#4527A0",
+      "color": "oklch(40% 0.22 285)",
       "avatar": "circuit",
       "instructionFile": "docs/agents/AUTOMATION_TESTER_AGENT.md"
     }
@@ -83,7 +83,7 @@
     "subtitle": "Agentic AI SDLC",
     "footer": "Claude Code Agentic AI SDLC",
     "repoUrl": "https://github.com/yourorg/your-project",
-    "primaryColor": "#1565C0",
+    "primaryColor": "oklch(50% 0.20 264)",
     "platform": "Claude Code",
     "author": "Kamal Syed"
   },

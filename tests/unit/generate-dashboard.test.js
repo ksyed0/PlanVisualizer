@@ -330,9 +330,10 @@ describe('US-0120 stories panel polish', () => {
     expect(html).toMatch(/<div class="story-row status-planned">[\s\S]*?US-0121/);
     // CSS enumerates the three strip colours + the 3px border-left baseline.
     expect(html).toMatch(/\.story-row \{[^}]*border-left:\s*3px solid/);
-    expect(html).toMatch(/\.story-row\.status-complete \{[^}]*border-left-color:\s*#22c55e/);
-    expect(html).toMatch(/\.story-row\.status-inprogress \{[^}]*border-left-color:\s*#f59e0b/);
-    expect(html).toMatch(/\.story-row\.status-planned \{[^}]*border-left-color:\s*#64748b/);
+    // US-0137: story strip colours now use CSS vars (AC-0498 — no hex literals).
+    expect(html).toMatch(/\.story-row\.status-complete \{[^}]*border-left-color:\s*var\(--ok\)/);
+    expect(html).toMatch(/\.story-row\.status-inprogress \{[^}]*border-left-color:\s*var\(--warn\)/);
+    expect(html).toMatch(/\.story-row\.status-planned \{[^}]*border-left-color:\s*var\(--text-dim\)/);
   });
 
   // AC-0408: elapsed pill appears on In Progress stories, rendered in
@@ -574,5 +575,26 @@ describe('generate-dashboard — US-0146 live bar', () => {
       'utf8',
     );
     expect(src).toContain('pv-live-clock');
+  });
+});
+
+// AC-0498: generated dashboard HTML must contain zero hex color literals
+// (#RGB / #RRGGBB), rgb(), or rgba() calls. All colours must use oklch(),
+// color-mix(in oklab, ...) or CSS custom properties.
+describe('AC-0498 — no hex literals in generated dashboard HTML', () => {
+  it('generateHTML output contains no hex colour literals or rgb()/rgba() calls', () => {
+    const { generateHTML } = require('../../tools/generate-dashboard');
+    const fixture = {
+      phases: [],
+      agents: {},
+      metrics: {},
+      cycles: [],
+      log: [],
+      stories: {},
+      epics: {},
+    };
+    const html = generateHTML(fixture);
+    const hits = html.match(/#[0-9a-fA-F]{3,6}\b|rgb\(|rgba\(/g) || [];
+    expect(hits).toHaveLength(0);
   });
 });

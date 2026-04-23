@@ -235,3 +235,34 @@ describe('theme.js — OKLCH palette tokens (US-0137)', () => {
     expect(css).not.toMatch(/#[0-9a-fA-F]{3,8}(?![0-9a-fA-F*])/);
   });
 });
+
+// US-0141: pvSetTheme() persistence in render-scripts.js
+describe('US-0141 — pvSetTheme in renderScripts output', () => {
+  const { renderScripts } = require('../../tools/lib/render-scripts');
+
+  it('renderScripts output defines pvSetTheme function', () => {
+    const html = renderScripts({ data: { sdlcStatus: null } });
+    expect(html).toContain('function pvSetTheme');
+  });
+
+  it('pvSetTheme persists to localStorage under pv-theme key', () => {
+    const html = renderScripts({ data: { sdlcStatus: null } });
+    expect(html).toContain("localStorage.setItem('pv-theme'");
+  });
+
+  it('init reads localStorage pv-theme before falling back to prefers-color-scheme', () => {
+    const html = renderScripts({ data: { sdlcStatus: null } });
+    expect(html).toContain("localStorage.getItem('pv-theme')");
+    expect(html).toContain('prefers-color-scheme: dark');
+  });
+
+  it('setTheme is an alias for pvSetTheme (backward compat)', () => {
+    const html = renderScripts({ data: { sdlcStatus: null } });
+    expect(html).toContain('var setTheme = pvSetTheme');
+  });
+
+  it('OS theme change listener is wired when no stored pref exists', () => {
+    const html = renderScripts({ data: { sdlcStatus: null } });
+    expect(html).toContain("addEventListener('change'");
+  });
+});

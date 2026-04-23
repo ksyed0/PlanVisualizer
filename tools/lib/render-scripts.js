@@ -311,7 +311,11 @@ function renderScripts(data, options = {}) {
   document.addEventListener('DOMContentLoaded', setStickyTop);
   window.addEventListener('resize', setStickyTop);
 
-  function setTheme(t) {
+  // US-0141: pvSetTheme — canonical theme setter used by both Plan Visualizer
+  // and the Agentic Dashboard chrome (render-chrome.js). Persists to
+  // localStorage under 'pv-theme'; init falls back to prefers-color-scheme
+  // when no stored preference exists.
+  function pvSetTheme(t) {
     document.documentElement.setAttribute('data-theme', t);
     /* BUG-0190: Tailwind darkMode:'class' requires .dark on <html> */
     document.documentElement.classList.toggle('dark', t === 'dark');
@@ -320,11 +324,24 @@ function renderScripts(data, options = {}) {
     var db = document.getElementById('theme-btn-dark');
     if (lb) lb.setAttribute('aria-pressed', t === 'light' ? 'true' : 'false');
     if (db) db.setAttribute('aria-pressed', t === 'dark' ? 'true' : 'false');
+    // Update the pv-chrome toggle label if present (render-chrome.js header)
+    var chromeToggle = document.getElementById('pv-theme-toggle');
+    if (chromeToggle) chromeToggle.setAttribute('aria-label', t === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
     updateChartTheme();
   }
+  // Backward-compat alias — existing callers use setTheme()
+  var setTheme = pvSetTheme;
+  // Init: stored pref → OS pref → 'light'
   (function () {
-    var t = localStorage.getItem('pv-theme') || 'light';
-    setTheme(t);
+    var stored = localStorage.getItem('pv-theme');
+    var t = stored || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    pvSetTheme(t);
+    // React to OS-level changes when no manual preference has been saved
+    if (!stored && window.matchMedia) {
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function (e) {
+        if (!localStorage.getItem('pv-theme')) pvSetTheme(e.matches ? 'dark' : 'light');
+      });
+    }
   })();
 
   function toggleTheme() {
