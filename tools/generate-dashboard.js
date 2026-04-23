@@ -1557,51 +1557,556 @@ function generateHTML(status) {
   .pv-workload-bar { height: 100%; background: var(--live-accent, oklch(72% 0.19 38)); border-radius: 3px; transition: width 0.3s; }
   .pv-workload-count { font-size: 11px; color: var(--text-muted); min-width: 24px; text-align: right; }
   .pv-workload-empty { font-size: 12px; color: var(--text-muted); padding: 8px 0; }
+
+  /* ===== MISSION CONTROL REDESIGN (US-0148) ===== */
+
+  /* ── Light-mode-first root overrides ── */
+  :root {
+    --mc-bg: oklch(96% 0.004 220);
+    --mc-surface: oklch(100% 0 0);
+    --mc-border: oklch(88% 0.008 220);
+    --mc-text: oklch(14% 0.018 255);
+    --mc-muted: oklch(48% 0.008 220);
+    --mc-dim: oklch(63% 0.006 220);
+    --mc-header-bg: oklch(14% 0.025 240);
+    --mc-header-text: oklch(88% 0.006 220);
+    --mc-accent: var(--live-accent);
+    --mc-ok: var(--ok);
+    --mc-risk: var(--risk);
+    --mc-info: var(--info);
+  }
+  [data-theme="dark"] {
+    --mc-bg: oklch(8% 0.015 220);
+    --mc-surface: oklch(14% 0.025 240);
+    --mc-border: oklch(24% 0.030 255);
+    --mc-text: oklch(88% 0.006 220);
+    --mc-muted: oklch(63% 0.006 220);
+    --mc-dim: oklch(52% 0.006 220);
+    --mc-header-bg: oklch(10% 0.020 240);
+    --mc-header-text: oklch(88% 0.006 220);
+  }
+
+  /* ── Body override for light-first ── */
+  body {
+    background-color: var(--mc-bg);
+    color: var(--mc-text);
+  }
+  [data-theme="light"] body { background-image: none; }
+
+  /* ── Mission Control top narrow header ── */
+  .mc-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--mc-header-bg);
+    color: var(--mc-header-text);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 18px;
+    height: 42px;
+    border-bottom: 1px solid oklch(100% 0 0 / 8%);
+    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 11.5px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  .mc-topbar-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; overflow: hidden; }
+  .mc-topbar-center { display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
+  .mc-topbar-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .mc-onair-badge {
+    background: var(--live-accent);
+    color: oklch(12% 0.02 60);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    padding: 2px 7px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+  .mc-breadcrumb {
+    color: oklch(70% 0.006 220);
+    font-size: 11px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .mc-breadcrumb .bc-sep { margin: 0 5px; opacity: 0.4; }
+  .mc-breadcrumb .bc-id { color: oklch(82% 0.008 220); font-weight: 600; }
+  .mc-topbar-center .mc-assigned { color: oklch(70% 0.006 220); font-size: 11px; }
+  .mc-topbar-center .mc-assigned strong { color: oklch(82% 0.008 220); }
+  .mc-topbar-center .mc-elapsed-display { color: oklch(60% 0.006 220); font-size: 11px; }
+  .mc-topbar-center .mc-elapsed-display strong { color: oklch(78% 0.006 220); }
+  .mc-topbar-center .mc-cycle-disp { color: oklch(60% 0.006 220); font-size: 11px; }
+  .mc-topbar-center .mc-topbar-clock { color: oklch(85% 0.006 220); font-size: 12px; }
+  .mc-live-badge {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+    color: var(--ok);
+  }
+  .mc-live-badge .mc-live-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--ok);
+    box-shadow: 0 0 0 2px oklch(66% 0.17 145 / 30%);
+    flex-shrink: 0;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .mc-live-badge .mc-live-dot { animation: live-dot-pulse 2.4s ease-in-out infinite; }
+  }
+  .mc-btn-sm {
+    background: oklch(100% 0 0 / 12%);
+    border: 1px solid oklch(100% 0 0 / 18%);
+    color: oklch(80% 0.006 220);
+    padding: 3px 10px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 11px;
+    font-family: inherit;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+  .mc-btn-sm:hover { background: oklch(100% 0 0 / 22%); }
+
+  /* ── Mission Control hero card ── */
+  .mc-hero {
+    background: var(--mc-surface);
+    border: 1px solid var(--mc-border);
+    border-radius: 10px;
+    padding: 16px 20px 12px;
+    margin-bottom: 14px;
+  }
+  .mc-hero-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 14px;
+  }
+  .mc-hero-breadcrumb {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 10px; font-weight: 600;
+    color: var(--mc-muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    flex: 1;
+  }
+  .mc-hero-breadcrumb .bc-sep { margin: 0 6px; opacity: 0.4; }
+  .mc-hero-title { display: flex; align-items: center; gap: 10px; }
+  .mc-hero-title h1 {
+    font-family: var(--font-sans);
+    font-size: 20px; font-weight: 700;
+    color: var(--mc-text);
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+  .mc-live-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+    background: oklch(66% 0.17 145 / 12%);
+    color: var(--ok);
+    padding: 2px 8px;
+    border-radius: 10px;
+    border: 1px solid oklch(66% 0.17 145 / 30%);
+  }
+  [data-theme="dark"] .mc-live-chip { background: oklch(66% 0.17 145 / 14%); }
+  .mc-hero-signal {
+    margin-left: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--mc-muted);
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+  }
+  .mc-hero-signal .mc-signal-dot {
+    display: inline-block;
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--ok);
+    margin-right: 4px;
+    vertical-align: middle;
+  }
+
+  /* ── Stat tiles row ── */
+  .mc-stats-row {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 8px;
+  }
+  @media (max-width: 1300px) {
+    .mc-stats-row { grid-template-columns: repeat(4, 1fr); }
+  }
+  @media (max-width: 768px) {
+    .mc-stats-row { grid-template-columns: repeat(2, 1fr); }
+  }
+  .mc-stat-tile {
+    background: var(--mc-bg);
+    border: 1px solid var(--mc-border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: flex; flex-direction: column; gap: 2px;
+    min-width: 0;
+  }
+  [data-theme="dark"] .mc-stat-tile { background: var(--bg-card-inner); }
+  .mc-stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    color: var(--mc-muted);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .mc-stat-value {
+    font-family: var(--font-display), 'Departure Mono', monospace;
+    font-size: 20px; font-weight: 700;
+    color: var(--mc-text);
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .mc-stat-value.ok { color: var(--ok); }
+  .mc-stat-value.warn { color: var(--live-accent); }
+  .mc-stat-value.risk { color: var(--risk); }
+  .mc-stat-value.info { color: var(--info); }
+  .mc-stat-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; color: var(--mc-dim);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    margin-top: 1px;
+  }
+
+  /* ── Pipeline section ── */
+  .mc-section-bar {
+    display: flex; align-items: center;
+    margin-bottom: 8px; gap: 12px;
+  }
+  .mc-section-label {
+    font-family: var(--font-display), 'Departure Mono', monospace;
+    font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    color: var(--mc-muted);
+  }
+  .mc-section-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--mc-dim);
+    margin-left: auto;
+  }
+
+  /* ── Two-column layout ── */
+  .mc-layout {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 14px;
+    align-items: start;
+  }
+  @media (max-width: 1024px) {
+    .mc-layout { grid-template-columns: 1fr; }
+    .mc-sidebar { display: none; }
+  }
+  .mc-main { min-width: 0; }
+  .mc-sidebar { min-width: 0; }
+
+  /* ── Roster section ── */
+  .mc-roster { margin-bottom: 14px; }
+  .mc-roster-rows { display: flex; flex-direction: column; gap: 4px; }
+  .mc-agent-row {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--mc-surface);
+    border: 1px solid var(--mc-border);
+    border-left: 3px solid transparent;
+    border-radius: 8px;
+    padding: 10px 12px;
+    transition: border-color 0.2s;
+    min-width: 0;
+  }
+  .mc-agent-row.mc-agent-active {
+    border-left-color: var(--live-accent);
+    background: oklch(72% 0.19 38 / 4%);
+  }
+  [data-theme="dark"] .mc-agent-row.mc-agent-active {
+    background: color-mix(in oklab, var(--live-accent) 6%, var(--mc-surface));
+  }
+  .mc-agent-row.mc-agent-blocked {
+    border-left-color: var(--risk);
+    background: oklch(58% 0.22 25 / 4%);
+  }
+  [data-theme="dark"] .mc-agent-row.mc-agent-blocked {
+    background: color-mix(in oklab, var(--risk) 6%, var(--mc-surface));
+  }
+  .mc-agent-row.mc-agent-review {
+    border-left-color: var(--info);
+  }
+  .mc-agent-circle {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+    color: oklch(100% 0 0);
+    flex-shrink: 0;
+    font-family: var(--font-sans);
+  }
+  .mc-agent-identity { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 1px; }
+  .mc-agent-name-line {
+    display: flex; align-items: center; gap: 6px;
+    font-family: var(--font-sans); font-size: 13px; font-weight: 700;
+    color: var(--mc-text);
+  }
+  .mc-agent-name-line .mc-agent-role-text {
+    font-weight: 400; color: var(--mc-muted); font-size: 11px;
+  }
+  .mc-agent-task-line {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--mc-muted);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .mc-agent-task-line a { color: inherit; text-decoration: none; }
+  .mc-agent-task-line a:hover { text-decoration: underline; }
+  .mc-status-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 3px 8px; border-radius: 10px;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+  .mc-status-badge.status-active { background: oklch(72% 0.19 38 / 15%); color: var(--live-accent); }
+  .mc-status-badge.status-idle { background: oklch(55% 0 0 / 10%); color: var(--mc-muted); }
+  .mc-status-badge.status-review { background: oklch(60% 0.14 185 / 12%); color: var(--info); }
+  .mc-status-badge.status-blocked { background: oklch(58% 0.22 25 / 15%); color: var(--risk); }
+  .mc-status-badge.status-complete { background: oklch(66% 0.17 145 / 12%); color: var(--ok); }
+  [data-theme="light"] .mc-status-badge.status-active { color: oklch(52% 0.17 38); }
+  [data-theme="light"] .mc-status-badge.status-idle { color: oklch(48% 0.008 220); }
+  [data-theme="light"] .mc-status-badge.status-blocked { color: oklch(45% 0.20 25); }
+
+  /* ── Sidebar panels ── */
+  .mc-sidebar-panel {
+    background: var(--mc-surface);
+    border: 1px solid var(--mc-border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+  .mc-sidebar-title {
+    font-family: var(--font-display), 'Departure Mono', monospace;
+    font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    color: var(--mc-muted);
+    margin-bottom: 8px;
+  }
+  .mc-attn-chips {
+    display: flex; gap: 6px; flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .mc-attn-chip {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; font-weight: 700; letter-spacing: 0.1em;
+    padding: 3px 8px; border-radius: 8px;
+    background: oklch(55% 0 0 / 8%); color: var(--mc-muted);
+    white-space: nowrap;
+  }
+  .mc-attn-chip.risk { background: oklch(58% 0.22 25 / 12%); color: var(--risk); }
+  .mc-attn-chip.warn { background: oklch(76% 0.17 80 / 12%); color: oklch(52% 0.17 58); }
+  .mc-attn-chip.info { background: oklch(60% 0.14 185 / 12%); color: var(--info); }
+  [data-theme="light"] .mc-attn-chip.warn { color: oklch(40% 0.15 58); }
+  [data-theme="light"] .mc-attn-chip.info { color: oklch(38% 0.13 185); }
+  .mc-attn-item {
+    background: var(--mc-bg);
+    border: 1px solid var(--mc-border);
+    border-radius: 6px; padding: 8px 10px;
+    margin-bottom: 6px; font-size: 12px;
+  }
+  [data-theme="dark"] .mc-attn-item { background: var(--bg-card-inner); }
+  .mc-attn-item:last-child { margin-bottom: 0; }
+  .mc-attn-item-head {
+    display: flex; align-items: center; gap: 6px;
+    margin-bottom: 3px;
+  }
+  .mc-attn-item-name { font-weight: 700; color: var(--mc-text); font-size: 12px; }
+  .mc-attn-item-desc { font-size: 11px; color: var(--mc-muted); }
+  .mc-attn-item-time { margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--mc-dim); }
+  .mc-attn-actions { display: flex; align-items: center; gap: 8px; margin-top: 5px; }
+  .mc-attn-jump {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    color: var(--mc-muted); cursor: pointer;
+    background: none; border: 1px solid var(--mc-border);
+    border-radius: 4px; padding: 2px 6px;
+    transition: color 0.15s;
+  }
+  .mc-attn-jump:hover { color: var(--mc-text); border-color: var(--mc-muted); }
+  .mc-attn-all { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--mc-muted); margin-left: auto; }
+
+  /* ── Sidebar event log ── */
+  .mc-evtlog-title {
+    font-family: var(--font-display), 'Departure Mono', monospace;
+    font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    color: var(--mc-muted);
+    margin-bottom: 8px;
+  }
+  .mc-evtlog-scroll {
+    max-height: 280px; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .mc-evt-row {
+    display: grid;
+    grid-template-columns: 58px 1fr;
+    gap: 6px;
+    align-items: start;
+    padding: 2px 0;
+    border-bottom: 1px solid var(--mc-border);
+    font-size: 11px;
+  }
+  .mc-evt-row:last-child { border-bottom: none; }
+  .mc-evt-time { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--mc-dim); white-space: nowrap; padding-top: 1px; }
+  .mc-evt-body { min-width: 0; }
+  .mc-evt-agent { font-weight: 700; font-size: 11px; margin-right: 4px; }
+  .mc-evt-msg { color: var(--mc-muted); font-size: 10px; display: block; word-break: break-word; }
+
+  /* ── Roster counts in section bar ── */
+  .mc-roster-counts { margin-left: auto; display: flex; gap: 10px; align-items: center; font-family: 'JetBrains Mono', monospace; font-size: 10px; }
+  .mc-count-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 3px; vertical-align: middle; }
+  .mc-count-active .mc-count-dot { background: var(--live-accent); }
+  .mc-count-idle .mc-count-dot { background: var(--mc-dim); }
+  .mc-count-blocked .mc-count-dot { background: var(--risk); }
+  .mc-count-active { color: var(--live-accent); }
+  .mc-count-idle { color: var(--mc-dim); }
+  .mc-count-blocked { color: var(--risk); }
+
+  /* ── Container override ── */
+  .mc-container { max-width: 1500px; margin: 0 auto; padding: 14px 18px; }
+
+  /* Collapsed sections inside existing HTML we keep inline */
+  .mc-legacy-section { margin-bottom: 14px; }
+  /* ===== END MISSION CONTROL REDESIGN ===== */
 </style>
 </head>
 <body>
 
-${renderChrome('live', status)}
-
 <!-- US-0122 AC-0417: incident ticker (hidden by default, .active shown beneath header when any agent/phase is blocked). -->
 <div id="incident-ticker" class="incident-ticker" aria-live="polite" aria-atomic="true"></div>
 
-<!-- US-0146: Live bar — always visible ON AIR status strip -->
-<div class="pv-live-bar" id="pv-live-bar" role="status" aria-live="polite">
+<!-- US-0148 MISSION CONTROL: Sticky narrow top header bar -->
+${(() => {
+  const dmAgentName = (AGENT_CONFIG.orchestrator || {}).dmAgent || 'Conductor';
+  const activeAgentEntry =
+    Object.entries(agents).find(([name, a]) => a.status === 'active' && name !== dmAgentName) ||
+    Object.entries(agents).find(([, a]) => a.status === 'active');
+  const activeAgentName = activeAgentEntry ? activeAgentEntry[0] : null;
+  const activeAgentData = activeAgentEntry ? activeAgentEntry[1] : null;
+  const activeEpicId = cycleActiveStory ? (stories[cycleActiveStory.id] || {}).epic || '' : '';
+  const activeStoryId = cycleActiveStory ? cycleActiveStory.id : '';
+  const activeStoryTitle = cycleActiveStory ? storyTitles[cycleActiveStory.id] || cycleActiveStory.title || '' : '';
+  return `<div class="mc-topbar" role="banner">
+  <div class="mc-topbar-left">
+    <span class="mc-onair-badge">ON AIR</span>
+    <span class="mc-breadcrumb">
+      ${activeEpicId ? `<span class="bc-id">${esc(activeEpicId)}</span><span class="bc-sep">›</span>` : ''}${activeStoryId ? `<span class="bc-id">${esc(activeStoryId)}</span>` : ''}<span class="bc-sep">&middot;</span><span>${esc(activeStoryTitle || 'STANDBY')}</span>
+    </span>
+  </div>
+  <div class="mc-topbar-center">
+    ${activeAgentName ? `<span class="mc-assigned">ASSIGNED <strong>${esc(activeAgentName)}</strong>${activeAgentData && activeAgentData.eta ? ` &middot; ETA ~${esc(activeAgentData.eta)}` : ''}</span>` : ''}
+    <span class="mc-elapsed-display">ELAPSED <strong id="mc-topbar-elapsed">00:00:00</strong></span>
+    <span class="mc-cycle-disp" id="mc-topbar-cycle">CYCLE ${String(cycleNumber).padStart(3, '0')}</span>
+    <span class="mc-topbar-clock" id="mc-topbar-clock">00:00:00</span>
+  </div>
+  <div class="mc-topbar-right">
+    <span class="mc-live-badge" title="Live — refreshing every 5s"><span class="mc-live-dot" aria-hidden="true"></span>LIVE</span>
+    <button class="mc-btn-sm" onclick="document.getElementById('about-modal').classList.add('open')">About</button>
+    <button class="mc-btn-sm" id="theme-toggle" onclick="toggleTheme()">Light/Dark</button>
+  </div>
+</div>`;
+})()}
+
+<!-- US-0146: Live bar — always visible ON AIR status strip (kept for patchDOM/test compatibility) -->
+<div class="pv-live-bar" id="pv-live-bar" role="status" aria-live="polite" style="display:none;">
   <span class="pv-on-air">ON AIR</span>
   <div class="pv-live-cycle" id="pv-live-cycle">CYCLE — · —:——</div>
   <div class="pv-live-ticker" id="pv-live-ticker" aria-hidden="true"></div>
   <div class="pv-live-clock" id="pv-live-clock">00:00:00</div>
 </div>
 
-<div class="container">
+<div class="mc-container">
 
-${
-  pipelineComplete
-    ? `<!-- Pipeline Complete Banner -->
-<div style="background: linear-gradient(135deg, color-mix(in oklab, var(--ok) 15%, var(--bg-card)) 0%, color-mix(in oklab, var(--ok) 10%, var(--bg-primary)) 100%); border: 1px solid color-mix(in oklab, var(--ok) 30%, transparent); border-left: 4px solid var(--ok); border-radius: 8px; padding: 14px 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 14px;">
-  <span style="font-size: 28px;">🎉</span>
-  <div>
-    <div style="color: var(--ok); font-size: 16px; font-weight: 700; letter-spacing: 0.5px;">PIPELINE COMPLETE — v1.0.0-poc</div>
-    <div style="color: var(--text-secondary); font-size: 12px; margin-top: 2px;">All ${phases.length} phases complete · ${metrics.storiesCompleted}/${metrics.storiesTotal} stories · ${metrics.testsPassed} tests passing · ${metrics.coveragePercent}% coverage · ${metrics.bugsFixed} bugs fixed</div>
+<!-- ── Mission Control Hero Card ── -->
+<div class="mc-hero">
+  <div class="mc-hero-header">
+    <div>
+      <div class="mc-hero-breadcrumb">
+        AGENTIC SDLC
+        <span class="bc-sep">›</span> R${cycleNumber}
+        ${cycleActiveStory ? `<span class="bc-sep">›</span> ${esc((stories[cycleActiveStory.id] || {}).epic || '')} <span class="bc-sep">›</span> ${esc(cycleActiveStory.id)}` : ''}
+        ${cycleActiveStory ? `<span class="bc-sep">&middot;</span> ${esc(storyTitles[cycleActiveStory.id] || cycleActiveStory.title || '')}` : ''}
+      </div>
+      <div class="mc-hero-title">
+        <h1>Mission Control</h1>
+        <span class="mc-live-chip"><span class="mc-live-dot" aria-hidden="true" style="width:5px;height:5px;border-radius:50%;background:var(--ok);display:inline-block;"></span>LIVE</span>
+      </div>
+    </div>
+    <div class="mc-hero-signal">
+      <span class="mc-signal-dot" aria-hidden="true"></span>HEALTHY signal &middot; 5s refresh
+    </div>
   </div>
-</div>`
-    : ''
-}
 
-<!-- Phase Pipeline — US-0115: 6-phase timeline with cycle counter. -->
-<h2 class="section-header">PIPELINE</h2>
-<!-- AC-0384: cycle counter above the timeline. The #cycle-elapsed node
-     carries data-started-at (ISO8601) and is re-rendered every second by
-     updateCycleElapsed() client-side so the HH:MM:SS ticks smoothly. -->
-<div class="cycle-counter" id="cycle-counter" aria-live="polite">
-  <span class="cycle-label">
-    <span class="live-dot ok" aria-label="live" title="live"></span>
-    <span id="cycle-label-text">${esc(cycleLabel)}</span>
-  </span>
-  <span class="cycle-elapsed" id="cycle-elapsed" data-started-at="${esc(cycleStartedAt)}">00:00:00</span>
+  <!-- 8 stat tiles -->
+  <div class="mc-stats-row">
+    <!-- PHASE -->
+    <div class="mc-stat-tile">
+      <div class="mc-stat-label">PHASE</div>
+      <div class="mc-stat-value info" id="mc-stat-phase">${phases.filter((p) => p.status === 'complete').length}<span style="font-size:13px;opacity:0.6;">/${phases.length}</span></div>
+      <div class="mc-stat-sub">${currentPhaseObj ? esc(currentPhaseObj.name || '') : pipelineComplete ? 'COMPLETE' : 'STANDBY'}</div>
+    </div>
+    <!-- ACTIVE AGENTS -->
+    <div class="mc-stat-tile">
+      <div class="mc-stat-label">ACTIVE</div>
+      <div class="mc-stat-value warn" id="mc-stat-active">${Object.values(agents).filter((a) => a && a.status === 'active').length}</div>
+      <div class="mc-stat-sub">of ${Object.keys(agents).length} agents</div>
+    </div>
+    <!-- QUEUE (stories in progress/planned) -->
+    <div class="mc-stat-tile">
+      <div class="mc-stat-label">QUEUE</div>
+      <div class="mc-stat-value" id="mc-stat-queue">${metrics.storiesTotal - metrics.storiesCompleted > 0 ? metrics.storiesTotal - metrics.storiesCompleted : 0}</div>
+      <div class="mc-stat-sub">stories remaining</div>
+    </div>
+    <!-- REVIEWS -->
+    <div class="mc-stat-tile">
+      <div class="mc-stat-label">REVIEWS</div>
+      <div class="mc-stat-value ${(metrics.reviewsBlocked || 0) > 0 ? 'risk' : 'ok'}" id="mc-stat-reviews">${metrics.reviewsBlocked || 0}</div>
+      <div class="mc-stat-sub">awaiting verdict</div>
+    </div>
+    <!-- BLOCKED -->
+    <div class="mc-stat-tile">
+      <div class="mc-stat-label">BLOCKED</div>
+      ${(() => {
+        const blockedAgents = Object.entries(agents).filter(([, a]) => a && a.status === 'blocked');
+        const count = blockedAgents.length;
+        const firstName = blockedAgents.length > 0 ? blockedAgents[0][0] : '';
+        return `<div class="mc-stat-value ${count > 0 ? 'risk' : ''}" id="mc-stat-blocked">${count}</div><div class="mc-stat-sub">${count > 0 ? esc(firstName) : 'all clear'}</div>`;
+      })()}
+    </div>
+    <!-- TESTS -->
+    <div class="mc-stat-tile">
+      <div class="mc-stat-label">TESTS</div>
+      <div class="mc-stat-value ${(metrics.testsFailed || 0) > 0 ? 'risk' : 'ok'}" id="mc-stat-tests">${metrics.testsPassed || 0}<span style="font-size:13px;opacity:0.6;">/${metrics.testsTotal || 0}</span></div>
+      <div class="mc-stat-sub">passing</div>
+    </div>
+    <!-- COVERAGE -->
+    <div class="mc-stat-tile">
+      <div class="mc-stat-label">COVERAGE</div>
+      <div class="mc-stat-value ${coverageTone}" id="mc-stat-coverage">${coveragePct}%</div>
+      <div class="mc-stat-sub">statements</div>
+    </div>
+    <!-- AI SPEND -->
+    <div class="mc-stat-tile">
+      <div class="mc-stat-label">AI SPEND</div>
+      <div class="mc-stat-value" id="mc-stat-spend">—</div>
+      <div class="mc-stat-sub">today</div>
+    </div>
+  </div>
 </div>
-<div class="pipeline">
+
+<!-- ── Two-column layout: main + sidebar ── -->
+<div class="mc-layout">
+<div class="mc-main">
+
+<!-- PIPELINE section -->
+<div class="mc-section-bar">
+  <span class="mc-section-label">PIPELINE</span>
+  <span class="mc-section-meta" id="cycle-counter" aria-live="polite">CYCLE ${String(cycleNumber).padStart(3, '0')} &middot; <span id="cycle-elapsed" data-started-at="${esc(cycleStartedAt)}">00:00:00</span></span>
+</div>
+<div class="pipeline mc-legacy-section">
 ${phases
   .map((p, i) => {
     const phaseNum = String(i + 1).padStart(2, '0');
@@ -1609,23 +2114,15 @@ ${phases
       p.status === 'complete' ? '✅' : p.status === 'in-progress' ? '🔄' : p.status === 'blocked' ? '⚠️' : '⏳';
     const elapsed = p.status === 'complete' ? formatPhaseElapsed(p.startedAt, p.completedAt) : '';
     const hasElapsed = elapsed ? '1' : '0';
-    // AC-0385: the in-progress phase gets the partial-fill width; all
-    // other phases render the track with either 0 (pending/blocked) or
-    // 100 (complete, via CSS) so patchDOM() only needs to flip the class
-    // to transition states.
     const fillWidth = p.status === 'in-progress' ? cycleFillPct : p.status === 'complete' ? 100 : 0;
-    const agents = Array.isArray(p.agents) ? p.agents : [];
+    const pAgents = Array.isArray(p.agents) ? p.agents : [];
     const deliverables = Array.isArray(p.deliverables) ? p.deliverables : [];
-    // US-0111 AC-0364 + US-0115: stable IDs so refreshState() / patchDOM() can
-    // update only the changed phase nodes instead of reloading the page.
-    // New helper ids (-check, -elapsed, -fill, -num) support the timeline
-    // footer/fill elements added here.
     return `  <div class="phase-block ${p.status}" id="phase-${p.id}" data-phase-status="${p.status}">
     <div class="phase-beacon" aria-hidden="true"></div>
     <div class="phase-status" id="phase-${p.id}-icon" aria-hidden="true">${icon}</div>
     <div class="phase-number" id="phase-${p.id}-num">${phaseNum}</div>
     <div class="phase-name">${p.name}</div>
-    <div class="phase-agents">${agents.join(' \u00B7 ')}</div>
+    <div class="phase-agents">${pAgents.join(' \u00B7 ')}</div>
     <div class="phase-deliverables">${deliverables.join(' \u00B7 ')}</div>
     <div class="phase-elapsed" id="phase-${p.id}-elapsed" data-has-elapsed="${hasElapsed}"><span class="phase-check" id="phase-${p.id}-check" aria-label="complete">\u2713</span>${esc(elapsed)}</div>
     <div class="phase-fill-track"><div class="phase-fill-bar pv-phase-fill" id="phase-${p.id}-fill" style="width: ${fillWidth}%"></div></div>
@@ -1634,250 +2131,139 @@ ${phases
   .join('\n')}
 </div>
 
+<!-- ROSTER section -->
+${(() => {
+  const agentList = Object.entries(agents);
+  const activeCount = agentList.filter(([, a]) => a && a.status === 'active').length;
+  const idleCount = agentList.filter(
+    ([, a]) => !a || (a.status !== 'active' && a.status !== 'blocked' && a.status !== 'needs-review'),
+  ).length;
+  const blockedCount = agentList.filter(([, a]) => a && a.status === 'blocked').length;
+  const imgBase = 'agents/images';
+  const dmAgentName = (AGENT_CONFIG.orchestrator || {}).dmAgent || 'Conductor';
+
+  const rows = agentList
+    .map(([name, agent]) => {
+      const color = agentColors[name] || 'oklch(55% 0 0)';
+      const avatar = agentAvatars[name] || name.toLowerCase();
+      const initial = name.charAt(0).toUpperCase();
+      const role = agentRoles[name] || name;
+      const isActive = agent && agent.status === 'active';
+      const isBlocked = agent && agent.status === 'blocked';
+      const isReview = agent && agent.status === 'needs-review';
+      const statusStr = (agent && agent.status) || 'idle';
+      const statusCls = isActive
+        ? 'status-active'
+        : isBlocked
+          ? 'status-blocked'
+          : isReview
+            ? 'status-review'
+            : statusStr === 'complete'
+              ? 'status-complete'
+              : 'status-idle';
+      const rowCls = isActive ? 'mc-agent-active' : isBlocked ? 'mc-agent-blocked' : isReview ? 'mc-agent-review' : '';
+      const task = (agent && agent.currentTask) || '';
+      const branch = (agent && agent.branch) || '';
+      const taskDisplay = branch
+        ? `<a href="${esc(branch)}">${esc(task || branch)}</a>`
+        : task
+          ? esc(task)
+          : '<span style="opacity:0.5;">—</span>';
+      // US-0119 / US-0142: keep agent-card + stable IDs for patchDOM compatibility
+      const icon = agentIcons[name] || '';
+      const statusBg = isActive ? 'oklch(66% 0.17 145 / 20%)' : 'oklch(55% 0 0 / 15%)';
+      const statusColor = isActive ? 'var(--ok)' : statusStr === 'complete' ? 'var(--info)' : 'var(--text-muted)';
+      return `    <div class="mc-agent-row ${rowCls} agent-card ${isActive ? 'is-active active' : isBlocked ? 'is-blocked' : isReview ? 'is-review' : 'is-idle'}" id="agent-${esc(name)}" data-agent-name="${esc(name)}" data-agent-status="${esc(statusStr)}" style="--agent-color:${color};--agent-color-ring:${color}40;">
+      ${isActive ? '<div class="agent-rail"></div>' : ''}
+      <div class="mc-agent-circle" style="background:${color};">${esc(initial)}</div>
+      <div class="mc-agent-identity">
+        <div class="mc-agent-name-line">
+          <span>${esc(name)}</span>
+          <span class="mc-agent-role-text">&middot; ${esc(role)}</span>
+        </div>
+        <div class="mc-agent-task-line" id="agent-${esc(name)}-task">${taskDisplay}</div>
+      </div>
+      <span class="mc-status-badge ${statusCls}">${esc(statusStr)}</span>
+      <!-- Hidden agent-status for AC-0428 test compat -->
+      <div class="agent-status" id="agent-${esc(name)}-status" style="display:none;background:${statusBg};color:${statusColor}">${esc(statusStr)}</div>
+      <span class="live-dot ok on-air-dot${isActive ? ' dot-pulse' : ''}" aria-label="now on air" title="now on air" style="${isActive ? '' : 'display:none;'}"></span>
+    </div>`;
+    })
+    .join('\n');
+
+  return `<div class="mc-roster mc-legacy-section">
+  <div class="mc-section-bar">
+    <span class="mc-section-label">ROSTER</span>
+    <div class="mc-roster-counts">
+      <span class="mc-count-active"><span class="mc-count-dot"></span>${activeCount} ACTIVE</span>
+      <span class="mc-count-idle"><span class="mc-count-dot"></span>${idleCount} IDLE</span>
+      <span class="mc-count-blocked"><span class="mc-count-dot"></span>${blockedCount} BLOCKED</span>
+    </div>
+  </div>
+  <div class="mc-roster-rows agent-grid" id="mc-roster-rows">
+${rows}
+  </div>
+</div>
+
+<!-- Hidden spotlight stub for patchDOM agent-spotlight compatibility -->
+<div id="agent-spotlight" style="display:none;" data-agent-name="" data-started-at="">
+  <div id="agent-spotlight-name"></div>
+  <div id="agent-spotlight-role"></div>
+  <div id="agent-spotlight-task"></div>
+  <div id="agent-spotlight-elapsed" data-started-at="${esc(cycleStartedAt)}"></div>
+</div>`;
+})()}
+
 <!-- US-0130: Epic progress strip — rendered by patchDOM on each tick -->
-<div id="epic-strip" style="display:none; margin-bottom:16px; background:var(--bg-card); border:1px solid var(--bg-card-border); border-radius:10px; padding:10px 16px; font-family:var(--font-sans); font-size:12px;">
-  <div style="font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin-bottom:8px;">Epic Progress</div>
+<div id="epic-strip" style="display:none; margin-bottom:14px; background:var(--mc-surface); border:1px solid var(--mc-border); border-radius:10px; padding:10px 16px; font-family:var(--font-sans); font-size:12px;">
+  <div style="font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:var(--mc-muted); margin-bottom:8px;">Epic Progress</div>
   <div id="epic-strip-rows"></div>
 </div>
 
 <!-- US-0133: Cycle history — lap strip + telemetry -->
-<div id="cycle-history-section" style="display:none; margin-bottom:24px;">
-  <div style="font-family:var(--font-display),monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin-bottom:8px;">Cycle History</div>
+<div id="cycle-history-section" style="display:none; margin-bottom:14px;">
+  <div style="font-family:var(--font-display),monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--mc-dim); margin-bottom:8px;">Cycle History</div>
   <div id="cycle-telemetry" style="display:flex; gap:16px; margin-bottom:10px; flex-wrap:wrap;"></div>
   <div id="cycle-lap-strip" style="display:flex; gap:8px; overflow-x:auto; padding-bottom:4px;"></div>
 </div>
 
-<!-- Metrics Row — US-0118 differentiated cards.
-     AC-0399: semantic color keyed to state: Phase=blue, Quality=green/amber/red
-     by coverage threshold, Reviews=green(approve)/red(block).
-     Metric IDs (id="metric-*") are preserved so patchDOM() from US-0111 can
-     mutate values in-place on live refresh. -->
-<h2 class="section-header">TELEMETRY</h2>
-<div class="grid">
-
-  <!-- AC-0396: Phase Progress card — hero number in Departure Mono 56px +
-       sparkline below (one bar per phase, height keyed to status). -->
-  <div class="card metric-card" id="card-phase-progress">
-    <h2>Phase Progress</h2>
-    <div class="metric-sub">Phases Complete</div>
-    <div class="metric-hero blue" id="metric-phaseHero"><span id="metric-phasesCompleteNum">${phases.filter((p) => p.status === 'complete').length}</span><span class="hero-sep">/</span><span class="hero-den" id="metric-phasesTotalNum">${phases.length}</span></div>
-    <!-- Legacy ids preserved for patchDOM() compatibility. -->
-    <span id="metric-phasesComplete" hidden>${phases.filter((p) => p.status === 'complete').length} / ${phases.length}</span>
-    <div class="phase-sparkline" id="metric-phasesSparkline" aria-hidden="true">
-${phases
-  .map(
-    (p, i) =>
-      `      <div class="spark-bar ${p.status}" data-phase-id="${esc(p.id)}" data-phase-status="${esc(p.status)}" style="height: ${sparkHeights[i]}%" title="${esc(p.name)}: ${esc(p.status)}"></div>`,
-  )
-  .join('\n')}
-    </div>
-    <div class="progress-bar"><div class="progress-fill blue" id="metric-phasesBar" style="width: ${phasePercent}%"></div></div>
-    <div class="metric-sub" style="margin-top: 14px">Stories Done · <span id="metric-storiesDone">${metrics.storiesCompleted} / ${metrics.storiesTotal}</span> · Tasks <span id="metric-tasksDone">${metrics.tasksTotal > 0 ? `${metrics.tasksCompleted} / ${metrics.tasksTotal}` : '—'}</span></div>
-    <div class="progress-bar"><div class="progress-fill green" id="metric-storiesBar" style="width: ${storyPercent}%"></div></div>
-    <div class="progress-bar" style="margin-top: 4px"><div class="progress-fill red" id="metric-tasksBar" style="width: ${metrics.tasksTotal > 0 ? Math.round((metrics.tasksCompleted / metrics.tasksTotal) * 100) : 0}%"></div></div>
-    <div class="card-footer">
-      <span class="stamp">Last updated <b id="stamp-phase-progress">${stampHHMM}</b></span>
-    </div>
+<!-- TELEMETRY: hidden metric IDs for patchDOM compatibility (US-0111) -->
+<div style="display:none;" aria-hidden="true">
+  <span id="metric-phasesComplete">${phases.filter((p) => p.status === 'complete').length} / ${phases.length}</span>
+  <span id="metric-phasesCompleteNum">${phases.filter((p) => p.status === 'complete').length}</span>
+  <span id="metric-phasesTotalNum">${phases.length}</span>
+  <span id="metric-storiesDone">${metrics.storiesCompleted} / ${metrics.storiesTotal}</span>
+  <span id="metric-tasksDone">${metrics.tasksTotal > 0 ? `${metrics.tasksCompleted} / ${metrics.tasksTotal}` : '—'}</span>
+  <span id="metric-testsPassed">${metrics.testsPassed}</span>
+  <span id="metric-testsFailed">${metrics.testsFailed}</span>
+  <span id="metric-testsTotal">${metrics.testsTotal}</span>
+  <span id="metric-bugsOpen">${metrics.bugsOpen}</span>
+  <span id="metric-bugsFixed">${metrics.bugsFixed}</span>
+  <span id="metric-reviewsApproved">${metrics.reviewsApproved}</span>
+  <span id="metric-reviewsBlocked">${metrics.reviewsBlocked}</span>
+  <span id="metric-coveragePercent">${coveragePct}%</span>
+  <b id="stamp-phase-progress">${stampHHMM}</b>
+  <b id="stamp-quality">${stampHHMM}</b>
+  <b id="stamp-reviews">${stampHHMM}</b>
+  <!-- Doughnut for patchDOM coverage -->
+  <div id="metric-coverageDoughnut" data-coverage="${coveragePct}" data-tone="${coverageTone}">
+    <circle id="metric-coverageDoughnutFill" class="d-fill ${coverageTone}" stroke-dashoffset="${doughnutOffset}"></circle>
   </div>
-
-  <!-- AC-0397: Quality card — SVG doughnut (circle + stroke-dasharray) with
-       center coverage number. Tint green ≥80%, amber 60–80%, red <60%. -->
-  <div class="card metric-card" id="card-quality">
-    <h2><span class="live-dot ok" aria-label="live" title="live" id="quality-live-dot"></span>Quality</h2>
-    <div class="doughnut-wrap">
-      <div class="doughnut" id="metric-coverageDoughnut" data-coverage="${coveragePct}" data-tone="${coverageTone}" role="img" aria-label="Code coverage ${coveragePct}%">
-        <svg viewBox="0 0 36 36">
-          <circle class="d-track" cx="18" cy="18" r="15.9155"></circle>
-          <circle class="d-fill ${coverageTone}" id="metric-coverageDoughnutFill" cx="18" cy="18" r="15.9155"
-                  stroke-dasharray="100 100" stroke-dashoffset="${doughnutOffset}"></circle>
-        </svg>
-        <div class="doughnut-center">
-          <div class="d-num ${coverageTone}" id="metric-coveragePercent">${coveragePct}%</div>
-          <div class="d-label">Coverage</div>
-        </div>
-      </div>
-    </div>
-    <div class="quality-stats">
-      <div class="qs-cell">
-        <span class="qs-label">Passed</span>
-        <span class="qs-val green" id="metric-testsPassed">${metrics.testsPassed}</span>
-      </div>
-      <div class="qs-cell">
-        <span class="qs-label">Failed</span>
-        <span class="qs-val ${metrics.testsFailed > 0 ? 'red' : 'muted'}" id="metric-testsFailed">${metrics.testsFailed}</span>
-      </div>
-      <div class="qs-cell">
-        <span class="qs-label">Bugs Open</span>
-        <span class="qs-val ${metrics.bugsOpen > 0 ? 'red' : 'green'}" id="metric-bugsOpen">${metrics.bugsOpen}</span>
-      </div>
-    </div>
-    <span id="metric-testsTotal" hidden>${metrics.testsTotal}</span>
-    <div class="card-footer">
-      <span class="stamp">Last updated <b id="stamp-quality">${stampHHMM}</b></span>
-    </div>
+  <!-- Sparkline for patchDOM -->
+  <div id="metric-phasesSparkline">
+${phases.map((p, i) => `    <div class="spark-bar ${p.status}" data-phase-id="${esc(p.id)}" data-phase-status="${esc(p.status)}" style="height: ${sparkHeights[i]}%"></div>`).join('\n')}
   </div>
-
-  <!-- AC-0398: Reviews card — compact list of recent review verdicts from
-       status.log, each row with an agent avatar chip (small circular image
-       from agents.config.json, path agents/images/optimized/AVATAR-64.png). -->
-  <div class="card metric-card" id="card-reviews">
-    <h2>Reviews</h2>
-    <div class="reviews-summary">
-      <div class="rs-cell rs-approved">
-        <span class="rs-label">Approved</span>
-        <span class="rs-val" id="metric-reviewsApproved">${metrics.reviewsApproved}</span>
-      </div>
-      <div class="rs-cell rs-blocked">
-        <span class="rs-label">Blocked</span>
-        <span class="rs-val ${metrics.reviewsBlocked > 0 ? '' : 'zero'}" id="metric-reviewsBlocked">${metrics.reviewsBlocked}</span>
-      </div>
-    </div>
-    <ul class="reviews-list" id="metric-reviewsList">
-${
-  reviewEntries.length === 0
-    ? `      <li class="reviews-empty">No reviews yet — awaiting first verdict.</li>`
-    : reviewEntries
-        .map((r) => {
-          const color = agentColors[r.agent] || 'var(--text-muted)';
-          const icon = agentIcons[r.agent] || '🔍';
-          const avatar = agentAvatars[r.agent] || r.agent.toLowerCase();
-          const imgBase = 'agents/images';
-          const chipImg = `<img class="review-chip" src="${imgBase}/optimized/${esc(avatar)}-64.png" alt="${esc(r.agent)}" style="border-color: ${color}" onerror="this.onerror=function(){this.outerHTML='<div class=\\'review-chip-fallback\\' style=\\'border-color: ${color}\\'>${icon}</div>'};this.src='${imgBase}/headshots/${esc(r.agent.toLowerCase())}.png'">`;
-          return `      <li class="review-item">
-        ${chipImg}
-        <div class="review-body">
-          <div class="review-line">
-            <span class="review-agent" style="color: ${color}">${esc(r.agent)}</span>
-            <span class="review-target">${esc(r.target)}</span>
-          </div>
-          <div class="review-time">${esc(r.time)}</div>
-        </div>
-        <span class="review-verdict ${r.verdict}">${r.verdict === 'approve' ? 'Approve' : 'Block'}</span>
-      </li>`;
-        })
-        .join('\n')
-}
-    </ul>
-    <span id="metric-bugsFixed" hidden>${metrics.bugsFixed}</span>
-    <div class="card-footer">
-      <span class="stamp">Last updated <b id="stamp-reviews">${stampHHMM}</b></span>
-    </div>
-  </div>
+  <!-- Progress bars -->
+  <div class="progress-bar"><div id="metric-phasesBar" class="progress-fill blue" style="width:${phasePercent}%"></div></div>
+  <div class="progress-bar"><div id="metric-storiesBar" class="progress-fill green" style="width:${storyPercent}%"></div></div>
+  <div class="progress-bar"><div id="metric-tasksBar" class="progress-fill red" style="width:${metrics.tasksTotal > 0 ? Math.round((metrics.tasksCompleted / metrics.tasksTotal) * 100) : 0}%"></div></div>
 </div>
 
-<!-- Agents + Stories -->
-<div class="grid-2">
-  <div class="card">
-    <h2 class="section-header">ACTIVE AGENT</h2>
-${(() => {
-  const roles = agentRoles;
-  const imgBase = 'agents/images';
-  // US-0119 AC-0401: Spotlight banner — broadcast stage for the current on-air
-  // agent. Prefer non-Conductor active agent (BUG-0079). Uses the 160px
-  // optimized portrait from US-0113's config, Geist 28px name, small-caps
-  // role, JetBrains Mono task line, and an elapsed-time ticker seeded from
-  // agent.startedAt (ISO 8601) when available — the client-side ticker in
-  // the main <script> block re-renders the elapsed text every second.
-  const dmAgentName = (AGENT_CONFIG.orchestrator || {}).dmAgent || 'Conductor';
-  const activeAgent =
-    Object.entries(agents).find(([name, a]) => a.status === 'active' && name !== dmAgentName) ||
-    Object.entries(agents).find(([, a]) => a.status === 'active');
-  let spotlight;
-  if (activeAgent) {
-    const [aName, aData] = activeAgent;
-    const aColor = agentColors[aName] || 'var(--text-muted)';
-    const aAvatar = agentAvatars[aName] || aName.toLowerCase();
-    const startedAt = aData.startedAt || '';
-    const fullPortrait = `${imgBase}/optimized/${aAvatar}-320.png`;
-    spotlight = `    <div class="agent-spotlight" id="agent-spotlight" data-agent-name="${esc(aName)}" data-started-at="${esc(startedAt)}">
-      <div class="spotlight-portrait-wrap" style="border-color: ${aColor}"
-        onmouseenter="showAgentPortrait(this,'${fullPortrait}')" onmouseleave="hideAgentPortrait()">
-        <img class="spotlight-img" src="${imgBase}/optimized/${aAvatar}-160.png" alt="${esc(aName)}" onerror="this.onerror=null; this.src='${imgBase}/headshots/${esc(aName.toLowerCase())}.png'">
-      </div>
-      <div class="spotlight-info">
-        <div class="spotlight-name" id="agent-spotlight-name" style="color: ${aColor}"><span class="live-dot ok" aria-label="live" title="live" id="spotlight-live-dot"></span>${esc(aName)}</div>
-        <div class="spotlight-role" id="agent-spotlight-role">${esc(roles[aName] || aName)}</div>
-        <div class="spotlight-task" id="agent-spotlight-task">${esc(aData.currentTask || 'Awaiting assignment')}</div>
-        <div class="spotlight-elapsed" id="agent-spotlight-elapsed" data-started-at="${esc(startedAt)}">${startedAt ? '—' : 'IDLE'}</div>
-      </div>
-    </div>`;
-  } else {
-    spotlight = `    <div class="agent-spotlight no-active" id="agent-spotlight">
-      <div class="spotlight-waiting">Waiting for ${(AGENT_CONFIG.orchestrator || {}).dmAgent || 'orchestrator'} to activate agents...</div>
-    </div>`;
-  }
-  return spotlight;
-})()}
-    <div class="agent-grid">
-${Object.entries(agents)
-  .map(([name, agent]) => {
-    const color = agentColors[name] || 'var(--text-muted)';
-    const icon = agentIcons[name] || '🤖';
-    const imgBase = 'agents/images';
-    const statusBg = agent.status === 'active' ? 'oklch(66% 0.17 145 / 20%)' : 'oklch(55% 0 0 / 15%)';
-    const statusColor =
-      agent.status === 'active'
-        ? 'var(--ok)'
-        : agent.status === 'complete'
-          ? 'var(--report-accent)'
-          : 'var(--text-muted)';
-    const roles = agentRoles;
-    // US-0119 AC-0402: vertical layout — 80x80 circle portrait with 2px
-    // agent-color ring on top, then name, role micro-copy, status pill.
-    // Active station (AC-0403) gets .active class → 3px agent-color glow
-    // box-shadow + pulsing green "now on air" live-dot. Idle stations
-    // (AC-0404) get .idle class → opacity 0.5. Hover (AC-0405) applies a
-    // 4px agent-color outline glow via --agent-color-ring CSS variable,
-    // replacing the previous filter:brightness(1.12) which was invisible
-    // in light mode (BUG-0161).
-    const avatar = agentAvatars[name] || name.toLowerCase();
-    const avatarImg = `<img class="agent-avatar" src="${imgBase}/optimized/${avatar}-64.png" alt="${esc(name)}" onerror="this.onerror=function(){this.outerHTML='<div class=\\'agent-avatar-fallback\\'>${icon}</div>'};this.src='${imgBase}/headshots/${esc(name.toLowerCase())}.png'">`;
-    const fullPortrait = `${imgBase}/optimized/${avatar}-320.png`;
-    const isActive = agent.status === 'active';
-    const isIdle =
-      !isActive && agent.status !== 'complete' && agent.status !== 'blocked' && agent.status !== 'needs-review';
-    // US-0142: status-specific CSS classes for visual prominence
-    const statusCls =
-      agent.status === 'active'
-        ? 'is-active'
-        : agent.status === 'blocked'
-          ? 'is-blocked'
-          : agent.status === 'needs-review'
-            ? 'is-review'
-            : 'is-idle';
-    const stationClasses = ['agent-card', statusCls];
-    if (isActive) stationClasses.push('active');
-    if (isIdle) stationClasses.push('idle');
-    // --agent-color drives the 3px active glow; --agent-color-ring is the
-    // translucent variant used for the 4px hover outline (AC-0405).
-    const styleVars = `--agent-color: ${color}; --agent-color-ring: ${color}40;`;
-    // US-0142: accent rail (only when active) and pulsing dot class
-    const rail = isActive ? '<div class="agent-rail"></div>' : '';
-    const dotCls = isActive ? 'dot-pulse' : '';
-    // US-0111 AC-0364: keep stable IDs on card + inner pills so patchDOM()
-    // can update status/task text without re-rendering the whole grid.
-    return `      <div class="${stationClasses.join(' ')}" id="agent-${esc(name)}" data-agent-name="${esc(name)}" data-agent-status="${esc(agent.status)}" style="${styleVars}"
-        onmouseenter="showAgentPortrait(this,'${fullPortrait}')" onmouseleave="hideAgentPortrait()">
-        ${rail}<span class="live-dot ok on-air-dot${dotCls ? ' ' + dotCls : ''}" aria-label="now on air" title="now on air"></span>
-        ${avatarImg}
-        <div class="agent-info">
-          <div class="agent-name" style="color: ${color}">${esc(name)}</div>
-          <div class="agent-role">${esc(roles[name] || name)}</div>
-          <div class="agent-status" id="agent-${esc(name)}-status" style="background: ${statusBg}; color: ${statusColor}">${esc(agent.status)}</div>
-          <div class="agent-task" id="agent-${esc(name)}-task"${agent.currentTask ? '' : ' style="display:none"'}>${esc(agent.currentTask || '')}</div>
-        </div>
-      </div>`;
-  })
-  .join('\n')}
-    </div>
-  </div>
-
-  <div class="card">
-    <h2>User Stories</h2>
-    <div class="story-list">
+<!-- User Stories (collapsed; patchDOM reads these) -->
+<div class="mc-legacy-section" style="display:none;">
+  <div class="story-list">
 ${(() => {
   const epics = status.epics || {};
-  // Group stories by epic
   const groups = {};
   Object.entries(stories).forEach(([id, story]) => {
     const epicId = story.epic || 'OTHER';
@@ -1891,18 +2277,10 @@ ${(() => {
       const storyRows = epicStories
         .map((s) => {
           const statusClass = s.status === 'In Progress' ? 'InProgress' : s.status;
-          // US-0120 AC-0407: map the story status to a status-strip modifier.
-          // Anything that isn't Complete/Done or In Progress falls through to
-          // "planned" so ToDo, Planned, Backlog, and unknown values all share
-          // the muted slate strip.
           const isComplete = s.status === 'Complete' || s.status === 'Done';
           const isInProgress = s.status === 'In Progress';
           const stripClass = isComplete ? 'status-complete' : isInProgress ? 'status-inprogress' : 'status-planned';
           const title = storyTitles[s.id] || s.title || '';
-          // US-0120 AC-0410: agent color-dot + initial next to the title.
-          // Only render when assignedAgent resolves to a known agent colour so
-          // legacy rows (assignedAgent: null, or a name we don't track) stay
-          // unchanged and patchDOM-friendly.
           const agentName = s.assignedAgent || '';
           const agentColor = agentName ? agentColors[agentName] : null;
           const agentInitial = agentName ? agentName.charAt(0).toUpperCase() : '';
@@ -1910,8 +2288,6 @@ ${(() => {
             agentName && agentColor
               ? `<span class="story-agent" title="${esc(agentName)}"><span class="story-agent-dot" style="background:${agentColor}"></span><span class="story-agent-initial">${esc(agentInitial)}</span></span>`
               : '';
-          // US-0120 AC-0408: elapsed-time pill for In Progress stories that
-          // carry a startedAt timestamp. Skipped silently otherwise.
           const elapsed = isInProgress ? formatElapsed(s.startedAt, nowMs) : null;
           const elapsedPill = elapsed
             ? `<span class="story-elapsed" title="elapsed since startedAt">${esc(elapsed)}</span>`
@@ -1946,20 +2322,17 @@ ${storyRows}
     })
     .join('\n');
 })()}
-    </div>
   </div>
 </div>
 
-<!-- US-0147: Agent Workload — live assignment counts from sdlcStatus.stories -->
-<div class="card" style="margin-bottom:16px;">
-  <div class="card-head">
-    <h3>Agent Workload</h3>
-  </div>
+<!-- US-0147: Agent Workload -->
+<div class="mc-legacy-section" style="display:none;" id="mc-workload-section">
+  <div class="card-head"><h3>Agent Workload</h3></div>
   ${renderAgentWorkload(status.agents, status.stories)}
 </div>
 
-<!-- US-0145: Event Log — primary column widget with monospace rows, auto-scroll, pause-on-hover -->
-<div class="card pv-event-log" id="pv-event-log">
+<!-- US-0145: Event Log — primary column widget (hidden; sidebar version shown) -->
+<div class="card pv-event-log" id="pv-event-log" style="display:none;">
   <div class="card-head">
     <h3>Event Log</h3>
     <span class="pv-log-status" id="pv-log-status">LIVE</span>
@@ -1968,11 +2341,8 @@ ${storyRows}
 </div>
 
 <!-- Activity Log — US-0121 terminal aesthetic -->
-<div class="card" style="margin-top: 24px">
+<div class="card mc-legacy-section" style="margin-top:14px;">
   <h2><span class="live-dot ok" aria-label="live" title="live" id="activity-live-dot"></span>Activity Log</h2>
-  <!-- US-0121 AC-0413/AC-0414: filter chips + tail-mode toggle. Chip clicks
-       toggle filtering via data-log-filter; tail-mode persists to
-       localStorage('dashboard-tail-mode'). -->
   <div class="log-toolbar" role="toolbar" aria-label="Activity log controls">
     <div class="log-filters" role="group" aria-label="Filter log entries">
       <button class="log-filter-chip active" data-log-filter="all" aria-pressed="true">All</button>
@@ -1995,7 +2365,6 @@ ${
         .reverse()
         .map((entry) => {
           const agentColor = agentColors[entry.agent] || 'var(--text-muted)';
-          // US-0111 AC-0364: data-log-key lets patchDOM() dedupe and prepend only new entries.
           const key = `${entry.time || ''}|${entry.agent || ''}|${entry.message || ''}`;
           const category = logCategory(entry.message);
           const agentToken = entry.agent || 'System';
@@ -2014,7 +2383,114 @@ ${
   </div>
 </div>
 
-</div>
+</div><!-- /mc-main -->
+
+<!-- ── RIGHT SIDEBAR ── -->
+<div class="mc-sidebar">
+
+  <!-- NEEDS ATTENTION panel -->
+  <div class="mc-sidebar-panel">
+    <div class="mc-sidebar-title">NEEDS ATTENTION</div>
+    ${(() => {
+      const blockedAgents = Object.entries(agents).filter(([, a]) => a && a.status === 'blocked');
+      const reviewAgents = Object.entries(agents).filter(([, a]) => a && a.status === 'needs-review');
+      const blockedCount = blockedAgents.length;
+      const reviewCount = reviewAgents.length;
+      const bugsCount = metrics.bugsOpen || 0;
+      return (
+        `<div class="mc-attn-chips">
+        <span class="mc-attn-chip${blockedCount > 0 ? ' risk' : ''}">${blockedCount} blocked</span>
+        <span class="mc-attn-chip${reviewCount > 0 ? ' info' : ''}">${reviewCount} review</span>
+        <span class="mc-attn-chip${bugsCount > 0 ? ' warn' : ''}">${bugsCount} bugs</span>
+      </div>` +
+        (blockedAgents.length === 0 && reviewAgents.length === 0
+          ? `<div style="font-size:11px;color:var(--mc-muted);font-style:italic;padding:4px 0;">All clear — no blockers.</div>`
+          : [...blockedAgents, ...reviewAgents]
+              .slice(0, 3)
+              .map(([name, agent]) => {
+                const statusStr = agent.status || 'blocked';
+                const task = agent.currentTask || agent.currentStory || 'unknown';
+                const badgeCls =
+                  statusStr === 'blocked' ? 'mc-status-badge status-blocked' : 'mc-status-badge status-review';
+                return `<div class="mc-attn-item">
+              <div class="mc-attn-item-head">
+                <span class="mc-attn-item-name">${esc(name)}</span>
+                <span class="${badgeCls}" style="font-size:8px;padding:2px 5px;">${esc(statusStr)}</span>
+                <span class="mc-attn-item-time">—</span>
+              </div>
+              <div class="mc-attn-item-desc">${esc(task)}</div>
+              <div class="mc-attn-actions">
+                <button class="mc-attn-jump" onclick="document.getElementById('agent-${esc(name)}') && document.getElementById('agent-${esc(name)}').scrollIntoView({behavior:'smooth',block:'center'})">Jump to ${esc(name)} +</button>
+                <span class="mc-attn-all">All ${blockedCount + reviewCount}</span>
+              </div>
+            </div>`;
+              })
+              .join(''))
+      );
+    })()}
+  </div>
+
+  <!-- EVENT LOG panel -->
+  <div class="mc-sidebar-panel">
+    <div class="mc-evtlog-title">LAST 10 EVENTS · AUTO-SCROLL</div>
+    <div class="mc-evtlog-scroll" id="mc-evtlog-scroll">
+${(() => {
+  if (log.length === 0) {
+    return `      <div style="font-size:11px;color:var(--mc-muted);font-style:italic;">No events yet.</div>`;
+  }
+  return log
+    .slice(-10)
+    .reverse()
+    .map((entry) => {
+      const agentColor = agentColors[entry.agent] || 'var(--mc-muted)';
+      const timeFormatted = formatLogTime(entry.time);
+      return `      <div class="mc-evt-row">
+        <span class="mc-evt-time">${esc(timeFormatted)}</span>
+        <div class="mc-evt-body">
+          <span class="mc-evt-agent" style="color:${agentColor}">${esc(entry.agent || 'System')}</span>
+          <span class="mc-evt-msg">${esc(entry.message || '')}</span>
+        </div>
+      </div>`;
+    })
+    .join('\n');
+})()}
+    </div>
+  </div>
+
+  <!-- Phase Progress (compact) -->
+  <div class="mc-sidebar-panel">
+    <div class="mc-sidebar-title">PHASE PROGRESS</div>
+    <div id="card-phase-progress" style="font-size:12px;">
+      <div class="metric-sub">Phases Complete</div>
+      <div class="metric-hero blue" style="font-size:32px;" id="metric-phaseHero">
+        <span id="metric-phasesCompleteNum2">${phases.filter((p) => p.status === 'complete').length}</span>/<span class="hero-den">${phases.length}</span>
+      </div>
+      <div class="phase-sparkline" id="metric-phasesSparkline2" aria-hidden="true" style="height:20px;margin-bottom:6px;">
+${phases.map((p, i) => `        <div class="spark-bar ${p.status}" style="height:${sparkHeights[i]}%" title="${esc(p.name)}"></div>`).join('\n')}
+      </div>
+      <div class="progress-bar" style="height:5px;"><div class="progress-fill blue" style="width:${phasePercent}%"></div></div>
+    </div>
+  </div>
+
+  <!-- Quality (compact) -->
+  <div class="mc-sidebar-panel">
+    <div class="mc-sidebar-title">QUALITY</div>
+    <div style="display:flex;align-items:center;gap:12px;font-size:12px;">
+      <span style="font-family:var(--font-display),monospace;font-size:28px;color:var(--${coverageTone === 'green' ? 'ok' : coverageTone === 'amber' ? 'warn' : 'risk'});">${coveragePct}%</span>
+      <div>
+        <div style="color:var(--mc-muted);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;">Coverage</div>
+        <div id="card-quality" style="margin-top:4px;font-size:11px;color:var(--mc-muted);">
+          <span style="color:var(--ok);">${metrics.testsPassed || 0} pass</span> &middot; <span style="color:${(metrics.testsFailed || 0) > 0 ? 'var(--risk)' : 'var(--mc-muted)'};">${metrics.testsFailed || 0} fail</span> &middot; <span style="color:${(metrics.bugsOpen || 0) > 0 ? 'var(--risk)' : 'var(--mc-muted)'};">${metrics.bugsOpen || 0} bugs</span>
+        </div>
+      </div>
+    </div>
+    <span id="card-reviews" hidden></span>
+  </div>
+
+</div><!-- /mc-sidebar -->
+</div><!-- /mc-layout -->
+
+</div><!-- /mc-container -->
 
 <!-- About Modal — US-0123: two-column (playbill image | mission + roster + meta).
      Parity target: plan-status.html About modal (US-0109). -->
@@ -3086,17 +3562,41 @@ setInterval(updateCycleElapsed, 1000);
 
 // US-0146: Live bar HH:MM:SS clock — ticks every second.
 (function startLiveClock() {
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
   function tick() {
-    var el = document.getElementById('pv-live-clock');
-    if (!el) return;
     var n = new Date();
-    el.textContent =
-      String(n.getHours()).padStart(2, '0') + ':' +
-      String(n.getMinutes()).padStart(2, '0') + ':' +
-      String(n.getSeconds()).padStart(2, '0');
+    var hhmmss = pad2(n.getHours()) + ':' + pad2(n.getMinutes()) + ':' + pad2(n.getSeconds());
+    // Legacy pv-live-clock (hidden)
+    var el = document.getElementById('pv-live-clock');
+    if (el) el.textContent = hhmmss;
+    // Mission Control topbar clock
+    var mcClock = document.getElementById('mc-topbar-clock');
+    if (mcClock) mcClock.textContent = hhmmss;
   }
   tick();
   setInterval(tick, 1000);
+})();
+
+// US-0148: Mission Control topbar elapsed ticker (mirrors cycle-elapsed).
+(function startTopbarElapsed() {
+  function tick() {
+    var src = document.getElementById('cycle-elapsed');
+    var dest = document.getElementById('mc-topbar-elapsed');
+    if (src && dest && dest.textContent !== src.textContent) dest.textContent = src.textContent;
+  }
+  setInterval(tick, 1000);
+})();
+
+// US-0148: Update topbar cycle number from patchCycleCounter.
+// cycle-label-text stub for patchCycleCounter compatibility
+(function ensureCycleLabelText() {
+  // patchCycleCounter writes to #cycle-label-text; ensure it exists.
+  if (!document.getElementById('cycle-label-text')) {
+    var el = document.createElement('span');
+    el.id = 'cycle-label-text';
+    el.style.display = 'none';
+    document.body.appendChild(el);
+  }
 })();
 </script>
 
