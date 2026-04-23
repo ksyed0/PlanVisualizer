@@ -85,6 +85,66 @@ describe('theme.js — parity with render-html re-export', () => {
   });
 });
 
+describe('theme token exports — US-0137', () => {
+  const theme = require('../../tools/lib/theme');
+
+  test('palette exports ink scale', () => {
+    expect(theme.palette.ink0).toMatch(/oklch/);
+  });
+
+  test('chartColors has ok/warn/risk/info/accent/mute', () => {
+    ['ok', 'warn', 'risk', 'info', 'accent', 'mute'].forEach((k) => expect(theme.chartColors[k]).toBeDefined());
+  });
+
+  test('type has sans and mono', () => {
+    expect(theme.type.sans).toBeDefined();
+    expect(theme.type.mono).toBeDefined();
+  });
+
+  test('radius.full is 9999px', () => {
+    expect(theme.radius.full).toBe('9999px');
+  });
+
+  test('shadow.card is defined', () => {
+    expect(theme.shadow.card).toBeDefined();
+  });
+
+  test('spacing[1] is 4px', () => {
+    expect(theme.spacing['1']).toBe('4px');
+  });
+
+  test('chromeTokens contains --chrome-bg and no hex', () => {
+    expect(theme.chromeTokens).toContain('--chrome-bg');
+    expect(theme.chromeTokens).not.toMatch(/#[0-9a-fA-F]{3,6}\b/);
+  });
+
+  test('generateCssTokens has :root and [data-theme="dark"] and no hex', () => {
+    const css = theme.generateCssTokens();
+    expect(css).toContain(':root');
+    expect(css).toContain('[data-theme="dark"]');
+    expect(css).not.toMatch(/#[0-9a-fA-F]{3,6}\b/);
+  });
+
+  test('generateDashboardCssTokens has --live-accent and no hex', () => {
+    const css = theme.generateDashboardCssTokens();
+    expect(css).toContain('--live-accent');
+    expect(css).not.toMatch(/#[0-9a-fA-F]{3,6}\b/);
+  });
+});
+
+describe('US-0141 — Dual Theme tokens', () => {
+  const theme = require('../../tools/lib/theme');
+
+  test('generateCssTokens has dark mode block', () => {
+    expect(theme.generateCssTokens()).toContain('[data-theme="dark"]');
+  });
+
+  test('dark mode bg is not pure black', () => {
+    expect(theme.generateCssTokens()).not.toContain('#000');
+    expect(theme.generateCssTokens()).not.toContain('#fff');
+  });
+});
+
 describe('theme.js — OKLCH palette tokens (US-0137)', () => {
   const { palette, chartColors, generateCssTokens } = require('../../tools/lib/theme');
 

@@ -65,17 +65,27 @@ function badge(text) {
 // All values use OKLCH (perceptually uniform). Support: Chrome 111+, Firefox 113+, Safari 15.4+.
 const palette = {
   ink0: 'oklch(99% 0.004 95)',
-  ink1: 'oklch(97% 0.004 95)',
-  ink2: 'oklch(94% 0.006 95)',
-  ink3: 'oklch(88% 0.008 95)',
-  ink4: 'oklch(70% 0.012 95)',
-  ink5: 'oklch(52% 0.015 95)',
-  ink6: 'oklch(38% 0.015 95)',
-  ink7: 'oklch(24% 0.018 95)',
-  ink8: 'oklch(16% 0.018 95)',
-  ink9: 'oklch(10% 0.018 95)',
-  ink10: 'oklch(6%  0.018 95)',
+  ink1: 'oklch(97% 0.006 95)',
+  ink2: 'oklch(94% 0.008 95)',
+  ink3: 'oklch(88% 0.010 95)',
+  ink4: 'oklch(78% 0.012 95)',
+  ink5: 'oklch(65% 0.014 95)',
+  ink6: 'oklch(50% 0.014 95)',
+  ink7: 'oklch(36% 0.014 95)',
+  ink8: 'oklch(16% 0.012 95)',
+  ink9: 'oklch(10% 0.008 95)',
+  ink10: 'oklch(6%  0.006 95)',
 
+  // Named hues for semantic use
+  indigo: 'oklch(56% 0.22 264)',
+  orange: 'oklch(72% 0.19 46)',
+  green: 'oklch(66% 0.17 145)',
+  amber: 'oklch(76% 0.17 80)',
+  red: 'oklch(58% 0.22 25)',
+  teal: 'oklch(60% 0.14 185)',
+  violet: 'oklch(56% 0.22 290)',
+
+  // Legacy aliases (kept for backward compatibility)
   planAccent: 'oklch(62% 0.19 268)',
   planAccentSoft: 'oklch(62% 0.19 268 / 0.14)',
   planAccentInk: 'oklch(42% 0.18 268)',
@@ -83,20 +93,55 @@ const palette = {
   liveAccentSoft: 'oklch(72% 0.19 38 / 0.18)',
   liveAccentInk: 'oklch(55% 0.18 38)',
 
-  ok: 'oklch(68% 0.15 150)',
-  warn: 'oklch(74% 0.16 78)',
-  risk: 'oklch(64% 0.20 25)',
-  info: 'oklch(66% 0.14 240)',
+  ok: 'oklch(66% 0.17 145)',
+  warn: 'oklch(76% 0.17 80)',
+  risk: 'oklch(58% 0.22 25)',
+  info: 'oklch(60% 0.14 185)',
 };
 
 const chartColors = {
-  ok: palette.ok,
-  warn: palette.warn,
-  risk: palette.risk,
-  info: palette.info,
-  accent: palette.planAccent,
-  mute: palette.ink4,
+  ok: palette.green,
+  warn: palette.amber,
+  risk: palette.red,
+  info: palette.teal,
+  accent: palette.indigo,
+  mute: palette.ink5,
 };
+
+const type = {
+  sans: "-apple-system, BlinkMacSystemFont, 'Inter', sans-serif",
+  display: "'Inter', sans-serif",
+  mono: "'Departure Mono', 'Fira Code', monospace",
+};
+
+const radius = { sm: '4px', md: '8px', lg: '12px', full: '9999px' };
+
+const shadow = {
+  card: '0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04)',
+  cardHover: '0 4px 12px rgba(0,0,0,.12)',
+  modal: '0 20px 60px rgba(0,0,0,.24)',
+};
+
+const spacing = Object.fromEntries([1, 2, 3, 4, 5, 6, 8, 10, 12, 16].map((n) => [String(n), `${n * 4}px`]));
+
+const chromeTokens = `
+  --chrome-bg:      oklch(18% 0.015 220);
+  --chrome-brand:   ${palette.ink0};
+  --chrome-text:    ${palette.ink2};
+  --chrome-muted:   ${palette.ink5};
+  --chrome-subtle:  ${palette.ink6};
+  --chrome-seg-active-bg: oklch(100% 0 0 / 0.08);
+  --chrome-hover-bg:      oklch(100% 0 0 / 0.07);
+  --chrome-theme-bg:      oklch(100% 0 0 / 0.07);
+  --chrome-theme-active:  oklch(100% 0 0 / 0.12);
+  --chrome-report-bg: color-mix(in oklab, ${palette.indigo} 25%, transparent);
+  --chrome-report-text: oklch(79% 0.10 264);
+  --chrome-report-pip: oklch(68% 0.14 264);
+  --chrome-live-bg:   color-mix(in oklab, ${palette.orange} 20%, transparent);
+  --chrome-live-text: oklch(83% 0.10 46);
+  --chrome-live-pip:  oklch(77% 0.14 46);
+  --chrome-border:    oklch(100% 0 0 / 0.06);
+`.trim();
 
 function generateCssTokens() {
   return `/* === US-0137 OKLCH design tokens === */
@@ -122,6 +167,8 @@ function generateCssTokens() {
     --clr-accent-subtle: color-mix(in oklab, var(--plan-accent) 10%, transparent);
     --shadow-card:       var(--shadow);
     --shadow-card-hover: var(--shadow-lg);
+    --surface-alt:       oklch(25% 0.015 220);
+    ${chromeTokens}
   }
 
   [data-theme="light"] {
@@ -225,4 +272,30 @@ function generateCssTokens() {
   }`.trim();
 }
 
-module.exports = { BADGE_TONE, badge, palette, chartColors, generateCssTokens };
+function generateDashboardCssTokens() {
+  return `:root {
+  --live-accent: ${palette.orange}; --live-accent-soft: oklch(72% 0.12 46 / 0.15);
+  --report-accent: ${palette.indigo}; --bg: ${palette.ink1}; --surface: ${palette.ink0};
+  --text: ${palette.ink9}; --text-muted: ${palette.ink5}; --border: ${palette.ink3};
+  --ok: ${palette.green}; --warn: ${palette.amber}; --risk: ${palette.red}; --info: ${palette.teal};
+  ${chromeTokens}
+}
+[data-theme="dark"] {
+  --bg: ${palette.ink10}; --surface: ${palette.ink8}; --text: ${palette.ink1};
+  --text-muted: ${palette.ink5}; --border: oklch(28% 0.018 95);
+}`.trim();
+}
+
+module.exports = {
+  BADGE_TONE,
+  badge,
+  palette,
+  chartColors,
+  type,
+  radius,
+  shadow,
+  spacing,
+  chromeTokens,
+  generateCssTokens,
+  generateDashboardCssTokens,
+};
