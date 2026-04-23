@@ -2633,7 +2633,7 @@ US-0135 (EPIC-0020): As a Plan-Status viewer, I want a Status hero that answers 
 Priority: High (P0)
 Estimate: M
 Status: Done
-Branch: feature/US-0135-status-hero
+Branch: feature/EPIC-0020-cross-dashboard-redesign
 Acceptance Criteria:
 
 - [x] AC-0488: Status tab renders a hero card with release name, a one-word verdict (On track / At risk / Off track), a stable/warn/risk chip, and a one-sentence narrative summary
@@ -2650,7 +2650,7 @@ US-0136 (EPIC-0020): As any viewer, I want the corporate navy gradient header re
 Priority: High (P0)
 Estimate: S
 Status: Done
-Branch: feature/US-0136-neutral-chrome
+Branch: feature/EPIC-0020-cross-dashboard-redesign
 Acceptance Criteria:
 
 - [x] AC-0492: The fixed topbar uses a blurred neutral surface (surface/opacity token) with a 1px bottom border, no saturated gradient
@@ -2667,7 +2667,7 @@ US-0137 (EPIC-0020): As a developer, I want a shared theme.js (tokens.js) module
 Priority: High (P0)
 Estimate: M
 Status: Done
-Branch: feature/US-0137-shared-tokens
+Branch: feature/EPIC-0020-cross-dashboard-redesign
 Acceptance Criteria:
 
 - [x] AC-0496: tools/lib/theme.js exports `palette`, `type`, `radius`, `shadow`, `spacing`, `charts` objects consumed by both render-html.js and dashboard.html generators
@@ -2684,7 +2684,7 @@ US-0138 (EPIC-0020): As a viewer, I want the page chrome to carry a REPORT / LIV
 Priority: Medium (P1)
 Estimate: XS
 Status: Done
-Branch: feature/US-0138-mode-badge
+Branch: feature/EPIC-0020-cross-dashboard-redesign
 Acceptance Criteria:
 
 - [x] AC-0500: Badge renders as a pill with a colored pip + uppercase mono text ("REPORT" / "LIVE")
@@ -2701,7 +2701,7 @@ US-0139 (EPIC-0020): As a Plan-Status viewer, I want the Status tab to surface a
 Priority: High (P0)
 Estimate: M
 Status: Done
-Branch: feature/US-0139-status-tab-richer
+Branch: feature/EPIC-0020-cross-dashboard-redesign
 Acceptance Criteria:
 
 - [x] AC-0504: Status tab includes a Top Risks card with severity-chipped items drawn from open bugs + blocked stories + overdue epics
@@ -2718,7 +2718,7 @@ US-0140 (EPIC-0020): As a viewer, I want every chart across Status, Charts, Tren
 Priority: High (P0)
 Estimate: M
 Status: Done
-Branch: feature/US-0140-chart-palette
+Branch: feature/EPIC-0020-cross-dashboard-redesign
 Acceptance Criteria:
 
 - [x] AC-0508: A single chartColors map in theme.js defines ok/warn/risk/info/accent/mute keys
@@ -2735,7 +2735,7 @@ US-0141 (EPIC-0020): As a viewer, I want first-class dark and light themes on bo
 Priority: High (P0)
 Estimate: M
 Status: Done
-Branch: feature/US-0141-dual-theme
+Branch: feature/EPIC-0020-cross-dashboard-redesign
 Acceptance Criteria:
 
 - [x] AC-0512: [data-theme="dark"] and [data-theme="light"] declarations cover every surface, border, shadow, and chip in both dashboards
@@ -2752,7 +2752,7 @@ US-0142 (EPIC-0020): As an Agentic viewer, I want currently-active agents to pop
 Priority: High (P0)
 Estimate: S
 Status: Done
-Branch: feature/US-0142-active-agent-prominence
+Branch: feature/EPIC-0020-cross-dashboard-redesign
 Acceptance Criteria:
 
 - [x] AC-0516: Active agent cards render with a 3px left accent rail in live-accent, a tinted background (~9% accent mix), and an outlined border in live-accent
@@ -2769,7 +2769,7 @@ US-0143 (EPIC-0020): As an Agentic viewer, I want Conductor hand-offs to be visi
 Priority: Medium (P1)
 Estimate: S
 Status: Done
-Branch: feature/US-0143-conductor-dispatch-hold
+Branch: feature/EPIC-0020-cross-dashboard-redesign
 Acceptance Criteria:
 
 - [x] AC-0520: When Conductor transitions active → idle, the UI holds the active state for a minimum of 3s before fading back
@@ -2785,7 +2785,7 @@ US-0144 (EPIC-0020): As an Agentic viewer, I want the 6-phase Pipeline to stop d
 Priority: Medium (P1)
 Estimate: S
 Status: Done
-Branch: feature/US-0144-pipeline-scope
+Branch: feature/EPIC-0020-cross-dashboard-redesign
 Acceptance Criteria:
 
 - [x] AC-0523: Pipeline phase cards show phase number, name, agent-group label, and a partial-progress fill bar
@@ -2802,7 +2802,7 @@ US-0145 (EPIC-0020): As an Agentic viewer, I want a prominent terminal-style Eve
 Priority: High (P0)
 Estimate: M
 Status: Done
-Branch: feature/US-0145-event-log
+Branch: feature/EPIC-0020-cross-dashboard-redesign
 Acceptance Criteria:
 
 - [x] AC-0527: Event Log renders as a main-column card (not sidebar) with monospace rows: timestamp · agent · message
@@ -2819,7 +2819,7 @@ US-0146 (EPIC-0020): As an Agentic viewer, I want a persistent Live Bar carrying
 Priority: Medium (P1)
 Estimate: S
 Status: Done
-Branch: feature/US-0146-live-bar
+Branch: feature/EPIC-0020-cross-dashboard-redesign
 Acceptance Criteria:
 
 - [x] AC-0531: Live Bar sits between chrome and masthead, ~48px tall, with a horizontal live-accent gradient wash
@@ -2835,12 +2835,12 @@ Acceptance Criteria:
 US-0147 (EPIC-0020): As an Agentic viewer, I want the Agent Workload widget to reflect live pipeline assignments from sdlc-status.json rather than static Assignee fields in RELEASE_PLAN.md, so that the workload display stays accurate as stories pass through multiple agents.
 Priority: Medium (P1)
 Estimate: S
-Status: Planned
-Branch: feature/US-0147-agent-workload-live-data
+Status: Done
+Branch: feature/EPIC-0020-cross-dashboard-redesign
 Acceptance Criteria:
 
-- [ ] AC-0535: Agent Workload widget reads from data.sdlcStatus (derived from docs/sdlc-status.json) — not story.assignee — and shows in-flight story count per named agent
-- [ ] AC-0536: Agent rows use colour and icon from agents.config.json so each agent is visually distinct
-- [ ] AC-0537: Stories counted as "active" for an agent while that agent's phase is in progress; completed stories are excluded from the bar length but shown as a "(N done)" sub-label
-- [ ] AC-0538: When sdlc-status.json is absent or unparseable the widget falls back gracefully to a "No live data" empty state rather than the old Assignee-derived "Unassigned N" row
+- [x] AC-0535: Agent Workload widget reads from data.sdlcStatus (derived from docs/sdlc-status.json) — not story.assignee — and shows in-flight story count per named agent
+- [x] AC-0536: Agent rows use colour and icon from agents.config.json so each agent is visually distinct
+- [x] AC-0537: Stories counted as "active" for an agent while that agent's phase is in progress; completed stories are excluded from the bar length but shown as a "(N done)" sub-label
+- [x] AC-0538: When sdlc-status.json is absent or unparseable the widget falls back gracefully to a "No live data" empty state rather than the old Assignee-derived "Unassigned N" row
       Dependencies: US-0142, US-0145

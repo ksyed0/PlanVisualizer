@@ -74,6 +74,34 @@ describe('theme.js — badge() fallback for unknown labels', () => {
   });
 });
 
+describe('AC-0498 — no hex literals in generated HTML', () => {
+  test('renderHtml output contains no hex colour literals', () => {
+    const { renderHtml } = require('../../tools/lib/render-html');
+    const data = {
+      epics: [],
+      stories: [],
+      tasks: [],
+      testCases: [],
+      bugs: [],
+      lessons: [],
+      costs: { _totals: { costUsd: 0, projectedUsd: 0 } },
+      atRisk: {},
+      coverage: { available: false },
+      recentActivity: [],
+      generatedAt: new Date().toISOString(),
+      commitSha: 'x',
+      projectName: 'T',
+      tagline: '',
+      risk: { byStory: new Map(), byEpic: new Map() },
+      sdlcStatus: null,
+      completion: null,
+    };
+    const html = renderHtml(data);
+    const hits = html.match(/#[0-9a-fA-F]{3,6}\b|rgb\(|rgba\(/g) || [];
+    expect(hits).toHaveLength(0);
+  });
+});
+
 describe('theme.js — parity with render-html re-export', () => {
   it('render-html re-exports the same BADGE_TONE object', () => {
     // AC-0431: existing render-html callers must keep seeing BADGE_TONE /
@@ -82,6 +110,66 @@ describe('theme.js — parity with render-html re-export', () => {
     const renderHtml = require('../../tools/lib/render-html');
     expect(renderHtml.BADGE_TONE).toBe(BADGE_TONE);
     expect(renderHtml.badge).toBe(badge);
+  });
+});
+
+describe('theme token exports — US-0137', () => {
+  const theme = require('../../tools/lib/theme');
+
+  test('palette exports ink scale', () => {
+    expect(theme.palette.ink0).toMatch(/oklch/);
+  });
+
+  test('chartColors has ok/warn/risk/info/accent/mute', () => {
+    ['ok', 'warn', 'risk', 'info', 'accent', 'mute'].forEach((k) => expect(theme.chartColors[k]).toBeDefined());
+  });
+
+  test('type has sans and mono', () => {
+    expect(theme.type.sans).toBeDefined();
+    expect(theme.type.mono).toBeDefined();
+  });
+
+  test('radius.full is 9999px', () => {
+    expect(theme.radius.full).toBe('9999px');
+  });
+
+  test('shadow.card is defined', () => {
+    expect(theme.shadow.card).toBeDefined();
+  });
+
+  test('spacing[1] is 4px', () => {
+    expect(theme.spacing['1']).toBe('4px');
+  });
+
+  test('chromeTokens contains --chrome-bg and no hex', () => {
+    expect(theme.chromeTokens).toContain('--chrome-bg');
+    expect(theme.chromeTokens).not.toMatch(/#[0-9a-fA-F]{3,6}\b/);
+  });
+
+  test('generateCssTokens has :root and [data-theme="dark"] and no hex', () => {
+    const css = theme.generateCssTokens();
+    expect(css).toContain(':root');
+    expect(css).toContain('[data-theme="dark"]');
+    expect(css).not.toMatch(/#[0-9a-fA-F]{3,6}\b/);
+  });
+
+  test('generateDashboardCssTokens has --live-accent and no hex', () => {
+    const css = theme.generateDashboardCssTokens();
+    expect(css).toContain('--live-accent');
+    expect(css).not.toMatch(/#[0-9a-fA-F]{3,6}\b/);
+  });
+});
+
+describe('US-0141 — Dual Theme tokens', () => {
+  const theme = require('../../tools/lib/theme');
+
+  test('generateCssTokens has dark mode block', () => {
+    expect(theme.generateCssTokens()).toContain('[data-theme="dark"]');
+  });
+
+  test('dark mode bg is not pure black', () => {
+    expect(theme.generateCssTokens()).not.toContain('#000');
+    expect(theme.generateCssTokens()).not.toContain('#fff');
   });
 });
 
@@ -145,5 +233,36 @@ describe('theme.js — OKLCH palette tokens (US-0137)', () => {
   it('generateCssTokens output contains no bare hex literals', () => {
     const css = generateCssTokens();
     expect(css).not.toMatch(/#[0-9a-fA-F]{3,8}(?![0-9a-fA-F*])/);
+  });
+});
+
+// US-0141: pvSetTheme() persistence in render-scripts.js
+describe('US-0141 — pvSetTheme in renderScripts output', () => {
+  const { renderScripts } = require('../../tools/lib/render-scripts');
+
+  it('renderScripts output defines pvSetTheme function', () => {
+    const html = renderScripts({ data: { sdlcStatus: null } });
+    expect(html).toContain('function pvSetTheme');
+  });
+
+  it('pvSetTheme persists to localStorage under pv-theme key', () => {
+    const html = renderScripts({ data: { sdlcStatus: null } });
+    expect(html).toContain("localStorage.setItem('pv-theme'");
+  });
+
+  it('init reads localStorage pv-theme before falling back to prefers-color-scheme', () => {
+    const html = renderScripts({ data: { sdlcStatus: null } });
+    expect(html).toContain("localStorage.getItem('pv-theme')");
+    expect(html).toContain('prefers-color-scheme: dark');
+  });
+
+  it('setTheme is an alias for pvSetTheme (backward compat)', () => {
+    const html = renderScripts({ data: { sdlcStatus: null } });
+    expect(html).toContain('var setTheme = pvSetTheme');
+  });
+
+  it('OS theme change listener is wired when no stored pref exists', () => {
+    const html = renderScripts({ data: { sdlcStatus: null } });
+    expect(html).toContain("addEventListener('change'");
   });
 });
