@@ -1,6 +1,7 @@
 'use strict';
 
 const { esc, jsEsc, usd, normalizeStoryRef } = require('./render-utils');
+const { renderChrome: renderChromeShared, CHROME_CSS } = require('./render-chrome');
 
 // US-0138: Mode badge — REPORT (static pip) or LIVE (pulsing pip).
 // Plan-Status always renders REPORT. Agentic renders LIVE in generate-dashboard.js.
@@ -174,9 +175,10 @@ function renderSidebar() {
   </aside>`;
 }
 
-// US-0136: Frosted-glass neutral chrome. Replaces the saturated navy gradient topbar.
+// US-0136/US-0137: Frosted-glass neutral chrome. Replaces the saturated navy gradient topbar.
 // Height ≤52px. Contains: brand, dashboard switcher, mode badge, about, theme toggle.
 // renderCompletionBanner() renders separately below this — do not move it.
+// CHROME_CSS (from render-chrome.js) is embedded via renderHtml's <style> block.
 function renderChrome(data) {
   const projectName = esc((data && data.projectName) || 'Plan Visualizer');
   return `
@@ -193,15 +195,15 @@ function renderChrome(data) {
     <span id="gen-time" data-iso="${esc((data && data.generatedAt) || '')}" style="font-size:11px;color:var(--text-mute);white-space:nowrap"></span>
     ${renderModeBadge('report')}
     <!-- BUG-0193: Search button restored to chrome -->
-    <button class="pv-iconbtn" onclick="openSearch && openSearch()" aria-label="Search (⌘K)" id="search-btn" style="gap:5px">
-      <span aria-hidden="true" style="font-size:13px">⌘K</span>
+    <button class="pv-iconbtn" onclick="openSearch && openSearch()" aria-label="Search (\u2318K)" id="search-btn" style="gap:5px">
+      <span aria-hidden="true" style="font-size:13px">\u2318K</span>
     </button>
     <button class="pv-iconbtn" onclick="openAbout && openAbout()" aria-label="About">
-      <span aria-hidden="true">ⓘ</span> About
+      <span aria-hidden="true">\u24d8</span> About
     </button>
     <div class="pv-theme-segs" role="group" aria-label="Theme">
-      <button onclick="setTheme('light')" id="theme-btn-light" class="pv-seg" aria-pressed="false">☀ Light</button>
-      <button onclick="setTheme('dark')"  id="theme-btn-dark"  class="pv-seg" aria-pressed="false">☾ Dark</button>
+      <button onclick="setTheme('light')" id="theme-btn-light" class="pv-seg" aria-pressed="false">\u2600 Light</button>
+      <button onclick="setTheme('dark')"  id="theme-btn-dark"  class="pv-seg" aria-pressed="false">\u263e Dark</button>
     </div>
   </header>`;
 }
@@ -210,12 +212,12 @@ function renderCompletionBanner(data) {
   if (!data.completion) return '';
   const { likelyDate, rangeStart, rangeEnd, velocityWeeks } = data.completion;
   return `
-  <div id="completion-banner" style="background:#0f172a;border-bottom:1px solid #1e293b;padding:6px 24px;display:flex;align-items:center;gap:8px;font-size:12px;flex-wrap:wrap">
-    <span style="color:#94a3b8">Estimated completion:</span>
-    <span style="color:#fbbf24;font-weight:600">${esc(likelyDate)} (likely)</span>
-    <span style="color:#475569">·</span>
-    <span style="color:#c4b5fd">${esc(rangeStart)} – ${esc(rangeEnd)} range</span>
-    <span style="color:#475569;font-size:11px;margin-left:auto">based on ${esc(String(velocityWeeks))}-wk velocity</span>
+  <div id="completion-banner" style="background:var(--bg-sunk,oklch(10% 0.008 95));border-bottom:1px solid var(--border,oklch(28% 0.018 95));padding:6px 24px;display:flex;align-items:center;gap:8px;font-size:12px;flex-wrap:wrap">
+    <span style="color:var(--text-muted,var(--text-dim))">Estimated completion:</span>
+    <span style="color:var(--warn);font-weight:600">${esc(likelyDate)} (likely)</span>
+    <span style="color:var(--text-muted,var(--text-dim))">·</span>
+    <span style="color:var(--info)">${esc(rangeStart)} – ${esc(rangeEnd)} range</span>
+    <span style="color:var(--text-muted,var(--text-dim));font-size:11px;margin-left:auto">based on ${esc(String(velocityWeeks))}-wk velocity</span>
   </div>`;
 }
 
@@ -226,4 +228,5 @@ module.exports = {
   renderCompletionBanner,
   renderModeBadge,
   renderMasthead,
+  CHROME_CSS,
 };

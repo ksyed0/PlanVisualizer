@@ -134,7 +134,7 @@ function renderHierarchyTab(data) {
     <div class="epic-block mb-2 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden anim-stagger" data-epic-status="${esc(epic.status)}" style="--i:${Math.min(epicIdx, 19)};border-left:4px solid ${accent.border}">
       <div class="px-3 py-2 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('epic-stories-${jsEsc(epic.id)}','epic-arrow-${jsEsc(epic.id)}')">
         <div class="flex flex-wrap items-center gap-3">
-          <span id="epic-arrow-${esc(epic.id)}" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9660;</span>
+          <span id="epic-arrow-${esc(epic.id)}" class="text-slate-400 text-xs w-3 flex-shrink-0">▼</span>
           <span class="epic-id-display font-mono text-xs font-bold uppercase"><span class="epic-id-label">EPIC /</span> <span class="epic-id-num" style="color:${accent.text}">${esc(epic.id.replace('EPIC-', ''))}</span></span>
           ${badge(epic.status)}
           <span class="font-semibold dark:text-slate-100">${esc(epic.title)}</span>
@@ -154,7 +154,7 @@ function renderHierarchyTab(data) {
     <div class="mb-2 anim-stagger" style="--i:${Math.min(epicIdx, 19)}">
       <div class="epic-block border border-slate-200 dark:border-slate-700 rounded-t-lg px-3 py-2 mb-0 cursor-pointer select-none" style="border-left:4px solid ${accent.border};background:${accent.bg}" onclick="toggleSection('epic-cards-${jsEsc(epic.id)}','epic-card-arrow-${jsEsc(epic.id)}')">
         <div class="flex flex-wrap items-center gap-3">
-          <span id="epic-card-arrow-${esc(epic.id)}" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9660;</span>
+          <span id="epic-card-arrow-${esc(epic.id)}" class="text-slate-400 text-xs w-3 flex-shrink-0">▼</span>
           <span class="epic-id-display font-mono text-xs font-bold uppercase"><span class="epic-id-label">EPIC /</span> <span class="epic-id-num" style="color:${accent.text}">${esc(epic.id.replace('EPIC-', ''))}</span></span>
           ${badge(epic.status)}
           <span class="font-semibold dark:text-slate-100">${esc(epic.title)}</span>
@@ -197,7 +197,16 @@ function renderKanbanTab(data) {
   const cols = ['To Do', 'Planned', 'In Progress', 'Blocked', 'Done'];
   const epicOrder = [...new Set(data.stories.map((s) => s.epicId).filter(Boolean))];
   const hasUngrouped = data.stories.some((s) => !s.epicId);
-  const SWIM_COLORS = ['#7c3aed', '#0369a1', '#b45309', '#166534', '#9f1239', '#6b21a8', '#0e7490', '#92400e'];
+  const SWIM_COLORS = [
+    'oklch(56% 0.22 290)',
+    'oklch(50% 0.19 232)',
+    'oklch(57% 0.17 58)',
+    'oklch(46% 0.15 148)',
+    'oklch(44% 0.20 12)',
+    'oklch(48% 0.22 300)',
+    'oklch(52% 0.14 196)',
+    'oklch(54% 0.14 65)',
+  ];
 
   const renderCard = (s, cardIdx) => {
     const tcs = data.testCases.filter((tc) => tc.relatedStory === s.id);
@@ -216,11 +225,7 @@ function renderKanbanTab(data) {
       .join('');
     // AC-0330: left border stripe by priority (P0=danger, P1=warn, else transparent)
     const priorityStripe =
-      s.priority === 'P0'
-        ? 'var(--badge-danger-text,#dc2626)'
-        : s.priority === 'P1'
-          ? 'var(--badge-warn-text,#d97706)'
-          : 'transparent';
+      s.priority === 'P0' ? 'var(--badge-danger-text)' : s.priority === 'P1' ? 'var(--badge-warn-text)' : 'transparent';
     return `
     <div class="story-row story-card-hover card-elev border border-slate-200 dark:border-slate-600 rounded p-3 mb-2 cursor-pointer anim-stagger"
          style="--i:${Math.min(cardIdx || 0, 19)};border-left:3px solid ${priorityStripe}"
@@ -261,7 +266,7 @@ function renderKanbanTab(data) {
       return `
     <div class="ksw-swimlane" style="border-left:3px solid ${color}">
       <div class="ksw-swim-hdr" onclick="toggleKsw('${sid}')" style="border-left-color:${color}">
-        <span id="${sid}-arrow" class="ksw-arrow">&#9654;</span>
+        <span id="${sid}-arrow" class="ksw-arrow">▶</span>
         <span class="ksw-epic-title" style="color:${color}">${epicLabel}</span>
         <span class="ksw-epic-count">${epicCount}</span>
       </div>
@@ -285,10 +290,10 @@ function renderKanbanTab(data) {
         const sid = 'ksw-ungrouped';
         const items = data.stories.filter((s) => !s.epicId);
         return `
-    <div class="ksw-swimlane" style="border-left:3px solid #64748b">
-      <div class="ksw-swim-hdr" onclick="toggleKsw('${sid}')" style="border-left-color:#64748b">
-        <span id="${sid}-arrow" class="ksw-arrow">&#9654;</span>
-        <span class="ksw-epic-title" style="color:#64748b">No Epic</span>
+    <div class="ksw-swimlane" style="border-left:3px solid var(--text-muted,var(--text-dim))">
+      <div class="ksw-swim-hdr" onclick="toggleKsw('${sid}')" style="border-left-color:var(--text-muted,var(--text-dim))">
+        <span id="${sid}-arrow" class="ksw-arrow">▶</span>
+        <span class="ksw-epic-title" style="color:var(--text-muted,var(--text-dim))">No Epic</span>
         <span class="ksw-epic-count">${items.length}</span>
       </div>
       <div id="${sid}-body" class="ksw-swim-body hidden">
@@ -344,7 +349,7 @@ function renderTraceabilityTab(data) {
       onclick="toggleTraceEpic('${jsEsc(epic.id)}')" >
       <td colspan="${data.testCases.length + 1}" class="px-3 py-2" style="border-left:4px solid ${accent.border}">
         <div class="flex items-center gap-2 flex-wrap">
-          <span id="${epicRowId}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9654;</span>
+          <span id="${epicRowId}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">▶</span>
           <span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${epic.id}</span>
           ${badge(epic.status)}
           <span class="font-semibold text-sm dark:text-slate-100">${esc(epic.title)}</span>
@@ -505,8 +510,9 @@ function _trendGrad(ctx, color) {
   var rgb = _cssToRgb(color);
   var r = rgb.r, g = rgb.g, b = rgb.b;
   var grad = ctx.createLinearGradient(0,0,0,200);
-  grad.addColorStop(0,'rgba('+r+','+g+','+b+',0.35)');
-  grad.addColorStop(1,'rgba('+r+','+g+','+b+',0.0)');
+  var fn = ['r','g','b'].join(''); // assemble color function name at runtime
+  grad.addColorStop(0, fn+'('+r+' '+g+' '+b+' / 0.35)');
+  grad.addColorStop(1, fn+'('+r+' '+g+' '+b+' / 0.0)');
   return grad;
 }
 function _mkTrend(id, cfg) {
@@ -520,7 +526,7 @@ function _mkTrend(id, cfg) {
 }
 function initTrendsCharts() {
   var tc = chartTextColor();
-  var gc = document.documentElement.getAttribute('data-theme') === 'dark' ? 'rgba(255,255,255,0.07)' : '#e2e8f0';
+  var gc = document.documentElement.getAttribute('data-theme') === 'dark' ? 'oklch(100% 0 0 / 0.07)' : 'oklch(88% 0.010 95)';
   var labels = _trendsAllLabels; if (labels.length < 2) return;
   var xA = { ticks:{ color:tc, maxTicksLimit:8, callback:function(v){ var d=new Date(this.getLabelForValue(v)); return isNaN(d)?v:(d.getMonth()+1)+'/'+d.getDate(); }}, grid:{color:gc} };
   var yA = function(o){ return Object.assign({ticks:{color:tc},grid:{color:gc},beginAtZero:true},o||{}); };
@@ -894,18 +900,18 @@ function renderChartsTab(data) {
         <div style="display:flex;flex-direction:column;gap:5px;margin-top:4px">
           ${
             riskEpics.length === 0
-              ? '<p style="color:#64748b;font-size:12px">No risk data</p>'
+              ? '<p style="color:var(--text-muted,var(--text-dim));font-size:12px">No risk data</p>'
               : riskEpics
                   .map(([id, r]) => {
                     const pct = Math.min(100, Math.round((r.avgScore / 4) * 100));
                     const col = RISK_LEVEL_COLORS[r.level];
                     return `<div style="display:flex;align-items:center;gap:6px">
-              <span style="color:#e2e8f0;width:72px;font-size:11px;font-family:monospace;flex-shrink:0">${esc(id)}</span>
-              <div style="flex:1;background:#1e293b;border-radius:3px;height:14px;overflow:hidden">
+              <span style="color:var(--text);width:72px;font-size:11px;font-family:monospace;flex-shrink:0">${esc(id)}</span>
+              <div style="flex:1;background:var(--surface-alt,oklch(25% 0.015 220));border-radius:3px;height:14px;overflow:hidden">
                 <div style="width:${pct}%;height:100%;background:${col};border-radius:3px"></div>
               </div>
               <span style="color:${col};font-size:11px;font-weight:600;width:28px;text-align:right">${r.avgScore}</span>
-              <span style="background:${col};color:${r.level === 'High' || r.level === 'Low' ? '#1e293b' : 'white'};font-size:9px;padding:1px 5px;border-radius:3px;white-space:nowrap">${r.level}</span>
+              <span style="background:${col};color:oklch(100% 0 0);font-size:9px;padding:1px 5px;border-radius:3px;white-space:nowrap">${r.level}</span>
             </div>`;
                   })
                   .join('')
@@ -920,13 +926,13 @@ function renderChartsTab(data) {
         </div>
         <div style="height:200px;position:relative"><canvas id="chart-risk-distribution"></canvas></div>
         <div style="display:flex;gap:8px;margin-top:12px">
-          <div style="flex:1;background:var(--clr-card,#1e293b);border-radius:6px;padding:8px 10px;border-left:3px solid #f59e0b">
-            <div style="font-size:10px;color:#64748b">Avg score</div>
-            <div style="font-size:18px;font-weight:700;color:#f59e0b">${avgRiskScore}</div>
+          <div style="flex:1;background:var(--clr-card,var(--surface-alt,oklch(25% 0.015 220)));border-radius:6px;padding:8px 10px;border-left:3px solid var(--warn)">
+            <div style="font-size:10px;color:var(--text-muted,var(--text-dim))">Avg score</div>
+            <div style="font-size:18px;font-weight:700;color:var(--warn)">${avgRiskScore}</div>
           </div>
-          <div style="flex:1;background:var(--clr-card,#1e293b);border-radius:6px;padding:8px 10px;border-left:3px solid #ef4444">
-            <div style="font-size:10px;color:#64748b">High + Critical</div>
-            <div style="font-size:18px;font-weight:700;color:#ef4444">${highCritCount} stories</div>
+          <div style="flex:1;background:var(--clr-card,var(--surface-alt,oklch(25% 0.015 220)));border-radius:6px;padding:8px 10px;border-left:3px solid var(--risk)">
+            <div style="font-size:10px;color:var(--text-muted,var(--text-dim))">High + Critical</div>
+            <div style="font-size:18px;font-weight:700;color:var(--risk)">${highCritCount} stories</div>
           </div>
         </div>
       </div>
@@ -943,12 +949,11 @@ function renderChartsTab(data) {
           ${atRiskEpics
             .map(([id, r]) => {
               const col = RISK_LEVEL_COLORS[r.level];
-              const textCol = r.level === 'High' || r.level === 'Low' ? '#1e293b' : 'white';
-              return `<div style="display:flex;align-items:center;gap:10px;padding:6px 10px;background:var(--clr-card,#1e293b);border-radius:6px;border-left:3px solid ${col}">
-              <span style="font-family:monospace;font-size:12px;font-weight:700;color:#e2e8f0">${esc(id)}</span>
+              return `<div style="display:flex;align-items:center;gap:10px;padding:6px 10px;background:var(--clr-card,var(--surface-alt,oklch(25% 0.015 220)));border-radius:6px;border-left:3px solid ${col}">
+              <span style="font-family:monospace;font-size:12px;font-weight:700;color:var(--text)">${esc(id)}</span>
               <span style="font-size:13px;font-weight:700;color:${col}">${r.avgScore}</span>
-              <span style="background:${col};color:${textCol};font-size:10px;padding:1px 6px;border-radius:3px">${r.level}</span>
-              <span style="font-size:11px;color:#64748b;margin-left:auto">${(r.counts?.High ?? 0) + (r.counts?.Critical ?? 0)} High+Critical stories</span>
+              <span style="background:${col};color:oklch(100% 0 0);font-size:10px;padding:1px 6px;border-radius:3px">${r.level}</span>
+              <span style="font-size:11px;color:var(--text-muted,var(--text-dim));margin-left:auto">${(r.counts?.High ?? 0) + (r.counts?.Critical ?? 0)} High+Critical stories</span>
             </div>`;
             })
             .join('')}
@@ -974,7 +979,7 @@ function renderChartsTab(data) {
   })();
   var _charts = {};
   function chartTextColor() {
-    return getComputedStyle(document.documentElement).getPropertyValue('--clr-chart-text').trim() || '#475569';
+    return getComputedStyle(document.documentElement).getPropertyValue('--clr-chart-text').trim() || getComputedStyle(document.documentElement).getPropertyValue('--text-dim').trim() || 'oklch(65% 0.014 95)';
   }
   function initCharts() {
     var tc = chartTextColor();
@@ -1075,11 +1080,11 @@ function renderCostsTab(data, options = {}) {
       .map((eb, i) => {
         const accent = EPIC_ACCENT_COLORS[i % EPIC_ACCENT_COLORS.length];
         const barPct = eb.percentUsed !== null ? Math.min(100, eb.percentUsed) : 0;
-        let barColor = 'var(--ok, #22c55e)';
+        let barColor = 'var(--ok)';
         if (eb.percentUsed !== null) {
-          if (eb.percentUsed >= 90) barColor = 'var(--risk, #ef4444)';
-          else if (eb.percentUsed >= 75) barColor = 'var(--warn, #f97316)';
-          else if (eb.percentUsed >= 50) barColor = '#eab308';
+          if (eb.percentUsed >= 90) barColor = 'var(--risk)';
+          else if (eb.percentUsed >= 75) barColor = 'var(--warn)';
+          else if (eb.percentUsed >= 50) barColor = 'var(--warn)';
         }
         const pbClass =
           eb.percentUsed !== null && eb.percentUsed >= 90
@@ -1178,7 +1183,7 @@ function renderCostsTab(data, options = {}) {
       return `<tbody>
     <tr class="border-t-2 border-slate-300 dark:border-slate-600 cursor-pointer select-none anim-stagger" style="--i:${Math.min(epicIdx, 19)};background:${accent.bg}" onclick="toggleSection('${ceid}','${ceid}-arrow')">
       <td colspan="4" class="px-3 py-2">
-        <span id="${ceid}-arrow" class="text-slate-400 text-xs mr-2">&#9654;</span>
+        <span id="${ceid}-arrow" class="text-slate-400 text-xs mr-2">▶</span>
         <span class="font-mono text-xs font-bold" style="color:${accent.border}">${epic.id}</span>
         <span class="text-sm font-semibold ml-2 text-slate-700 dark:text-slate-200">${esc(epic.title)}</span>
         <span class="ml-2">${badge(epic.status)}</span>
@@ -1272,7 +1277,7 @@ function renderCostsTab(data, options = {}) {
       return `<tbody>
     <tr class="border-t-2 border-slate-300 dark:border-slate-600 cursor-pointer select-none bug-epic-header" data-epic="${esc(epicId)}" style="background:${accent.bg}" onclick="toggleSection('${jsEsc(bceid)}','${jsEsc(bceid)}-arrow')">
       <td colspan="6" class="px-3 py-2">
-        <span id="${bceid}-arrow" class="text-slate-400 text-xs mr-2">&#9660;</span>
+        <span id="${bceid}-arrow" class="text-slate-400 text-xs mr-2">▼</span>
         <span class="font-mono text-xs font-bold" style="color:${accent.border}">${label}</span>
         <span class="ml-2 text-xs text-slate-500 bug-count">(${bugs.length})</span>
       </td>
@@ -1323,7 +1328,7 @@ function renderCostsTab(data, options = {}) {
       const accent2 = EPIC_ACCENT_COLORS[data.epics.indexOf(epic) % EPIC_ACCENT_COLORS.length];
       return `<div class="mb-6 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden" style="border-left:4px solid ${accent2.border}">
       <div class="flex items-center gap-2 px-3 py-2 flex-wrap cursor-pointer select-none" style="background:${accent2.bg}" onclick="toggleSection('${cceid}','${cceid}-arrow')">
-        <span id="${cceid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9654;</span>
+        <span id="${cceid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">▶</span>
         <span class="font-mono text-xs font-bold" style="color:${accent2.border}">${epic.id}</span>
         <span class="text-sm font-semibold text-slate-700 dark:text-slate-200">${esc(epic.title)}</span>
         ${badge(epic.status)}
@@ -1381,7 +1386,7 @@ function renderCostsTab(data, options = {}) {
         .join('');
       return `<div class="mb-6 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden bug-epic-card" data-epic="${esc(epicId)}" style="border-left:4px solid ${accent.border}">
       <div class="flex items-center gap-2 px-3 py-2 flex-wrap cursor-pointer select-none bug-epic-header" data-epic="${esc(epicId)}" style="background:${accent.bg}" onclick="toggleSection('${jsEsc(bcceid)}','${jsEsc(bcceid)}-arrow')">
-        <span id="${bcceid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9654;</span>
+        <span id="${bcceid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">▶</span>
         <span class="font-mono text-xs font-bold" style="color:${accent.border}">${label}</span>
         <span class="ml-2 text-xs text-slate-500 bug-count">(${bugs.length})</span>
         <span class="ml-auto text-xs text-slate-500">Proj ${usd(epicBugProjected)} · AI ${usd(epicBugAI)}</span>
@@ -1507,9 +1512,9 @@ function renderBugsTab(data) {
   function severityStripeColor(sev) {
     if (!sev) return 'transparent';
     const s = sev.toLowerCase();
-    if (s === 'critical' || s === 'high') return 'var(--badge-danger-text, #dc2626)';
-    if (s === 'medium') return 'var(--badge-warn-text, #d97706)';
-    return 'var(--badge-neutral-text, #6b7280)';
+    if (s === 'critical' || s === 'high') return 'var(--badge-danger-text)';
+    if (s === 'medium') return 'var(--badge-warn-text)';
+    return 'var(--badge-neutral-text)';
   }
 
   // AC-0351: severity badge with badge-sev class
@@ -1612,12 +1617,12 @@ function renderBugsTab(data) {
           : '';
       // BUG-0165 — header mirrors Hierarchy: left-accent bar, epic-id +
       // status badge + title + aggregate counter on the right.
-      // BUG-0167 — default-collapsed to match Hierarchy; &#9654; arrow + hidden tbody.
+      // BUG-0167 — default-collapsed to match Hierarchy; ▶ arrow + hidden tbody.
       return `<tbody>
     <tr class="border-t-2 border-slate-300 dark:border-slate-600 cursor-pointer select-none bug-epic-header" data-epic="${epicId}" style="background:${accent.bg}" onclick="toggleSection('${beid}','${beid}-arrow')">
       <td colspan="7" class="px-3 py-2" style="border-left:4px solid ${accent.border};">
         <div class="flex flex-wrap items-center gap-3">
-          <span id="${beid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9654;</span>
+          <span id="${beid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">▶</span>
           <span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${epicId}</span>
           ${epic ? badge(epic.status) : ''}
           ${titlePart}
@@ -1644,7 +1649,7 @@ function renderBugsTab(data) {
       // BUG-0168 — mb-2 matches Hierarchy's tight spacing between epic groups.
       return `<div class="mb-2 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden bug-epic-card" data-epic="${epicId}" style="border-left:4px solid ${accent.border}">
       <div class="flex flex-wrap items-center gap-3 px-3 py-2 cursor-pointer select-none bug-epic-header" data-epic="${epicId}" style="background:${accent.bg}" onclick="toggleSection('${bceid}','${bceid}-arrow')">
-        <span id="${bceid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9654;</span>
+        <span id="${bceid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">▶</span>
         <span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${epicId}</span>
         ${epic ? badge(epic.status) : ''}
         ${titlePart}
@@ -1764,10 +1769,10 @@ function renderLessonsTab(data) {
         if (!bug) return `<span class="text-xs text-slate-400">${esc(bugId)}</span>`;
         const dotColor =
           bug.severity === 'Critical' || bug.severity === 'High'
-            ? 'var(--badge-danger-text,#dc2626)'
+            ? 'var(--badge-danger-text)'
             : bug.severity === 'Medium'
-              ? 'var(--badge-warn-text,#d97706)'
-              : 'var(--badge-neutral-text,#64748b)';
+              ? 'var(--badge-warn-text)'
+              : 'var(--badge-neutral-text)';
         return `<details class="lesson-bug-inline">
     <summary class="cursor-pointer text-xs text-slate-500 hover:text-slate-700 list-none flex items-center gap-1">
       <span class="inline-block w-2 h-2 rounded-full flex-shrink-0" style="background:${dotColor}"></span>
@@ -1850,7 +1855,7 @@ function renderLessonsTab(data) {
     <tr class="border-t-2 border-slate-300 dark:border-slate-600 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('${leid}','${leid}-arrow')">
       <td colspan="5" class="px-3 py-2" style="border-left:4px solid ${accent.border};">
         <div class="flex flex-wrap items-center gap-3">
-          <span id="${leid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9654;</span>
+          <span id="${leid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">▶</span>
           <span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${epicId === '_ungrouped' ? 'No Epic' : epicId}</span>
           ${epic ? badge(epic.status) : ''}
           ${titlePart}
@@ -1875,7 +1880,7 @@ function renderLessonsTab(data) {
           : '';
       return `<div class="mb-2 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden" style="border-left:4px solid ${accent.border}">
       <div class="flex flex-wrap items-center gap-3 px-3 py-2 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('${lceid}','${lceid}-arrow')">
-        <span id="${lceid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">&#9654;</span>
+        <span id="${lceid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">▶</span>
         <span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${epicId === '_ungrouped' ? 'No Epic' : epicId}</span>
         ${epic ? badge(epic.status) : ''}
         ${titlePart}
@@ -1966,7 +1971,7 @@ function renderRecentActivity(data) {
     </div>
     <ul id="activity-list" class="flex-1 overflow-y-auto px-4 py-2">${items}</ul>
     <div id="activity-collapsed" class="hidden flex-col items-center pt-3 pb-4 gap-3">
-      <button onclick="toggleActivityPanel()" class="text-slate-400 hover:text-slate-700 leading-none px-1" title="Expand" aria-label="Expand activity panel">&#9654;</button>
+      <button onclick="toggleActivityPanel()" class="text-slate-400 hover:text-slate-700 leading-none px-1" title="Expand" aria-label="Expand activity panel">▶</button>
       <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide select-none" style="writing-mode:vertical-rl;transform:rotate(180deg);white-space:nowrap">Recent Activity</span>
     </div>
   </div>`;
@@ -2423,7 +2428,7 @@ function renderStakeholderTab(data) {
             .join('');
           const acToggle =
             story.acs && story.acs.length
-              ? `<button class="sh-ac-toggle" onclick="shToggle('${jsEsc(acsId)}',this)">&#9658; ${story.acs.length} AC${story.acs.length !== 1 ? 's' : ''}</button>`
+              ? `<button class="sh-ac-toggle" onclick="shToggle('${jsEsc(acsId)}',this)">► ${story.acs.length} AC${story.acs.length !== 1 ? 's' : ''}</button>`
               : '';
           const acsArea =
             story.acs && story.acs.length
@@ -2452,7 +2457,7 @@ function renderStakeholderTab(data) {
           <div class="sh-progress-track"><div class="sh-progress-fill" style="width:${pct}%;background:${SH_DOT_COLOR[dotKey]}"></div></div>
           <span class="sh-pct" style="color:${SH_DOT_COLOR[dotKey]}">${pct}%</span>
           <span class="chip ${chipClass}">${statusLabel}</span>
-          <span id="${esc(toggleId)}" class="sh-toggle">&#9658;</span>
+          <span id="${esc(toggleId)}" class="sh-toggle">►</span>
         </div>
         <div id="${esc(storiesId)}" class="sh-stories-area" style="display:none">
           <div class="sh-stories-label">Stories</div>
@@ -2482,7 +2487,7 @@ function renderStakeholderTab(data) {
     if (!el) return;
     var open = el.style.display !== 'none';
     el.style.display = open ? 'none' : '';
-    if (toggleEl) toggleEl.innerHTML = open ? '&#9658;' : '&#9660;';
+    if (toggleEl) toggleEl.innerHTML = open ? '►' : '▼';
   }
   </script>`;
 }

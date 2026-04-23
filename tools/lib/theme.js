@@ -117,9 +117,9 @@ const type = {
 const radius = { sm: '4px', md: '8px', lg: '12px', full: '9999px' };
 
 const shadow = {
-  card: '0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04)',
-  cardHover: '0 4px 12px rgba(0,0,0,.12)',
-  modal: '0 20px 60px rgba(0,0,0,.24)',
+  card: '0 1px 3px oklch(0% 0 0 / 8%), 0 1px 2px oklch(0% 0 0 / 4%)',
+  cardHover: '0 4px 12px oklch(0% 0 0 / 12%)',
+  modal: '0 20px 60px oklch(0% 0 0 / 24%)',
 };
 
 const spacing = Object.fromEntries([1, 2, 3, 4, 5, 6, 8, 10, 12, 16].map((n) => [String(n), `${n * 4}px`]));
@@ -181,9 +181,9 @@ function generateCssTokens() {
     --text:        ${palette.ink9};
     --text-dim:    ${palette.ink5};
     --text-mute:   ${palette.ink4};
-    --shadow:      0 1px 0 rgba(15,15,20,.03), 0 4px 16px -8px rgba(15,15,20,.08);
-    --shadow-lg:   0 2px 0 rgba(15,15,20,.04), 0 12px 32px -12px rgba(15,15,20,.12);
-    --grid-dot:    rgba(30,30,40,0.08);
+    --shadow:      0 1px 0 oklch(10% 0.015 220 / 3%), 0 4px 16px -8px oklch(10% 0.015 220 / 8%);
+    --shadow-lg:   0 2px 0 oklch(10% 0.015 220 / 4%), 0 12px 32px -12px oklch(10% 0.015 220 / 12%);
+    --grid-dot:    oklch(14% 0.015 220 / 8%);
 
     /* BUG-0190/BUG-0198: --clr-* compatibility aliases for light theme */
     --clr-body-bg:      var(--bg);
@@ -231,9 +231,9 @@ function generateCssTokens() {
     --text:        ${palette.ink1};
     --text-dim:    ${palette.ink4};
     --text-mute:   ${palette.ink5};
-    --shadow:      0 1px 0 rgba(0,0,0,.35), 0 6px 20px -8px rgba(0,0,0,.5);
-    --shadow-lg:   0 2px 0 rgba(0,0,0,.4), 0 18px 36px -14px rgba(0,0,0,.55);
-    --grid-dot:    rgba(200,210,230,0.06);
+    --shadow:      0 1px 0 oklch(0% 0 0 / 35%), 0 6px 20px -8px oklch(0% 0 0 / 50%);
+    --shadow-lg:   0 2px 0 oklch(0% 0 0 / 40%), 0 18px 36px -14px oklch(0% 0 0 / 55%);
+    --grid-dot:    oklch(85% 0.010 220 / 6%);
 
     /* BUG-0190/BUG-0198: --clr-* compatibility aliases for dark theme */
     --clr-body-bg:      var(--bg);

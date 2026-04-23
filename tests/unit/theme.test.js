@@ -74,6 +74,34 @@ describe('theme.js — badge() fallback for unknown labels', () => {
   });
 });
 
+describe('AC-0498 — no hex literals in generated HTML', () => {
+  test('renderHtml output contains no hex colour literals', () => {
+    const { renderHtml } = require('../../tools/lib/render-html');
+    const data = {
+      epics: [],
+      stories: [],
+      tasks: [],
+      testCases: [],
+      bugs: [],
+      lessons: [],
+      costs: { _totals: { costUsd: 0, projectedUsd: 0 } },
+      atRisk: {},
+      coverage: { available: false },
+      recentActivity: [],
+      generatedAt: new Date().toISOString(),
+      commitSha: 'x',
+      projectName: 'T',
+      tagline: '',
+      risk: { byStory: new Map(), byEpic: new Map() },
+      sdlcStatus: null,
+      completion: null,
+    };
+    const html = renderHtml(data);
+    const hits = html.match(/#[0-9a-fA-F]{3,6}\b|rgb\(|rgba\(/g) || [];
+    expect(hits).toHaveLength(0);
+  });
+});
+
 describe('theme.js — parity with render-html re-export', () => {
   it('render-html re-exports the same BADGE_TONE object', () => {
     // AC-0431: existing render-html callers must keep seeing BADGE_TONE /
