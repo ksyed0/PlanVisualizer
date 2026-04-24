@@ -147,14 +147,10 @@ describe('generate-dashboard.js baseline harness (US-0124)', () => {
   test('AC-0429: About modal renders with the project name', () => {
     const { generateHTML } = require('../../tools/generate-dashboard.js');
     const html = generateHTML(makeHealthyFixture());
-    const projectTitle = (AGENTS_CONFIG.dashboard || {}).title || 'SDLC Dashboard';
-
     expect(html).toContain('id="about-modal"');
-    // The modal <h3> carries the dashboard title (escaped). Use a regex
-    // tolerant to whitespace so small formatting tweaks don't break the net.
-    const titleInModal = new RegExp(
-      `id="about-modal"[\\s\\S]*?<h3>${projectTitle.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')}</h3>`,
-    );
+    // The About modal always uses the fixed "Agentic SDLC Dashboard" title
+    // regardless of the project name in the config.
+    const titleInModal = new RegExp(`id="about-modal"[\\s\\S]*?<h3>Agentic SDLC Dashboard</h3>`);
     expect(html).toMatch(titleInModal);
   });
 });
