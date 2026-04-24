@@ -789,8 +789,8 @@ function generateHTML(status) {
      "now on air" dot. Idle stations fade to 0.5 opacity. Hover replaces
      the old filter:brightness(1.12) — invisible in light mode (BUG-0161)
      — with a 4px agent-color outline glow. */
-  .agent-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-  .agent-card { position: relative; background: var(--bg-card-inner); border-radius: 10px; padding: 14px 10px; transition: transform 150ms ease, box-shadow 150ms ease, opacity 0.2s; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; border: 1px solid var(--bg-card-border); }
+  .agent-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .agent-card { position: relative; background: var(--bg-card-inner); border-radius: 10px; padding: 12px; transition: transform 150ms ease, box-shadow 150ms ease, opacity 0.2s; display: flex; flex-direction: row; align-items: flex-start; gap: 12px; cursor: pointer; border: 1px solid var(--bg-card-border); }
   .agent-card.idle { opacity: 0.5; }
   .agent-card:hover { transform: translateY(-1px); box-shadow: 0 0 0 4px var(--agent-color-ring, oklch(55% 0 0 / 35%)); opacity: 1; }
   .agent-card.active { box-shadow: 0 0 0 3px var(--agent-color, var(--text-muted)), 0 6px 24px oklch(0% 0 0 / 35%); }
@@ -809,9 +809,9 @@ function generateHTML(status) {
   @keyframes pv-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
   #agent-portrait-popup { position: fixed; z-index: 999; width: 200px; border-radius: 14px; overflow: hidden; box-shadow: 0 12px 40px oklch(0% 0 0 / 70%); pointer-events: none; display: none; transition: opacity 0.15s; border: 2px solid oklch(100% 0 0 / 12%); }
   #agent-portrait-popup img { width: 100%; display: block; border-radius: 12px; object-fit: cover; object-position: center top; }
-  .agent-avatar { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; object-position: center top; border: 2px solid var(--agent-color, var(--text-muted)); flex-shrink: 0; }
-  .agent-avatar-fallback { width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--agent-color, var(--text-muted)); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 32px; background: var(--bg-phase-pending); }
-  .agent-info { min-width: 0; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; }
+  .agent-avatar { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; object-position: center top; border: 2px solid var(--agent-color, var(--text-muted)); flex-shrink: 0; }
+  .agent-avatar-fallback { width: 64px; height: 64px; border-radius: 50%; border: 2px solid var(--agent-color, var(--text-muted)); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 26px; background: var(--bg-phase-pending); }
+  .agent-info { min-width: 0; flex: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; }
   .agent-name { font-family: var(--font-sans); font-size: 13px; font-weight: 700; letter-spacing: 0.01em; }
   .agent-role { font-family: var(--font-sans); font-size: 9px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
   .agent-status { font-size: 10px; font-weight: 600; padding: 2px 10px; border-radius: 10px; display: inline-block; text-transform: uppercase; letter-spacing: 0.06em; }
@@ -1408,7 +1408,7 @@ function generateHTML(status) {
     .container { padding: 16px; }
     .grid { grid-template-columns: 1fr 1fr; gap: 16px; }
     .grid-2 { grid-template-columns: 1fr; gap: 16px; }
-    .agent-grid { grid-template-columns: repeat(3, 1fr); }
+    .agent-grid { grid-template-columns: repeat(2, 1fr); }
     .epic-stories { grid-template-columns: 1fr 1fr; }
   }
 
@@ -1447,9 +1447,9 @@ function generateHTML(status) {
     .spotlight-portrait-wrap { flex-basis: 110px; width: 110px; }
     .spotlight-name { font-size: 20px; }
     .spotlight-role { font-size: 10px; }
-    .agent-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
-    .agent-card { padding: 10px 6px; gap: 6px; }
-    .agent-avatar, .agent-avatar-fallback { width: 56px; height: 56px; font-size: 24px; }
+    .agent-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+    .agent-card { padding: 10px 8px; gap: 8px; }
+    .agent-avatar, .agent-avatar-fallback { width: 48px; height: 48px; font-size: 20px; }
     .agent-name { font-size: 11px; }
     .epic-stories { grid-template-columns: 1fr; }
     .log-scroll { max-height: 150px; }
@@ -1489,9 +1489,9 @@ function generateHTML(status) {
     .spotlight-role { font-size: 10px; }
     .spotlight-task { display: none; }
     .spotlight-elapsed { font-size: 10px; }
-    .agent-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
-    .agent-card { padding: 10px 6px; gap: 6px; }
-    .agent-avatar, .agent-avatar-fallback { width: 52px; height: 52px; font-size: 22px; }
+    .agent-grid { grid-template-columns: repeat(1, 1fr); gap: 6px; }
+    .agent-card { padding: 10px 8px; gap: 8px; }
+    .agent-avatar, .agent-avatar-fallback { width: 48px; height: 48px; font-size: 20px; }
     .agent-name { font-size: 11px; }
     .agent-role { font-size: 9px; }
     .agent-status { font-size: 9px; padding: 1px 6px; }
@@ -1513,8 +1513,8 @@ function generateHTML(status) {
     .agent-spotlight { min-height: 160px; }
     .spotlight-portrait-wrap { flex-basis: 96px; width: 96px; height: 96px; }
     .spotlight-name { font-size: 16px; }
-    .agent-grid { grid-template-columns: repeat(2, 1fr); }
-    .agent-avatar, .agent-avatar-fallback { width: 48px; height: 48px; font-size: 20px; }
+    .agent-grid { grid-template-columns: repeat(1, 1fr); }
+    .agent-avatar, .agent-avatar-fallback { width: 40px; height: 40px; font-size: 18px; }
     .header-right .clock .time { font-size: 16px; }
     #theme-toggle, .btn-header { font-size: 11px; padding: 4px 10px; }
   }

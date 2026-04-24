@@ -361,6 +361,7 @@ function main() {
 
   data.budget = budgetMetrics;
   data.completion = computeCompletion(data.stories, trends);
+  data.trends = trends;
 
   const outputDir = path.join(ROOT, config.docs.outputDir);
   if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });

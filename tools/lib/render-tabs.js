@@ -56,7 +56,7 @@ function renderHierarchyTab(data) {
           })
           .join('');
         return `
-      <div id="story-${esc(story.id)}" class="story-row ml-6 border-l-2 border-slate-200 dark:border-slate-600 pl-4 py-2"
+      <div id="story-${esc(story.id)}" class="story-row border-t border-slate-100 dark:border-slate-700 px-3 py-2"
            data-epic="${esc(story.epicId)}" data-status="${esc(story.status)}" data-priority="${esc(story.priority)}">
         <div class="flex flex-wrap items-center gap-2 cursor-pointer" onclick="toggleACs('${jsEsc(story.id)}')">
           <span class="font-mono text-xs text-slate-500 whitespace-nowrap">${story.id}</span>
@@ -823,6 +823,31 @@ function renderChartsTab(data) {
 
   const atRiskEpics = riskEpics.filter(([, r]) => r.avgScore >= 2.0);
 
+  // Test Results by Epic
+  const epicStoryIdSets = new Map(
+    data.epics.map((e) => [e.id, new Set(data.stories.filter((s) => s.epicId === e.id).map((s) => s.id))]),
+  );
+  const epicTCPass = JSON.stringify(
+    data.epics.map(
+      (e) =>
+        data.testCases.filter((tc) => epicStoryIdSets.get(e.id).has(tc.relatedStory) && tc.status === 'Pass').length,
+    ),
+  );
+  const epicTCFail = JSON.stringify(
+    data.epics.map(
+      (e) =>
+        data.testCases.filter((tc) => epicStoryIdSets.get(e.id).has(tc.relatedStory) && tc.status === 'Fail').length,
+    ),
+  );
+  const epicTCNotRun = JSON.stringify(
+    data.epics.map(
+      (e) =>
+        data.testCases.filter(
+          (tc) => epicStoryIdSets.get(e.id).has(tc.relatedStory) && !['Pass', 'Fail'].includes(tc.status),
+        ).length,
+    ),
+  );
+
   return `
   <div id="tab-charts" class="p-6 hidden" role="tabpanel" aria-labelledby="tab-btn-charts">
     ${_renderStatusHero(data)}
@@ -837,6 +862,14 @@ function renderChartsTab(data) {
           <span class="chart-subtitle">by epic</span>
         </div>
         <div style="height:${Math.max(300, data.epics.length * 36)}px;position:relative"><canvas id="chart-epic-progress"></canvas></div>
+      </div>
+
+      <div class="card-elev rounded-lg p-4 anim-stagger" style="--i:1">
+        <div class="chart-header-rule">
+          <span class="display-title">Test Results by Epic</span>
+          <span class="chart-subtitle">pass / fail / not run</span>
+        </div>
+        <div style="height:${Math.max(300, data.epics.length * 36)}px;position:relative"><canvas id="chart-tc-results"></canvas></div>
       </div>
 
       <div class="card-elev rounded-lg p-4 anim-stagger" style="--i:1">
@@ -997,6 +1030,17 @@ function renderChartsTab(data) {
         { label: 'Done', data: ${epicDone}, backgroundColor: pvChartColors.ok },
         { label: 'In Progress', data: ${epicInProgress}, backgroundColor: pvChartColors.info },
         { label: 'Planned/To Do', data: ${epicPlanned}, backgroundColor: pvChartColors.mute },
+      ]},
+      options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true } } },
+        scales: { x: { stacked: true, ticks: { color: tc } }, y: { stacked: true, ticks: { color: tc, autoSkip: false } } } }
+    });
+    _charts.tcResults = new Chart(document.getElementById('chart-tc-results'), {
+      type: 'bar',
+      data: { labels: ${epicLabels}, datasets: [
+        { label: 'Pass', data: ${epicTCPass}, backgroundColor: pvChartColors.info },
+        { label: 'Fail', data: ${epicTCFail}, backgroundColor: pvChartColors.risk },
+        { label: 'Not Run', data: ${epicTCNotRun}, backgroundColor: pvChartColors.mute },
       ]},
       options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
         plugins: { legend: { labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true } } },
@@ -1285,7 +1329,7 @@ function renderCostsTab(data, options = {}) {
       return `<tbody>
     <tr class="border-t-2 border-slate-300 dark:border-slate-600 cursor-pointer select-none bug-epic-header" data-epic="${esc(epicId)}" style="background:${accent.bg}" onclick="toggleSection('${jsEsc(bceid)}','${jsEsc(bceid)}-arrow')">
       <td colspan="6" class="px-3 py-2">
-        <span id="${bceid}-arrow" class="text-slate-400 text-xs mr-2">▼</span>
+        <span id="${bceid}-arrow" class="text-slate-400 text-xs mr-2">&#9654;</span>
         <span class="font-mono text-xs font-bold" style="color:${accent.border}">${label}</span>
         <span class="ml-2 text-xs text-slate-500 bug-count">(${bugs.length})</span>
       </td>
@@ -1293,7 +1337,7 @@ function renderCostsTab(data, options = {}) {
       <td class="px-3 py-2 text-right text-sm font-medium text-teal-700 dark:text-teal-400">${usd(epicAI)}</td>
       <td class="px-3 py-2 text-right text-xs text-slate-500 tokens-col">${fmtNum(epicIn)} / ${fmtNum(epicOut)}</td>
     </tr>
-    </tbody><tbody id="${bceid}">${bugRows}</tbody>`;
+    </tbody><tbody id="${bceid}" class="hidden">${bugRows}</tbody>`;
     })
     .join('');
 
@@ -2046,7 +2090,7 @@ function renderStatusTab(data) {
     if (!trends || !trends.dates || trends.dates.length < 2)
       return '<span class="text-xs text-slate-400">No history</span>';
     const recent30 = trends.dates.slice(-30);
-    const covVals = (trends.coveragePcts || []).slice(-30);
+    const covVals = (trends.coverage || []).slice(-30);
     return recent30
       .map((d, i) => {
         const v = covVals[i] || 0;
@@ -2270,12 +2314,12 @@ const STATUS_LABELS = {
 };
 
 const STATUS_CHIP = {
-  Done: 'ok',
+  Done: 'info',
   'In Progress': 'warn',
   'In-Progress': 'warn',
   Planned: 'mute',
-  Blocked: 'risk',
-  'At Risk': 'risk',
+  Blocked: 'warn',
+  'At Risk': 'warn',
 };
 
 const SH_DOT_COLOR = {
@@ -2306,9 +2350,9 @@ function shEpicCompositeStatus(epicId, stories, bugs) {
   const anyActive = epicStories.some((s) => /^(done|in[ -]progress)$/i.test(s.status));
   const allPlanned = epicStories.every((s) => /^planned$/i.test(s.status));
 
-  if (allDone) return { label: 'Complete', chipClass: 'ok', dotKey: 'ok' };
+  if (allDone) return { label: 'Complete', chipClass: 'info', dotKey: 'info' };
   if (anyBlocked || hasOpenCritical) return { label: 'Needs Attention', chipClass: 'risk', dotKey: 'risk' };
-  if (anyActive) return { label: 'On Track', chipClass: 'info', dotKey: 'info' };
+  if (anyActive) return { label: 'On Track', chipClass: 'warn', dotKey: 'warn' };
   if (allPlanned) return { label: 'Planned', chipClass: 'mute', dotKey: 'mute' };
   return { label: 'In Progress', chipClass: 'warn', dotKey: 'warn' };
 }

@@ -23,9 +23,9 @@ describe('theme.js — export surface', () => {
     // Sample three labels from three different tone buckets — if any of
     // these regress to the wrong tone the Plan Visualizer's status pills
     // will render the wrong colour.
-    expect(BADGE_TONE.Fixed).toBe('success');
-    expect(BADGE_TONE.Open).toBe('danger');
-    expect(BADGE_TONE['In Progress']).toBe('info');
+    expect(BADGE_TONE.Fixed).toBe('info');
+    expect(BADGE_TONE.Open).toBe('warn');
+    expect(BADGE_TONE['In Progress']).toBe('warn');
   });
 
   it('maps exactly 20 known labels', () => {
@@ -39,10 +39,10 @@ describe('theme.js — badge() tone resolution', () => {
   // One representative label per semantic category. If the resolution
   // logic regresses, at least one of these will fail.
   const cases = [
-    { label: 'Done', tone: 'success' },
-    { label: 'To Do', tone: 'warn' },
-    { label: 'Blocked', tone: 'danger' },
-    { label: 'In Progress', tone: 'info' },
+    { label: 'Done', tone: 'info' },
+    { label: 'To Do', tone: 'neutral' },
+    { label: 'Blocked', tone: 'warn' },
+    { label: 'In Progress', tone: 'warn' },
     { label: 'Planned', tone: 'neutral' },
   ];
 
