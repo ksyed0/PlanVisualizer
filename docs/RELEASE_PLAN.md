@@ -2983,3 +2983,18 @@ Acceptance Criteria:
 - [ ] AC-0570: All written test cases executed and Pass/Fail status recorded
 - [ ] AC-0571: Any failures result in a logged BUG entry in docs/BUGS.md
 ```
+
+```
+US-0158 (EPIC-0021): As a project lead, I want AI cost data correctly attributed to all stories and bugs (including those worked in worktree branches), so that the Cost Breakdown by Epic chart reflects true spend and zero-cost entries are eliminated.
+Priority: High (P0)
+Estimate: M
+Status: Planned
+Branch: feature/US-0158-ai-cost-attribution-fix
+Acceptance Criteria:
+
+- [ ] AC-0572: Parse-cost-log.js branch-prefix matching is extended to recognise worktree branch patterns (claude/*, and any non-feature/* branch prefixes used by Claude Code) so sessions worked in worktrees are attributed to the correct story/epic
+- [ ] AC-0573: A one-time backfill script reads AI_COST_LOG.md entries with branch=null or unmatched branches, uses git log to identify which story was active during each session's timestamp, and writes estimated cost rows to close the data gap
+- [ ] AC-0574: After backfill, no Done story or Fixed bug dated before 2026-04-24 shows $0 AI cost (excluding stories that genuinely had no Claude usage)
+- [ ] AC-0575: Cost Breakdown by Epic chart shows non-zero spend for EPIC-0010, EPIC-0012, EPIC-0016, EPIC-0017, EPIC-0019, EPIC-0020, and other epics that were primarily worked in worktrees
+- [ ] AC-0576: LESSONS.md updated with the worktree branch-naming gap and the fix so future sessions prevent recurrence
+```
