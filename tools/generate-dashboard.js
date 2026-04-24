@@ -2523,6 +2523,10 @@ function openAbout() {
   var m = document.getElementById('about-modal');
   if (m) m.classList.add('open');
 }
+function closeAbout() {
+  var m = document.getElementById('about-modal');
+  if (m) m.classList.remove('open');
+}
 (function() {
   var saved = localStorage.getItem('dashboard-theme') || 'dark';
   pvSetTheme(saved);

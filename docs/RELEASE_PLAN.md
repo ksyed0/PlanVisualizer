@@ -3022,3 +3022,18 @@ Acceptance Criteria:
 - [ ] AC-0579: A 4-period rolling average trend line is overlaid on the bars so viewers can distinguish noise from trend
 - [ ] AC-0580: Chart respects the shared semantic palette from theme.js (no hardcoded hex literals); renders correctly in both light and dark mode
 ```
+
+```
+US-0160 (EPIC-0022): As a developer, I want the remaining Tailwind CSS utility classes in plan-status removed and replaced with the OKLCH CSS custom property system already used throughout the codebase, so that the CDN dependency is eliminated and the styling system is unified across both dashboards.
+Priority: Low (P2)
+Estimate: S
+Status: Planned
+Branch: feature/US-0160-remove-tailwind
+Acceptance Criteria:
+
+- [ ] AC-0581: The Tailwind CDN <script> tag is removed from the plan-status HTML output; no Tailwind class strings remain in render-html.js, render-shell.js, or render-scripts.js
+- [ ] AC-0582: All replaced Tailwind utility classes (budget alert banner, filter bar, search input) are implemented as named CSS classes using var(--clr-*) custom properties consistent with the OKLCH theme system in theme.js
+- [ ] AC-0583: Dark mode for converted elements works via [data-theme=dark] attribute selectors, not Tailwind dark: variants
+- [ ] AC-0584: Visual regression — the budget alert banner, filter bar, and search input render identically in both light and dark mode after conversion
+- [ ] AC-0585: All existing tests pass; no new hex literals are introduced (AC-0498 equivalent enforced for plan-status output)
+```
