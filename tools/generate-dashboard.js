@@ -2018,8 +2018,6 @@ ${(() => {
   </div>
   <div class="mc-topbar-right">
     <span class="mc-live-badge" title="Live — refreshing every 5s"><span class="mc-live-dot" aria-hidden="true"></span>LIVE</span>
-    <button class="mc-btn-sm" onclick="document.getElementById('about-modal').classList.add('open')">About</button>
-    <button class="mc-btn-sm" id="theme-toggle" onclick="toggleTheme()">Light/Dark</button>
   </div>
 </div>`;
 })()}
