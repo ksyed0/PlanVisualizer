@@ -456,7 +456,7 @@ function renderTrendsTab(data, options = {}) {
         const tableRows = rows
           .map(
             (r) => `<tr>
-          <td style="font-family:monospace;font-size:11px;white-space:nowrap">${esc(r.date.replace('T', ' ').slice(0, 16))}</td>
+          <td style="font-family:var(--font-mono);font-size:11px;white-space:nowrap">${esc(r.date.replace('T', ' ').slice(0, 16))}</td>
           <td style="text-align:right;font-weight:600">${r.cumul}</td>
           <td style="text-align:right;color:${r.delta > 0 ? 'var(--ok)' : 'var(--risk)'}">${r.delta > 0 ? '+' : ''}${r.delta}</td>
         </tr>`,
@@ -2265,7 +2265,6 @@ function renderStatusTab(data) {
       });
     }
   }
-  const riskColors = { HIGH: 'var(--risk)', MED: 'var(--warn)', LOW: 'var(--ok)' };
   const riskItems =
     risks
       .slice(0, 5)
@@ -2541,6 +2540,8 @@ function renderStatusTab(data) {
   </div>
   <style>
   @media(max-width:1100px){.pv-widgets{grid-template-columns:1fr}}
+  @media(max-width:900px){#tab-status .pv-hero-vizrow{grid-template-columns:1fr 1fr}}
+  @media(max-width:640px){#tab-status [style*="repeat(4,1fr)"]{grid-template-columns:1fr 1fr}}
   </style>`;
 }
 
