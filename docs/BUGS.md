@@ -2906,3 +2906,277 @@ Steps to Reproduce:
    Lesson Encoded: No
    Estimated Cost USD: 0.00
    Notes: Updated both lessonColGroups and lessonCardGroups to use the Bugs tab format: font-mono epic id + badge(epic.status) + title span + count, with border-left:4px solid ${accent.border} on the cell. Card view wrapper changed from mb-6 to mb-2 to match Bugs card view spacing.
+
+---
+
+BUG-0211: Status tab blank — no content renders below header stat row
+Severity: High
+Related Story: US-0135 (EPIC-0020)
+Steps to Reproduce:
+
+1. Open plan-status.html → Status tab
+2. Observe main content area below "PLANVISUALIZER · Status REPORT" header is completely empty
+   Expected: Status Hero card (verdict, density toggle, stat blocks, mini-viz) + Rich Status widgets render
+   Actual: White blank area
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0211-0226-dashboard-polish
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: data.trends was extracted but never assigned to data object before JSON serialisation; fixed by adding data.trends = trends in generate-plan.js.
+
+---
+
+BUG-0212: Hierarchy tab — card view is blank
+Severity: High
+Related Story: US-0049 (EPIC-0006)
+Steps to Reproduce:
+
+1. Open plan-status.html → Hierarchy tab → switch to Card view
+2. Observe no epic/story cards render
+   Expected: Cards render with epic groupings and story cards
+   Actual: Blank content area
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0211-0226-dashboard-polish
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: applyFilters used block.closest('.mb-8') — stale class after refactor. Fixed to .mb-2.
+
+---
+
+BUG-0213: Kanban tab — epic group headers missing Epic status label
+Severity: Low
+Related Story: US-0060 (EPIC-0007)
+Steps to Reproduce:
+
+1. Open plan-status.html → Kanban tab
+2. Observe epic group headers
+   Expected: Epic header includes status badge/label (Done, In Progress, Planned)
+   Actual: No status label shown
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0211-0226-dashboard-polish
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Added epicStatusMap + badge() call to Kanban swimlane header template.
+
+---
+
+BUG-0214: Epic header formatting inconsistent across tabs — should match Traceability tab style
+Severity: Medium
+Related Story: US-0049 (EPIC-0006)
+Steps to Reproduce:
+
+1. Compare epic group headers across Hierarchy, Kanban, Costs, Bugs, Lessons tabs
+2. Compare to Traceability tab epic headers
+   Expected: All tabs use same epic header format (monospaced EPIC-XXXX + status badge + title + count + left accent border)
+   Actual: Each tab uses a different header style
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0211-0226-dashboard-polish
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Kanban, Bugs card, and Lessons card views updated to use EPIC_ACCENT_COLORS with border-t-2 + border-left:4px accent style matching Traceability tab.
+
+---
+
+BUG-0215: Charts tab — L/M/S density toggle on "On Track" Status Hero bar has no effect
+Severity: Medium
+Related Story: US-0135 (EPIC-0020)
+Steps to Reproduce:
+
+1. Open plan-status.html → Charts/Status tab
+2. Find the L/M/S density toggle on the hero "On Track" verdict section
+3. Click L or S — layout does not change
+   Expected: Hero card changes density (compact/medium/large)
+   Actual: No visual change
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0215-0222-dashboard-fixes
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: No CSS rules consumed the data-density attribute. Added .pv-hero[data-density="M/S"] rules to render-scripts.js to hide vizrow at M/S and stats at S.
+
+---
+
+BUG-0216: Charts tab — Story Status Distribution chart does not scale to fill available width
+Severity: Low
+Related Story: US-0070 (EPIC-0010)
+Steps to Reproduce:
+
+1. Open plan-status.html → Charts tab
+2. Observe Story Status Distribution doughnut chart
+   Expected: Chart fills available column width responsively
+   Actual: Chart renders at a fixed small size with large empty area around it
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0215-0222-dashboard-fixes
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Container div was missing height:300px; Chart.js needs an explicit height on the container to size the canvas responsively.
+
+---
+
+BUG-0217: Costs tab — AI cost attribution incorrect (EPIC-0013 too high; EPIC-0016/0017/0020 show $0.00)
+Severity: Medium
+Related Story: US-0084 (EPIC-0008)
+Steps to Reproduce:
+
+1. Open plan-status.html → Costs tab
+2. Expand EPIC-0016, EPIC-0017, EPIC-0020 — AI cost shows $0.00
+3. Compare EPIC-0013 AI cost — appears inflated
+   Expected: AI costs accurately attributed to epics via story branch matching
+   Actual: Recent epics show $0; older epics may absorb costs that belong elsewhere
+   Status: Open
+   Fix Branch:
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Root cause — branch-name matching in parse-cost-log.js uses story branch prefix matching. Recent epics (0016/0017/0020) have branches whose prefixes aren't captured in the AI_COST_LOG.md session rows. Separate investigation needed.
+
+---
+
+BUG-0218: Costs tab — EPIC-0018 missing from epic cost breakdown
+Severity: Medium
+Related Story: US-0084 (EPIC-0008)
+Steps to Reproduce:
+
+1. Open plan-status.html → Costs tab
+2. Scroll through epic list — EPIC-0018 is absent
+   Expected: All epics including EPIC-0018 appear in the cost breakdown
+   Actual: EPIC-0018 row is missing
+   Status: Retired
+   Fix Branch:
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Not a code bug. EPIC-0018 was never created — project numbering skips from EPIC-0017 to EPIC-0019. No row to display. Retiring as invalid.
+
+---
+
+BUG-0219: Status/Charts tab — Risk Score by Epic shows Done epics; should suppress them
+Severity: Low
+Related Story: US-0068 (EPIC-0010)
+Steps to Reproduce:
+
+1. Open plan-status.html → Charts or Status tab → Risk Score by Epic section
+2. Observe Done epics appearing in the chart
+   Expected: Only non-Done epics shown; a note states "Showing incomplete epics only"
+   Actual: All epics including Done ones shown, cluttering the chart
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0211-0226-dashboard-polish
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Added epicStatusMap filter — Risk Score chart now suppresses Done epics and renders a note "Showing incomplete epics only".
+
+---
+
+BUG-0220: Trends tab — Velocity chart ambiguous (cumulative vs per-session unclear); recent values appear inflated
+Severity: Medium
+Related Story: US-0055 (EPIC-0008)
+Steps to Reproduce:
+
+1. Open plan-status.html → Trends tab → Velocity chart
+2. Observe Y-axis and recent data points — last few sessions show unusually high story counts
+   Expected: Chart clearly labelled as "Stories Shipped per Session" with realistic values
+   Actual: Axis label is ambiguous; recent sessions show values inconsistent with actual output
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0215-0222-dashboard-fixes
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Velocity metric is cumulative (total done stories at each snapshot). Changed chart subtitle from "story points per session" to "cumulative done points".
+
+---
+
+BUG-0221: Trends tab — AI Costs and Token Usage charts show no change for recent sessions
+Severity: Medium
+Related Story: US-0055 (EPIC-0008)
+Steps to Reproduce:
+
+1. Open plan-status.html → Trends tab → AI Costs chart and Token Usage chart
+2. Observe the last several sessions — values appear flat/unchanged
+   Expected: Charts reflect actual AI spend and token counts per session
+   Actual: Recent sessions show identical or zero values
+   Status: Open
+   Fix Branch:
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Architectural limitation — snapshot.js records cumulative AI_COST_LOG.md state at each progress.md snapshot. If new sessions don't generate new progress.md entries, no new snapshots are captured. Separate investigation needed to verify capture-cost.js is appending correctly.
+
+---
+
+BUG-0222: Costs tab — Budget section and Stories section use different epic header formatting
+Severity: Low
+Related Story: US-0084 (EPIC-0008)
+Steps to Reproduce:
+
+1. Open plan-status.html → Costs tab
+2. Compare Budget epic group headers with Stories epic group headers
+   Expected: Both sections use identical epic header format
+   Actual: Budget and Stories use visually different header styles
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0215-0222-dashboard-fixes
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Budget epic table rows now use accent.bg background and 4px accent left-border on the first td, matching the Stories section header style.
+
+---
+
+BUG-0223: Bugs tab — epic groups should be collapsed by default
+Severity: Low
+Related Story: US-0064 (EPIC-0007)
+Steps to Reproduce:
+
+1. Open plan-status.html → Bugs tab
+2. Observe all epic groups are expanded on load
+   Expected: All epic groups collapsed by default; user expands as needed
+   Actual: All groups expanded, causing long scroll on first load
+   Status: Open
+   Fix Branch:
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Default collapsed state requires server-rendered hidden class on bug-group tbody + collapsed arrow state in markup. Deferred to a future polish story.
+
+---
+
+BUG-0224: Costs tab — Bug AI costs are identical across many bugs and do not match actual spend
+Severity: Medium
+Related Story: US-0084 (EPIC-0008)
+Steps to Reproduce:
+
+1. Open plan-status.html → Costs tab → expand any epic → view bug rows
+2. Many bugs show identical AI cost values (e.g. $207.41); many show blank
+   Expected: Each bug's AI cost attributed from sessions where it was fixed (via fix branch)
+   Actual: Costs appear to be divided equally or mis-attributed
+   Status: Open
+   Fix Branch:
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Architectural limitation — attributeBugCosts() in compute-costs.js splits session cost equally across all bugs fixed in that session (identified by fix branch). True per-bug attribution would require sub-session timing data not available in AI_COST_LOG.md.
+
+---
+
+BUG-0225: Bugs tab compact view — bugs not sorted ascending by Bug ID by default
+Severity: Low
+Related Story: US-0064 (EPIC-0007)
+Steps to Reproduce:
+
+1. Open plan-status.html → Bugs tab → Compact view
+2. Observe default sort order
+   Expected: Bugs sorted ascending by BUG-XXXX ID by default
+   Actual: Sort order is not ascending by ID
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0211-0226-dashboard-polish
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Added .sort((a,b) => (a.id||'').localeCompare(b.id||'')) to compactRows in renderBugsTab.
+
+---
+
+BUG-0226: Multiple tabs — column view and card view use different epic header formatting on same tab
+Severity: Low
+Related Story: US-0049 (EPIC-0006)
+Steps to Reproduce:
+
+1. Open any tab with column/card toggle (Hierarchy, Bugs, Lessons, Costs)
+2. Toggle between column and card view — epic group headers look different
+   Expected: Epic headers are visually identical in both views
+   Actual: Column view and card view render different header markup/styles
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0211-0226-dashboard-polish
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Bugs card view and Lessons card view updated to use same flat row style as column view (border-t-2 + border-left:4px + accent.bg). Kanban also updated.

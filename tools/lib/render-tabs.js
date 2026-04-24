@@ -442,7 +442,7 @@ function renderTrendsTab(data, options = {}) {
       <div style="height:250px;position:relative"><canvas id="chart-trends-progress"></canvas></div>
     </div>
     <div class="card-elev rounded-lg p-4 anim-stagger" style="--i:1">
-      <div class="chart-header-rule"><span class="display-title">Velocity</span><span class="chart-subtitle">story points per session</span></div>
+      <div class="chart-header-rule"><span class="display-title">Velocity</span><span class="chart-subtitle">cumulative done points</span></div>
       <div style="height:250px;position:relative"><canvas id="chart-trends-velocity"></canvas></div>
     </div>
 
@@ -844,7 +844,7 @@ function renderChartsTab(data) {
           <span class="display-title">Story Status Distribution</span>
           <span class="chart-subtitle">distribution</span>
         </div>
-        <div style="position:relative">
+        <div style="height:300px;position:relative">
           <canvas id="chart-burndown"></canvas>
           <div class="chart-center-overlay">
             <span class="hero-num">${totalStories}</span>
@@ -1100,8 +1100,8 @@ function renderCostsTab(data, options = {}) {
             : eb.percentUsed !== null && eb.percentUsed >= 75
               ? 'pb-warn'
               : 'pb-ok';
-        return `<tr class="border-t border-slate-100 dark:border-slate-700 anim-stagger" style="--i:${Math.min(i, 19)}">
-        <td class="px-3 py-2"><span class="font-mono text-xs font-bold" style="color:${accent.border}">${eb.id}</span></td>
+        return `<tr class="border-t border-slate-100 dark:border-slate-700 anim-stagger" style="--i:${Math.min(i, 19)};background:${accent.bg}">
+        <td class="px-3 py-2" style="border-left:4px solid ${accent.border}"><span class="font-mono text-xs font-bold" style="color:${accent.border}">${eb.id}</span></td>
         <td class="px-3 py-2 text-sm dark:text-slate-200">${eb.budget !== null ? usd(eb.budget) : '—'}</td>
         <td class="px-3 py-2 text-sm dark:text-slate-200">${usd(eb.spent)}</td>
         <td class="px-3 py-2 text-sm dark:text-slate-200">${eb.remaining !== null ? usd(eb.remaining) : '—'}</td>
@@ -2124,7 +2124,7 @@ function renderStatusTab(data) {
   <div id="tab-status" class="p-6" role="tabpanel" aria-labelledby="tab-btn-status">
 
     <!-- Release Health Hero -->
-    <div class="card mb-6 p-0 overflow-hidden">
+    <div class="pv-hero card mb-6 p-0 overflow-hidden">
       <div class="pv-hero-head">
         <div class="pv-hero-verdict" style="position:relative">
           <div class="pv-hero-toggle" role="group" aria-label="Density">${['L', 'M', 'S'].map((d) => `<button class="pv-hero-density-btn${d === 'M' ? ' pv-hero-active' : ''}" data-density="${d}" onclick="pvHeroDensity('${d}')">${d}</button>`).join('')}</div>
