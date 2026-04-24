@@ -2265,6 +2265,7 @@ function renderStatusTab(data) {
       });
     }
   }
+  const riskColors = { HIGH: 'var(--risk)', MED: 'var(--warn)', LOW: 'var(--ok)' };
   const riskItems =
     risks
       .slice(0, 5)
@@ -2540,8 +2541,6 @@ function renderStatusTab(data) {
   </div>
   <style>
   @media(max-width:1100px){.pv-widgets{grid-template-columns:1fr}}
-  @media(max-width:900px){#tab-status .pv-hero-vizrow{grid-template-columns:1fr 1fr}}
-  @media(max-width:640px){#tab-status [style*="repeat(4,1fr)"]{grid-template-columns:1fr 1fr}}
   </style>`;
 }
 
