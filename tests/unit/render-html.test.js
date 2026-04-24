@@ -91,23 +91,6 @@ describe('renderHtml', () => {
   });
 
   describe('US-0135 — Status Hero Card', () => {
-    test('Status tab contains density toggle with L M S buttons', () => {
-      expect(html).toContain('pv-hero-density');
-      expect(html).toContain('data-density="L"');
-      expect(html).toContain('data-density="M"');
-      expect(html).toContain('data-density="S"');
-    });
-    test('default M button has pv-hero-active class', () => {
-      expect(html).toMatch(/data-density="M"[^>]*pv-hero-active|pv-hero-active[^>]*data-density="M"/);
-    });
-    test('toggle is inside verdict section', () => {
-      const verdictIdx = html.indexOf('pv-hero-verdict');
-      const toggleIdx = html.indexOf('pv-hero-density');
-      const statsIdx = html.indexOf('pv-hero-stats');
-      expect(verdictIdx).toBeGreaterThanOrEqual(0);
-      expect(toggleIdx).toBeGreaterThan(verdictIdx);
-      expect(toggleIdx).toBeLessThan(statsIdx);
-    });
     test('hero contains stats and viz sections', () => {
       expect(html).toContain('pv-hero-stats');
       expect(html).toContain('pv-hero-viz');

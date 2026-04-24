@@ -260,15 +260,15 @@ function renderKanbanTab(data) {
     .map((epicId, i) => {
       const color = SWIM_COLORS[i % SWIM_COLORS.length];
       const epicObj = (data.epics || []).find((e) => e.id === epicId);
-      const epicLabel = epicObj ? `${esc(epicId)}: ${esc(epicObj.title)}` : esc(epicId);
       const epicCount = data.stories.filter((s) => s.epicId === epicId).length;
       const sid = `ksw-${epicId.replace(/[^a-zA-Z0-9]/g, '-')}`;
       return `
-    <div class="ksw-swimlane" style="border-left:3px solid ${color}">
-      <div class="ksw-swim-hdr" onclick="toggleKsw('${sid}')" style="border-left-color:${color}">
+    <div class="ksw-swimlane" style="border-left:4px solid ${color}">
+      <div class="ksw-swim-hdr" onclick="toggleKsw('${sid}')" style="background:${color}18;border-left-color:${color}">
         <span id="${sid}-arrow" class="ksw-arrow">▶</span>
-        <span class="ksw-epic-title" style="color:${color}">${epicLabel}</span>
+        <span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${color}">${esc(epicId)}</span>
         ${epicObj ? badge(epicObj.status) : ''}
+        <span class="font-semibold text-sm dark:text-slate-100">${epicObj ? esc(epicObj.title) : ''}</span>
         <span class="ksw-epic-count">${epicCount}</span>
       </div>
       <div id="${sid}-body" class="ksw-swim-body hidden">
@@ -291,10 +291,10 @@ function renderKanbanTab(data) {
         const sid = 'ksw-ungrouped';
         const items = data.stories.filter((s) => !s.epicId);
         return `
-    <div class="ksw-swimlane" style="border-left:3px solid var(--text-muted,var(--text-dim))">
+    <div class="ksw-swimlane" style="border-left:4px solid var(--text-muted,var(--text-dim))">
       <div class="ksw-swim-hdr" onclick="toggleKsw('${sid}')" style="border-left-color:var(--text-muted,var(--text-dim))">
         <span id="${sid}-arrow" class="ksw-arrow">▶</span>
-        <span class="ksw-epic-title" style="color:var(--text-muted,var(--text-dim))">No Epic</span>
+        <span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:var(--text-muted)">No Epic</span>
         <span class="ksw-epic-count">${items.length}</span>
       </div>
       <div id="${sid}-body" class="ksw-swim-body hidden">
@@ -643,7 +643,6 @@ function _renderStatusHero(data) {
   <div class="pv-hero card" style="margin-bottom:16px">
     <div class="pv-hero-head">
       <div class="pv-hero-verdict" style="position:relative">
-        <div class="pv-hero-toggle" role="group" aria-label="Density">${['L', 'M', 'S'].map((d) => `<button class="pv-hero-density-btn${d === 'M' ? ' pv-hero-active' : ''}" data-density="${d}" onclick="pvHeroDensity('${d}')">${d}</button>`).join('')}</div>
         <span class="chip ${verdictTone}"><span class="d"></span>${esc(verdict)}</span>
         <p class="pv-hero-narrative">${esc(narrative)}</p>
       </div>
@@ -701,8 +700,22 @@ function _renderDecisionWidgets(data) {
           `<div class="pv-risk-item"><span class="chip warn">Overdue</span><span class="pv-risk-label">${esc(e.id)}: ${esc(e.title)}</span></div>`,
       ),
   ];
+  if (riskItems.length === 0 && openBugs.length > 3) {
+    const medBugs = openBugs.filter((b) => b.severity === 'Medium').slice(0, 3);
+    if (medBugs.length > 0) {
+      medBugs.forEach((b) =>
+        riskItems.push(
+          `<div class="pv-risk-item"><span class="chip warn">Med</span><span class="pv-risk-label">${esc(b.id)}: ${esc(b.title)}</span></div>`,
+        ),
+      );
+    } else {
+      riskItems.push(
+        `<div class="pv-risk-item"><span class="chip warn">Bugs</span><span class="pv-risk-label">${openBugs.length} open bugs require attention</span></div>`,
+      );
+    }
+  }
   const riskContent =
-    riskItems.length > 0 ? riskItems.join('') : '<p class="pv-widget-empty">No critical risks detected.</p>';
+    riskItems.length > 0 ? riskItems.join('') : '<p class="pv-widget-empty">No active risks — looking good 🎉</p>';
 
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   const recentDone = (data.recentActivity || []).filter((a) => a.date && new Date(a.date) >= sevenDaysAgo);
@@ -2144,6 +2157,18 @@ function renderStatusTab(data) {
     .slice(0, 2)
     .forEach((s) => risks.push({ level: 'MED', label: esc(s.title), sub: `${esc(s.id)} · Blocked` }));
   if (budgetPct > 80) risks.push({ level: 'LOW', label: 'Budget approaching cap', sub: `${budgetPct}% consumed` });
+  if (risks.length === 0 && hasRisk && openBugs.length > 3) {
+    const medBugs = openBugs.filter((b) => b.severity === 'Medium').slice(0, 3);
+    if (medBugs.length > 0) {
+      medBugs.forEach((b) => risks.push({ level: 'MED', label: esc(b.title), sub: `${esc(b.id)} · Medium` }));
+    } else {
+      risks.push({
+        level: 'MED',
+        label: `${openBugs.length} open bugs require attention`,
+        sub: 'No Critical/High severity, but count is elevated',
+      });
+    }
+  }
   const riskColors = { HIGH: 'var(--risk)', MED: 'var(--warn)', LOW: 'var(--ok)' };
   const riskItems =
     risks
@@ -2171,7 +2196,6 @@ function renderStatusTab(data) {
     <div class="pv-hero card mb-6 p-0 overflow-hidden">
       <div class="pv-hero-head">
         <div class="pv-hero-verdict" style="position:relative">
-          <div class="pv-hero-toggle" role="group" aria-label="Density">${['L', 'M', 'S'].map((d) => `<button class="pv-hero-density-btn${d === 'M' ? ' pv-hero-active' : ''}" data-density="${d}" onclick="pvHeroDensity('${d}')">${d}</button>`).join('')}</div>
           <p class="pv-eyebrow">Release Health</p>
           <h2 style="margin:4px 0 6px;font-family:var(--font-display);font-size:clamp(28px,4vw,44px);font-weight:600;letter-spacing:-0.02em;line-height:1;color:${verdictColor}">${verdict}</h2>
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
@@ -2282,24 +2306,8 @@ function renderStatusTab(data) {
     </div>
   </div>
   <style>
-  .pv-hero-toggle{position:absolute;top:8px;right:10px;display:flex;gap:2px}
-  .pv-hero-density-btn{padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600;
-    border:1px solid oklch(100% 0 0 / 0.2);background:none;color:inherit;cursor:pointer;opacity:.6}
-  .pv-hero-density-btn.pv-hero-active{opacity:1;background:oklch(100% 0 0 / 0.15)}
   @media(max-width:1100px){.pv-widgets{grid-template-columns:1fr}}
-  </style>
-  <script>
-  (function(){var s=localStorage.getItem('pv-hero-density')||'M';pvHeroDensity(s)})();
-  function pvHeroDensity(d){
-    localStorage.setItem('pv-hero-density',d);
-    var h=document.querySelector('#tab-status .pv-hero-head');
-    if(h)h.setAttribute('data-density',d);
-    document.querySelectorAll('.pv-hero-density-btn').forEach(function(b){
-      b.classList.toggle('pv-hero-active',b.dataset.density===d);
-    });
-  }
-  window.pvHeroDensity=pvHeroDensity;
-  </script>`;
+  </style>`;
 }
 
 // ── EPIC-0012: Stakeholder View ──────────────────────────────────────────────

@@ -262,18 +262,6 @@ function renderScripts(data, options = {}) {
   }
   window.cssVar = cssVar;
 
-  // US-0135: Hero density toggle
-  function pvHeroDensity(d) {
-    localStorage.setItem('pv-hero-density', d);
-    var heroes = document.querySelectorAll('.pv-hero, #tab-status .pv-hero-head');
-    heroes.forEach(function(h) { h.setAttribute('data-density', d); });
-    document.querySelectorAll('.pv-hero-density-btn').forEach(function(b) {
-      b.classList.toggle('pv-hero-active', b.dataset.density === d);
-    });
-  }
-  window.pvHeroDensity = pvHeroDensity;
-  (function() { var s = localStorage.getItem('pv-hero-density') || 'M'; pvHeroDensity(s); })();
-
   document.addEventListener('DOMContentLoaded', function() {
     var themeBtn = document.getElementById('theme-toggle');
     if (themeBtn) themeBtn.textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️ Light' : '🌙 Dark';
@@ -862,10 +850,6 @@ function renderPrintCSS() {
   .bug-compact-row { display: flex; align-items: center; gap: 10px; padding: 6px 12px; border-bottom: 1px solid var(--clr-border); font-size: 13px; }
   .bug-compact-id { font-family: monospace; font-size: 11px; opacity: 0.7; min-width: 80px; }
   .bug-compact-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  /* BUG-0215: Hero density toggle — L=full, M=hide vizrow, S=hide vizrow+stats */
-  .pv-hero[data-density="M"] .pv-hero-vizrow { display: none !important; }
-  .pv-hero[data-density="S"] .pv-hero-vizrow { display: none !important; }
-  .pv-hero[data-density="S"] .pv-hero-stats  { display: none; }
   </style>`;
 }
 
