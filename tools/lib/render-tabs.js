@@ -1741,10 +1741,10 @@ function renderBugsTab(data) {
           ? `<span class="italic text-slate-500">No Epic</span>`
           : '';
       // BUG-0168 — mb-2 matches Hierarchy's tight spacing between epic groups.
-      return `<div class="mb-2 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden bug-epic-card" data-epic="${epicId}" style="border-left:4px solid ${accent.border}">
-      <div class="flex flex-wrap items-center gap-3 px-3 py-2 cursor-pointer select-none bug-epic-header" data-epic="${epicId}" style="background:${accent.bg}" onclick="toggleSection('${bceid}','${bceid}-arrow')">
+      return `<div class="border-t-2 border-slate-300 dark:border-slate-600 bug-epic-card" data-epic="${epicId}" style="background:${accent.bg}">
+      <div class="flex flex-wrap items-center gap-3 px-3 py-2 cursor-pointer select-none bug-epic-header" data-epic="${epicId}" style="border-left:4px solid ${accent.border}" onclick="toggleSection('${bceid}','${bceid}-arrow')">
         <span id="${bceid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">▶</span>
-        ${epicId !== '_ungrouped' ? `<span class="epic-id-display font-mono text-xs font-bold uppercase"><span class="epic-id-label">EPIC /</span> <span class="epic-id-num" style="color:${accent.text}">${epicId.replace('EPIC-', '')}</span></span>` : ''}
+        ${epicId !== '_ungrouped' ? `<span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${epicId}</span>` : ''}
         ${epic ? badge(epic.status) : ''}
         ${titlePart}
         <span class="ml-auto text-xs text-slate-500 bug-count">${open} open &middot; ${bugs.length} total</span>
