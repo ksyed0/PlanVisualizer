@@ -259,8 +259,8 @@ function renderKanbanTab(data) {
   const swimlaneRows = epicOrder
     .map((epicId, i) => {
       const color = SWIM_COLORS[i % SWIM_COLORS.length];
-      const epicTitle = (data.epics || []).find((e) => e.id === epicId);
-      const epicLabel = epicTitle ? `${esc(epicId)}: ${esc(epicTitle.title)}` : esc(epicId);
+      const epicObj = (data.epics || []).find((e) => e.id === epicId);
+      const epicLabel = epicObj ? `${esc(epicId)}: ${esc(epicObj.title)}` : esc(epicId);
       const epicCount = data.stories.filter((s) => s.epicId === epicId).length;
       const sid = `ksw-${epicId.replace(/[^a-zA-Z0-9]/g, '-')}`;
       return `
@@ -268,6 +268,7 @@ function renderKanbanTab(data) {
       <div class="ksw-swim-hdr" onclick="toggleKsw('${sid}')" style="border-left-color:${color}">
         <span id="${sid}-arrow" class="ksw-arrow">▶</span>
         <span class="ksw-epic-title" style="color:${color}">${epicLabel}</span>
+        ${epicObj ? badge(epicObj.status) : ''}
         <span class="ksw-epic-count">${epicCount}</span>
       </div>
       <div id="${sid}-body" class="ksw-swim-body hidden">
@@ -794,9 +795,14 @@ function renderChartsTab(data) {
   );
   const totalStories = data.stories.filter((s) => s.status !== 'Retired').length;
 
-  // Risk chart data
+  // Risk chart data — BUG-0219: suppress Done epics
+  const epicStatusMap = Object.fromEntries((data.epics || []).map((e) => [e.id, e.status]));
   const riskEpics =
-    data.risk && data.risk.byEpic ? [...data.risk.byEpic.entries()].sort((a, b) => b[1].avgScore - a[1].avgScore) : [];
+    data.risk && data.risk.byEpic
+      ? [...data.risk.byEpic.entries()]
+          .filter(([id]) => !/^done$/i.test(epicStatusMap[id] || ''))
+          .sort((a, b) => b[1].avgScore - a[1].avgScore)
+      : [];
   const riskCounts = { Low: 0, Medium: 0, High: 0, Critical: 0 };
   let totalRiskScore = 0,
     activeStoryCount = 0;
@@ -897,7 +903,7 @@ function renderChartsTab(data) {
       <div class="card-elev rounded-lg p-4 anim-stagger" style="--i:6">
         <div class="chart-header-rule">
           <span class="display-title">Risk Score by Epic</span>
-          <span class="chart-subtitle">avg score, active stories</span>
+          <span class="chart-subtitle">incomplete epics only · avg score</span>
         </div>
         <div style="display:flex;flex-direction:column;gap:5px;margin-top:4px">
           ${
@@ -1592,8 +1598,9 @@ function renderBugsTab(data) {
   const openBugCount = (bugs) =>
     bugs.filter((b) => !/^(Fixed|Retired|Cancelled|Verified|Closed)/i.test(b.status)).length;
 
-  // AC-0355: compact view rows (flat, no epic grouping)
-  const compactRows = data.bugs
+  // AC-0355: compact view rows (flat, no epic grouping) — BUG-0225: sort ascending by ID
+  const compactRows = [...data.bugs]
+    .sort((a, b) => (a.id || '').localeCompare(b.id || ''))
     .map(
       (bug) => `
     <div class="bug-compact-row" data-status="${esc(bug.status)}" data-severity="${esc(bug.severity)}" data-epic="${esc(storyEpicMap[normalizeStoryRef(bug.relatedStory)] || '_ungrouped')}" style="border-left:4px solid ${severityStripeColor(bug.severity)}">
@@ -2524,6 +2531,7 @@ module.exports = {
   renderHierarchyTab,
   renderKanbanTab,
   renderTraceabilityTab,
+  renderStatusTab,
   renderTrendsTab,
   renderChartsTab,
   renderCostsTab,

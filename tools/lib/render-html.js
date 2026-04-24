@@ -13,6 +13,7 @@ const {
   renderHierarchyTab,
   renderKanbanTab,
   renderTraceabilityTab,
+  renderStatusTab,
   renderChartsTab,
   renderTrendsTab,
   renderCostsTab,
@@ -502,6 +503,7 @@ function renderHtml(data, options = {}) {
         ${renderFilterBar(data)}
       </div>
       <div id="tab-content">
+        ${renderStatusTab(data)}
         ${renderHierarchyTab(data)}
         ${renderKanbanTab(data)}
         ${renderTraceabilityTab(data)}

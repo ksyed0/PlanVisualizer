@@ -288,15 +288,10 @@ function renderScripts(data, options = {}) {
     // Restore hierarchy view preference
     setHierarchyView(localStorage.getItem('hierarchyView') || 'column');
 
-    // BUG-0206: Collapse ALL epics by default in both column and card view
-    // (was Done-only; all views start collapsed — user expands on demand)
+    // BUG-0206: Collapse column-view epics by default (card view stays expanded — BUG-0212)
     document.querySelectorAll('#hier-column-view [id^="epic-stories-"]').forEach(function(el) {
       var epicId = el.id.replace('epic-stories-', '');
       if (!el.classList.contains('hidden')) toggleSection(el.id, 'epic-arrow-' + epicId);
-    });
-    document.querySelectorAll('#hier-card-view [id^="epic-cards-"]').forEach(function(el) {
-      var epicId = el.id.replace('epic-cards-', '');
-      if (!el.classList.contains('hidden')) toggleSection(el.id, 'epic-card-arrow-' + epicId);
     });
 
     // Restore filter state (bug status intentionally not restored — bug status changes between sessions)
