@@ -1022,7 +1022,7 @@ function generateHTML(status) {
   .modal .about-mission { font-size: 13px; color: var(--text-secondary); margin-bottom: 14px; line-height: 1.45; }
   .modal .about-roster-title,
   .modal .about-links-title { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted); margin: 0 0 6px; }
-  .modal .about-roster { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; margin-bottom: 14px; list-style: none; padding: 0; }
+  .modal .about-roster { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px 10px; margin-bottom: 14px; list-style: none; padding: 0; }
   .modal .about-roster li { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-primary); min-width: 0; }
   .modal .about-roster img,
   .modal .about-roster .about-roster-fallback { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 1px solid var(--bg-card-border); background: var(--bg-card-inner); }
@@ -2547,7 +2547,7 @@ ${phases.map((p, i) => `        <div class="spark-bar ${p.status}" style="height
       </div>
       <!-- AC-0422: right column — mission, roster, links, version info -->
       <div class="about-right">
-        <h3>${esc(DASH_META.title)}</h3>
+        <h3>Agentic SDLC Dashboard</h3>
         <p>${esc(DASH_META.subtitle)}</p>
         <p class="about-mission">
           An agentic SDLC mission-control dashboard. Nine role-specialised AI

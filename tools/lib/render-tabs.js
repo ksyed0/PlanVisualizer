@@ -197,17 +197,6 @@ function renderKanbanTab(data) {
   const cols = ['To Do', 'Planned', 'In Progress', 'Blocked', 'Done'];
   const epicOrder = [...new Set(data.stories.map((s) => s.epicId).filter(Boolean))];
   const hasUngrouped = data.stories.some((s) => !s.epicId);
-  const SWIM_COLORS = [
-    'oklch(56% 0.22 290)',
-    'oklch(50% 0.19 232)',
-    'oklch(57% 0.17 58)',
-    'oklch(46% 0.15 148)',
-    'oklch(44% 0.20 12)',
-    'oklch(48% 0.22 300)',
-    'oklch(52% 0.14 196)',
-    'oklch(54% 0.14 65)',
-  ];
-
   const renderCard = (s, cardIdx) => {
     const tcs = data.testCases.filter((tc) => tc.relatedStory === s.id);
     const acDone = s.acs.filter((a) => a.done).length;
@@ -258,15 +247,16 @@ function renderKanbanTab(data) {
   // Epic swimlane rows
   const swimlaneRows = epicOrder
     .map((epicId, i) => {
-      const color = SWIM_COLORS[i % SWIM_COLORS.length];
       const epicObj = (data.epics || []).find((e) => e.id === epicId);
+      const epicObjIdx = (data.epics || []).indexOf(epicObj);
+      const accent = EPIC_ACCENT_COLORS[(epicObjIdx >= 0 ? epicObjIdx : i) % EPIC_ACCENT_COLORS.length];
       const epicCount = data.stories.filter((s) => s.epicId === epicId).length;
       const sid = `ksw-${epicId.replace(/[^a-zA-Z0-9]/g, '-')}`;
       return `
-    <div class="ksw-swimlane" style="border-left:4px solid ${color}">
-      <div class="ksw-swim-hdr" onclick="toggleKsw('${sid}')" style="background:${color}18;border-left-color:${color}">
+    <div class="ksw-swimlane" style="border-left:4px solid ${accent.border}">
+      <div class="ksw-swim-hdr" onclick="toggleKsw('${sid}')" style="background:${accent.bg};border-left-color:${accent.border}">
         <span id="${sid}-arrow" class="ksw-arrow">▶</span>
-        <span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${color}">${esc(epicId)}</span>
+        <span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${esc(epicId)}</span>
         ${epicObj ? badge(epicObj.status) : ''}
         <span class="font-semibold text-sm dark:text-slate-100">${epicObj ? esc(epicObj.title) : ''}</span>
         <span class="ksw-epic-count">${epicCount}</span>
@@ -1377,7 +1367,9 @@ function renderCostsTab(data, options = {}) {
     <tr class="border-t-2 border-slate-300 dark:border-slate-600 cursor-pointer select-none bug-epic-header" data-epic="${esc(epicId)}" style="background:${accent.bg}" onclick="toggleSection('${jsEsc(bceid)}','${jsEsc(bceid)}-arrow')">
       <td colspan="6" class="px-3 py-2">
         <span id="${bceid}-arrow" class="text-slate-400 text-xs mr-2">&#9654;</span>
-        <span class="font-mono text-xs font-bold" style="color:${accent.border}">${label}</span>
+        ${epicId !== '_ungrouped' ? `<span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${epicId}</span>` : ''}
+        ${epic ? badge(epic.status) : ''}
+        <span class="font-semibold dark:text-slate-100">${epicId === '_ungrouped' ? 'No Epic' : esc(epic ? epic.title : epicId)}</span>
         <span class="ml-2 text-xs text-slate-500 bug-count">(${bugs.length})</span>
       </td>
       <td class="px-3 py-2 text-right text-sm font-medium dark:text-slate-200">${epicProjected > 0 ? usd(epicProjected) : '—'}</td>
@@ -1486,7 +1478,9 @@ function renderCostsTab(data, options = {}) {
       return `<div class="mb-6 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden bug-epic-card" data-epic="${esc(epicId)}" style="border-left:4px solid ${accent.border}">
       <div class="flex items-center gap-2 px-3 py-2 flex-wrap cursor-pointer select-none bug-epic-header" data-epic="${esc(epicId)}" style="background:${accent.bg}" onclick="toggleSection('${jsEsc(bcceid)}','${jsEsc(bcceid)}-arrow')">
         <span id="${bcceid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">▶</span>
-        <span class="font-mono text-xs font-bold" style="color:${accent.border}">${label}</span>
+        ${epicId !== '_ungrouped' ? `<span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${epicId}</span>` : ''}
+        ${epic ? badge(epic.status) : ''}
+        <span class="font-semibold dark:text-slate-100">${epicId === '_ungrouped' ? 'No Epic' : esc(epic ? epic.title : epicId)}</span>
         <span class="ml-2 text-xs text-slate-500 bug-count">(${bugs.length})</span>
         <span class="ml-auto text-xs text-slate-500">Proj ${usd(epicBugProjected)} · AI ${usd(epicBugAI)}</span>
       </div>
@@ -1723,7 +1717,7 @@ function renderBugsTab(data) {
       <td colspan="7" class="px-3 py-2" style="border-left:4px solid ${accent.border};">
         <div class="flex flex-wrap items-center gap-3">
           <span id="${beid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">▶</span>
-          ${epicId !== '_ungrouped' ? `<span class="epic-id-display font-mono text-xs font-bold uppercase"><span class="epic-id-label">EPIC /</span> <span class="epic-id-num" style="color:${accent.text}">${epicId.replace('EPIC-', '')}</span></span>` : ''}
+          ${epicId !== '_ungrouped' ? `<span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${epicId}</span>` : ''}
           ${epic ? badge(epic.status) : ''}
           ${titlePart}
           <span class="ml-auto text-xs text-slate-500 bug-count">${open} open &middot; ${bugs.length} total</span>
@@ -1956,7 +1950,7 @@ function renderLessonsTab(data) {
       <td colspan="5" class="px-3 py-2" style="border-left:4px solid ${accent.border};">
         <div class="flex flex-wrap items-center gap-3">
           <span id="${leid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">▶</span>
-          ${epicId !== '_ungrouped' ? `<span class="epic-id-display font-mono text-xs font-bold uppercase"><span class="epic-id-label">EPIC /</span> <span class="epic-id-num" style="color:${accent.text}">${epicId.replace('EPIC-', '')}</span></span>` : ''}
+          ${epicId !== '_ungrouped' ? `<span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${epicId}</span>` : ''}
           ${epic ? badge(epic.status) : ''}
           ${titlePart}
           <span class="ml-auto text-xs text-slate-500">${ls.length} lesson${ls.length !== 1 ? 's' : ''}</span>

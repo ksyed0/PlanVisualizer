@@ -2998,3 +2998,27 @@ Acceptance Criteria:
 - [ ] AC-0575: Cost Breakdown by Epic chart shows non-zero spend for EPIC-0010, EPIC-0012, EPIC-0016, EPIC-0017, EPIC-0019, EPIC-0020, and other epics that were primarily worked in worktrees
 - [ ] AC-0576: LESSONS.md updated with the worktree branch-naming gap and the fix so future sessions prevent recurrence
 ```
+
+```
+EPIC-0022
+Title: Analytics & Charting Enhancements
+Status: Planned
+ReleaseTarget: v2.x
+Description: New data visualisations that deepen delivery insight — velocity, throughput, and flow metrics — giving teams a clearer picture of team pace and predictability over time.
+```
+
+## User Stories — EPIC-0022: Analytics & Charting Enhancements
+
+```
+US-0159 (EPIC-0022): As a project lead, I want a Velocity chart in the Trends tab showing story points (or story count) completed per sprint/week over time, so that I can see team throughput trends and forecast delivery pace.
+Priority: Medium (P1)
+Estimate: L
+Status: Planned
+Branch: feature/US-0159-velocity-chart
+Acceptance Criteria:
+
+- [ ] AC-0577: Velocity chart renders as a bar chart in the Trends tab, with one bar per completed sprint or rolling week, height representing story count (or t-shirt-size points) completed in that period
+- [ ] AC-0578: Chart draws data from existing parse-progress.js session logs and RELEASE_PLAN.md story completion dates; no new data-source files are required
+- [ ] AC-0579: A 4-period rolling average trend line is overlaid on the bars so viewers can distinguish noise from trend
+- [ ] AC-0580: Chart respects the shared semantic palette from theme.js (no hardcoded hex literals); renders correctly in both light and dark mode
+```
