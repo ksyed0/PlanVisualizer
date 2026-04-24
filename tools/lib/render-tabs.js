@@ -175,7 +175,7 @@ function renderHierarchyTab(data) {
     .join('');
 
   return `
-  <div id="tab-hierarchy" class="p-6" role="tabpanel" aria-labelledby="tab-btn-hierarchy">
+  <div id="tab-hierarchy" class="p-6 hidden" role="tabpanel" aria-labelledby="tab-btn-hierarchy">
     <div class="flex items-center justify-end mb-4 flex-shrink-0">
       <div class="flex gap-1">
         <button id="hier-col-btn" onclick="setHierarchyView('column')"
