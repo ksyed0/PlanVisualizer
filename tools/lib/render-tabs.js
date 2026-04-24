@@ -442,7 +442,7 @@ function renderTrendsTab(data, options = {}) {
       <div style="height:250px;position:relative"><canvas id="chart-trends-progress"></canvas></div>
     </div>
     <div class="card-elev rounded-lg p-4 anim-stagger" style="--i:1">
-      <div class="chart-header-rule"><span class="display-title">Velocity</span><span class="chart-subtitle">cumulative done points (burn-up)</span></div>
+      <div class="chart-header-rule"><span class="display-title">Burn Up</span><span class="chart-subtitle">cumulative story points completed</span></div>
       <div style="height:250px;position:relative"><canvas id="chart-trends-velocity"></canvas></div>
       ${(() => {
         if (!trends || !trends.velocity || trends.velocity.length < 2) return '';
