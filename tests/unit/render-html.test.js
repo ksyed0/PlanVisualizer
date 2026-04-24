@@ -1101,10 +1101,10 @@ describe('US-0107 — Lessons card polish', () => {
 });
 
 describe('US-0100 — Hierarchy tab polish', () => {
-  it('epic ID renders with EPIC / split pattern', () => {
+  it('epic ID renders as full EPIC-XXXX monospace span', () => {
     const html = renderHtml(sampleData);
-    expect(html).toMatch(/epic-id-display/);
-    expect(html).toMatch(/EPIC \//);
+    expect(html).toMatch(/tracking-widest/);
+    expect(html).toMatch(/EPIC-\d{4}/);
   });
 
   it('epic progress rule div is present', () => {
