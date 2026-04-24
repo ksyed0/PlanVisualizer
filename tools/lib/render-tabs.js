@@ -442,7 +442,7 @@ function renderTrendsTab(data, options = {}) {
       <div style="height:250px;position:relative"><canvas id="chart-trends-progress"></canvas></div>
     </div>
     <div class="card-elev rounded-lg p-4 anim-stagger" style="--i:1">
-      <div class="chart-header-rule"><span class="display-title">Burn Up</span><span class="chart-subtitle">cumulative story points completed</span></div>
+      <div class="chart-header-rule"><span class="display-title">Velocity</span><span class="chart-subtitle">cumulative done points (burn-up)</span></div>
       <div style="height:250px;position:relative"><canvas id="chart-trends-velocity"></canvas></div>
       ${(() => {
         if (!trends || !trends.velocity || trends.velocity.length < 2) return '';
@@ -456,7 +456,7 @@ function renderTrendsTab(data, options = {}) {
         const tableRows = rows
           .map(
             (r) => `<tr>
-          <td style="font-family:var(--font-mono);font-size:11px;white-space:nowrap">${esc(r.date.replace('T', ' ').slice(0, 16))}</td>
+          <td style="font-family:monospace;font-size:11px;white-space:nowrap">${esc(r.date.replace('T', ' ').slice(0, 16))}</td>
           <td style="text-align:right;font-weight:600">${r.cumul}</td>
           <td style="text-align:right;color:${r.delta > 0 ? 'var(--ok)' : 'var(--risk)'}">${r.delta > 0 ? '+' : ''}${r.delta}</td>
         </tr>`,
