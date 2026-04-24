@@ -8,6 +8,7 @@ const {
   renderSidebar,
   renderCompletionBanner,
   renderMasthead,
+  SHELL_CHROME_CSS,
 } = require('./render-shell');
 const {
   renderHierarchyTab,
@@ -66,91 +67,9 @@ function renderHtml(data, options = {}) {
     .card-elev { background-color: var(--clr-panel-bg); box-shadow: var(--shadow-card); transition: box-shadow 180ms ease; padding: 1rem; }
     .card-elev:hover { box-shadow: var(--shadow-card-hover); }
 
-    /* === Chrome (sticky, frosted-glass neutral) — US-0136 === */
-    /* Old navy gradient topbar replaced with neutral frosted-glass chrome. */
-    .pv-chrome {
-      position: sticky;
-      top: 0;
-      z-index: 60;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 8px 18px;
-      min-height: 52px;
-      max-height: 52px;
-      border-bottom: 1px solid var(--border);
-      background: color-mix(in oklab, var(--bg) 80%, transparent);
-      backdrop-filter: blur(12px) saturate(1.2);
-      -webkit-backdrop-filter: blur(12px) saturate(1.2);
-    }
-    .pv-chrome-brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-family: var(--font-display);
-      font-size: 17px;
-      letter-spacing: -0.01em;
-      color: var(--text);
-    }
-    .pv-chrome-dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 2px;
-      background: linear-gradient(135deg, var(--plan-accent), var(--live-accent));
-      flex-shrink: 0;
-    }
-    .pv-chrome-spacer { flex: 1; }
-    .pv-chrome-segs,
-    .pv-theme-segs {
-      display: flex;
-      gap: 2px;
-      padding: 3px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      background: var(--surface);
-    }
-    .pv-seg {
-      padding: 5px 11px;
-      font-size: 12.5px;
-      font-weight: 500;
-      border-radius: 6px;
-      color: var(--text-dim);
-      cursor: pointer;
-      background: none;
-      border: 0;
-      font-family: var(--font-sans);
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-    }
-    .pv-seg:hover {
-      color: var(--text);
-      background: var(--surface-2);
-    }
-    .pv-seg-active,
-    .pv-seg[aria-pressed='true'] {
-      background: var(--surface-2);
-      color: var(--text);
-      box-shadow: inset 0 0 0 1px var(--border-soft);
-    }
-    .pv-iconbtn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 10px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--text-dim);
-      font-size: 12px;
-      font-weight: 500;
-      cursor: pointer;
-      font-family: var(--font-sans);
-    }
-    .pv-iconbtn:hover {
-      color: var(--text);
-      background: var(--surface-2);
-    }
+    /* === Chrome (sticky, frosted-glass neutral) — US-0136/US-0137 === */
+    /* Shared between plan-status and agentic dashboards. CSS lives in SHELL_CHROME_CSS. */
+    ${SHELL_CHROME_CSS}
     /* Legacy topbar classes kept for backward-compat with any external CSS references */
     .topbar-inner { display: flex; align-items: center; gap: 12px; width: 100%; min-width: 0; }
     .topbar-project { flex: 1; min-width: 0; }
@@ -280,41 +199,7 @@ function renderHtml(data, options = {}) {
       .nav-label { display: flex !important; }
     }
 
-    /* US-0138: Mode badge */
-    .mode-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 5px 10px 5px 8px;
-      border-radius: 999px;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--text);
-    }
-    .mode-badge .pip {
-      width: 6px;
-      height: 6px;
-      border-radius: 999px;
-      display: inline-block;
-    }
-    .mode-report .pip {
-      background: var(--plan-accent);
-      box-shadow: 0 0 0 3px var(--plan-accent-soft);
-    }
-    .mode-live .pip {
-      background: var(--live-accent);
-      box-shadow: 0 0 0 3px var(--live-accent-soft);
-      animation: pv-pulse 1.6s ease-in-out infinite;
-    }
-    @keyframes pv-pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.35; }
-    }
+    /* US-0138: Mode badge — CSS now lives in SHELL_CHROME_CSS (render-shell.js) */
     /* US-0135: Status hero */
     .pv-hero { padding: 0; overflow: hidden; }
     .pv-hero-head {
@@ -406,7 +291,7 @@ function renderHtml(data, options = {}) {
       margin: 0 0 14px;
       border: 1px solid var(--border);
       border-radius: 12px;
-      background: var(--surface);
+      background: linear-gradient(135deg, color-mix(in oklab, var(--plan-accent) 10%, var(--surface)) 0%, var(--surface) 60%);
       box-shadow: var(--shadow);
     }
     .pv-eyebrow {

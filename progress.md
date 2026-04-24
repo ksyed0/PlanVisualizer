@@ -4,6 +4,35 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 27 — 2026-04-24
+
+### What Was Done
+
+1. **Font consistency (all tabs)** — Replaced all hardcoded font stacks (`'Inter Tight', sans-serif`, `'JetBrains Mono', monospace`, etc.) with CSS custom properties (`var(--font-sans)`, `var(--font-mono)`, `var(--font-display)`) across `render-tabs.js`, `render-scripts.js`, and `generate-dashboard.js`. Chart.js resolves vars at init time via `getComputedStyle`.
+
+2. **Epic header card/column alignment (Bugs + Lessons)** — Column and card view epic headers now use the same "EPIC / 0001" two-part coloured format as Hierarchy. `epic-id-label` + `epic-id-num` with `accent.text` colour, guarded for `_ungrouped` section.
+
+3. **ON AIR bar redesign (Item 1)** — 3-column grid: `[ON AIR] | [NOW EXECUTING / cycle / ticker] | [CLOCK label + clock]`. Existing element IDs preserved; CSS fully rewritten. Hidden until pipeline is active (`display:none`).
+
+4. **Event log card redesign (Item 3)** — Each entry is a card with agent dot + name, timestamp, message, and tag pill (STORY DONE / BLOCKED / REVIEW / STARTED). Old row/grid layout removed.
+
+5. **Tests updated** — TC-0152 and AC-0408 updated to assert on CSS variable references rather than stale hardcoded font literals.
+
+### Test Results
+
+- 638 tests, 26 suites — all passing
+- Statement coverage well above 80% gate
+
+### Blockers
+
+None.
+
+### PR
+
+- [PR #435](https://github.com/ksyed0/PlanVisualizer/pull/435) — auto-merge armed, awaiting CI
+
+---
+
 ## Session 26 — 2026-04-22
 
 ### What Was Done

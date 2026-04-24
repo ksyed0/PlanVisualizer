@@ -37,33 +37,21 @@
   --bg: oklch(6%  0.006 95); --surface: oklch(16% 0.012 95); --text: oklch(97% 0.006 95);
   --text-muted: oklch(65% 0.014 95); --border: oklch(28% 0.018 95);
 }
-  .pv-chrome { height:52px; background:var(--chrome-bg); border-bottom:1px solid var(--chrome-border);
-  display:flex; align-items:center; padding:0 14px; gap:8px; font-size:12px;
-  position:sticky; top:0; z-index:100; }
-.pv-brand { font-weight:700; font-size:13px; color:var(--chrome-brand);
-  letter-spacing:-.01em; margin-right:4px; text-decoration:none; }
-.pv-seg-group { display:flex; gap:2px; }
-.pv-seg { padding:4px 10px; border-radius:6px; font-size:11px; font-weight:500;
-  color:var(--chrome-muted); cursor:pointer; border:none; background:none; text-decoration:none; }
-.pv-seg-active { background:var(--chrome-seg-active-bg); color:var(--chrome-text); font-weight:600; }
-.pv-spacer { flex:1; }
-.pv-iconbtn { width:28px; height:28px; border-radius:6px; display:flex; align-items:center;
-  justify-content:center; font-size:13px; color:var(--chrome-muted); cursor:pointer; border:none; background:none; }
-.pv-iconbtn:hover { background:var(--chrome-hover-bg); }
-.pv-theme-segs { display:flex; background:var(--chrome-theme-bg); border-radius:6px; padding:2px; gap:1px; }
-.pv-theme-btn { padding:3px 7px; border-radius:4px; font-size:11px; color:var(--chrome-subtle);
-  cursor:pointer; border:none; background:none; }
-.pv-theme-btn.active { background:var(--chrome-theme-active); color:var(--chrome-text); }
-.mode-badge { display:flex; align-items:center; gap:5px; padding:3px 8px; border-radius:9999px;
-  font-size:10px; font-weight:700; letter-spacing:.06em; }
-.mode-report { background:var(--chrome-report-bg); color:var(--chrome-report-text); }
-.mode-live   { background:var(--chrome-live-bg);   color:var(--chrome-live-text); }
-.mode-pip { width:7px; height:7px; border-radius:50%; }
-.mode-report .mode-pip { background:var(--chrome-report-pip); }
-.mode-live   .mode-pip { background:var(--chrome-live-pip); }
-.mode-pip-pulse { animation:pv-pip-pulse 1.6s ease-in-out infinite; }
-@keyframes pv-pip-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
-@media (prefers-reduced-motion:reduce) { .mode-pip-pulse { animation:none; } }
+  .pv-chrome{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:14px;padding:8px 18px;min-height:52px;max-height:52px;border-bottom:1px solid var(--border);background:color-mix(in oklab,var(--bg) 80%,transparent);backdrop-filter:blur(12px) saturate(1.2);-webkit-backdrop-filter:blur(12px) saturate(1.2);}
+.pv-chrome-brand{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-size:17px;letter-spacing:-0.01em;color:var(--text);}
+.pv-chrome-dot{width:9px;height:9px;border-radius:2px;background:linear-gradient(135deg,var(--plan-accent),var(--live-accent));flex-shrink:0;}
+.pv-chrome-spacer{flex:1;}
+.pv-chrome-segs,.pv-theme-segs{display:flex;gap:2px;padding:3px;border:1px solid var(--border);border-radius:8px;background:var(--surface);}
+.pv-seg{padding:5px 11px;font-size:12.5px;font-weight:500;border-radius:6px;color:var(--text-dim);cursor:pointer;background:none;border:0;font-family:var(--font-sans);text-decoration:none;display:inline-flex;align-items:center;}
+.pv-seg:hover{color:var(--text);background:var(--surface-2);}
+.pv-seg-active,.pv-seg[aria-pressed='true']{background:var(--surface-2);color:var(--text);box-shadow:inset 0 0 0 1px var(--border-soft);}
+.pv-iconbtn{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font-sans);}
+.pv-iconbtn:hover{color:var(--text);background:var(--surface-2);}
+.mode-badge{display:inline-flex;align-items:center;gap:8px;padding:5px 10px 5px 8px;border-radius:999px;font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;border:1px solid var(--border);background:var(--surface);color:var(--text);}
+.mode-badge .pip{width:6px;height:6px;border-radius:999px;display:inline-block;}
+.mode-report .pip{background:var(--plan-accent);box-shadow:0 0 0 3px var(--plan-accent-soft);}
+.mode-live .pip{background:var(--live-accent);box-shadow:0 0 0 3px var(--live-accent-soft);animation:pv-pulse 1.6s ease-in-out infinite;}
+@keyframes pv-pulse{0%,100%{opacity:1}50%{opacity:0.35}}
   :root {
     --brand-primary: oklch(50% 0.20 264);
     /* US-0110 AC-0361: scoped font stacks — do NOT reassign existing typography
@@ -71,13 +59,13 @@
     --font-display: 'Departure Mono', 'SF Mono', Menlo, Consolas, monospace;
     --font-sans: 'Geist', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     /* US-0110: canvas bg aligned with Plan Visualizer dark canvas (US-0094/US-0095). */
-    --bg-primary: oklch(8% 0.015 220);
-    --bg-card: oklch(14% 0.025 240);
-    --bg-card-inner: oklch(14% 0.025 255);
-    --bg-card-border: oklch(24% 0.030 255);
-    --bg-phase-pending: oklch(22% 0.025 255);
-    --bg-phase-border: oklch(28% 0.025 255);
-    --bg-phase-complete: oklch(20% 0.025 148);
+    --bg-primary: oklch(11% 0.016 220);
+    --bg-card: oklch(20% 0.025 240);
+    --bg-card-inner: oklch(18% 0.025 255);
+    --bg-card-border: oklch(34% 0.030 255);
+    --bg-phase-pending: oklch(24% 0.025 255);
+    --bg-phase-border: oklch(36% 0.025 255);
+    --bg-phase-complete: oklch(22% 0.025 148);
     --bg-progress: oklch(22% 0.025 255);
     --text-primary: oklch(88% 0.006 220);
     --text-secondary: oklch(70% 0.006 220);
@@ -125,7 +113,7 @@
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: var(--font-sans);
     background-color: var(--bg-primary);
     /* US-0110 AC-0360: subtle dot-grid — scoped to dark theme only, visible but low-key. */
     background-image: radial-gradient(circle, oklch(70% 0.010 220 / 6%) 1px, transparent 1px);
@@ -166,7 +154,7 @@
   }
   .cycle-counter .cycle-label { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
   .cycle-counter .cycle-elapsed {
-    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     color: var(--text-muted);
     font-variant-numeric: tabular-nums;
@@ -307,7 +295,7 @@
   [data-theme="light"] .phase-check { color: var(--ok); }
   .phase-elapsed {
     display: none;
-    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: 10px;
     color: var(--text-muted);
     font-variant-numeric: tabular-nums;
@@ -413,8 +401,8 @@
   .spotlight-name { font-family: var(--font-sans); font-size: 28px; font-weight: 700; letter-spacing: -0.01em; color: var(--text-primary); display: flex; align-items: center; gap: 10px; line-height: 1.1; }
   [data-theme="light"] .spotlight-name { color: var(--text-primary); }
   .spotlight-role { font-family: var(--font-sans); font-size: 11px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-muted); }
-  .spotlight-task { font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace; font-size: 12px; color: var(--text-secondary); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
-  .spotlight-elapsed { font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace; font-size: 11px; color: var(--text-dim); letter-spacing: 0.04em; font-variant-numeric: tabular-nums; margin-top: 2px; }
+  .spotlight-task { font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
+  .spotlight-elapsed { font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); letter-spacing: 0.04em; font-variant-numeric: tabular-nums; margin-top: 2px; }
   .spotlight-elapsed::before { content: 'ELAPSED '; color: var(--text-muted); letter-spacing: 0.14em; }
 
   /* US-0119 AC-0402/0403/0404/0405: Vertical station cards. Portrait on
@@ -424,8 +412,8 @@
      "now on air" dot. Idle stations fade to 0.5 opacity. Hover replaces
      the old filter:brightness(1.12) — invisible in light mode (BUG-0161)
      — with a 4px agent-color outline glow. */
-  .agent-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-  .agent-card { position: relative; background: var(--bg-card-inner); border-radius: 10px; padding: 14px 10px; transition: transform 150ms ease, box-shadow 150ms ease, opacity 0.2s; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; border: 1px solid var(--bg-card-border); }
+  .agent-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .agent-card { position: relative; background: var(--bg-card-inner); border-radius: 10px; padding: 12px; transition: transform 150ms ease, box-shadow 150ms ease, opacity 0.2s; display: flex; flex-direction: row; align-items: flex-start; gap: 12px; cursor: pointer; border: 1px solid var(--bg-card-border); }
   .agent-card.idle { opacity: 0.5; }
   .agent-card:hover { transform: translateY(-1px); box-shadow: 0 0 0 4px var(--agent-color-ring, oklch(55% 0 0 / 35%)); opacity: 1; }
   .agent-card.active { box-shadow: 0 0 0 3px var(--agent-color, var(--text-muted)), 0 6px 24px oklch(0% 0 0 / 35%); }
@@ -444,13 +432,13 @@
   @keyframes pv-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
   #agent-portrait-popup { position: fixed; z-index: 999; width: 200px; border-radius: 14px; overflow: hidden; box-shadow: 0 12px 40px oklch(0% 0 0 / 70%); pointer-events: none; display: none; transition: opacity 0.15s; border: 2px solid oklch(100% 0 0 / 12%); }
   #agent-portrait-popup img { width: 100%; display: block; border-radius: 12px; object-fit: cover; object-position: center top; }
-  .agent-avatar { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; object-position: center top; border: 2px solid var(--agent-color, var(--text-muted)); flex-shrink: 0; }
-  .agent-avatar-fallback { width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--agent-color, var(--text-muted)); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 32px; background: var(--bg-phase-pending); }
-  .agent-info { min-width: 0; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; }
+  .agent-avatar { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; object-position: center top; border: 2px solid var(--agent-color, var(--text-muted)); flex-shrink: 0; }
+  .agent-avatar-fallback { width: 64px; height: 64px; border-radius: 50%; border: 2px solid var(--agent-color, var(--text-muted)); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 26px; background: var(--bg-phase-pending); }
+  .agent-info { min-width: 0; flex: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; }
   .agent-name { font-family: var(--font-sans); font-size: 13px; font-weight: 700; letter-spacing: 0.01em; }
   .agent-role { font-family: var(--font-sans); font-size: 9px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
   .agent-status { font-size: 10px; font-weight: 600; padding: 2px 10px; border-radius: 10px; display: inline-block; text-transform: uppercase; letter-spacing: 0.06em; }
-  .agent-task { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10px; color: var(--text-secondary); margin-top: 4px; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .agent-task { font-family: var(--font-mono); font-size: 10px; color: var(--text-secondary); margin-top: 4px; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
   /* Story table */
   .story-list { display: flex; flex-direction: column; gap: 10px; }
@@ -484,7 +472,7 @@
   /* US-0120 AC-0408: elapsed-time pill in JetBrains Mono next to the status
      badge. Rendered only for In Progress stories that carry a startedAt stamp. */
   .story-elapsed {
-    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: 10px;
     font-weight: 600;
     padding: 2px 8px;
@@ -517,7 +505,7 @@
     gap: 8px;
     margin-bottom: 10px;
     flex-wrap: wrap;
-    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
   }
   .log-filters { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; min-width: 0; }
   .log-filter-chip {
@@ -564,7 +552,7 @@
   .log-scroll {
     max-height: 240px;
     overflow-y: auto;
-    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     line-height: 1.5;
   }
@@ -588,7 +576,7 @@
 
   /* AC-0415: empty state — blinking terminal cursor + waiting message. */
   .log-empty {
-    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     color: var(--text-muted);
     padding: 8px 10px;
@@ -619,7 +607,7 @@
      for a console/telemetry feel, with a .stale variant that turns red when
      refreshState() can't reach sdlc-status.json. */
   .last-updated {
-    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: 11px;
     color: oklch(100% 0 0 / 75%);
     letter-spacing: 0.02em;
@@ -676,7 +664,7 @@
   .modal .meta-supertitle { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted); margin-bottom: 6px; }
   .modal .meta-row { padding-left: 8px; margin-bottom: 3px; }
   .modal .meta-label { color: var(--text-muted); }
-  .modal .meta-value { color: var(--text-primary); font-family: 'JetBrains Mono', 'Menlo', monospace; font-size: 11px; }
+  .modal .meta-value { color: var(--text-primary); font-family: var(--font-mono); font-size: 11px; }
   .modal .meta-attribution { margin-top: 14px; font-size: 11px; color: var(--text-muted); text-align: center; }
   .modal-close { position: absolute; top: 12px; right: 16px; background: none; border: none; color: var(--text-muted); font-size: 22px; cursor: pointer; line-height: 1; padding: 4px 8px; border-radius: 6px; transition: background 0.2s; }
   .modal-close:hover { background: var(--bg-card-inner); color: var(--text-primary); }
@@ -828,7 +816,7 @@
   [data-theme="light"] .metric-hero.amber { color: var(--live-accent); }
 
   .metric-sub {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 10px;
     color: var(--text-muted);
     text-transform: uppercase;
@@ -890,7 +878,7 @@
   [data-theme="light"] .doughnut-center .d-num.green { color: var(--ok); }
   [data-theme="light"] .doughnut-center .d-num.amber { color: var(--live-accent); }
   .doughnut-center .d-label {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 9px;
     color: var(--text-muted);
     text-transform: uppercase;
@@ -907,7 +895,7 @@
   }
   .quality-stats .qs-cell { padding: 4px 0; }
   .quality-stats .qs-label {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 9px;
     color: var(--text-muted);
     text-transform: uppercase;
@@ -931,7 +919,7 @@
   }
   .reviews-summary .rs-cell { padding: 6px 4px; border-radius: 6px; background: var(--bg-card-inner); }
   .reviews-summary .rs-label {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 9px;
     color: var(--text-muted);
     text-transform: uppercase;
@@ -983,12 +971,12 @@
   .review-agent { font-size: 12px; font-weight: 700; flex-shrink: 0; }
   .review-target {
     font-size: 11px; color: var(--text-secondary);
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   .review-time {
     font-size: 10px; color: var(--text-muted);
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
     margin-top: 1px;
   }
@@ -996,7 +984,7 @@
     font-size: 9px; font-weight: 700;
     padding: 3px 8px; border-radius: 10px;
     text-transform: uppercase; letter-spacing: 0.06em;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     flex-shrink: 0;
   }
   .review-verdict.approve { color: var(--ok); background: oklch(66% 0.17 145 / 14%); }
@@ -1017,7 +1005,7 @@
     align-items: center;
   }
   .card-footer .stamp {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 10px;
     color: var(--text-muted);
     letter-spacing: 0.12em;
@@ -1043,7 +1031,7 @@
     .container { padding: 16px; }
     .grid { grid-template-columns: 1fr 1fr; gap: 16px; }
     .grid-2 { grid-template-columns: 1fr; gap: 16px; }
-    .agent-grid { grid-template-columns: repeat(3, 1fr); }
+    .agent-grid { grid-template-columns: repeat(2, 1fr); }
     .epic-stories { grid-template-columns: 1fr 1fr; }
   }
 
@@ -1082,9 +1070,9 @@
     .spotlight-portrait-wrap { flex-basis: 110px; width: 110px; }
     .spotlight-name { font-size: 20px; }
     .spotlight-role { font-size: 10px; }
-    .agent-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
-    .agent-card { padding: 10px 6px; gap: 6px; }
-    .agent-avatar, .agent-avatar-fallback { width: 56px; height: 56px; font-size: 24px; }
+    .agent-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+    .agent-card { padding: 10px 8px; gap: 8px; }
+    .agent-avatar, .agent-avatar-fallback { width: 48px; height: 48px; font-size: 20px; }
     .agent-name { font-size: 11px; }
     .epic-stories { grid-template-columns: 1fr; }
     .log-scroll { max-height: 150px; }
@@ -1124,9 +1112,9 @@
     .spotlight-role { font-size: 10px; }
     .spotlight-task { display: none; }
     .spotlight-elapsed { font-size: 10px; }
-    .agent-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
-    .agent-card { padding: 10px 6px; gap: 6px; }
-    .agent-avatar, .agent-avatar-fallback { width: 52px; height: 52px; font-size: 22px; }
+    .agent-grid { grid-template-columns: repeat(1, 1fr); gap: 6px; }
+    .agent-card { padding: 10px 8px; gap: 8px; }
+    .agent-avatar, .agent-avatar-fallback { width: 48px; height: 48px; font-size: 20px; }
     .agent-name { font-size: 11px; }
     .agent-role { font-size: 9px; }
     .agent-status { font-size: 9px; padding: 1px 6px; }
@@ -1148,8 +1136,8 @@
     .agent-spotlight { min-height: 160px; }
     .spotlight-portrait-wrap { flex-basis: 96px; width: 96px; height: 96px; }
     .spotlight-name { font-size: 16px; }
-    .agent-grid { grid-template-columns: repeat(2, 1fr); }
-    .agent-avatar, .agent-avatar-fallback { width: 48px; height: 48px; font-size: 20px; }
+    .agent-grid { grid-template-columns: repeat(1, 1fr); }
+    .agent-avatar, .agent-avatar-fallback { width: 40px; height: 40px; font-size: 18px; }
     .header-right .clock .time { font-size: 16px; }
     #theme-toggle, .btn-header { font-size: 11px; padding: 4px 10px; }
   }
@@ -1164,26 +1152,34 @@
   .pv-event-log { margin-bottom: 16px; }
   .pv-log-row { display: grid; grid-template-columns: 72px 90px 1fr; gap: 10px; padding: 4px 14px; border-bottom: 1px dashed oklch(100% 0 0 / 6%); font-size: 12px; }
   .pv-log-row:last-child { border-bottom: 0; }
-  .evt-time { color: var(--text-muted); font-family: monospace; }
+  .evt-time { color: var(--text-muted); font-family: var(--font-mono); }
   .evt-agent { color: var(--text-secondary); font-weight: 600; }
   .evt-msg { color: var(--text-secondary); }
   .evt-start .evt-agent { color: var(--live-accent-ink, oklch(55% 0.18 38)); }
   .evt-done .evt-agent { color: var(--ok, oklch(68% 0.15 150)); }
   .evt-block .evt-agent { color: var(--risk, oklch(64% 0.20 25)); }
   .evt-review .evt-agent { color: var(--info, oklch(66% 0.14 240)); }
-  .pv-log-status { font-family: monospace; font-size: 10px; letter-spacing: 0.1em; padding: 2px 6px; border-radius: 4px; background: var(--live-accent, oklch(72% 0.19 38)); color: oklch(12% 0.02 60); margin-left: auto; }
+  .pv-log-status { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; padding: 2px 6px; border-radius: 4px; background: var(--live-accent, oklch(72% 0.19 38)); color: oklch(12% 0.02 60); margin-left: auto; }
   .card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
   .card-head h3 { margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; }
   /* US-0144: Simplified phase fill bar — number/name/group/fill only */
   .pv-phase-fill-bg { height: 4px; background: var(--bg-progress, oklch(100% 0 0 / 10%)); border-radius: 3px; overflow: hidden; margin-top: auto; }
   .pv-phase-fill { height: 100%; border-radius: 3px; background: var(--ok, oklch(68% 0.15 150)); transition: width 0.3s; }
-  /* US-0146: Live bar — ON AIR chip, cycle display, ticker, HH:MM:SS clock */
-  .pv-live-bar { display: flex; align-items: center; gap: 14px; padding: 8px 18px; background: linear-gradient(90deg, color-mix(in oklab, var(--live-accent, oklch(72% 0.19 38)) 14%, transparent) 0%, transparent 80%); border-bottom: 1px solid var(--bg-card-border, oklch(24% 0.030 255)); min-height: 48px; border-left: 3px solid var(--live-accent, oklch(72% 0.19 38)); margin-bottom: 0; }
-  .pv-on-air { font-family: monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; padding: 4px 8px; background: var(--live-accent, oklch(72% 0.19 38)); color: oklch(12% 0.02 60); border-radius: 4px; flex-shrink: 0; }
-  .pv-live-cycle { font-family: monospace; font-size: 12.5px; color: var(--text-secondary, var(--text-secondary)); flex-shrink: 0; }
-  .pv-live-ticker { flex: 1; font-family: monospace; font-size: 12px; color: var(--text-secondary, var(--text-secondary)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 14px; border-left: 1px solid var(--divider, oklch(22% 0.025 255)); }
-  .pv-live-clock { font-family: monospace; font-size: 14px; font-weight: 600; color: var(--text-primary, oklch(88% 0.006 220)); flex-shrink: 0; }
-  @media (prefers-reduced-motion: reduce) { .pv-live-ticker { animation: none; } }
+  /* US-0146: Live bar — 3-column grid: ON AIR | NOW EXECUTING + breadcrumb + last-event | CLOCK */
+  .pv-live-bar { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 0; padding: 10px 18px; background: linear-gradient(90deg, color-mix(in oklab, var(--live-accent, oklch(72% 0.19 38)) 14%, transparent) 0%, transparent 80%); border-bottom: 1px solid var(--bg-card-border, oklch(24% 0.030 255)); min-height: 64px; border-left: 3px solid var(--live-accent, oklch(72% 0.19 38)); margin-bottom: 0; }
+  .pv-on-air { font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: 0.12em; padding: 4px 8px; background: var(--live-accent, oklch(72% 0.19 38)); color: oklch(12% 0.02 60); border-radius: 4px; flex-shrink: 0; }
+  .pv-live-col-left { display: flex; align-items: center; padding-right: 18px; border-right: 1px solid var(--divider, oklch(22% 0.025 255)); }
+  .pv-live-col-mid { display: flex; flex-direction: column; gap: 3px; padding: 0 18px; min-width: 0; justify-content: center; }
+  .pv-live-col-right { display: flex; flex-direction: column; gap: 1px; padding-left: 18px; border-left: 1px solid var(--divider, oklch(22% 0.025 255)); align-items: flex-end; justify-content: center; }
+  .pv-live-exec-lbl { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--mc-dim); }
+  .pv-live-cycle { font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary, oklch(75% 0.006 220)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pv-live-last-evt { display: flex; align-items: center; gap: 5px; overflow: hidden; }
+  .pv-live-pulse-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--ok, oklch(68% 0.15 150)); animation: pv-pulse 2s ease-in-out infinite; flex-shrink: 0; display: inline-block; }
+  .pv-live-ticker { font-family: var(--font-mono); font-size: 10px; color: var(--mc-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pv-live-stat-lbl { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mc-dim); }
+  .pv-live-clock { font-family: var(--font-mono); font-size: 14px; font-weight: 700; color: var(--text-primary, oklch(88% 0.006 220)); text-align: right; }
+  @keyframes pv-pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+  @media (prefers-reduced-motion: reduce) { .pv-live-pulse-dot { animation: none; } }
   /* US-0147: Agent Workload — live assignment bars from stories */
   .pv-workload-section { margin-bottom: 16px; }
   .pv-workload-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
@@ -1211,14 +1207,14 @@
     --mc-info: var(--info);
   }
   [data-theme="dark"] {
-    --mc-bg: oklch(8% 0.015 220);
-    --mc-surface: oklch(14% 0.025 240);
-    --mc-border: oklch(24% 0.030 255);
-    --mc-text: oklch(88% 0.006 220);
-    --mc-muted: oklch(63% 0.006 220);
-    --mc-dim: oklch(52% 0.006 220);
-    --mc-header-bg: oklch(10% 0.020 240);
-    --mc-header-text: oklch(88% 0.006 220);
+    --mc-bg: oklch(11% 0.016 220);
+    --mc-surface: oklch(20% 0.025 240);
+    --mc-border: oklch(34% 0.030 255);
+    --mc-text: oklch(90% 0.006 220);
+    --mc-muted: oklch(65% 0.008 220);
+    --mc-dim: oklch(54% 0.006 220);
+    --mc-header-bg: oklch(15% 0.022 240);
+    --mc-header-text: oklch(90% 0.006 220);
   }
 
   /* ── Body override for light-first ── */
@@ -1241,7 +1237,7 @@
     padding: 0 18px;
     height: 42px;
     border-bottom: 1px solid oklch(100% 0 0 / 8%);
-    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: 11.5px;
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
@@ -1305,18 +1301,21 @@
 
   /* ── Mission Control hero card ── */
   .mc-hero {
-    background: var(--mc-surface);
+    background: linear-gradient(135deg, oklch(88% 0.06 270) 0%, oklch(84% 0.09 300) 100%);
     border: 1px solid var(--mc-border);
     border-radius: 10px;
     padding: 16px 20px 12px;
     margin-bottom: 14px;
+  }
+  [data-theme="dark"] .mc-hero {
+    background: linear-gradient(135deg, oklch(20% 0.05 270) 0%, oklch(18% 0.06 300) 100%);
   }
   .mc-hero-header {
     display: flex; align-items: center; gap: 12px;
     margin-bottom: 14px;
   }
   .mc-hero-breadcrumb {
-    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-family: var(--font-mono);
     font-size: 10px; font-weight: 600;
     color: var(--mc-muted);
     letter-spacing: 0.12em;
@@ -1344,7 +1343,7 @@
   [data-theme="dark"] .mc-live-chip { background: oklch(66% 0.17 145 / 14%); }
   .mc-hero-signal {
     margin-left: auto;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 10px; color: var(--mc-muted);
     letter-spacing: 0.08em;
     white-space: nowrap;
@@ -1379,7 +1378,7 @@
   }
   [data-theme="dark"] .mc-stat-tile { background: var(--bg-card-inner); }
   .mc-stat-label {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 9px; font-weight: 700;
     text-transform: uppercase; letter-spacing: 0.14em;
     color: var(--mc-muted);
@@ -1398,7 +1397,7 @@
   .mc-stat-value.risk { color: var(--risk); }
   .mc-stat-value.info { color: var(--info); }
   .mc-stat-sub {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 9px; color: var(--mc-dim);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     margin-top: 1px;
@@ -1416,7 +1415,7 @@
     color: var(--mc-muted);
   }
   .mc-section-meta {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 10px; color: var(--mc-dim);
     margin-left: auto;
   }
@@ -1438,6 +1437,7 @@
   /* ── Roster section ── */
   .mc-roster { margin-bottom: 14px; }
   .mc-roster-rows { display: flex; flex-direction: column; gap: 4px; }
+  .mc-roster-rows.agent-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .mc-agent-row {
     display: flex; align-items: center; gap: 10px;
     background: var(--mc-surface);
@@ -1483,14 +1483,14 @@
     font-weight: 400; color: var(--mc-muted); font-size: 11px;
   }
   .mc-agent-task-line {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 10px; color: var(--mc-muted);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   .mc-agent-task-line a { color: inherit; text-decoration: none; }
   .mc-agent-task-line a:hover { text-decoration: underline; }
   .mc-status-badge {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 9px; font-weight: 700; letter-spacing: 0.12em;
     text-transform: uppercase;
     padding: 3px 8px; border-radius: 10px;
@@ -1526,42 +1526,46 @@
     margin-bottom: 10px;
   }
   .mc-attn-chip {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px; font-weight: 700; letter-spacing: 0.1em;
-    padding: 3px 8px; border-radius: 8px;
+    font-family: var(--font-mono);
+    font-size: 10px; font-weight: 600; letter-spacing: 0.06em;
+    padding: 3px 10px; border-radius: 20px;
     background: oklch(55% 0 0 / 8%); color: var(--mc-muted);
+    border: 1px solid oklch(55% 0 0 / 20%);
     white-space: nowrap;
   }
-  .mc-attn-chip.risk { background: oklch(58% 0.22 25 / 12%); color: var(--risk); }
-  .mc-attn-chip.warn { background: oklch(76% 0.17 80 / 12%); color: oklch(52% 0.17 58); }
-  .mc-attn-chip.info { background: oklch(60% 0.14 185 / 12%); color: var(--info); }
-  [data-theme="light"] .mc-attn-chip.warn { color: oklch(40% 0.15 58); }
-  [data-theme="light"] .mc-attn-chip.info { color: oklch(38% 0.13 185); }
+  .mc-attn-chip.risk { background: oklch(58% 0.22 25 / 10%); color: var(--risk); border-color: oklch(58% 0.22 25 / 35%); }
+  .mc-attn-chip.warn { background: oklch(76% 0.17 80 / 10%); color: oklch(48% 0.17 58); border-color: oklch(76% 0.17 80 / 35%); }
+  .mc-attn-chip.info { background: oklch(60% 0.14 185 / 10%); color: var(--info); border-color: oklch(60% 0.14 185 / 35%); }
+  [data-theme="light"] .mc-attn-chip.warn { color: oklch(38% 0.15 58); }
+  [data-theme="light"] .mc-attn-chip.info { color: oklch(36% 0.13 185); }
   .mc-attn-item {
     background: var(--mc-bg);
     border: 1px solid var(--mc-border);
-    border-radius: 6px; padding: 8px 10px;
-    margin-bottom: 6px; font-size: 12px;
+    border-radius: 8px; padding: 10px 12px;
+    margin-bottom: 8px;
   }
   [data-theme="dark"] .mc-attn-item { background: var(--bg-card-inner); }
   .mc-attn-item:last-child { margin-bottom: 0; }
-  .mc-attn-item-head {
-    display: flex; align-items: center; gap: 6px;
-    margin-bottom: 3px;
-  }
-  .mc-attn-item-name { font-weight: 700; color: var(--mc-text); font-size: 12px; }
-  .mc-attn-item-desc { font-size: 11px; color: var(--mc-muted); }
-  .mc-attn-item-time { margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--mc-dim); }
-  .mc-attn-actions { display: flex; align-items: center; gap: 8px; margin-top: 5px; }
+  .mc-attn-item-line1 { font-size: 12px; margin-bottom: 2px; }
+  .mc-attn-item-name { font-weight: 700; color: var(--mc-text); }
+  .mc-attn-item-desc { color: var(--mc-muted); margin-left: 4px; }
+  .mc-attn-item-line2 { font-size: 10px; color: var(--mc-dim); font-family: var(--font-mono); letter-spacing: 0.06em; margin-bottom: 8px; }
+  .mc-attn-actions { display: flex; align-items: center; gap: 8px; }
   .mc-attn-jump {
-    font-family: 'JetBrains Mono', monospace; font-size: 9px;
-    color: var(--mc-muted); cursor: pointer;
-    background: none; border: 1px solid var(--mc-border);
-    border-radius: 4px; padding: 2px 6px;
-    transition: color 0.15s;
+    flex: 1; font-family: var(--font-mono); font-size: 11px; font-weight: 700;
+    color: oklch(98% 0 0); cursor: pointer; letter-spacing: 0.05em;
+    background: var(--risk); border: none;
+    border-radius: 8px; padding: 7px 14px;
+    transition: opacity 0.15s;
   }
-  .mc-attn-jump:hover { color: var(--mc-text); border-color: var(--mc-muted); }
-  .mc-attn-all { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--mc-muted); margin-left: auto; }
+  .mc-attn-jump:hover { opacity: 0.85; }
+  .mc-attn-all {
+    font-family: var(--font-mono); font-size: 11px; font-weight: 600;
+    color: var(--mc-muted); padding: 7px 12px;
+    border: 1px solid var(--mc-border); border-radius: 8px;
+    background: none; cursor: pointer; white-space: nowrap;
+  }
+  .mc-attn-all:hover { color: var(--mc-text); }
 
   /* ── Sidebar event log ── */
   .mc-evtlog-title {
@@ -1573,25 +1577,22 @@
   }
   .mc-evtlog-scroll {
     max-height: 280px; overflow-y: auto;
-    display: flex; flex-direction: column; gap: 3px;
+    display: flex; flex-direction: column; gap: 6px;
   }
-  .mc-evt-row {
-    display: grid;
-    grid-template-columns: 58px 1fr;
-    gap: 6px;
-    align-items: start;
-    padding: 2px 0;
-    border-bottom: 1px solid var(--mc-border);
-    font-size: 11px;
-  }
-  .mc-evt-row:last-child { border-bottom: none; }
-  .mc-evt-time { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--mc-dim); white-space: nowrap; padding-top: 1px; }
-  .mc-evt-body { min-width: 0; }
-  .mc-evt-agent { font-weight: 700; font-size: 11px; margin-right: 4px; }
-  .mc-evt-msg { color: var(--mc-muted); font-size: 10px; display: block; word-break: break-word; }
+  .mc-evt-card { background: var(--mc-surface); border: 1px solid var(--mc-border); border-radius: 8px; padding: 8px 10px; }
+  .mc-evt-card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+  .mc-evt-card-agent { display: inline-flex; align-items: center; gap: 5px; font-weight: 700; font-size: 12px; color: var(--mc-text); }
+  .mc-evt-card-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .mc-evt-time { font-family: var(--font-mono); font-size: 10px; color: var(--mc-dim); white-space: nowrap; }
+  .mc-evt-msg { color: var(--mc-muted); font-size: 11px; line-height: 1.4; word-break: break-word; }
+  .mc-evt-tag { display: inline-block; font-family: var(--font-mono); font-size: 9px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 6px; border-radius: 20px; margin-top: 5px; }
+  .mc-evt-tag-done { background: color-mix(in oklab, var(--ok) 15%, transparent); color: var(--ok); }
+  .mc-evt-tag-block { background: color-mix(in oklab, var(--risk) 15%, transparent); color: var(--risk); }
+  .mc-evt-tag-review { background: color-mix(in oklab, var(--info) 15%, transparent); color: var(--info); }
+  .mc-evt-tag-start { background: color-mix(in oklab, var(--warn) 15%, transparent); color: var(--warn); }
 
   /* ── Roster counts in section bar ── */
-  .mc-roster-counts { margin-left: auto; display: flex; gap: 10px; align-items: center; font-family: 'JetBrains Mono', monospace; font-size: 10px; }
+  .mc-roster-counts { margin-left: auto; display: flex; gap: 10px; align-items: center; font-family: var(--font-mono); font-size: 10px; }
   .mc-count-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 3px; vertical-align: middle; }
   .mc-count-active .mc-count-dot { background: var(--live-accent); }
   .mc-count-idle .mc-count-dot { background: var(--mc-dim); }
@@ -1609,6 +1610,30 @@
 </style>
 </head>
 <body>
+
+  <header class="pv-chrome" id="pv-chrome" data-mode="live">
+    <div class="pv-chrome-brand">
+      <span class="pv-chrome-dot" aria-hidden="true"></span>
+      <span class="pv-chrome-name">PlanVisualizer</span>
+    </div>
+    <div class="pv-chrome-segs" role="tablist" aria-label="Dashboard">
+      <a href="plan-status.html" class="pv-seg" aria-pressed="false">Plan-Status</a>
+      <button class="pv-seg pv-seg-active" aria-pressed="true">Pipeline</button>
+    </div>
+    <div class="pv-chrome-spacer"></div>
+    <span id="gen-time" data-iso="2026-04-24T22:16:16.425Z" style="font-size:11px;color:var(--text-mute);white-space:nowrap"></span>
+    <span class="mode-badge mode-live" aria-label="Mode: Live" tabindex="0">
+    <span class="pip" aria-hidden="true"></span>LIVE
+  </span>
+    
+    <button class="pv-iconbtn" onclick="openAbout && openAbout()" aria-label="About">
+      <span aria-hidden="true">ⓘ</span> About
+    </button>
+    <div class="pv-theme-segs" role="group" aria-label="Theme">
+      <button onclick="pvSetTheme('light')" id="theme-btn-light" class="pv-seg" aria-pressed="false">☀ Light</button>
+      <button onclick="pvSetTheme('dark')"  id="theme-btn-dark"  class="pv-seg" aria-pressed="false">☾ Dark</button>
+    </div>
+  </header>
 
 <!-- US-0122 AC-0417: incident ticker (hidden by default, .active shown beneath header when any agent/phase is blocked). -->
 <div id="incident-ticker" class="incident-ticker" aria-live="polite" aria-atomic="true"></div>
@@ -1634,12 +1659,23 @@
   </div>
 </div>
 
-<!-- US-0146: Live bar — always visible ON AIR status strip (kept for patchDOM/test compatibility) -->
+<!-- US-0146: Live bar — 3-column ON AIR strip (kept for patchDOM/test compatibility) -->
 <div class="pv-live-bar" id="pv-live-bar" role="status" aria-live="polite" style="display:none;">
-  <span class="pv-on-air">ON AIR</span>
-  <div class="pv-live-cycle" id="pv-live-cycle">CYCLE — · —:——</div>
-  <div class="pv-live-ticker" id="pv-live-ticker" aria-hidden="true"></div>
-  <div class="pv-live-clock" id="pv-live-clock">00:00:00</div>
+  <div class="pv-live-col-left">
+    <span class="pv-on-air">ON AIR</span>
+  </div>
+  <div class="pv-live-col-mid">
+    <div class="pv-live-exec-lbl">NOW EXECUTING</div>
+    <div class="pv-live-cycle" id="pv-live-cycle">CYCLE — · —:——</div>
+    <div class="pv-live-last-evt">
+      <span class="pv-live-pulse-dot" aria-hidden="true"></span>
+      <span class="pv-live-ticker" id="pv-live-ticker" aria-hidden="true"></span>
+    </div>
+  </div>
+  <div class="pv-live-col-right">
+    <span class="pv-live-stat-lbl">CLOCK</span>
+    <span class="pv-live-clock" id="pv-live-clock">00:00:00</span>
+  </div>
 </div>
 
 <div class="mc-container">
@@ -1681,7 +1717,7 @@
     <!-- QUEUE (stories in progress/planned) -->
     <div class="mc-stat-tile">
       <div class="mc-stat-label">QUEUE</div>
-      <div class="mc-stat-value" id="mc-stat-queue">6</div>
+      <div class="mc-stat-value" id="mc-stat-queue">16</div>
       <div class="mc-stat-sub">stories remaining</div>
     </div>
     <!-- REVIEWS -->
@@ -1704,7 +1740,7 @@
     <!-- COVERAGE -->
     <div class="mc-stat-tile">
       <div class="mc-stat-label">COVERAGE</div>
-      <div class="mc-stat-value green" id="mc-stat-coverage">87.98%</div>
+      <div class="mc-stat-value green" id="mc-stat-coverage">93.19%</div>
       <div class="mc-stat-sub">statements</div>
     </div>
     <!-- AI SPEND -->
@@ -1726,7 +1762,7 @@
   <span class="mc-section-meta" id="cycle-counter" aria-live="polite">CYCLE 001 &middot; <span id="cycle-elapsed" data-started-at="">00:00:00</span></span>
 </div>
 <div class="pipeline mc-legacy-section">
-
+  <div style="width:100%;padding:20px 16px;font-size:12px;color:var(--text-secondary);font-family:var(--font-display),monospace;letter-spacing:0.06em;text-align:center;opacity:0.6;">STANDBY &middot; No pipeline cycle active</div>
 </div>
 
 <!-- ROSTER section -->
@@ -1742,137 +1778,155 @@
   <div class="mc-roster-rows agent-grid" id="mc-roster-rows">
     <div class="mc-agent-row  agent-card is-idle" id="agent-Conductor" data-agent-name="Conductor" data-agent-status="idle" style="--agent-color:oklch(52% 0.22 25);--agent-color-ring:oklch(52% 0.22 25)40;">
       
-      <div class="mc-agent-circle" style="background:oklch(52% 0.22 25);">C</div>
-      <div class="mc-agent-identity">
-        <div class="mc-agent-name-line">
-          <span>Conductor</span>
-          <span class="mc-agent-role-text">&middot; Delivery Manager</span>
+      <img class="agent-avatar" src="agents/images/optimized/conductor-64.png" alt="Conductor" style="border-color:oklch(52% 0.22 25);" onerror="this.replaceWith(Object.assign(document.createElement(&#39;div&#39;),{className:&#39;agent-avatar-fallback&#39;,textContent:&#39;C&#39;,style:&#39;border-color:oklch(52% 0.22 25);&#39;}))">
+      <div class="agent-info">
+        <div class="mc-agent-identity">
+          <div class="mc-agent-name-line">
+            <span>Conductor</span>
+            <span class="mc-agent-role-text">&middot; Delivery Manager</span>
+          </div>
+          <div class="mc-agent-task-line" id="agent-Conductor-task"><span style="opacity:0.5;">—</span></div>
         </div>
-        <div class="mc-agent-task-line" id="agent-Conductor-task"><span style="opacity:0.5;">—</span></div>
+        <span class="mc-status-badge status-idle">idle</span>
+        <!-- Hidden agent-status for AC-0428 test compat -->
+        <div class="agent-status" id="agent-Conductor-status" style="display:none;background:oklch(55% 0 0 / 15%);color:var(--text-muted)">idle</div>
       </div>
-      <span class="mc-status-badge status-idle">idle</span>
-      <!-- Hidden agent-status for AC-0428 test compat -->
-      <div class="agent-status" id="agent-Conductor-status" style="display:none;background:oklch(55% 0 0 / 15%);color:var(--text-muted)">idle</div>
       <span class="live-dot ok on-air-dot" aria-label="now on air" title="now on air" style="display:none;"></span>
     </div>
     <div class="mc-agent-row  agent-card is-idle" id="agent-Compass" data-agent-name="Compass" data-agent-status="idle" style="--agent-color:oklch(50% 0.20 264);--agent-color-ring:oklch(50% 0.20 264)40;">
       
-      <div class="mc-agent-circle" style="background:oklch(50% 0.20 264);">C</div>
-      <div class="mc-agent-identity">
-        <div class="mc-agent-name-line">
-          <span>Compass</span>
-          <span class="mc-agent-role-text">&middot; Product Owner</span>
+      <img class="agent-avatar" src="agents/images/optimized/compass-64.png" alt="Compass" style="border-color:oklch(50% 0.20 264);" onerror="this.replaceWith(Object.assign(document.createElement(&#39;div&#39;),{className:&#39;agent-avatar-fallback&#39;,textContent:&#39;C&#39;,style:&#39;border-color:oklch(50% 0.20 264);&#39;}))">
+      <div class="agent-info">
+        <div class="mc-agent-identity">
+          <div class="mc-agent-name-line">
+            <span>Compass</span>
+            <span class="mc-agent-role-text">&middot; Product Owner</span>
+          </div>
+          <div class="mc-agent-task-line" id="agent-Compass-task"><span style="opacity:0.5;">—</span></div>
         </div>
-        <div class="mc-agent-task-line" id="agent-Compass-task"><span style="opacity:0.5;">—</span></div>
+        <span class="mc-status-badge status-idle">idle</span>
+        <!-- Hidden agent-status for AC-0428 test compat -->
+        <div class="agent-status" id="agent-Compass-status" style="display:none;background:oklch(55% 0 0 / 15%);color:var(--text-muted)">idle</div>
       </div>
-      <span class="mc-status-badge status-idle">idle</span>
-      <!-- Hidden agent-status for AC-0428 test compat -->
-      <div class="agent-status" id="agent-Compass-status" style="display:none;background:oklch(55% 0 0 / 15%);color:var(--text-muted)">idle</div>
       <span class="live-dot ok on-air-dot" aria-label="now on air" title="now on air" style="display:none;"></span>
     </div>
     <div class="mc-agent-row  agent-card is-idle" id="agent-Keystone" data-agent-name="Keystone" data-agent-status="idle" style="--agent-color:oklch(44% 0.22 310);--agent-color-ring:oklch(44% 0.22 310)40;">
       
-      <div class="mc-agent-circle" style="background:oklch(44% 0.22 310);">K</div>
-      <div class="mc-agent-identity">
-        <div class="mc-agent-name-line">
-          <span>Keystone</span>
-          <span class="mc-agent-role-text">&middot; Architect</span>
+      <img class="agent-avatar" src="agents/images/optimized/keystone-64.png" alt="Keystone" style="border-color:oklch(44% 0.22 310);" onerror="this.replaceWith(Object.assign(document.createElement(&#39;div&#39;),{className:&#39;agent-avatar-fallback&#39;,textContent:&#39;K&#39;,style:&#39;border-color:oklch(44% 0.22 310);&#39;}))">
+      <div class="agent-info">
+        <div class="mc-agent-identity">
+          <div class="mc-agent-name-line">
+            <span>Keystone</span>
+            <span class="mc-agent-role-text">&middot; Architect</span>
+          </div>
+          <div class="mc-agent-task-line" id="agent-Keystone-task"><span style="opacity:0.5;">—</span></div>
         </div>
-        <div class="mc-agent-task-line" id="agent-Keystone-task"><span style="opacity:0.5;">—</span></div>
+        <span class="mc-status-badge status-idle">idle</span>
+        <!-- Hidden agent-status for AC-0428 test compat -->
+        <div class="agent-status" id="agent-Keystone-status" style="display:none;background:oklch(55% 0 0 / 15%);color:var(--text-muted)">idle</div>
       </div>
-      <span class="mc-status-badge status-idle">idle</span>
-      <!-- Hidden agent-status for AC-0428 test compat -->
-      <div class="agent-status" id="agent-Keystone-status" style="display:none;background:oklch(55% 0 0 / 15%);color:var(--text-muted)">idle</div>
       <span class="live-dot ok on-air-dot" aria-label="now on air" title="now on air" style="display:none;"></span>
     </div>
     <div class="mc-agent-row  agent-card is-idle" id="agent-Lens" data-agent-name="Lens" data-agent-status="idle" style="--agent-color:oklch(72% 0.19 46);--agent-color-ring:oklch(72% 0.19 46)40;">
       
-      <div class="mc-agent-circle" style="background:oklch(72% 0.19 46);">L</div>
-      <div class="mc-agent-identity">
-        <div class="mc-agent-name-line">
-          <span>Lens</span>
-          <span class="mc-agent-role-text">&middot; Code Reviewer</span>
+      <img class="agent-avatar" src="agents/images/optimized/lens-64.png" alt="Lens" style="border-color:oklch(72% 0.19 46);" onerror="this.replaceWith(Object.assign(document.createElement(&#39;div&#39;),{className:&#39;agent-avatar-fallback&#39;,textContent:&#39;L&#39;,style:&#39;border-color:oklch(72% 0.19 46);&#39;}))">
+      <div class="agent-info">
+        <div class="mc-agent-identity">
+          <div class="mc-agent-name-line">
+            <span>Lens</span>
+            <span class="mc-agent-role-text">&middot; Code Reviewer</span>
+          </div>
+          <div class="mc-agent-task-line" id="agent-Lens-task"><span style="opacity:0.5;">—</span></div>
         </div>
-        <div class="mc-agent-task-line" id="agent-Lens-task"><span style="opacity:0.5;">—</span></div>
+        <span class="mc-status-badge status-idle">idle</span>
+        <!-- Hidden agent-status for AC-0428 test compat -->
+        <div class="agent-status" id="agent-Lens-status" style="display:none;background:oklch(55% 0 0 / 15%);color:var(--text-muted)">idle</div>
       </div>
-      <span class="mc-status-badge status-idle">idle</span>
-      <!-- Hidden agent-status for AC-0428 test compat -->
-      <div class="agent-status" id="agent-Lens-status" style="display:none;background:oklch(55% 0 0 / 15%);color:var(--text-muted)">idle</div>
       <span class="live-dot ok on-air-dot" aria-label="now on air" title="now on air" style="display:none;"></span>
     </div>
     <div class="mc-agent-row  agent-card is-idle" id="agent-Palette" data-agent-name="Palette" data-agent-status="idle" style="--agent-color:oklch(60% 0.14 185);--agent-color-ring:oklch(60% 0.14 185)40;">
       
-      <div class="mc-agent-circle" style="background:oklch(60% 0.14 185);">P</div>
-      <div class="mc-agent-identity">
-        <div class="mc-agent-name-line">
-          <span>Palette</span>
-          <span class="mc-agent-role-text">&middot; UI Designer</span>
+      <img class="agent-avatar" src="agents/images/optimized/palette-64.png" alt="Palette" style="border-color:oklch(60% 0.14 185);" onerror="this.replaceWith(Object.assign(document.createElement(&#39;div&#39;),{className:&#39;agent-avatar-fallback&#39;,textContent:&#39;P&#39;,style:&#39;border-color:oklch(60% 0.14 185);&#39;}))">
+      <div class="agent-info">
+        <div class="mc-agent-identity">
+          <div class="mc-agent-name-line">
+            <span>Palette</span>
+            <span class="mc-agent-role-text">&middot; UI Designer</span>
+          </div>
+          <div class="mc-agent-task-line" id="agent-Palette-task"><span style="opacity:0.5;">—</span></div>
         </div>
-        <div class="mc-agent-task-line" id="agent-Palette-task"><span style="opacity:0.5;">—</span></div>
+        <span class="mc-status-badge status-idle">idle</span>
+        <!-- Hidden agent-status for AC-0428 test compat -->
+        <div class="agent-status" id="agent-Palette-status" style="display:none;background:oklch(55% 0 0 / 15%);color:var(--text-muted)">idle</div>
       </div>
-      <span class="mc-status-badge status-idle">idle</span>
-      <!-- Hidden agent-status for AC-0428 test compat -->
-      <div class="agent-status" id="agent-Palette-status" style="display:none;background:oklch(55% 0 0 / 15%);color:var(--text-muted)">idle</div>
       <span class="live-dot ok on-air-dot" aria-label="now on air" title="now on air" style="display:none;"></span>
     </div>
     <div class="mc-agent-row  agent-card is-idle" id="agent-Forge" data-agent-name="Forge" data-agent-status="idle" style="--agent-color:oklch(44% 0.22 25);--agent-color-ring:oklch(44% 0.22 25)40;">
       
-      <div class="mc-agent-circle" style="background:oklch(44% 0.22 25);">F</div>
-      <div class="mc-agent-identity">
-        <div class="mc-agent-name-line">
-          <span>Forge</span>
-          <span class="mc-agent-role-text">&middot; Backend Developer</span>
+      <img class="agent-avatar" src="agents/images/optimized/forge-64.png" alt="Forge" style="border-color:oklch(44% 0.22 25);" onerror="this.replaceWith(Object.assign(document.createElement(&#39;div&#39;),{className:&#39;agent-avatar-fallback&#39;,textContent:&#39;F&#39;,style:&#39;border-color:oklch(44% 0.22 25);&#39;}))">
+      <div class="agent-info">
+        <div class="mc-agent-identity">
+          <div class="mc-agent-name-line">
+            <span>Forge</span>
+            <span class="mc-agent-role-text">&middot; Backend Developer</span>
+          </div>
+          <div class="mc-agent-task-line" id="agent-Forge-task"><span style="opacity:0.5;">—</span></div>
         </div>
-        <div class="mc-agent-task-line" id="agent-Forge-task"><span style="opacity:0.5;">—</span></div>
+        <span class="mc-status-badge status-idle">idle</span>
+        <!-- Hidden agent-status for AC-0428 test compat -->
+        <div class="agent-status" id="agent-Forge-status" style="display:none;background:oklch(55% 0 0 / 15%);color:var(--text-muted)">idle</div>
       </div>
-      <span class="mc-status-badge status-idle">idle</span>
-      <!-- Hidden agent-status for AC-0428 test compat -->
-      <div class="agent-status" id="agent-Forge-status" style="display:none;background:oklch(55% 0 0 / 15%);color:var(--text-muted)">idle</div>
       <span class="live-dot ok on-air-dot" aria-label="now on air" title="now on air" style="display:none;"></span>
     </div>
     <div class="mc-agent-row  agent-card is-idle" id="agent-Pixel" data-agent-name="Pixel" data-agent-status="idle" style="--agent-color:oklch(38% 0.20 270);--agent-color-ring:oklch(38% 0.20 270)40;">
       
-      <div class="mc-agent-circle" style="background:oklch(38% 0.20 270);">P</div>
-      <div class="mc-agent-identity">
-        <div class="mc-agent-name-line">
-          <span>Pixel</span>
-          <span class="mc-agent-role-text">&middot; Frontend Developer</span>
+      <img class="agent-avatar" src="agents/images/optimized/pixel-64.png" alt="Pixel" style="border-color:oklch(38% 0.20 270);" onerror="this.replaceWith(Object.assign(document.createElement(&#39;div&#39;),{className:&#39;agent-avatar-fallback&#39;,textContent:&#39;P&#39;,style:&#39;border-color:oklch(38% 0.20 270);&#39;}))">
+      <div class="agent-info">
+        <div class="mc-agent-identity">
+          <div class="mc-agent-name-line">
+            <span>Pixel</span>
+            <span class="mc-agent-role-text">&middot; Frontend Developer</span>
+          </div>
+          <div class="mc-agent-task-line" id="agent-Pixel-task"><span style="opacity:0.5;">—</span></div>
         </div>
-        <div class="mc-agent-task-line" id="agent-Pixel-task"><span style="opacity:0.5;">—</span></div>
+        <span class="mc-status-badge status-idle">idle</span>
+        <!-- Hidden agent-status for AC-0428 test compat -->
+        <div class="agent-status" id="agent-Pixel-status" style="display:none;background:oklch(55% 0 0 / 15%);color:var(--text-muted)">idle</div>
       </div>
-      <span class="mc-status-badge status-idle">idle</span>
-      <!-- Hidden agent-status for AC-0428 test compat -->
-      <div class="agent-status" id="agent-Pixel-status" style="display:none;background:oklch(55% 0 0 / 15%);color:var(--text-muted)">idle</div>
       <span class="live-dot ok on-air-dot" aria-label="now on air" title="now on air" style="display:none;"></span>
     </div>
     <div class="mc-agent-row  agent-card is-idle" id="agent-Sentinel" data-agent-name="Sentinel" data-agent-status="idle" style="--agent-color:oklch(50% 0.17 145);--agent-color-ring:oklch(50% 0.17 145)40;">
       
-      <div class="mc-agent-circle" style="background:oklch(50% 0.17 145);">S</div>
-      <div class="mc-agent-identity">
-        <div class="mc-agent-name-line">
-          <span>Sentinel</span>
-          <span class="mc-agent-role-text">&middot; Functional Tester</span>
+      <img class="agent-avatar" src="agents/images/optimized/sentinel-64.png" alt="Sentinel" style="border-color:oklch(50% 0.17 145);" onerror="this.replaceWith(Object.assign(document.createElement(&#39;div&#39;),{className:&#39;agent-avatar-fallback&#39;,textContent:&#39;S&#39;,style:&#39;border-color:oklch(50% 0.17 145);&#39;}))">
+      <div class="agent-info">
+        <div class="mc-agent-identity">
+          <div class="mc-agent-name-line">
+            <span>Sentinel</span>
+            <span class="mc-agent-role-text">&middot; Functional Tester</span>
+          </div>
+          <div class="mc-agent-task-line" id="agent-Sentinel-task"><span style="opacity:0.5;">—</span></div>
         </div>
-        <div class="mc-agent-task-line" id="agent-Sentinel-task"><span style="opacity:0.5;">—</span></div>
+        <span class="mc-status-badge status-idle">idle</span>
+        <!-- Hidden agent-status for AC-0428 test compat -->
+        <div class="agent-status" id="agent-Sentinel-status" style="display:none;background:oklch(55% 0 0 / 15%);color:var(--text-muted)">idle</div>
       </div>
-      <span class="mc-status-badge status-idle">idle</span>
-      <!-- Hidden agent-status for AC-0428 test compat -->
-      <div class="agent-status" id="agent-Sentinel-status" style="display:none;background:oklch(55% 0 0 / 15%);color:var(--text-muted)">idle</div>
       <span class="live-dot ok on-air-dot" aria-label="now on air" title="now on air" style="display:none;"></span>
     </div>
     <div class="mc-agent-row  agent-card is-idle" id="agent-Circuit" data-agent-name="Circuit" data-agent-status="idle" style="--agent-color:oklch(40% 0.22 285);--agent-color-ring:oklch(40% 0.22 285)40;">
       
-      <div class="mc-agent-circle" style="background:oklch(40% 0.22 285);">C</div>
-      <div class="mc-agent-identity">
-        <div class="mc-agent-name-line">
-          <span>Circuit</span>
-          <span class="mc-agent-role-text">&middot; Automation Tester</span>
+      <img class="agent-avatar" src="agents/images/optimized/circuit-64.png" alt="Circuit" style="border-color:oklch(40% 0.22 285);" onerror="this.replaceWith(Object.assign(document.createElement(&#39;div&#39;),{className:&#39;agent-avatar-fallback&#39;,textContent:&#39;C&#39;,style:&#39;border-color:oklch(40% 0.22 285);&#39;}))">
+      <div class="agent-info">
+        <div class="mc-agent-identity">
+          <div class="mc-agent-name-line">
+            <span>Circuit</span>
+            <span class="mc-agent-role-text">&middot; Automation Tester</span>
+          </div>
+          <div class="mc-agent-task-line" id="agent-Circuit-task"><span style="opacity:0.5;">—</span></div>
         </div>
-        <div class="mc-agent-task-line" id="agent-Circuit-task"><span style="opacity:0.5;">—</span></div>
+        <span class="mc-status-badge status-idle">idle</span>
+        <!-- Hidden agent-status for AC-0428 test compat -->
+        <div class="agent-status" id="agent-Circuit-status" style="display:none;background:oklch(55% 0 0 / 15%);color:var(--text-muted)">idle</div>
       </div>
-      <span class="mc-status-badge status-idle">idle</span>
-      <!-- Hidden agent-status for AC-0428 test compat -->
-      <div class="agent-status" id="agent-Circuit-status" style="display:none;background:oklch(55% 0 0 / 15%);color:var(--text-muted)">idle</div>
       <span class="live-dot ok on-air-dot" aria-label="now on air" title="now on air" style="display:none;"></span>
     </div>
   </div>
@@ -1904,22 +1958,22 @@
   <span id="metric-phasesComplete">0 / 0</span>
   <span id="metric-phasesCompleteNum">0</span>
   <span id="metric-phasesTotalNum">0</span>
-  <span id="metric-storiesDone">141 / 147</span>
+  <span id="metric-storiesDone">142 / 158</span>
   <span id="metric-tasksDone">54 / 54</span>
   <span id="metric-testsPassed">0</span>
   <span id="metric-testsFailed">0</span>
   <span id="metric-testsTotal">0</span>
-  <span id="metric-bugsOpen">8</span>
-  <span id="metric-bugsFixed">163</span>
+  <span id="metric-bugsOpen">12</span>
+  <span id="metric-bugsFixed">174</span>
   <span id="metric-reviewsApproved">0</span>
   <span id="metric-reviewsBlocked">0</span>
-  <span id="metric-coveragePercent">87.98%</span>
-  <b id="stamp-phase-progress">17:56</b>
-  <b id="stamp-quality">17:56</b>
-  <b id="stamp-reviews">17:56</b>
+  <span id="metric-coveragePercent">93.19%</span>
+  <b id="stamp-phase-progress">18:16</b>
+  <b id="stamp-quality">18:16</b>
+  <b id="stamp-reviews">18:16</b>
   <!-- Doughnut for patchDOM coverage -->
-  <div id="metric-coverageDoughnut" data-coverage="87.98" data-tone="green">
-    <circle id="metric-coverageDoughnutFill" class="d-fill green" stroke-dashoffset="12.02"></circle>
+  <div id="metric-coverageDoughnut" data-coverage="93.19" data-tone="green">
+    <circle id="metric-coverageDoughnutFill" class="d-fill green" stroke-dashoffset="6.81"></circle>
   </div>
   <!-- Sparkline for patchDOM -->
   <div id="metric-phasesSparkline">
@@ -1927,7 +1981,7 @@
   </div>
   <!-- Progress bars -->
   <div class="progress-bar"><div id="metric-phasesBar" class="progress-fill blue" style="width:0%"></div></div>
-  <div class="progress-bar"><div id="metric-storiesBar" class="progress-fill green" style="width:96%"></div></div>
+  <div class="progress-bar"><div id="metric-storiesBar" class="progress-fill green" style="width:90%"></div></div>
   <div class="progress-bar"><div id="metric-tasksBar" class="progress-fill red" style="width:100%"></div></div>
 </div>
 
@@ -1986,7 +2040,7 @@
     <div class="mc-attn-chips">
         <span class="mc-attn-chip">0 blocked</span>
         <span class="mc-attn-chip">0 review</span>
-        <span class="mc-attn-chip warn">8 bugs</span>
+        <span class="mc-attn-chip warn">12 bugs</span>
       </div><div style="font-size:11px;color:var(--mc-muted);font-style:italic;padding:4px 0;">All clear — no blockers.</div>
   </div>
 
@@ -2017,11 +2071,11 @@
   <div class="mc-sidebar-panel">
     <div class="mc-sidebar-title">QUALITY</div>
     <div style="display:flex;align-items:center;gap:12px;font-size:12px;">
-      <span style="font-family:var(--font-display),monospace;font-size:28px;color:var(--ok);">87.98%</span>
+      <span style="font-family:var(--font-display),monospace;font-size:28px;color:var(--ok);">93.19%</span>
       <div>
         <div style="color:var(--mc-muted);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;">Coverage</div>
         <div id="card-quality" style="margin-top:4px;font-size:11px;color:var(--mc-muted);">
-          <span style="color:var(--ok);">0 pass</span> &middot; <span style="color:var(--mc-muted);">0 fail</span> &middot; <span style="color:var(--risk);">8 bugs</span>
+          <span style="color:var(--ok);">0 pass</span> &middot; <span style="color:var(--mc-muted);">0 fail</span> &middot; <span style="color:var(--risk);">12 bugs</span>
         </div>
       </div>
     </div>
@@ -2122,15 +2176,15 @@
           <div class="meta-section">
             <div class="meta-supertitle">This Project</div>
             <div class="meta-row"><span class="meta-label">Name:</span> <span class="meta-value">plan-visualizer</span></div>
-            <div class="meta-row"><span class="meta-label">Version:</span> <span class="meta-value">v1.5.36</span></div>
-            <div class="meta-row"><span class="meta-label">Branch:</span> <span class="meta-value">feature/US-0148-mission-control-redesign</span></div>
-            <div class="meta-row"><span class="meta-label">Build:</span> <span class="meta-value">r552 9662c30</span></div>
+            <div class="meta-row"><span class="meta-label">Version:</span> <span class="meta-value">v1.5.39</span></div>
+            <div class="meta-row"><span class="meta-label">Branch:</span> <span class="meta-value">bugfix/hierarchy-hidden-default</span></div>
+            <div class="meta-row"><span class="meta-label">Build:</span> <span class="meta-value">r566 755632b</span></div>
           </div>
           <div class="meta-section">
             <div class="meta-supertitle">Dashboard Tool</div>
             <div class="meta-row"><span class="meta-label">View:</span> <span class="meta-value">Agentic SDLC Dashboard</span></div>
-            <div class="meta-row"><span class="meta-label">Generated by:</span> <span class="meta-value">plan-visualizer v1.5.36</span></div>
-            <div class="meta-row"><span class="meta-label">Generated at:</span> <span class="meta-value">Apr 23, 2026, 05:56 PM</span></div>
+            <div class="meta-row"><span class="meta-label">Generated by:</span> <span class="meta-value">plan-visualizer v1.5.39</span></div>
+            <div class="meta-row"><span class="meta-label">Generated at:</span> <span class="meta-value">Apr 24, 2026, 06:16 PM</span></div>
           </div>
           <div class="meta-attribution">Implemented by Kamal Syed</div>
         </div>
@@ -2140,7 +2194,7 @@
 </div>
 
 <div class="footer">
-  Claude Code Agentic AI SDLC | Last refreshed: Apr 23, 2026, 05:56 PM
+  Claude Code Agentic AI SDLC | Last refreshed: Apr 24, 2026, 06:16 PM
 </div>
 
 <script>
@@ -2316,7 +2370,7 @@ function _applyLogFilter(filter) {
 // ── Dashboard Alert System ────────────────────────────────────────────────────
 // Detects state changes across page refreshes using localStorage, then plays
 // a Web Audio tone and fires a browser Notification when attention is needed.
-var DASH_SNAPSHOT = {"currentPhase":0,"bugsOpen":8,"agentStatuses":{"Conductor":"idle","Compass":"idle","Keystone":"idle","Lens":"idle","Palette":"idle","Forge":"idle","Pixel":"idle","Sentinel":"idle","Circuit":"idle"},"phaseStatuses":[],"pipelineComplete":false};
+var DASH_SNAPSHOT = {"currentPhase":0,"bugsOpen":12,"agentStatuses":{"Conductor":"idle","Compass":"idle","Keystone":"idle","Lens":"idle","Palette":"idle","Forge":"idle","Pixel":"idle","Sentinel":"idle","Circuit":"idle"},"phaseStatuses":[],"pipelineComplete":false};
 
 // US-0111: expose agent colors to the client so patchDOM() can restyle
 // agent-status pills when an agent transitions between idle/active/blocked

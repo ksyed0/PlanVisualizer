@@ -2858,3 +2858,143 @@ Acceptance Criteria:
 - [x] AC-0537: Stories counted as "active" for an agent while that agent's phase is in progress; completed stories are excluded from the bar length but shown as a "(N done)" sub-label
 - [x] AC-0538: When sdlc-status.json is absent or unparseable the widget falls back gracefully to a "No live data" empty state rather than the old Assignee-derived "Unassigned N" row
       Dependencies: US-0142, US-0145
+
+```
+EPIC-0021
+Title: Test Case Audit
+Status: In-Progress
+ReleaseTarget: v1.x
+Description: Retroactive test case coverage for epics shipped without formal TCs. One story per epic; each story produces written TCs, executed results, and any defects logged.
+```
+
+```
+US-0149 (EPIC-0021): As a QA lead, I want formal test cases written and executed for EPIC-0008 Trend Analysis & Historical Tracking, so that the trend snapshot and extraction logic is verified against its acceptance criteria.
+Priority: High (P0)
+Estimate: M
+Status: Planned
+Branch: feature/US-0149-tc-audit-epic-0008
+Acceptance Criteria:
+
+- [ ] AC-0545: Test cases written covering all ACs from US-0047 (snapshot), US-0048 (extraction), US-0049 (trend charts), US-0050 (multi-snapshot dedup)
+- [ ] AC-0546: All written test cases executed and Pass/Fail status recorded in RELEASE_PLAN.md under each TC entry
+- [ ] AC-0547: Any failures result in a logged BUG entry in docs/BUGS.md with severity and reproduction steps
+```
+
+```
+US-0150 (EPIC-0021): As a QA lead, I want formal test cases written and executed for EPIC-0009 Budget Forecasting, so that cost parsing, projection, and display logic is verified.
+Priority: High (P0)
+Estimate: M
+Status: Planned
+Branch: feature/US-0150-tc-audit-epic-0009
+Acceptance Criteria:
+
+- [ ] AC-0548: Test cases written covering all ACs from EPIC-0009 stories (cost parsing, t-shirt projection, per-epic budget display)
+- [ ] AC-0549: All written test cases executed and Pass/Fail status recorded
+- [ ] AC-0550: Any failures result in a logged BUG entry in docs/BUGS.md
+```
+
+```
+US-0151 (EPIC-0021): As a QA lead, I want formal test cases written and executed for EPIC-0011 Search, so that the client-side search index and filtering logic is verified.
+Priority: Medium (P1)
+Estimate: S
+Status: Planned
+Branch: feature/US-0151-tc-audit-epic-0011
+Acceptance Criteria:
+
+- [ ] AC-0551: Test cases written covering all ACs from EPIC-0011 stories (search index build, filter bar, result highlighting)
+- [ ] AC-0552: All written test cases executed and Pass/Fail status recorded
+- [ ] AC-0553: Any failures result in a logged BUG entry in docs/BUGS.md
+```
+
+```
+US-0152 (EPIC-0021): As a QA lead, I want formal test cases written and executed for EPIC-0013 Agentic SDLC Dashboard, so that the dashboard scaffold, sdlc-status parsing, and agent rendering are verified.
+Priority: High (P0)
+Estimate: L
+Status: Planned
+Branch: feature/US-0152-tc-audit-epic-0013
+Acceptance Criteria:
+
+- [ ] AC-0554: Test cases written covering all ACs from EPIC-0013 stories (generate-dashboard, sdlc-status parsing, agent roster, pipeline phase cards)
+- [ ] AC-0555: All written test cases executed and Pass/Fail status recorded
+- [ ] AC-0556: Any failures result in a logged BUG entry in docs/BUGS.md
+```
+
+```
+US-0153 (EPIC-0021): As a QA lead, I want formal test cases written and executed for EPIC-0014 Follow-Up Changes, so that miscellaneous post-epic improvements are regression-tested.
+Priority: Medium (P1)
+Estimate: M
+Status: Planned
+Branch: feature/US-0153-tc-audit-epic-0014
+Acceptance Criteria:
+
+- [ ] AC-0557: Test cases written covering all ACs from EPIC-0014 stories (CLI sdlc-status tool, About modal, Agentic dashboard parity)
+- [ ] AC-0558: All written test cases executed and Pass/Fail status recorded
+- [ ] AC-0559: Any failures result in a logged BUG entry in docs/BUGS.md
+```
+
+```
+US-0154 (EPIC-0021): As a QA lead, I want formal test cases written and executed for EPIC-0016 Agentic Dashboard Mission Control Redesign, so that the MC layout, roster, pipeline, and live bar widgets are verified.
+Priority: High (P0)
+Estimate: L
+Status: Planned
+Branch: feature/US-0154-tc-audit-epic-0016
+Acceptance Criteria:
+
+- [ ] AC-0560: Test cases written covering all ACs from EPIC-0016 stories (MC header/roster/pipeline/live-bar redesign, US-0148 layout closure)
+- [ ] AC-0561: All written test cases executed and Pass/Fail status recorded
+- [ ] AC-0562: Any failures result in a logged BUG entry in docs/BUGS.md
+```
+
+```
+US-0155 (EPIC-0021): As a QA lead, I want formal test cases written and executed for EPIC-0017 Agentic Dashboard Effectiveness Review, so that the skills-integration doc and effectiveness audit outputs are verified.
+Priority: Medium (P1)
+Estimate: S
+Status: Planned
+Branch: feature/US-0155-tc-audit-epic-0017
+Acceptance Criteria:
+
+- [ ] AC-0563: Test cases written covering all ACs from EPIC-0017 stories (skills integration table, superpowers adoption metrics, US-0126)
+- [ ] AC-0564: All written test cases executed and Pass/Fail status recorded
+- [ ] AC-0565: Any failures result in a logged BUG entry in docs/BUGS.md
+```
+
+```
+US-0156 (EPIC-0021): As a QA lead, I want formal test cases written and executed for EPIC-0019 Dashboard Cycle History, so that the cycle schema, CLI commands, and extraction guide are verified.
+Priority: Medium (P1)
+Estimate: M
+Status: Planned
+Branch: feature/US-0156-tc-audit-epic-0019
+Acceptance Criteria:
+
+- [ ] AC-0566: Test cases written covering all ACs from EPIC-0019 stories (cycle-complete command, cycle history schema, sdlc-status cycle array, extraction guide)
+- [ ] AC-0567: All written test cases executed and Pass/Fail status recorded
+- [ ] AC-0568: Any failures result in a logged BUG entry in docs/BUGS.md
+```
+
+```
+US-0157 (EPIC-0021): As a QA lead, I want formal test cases written and executed for EPIC-0020 Cross-Dashboard Redesign, so that the shared theme tokens, neutral chrome, status hero, and agent workload widget are verified.
+Priority: High (P0)
+Estimate: L
+Status: Planned
+Branch: feature/US-0157-tc-audit-epic-0020
+Acceptance Criteria:
+
+- [ ] AC-0569: Test cases written covering all ACs from EPIC-0020 stories (theme.js tokens, render-chrome.js, CSS custom properties, no hex literals, status hero density, agent workload from sdlc-status)
+- [ ] AC-0570: All written test cases executed and Pass/Fail status recorded
+- [ ] AC-0571: Any failures result in a logged BUG entry in docs/BUGS.md
+```
+
+```
+US-0158 (EPIC-0021): As a project lead, I want AI cost data correctly attributed to all stories and bugs (including those worked in worktree branches), so that the Cost Breakdown by Epic chart reflects true spend and zero-cost entries are eliminated.
+Priority: High (P0)
+Estimate: M
+Status: Planned
+Branch: feature/US-0158-ai-cost-attribution-fix
+Acceptance Criteria:
+
+- [ ] AC-0572: Parse-cost-log.js branch-prefix matching is extended to recognise worktree branch patterns (claude/*, and any non-feature/* branch prefixes used by Claude Code) so sessions worked in worktrees are attributed to the correct story/epic
+- [ ] AC-0573: A one-time backfill script reads AI_COST_LOG.md entries with branch=null or unmatched branches, uses git log to identify which story was active during each session's timestamp, and writes estimated cost rows to close the data gap
+- [ ] AC-0574: After backfill, no Done story or Fixed bug dated before 2026-04-24 shows $0 AI cost (excluding stories that genuinely had no Claude usage)
+- [ ] AC-0575: Cost Breakdown by Epic chart shows non-zero spend for EPIC-0010, EPIC-0012, EPIC-0016, EPIC-0017, EPIC-0019, EPIC-0020, and other epics that were primarily worked in worktrees
+- [ ] AC-0576: LESSONS.md updated with the worktree branch-naming gap and the fix so future sessions prevent recurrence
+```
