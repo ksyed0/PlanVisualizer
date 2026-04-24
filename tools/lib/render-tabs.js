@@ -1285,7 +1285,7 @@ function renderCostsTab(data, options = {}) {
       return `<tbody>
     <tr class="border-t-2 border-slate-300 dark:border-slate-600 cursor-pointer select-none bug-epic-header" data-epic="${esc(epicId)}" style="background:${accent.bg}" onclick="toggleSection('${jsEsc(bceid)}','${jsEsc(bceid)}-arrow')">
       <td colspan="6" class="px-3 py-2">
-        <span id="${bceid}-arrow" class="text-slate-400 text-xs mr-2">▼</span>
+        <span id="${bceid}-arrow" class="text-slate-400 text-xs mr-2">&#9654;</span>
         <span class="font-mono text-xs font-bold" style="color:${accent.border}">${label}</span>
         <span class="ml-2 text-xs text-slate-500 bug-count">(${bugs.length})</span>
       </td>
@@ -1293,7 +1293,7 @@ function renderCostsTab(data, options = {}) {
       <td class="px-3 py-2 text-right text-sm font-medium text-teal-700 dark:text-teal-400">${usd(epicAI)}</td>
       <td class="px-3 py-2 text-right text-xs text-slate-500 tokens-col">${fmtNum(epicIn)} / ${fmtNum(epicOut)}</td>
     </tr>
-    </tbody><tbody id="${bceid}">${bugRows}</tbody>`;
+    </tbody><tbody id="${bceid}" class="hidden">${bugRows}</tbody>`;
     })
     .join('');
 
@@ -2270,12 +2270,12 @@ const STATUS_LABELS = {
 };
 
 const STATUS_CHIP = {
-  Done: 'ok',
+  Done: 'info',
   'In Progress': 'warn',
   'In-Progress': 'warn',
   Planned: 'mute',
-  Blocked: 'risk',
-  'At Risk': 'risk',
+  Blocked: 'warn',
+  'At Risk': 'warn',
 };
 
 const SH_DOT_COLOR = {
@@ -2306,9 +2306,9 @@ function shEpicCompositeStatus(epicId, stories, bugs) {
   const anyActive = epicStories.some((s) => /^(done|in[ -]progress)$/i.test(s.status));
   const allPlanned = epicStories.every((s) => /^planned$/i.test(s.status));
 
-  if (allDone) return { label: 'Complete', chipClass: 'ok', dotKey: 'ok' };
+  if (allDone) return { label: 'Complete', chipClass: 'info', dotKey: 'info' };
   if (anyBlocked || hasOpenCritical) return { label: 'Needs Attention', chipClass: 'risk', dotKey: 'risk' };
-  if (anyActive) return { label: 'On Track', chipClass: 'info', dotKey: 'info' };
+  if (anyActive) return { label: 'On Track', chipClass: 'warn', dotKey: 'warn' };
   if (allPlanned) return { label: 'Planned', chipClass: 'mute', dotKey: 'mute' };
   return { label: 'In Progress', chipClass: 'warn', dotKey: 'warn' };
 }

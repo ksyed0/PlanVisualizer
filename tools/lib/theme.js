@@ -17,31 +17,30 @@
 // (fixes BUG-0110 where hardcoded dark hex values rendered as dark rectangles
 // in light mode).
 const BADGE_TONE = {
-  // success
-  Done: 'success',
-  Pass: 'success',
-  Fixed: 'success',
-  // warn
-  'To Do': 'warn',
-  'Not Run': 'warn',
-  Medium: 'warn',
-  P1: 'warn',
-  High: 'warn',
-  // danger
-  Blocked: 'danger',
-  Fail: 'danger',
-  Open: 'danger',
-  Critical: 'danger',
-  P0: 'danger',
-  // info
-  'In Progress': 'info',
-  // neutral
+  // info (blue) = complete
+  Done: 'info',
+  Pass: 'info',
+  Fixed: 'info',
+  // neutral (grey) = not started / planned
   Planned: 'neutral',
+  'To Do': 'neutral',
+  'Not Run': 'neutral',
   Low: 'neutral',
   P2: 'neutral',
   Rejected: 'neutral',
   Cancelled: 'neutral',
   Retired: 'neutral',
+  // warn (amber) = at risk
+  'In Progress': 'warn',
+  Blocked: 'warn',
+  Open: 'warn',
+  Medium: 'warn',
+  High: 'warn',
+  P1: 'warn',
+  // danger (red) = failed
+  Fail: 'danger',
+  Critical: 'danger',
+  P0: 'danger',
 };
 
 // Local HTML-escape helper. Kept in-module so theme.js has no runtime

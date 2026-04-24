@@ -309,37 +309,40 @@ describe('renderHtml — badge fallback', () => {
 });
 
 // US-0097 (EPIC-0015): Exhaustive coverage of the BADGE_TONE mapping. Every
-// one of the 17 known badge labels must resolve to its expected semantic tone
+// one of the 20 known badge labels must resolve to its expected semantic tone
 // class so that styling remains stable as the palette evolves. See
-// tools/lib/render-html.js:22 for the authoritative map.
-describe('badge() tone mapping — all 17 semantic labels', () => {
+// tools/lib/theme.js for the authoritative map.
+// Color semantics: blue=complete, amber=at-risk, red=failed, grey=not-started.
+describe('badge() tone mapping — all 20 semantic labels', () => {
   const cases = [
-    // success
-    ['Done', 'success'],
-    ['Pass', 'success'],
-    ['Fixed', 'success'],
-    // warn
-    ['To Do', 'warn'],
-    ['Not Run', 'warn'],
-    ['Medium', 'warn'],
-    ['P1', 'warn'],
-    ['High', 'warn'],
-    // danger
-    ['Blocked', 'danger'],
-    ['Fail', 'danger'],
-    ['Open', 'danger'],
-    ['Critical', 'danger'],
-    ['P0', 'danger'],
-    // info
-    ['In Progress', 'info'],
-    // neutral
+    // info (blue) = complete
+    ['Done', 'info'],
+    ['Pass', 'info'],
+    ['Fixed', 'info'],
+    // neutral (grey) = not started / planned
     ['Planned', 'neutral'],
+    ['To Do', 'neutral'],
+    ['Not Run', 'neutral'],
     ['Low', 'neutral'],
     ['P2', 'neutral'],
+    ['Rejected', 'neutral'],
+    ['Cancelled', 'neutral'],
+    ['Retired', 'neutral'],
+    // warn (amber) = at risk
+    ['In Progress', 'warn'],
+    ['Blocked', 'warn'],
+    ['Open', 'warn'],
+    ['Medium', 'warn'],
+    ['High', 'warn'],
+    ['P1', 'warn'],
+    // danger (red) = failed
+    ['Fail', 'danger'],
+    ['Critical', 'danger'],
+    ['P0', 'danger'],
   ];
 
-  it('covers all 17 canonical labels', () => {
-    expect(cases).toHaveLength(17);
+  it('covers all 20 canonical labels', () => {
+    expect(cases).toHaveLength(20);
   });
 
   describe.each(cases)('label "%s"', (label, tone) => {
