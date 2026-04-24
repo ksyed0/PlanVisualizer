@@ -21,7 +21,7 @@ const { execSync } = require('child_process');
 // report notes for the rationale.
 // eslint-disable-next-line no-unused-vars
 const { badge, BADGE_TONE, generateDashboardCssTokens } = require('./lib/theme');
-const { renderChrome, CHROME_CSS } = require('./lib/render-chrome');
+const { renderChrome, SHELL_CHROME_CSS } = require('./lib/render-shell');
 
 const ROOT = path.resolve(__dirname, '..');
 
@@ -428,7 +428,7 @@ function generateHTML(status) {
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap">
 <style>
   ${generateDashboardCssTokens()}
-  ${CHROME_CSS}
+  ${SHELL_CHROME_CSS}
   :root {
     --brand-primary: ${DASH_META.primaryColor};
     /* US-0110 AC-0361: scoped font stacks — do NOT reassign existing typography
@@ -436,13 +436,13 @@ function generateHTML(status) {
     --font-display: 'Departure Mono', 'SF Mono', Menlo, Consolas, monospace;
     --font-sans: 'Geist', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     /* US-0110: canvas bg aligned with Plan Visualizer dark canvas (US-0094/US-0095). */
-    --bg-primary: oklch(8% 0.015 220);
-    --bg-card: oklch(14% 0.025 240);
-    --bg-card-inner: oklch(14% 0.025 255);
-    --bg-card-border: oklch(24% 0.030 255);
-    --bg-phase-pending: oklch(22% 0.025 255);
-    --bg-phase-border: oklch(28% 0.025 255);
-    --bg-phase-complete: oklch(20% 0.025 148);
+    --bg-primary: oklch(11% 0.016 220);
+    --bg-card: oklch(20% 0.025 240);
+    --bg-card-inner: oklch(18% 0.025 255);
+    --bg-card-border: oklch(34% 0.030 255);
+    --bg-phase-pending: oklch(24% 0.025 255);
+    --bg-phase-border: oklch(36% 0.025 255);
+    --bg-phase-complete: oklch(22% 0.025 148);
     --bg-progress: oklch(22% 0.025 255);
     --text-primary: oklch(88% 0.006 220);
     --text-secondary: oklch(70% 0.006 220);
@@ -1576,14 +1576,14 @@ function generateHTML(status) {
     --mc-info: var(--info);
   }
   [data-theme="dark"] {
-    --mc-bg: oklch(8% 0.015 220);
-    --mc-surface: oklch(14% 0.025 240);
-    --mc-border: oklch(24% 0.030 255);
-    --mc-text: oklch(88% 0.006 220);
-    --mc-muted: oklch(63% 0.006 220);
-    --mc-dim: oklch(52% 0.006 220);
-    --mc-header-bg: oklch(10% 0.020 240);
-    --mc-header-text: oklch(88% 0.006 220);
+    --mc-bg: oklch(11% 0.016 220);
+    --mc-surface: oklch(20% 0.025 240);
+    --mc-border: oklch(34% 0.030 255);
+    --mc-text: oklch(90% 0.006 220);
+    --mc-muted: oklch(65% 0.008 220);
+    --mc-dim: oklch(54% 0.006 220);
+    --mc-header-bg: oklch(15% 0.022 240);
+    --mc-header-text: oklch(90% 0.006 220);
   }
 
   /* ── Body override for light-first ── */
@@ -1670,11 +1670,14 @@ function generateHTML(status) {
 
   /* ── Mission Control hero card ── */
   .mc-hero {
-    background: var(--mc-surface);
+    background: linear-gradient(135deg, oklch(88% 0.06 270) 0%, oklch(84% 0.09 300) 100%);
     border: 1px solid var(--mc-border);
     border-radius: 10px;
     padding: 16px 20px 12px;
     margin-bottom: 14px;
+  }
+  [data-theme="dark"] .mc-hero {
+    background: linear-gradient(135deg, oklch(20% 0.05 270) 0%, oklch(18% 0.06 300) 100%);
   }
   .mc-hero-header {
     display: flex; align-items: center; gap: 12px;
@@ -1893,41 +1896,45 @@ function generateHTML(status) {
   }
   .mc-attn-chip {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 9px; font-weight: 700; letter-spacing: 0.1em;
-    padding: 3px 8px; border-radius: 8px;
+    font-size: 10px; font-weight: 600; letter-spacing: 0.06em;
+    padding: 3px 10px; border-radius: 20px;
     background: oklch(55% 0 0 / 8%); color: var(--mc-muted);
+    border: 1px solid oklch(55% 0 0 / 20%);
     white-space: nowrap;
   }
-  .mc-attn-chip.risk { background: oklch(58% 0.22 25 / 12%); color: var(--risk); }
-  .mc-attn-chip.warn { background: oklch(76% 0.17 80 / 12%); color: oklch(52% 0.17 58); }
-  .mc-attn-chip.info { background: oklch(60% 0.14 185 / 12%); color: var(--info); }
-  [data-theme="light"] .mc-attn-chip.warn { color: oklch(40% 0.15 58); }
-  [data-theme="light"] .mc-attn-chip.info { color: oklch(38% 0.13 185); }
+  .mc-attn-chip.risk { background: oklch(58% 0.22 25 / 10%); color: var(--risk); border-color: oklch(58% 0.22 25 / 35%); }
+  .mc-attn-chip.warn { background: oklch(76% 0.17 80 / 10%); color: oklch(48% 0.17 58); border-color: oklch(76% 0.17 80 / 35%); }
+  .mc-attn-chip.info { background: oklch(60% 0.14 185 / 10%); color: var(--info); border-color: oklch(60% 0.14 185 / 35%); }
+  [data-theme="light"] .mc-attn-chip.warn { color: oklch(38% 0.15 58); }
+  [data-theme="light"] .mc-attn-chip.info { color: oklch(36% 0.13 185); }
   .mc-attn-item {
     background: var(--mc-bg);
     border: 1px solid var(--mc-border);
-    border-radius: 6px; padding: 8px 10px;
-    margin-bottom: 6px; font-size: 12px;
+    border-radius: 8px; padding: 10px 12px;
+    margin-bottom: 8px;
   }
   [data-theme="dark"] .mc-attn-item { background: var(--bg-card-inner); }
   .mc-attn-item:last-child { margin-bottom: 0; }
-  .mc-attn-item-head {
-    display: flex; align-items: center; gap: 6px;
-    margin-bottom: 3px;
-  }
-  .mc-attn-item-name { font-weight: 700; color: var(--mc-text); font-size: 12px; }
-  .mc-attn-item-desc { font-size: 11px; color: var(--mc-muted); }
-  .mc-attn-item-time { margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--mc-dim); }
-  .mc-attn-actions { display: flex; align-items: center; gap: 8px; margin-top: 5px; }
+  .mc-attn-item-line1 { font-size: 12px; margin-bottom: 2px; }
+  .mc-attn-item-name { font-weight: 700; color: var(--mc-text); }
+  .mc-attn-item-desc { color: var(--mc-muted); margin-left: 4px; }
+  .mc-attn-item-line2 { font-size: 10px; color: var(--mc-dim); font-family: 'JetBrains Mono', monospace; letter-spacing: 0.06em; margin-bottom: 8px; }
+  .mc-attn-actions { display: flex; align-items: center; gap: 8px; }
   .mc-attn-jump {
-    font-family: 'JetBrains Mono', monospace; font-size: 9px;
-    color: var(--mc-muted); cursor: pointer;
-    background: none; border: 1px solid var(--mc-border);
-    border-radius: 4px; padding: 2px 6px;
-    transition: color 0.15s;
+    flex: 1; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700;
+    color: oklch(98% 0 0); cursor: pointer; letter-spacing: 0.05em;
+    background: var(--risk); border: none;
+    border-radius: 8px; padding: 7px 14px;
+    transition: opacity 0.15s;
   }
-  .mc-attn-jump:hover { color: var(--mc-text); border-color: var(--mc-muted); }
-  .mc-attn-all { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--mc-muted); margin-left: auto; }
+  .mc-attn-jump:hover { opacity: 0.85; }
+  .mc-attn-all {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600;
+    color: var(--mc-muted); padding: 7px 12px;
+    border: 1px solid var(--mc-border); border-radius: 8px;
+    background: none; cursor: pointer; white-space: nowrap;
+  }
+  .mc-attn-all:hover { color: var(--mc-text); }
 
   /* ── Sidebar event log ── */
   .mc-evtlog-title {
@@ -1975,6 +1982,7 @@ function generateHTML(status) {
 </style>
 </head>
 <body>
+${renderChrome({ projectName: (planData && planData.projectName) || (status && status.project && status.project.name) || 'PlanVisualizer', generatedAt: new Date().toISOString() }, 'live')}
 
 <!-- US-0122 AC-0417: incident ticker (hidden by default, .active shown beneath header when any agent/phase is blocked). -->
 <div id="incident-ticker" class="incident-ticker" aria-live="polite" aria-atomic="true"></div>
@@ -2108,17 +2116,20 @@ ${(() => {
   <span class="mc-section-meta" id="cycle-counter" aria-live="polite">CYCLE ${String(cycleNumber).padStart(3, '0')} &middot; <span id="cycle-elapsed" data-started-at="${esc(cycleStartedAt)}">00:00:00</span></span>
 </div>
 <div class="pipeline mc-legacy-section">
-${phases
-  .map((p, i) => {
-    const phaseNum = String(i + 1).padStart(2, '0');
-    const icon =
-      p.status === 'complete' ? '✅' : p.status === 'in-progress' ? '🔄' : p.status === 'blocked' ? '⚠️' : '⏳';
-    const elapsed = p.status === 'complete' ? formatPhaseElapsed(p.startedAt, p.completedAt) : '';
-    const hasElapsed = elapsed ? '1' : '0';
-    const fillWidth = p.status === 'in-progress' ? cycleFillPct : p.status === 'complete' ? 100 : 0;
-    const pAgents = Array.isArray(p.agents) ? p.agents : [];
-    const deliverables = Array.isArray(p.deliverables) ? p.deliverables : [];
-    return `  <div class="phase-block ${p.status}" id="phase-${p.id}" data-phase-status="${p.status}">
+${
+  phases.length === 0
+    ? `  <div style="width:100%;padding:20px 16px;font-size:12px;color:var(--text-secondary);font-family:var(--font-display),monospace;letter-spacing:0.06em;text-align:center;opacity:0.6;">STANDBY &middot; No pipeline cycle active</div>`
+    : phases
+        .map((p, i) => {
+          const phaseNum = String(i + 1).padStart(2, '0');
+          const icon =
+            p.status === 'complete' ? '✅' : p.status === 'in-progress' ? '🔄' : p.status === 'blocked' ? '⚠️' : '⏳';
+          const elapsed = p.status === 'complete' ? formatPhaseElapsed(p.startedAt, p.completedAt) : '';
+          const hasElapsed = elapsed ? '1' : '0';
+          const fillWidth = p.status === 'in-progress' ? cycleFillPct : p.status === 'complete' ? 100 : 0;
+          const pAgents = Array.isArray(p.agents) ? p.agents : [];
+          const deliverables = Array.isArray(p.deliverables) ? p.deliverables : [];
+          return `  <div class="phase-block ${p.status}" id="phase-${p.id}" data-phase-status="${p.status}">
     <div class="phase-beacon" aria-hidden="true"></div>
     <div class="phase-status" id="phase-${p.id}-icon" aria-hidden="true">${icon}</div>
     <div class="phase-number" id="phase-${p.id}-num">${phaseNum}</div>
@@ -2128,8 +2139,9 @@ ${phases
     <div class="phase-elapsed" id="phase-${p.id}-elapsed" data-has-elapsed="${hasElapsed}"><span class="phase-check" id="phase-${p.id}-check" aria-label="complete">\u2713</span>${esc(elapsed)}</div>
     <div class="phase-fill-track"><div class="phase-fill-bar pv-phase-fill" id="phase-${p.id}-fill" style="width: ${fillWidth}%"></div></div>
   </div>`;
-  })
-  .join('\n')}
+        })
+        .join('\n')
+}
 </div>
 
 <!-- ROSTER section -->
@@ -2413,20 +2425,16 @@ ${
           : [...blockedAgents, ...reviewAgents]
               .slice(0, 3)
               .map(([name, agent]) => {
-                const statusStr = agent.status || 'blocked';
+                const statusStr = (agent.status || 'blocked').toUpperCase();
                 const task = agent.currentTask || agent.currentStory || 'unknown';
-                const badgeCls =
-                  statusStr === 'blocked' ? 'mc-status-badge status-blocked' : 'mc-status-badge status-review';
+                const elapsed = agent.blockedAt ? formatElapsed(agent.blockedAt) : null;
+                const timeStr = elapsed ? `${statusStr} \u00B7 ${elapsed}` : statusStr;
                 return `<div class="mc-attn-item">
-              <div class="mc-attn-item-head">
-                <span class="mc-attn-item-name">${esc(name)}</span>
-                <span class="${badgeCls}" style="font-size:8px;padding:2px 5px;">${esc(statusStr)}</span>
-                <span class="mc-attn-item-time">—</span>
-              </div>
-              <div class="mc-attn-item-desc">${esc(task)}</div>
+              <div class="mc-attn-item-line1"><span class="mc-attn-item-name">${esc(name)}</span><span class="mc-attn-item-desc">${esc(task)}</span></div>
+              <div class="mc-attn-item-line2">${esc(timeStr)}</div>
               <div class="mc-attn-actions">
-                <button class="mc-attn-jump" onclick="document.getElementById('agent-${esc(name)}') && document.getElementById('agent-${esc(name)}').scrollIntoView({behavior:'smooth',block:'center'})">Jump to ${esc(name)} +</button>
-                <span class="mc-attn-all">All ${blockedCount + reviewCount}</span>
+                <button class="mc-attn-jump" onclick="document.getElementById('agent-${esc(name)}') && document.getElementById('agent-${esc(name)}').scrollIntoView({behavior:'smooth',block:'center'})">Jump to ${esc(name)} \u2193</button>
+                <button class="mc-attn-all">All ${blockedCount + reviewCount}</button>
               </div>
             </div>`;
               })

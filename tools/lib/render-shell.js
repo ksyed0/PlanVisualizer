@@ -1,7 +1,27 @@
 'use strict';
 
 const { esc, jsEsc, usd, normalizeStoryRef } = require('./render-utils');
-const { renderChrome: renderChromeShared, CHROME_CSS } = require('./render-chrome');
+// SHELL_CHROME_CSS: all CSS needed by renderChrome(). Exported so generate-dashboard.js
+// can inject it when using the shared chrome on the agentic dashboard.
+const SHELL_CHROME_CSS = `
+.pv-chrome{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:14px;padding:8px 18px;min-height:52px;max-height:52px;border-bottom:1px solid var(--border);background:color-mix(in oklab,var(--bg) 80%,transparent);backdrop-filter:blur(12px) saturate(1.2);-webkit-backdrop-filter:blur(12px) saturate(1.2);}
+.pv-chrome-brand{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-size:17px;letter-spacing:-0.01em;color:var(--text);}
+.pv-chrome-dot{width:9px;height:9px;border-radius:2px;background:linear-gradient(135deg,var(--plan-accent),var(--live-accent));flex-shrink:0;}
+.pv-chrome-spacer{flex:1;}
+.pv-chrome-segs,.pv-theme-segs{display:flex;gap:2px;padding:3px;border:1px solid var(--border);border-radius:8px;background:var(--surface);}
+.pv-seg{padding:5px 11px;font-size:12.5px;font-weight:500;border-radius:6px;color:var(--text-dim);cursor:pointer;background:none;border:0;font-family:var(--font-sans);text-decoration:none;display:inline-flex;align-items:center;}
+.pv-seg:hover{color:var(--text);background:var(--surface-2);}
+.pv-seg-active,.pv-seg[aria-pressed='true']{background:var(--surface-2);color:var(--text);box-shadow:inset 0 0 0 1px var(--border-soft);}
+.pv-iconbtn{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font-sans);}
+.pv-iconbtn:hover{color:var(--text);background:var(--surface-2);}
+.mode-badge{display:inline-flex;align-items:center;gap:8px;padding:5px 10px 5px 8px;border-radius:999px;font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;border:1px solid var(--border);background:var(--surface);color:var(--text);}
+.mode-badge .pip{width:6px;height:6px;border-radius:999px;display:inline-block;}
+.mode-report .pip{background:var(--plan-accent);box-shadow:0 0 0 3px var(--plan-accent-soft);}
+.mode-live .pip{background:var(--live-accent);box-shadow:0 0 0 3px var(--live-accent-soft);animation:pv-pulse 1.6s ease-in-out infinite;}
+@keyframes pv-pulse{0%,100%{opacity:1}50%{opacity:0.35}}
+`.trim();
+// Keep re-exporting CHROME_CSS from render-chrome.js for backward-compat with existing tests.
+const { CHROME_CSS } = require('./render-chrome');
 
 // US-0138: Mode badge — REPORT (static pip) or LIVE (pulsing pip).
 // Plan-Status always renders REPORT. Agentic renders LIVE in generate-dashboard.js.
@@ -175,35 +195,39 @@ function renderSidebar() {
   </aside>`;
 }
 
-// US-0136/US-0137: Frosted-glass neutral chrome. Replaces the saturated navy gradient topbar.
-// Height ≤52px. Contains: brand, dashboard switcher, mode badge, about, theme toggle.
-// renderCompletionBanner() renders separately below this — do not move it.
-// CHROME_CSS (from render-chrome.js) is embedded via renderHtml's <style> block.
-function renderChrome(data) {
+// US-0136/US-0137: Frosted-glass neutral chrome shared by both dashboards.
+// mode='report' → Plan-Status active, REPORT badge, ⌘K search.
+// mode='live'   → Pipeline active, LIVE badge, no ⌘K (agentic dashboard).
+function renderChrome(data, mode = 'report') {
   const projectName = esc((data && data.projectName) || 'Plan Visualizer');
+  const genIso = esc((data && data.generatedAt) || '');
+  const isLive = mode === 'live';
+  const themeSet = isLive ? 'pvSetTheme' : 'setTheme';
   return `
-  <header class="pv-chrome" id="pv-chrome">
+  <header class="pv-chrome" id="pv-chrome" data-mode="${mode}">
     <div class="pv-chrome-brand">
       <span class="pv-chrome-dot" aria-hidden="true"></span>
       <span class="pv-chrome-name">${projectName}</span>
     </div>
     <div class="pv-chrome-segs" role="tablist" aria-label="Dashboard">
-      <button class="pv-seg pv-seg-active" aria-pressed="true">Plan-Status</button>
-      <a href="dashboard.html" class="pv-seg" aria-pressed="false">Pipeline</a>
+      ${
+        isLive
+          ? `<a href="plan-status.html" class="pv-seg" aria-pressed="false">Plan-Status</a>
+      <button class="pv-seg pv-seg-active" aria-pressed="true">Pipeline</button>`
+          : `<button class="pv-seg pv-seg-active" aria-pressed="true">Plan-Status</button>
+      <a href="dashboard.html" class="pv-seg" aria-pressed="false">Pipeline</a>`
+      }
     </div>
     <div class="pv-chrome-spacer"></div>
-    <span id="gen-time" data-iso="${esc((data && data.generatedAt) || '')}" style="font-size:11px;color:var(--text-mute);white-space:nowrap"></span>
-    ${renderModeBadge('report')}
-    <!-- BUG-0193: Search button restored to chrome -->
-    <button class="pv-iconbtn" onclick="openSearch && openSearch()" aria-label="Search (\u2318K)" id="search-btn" style="gap:5px">
-      <span aria-hidden="true" style="font-size:13px">\u2318K</span>
-    </button>
+    <span id="gen-time" data-iso="${genIso}" style="font-size:11px;color:var(--text-mute);white-space:nowrap"></span>
+    ${renderModeBadge(mode)}
+    ${!isLive ? `<button class="pv-iconbtn" onclick="openSearch && openSearch()" aria-label="Search (\u2318K)" id="search-btn" style="gap:5px"><span aria-hidden="true" style="font-size:13px">\u2318K</span></button>` : ''}
     <button class="pv-iconbtn" onclick="openAbout && openAbout()" aria-label="About">
       <span aria-hidden="true">\u24d8</span> About
     </button>
     <div class="pv-theme-segs" role="group" aria-label="Theme">
-      <button onclick="setTheme('light')" id="theme-btn-light" class="pv-seg" aria-pressed="false">\u2600 Light</button>
-      <button onclick="setTheme('dark')"  id="theme-btn-dark"  class="pv-seg" aria-pressed="false">\u263e Dark</button>
+      <button onclick="${themeSet}('light')" id="theme-btn-light" class="pv-seg" aria-pressed="false">\u2600 Light</button>
+      <button onclick="${themeSet}('dark')"  id="theme-btn-dark"  class="pv-seg" aria-pressed="false">\u263e Dark</button>
     </div>
   </header>`;
 }
@@ -229,4 +253,5 @@ module.exports = {
   renderModeBadge,
   renderMasthead,
   CHROME_CSS,
+  SHELL_CHROME_CSS,
 };
