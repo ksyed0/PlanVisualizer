@@ -1803,6 +1803,7 @@ function generateHTML(status) {
   /* ── Roster section ── */
   .mc-roster { margin-bottom: 14px; }
   .mc-roster-rows { display: flex; flex-direction: column; gap: 4px; }
+  .mc-roster-rows.agent-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .mc-agent-row {
     display: flex; align-items: center; gap: 10px;
     background: var(--mc-surface);
@@ -2173,19 +2174,23 @@ ${(() => {
       const icon = agentIcons[name] || '';
       const statusBg = isActive ? 'oklch(66% 0.17 145 / 20%)' : 'oklch(55% 0 0 / 15%)';
       const statusColor = isActive ? 'var(--ok)' : statusStr === 'complete' ? 'var(--info)' : 'var(--text-muted)';
+      const fallbackStyle = `border-color:${color};`;
+      const onerror = `this.replaceWith(Object.assign(document.createElement('div'),{className:'agent-avatar-fallback',textContent:'${initial}',style:'${fallbackStyle}'}))`;
       return `    <div class="mc-agent-row ${rowCls} agent-card ${isActive ? 'is-active active' : isBlocked ? 'is-blocked' : isReview ? 'is-review' : 'is-idle'}" id="agent-${esc(name)}" data-agent-name="${esc(name)}" data-agent-status="${esc(statusStr)}" style="--agent-color:${color};--agent-color-ring:${color}40;">
       ${isActive ? '<div class="agent-rail"></div>' : ''}
-      <div class="mc-agent-circle" style="background:${color};">${esc(initial)}</div>
-      <div class="mc-agent-identity">
-        <div class="mc-agent-name-line">
-          <span>${esc(name)}</span>
-          <span class="mc-agent-role-text">&middot; ${esc(role)}</span>
+      <img class="agent-avatar" src="${imgBase}/optimized/${esc(avatar)}-64.png" alt="${esc(name)}" style="border-color:${color};" onerror="${esc(onerror)}">
+      <div class="agent-info">
+        <div class="mc-agent-identity">
+          <div class="mc-agent-name-line">
+            <span>${esc(name)}</span>
+            <span class="mc-agent-role-text">&middot; ${esc(role)}</span>
+          </div>
+          <div class="mc-agent-task-line" id="agent-${esc(name)}-task">${taskDisplay}</div>
         </div>
-        <div class="mc-agent-task-line" id="agent-${esc(name)}-task">${taskDisplay}</div>
+        <span class="mc-status-badge ${statusCls}">${esc(statusStr)}</span>
+        <!-- Hidden agent-status for AC-0428 test compat -->
+        <div class="agent-status" id="agent-${esc(name)}-status" style="display:none;background:${statusBg};color:${statusColor}">${esc(statusStr)}</div>
       </div>
-      <span class="mc-status-badge ${statusCls}">${esc(statusStr)}</span>
-      <!-- Hidden agent-status for AC-0428 test compat -->
-      <div class="agent-status" id="agent-${esc(name)}-status" style="display:none;background:${statusBg};color:${statusColor}">${esc(statusStr)}</div>
       <span class="live-dot ok on-air-dot${isActive ? ' dot-pulse' : ''}" aria-label="now on air" title="now on air" style="${isActive ? '' : 'display:none;'}"></span>
     </div>`;
     })
