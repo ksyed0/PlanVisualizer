@@ -362,11 +362,13 @@ function renderScripts(data, options = {}) {
   }
 
   function openAbout() {
-    document.getElementById('aboutModal').classList.remove('hidden');
+    var m = document.getElementById('about-modal');
+    if (m) m.classList.add('open');
     document.body.style.overflow = 'hidden';
   }
   function closeAbout() {
-    document.getElementById('aboutModal').classList.add('hidden');
+    var m = document.getElementById('about-modal');
+    if (m) m.classList.remove('open');
     document.body.style.overflow = '';
   }
   document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeAbout(); });
