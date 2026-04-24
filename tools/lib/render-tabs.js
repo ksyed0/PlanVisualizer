@@ -456,7 +456,7 @@ function renderTrendsTab(data, options = {}) {
         const tableRows = rows
           .map(
             (r) => `<tr>
-          <td style="font-family:monospace;font-size:11px;white-space:nowrap">${esc(r.date.replace('T', ' ').slice(0, 16))}</td>
+          <td style="font-family:var(--font-mono);font-size:11px;white-space:nowrap">${esc(r.date.replace('T', ' ').slice(0, 16))}</td>
           <td style="text-align:right;font-weight:600">${r.cumul}</td>
           <td style="text-align:right;color:${r.delta > 0 ? 'var(--ok)' : 'var(--risk)'}">${r.delta > 0 ? '+' : ''}${r.delta}</td>
         </tr>`,
@@ -563,7 +563,8 @@ function initTrendsCharts() {
   var labels = _trendsAllLabels; if (labels.length < 2) return;
   var xA = { ticks:{ color:tc, maxTicksLimit:8, callback:function(v){ var d=new Date(this.getLabelForValue(v)); return isNaN(d)?v:(d.getMonth()+1)+'/'+d.getDate(); }}, grid:{color:gc} };
   var yA = function(o){ return Object.assign({ticks:{color:tc},grid:{color:gc},beginAtZero:true},o||{}); };
-  var leg = { labels:{color:tc, font:{family:"'Inter',sans-serif",size:12}, pointStyle:'circle', usePointStyle:true }};
+  var fontSans = getComputedStyle(document.documentElement).getPropertyValue('--font-sans').trim() || "'Inter Tight',sans-serif";
+  var leg = { labels:{color:tc, font:{family:fontSans,size:12}, pointStyle:'circle', usePointStyle:true }};
   _mkTrend('chart-trends-progress', {type:'line', data:{labels:labels, datasets:[
     {label:'Done', data:_trendsAllData.done, borderColor:pvChartColors.ok, _gc:pvChartColors.ok, fill:true, tension:0.3},
     {label:'Total', data:_trendsAllData.total, borderColor:pvChartColors.mute, backgroundColor:'transparent', borderDash:[5,5], tension:0.3}
@@ -992,7 +993,7 @@ function renderChartsTab(data) {
                     const pct = Math.min(100, Math.round((r.avgScore / 4) * 100));
                     const col = RISK_LEVEL_COLORS[r.level];
                     return `<div style="display:flex;align-items:center;gap:6px">
-              <span style="color:var(--text);width:72px;font-size:11px;font-family:monospace;flex-shrink:0">${esc(id)}</span>
+              <span style="color:var(--text);width:72px;font-size:11px;font-family:var(--font-mono);flex-shrink:0">${esc(id)}</span>
               <div style="flex:1;background:var(--surface-alt,oklch(25% 0.015 220));border-radius:3px;height:14px;overflow:hidden">
                 <div style="width:${pct}%;height:100%;background:${col};border-radius:3px"></div>
               </div>
@@ -1036,7 +1037,7 @@ function renderChartsTab(data) {
             .map(([id, r]) => {
               const col = RISK_LEVEL_COLORS[r.level];
               return `<div style="display:flex;align-items:center;gap:10px;padding:6px 10px;background:var(--clr-card,var(--surface-alt,oklch(25% 0.015 220)));border-radius:6px;border-left:3px solid ${col}">
-              <span style="font-family:monospace;font-size:12px;font-weight:700;color:var(--text)">${esc(id)}</span>
+              <span style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--text)">${esc(id)}</span>
               <span style="font-size:13px;font-weight:700;color:${col}">${r.avgScore}</span>
               <span style="background:${col};color:oklch(100% 0 0);font-size:10px;padding:1px 6px;border-radius:3px">${r.level}</span>
               <span style="font-size:11px;color:var(--text-muted,var(--text-dim));margin-left:auto">${(r.counts?.High ?? 0) + (r.counts?.Critical ?? 0)} High+Critical stories</span>
@@ -1069,6 +1070,7 @@ function renderChartsTab(data) {
   }
   function initCharts() {
     var tc = chartTextColor();
+    var fontSans = getComputedStyle(document.documentElement).getPropertyValue('--font-sans').trim() || "'Inter Tight',sans-serif";
     _charts.epicProgress = new Chart(document.getElementById('chart-epic-progress'), {
       type: 'bar',
       data: { labels: ${epicLabels}, datasets: [
@@ -1077,7 +1079,7 @@ function renderChartsTab(data) {
         { label: 'Planned/To Do', data: ${epicPlanned}, backgroundColor: pvChartColors.mute },
       ]},
       options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true } } },
+        plugins: { legend: { labels: { color: tc, font: { family: fontSans, size: 12 }, pointStyle: 'circle', usePointStyle: true } } },
         scales: { x: { stacked: true, ticks: { color: tc } }, y: { stacked: true, ticks: { color: tc, autoSkip: false } } } }
     });
     _charts.tcResults = new Chart(document.getElementById('chart-tc-results'), {
@@ -1088,7 +1090,7 @@ function renderChartsTab(data) {
         { label: 'Not Run', data: ${epicTCNotRun}, backgroundColor: pvChartColors.mute },
       ]},
       options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true } } },
+        plugins: { legend: { labels: { color: tc, font: { family: fontSans, size: 12 }, pointStyle: 'circle', usePointStyle: true } } },
         scales: { x: { stacked: true, ticks: { color: tc } }, y: { stacked: true, ticks: { color: tc, autoSkip: false } } } }
     });
     _charts.costBreakdown = new Chart(document.getElementById('chart-cost-breakdown'), {
@@ -1099,7 +1101,7 @@ function renderChartsTab(data) {
       ]},
       options: {
         responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true } } },
+        plugins: { legend: { labels: { color: tc, font: { family: fontSans, size: 12 }, pointStyle: 'circle', usePointStyle: true } } },
         scales: {
           x: { ticks: { color: tc, autoSkip: false, maxRotation: 60, minRotation: 45 } },
           yProjected: { type: 'linear', position: 'left', ticks: { color: tc }, title: { display: true, text: 'Projected ($)', color: tc } },
@@ -1110,22 +1112,22 @@ function renderChartsTab(data) {
     _charts.coverage = new Chart(document.getElementById('chart-coverage'), {
       type: 'doughnut',
       data: { labels: ['Covered', 'Gap'], datasets: [{ data: [${coveragePctNum}, ${coverageGap}], backgroundColor: [${coveragePct !== null ? 'pvChartColors.ok' : 'pvChartColors.mute'},pvChartColors.mute], borderWidth: 0 }] },
-      options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: true, position: 'bottom', labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true } } } }
+      options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: true, position: 'bottom', labels: { color: tc, font: { family: fontSans, size: 12 }, pointStyle: 'circle', usePointStyle: true } } } }
     });
     _charts.aiTimeline = new Chart(document.getElementById('chart-ai-timeline'), {
       type: 'line',
       data: { labels: ${sessionDates}, datasets: [{ label: 'Cumulative AI Cost ($)', data: ${sessionCosts}, borderColor: pvChartColors.info, tension: 0.3, fill: true, backgroundColor: pvChartColors.mute }] },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true } } }, scales: { x: { ticks: { color: tc } }, y: { ticks: { color: tc } } } }
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc, font: { family: fontSans, size: 12 }, pointStyle: 'circle', usePointStyle: true } } }, scales: { x: { ticks: { color: tc } }, y: { ticks: { color: tc } } } }
     });
     _charts.burndown = new Chart(document.getElementById('chart-burndown'), {
       type: 'doughnut',
       data: { labels: ['Done','In Progress','Planned','To Do','Blocked'], datasets: [{ data: ${statusCounts}, backgroundColor: [pvChartColors.ok,pvChartColors.info,pvChartColors.mute,pvChartColors.warn,pvChartColors.risk], borderWidth: 1 }] },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true } } } }
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { color: tc, font: { family: fontSans, size: 12 }, pointStyle: 'circle', usePointStyle: true } } } }
     });
     _charts.burnRate = new Chart(document.getElementById('chart-burn-rate'), {
       type: 'bar',
       data: { labels: ${sessionDates}, datasets: [{ label: 'Session AI Spend ($)', data: ${sessionPerCosts}, backgroundColor: pvChartColors.accent }] },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc, font: { family: "'Inter', sans-serif", size: 12 }, pointStyle: 'circle', usePointStyle: true } } }, scales: { x: { ticks: { color: tc } }, y: { ticks: { color: tc } } } }
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: tc, font: { family: fontSans, size: 12 }, pointStyle: 'circle', usePointStyle: true } } }, scales: { x: { ticks: { color: tc } }, y: { ticks: { color: tc } } } }
     });
     if (document.getElementById('chart-risk-distribution')) {
       _charts.riskDist = new Chart(document.getElementById('chart-risk-distribution'), {
@@ -1721,7 +1723,7 @@ function renderBugsTab(data) {
       <td colspan="7" class="px-3 py-2" style="border-left:4px solid ${accent.border};">
         <div class="flex flex-wrap items-center gap-3">
           <span id="${beid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">▶</span>
-          <span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${epicId}</span>
+          ${epicId !== '_ungrouped' ? `<span class="epic-id-display font-mono text-xs font-bold uppercase"><span class="epic-id-label">EPIC /</span> <span class="epic-id-num" style="color:${accent.text}">${epicId.replace('EPIC-', '')}</span></span>` : ''}
           ${epic ? badge(epic.status) : ''}
           ${titlePart}
           <span class="ml-auto text-xs text-slate-500 bug-count">${open} open &middot; ${bugs.length} total</span>
@@ -1748,7 +1750,7 @@ function renderBugsTab(data) {
       return `<div class="mb-2 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden bug-epic-card" data-epic="${epicId}" style="border-left:4px solid ${accent.border}">
       <div class="flex flex-wrap items-center gap-3 px-3 py-2 cursor-pointer select-none bug-epic-header" data-epic="${epicId}" style="background:${accent.bg}" onclick="toggleSection('${bceid}','${bceid}-arrow')">
         <span id="${bceid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">▶</span>
-        <span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${epicId}</span>
+        ${epicId !== '_ungrouped' ? `<span class="epic-id-display font-mono text-xs font-bold uppercase"><span class="epic-id-label">EPIC /</span> <span class="epic-id-num" style="color:${accent.text}">${epicId.replace('EPIC-', '')}</span></span>` : ''}
         ${epic ? badge(epic.status) : ''}
         ${titlePart}
         <span class="ml-auto text-xs text-slate-500 bug-count">${open} open &middot; ${bugs.length} total</span>
@@ -1954,7 +1956,7 @@ function renderLessonsTab(data) {
       <td colspan="5" class="px-3 py-2" style="border-left:4px solid ${accent.border};">
         <div class="flex flex-wrap items-center gap-3">
           <span id="${leid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">▶</span>
-          <span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${epicId === '_ungrouped' ? 'No Epic' : epicId}</span>
+          ${epicId !== '_ungrouped' ? `<span class="epic-id-display font-mono text-xs font-bold uppercase"><span class="epic-id-label">EPIC /</span> <span class="epic-id-num" style="color:${accent.text}">${epicId.replace('EPIC-', '')}</span></span>` : ''}
           ${epic ? badge(epic.status) : ''}
           ${titlePart}
           <span class="ml-auto text-xs text-slate-500">${ls.length} lesson${ls.length !== 1 ? 's' : ''}</span>
@@ -1979,7 +1981,7 @@ function renderLessonsTab(data) {
       return `<div class="mb-2 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden" style="border-left:4px solid ${accent.border}">
       <div class="flex flex-wrap items-center gap-3 px-3 py-2 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('${lceid}','${lceid}-arrow')">
         <span id="${lceid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">▶</span>
-        <span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${epicId === '_ungrouped' ? 'No Epic' : epicId}</span>
+        ${epicId !== '_ungrouped' ? `<span class="epic-id-display font-mono text-xs font-bold uppercase"><span class="epic-id-label">EPIC /</span> <span class="epic-id-num" style="color:${accent.text}">${epicId.replace('EPIC-', '')}</span></span>` : ''}
         ${epic ? badge(epic.status) : ''}
         ${titlePart}
         <span class="ml-auto text-xs text-slate-500">${ls.length} lesson${ls.length !== 1 ? 's' : ''}</span>
@@ -2147,6 +2149,72 @@ function renderStatusTab(data) {
       .join('');
   })();
 
+  // ── Burn-up area SVG ─────────────────────────────────────────────
+  const burnUpSvg = (() => {
+    if (!trends || !trends.velocity || trends.velocity.length < 2)
+      return '<span style="font-size:11px;color:var(--text-mute)">No data</span>';
+    const vals = trends.velocity.slice(-60);
+    const W = 200,
+      H = 44;
+    const maxV = Math.max(...vals, 1);
+    const pts = vals
+      .map((v, i) => {
+        const x = +((i / (vals.length - 1)) * W).toFixed(1);
+        const y = +(H - (v / maxV) * (H - 2) - 1).toFixed(1);
+        return `${x},${y}`;
+      })
+      .join(' ');
+    const areaPts = `${pts} ${W},${H} 0,${H}`;
+    return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px" preserveAspectRatio="none" aria-hidden="true">
+      <defs><linearGradient id="bu-grad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="var(--plan-accent)" stop-opacity="0.35"/>
+        <stop offset="100%" stop-color="var(--plan-accent)" stop-opacity="0.03"/>
+      </linearGradient></defs>
+      <polygon points="${areaPts}" fill="url(#bu-grad)"/>
+      <polyline points="${pts}" fill="none" stroke="var(--plan-accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`;
+  })();
+
+  // ── KPI sparkline tiles ───────────────────────────────────────────
+  const kpiTiles = (() => {
+    if (!trends || !trends.dates || trends.dates.length < 2) return '';
+    const n = trends.dates.length;
+    const donePctSeries = (trends.doneCounts || []).map((c, i) => {
+      const tot = (trends.totalStories || [])[i] || 1;
+      return +((c / tot) * 100).toFixed(1);
+    });
+    const covSeries = (trends.coverage || []).map((v) => v || 0);
+    const bugSeries = trends.openBugs || [];
+    const costSeries = trends.aiCosts || [];
+
+    function lastDelta(series) {
+      for (let i = series.length - 1; i > 0; i--) {
+        const d = +(series[i] - series[i - 1]).toFixed(1);
+        if (d !== 0) return d;
+      }
+      return 0;
+    }
+    function kpiTile(label, val, unit, delta, deltaUnit, series, upGood) {
+      const isUp = delta > 0;
+      const good = upGood ? isUp : !isUp;
+      const dColor = delta === 0 ? 'var(--text-mute)' : good ? 'var(--ok)' : 'var(--risk)';
+      const arrow = delta > 0 ? '▲' : delta < 0 ? '▼' : '—';
+      const spark = sparkline(series.slice(-16), 56, 20);
+      return `<div class="card" style="padding:14px 16px;position:relative;overflow:hidden">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-mute);margin-bottom:4px">${label}</div>
+        <div style="position:absolute;top:10px;right:10px;color:var(--text-mute);opacity:.45">${spark}</div>
+        <div style="font-family:var(--font-display);font-size:clamp(22px,2.5vw,30px);font-weight:700;line-height:1;margin-bottom:5px">${val}<span style="font-size:13px;font-weight:400;color:var(--text-mute)">${unit}</span></div>
+        <div style="font-size:12px;color:${dColor};font-weight:600">${arrow} ${delta > 0 ? '+' : ''}${delta}${deltaUnit}<span style="font-weight:400;color:var(--text-mute)"> / wk</span></div>
+      </div>`;
+    }
+    return `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
+      ${kpiTile('Overall Progress', donePctSeries[n - 1] || donePct, '%', lastDelta(donePctSeries), '%', donePctSeries, true)}
+      ${kpiTile('Test Coverage', covSeries[n - 1] !== undefined ? covSeries[n - 1].toFixed(1) : covPct !== null ? covPct.toFixed(1) : '—', '%', lastDelta(covSeries), '%', covSeries, true)}
+      ${kpiTile('Open Bugs', bugSeries[n - 1] !== undefined ? bugSeries[n - 1] : openBugs.length, '', lastDelta(bugSeries), '', bugSeries, false)}
+      ${kpiTile('AI Spend', usd(costSeries[n - 1] || totalAI), '', +((costSeries[n - 1] || 0) - (costSeries[n - 2] || 0)).toFixed(2), '', costSeries, null)}
+    </div>`;
+  })();
+
   // ── Epic progress list ────────────────────────────────────────────
   const epicProgress = data.epics
     .filter(
@@ -2168,10 +2236,6 @@ function renderStatusTab(data) {
       </div>`;
     })
     .join('');
-
-  // ── This week stats (last 7 days from trends if available) ────────
-  const thisWeekStories = inProgress.length;
-  const weekBugsOpen = openBugs.filter((b) => b.severity === 'Critical' || b.severity === 'High').length;
 
   // ── Top risks list ────────────────────────────────────────────────
   const risks = [];
@@ -2201,7 +2265,6 @@ function renderStatusTab(data) {
       });
     }
   }
-  const riskColors = { HIGH: 'var(--risk)', MED: 'var(--warn)', LOW: 'var(--ok)' };
   const riskItems =
     risks
       .slice(0, 5)
@@ -2220,12 +2283,93 @@ function renderStatusTab(data) {
   const failed = allTCs.filter((t) => t.status === 'Fail').length;
   const notRun = allTCs.filter((t) => t.status === 'Not Run').length;
   const passRate = allTCs.length > 0 ? Math.round((passed / allTCs.length) * 100) : 0;
+  const covRingPct = covPct !== null ? Math.min(covPct, 100) : 0;
+  const covRingColor = covRingPct >= 80 ? 'var(--ok)' : covRingPct >= 60 ? 'var(--warn)' : 'var(--risk)';
+
+  // Pass-rate bars — last 14 coverage snapshots as quality proxy
+  const passRateBars = (() => {
+    const vals = trends && trends.coverage ? trends.coverage.slice(-14) : [];
+    if (vals.length === 0) return '<span style="font-size:11px;color:var(--text-mute)">No history</span>';
+    const dates = trends.dates ? trends.dates.slice(-14) : [];
+    return `<div style="display:flex;gap:3px">${vals
+      .map((v, i) => {
+        const color = v >= 80 ? 'var(--ok)' : v >= 60 ? 'var(--warn)' : v > 0 ? 'var(--risk)' : 'var(--border)';
+        const tip = dates[i] ? `${dates[i].slice(0, 10)}: ${v.toFixed ? v.toFixed(1) : v}%` : '';
+        return `<div title="${tip}" style="flex:1;height:22px;border-radius:3px;background:${color};opacity:${v > 0 ? 0.6 + (v / 100) * 0.4 : 0.25}"></div>`;
+      })
+      .join('')}</div>`;
+  })();
+
+  // TC pass rate by epic
+  const tcByEpic = {};
+  allTCs.forEach((tc) => {
+    const story = data.stories.find((s) => s.id === tc.relatedStory);
+    const eid = story ? story.epicId : null;
+    if (!eid) return;
+    if (!tcByEpic[eid]) tcByEpic[eid] = { pass: 0, total: 0 };
+    tcByEpic[eid].total++;
+    if (tc.status === 'Pass') tcByEpic[eid].pass++;
+  });
+  const coverageByEpic = (() => {
+    const rows = Object.entries(tcByEpic)
+      .map(([eid, { pass, total }]) => ({ eid, pct: Math.round((pass / total) * 100), total }))
+      .sort((a, b) => b.pct - a.pct)
+      .slice(0, 8);
+    if (!rows.length) return '<p style="font-size:11px;color:var(--text-mute)">No TC data</p>';
+    return rows
+      .map(({ eid, pct }) => {
+        const epic = data.epics.find((e) => e.id === eid);
+        const accent =
+          EPIC_ACCENT_COLORS[data.epics.indexOf(epic) % EPIC_ACCENT_COLORS.length] || EPIC_ACCENT_COLORS[0];
+        const barColor = pct >= 80 ? 'var(--ok)' : pct >= 60 ? 'var(--warn)' : 'var(--risk)';
+        return `<div style="display:grid;grid-template-columns:64px 1fr 40px;gap:8px;align-items:center;margin-bottom:6px">
+          <span style="font-family:var(--font-mono);font-size:10px;color:${accent.text};white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${esc(epic ? epic.title : eid)}">${eid}</span>
+          <div style="background:var(--border);border-radius:2px;height:6px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${barColor};border-radius:2px"></div></div>
+          <span style="font-family:var(--font-mono);font-size:11px;font-weight:600;text-align:right;color:${barColor}">${pct}%</span>
+        </div>`;
+      })
+      .join('');
+  })();
+
+  // ── This Week (date-windowed from trend snapshots) ─────────────────
+  const thisWeek = (() => {
+    const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const today = new Date();
+    const dow = today.getDay();
+    const wStart = new Date(today);
+    wStart.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1));
+    wStart.setHours(0, 0, 0, 0);
+    const wEnd = new Date(wStart);
+    wEnd.setDate(wStart.getDate() + 6);
+    const label = `${MONTHS[wStart.getMonth()]} ${wStart.getDate()}–${wEnd.getDate()}`;
+
+    if (!trends || !trends.dates || trends.dates.length < 2) {
+      return { label, storiesShipped: '—', bugsOpened: '—', bugsFixed: '—', aiSpend: '—' };
+    }
+    // Find index of first snapshot on or after week start
+    const wStartIso = wStart.toISOString();
+    let wStartIdx = trends.dates.findIndex((d) => d >= wStartIso);
+    if (wStartIdx < 0) wStartIdx = trends.dates.length - 1;
+    const prevIdx = Math.max(wStartIdx - 1, 0);
+
+    const doneDelta = (trends.doneCounts[trends.dates.length - 1] || 0) - (trends.doneCounts[prevIdx] || 0);
+    const bugDelta = (trends.openBugs[trends.dates.length - 1] || 0) - (trends.openBugs[prevIdx] || 0);
+    const costDelta = (trends.aiCosts[trends.dates.length - 1] || 0) - (trends.aiCosts[prevIdx] || 0);
+
+    return {
+      label,
+      storiesShipped: Math.max(doneDelta, 0),
+      bugsOpened: bugDelta > 0 ? bugDelta : 0,
+      bugsFixed: bugDelta < 0 ? Math.abs(bugDelta) : 0,
+      aiSpend: usd(Math.max(costDelta, 0)),
+    };
+  })();
 
   return `
   <div id="tab-status" class="p-6" role="tabpanel" aria-labelledby="tab-btn-status">
 
     <!-- Release Health Hero -->
-    <div class="pv-hero card mb-6 p-0 overflow-hidden">
+    <div class="pv-hero card mb-4 p-0 overflow-hidden">
       <div class="pv-hero-head">
         <div class="pv-hero-verdict" style="position:relative">
           <p class="pv-eyebrow">Release Health</p>
@@ -2253,21 +2397,28 @@ function renderStatusTab(data) {
           </div>
         </div>
       </div>
-      <!-- Mini-viz row -->
-      <div class="pv-hero-vizrow pv-hero-viz" style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <!-- Mini-viz row: progress bars | coverage dots | burn-up -->
+      <div class="pv-hero-vizrow pv-hero-viz" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
         <div>
-          <p class="pv-eyebrow" style="margin-bottom:6px">Progress · Past 14 weeks</p>
+          <p class="pv-eyebrow" style="margin-bottom:6px">Progress · Past 14 snapshots</p>
           <div style="display:flex;align-items:flex-end;gap:3px;height:36px">${progressBars}</div>
         </div>
         <div>
-          <p class="pv-eyebrow" style="margin-bottom:6px">Coverage · Last 30 days</p>
+          <p class="pv-eyebrow" style="margin-bottom:6px">Coverage · Last 30 snapshots</p>
           <div style="line-height:1;display:flex;flex-wrap:wrap;align-items:center">${coverageDots}</div>
+        </div>
+        <div>
+          <p class="pv-eyebrow" style="margin-bottom:6px">Burn · Cumulative</p>
+          ${burnUpSvg}
         </div>
       </div>
     </div>
 
+    <!-- KPI sparkline tiles -->
+    ${kpiTiles}
+
     <!-- Decision widgets row -->
-    <div class="pv-widgets mb-6">
+    <div class="pv-widgets mb-4">
       <!-- Overall progress KPIs -->
       <div class="card">
         <div class="card-head">
@@ -2308,25 +2459,75 @@ function renderStatusTab(data) {
       </div>
     </div>
 
-    <!-- Quality + This-week row -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-      <div class="card">
-        <div class="card-head"><h3>Quality</h3><span style="margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--text-mute)">${allTCs.length} TCs</span></div>
-        <div class="card-body">
-          <div class="pv-kv"><span class="pv-kv-k">Pass rate</span><span class="pv-kv-v" style="color:${passRate >= 90 ? 'var(--ok)' : passRate >= 70 ? 'var(--warn)' : 'var(--risk)'}">${passRate}%</span></div>
-          <div class="pv-kv"><span class="pv-kv-k">Passed</span><span class="pv-kv-v">${passed}</span></div>
-          <div class="pv-kv"><span class="pv-kv-k">Failed</span><span class="pv-kv-v" style="color:${failed > 0 ? 'var(--risk)' : 'inherit'}">${failed}</span></div>
-          <div class="pv-kv" style="border-bottom:0"><span class="pv-kv-k">Not Run</span><span class="pv-kv-v">${notRun}</span></div>
+    <!-- Quality (full-width) -->
+    <div class="card mb-4">
+      <div class="card-head">
+        <h3 style="text-transform:uppercase;letter-spacing:.08em;font-size:11px;font-weight:700">Quality</h3>
+        <span style="margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--text-mute)">${allTCs.length} Tests · Jest</span>
+      </div>
+      <div style="padding:16px">
+        <!-- Top row: ring + left stats + right stats -->
+        <div style="display:grid;grid-template-columns:auto 1fr 1fr;gap:24px;align-items:start;margin-bottom:20px">
+          <div style="position:relative;width:88px;height:88px;flex-shrink:0">
+            <svg viewBox="0 0 36 36" style="width:88px;height:88px;transform:rotate(-90deg)">
+              <circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--border)" stroke-width="3.2"/>
+              <circle cx="18" cy="18" r="15.9" fill="none" stroke="${covRingColor}" stroke-width="3.2"
+                stroke-dasharray="${covRingPct.toFixed(1)} 100" stroke-dashoffset="0" stroke-linecap="round"/>
+            </svg>
+            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center">
+              <span style="font-family:var(--font-display);font-size:15px;font-weight:700;line-height:1">${covPct !== null ? covPct.toFixed(1) : '—'}<span style="font-size:9px">%</span></span>
+              <span style="font-size:8px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--text-mute);margin-top:2px">Coverage</span>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div>
+              <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-mute)">Passed</div>
+              <div style="font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--ok);line-height:1.1">${passed}</div>
+            </div>
+            <div>
+              <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-mute)">Not Run</div>
+              <div style="font-family:var(--font-display);font-size:20px;font-weight:600;color:var(--text-dim);line-height:1.1">${notRun}</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div>
+              <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-mute)">Failed</div>
+              <div style="font-family:var(--font-display);font-size:28px;font-weight:700;color:${failed > 0 ? 'var(--risk)' : 'inherit'};line-height:1.1">${failed}</div>
+            </div>
+            <div>
+              <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-mute)">Open Bugs</div>
+              <div style="font-family:var(--font-display);font-size:20px;font-weight:600;color:${openBugs.length > 0 ? 'var(--warn)' : 'inherit'};line-height:1.1">${openBugs.length}</div>
+            </div>
+          </div>
+        </div>
+        <!-- Pass rate bars -->
+        <div style="margin-bottom:16px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <span style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-mute)">Coverage Rate · Last 14 Snapshots</span>
+            <span style="font-size:11px;font-weight:600;color:${covRingColor}">${covRingPct.toFixed(1)}%</span>
+          </div>
+          ${passRateBars}
+        </div>
+        <!-- TC pass rate by epic -->
+        <div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-mute);margin-bottom:8px">TC Pass Rate by Epic</div>
+          ${coverageByEpic}
         </div>
       </div>
+    </div>
+
+    <!-- This Week + Agent Workload -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
       <div class="card pv-widget-this-week">
-        <div class="card-head"><h3>This Week</h3></div>
+        <div class="card-head">
+          <h3 style="text-transform:uppercase;letter-spacing:.08em;font-size:11px;font-weight:700">This Week</h3>
+          <span style="margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--text-mute)">${esc(thisWeek.label)}</span>
+        </div>
         <div class="card-body">
-          <div class="pv-kv"><span class="pv-kv-k">Stories done</span><span class="pv-kv-v">${doneStories.length}</span></div>
-          <div class="pv-kv"><span class="pv-kv-k">In progress</span><span class="pv-kv-v">${thisWeekStories}</span></div>
-          <div class="pv-kv"><span class="pv-kv-k">Critical + High bugs</span><span class="pv-kv-v" style="color:${weekBugsOpen > 0 ? 'var(--risk)' : 'inherit'}">${weekBugsOpen}</span></div>
-          <div class="pv-kv"><span class="pv-kv-k">AI spend</span><span class="pv-kv-v">${usd(totalAI)}</span></div>
-          <div class="pv-kv" style="border-bottom:0"><span class="pv-kv-k">Est. budget</span><span class="pv-kv-v">${usd(totalProjected)}</span></div>
+          <div class="pv-kv"><span class="pv-kv-k" style="text-transform:uppercase;letter-spacing:.06em;font-size:10px">Stories Shipped</span><span class="pv-kv-v" style="font-size:20px;font-weight:700">${thisWeek.storiesShipped}</span></div>
+          <div class="pv-kv"><span class="pv-kv-k" style="text-transform:uppercase;letter-spacing:.06em;font-size:10px">Bugs Opened</span><span class="pv-kv-v" style="font-size:20px;font-weight:700">${thisWeek.bugsOpened}</span></div>
+          <div class="pv-kv"><span class="pv-kv-k" style="text-transform:uppercase;letter-spacing:.06em;font-size:10px">Bugs Fixed</span><span class="pv-kv-v" style="font-size:20px;font-weight:700;color:var(--ok)">${thisWeek.bugsFixed}</span></div>
+          <div class="pv-kv" style="border-bottom:0"><span class="pv-kv-k" style="text-transform:uppercase;letter-spacing:.06em;font-size:10px">AI Spend</span><span class="pv-kv-v" style="font-size:20px;font-weight:700">${thisWeek.aiSpend}</span></div>
         </div>
       </div>
       <div class="card pv-widget-agent-workload">
@@ -2339,6 +2540,8 @@ function renderStatusTab(data) {
   </div>
   <style>
   @media(max-width:1100px){.pv-widgets{grid-template-columns:1fr}}
+  @media(max-width:900px){#tab-status .pv-hero-vizrow{grid-template-columns:1fr 1fr}}
+  @media(max-width:640px){#tab-status [style*="repeat(4,1fr)"]{grid-template-columns:1fr 1fr}}
   </style>`;
 }
 

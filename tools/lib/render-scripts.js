@@ -848,7 +848,7 @@ function renderPrintCSS() {
   .lesson-pill { display: inline-flex; align-items: center; gap: 4px; background: var(--badge-info-bg); color: var(--badge-info-text); border: 1px solid var(--badge-info-border); border-radius: 12px; padding: 1px 8px; font-size: 11px; text-decoration: none; }
   .lesson-pill-id { font-weight: 600; }
   .bug-compact-row { display: flex; align-items: center; gap: 10px; padding: 6px 12px; border-bottom: 1px solid var(--clr-border); font-size: 13px; }
-  .bug-compact-id { font-family: monospace; font-size: 11px; opacity: 0.7; min-width: 80px; }
+  .bug-compact-id { font-family: var(--font-mono); font-size: 11px; opacity: 0.7; min-width: 80px; }
   .bug-compact-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   </style>`;
 }

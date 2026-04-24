@@ -362,7 +362,7 @@ describe('US-0120 stories panel polish', () => {
     const doneSlice = html.match(/<div class="story-row status-complete">[\s\S]*?<\/div>/);
     expect(doneSlice).not.toBeNull();
     expect(doneSlice[0]).not.toMatch(/story-elapsed/);
-    expect(html).toMatch(/\.story-elapsed \{[\s\S]*?font-family:\s*'JetBrains Mono'/);
+    expect(html).toMatch(/\.story-elapsed \{[\s\S]*?font-family:\s*var\(--font-mono\)/);
   });
 
   // AC-0409: epic headers reuse the tracked-out treatment that US-0110

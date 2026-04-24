@@ -490,7 +490,7 @@ function generateHTML(status) {
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: var(--font-sans);
     background-color: var(--bg-primary);
     /* US-0110 AC-0360: subtle dot-grid — scoped to dark theme only, visible but low-key. */
     background-image: radial-gradient(circle, oklch(70% 0.010 220 / 6%) 1px, transparent 1px);
@@ -531,7 +531,7 @@ function generateHTML(status) {
   }
   .cycle-counter .cycle-label { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
   .cycle-counter .cycle-elapsed {
-    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     color: var(--text-muted);
     font-variant-numeric: tabular-nums;
@@ -672,7 +672,7 @@ function generateHTML(status) {
   [data-theme="light"] .phase-check { color: var(--ok); }
   .phase-elapsed {
     display: none;
-    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: 10px;
     color: var(--text-muted);
     font-variant-numeric: tabular-nums;
@@ -778,8 +778,8 @@ function generateHTML(status) {
   .spotlight-name { font-family: var(--font-sans); font-size: 28px; font-weight: 700; letter-spacing: -0.01em; color: var(--text-primary); display: flex; align-items: center; gap: 10px; line-height: 1.1; }
   [data-theme="light"] .spotlight-name { color: var(--text-primary); }
   .spotlight-role { font-family: var(--font-sans); font-size: 11px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-muted); }
-  .spotlight-task { font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace; font-size: 12px; color: var(--text-secondary); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
-  .spotlight-elapsed { font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace; font-size: 11px; color: var(--text-dim); letter-spacing: 0.04em; font-variant-numeric: tabular-nums; margin-top: 2px; }
+  .spotlight-task { font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
+  .spotlight-elapsed { font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); letter-spacing: 0.04em; font-variant-numeric: tabular-nums; margin-top: 2px; }
   .spotlight-elapsed::before { content: 'ELAPSED '; color: var(--text-muted); letter-spacing: 0.14em; }
 
   /* US-0119 AC-0402/0403/0404/0405: Vertical station cards. Portrait on
@@ -815,7 +815,7 @@ function generateHTML(status) {
   .agent-name { font-family: var(--font-sans); font-size: 13px; font-weight: 700; letter-spacing: 0.01em; }
   .agent-role { font-family: var(--font-sans); font-size: 9px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
   .agent-status { font-size: 10px; font-weight: 600; padding: 2px 10px; border-radius: 10px; display: inline-block; text-transform: uppercase; letter-spacing: 0.06em; }
-  .agent-task { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10px; color: var(--text-secondary); margin-top: 4px; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .agent-task { font-family: var(--font-mono); font-size: 10px; color: var(--text-secondary); margin-top: 4px; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
   /* Story table */
   .story-list { display: flex; flex-direction: column; gap: 10px; }
@@ -849,7 +849,7 @@ function generateHTML(status) {
   /* US-0120 AC-0408: elapsed-time pill in JetBrains Mono next to the status
      badge. Rendered only for In Progress stories that carry a startedAt stamp. */
   .story-elapsed {
-    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: 10px;
     font-weight: 600;
     padding: 2px 8px;
@@ -882,7 +882,7 @@ function generateHTML(status) {
     gap: 8px;
     margin-bottom: 10px;
     flex-wrap: wrap;
-    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
   }
   .log-filters { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; min-width: 0; }
   .log-filter-chip {
@@ -929,7 +929,7 @@ function generateHTML(status) {
   .log-scroll {
     max-height: 240px;
     overflow-y: auto;
-    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     line-height: 1.5;
   }
@@ -953,7 +953,7 @@ function generateHTML(status) {
 
   /* AC-0415: empty state — blinking terminal cursor + waiting message. */
   .log-empty {
-    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     color: var(--text-muted);
     padding: 8px 10px;
@@ -984,7 +984,7 @@ function generateHTML(status) {
      for a console/telemetry feel, with a .stale variant that turns red when
      refreshState() can't reach sdlc-status.json. */
   .last-updated {
-    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: 11px;
     color: oklch(100% 0 0 / 75%);
     letter-spacing: 0.02em;
@@ -1041,7 +1041,7 @@ function generateHTML(status) {
   .modal .meta-supertitle { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted); margin-bottom: 6px; }
   .modal .meta-row { padding-left: 8px; margin-bottom: 3px; }
   .modal .meta-label { color: var(--text-muted); }
-  .modal .meta-value { color: var(--text-primary); font-family: 'JetBrains Mono', 'Menlo', monospace; font-size: 11px; }
+  .modal .meta-value { color: var(--text-primary); font-family: var(--font-mono); font-size: 11px; }
   .modal .meta-attribution { margin-top: 14px; font-size: 11px; color: var(--text-muted); text-align: center; }
   .modal-close { position: absolute; top: 12px; right: 16px; background: none; border: none; color: var(--text-muted); font-size: 22px; cursor: pointer; line-height: 1; padding: 4px 8px; border-radius: 6px; transition: background 0.2s; }
   .modal-close:hover { background: var(--bg-card-inner); color: var(--text-primary); }
@@ -1193,7 +1193,7 @@ function generateHTML(status) {
   [data-theme="light"] .metric-hero.amber { color: var(--live-accent); }
 
   .metric-sub {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 10px;
     color: var(--text-muted);
     text-transform: uppercase;
@@ -1255,7 +1255,7 @@ function generateHTML(status) {
   [data-theme="light"] .doughnut-center .d-num.green { color: var(--ok); }
   [data-theme="light"] .doughnut-center .d-num.amber { color: var(--live-accent); }
   .doughnut-center .d-label {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 9px;
     color: var(--text-muted);
     text-transform: uppercase;
@@ -1272,7 +1272,7 @@ function generateHTML(status) {
   }
   .quality-stats .qs-cell { padding: 4px 0; }
   .quality-stats .qs-label {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 9px;
     color: var(--text-muted);
     text-transform: uppercase;
@@ -1296,7 +1296,7 @@ function generateHTML(status) {
   }
   .reviews-summary .rs-cell { padding: 6px 4px; border-radius: 6px; background: var(--bg-card-inner); }
   .reviews-summary .rs-label {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 9px;
     color: var(--text-muted);
     text-transform: uppercase;
@@ -1348,12 +1348,12 @@ function generateHTML(status) {
   .review-agent { font-size: 12px; font-weight: 700; flex-shrink: 0; }
   .review-target {
     font-size: 11px; color: var(--text-secondary);
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   .review-time {
     font-size: 10px; color: var(--text-muted);
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
     margin-top: 1px;
   }
@@ -1361,7 +1361,7 @@ function generateHTML(status) {
     font-size: 9px; font-weight: 700;
     padding: 3px 8px; border-radius: 10px;
     text-transform: uppercase; letter-spacing: 0.06em;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     flex-shrink: 0;
   }
   .review-verdict.approve { color: var(--ok); background: oklch(66% 0.17 145 / 14%); }
@@ -1382,7 +1382,7 @@ function generateHTML(status) {
     align-items: center;
   }
   .card-footer .stamp {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 10px;
     color: var(--text-muted);
     letter-spacing: 0.12em;
@@ -1529,26 +1529,34 @@ function generateHTML(status) {
   .pv-event-log { margin-bottom: 16px; }
   .pv-log-row { display: grid; grid-template-columns: 72px 90px 1fr; gap: 10px; padding: 4px 14px; border-bottom: 1px dashed oklch(100% 0 0 / 6%); font-size: 12px; }
   .pv-log-row:last-child { border-bottom: 0; }
-  .evt-time { color: var(--text-muted); font-family: monospace; }
+  .evt-time { color: var(--text-muted); font-family: var(--font-mono); }
   .evt-agent { color: var(--text-secondary); font-weight: 600; }
   .evt-msg { color: var(--text-secondary); }
   .evt-start .evt-agent { color: var(--live-accent-ink, oklch(55% 0.18 38)); }
   .evt-done .evt-agent { color: var(--ok, oklch(68% 0.15 150)); }
   .evt-block .evt-agent { color: var(--risk, oklch(64% 0.20 25)); }
   .evt-review .evt-agent { color: var(--info, oklch(66% 0.14 240)); }
-  .pv-log-status { font-family: monospace; font-size: 10px; letter-spacing: 0.1em; padding: 2px 6px; border-radius: 4px; background: var(--live-accent, oklch(72% 0.19 38)); color: oklch(12% 0.02 60); margin-left: auto; }
+  .pv-log-status { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; padding: 2px 6px; border-radius: 4px; background: var(--live-accent, oklch(72% 0.19 38)); color: oklch(12% 0.02 60); margin-left: auto; }
   .card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
   .card-head h3 { margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; }
   /* US-0144: Simplified phase fill bar — number/name/group/fill only */
   .pv-phase-fill-bg { height: 4px; background: var(--bg-progress, oklch(100% 0 0 / 10%)); border-radius: 3px; overflow: hidden; margin-top: auto; }
   .pv-phase-fill { height: 100%; border-radius: 3px; background: var(--ok, oklch(68% 0.15 150)); transition: width 0.3s; }
-  /* US-0146: Live bar — ON AIR chip, cycle display, ticker, HH:MM:SS clock */
-  .pv-live-bar { display: flex; align-items: center; gap: 14px; padding: 8px 18px; background: linear-gradient(90deg, color-mix(in oklab, var(--live-accent, oklch(72% 0.19 38)) 14%, transparent) 0%, transparent 80%); border-bottom: 1px solid var(--bg-card-border, oklch(24% 0.030 255)); min-height: 48px; border-left: 3px solid var(--live-accent, oklch(72% 0.19 38)); margin-bottom: 0; }
-  .pv-on-air { font-family: monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; padding: 4px 8px; background: var(--live-accent, oklch(72% 0.19 38)); color: oklch(12% 0.02 60); border-radius: 4px; flex-shrink: 0; }
-  .pv-live-cycle { font-family: monospace; font-size: 12.5px; color: var(--text-secondary, var(--text-secondary)); flex-shrink: 0; }
-  .pv-live-ticker { flex: 1; font-family: monospace; font-size: 12px; color: var(--text-secondary, var(--text-secondary)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 14px; border-left: 1px solid var(--divider, oklch(22% 0.025 255)); }
-  .pv-live-clock { font-family: monospace; font-size: 14px; font-weight: 600; color: var(--text-primary, oklch(88% 0.006 220)); flex-shrink: 0; }
-  @media (prefers-reduced-motion: reduce) { .pv-live-ticker { animation: none; } }
+  /* US-0146: Live bar — 3-column grid: ON AIR | NOW EXECUTING + breadcrumb + last-event | CLOCK */
+  .pv-live-bar { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 0; padding: 10px 18px; background: linear-gradient(90deg, color-mix(in oklab, var(--live-accent, oklch(72% 0.19 38)) 14%, transparent) 0%, transparent 80%); border-bottom: 1px solid var(--bg-card-border, oklch(24% 0.030 255)); min-height: 64px; border-left: 3px solid var(--live-accent, oklch(72% 0.19 38)); margin-bottom: 0; }
+  .pv-on-air { font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: 0.12em; padding: 4px 8px; background: var(--live-accent, oklch(72% 0.19 38)); color: oklch(12% 0.02 60); border-radius: 4px; flex-shrink: 0; }
+  .pv-live-col-left { display: flex; align-items: center; padding-right: 18px; border-right: 1px solid var(--divider, oklch(22% 0.025 255)); }
+  .pv-live-col-mid { display: flex; flex-direction: column; gap: 3px; padding: 0 18px; min-width: 0; justify-content: center; }
+  .pv-live-col-right { display: flex; flex-direction: column; gap: 1px; padding-left: 18px; border-left: 1px solid var(--divider, oklch(22% 0.025 255)); align-items: flex-end; justify-content: center; }
+  .pv-live-exec-lbl { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--mc-dim); }
+  .pv-live-cycle { font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary, oklch(75% 0.006 220)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pv-live-last-evt { display: flex; align-items: center; gap: 5px; overflow: hidden; }
+  .pv-live-pulse-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--ok, oklch(68% 0.15 150)); animation: pv-pulse 2s ease-in-out infinite; flex-shrink: 0; display: inline-block; }
+  .pv-live-ticker { font-family: var(--font-mono); font-size: 10px; color: var(--mc-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pv-live-stat-lbl { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mc-dim); }
+  .pv-live-clock { font-family: var(--font-mono); font-size: 14px; font-weight: 700; color: var(--text-primary, oklch(88% 0.006 220)); text-align: right; }
+  @keyframes pv-pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+  @media (prefers-reduced-motion: reduce) { .pv-live-pulse-dot { animation: none; } }
   /* US-0147: Agent Workload — live assignment bars from stories */
   .pv-workload-section { margin-bottom: 16px; }
   .pv-workload-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
@@ -1606,7 +1614,7 @@ function generateHTML(status) {
     padding: 0 18px;
     height: 42px;
     border-bottom: 1px solid oklch(100% 0 0 / 8%);
-    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: 11.5px;
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
@@ -1684,7 +1692,7 @@ function generateHTML(status) {
     margin-bottom: 14px;
   }
   .mc-hero-breadcrumb {
-    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-family: var(--font-mono);
     font-size: 10px; font-weight: 600;
     color: var(--mc-muted);
     letter-spacing: 0.12em;
@@ -1712,7 +1720,7 @@ function generateHTML(status) {
   [data-theme="dark"] .mc-live-chip { background: oklch(66% 0.17 145 / 14%); }
   .mc-hero-signal {
     margin-left: auto;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 10px; color: var(--mc-muted);
     letter-spacing: 0.08em;
     white-space: nowrap;
@@ -1747,7 +1755,7 @@ function generateHTML(status) {
   }
   [data-theme="dark"] .mc-stat-tile { background: var(--bg-card-inner); }
   .mc-stat-label {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 9px; font-weight: 700;
     text-transform: uppercase; letter-spacing: 0.14em;
     color: var(--mc-muted);
@@ -1766,7 +1774,7 @@ function generateHTML(status) {
   .mc-stat-value.risk { color: var(--risk); }
   .mc-stat-value.info { color: var(--info); }
   .mc-stat-sub {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 9px; color: var(--mc-dim);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     margin-top: 1px;
@@ -1784,7 +1792,7 @@ function generateHTML(status) {
     color: var(--mc-muted);
   }
   .mc-section-meta {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 10px; color: var(--mc-dim);
     margin-left: auto;
   }
@@ -1852,14 +1860,14 @@ function generateHTML(status) {
     font-weight: 400; color: var(--mc-muted); font-size: 11px;
   }
   .mc-agent-task-line {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 10px; color: var(--mc-muted);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   .mc-agent-task-line a { color: inherit; text-decoration: none; }
   .mc-agent-task-line a:hover { text-decoration: underline; }
   .mc-status-badge {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 9px; font-weight: 700; letter-spacing: 0.12em;
     text-transform: uppercase;
     padding: 3px 8px; border-radius: 10px;
@@ -1895,7 +1903,7 @@ function generateHTML(status) {
     margin-bottom: 10px;
   }
   .mc-attn-chip {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 10px; font-weight: 600; letter-spacing: 0.06em;
     padding: 3px 10px; border-radius: 20px;
     background: oklch(55% 0 0 / 8%); color: var(--mc-muted);
@@ -1918,10 +1926,10 @@ function generateHTML(status) {
   .mc-attn-item-line1 { font-size: 12px; margin-bottom: 2px; }
   .mc-attn-item-name { font-weight: 700; color: var(--mc-text); }
   .mc-attn-item-desc { color: var(--mc-muted); margin-left: 4px; }
-  .mc-attn-item-line2 { font-size: 10px; color: var(--mc-dim); font-family: 'JetBrains Mono', monospace; letter-spacing: 0.06em; margin-bottom: 8px; }
+  .mc-attn-item-line2 { font-size: 10px; color: var(--mc-dim); font-family: var(--font-mono); letter-spacing: 0.06em; margin-bottom: 8px; }
   .mc-attn-actions { display: flex; align-items: center; gap: 8px; }
   .mc-attn-jump {
-    flex: 1; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700;
+    flex: 1; font-family: var(--font-mono); font-size: 11px; font-weight: 700;
     color: oklch(98% 0 0); cursor: pointer; letter-spacing: 0.05em;
     background: var(--risk); border: none;
     border-radius: 8px; padding: 7px 14px;
@@ -1929,7 +1937,7 @@ function generateHTML(status) {
   }
   .mc-attn-jump:hover { opacity: 0.85; }
   .mc-attn-all {
-    font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600;
+    font-family: var(--font-mono); font-size: 11px; font-weight: 600;
     color: var(--mc-muted); padding: 7px 12px;
     border: 1px solid var(--mc-border); border-radius: 8px;
     background: none; cursor: pointer; white-space: nowrap;
@@ -1946,25 +1954,22 @@ function generateHTML(status) {
   }
   .mc-evtlog-scroll {
     max-height: 280px; overflow-y: auto;
-    display: flex; flex-direction: column; gap: 3px;
+    display: flex; flex-direction: column; gap: 6px;
   }
-  .mc-evt-row {
-    display: grid;
-    grid-template-columns: 58px 1fr;
-    gap: 6px;
-    align-items: start;
-    padding: 2px 0;
-    border-bottom: 1px solid var(--mc-border);
-    font-size: 11px;
-  }
-  .mc-evt-row:last-child { border-bottom: none; }
-  .mc-evt-time { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--mc-dim); white-space: nowrap; padding-top: 1px; }
-  .mc-evt-body { min-width: 0; }
-  .mc-evt-agent { font-weight: 700; font-size: 11px; margin-right: 4px; }
-  .mc-evt-msg { color: var(--mc-muted); font-size: 10px; display: block; word-break: break-word; }
+  .mc-evt-card { background: var(--mc-surface); border: 1px solid var(--mc-border); border-radius: 8px; padding: 8px 10px; }
+  .mc-evt-card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+  .mc-evt-card-agent { display: inline-flex; align-items: center; gap: 5px; font-weight: 700; font-size: 12px; color: var(--mc-text); }
+  .mc-evt-card-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .mc-evt-time { font-family: var(--font-mono); font-size: 10px; color: var(--mc-dim); white-space: nowrap; }
+  .mc-evt-msg { color: var(--mc-muted); font-size: 11px; line-height: 1.4; word-break: break-word; }
+  .mc-evt-tag { display: inline-block; font-family: var(--font-mono); font-size: 9px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 6px; border-radius: 20px; margin-top: 5px; }
+  .mc-evt-tag-done { background: color-mix(in oklab, var(--ok) 15%, transparent); color: var(--ok); }
+  .mc-evt-tag-block { background: color-mix(in oklab, var(--risk) 15%, transparent); color: var(--risk); }
+  .mc-evt-tag-review { background: color-mix(in oklab, var(--info) 15%, transparent); color: var(--info); }
+  .mc-evt-tag-start { background: color-mix(in oklab, var(--warn) 15%, transparent); color: var(--warn); }
 
   /* ── Roster counts in section bar ── */
-  .mc-roster-counts { margin-left: auto; display: flex; gap: 10px; align-items: center; font-family: 'JetBrains Mono', monospace; font-size: 10px; }
+  .mc-roster-counts { margin-left: auto; display: flex; gap: 10px; align-items: center; font-family: var(--font-mono); font-size: 10px; }
   .mc-count-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 3px; vertical-align: middle; }
   .mc-count-active .mc-count-dot { background: var(--live-accent); }
   .mc-count-idle .mc-count-dot { background: var(--mc-dim); }
@@ -2019,12 +2024,23 @@ ${(() => {
 </div>`;
 })()}
 
-<!-- US-0146: Live bar — always visible ON AIR status strip (kept for patchDOM/test compatibility) -->
+<!-- US-0146: Live bar — 3-column ON AIR strip (kept for patchDOM/test compatibility) -->
 <div class="pv-live-bar" id="pv-live-bar" role="status" aria-live="polite" style="display:none;">
-  <span class="pv-on-air">ON AIR</span>
-  <div class="pv-live-cycle" id="pv-live-cycle">CYCLE — · —:——</div>
-  <div class="pv-live-ticker" id="pv-live-ticker" aria-hidden="true"></div>
-  <div class="pv-live-clock" id="pv-live-clock">00:00:00</div>
+  <div class="pv-live-col-left">
+    <span class="pv-on-air">ON AIR</span>
+  </div>
+  <div class="pv-live-col-mid">
+    <div class="pv-live-exec-lbl">NOW EXECUTING</div>
+    <div class="pv-live-cycle" id="pv-live-cycle">CYCLE — · —:——</div>
+    <div class="pv-live-last-evt">
+      <span class="pv-live-pulse-dot" aria-hidden="true"></span>
+      <span class="pv-live-ticker" id="pv-live-ticker" aria-hidden="true"></span>
+    </div>
+  </div>
+  <div class="pv-live-col-right">
+    <span class="pv-live-stat-lbl">CLOCK</span>
+    <span class="pv-live-clock" id="pv-live-clock">00:00:00</span>
+  </div>
 </div>
 
 <div class="mc-container">
@@ -2457,12 +2473,26 @@ ${(() => {
     .map((entry) => {
       const agentColor = agentColors[entry.agent] || 'var(--mc-muted)';
       const timeFormatted = formatLogTime(entry.time);
-      return `      <div class="mc-evt-row">
-        <span class="mc-evt-time">${esc(timeFormatted)}</span>
-        <div class="mc-evt-body">
-          <span class="mc-evt-agent" style="color:${agentColor}">${esc(entry.agent || 'System')}</span>
-          <span class="mc-evt-msg">${esc(entry.message || '')}</span>
+      const tagKey = entry.tag || '';
+      const tagLabel =
+        tagKey === 'done'
+          ? 'STORY DONE'
+          : tagKey === 'block'
+            ? 'BLOCKED'
+            : tagKey === 'review'
+              ? 'REVIEW'
+              : tagKey === 'start'
+                ? 'STARTED'
+                : tagKey
+                  ? tagKey.toUpperCase()
+                  : '';
+      return `      <div class="mc-evt-card">
+        <div class="mc-evt-card-head">
+          <span class="mc-evt-card-agent"><span class="mc-evt-card-dot" style="background:${agentColor}" aria-hidden="true"></span>${esc(entry.agent || 'System')}</span>
+          <span class="mc-evt-time">${esc(timeFormatted)}</span>
         </div>
+        <div class="mc-evt-msg">${esc(entry.message || '')}</div>
+        ${tagLabel ? `<span class="mc-evt-tag mc-evt-tag-${tagKey}">${tagLabel}</span>` : ''}
       </div>`;
     })
     .join('\n');
