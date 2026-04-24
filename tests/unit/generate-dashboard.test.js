@@ -150,7 +150,7 @@ describe('generate-dashboard.js baseline harness (US-0124)', () => {
     expect(html).toContain('id="about-modal"');
     // The About modal always uses the fixed "Agentic SDLC Dashboard" title
     // regardless of the project name in the config.
-    const titleInModal = new RegExp(`id="about-modal"[\\s\\S]*?<h3>Agentic SDLC Dashboard</h3>`);
+    const titleInModal = new RegExp(`id="about-modal"[\\s\\S]*?<h2 class="pv-about-h2">Agentic SDLC Dashboard</h2>`);
     expect(html).toMatch(titleInModal);
   });
 });
