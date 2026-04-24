@@ -442,8 +442,40 @@ function renderTrendsTab(data, options = {}) {
       <div style="height:250px;position:relative"><canvas id="chart-trends-progress"></canvas></div>
     </div>
     <div class="card-elev rounded-lg p-4 anim-stagger" style="--i:1">
-      <div class="chart-header-rule"><span class="display-title">Velocity</span><span class="chart-subtitle">cumulative done points</span></div>
+      <div class="chart-header-rule"><span class="display-title">Velocity</span><span class="chart-subtitle">cumulative done points (burn-up)</span></div>
       <div style="height:250px;position:relative"><canvas id="chart-trends-velocity"></canvas></div>
+      ${(() => {
+        if (!trends || !trends.velocity || trends.velocity.length < 2) return '';
+        const rows = trends.dates
+          .map((d, i) => {
+            const prev = i === 0 ? 0 : trends.velocity[i - 1];
+            const delta = Number((trends.velocity[i] - prev).toFixed(1));
+            return { date: d, cumul: trends.velocity[i], delta };
+          })
+          .filter((r) => r.delta !== 0);
+        const tableRows = rows
+          .map(
+            (r) => `<tr>
+          <td style="font-family:monospace;font-size:11px;white-space:nowrap">${esc(r.date.replace('T', ' ').slice(0, 16))}</td>
+          <td style="text-align:right;font-weight:600">${r.cumul}</td>
+          <td style="text-align:right;color:${r.delta > 0 ? 'var(--ok)' : 'var(--risk)'}">${r.delta > 0 ? '+' : ''}${r.delta}</td>
+        </tr>`,
+          )
+          .join('');
+        return `<details style="margin-top:12px">
+          <summary style="font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;opacity:.6;cursor:pointer;user-select:none">Show data (${rows.length} sessions with progress)</summary>
+          <div style="overflow-x:auto;margin-top:8px">
+            <table style="width:100%;border-collapse:collapse;font-size:12px">
+              <thead><tr style="border-bottom:1px solid var(--clr-border)">
+                <th style="text-align:left;padding:4px 8px;opacity:.6">Snapshot</th>
+                <th style="text-align:right;padding:4px 8px;opacity:.6">Cumul. Pts</th>
+                <th style="text-align:right;padding:4px 8px;opacity:.6">Delta</th>
+              </tr></thead>
+              <tbody>${tableRows}</tbody>
+            </table>
+          </div>
+        </details>`;
+      })()}
     </div>
 
     <div class="chart-supertitle">Cost &amp; Spend</div>
