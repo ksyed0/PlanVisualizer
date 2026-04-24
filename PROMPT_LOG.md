@@ -4,6 +4,19 @@ Timestamped log of every user prompt across all sessions. Append-only. Never edi
 
 ---
 
+## Session 27 — 2026-04-24
+
+| #   | Timestamp            | Prompt                                                                                                                            |
+| --- | -------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | 2026-04-24T16:00:00Z | where is the mockup                                                                                                               |
+| 2   | 2026-04-24T16:15:00Z | For item 2 - The current epic header formatting for column view is preferred (colourful), I prefer that over the plainer redesign |
+| 3   | 2026-04-24T16:30:00Z | Lets use the standard typefaces as defined in the style sheet, across all tabs                                                    |
+| 4   | 2026-04-24T16:45:00Z | For Item 2 we still need to make the Card view epic headers consistent with the column view, on all tabs                          |
+| 5   | 2026-04-24T17:00:00Z | are there any other outstanding changes                                                                                           |
+| 6   | 2026-04-24T17:15:00Z | Lets proceed with the mocked up designs for Items 1 and 3                                                                         |
+
+---
+
 ## Session 26 — 2026-04-22
 
 | #   | Timestamp            | Prompt                                                        |
