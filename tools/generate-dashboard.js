@@ -2604,22 +2604,22 @@ ${phases.map((p, i) => `        <div class="spark-bar ${p.status}" style="height
 </div>
 
 <script>
-function toggleTheme() {
-  const html = document.documentElement;
-  const current = html.getAttribute('data-theme');
-  const next = current === 'light' ? 'dark' : 'light';
-  html.setAttribute('data-theme', next);
-  localStorage.setItem('dashboard-theme', next);
-  updateToggleButton(next);
+// pvSetTheme / openAbout — aliases expected by renderChrome() (shared chrome from render-shell.js)
+function pvSetTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem('dashboard-theme', theme);
+  ['light', 'dark'].forEach(function(t) {
+    var btn = document.getElementById('theme-btn-' + t);
+    if (btn) btn.setAttribute('aria-pressed', String(t === theme));
+  });
 }
-function updateToggleButton(theme) {
-  const btn = document.getElementById('theme-toggle');
-  if (btn) btn.textContent = theme === 'light' ? '🌙 Dark' : '☀️ Light';
+function openAbout() {
+  var m = document.getElementById('about-modal');
+  if (m) m.classList.add('open');
 }
 (function() {
   var saved = localStorage.getItem('dashboard-theme') || 'dark';
-  if (saved === 'light') document.documentElement.setAttribute('data-theme', 'light');
-  updateToggleButton(saved);
+  pvSetTheme(saved);
 })();
 // Shared client-side helpers used by patchDOM() and related rendering code.
 // escH: HTML-escape a value before inserting into innerHTML (prevents XSS).
