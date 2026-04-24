@@ -135,7 +135,7 @@ function renderHierarchyTab(data) {
       <div class="px-3 py-2 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('epic-stories-${jsEsc(epic.id)}','epic-arrow-${jsEsc(epic.id)}')">
         <div class="flex flex-wrap items-center gap-3">
           <span id="epic-arrow-${esc(epic.id)}" class="text-slate-400 text-xs w-3 flex-shrink-0">▼</span>
-          <span class="epic-id-display font-mono text-xs font-bold uppercase"><span class="epic-id-label">EPIC /</span> <span class="epic-id-num" style="color:${accent.text}">${esc(epic.id.replace('EPIC-', ''))}</span></span>
+          <span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${esc(epic.id)}</span>
           ${badge(epic.status)}
           <span class="font-semibold dark:text-slate-100">${esc(epic.title)}</span>
           <span class="text-xs text-slate-500">${esc(epic.releaseTarget)}</span>
@@ -155,7 +155,7 @@ function renderHierarchyTab(data) {
       <div class="epic-block border border-slate-200 dark:border-slate-700 rounded-t-lg px-3 py-2 mb-0 cursor-pointer select-none" style="border-left:4px solid ${accent.border};background:${accent.bg}" onclick="toggleSection('epic-cards-${jsEsc(epic.id)}','epic-card-arrow-${jsEsc(epic.id)}')">
         <div class="flex flex-wrap items-center gap-3">
           <span id="epic-card-arrow-${esc(epic.id)}" class="text-slate-400 text-xs w-3 flex-shrink-0">▶</span>
-          <span class="epic-id-display font-mono text-xs font-bold uppercase"><span class="epic-id-label">EPIC /</span> <span class="epic-id-num" style="color:${accent.text}">${esc(epic.id.replace('EPIC-', ''))}</span></span>
+          <span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${esc(epic.id)}</span>
           ${badge(epic.status)}
           <span class="font-semibold dark:text-slate-100">${esc(epic.title)}</span>
           <span class="text-xs text-slate-500">${esc(epic.releaseTarget)}</span>
@@ -1271,7 +1271,7 @@ function renderCostsTab(data, options = {}) {
         .join('');
       return `<tbody>
     <tr class="border-t-2 border-slate-300 dark:border-slate-600 cursor-pointer select-none anim-stagger" style="--i:${Math.min(epicIdx, 19)};background:${accent.bg}" onclick="toggleSection('${ceid}','${ceid}-arrow')">
-      <td colspan="4" class="px-3 py-2">
+      <td colspan="4" class="px-3 py-2" style="border-left:4px solid ${accent.border}">
         <span id="${ceid}-arrow" class="text-slate-400 text-xs mr-2">▶</span>
         <span class="font-mono text-xs font-bold" style="color:${accent.border}">${epic.id}</span>
         <span class="text-sm font-semibold ml-2 text-slate-700 dark:text-slate-200">${esc(epic.title)}</span>
@@ -1365,7 +1365,7 @@ function renderCostsTab(data, options = {}) {
         .join('');
       return `<tbody>
     <tr class="border-t-2 border-slate-300 dark:border-slate-600 cursor-pointer select-none bug-epic-header" data-epic="${esc(epicId)}" style="background:${accent.bg}" onclick="toggleSection('${jsEsc(bceid)}','${jsEsc(bceid)}-arrow')">
-      <td colspan="6" class="px-3 py-2">
+      <td colspan="6" class="px-3 py-2" style="border-left:4px solid ${accent.border}">
         <span id="${bceid}-arrow" class="text-slate-400 text-xs mr-2">&#9654;</span>
         ${epicId !== '_ungrouped' ? `<span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${epicId}</span>` : ''}
         ${epic ? badge(epic.status) : ''}
@@ -1475,8 +1475,8 @@ function renderCostsTab(data, options = {}) {
       </div>`;
         })
         .join('');
-      return `<div class="mb-6 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden bug-epic-card" data-epic="${esc(epicId)}" style="border-left:4px solid ${accent.border}">
-      <div class="flex items-center gap-2 px-3 py-2 flex-wrap cursor-pointer select-none bug-epic-header" data-epic="${esc(epicId)}" style="background:${accent.bg}" onclick="toggleSection('${jsEsc(bcceid)}','${jsEsc(bcceid)}-arrow')">
+      return `<div class="border-t-2 border-slate-300 dark:border-slate-600 bug-epic-card" data-epic="${esc(epicId)}" style="background:${accent.bg}">
+      <div class="flex items-center gap-2 px-3 py-2 flex-wrap cursor-pointer select-none bug-epic-header" data-epic="${esc(epicId)}" style="border-left:4px solid ${accent.border}" onclick="toggleSection('${jsEsc(bcceid)}','${jsEsc(bcceid)}-arrow')">
         <span id="${bcceid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">▶</span>
         ${epicId !== '_ungrouped' ? `<span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${epicId}</span>` : ''}
         ${epic ? badge(epic.status) : ''}
@@ -1972,10 +1972,10 @@ function renderLessonsTab(data) {
         : epicId === '_ungrouped'
           ? `<span class="italic text-slate-500">No Epic</span>`
           : '';
-      return `<div class="mb-2 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden" style="border-left:4px solid ${accent.border}">
-      <div class="flex flex-wrap items-center gap-3 px-3 py-2 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('${lceid}','${lceid}-arrow')">
+      return `<div class="border-t-2 border-slate-300 dark:border-slate-600" style="background:${accent.bg}">
+      <div class="flex flex-wrap items-center gap-3 px-3 py-2 cursor-pointer select-none" style="border-left:4px solid ${accent.border}" onclick="toggleSection('${lceid}','${lceid}-arrow')">
         <span id="${lceid}-arrow" class="text-slate-400 text-xs w-3 flex-shrink-0">▶</span>
-        ${epicId !== '_ungrouped' ? `<span class="epic-id-display font-mono text-xs font-bold uppercase"><span class="epic-id-label">EPIC /</span> <span class="epic-id-num" style="color:${accent.text}">${epicId.replace('EPIC-', '')}</span></span>` : ''}
+        ${epicId !== '_ungrouped' ? `<span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${epicId}</span>` : ''}
         ${epic ? badge(epic.status) : ''}
         ${titlePart}
         <span class="ml-auto text-xs text-slate-500">${ls.length} lesson${ls.length !== 1 ? 's' : ''}</span>
