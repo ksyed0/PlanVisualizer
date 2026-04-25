@@ -2871,13 +2871,13 @@ Description: Retroactive test case coverage for epics shipped without formal TCs
 US-0149 (EPIC-0021): As a QA lead, I want formal test cases written and executed for EPIC-0008 Trend Analysis & Historical Tracking, so that the trend snapshot and extraction logic is verified against its acceptance criteria.
 Priority: High (P0)
 Estimate: M
-Status: Planned
+Status: Done
 Branch: feature/US-0149-tc-audit-epic-0008
 Acceptance Criteria:
 
-- [ ] AC-0545: Test cases written covering all ACs from US-0047 (snapshot), US-0048 (extraction), US-0049 (trend charts), US-0050 (multi-snapshot dedup)
-- [ ] AC-0546: All written test cases executed and Pass/Fail status recorded in RELEASE_PLAN.md under each TC entry
-- [ ] AC-0547: Any failures result in a logged BUG entry in docs/BUGS.md with severity and reproduction steps
+- [x] AC-0545: Test cases written covering all ACs from US-0047 (snapshot), US-0048 (extraction), US-0049 (trend charts), US-0050 (multi-snapshot dedup)
+- [x] AC-0546: All written test cases executed and Pass/Fail status recorded in RELEASE_PLAN.md under each TC entry
+- [x] AC-0547: Any failures result in a logged BUG entry in docs/BUGS.md with severity and reproduction steps
 ```
 
 ```
