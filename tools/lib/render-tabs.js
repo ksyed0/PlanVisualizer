@@ -2288,7 +2288,7 @@ function renderStatusTab(data) {
     return `<div style="display:flex;gap:3px">${vals
       .map((v, i) => {
         const color = v >= 80 ? 'var(--ok)' : v >= 60 ? 'var(--warn)' : v > 0 ? 'var(--risk)' : 'var(--border)';
-        const tip = dates[i] ? `${dates[i].slice(0, 10)}: ${v.toFixed ? v.toFixed(1) : v}%` : '';
+        const tip = dates[i] ? `${dates[i].slice(0, 10)}: ${v !== null && v !== undefined ? v.toFixed(1) : '?'}%` : '';
         return `<div title="${tip}" style="flex:1;height:22px;border-radius:3px;background:${color};opacity:${v > 0 ? 0.6 + (v / 100) * 0.4 : 0.25}"></div>`;
       })
       .join('')}</div>`;
