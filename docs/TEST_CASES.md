@@ -2989,3 +2989,113 @@ Steps:
    Status: [x] Pass
    Defect Raised: None
    Notes:
+TC-0180: scripts/install.sh §0 detects absent superpowers plugin and prompts Y/N
+Related Story: US-0126
+Related Task:
+Related AC: AC-0435
+Type: Functional
+Preconditions: scripts/install.sh present; environment where ~/.claude/plugins/cache/claude-plugins-official/superpowers/ does not exist
+Steps:
+
+1. Run `ls ~/.claude/plugins/cache/claude-plugins-official/superpowers/ 2>/dev/null || echo absent` to check current state
+2. Run `echo 'Y' | bash scripts/install.sh` to simulate Y response: observe script exits with slash command printed
+3. Run `echo 'N' | bash scripts/install.sh` to simulate N response: observe script continues installation
+   Expected Result: Script detects missing superpowers directory. Prompts "Do you want to install the superpowers plugin? (Y/N)". If Y: prints "/plugin install superpowers@claude-plugins-official" and exits 0. If N: continues with normal installation flow.
+   Actual Result: Superpowers plugin is installed (v5.0.7). Running `echo 'Y' | bash scripts/install.sh` shows "[install] superpowers plugin detected (v5.0.7) ✓" — plugin present path executes correctly. Code inspection of scripts/install.sh lines 18-39 confirms: absent path prompts Y/N; Y branch prints slash command and exits 0; N branch prints skip message and continues.
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: Plugin present in this environment; absent-path verified via code inspection of install.sh §0 block.
+
+---
+
+TC-0181: All 8 docs/agents/\*.md files contain Superpowers Skills section
+Related Story: US-0126
+Related Task:
+Related AC: AC-0436
+Type: Functional
+Preconditions: docs/agents/ directory present with 8 markdown files (DM_AGENT.md, FORGE_AGENT.md, PIXEL_AGENT.md, KEYSTONE_AGENT.md, LENS_AGENT.md, COMPASS_AGENT.md, ARCHITECT_AGENT.md, CONDUCTOR_AGENT.md)
+Steps:
+
+1. Run `grep -l "## Superpowers Skills" docs/agents/*.md | wc -l`
+2. Check output count
+   Expected Result: Output equals 8 (all 8 agent files contain "## Superpowers Skills" header)
+   Actual Result: Command returned 8. All 8 agent markdown files contain the "## Superpowers Skills" section header.
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0182: Each docs/agents/_.md Superpowers Skills section contains conditional skip note
+Related Story: US-0126
+Related Task:
+Related AC: AC-0437
+Type: Functional
+Preconditions: All 8 docs/agents/_.md files exist with Superpowers Skills sections
+Steps:
+
+1. Run `grep -l "If not installed" docs/agents/*.md | wc -l`
+2. Check output count
+   Expected Result: Output equals 8 (all 8 agent files contain "If not installed" conditional note in their Skills section)
+   Actual Result: Command returned 8. All 8 agent files contain the "If not installed" conditional skip note.
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0183: docs/skills-integration.md exists with installation section and full table
+Related Story: US-0126
+Related Task:
+Related AC: AC-0438
+Type: Functional
+Preconditions: docs/ directory present
+Steps:
+
+1. Run `test -f docs/skills-integration.md && echo exists || echo missing`
+2. Run `grep -c "Installation" docs/skills-integration.md` to verify Installation section present
+3. Run `grep "^|" docs/skills-integration.md | wc -l` to count table rows
+   Expected Result: File exists. Contains "Installation" section with instructions (at least 3 lines). Contains multi-row table with 4+ columns (Agent, Skill, Stage, Description) and 8+ data rows.
+   Actual Result: File exists. `grep -c "Installation"` returned 1 (section present). `grep "^|" | wc -l` returned 40 total table rows (24 data rows in the Agent × Skill × Stage Map, plus header and separator rows). All criteria met.
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0184: docs/skills-integration.md skill catalogue lists at least 12 distinct skills
+Related Story: US-0126
+Related Task:
+Related AC: AC-0439
+Type: Functional
+Preconditions: docs/skills-integration.md exists with skill catalogue section
+Steps:
+
+1. Open docs/skills-integration.md and locate "## Skill Catalogue" section
+2. Count distinct skill names (e.g., brainstorming, planning, code-review, etc.) in the catalogue
+   Expected Result: Catalogue lists 12 or more distinct skills with descriptions
+   Actual Result: Skill Catalogue section contains exactly 12 distinct skill entries with descriptions.
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0185: docs/ID_REGISTRY.md AC sequence updated to AC-0441 or higher after US-0126
+Related Story: US-0126
+Related Task:
+Related AC: AC-0440
+Type: Functional
+Preconditions: docs/ID_REGISTRY.md exists
+Steps:
+
+1. Open docs/ID_REGISTRY.md
+2. Locate the AC row in the ID Registry table
+3. Run `grep "AC" docs/ID_REGISTRY.md` to check the AC sequence values
+   Expected Result: AC sequence in ID_REGISTRY.md shows next value ≥ AC-0441, confirming AC-0440 was issued for US-0126.
+   Actual Result: `grep "AC" docs/ID_REGISTRY.md` returned: `| AC | AC-0577 | AC-0576 |`. Next available AC is AC-0577 (last = AC-0576), which is ≥ AC-0441.
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
