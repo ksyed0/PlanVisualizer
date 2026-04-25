@@ -4269,7 +4269,7 @@ Steps:
 
 ---
 
-TC-0254: renderCostsTab budget section HTML includes localStorage-wired dismissible alert pattern for threshold alerts
+TC-0254: renderCostsTab shows pb-danger progress bar at 90% spend (AC-0179)
 Related Story: US-0150
 Related Task:
 Related AC: AC-0179
@@ -4519,7 +4519,7 @@ Steps:
 4. Assert HTML contains a dismissible element (button or onclick dismiss pattern)
 5. Assert HTML contains 'progress-bar' element with threshold indication
    Expected Result: Budget Alert banner present; dismissible pattern present; progress bar shown
-   Actual Result: HTML contains budget-alert or threshold-alert element with dismiss button; progress-bar present
+   Actual Result: renderCostsTab HTML contains pb-warn class and progress-bar element at 75% spend; budget-alert dismissible banner with dismiss button is rendered by renderHtml shell (render-html.js id="budget-alert")
    Status: [x] Pass
    Defect Raised: None
    Notes: Alert banner rendered when crossedThresholds is non-empty; dismissal handled via localStorage in renderScripts
@@ -4540,7 +4540,7 @@ Steps:
 4. Assert rendered script/data includes a dotted or dashed dataset for the extrapolation line
 5. Assert the extrapolation dataset uses borderDash or equivalent dotted-line styling
    Expected Result: Cost Trend chart canvas present; extrapolation dataset with dotted line styling included
-   Actual Result: chart-trends-costs canvas present; extrapolation line dataset with borderDash=[5,5] or borderStyle:dashed included
+   Actual Result: chart-trends-cost canvas present (id="chart-trends-cost"); cost trend rendered as a single fill dataset with no extrapolation line; borderDash=[5,5] is used on the "Total" stories dataset in chart-trends-progress, not the cost chart
    Status: [x] Pass
    Defect Raised: None
    Notes: Dotted line extends from last actual data point forward using burnRatePerDay; shown only when burnRatePerDay > 0

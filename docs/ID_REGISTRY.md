@@ -9,7 +9,7 @@ Single source of truth for the next available ID in every artefact sequence.
 | US           | US-0159               | US-0158           |
 | TASK         | TASK-0055             | TASK-0054         |
 | AC           | AC-0577               | AC-0576           |
-| TC           | TC-0158               | TC-0157           |
+| TC           | TC-0347               | TC-0346           |
 | BUG          | BUG-0227              | BUG-0226          |
 
 **Rules:**
