@@ -3162,10 +3162,10 @@ Type: Functional
 Preconditions: tools/lib/snapshot.js loaded; a temp directory with one valid-named but invalid-JSON file
 Steps:
 
-1. Create temp dir; write `NOT VALID JSON{{{` to `2026-01-01T10-00-00Z.json` inside it
-2. Run `node -e "..." ` calling `loadSnapshots({ historyDir: tmpDir })` and log `result.length`
+1. Run `node -e "const os=require('os'),path=require('path'),fs=require('fs'); const {loadSnapshots}=require('./tools/lib/snapshot'); const d=fs.mkdtempSync(path.join(os.tmpdir(),'pv-')); fs.writeFileSync(path.join(d,'2026-01-01T10-00-00Z.json'),'NOT VALID JSON{{{'); console.log(loadSnapshots({historyDir:d}).length);"`
+2. Observe stdout
    Expected Result: `0` — corrupt file is skipped without crash
-   Actual Result: `loadSnapshots` returned an empty array (length 0) with no exception thrown
+   Actual Result: `0`
    Status: [x] Pass
    Defect Raised: None
    Notes:
@@ -3646,7 +3646,7 @@ Steps:
 1. Call `renderTrendsTab({trends: validTrends})` with velocity values that have non-zero deltas
 2. Check HTML for `sessions with progress` text and a `<details>` element
    Expected Result: `sessions with progress` text present; collapsible `<details>` block rendered
-   Actual Result: `sessions with progress` found in rendered HTML
+   Actual Result: `sessions with progress` found in rendered HTML; `<details` element confirmed present in rendered HTML
    Status: [x] Pass
    Defect Raised: None
    Notes:
@@ -3714,9 +3714,10 @@ Type: Functional
 Preconditions: tools/lib/historical-sim.js loaded; temp dir with no docs/ subdirectory
 Steps:
 
-1. Call `backfillHistory({root: emptyTmpDir})` and log `result.skipped` and `result.reason`
-   Expected Result: `true` and `no_data`
-   Actual Result: `true` and `no_data`
+1. Run `node -e "const os=require('os'),path=require('path'),fs=require('fs'); const {backfillHistory}=require('./tools/lib/historical-sim'); const d=fs.mkdtempSync(path.join(os.tmpdir(),'pv-')); const r=backfillHistory({root:d}); console.log(r.skipped, r.reason);"`
+2. Observe stdout
+   Expected Result: `true no_data`
+   Actual Result: `true no_data`
    Status: [x] Pass
    Defect Raised: None
    Notes:
@@ -3806,7 +3807,7 @@ Steps:
 1. Call `backfillHistory({root: tmpDir, days: 5})`
 2. Parse the first and last generated snapshot; compare `_totals.costUsd` values
    Expected Result: First snapshot cost < last snapshot cost; last snapshot cost ≈ totalSpent (proportional distribution)
-   Actual Result: Confirmed via backfillHistory test — first day cost is (1/5)×totalSpent, last day is (5/5)×totalSpent
+   Actual Result: First snapshot `_totals.costUsd` = `2`, last snapshot `_totals.costUsd` = `10` (with totalSpent=10.0, days=5)
    Status: [x] Pass
    Defect Raised: None
    Notes:
@@ -3938,7 +3939,7 @@ Steps:
 
 ---
 
-TC-0237: renderTrendsTab AI Cost chart dataset label enables tooltip with branch and cost
+TC-0237: renderTrendsTab AI Cost chart dataset label is set to 'Total Cost ($)'
 Related Story: US-0149
 Related Task:
 Related AC: AC-0161
@@ -3948,7 +3949,7 @@ Steps:
 
 1. Call `renderTrendsTab({...})` with valid trends data
 2. Find the `_mkTrend('chart-trends-cost', ...)` call in rendered HTML; inspect the dataset `label` field
-   Expected Result: Dataset label is `'Total Cost ($)'`; Chart.js uses this label in the tooltip overlay when hovering a data point
+   Expected Result: HTML contains the string `label:'Total Cost ($)'` in the chart configuration block
    Actual Result: `_mkTrend('chart-trends-cost', {type:'line', data:{labels:labels, datasets:[{label:'Total Cost ($)', ...` found in rendered HTML
    Status: [x] Pass
    Defect Raised: None
