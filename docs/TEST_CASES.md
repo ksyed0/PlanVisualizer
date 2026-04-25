@@ -2582,3 +2582,410 @@ Steps:
    Status: [x] Pass
    Defect Raised: None
    Notes:
+
+---
+
+TC-0158: Search input renders in sidebar with correct placeholder text
+Related Story: US-0151
+Related Task:
+Related AC: AC-0208
+Type: Functional
+Preconditions: tools/lib/render-html.js; renderHtml called with minimal valid data
+Steps:
+
+1. Call renderHtml() with sample data containing at least one story
+2. Check the returned HTML string for an input element with placeholder containing "Search stories, bugs, lessons..."
+   Expected Result: HTML contains an input with placeholder="Search stories, bugs, lessons..."
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0159: Search index includes story ID, title, and description fields
+Related Story: US-0151
+Related Task:
+Related AC: AC-0209
+Type: Functional
+Preconditions: tools/lib/search-index.js; buildSearchIndex called with data containing stories, bugs, and lessons
+Steps:
+
+1. Call buildSearchIndex({ stories: [{ id: 'US-0001', title: 'Test story', description: 'A description', epicId: 'EPIC-0001' }], bugs: [], lessons: [] })
+2. Inspect the returned array for an entry with type 'story' and fields id, title
+   Expected Result: Array contains an entry with type='story', id='US-0001', title='Test story'
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0160: Search index includes bug ID, title, and severity fields
+Related Story: US-0151
+Related Task:
+Related AC: AC-0209
+Type: Functional
+Preconditions: tools/lib/search-index.js; buildSearchIndex called with data containing bugs
+Steps:
+
+1. Call buildSearchIndex({ stories: [], bugs: [{ id: 'BUG-0001', title: 'A bug', severity: 'High', relatedStory: 'US-0001' }], lessons: [] })
+2. Inspect the returned array for an entry with type 'bug' and fields id, title, severity
+   Expected Result: Array contains entry with type='bug', id='BUG-0001', title='A bug', severity='High'
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0161: Search index includes lesson ID, rule, and context fields
+Related Story: US-0151
+Related Task:
+Related AC: AC-0209
+Type: Functional
+Preconditions: tools/lib/search-index.js; buildSearchIndex called with data containing lessons
+Steps:
+
+1. Call buildSearchIndex({ stories: [], bugs: [], lessons: [{ id: 'L-0001', rule: 'Always escape HTML', context: 'render-html.js' }] })
+2. Inspect the returned array for an entry with type 'lesson' and fields id, rule, context
+   Expected Result: Array contains entry with type='lesson', id='L-0001', rule='Always escape HTML'
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0162: Search dropdown appears on typing and shows max 10 results
+Related Story: US-0151
+Related Task:
+Related AC: AC-0210
+Type: Visual
+Preconditions: plan-status.html opened in browser
+Steps:
+
+1. Open plan-status.html in a browser
+2. Click the search input and type a common term that matches more than 10 entries (e.g., "story")
+3. Observe the dropdown results list
+   Expected Result: Dropdown appears with at most 10 results listed; results appear within 200ms of typing stopping
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0163: Each search result shows type icon, ID, title, and parent context
+Related Story: US-0151
+Related Task:
+Related AC: AC-0211
+Type: Functional
+Preconditions: tools/lib/render-html.js; renderHtml called with stories having epicId set
+Steps:
+
+1. Call renderHtml() with a story that has epicId='EPIC-0001' and id='US-0001', title='Sample'
+2. Check the returned HTML string for search result template elements containing type icon, ID, title, and parent context references
+   Expected Result: Search result markup includes type indicator, item ID, title, and parent epic context (e.g., "in EPIC-0001")
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0164: Clicking a search result navigates to the relevant tab
+Related Story: US-0151
+Related Task:
+Related AC: AC-0212
+Type: Visual
+Preconditions: plan-status.html opened in browser
+Steps:
+
+1. Open plan-status.html in a browser
+2. Type a known story ID (e.g., "US-0001") in the search input
+3. Click the result that appears in the dropdown
+   Expected Result: The dashboard navigates to the Stories/Hierarchy tab and scrolls to or expands the matching item
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0165: Typing a known story ID returns exactly that single result
+Related Story: US-0151
+Related Task:
+Related AC: AC-0213
+Type: Functional
+Preconditions: tools/lib/search-index.js; scoreMatch used with a known ID value
+Steps:
+
+1. Call scoreMatch({ id: 'US-0042', title: 'Some story', rule: '' }, 'us-0042')
+2. Check the returned score
+   Expected Result: scoreMatch returns 4 (exact ID match)
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0166: Typing a known bug ID returns exactly that single result with score 4
+Related Story: US-0151
+Related Task:
+Related AC: AC-0213
+Type: Functional
+Preconditions: tools/lib/search-index.js; scoreMatch used with a bug ID value
+Steps:
+
+1. Call scoreMatch({ id: 'BUG-0015', title: 'Login crash', rule: '' }, 'bug-0015')
+2. Check the returned score
+   Expected Result: scoreMatch returns 4 (exact ID match)
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0167: Result for a known ID is highlighted with a Jump to label
+Related Story: US-0151
+Related Task:
+Related AC: AC-0214
+Type: Visual
+Preconditions: plan-status.html opened in browser
+Steps:
+
+1. Open plan-status.html in a browser
+2. Type a known story ID (e.g., "US-0001") that exists in the data
+3. Observe the dropdown result entry
+   Expected Result: The result entry shows a "Jump to" label or highlighted indicator distinguishing it as a direct ID match
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0168: Pressing Enter with a valid ID navigates directly to the item
+Related Story: US-0151
+Related Task:
+Related AC: AC-0215
+Type: Visual
+Preconditions: plan-status.html opened in browser
+Steps:
+
+1. Open plan-status.html in a browser
+2. Type a known story ID (e.g., "US-0001") in the search input
+3. Press the Enter key without clicking the result
+   Expected Result: Dashboard navigates directly to the item as if the result was clicked
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0169: Invalid or unknown IDs show "No results found" message
+Related Story: US-0151
+Related Task:
+Related AC: AC-0216
+Type: Functional
+Preconditions: tools/lib/render-html.js; renderHtml called with standard data
+Steps:
+
+1. Call renderHtml() with sample data
+2. Check the returned HTML string for a "no results" element or text (e.g., "No results found")
+   Expected Result: HTML contains a "No results found" element or equivalent message shown when search yields no matches
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0170: Partial term fuzzy matches returns non-zero score for relevant entry
+Related Story: US-0151
+Related Task:
+Related AC: AC-0217
+Type: Functional
+Preconditions: tools/lib/search-index.js; scoreMatch used with a partial term
+Steps:
+
+1. Call scoreMatch({ id: 'US-0001', title: 'story board', rule: '' }, 'stor')
+2. Check the returned score
+   Expected Result: scoreMatch returns score >= 2 (substring or starts-with match on 'stor' within 'story')
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0171: Results are sorted by relevance score descending (exact > starts-with > contains)
+Related Story: US-0151
+Related Task:
+Related AC: AC-0218
+Type: Functional
+Preconditions: tools/lib/search-index.js; buildSearchIndex and scoreMatch used together
+Steps:
+
+1. Build index with three entries: one whose id exactly matches query, one whose title starts with query, one that only contains query as substring
+2. Score all three entries for the same query and sort by score descending
+   Expected Result: Entry with exact ID match (score 4) ranks first; starts-with (score 3) ranks second; substring (score 2) ranks third
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0172: Matched text portions are highlighted in search results
+Related Story: US-0151
+Related Task:
+Related AC: AC-0219
+Type: Visual
+Preconditions: plan-status.html opened in browser
+Steps:
+
+1. Open plan-status.html in a browser
+2. Type a partial term (e.g., "stor") in the search input
+3. Observe the matched text in the dropdown results
+   Expected Result: The matching portion of each result title is wrapped in a <strong> or highlighted element (e.g., "<strong>stor</strong>y")
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0173: Last 5 unique queries are stored in localStorage under recentSearches
+Related Story: US-0151
+Related Task:
+Related AC: AC-0220
+Type: Visual
+Preconditions: plan-status.html opened in browser; localStorage accessible
+Steps:
+
+1. Open plan-status.html in a browser
+2. Perform 6 distinct searches one after another
+3. Open browser DevTools and inspect localStorage key 'recentSearches'
+   Expected Result: localStorage['recentSearches'] contains at most 5 entries, storing the 5 most recent unique queries in order
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0174: Focused empty search input shows Recent Searches section with clickable pills
+Related Story: US-0151
+Related Task:
+Related AC: AC-0221
+Type: Visual
+Preconditions: plan-status.html opened in browser; at least one prior search query stored in localStorage
+Steps:
+
+1. Open plan-status.html in a browser after performing a prior search (so recentSearches has at least one entry)
+2. Click the search input without typing anything
+3. Observe the dropdown that appears
+   Expected Result: A "Recent Searches" section appears with clickable pill elements showing prior search queries
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0175: Clicking a recent search pill populates input and runs the search
+Related Story: US-0151
+Related Task:
+Related AC: AC-0222
+Type: Visual
+Preconditions: plan-status.html opened in browser; prior searches stored in localStorage
+Steps:
+
+1. Open plan-status.html and click the search input while empty
+2. Click one of the recent search pills shown in the dropdown
+3. Observe the search input value and search results
+   Expected Result: Search input is populated with the selected recent query and the dropdown shows corresponding results
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0176: Clear button removes all recent searches from localStorage and hides pills
+Related Story: US-0151
+Related Task:
+Related AC: AC-0223
+Type: Visual
+Preconditions: plan-status.html opened in browser; prior searches stored in localStorage
+Steps:
+
+1. Open plan-status.html with at least one recent search stored
+2. Focus the empty search input to show the Recent Searches section
+3. Click the clear (×) button next to the Recent Searches heading
+4. Re-focus the search input while still empty
+   Expected Result: Recent search pills are gone; localStorage['recentSearches'] is empty or removed; dropdown shows no recent searches
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0177: Bugs tab filter bar shows Epic, Status, and Severity dropdowns plus text search
+Related Story: US-0151
+Related Task:
+Related AC: AC-0270
+Type: Functional
+Preconditions: tools/lib/render-html.js; renderHtml called with bugs data
+Steps:
+
+1. Call renderHtml() with sample data containing at least one bug with epicId, status, and severity fields
+2. Check the returned HTML string for filter dropdowns labelled (or with values for) Epic, Status, and Severity plus a text search input in the Bugs tab
+   Expected Result: HTML contains Epic, Status, and Severity filter dropdowns and a text search input within the bugs filter bar
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0178: Traceability and Lessons tabs show shared text search box in filter bar
+Related Story: US-0151
+Related Task:
+Related AC: AC-0271
+Type: Functional
+Preconditions: tools/lib/render-html.js; renderHtml called with lessons and traceability data
+Steps:
+
+1. Call renderHtml() with data containing lessons and stories
+2. Check the returned HTML string for a text search input within the Traceability tab section and the Lessons tab section
+   Expected Result: Both Traceability and Lessons tab sections contain a text search input element in their filter bars
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0179: Filter bar Clear button resets all filters including bug epic and severity dropdowns
+Related Story: US-0151
+Related Task:
+Related AC: AC-0272
+Type: Functional
+Preconditions: tools/lib/render-html.js; renderHtml called with bugs data containing epic and severity values
+Steps:
+
+1. Call renderHtml() with bug data
+2. Check the returned HTML for a Clear button (or reset control) within the bugs filter bar
+3. Verify that the HTML/JS wires the Clear button to reset Epic, Status, Severity dropdowns and the text search input
+   Expected Result: HTML contains a Clear/reset button in the bugs filter bar that targets Epic, Status, and Severity dropdowns as well as the text search field
+   Actual Result:
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:

@@ -2897,13 +2897,13 @@ Acceptance Criteria:
 US-0151 (EPIC-0021): As a QA lead, I want formal test cases written and executed for EPIC-0011 Search, so that the client-side search index and filtering logic is verified.
 Priority: Medium (P1)
 Estimate: S
-Status: Planned
+Status: Done
 Branch: feature/US-0151-tc-audit-epic-0011
 Acceptance Criteria:
 
-- [ ] AC-0551: Test cases written covering all ACs from EPIC-0011 stories (search index build, filter bar, result highlighting)
-- [ ] AC-0552: All written test cases executed and Pass/Fail status recorded
-- [ ] AC-0553: Any failures result in a logged BUG entry in docs/BUGS.md
+- [x] AC-0551: Test cases written covering all ACs from EPIC-0011 stories (search index build, filter bar, result highlighting)
+- [x] AC-0552: All written test cases executed and Pass/Fail status recorded
+- [x] AC-0553: Any failures result in a logged BUG entry in docs/BUGS.md
 ```
 
 ```
