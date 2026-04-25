@@ -117,19 +117,22 @@ Branch name in `AI_COST_LOG.md` row must exactly match `Branch:` field in story 
 
 ---
 
-## Project Completion Status (as of 2026-04-22 Session 25)
+## Project Completion Status (as of 2026-04-24 Session 28)
 
-20 EPICs active (EPIC-0010/0014/0015/0016/0017/0019 Done; EPIC-0020 in progress), 147 active stories, 210 bugs.
-Open PRs: #416 (bugfix/BUG-0202-0208-ui-polish → develop) — 12 UI bugs fixed across Sessions 24–25.
-Next IDs: EPIC-0021, US-0148, TASK-0055, AC-0539, TC-0158, BUG-0211.
+22 EPICs (EPIC-0010/0014/0015/0016/0017/0019/0020 Done; EPIC-0022 Planned), 161 active stories, 193 bugs.
+Open PRs: bugfix/hierarchy-hidden-default → develop (Session 28 UI polish + About modal redesign).
+Next IDs: EPIC-0023, US-0162, TASK-0055, AC-0591, TC-0158, BUG-0227.
 
-Key additions (Session 25):
+Key additions (Sessions 26–28):
 
-- `data.agents` added to generate-plan.js data object (loaded from `agents.config.json`) — consumed by About modal agent roster.
-- `classList.add/remove('dark')` added to inline theme-init script (Tailwind darkMode:'class' requires it — BUG-0190 fully resolved).
-- All view-toggle functions (setCostsView, setBugsView, setLessonsView) migrated from inline styles to `classList.toggle('active-view', …)`.
-- Lessons tab epic headers now match Bugs tab format across column and card views.
-- US-0147 (EPIC-0020): Agent Workload widget to read from sdlc-status.json — added as Planned.
+- EPIC-0020 Done (cross-dashboard redesign, OKLCH theme, CSS tokens).
+- EPIC-0022 created (Analytics & Charting): US-0159 Velocity Chart (Planned), US-0160 Remove Tailwind (Planned), US-0161 About modal redesign (Done).
+- `renderAboutModal(aboutData)` in `render-html.js` — shared function for both dashboards. CSS uses `pv-about-*` classes with `var(--clr-*, var(--brand-*))` fallback chains. No Tailwind, no hex literals.
+- About modal layout: full-width 400px hero image → title + tagline inline → 3×3 roster grid → repo link + attribution row → meta section.
+- `openAbout()`/`closeAbout()` in render-scripts.js target `id="about-modal"` with `.open` class (harmonised with agentic pattern).
+- `generate-dashboard.js` must define `pvSetTheme()`, `openAbout()`, and `closeAbout()` — all called from shared `renderChrome()` output.
+- `#${buildNumber}` in modal HTML triggers the AC-0498 hex-literal test — use `r${buildNumber}` instead.
+- EPIC_ACCENT_COLORS in render-tabs.js must always use `% EPIC_ACCENT_COLORS.length` — crashes without modulo when epicIdx ≥ 8.
 
 Architecture decision: `Assignee:` field in RELEASE_PLAN.md stories is not meaningful for the multi-agent pipeline. Agent Workload widget should read from `docs/sdlc-status.json` instead.
 
@@ -138,7 +141,7 @@ Architecture decision: `Assignee:` field in RELEASE_PLAN.md stories is not meani
 ## Coverage Thresholds
 
 Jest coverage gate: 80% statements (global).
-Current coverage (2026-04-22 Session 25): ~93% statements, ~80% branches, ~94% functions. 1164 tests, 48 suites.
+Current coverage (2026-04-24 Session 28): 638 tests, 26 suites, all passing. Statement coverage above 80% gate.
 
 ---
 
