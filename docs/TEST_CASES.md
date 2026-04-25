@@ -4839,6 +4839,185 @@ Steps:
 
 ---
 
+TC-0282: normalizeBranch returns feature branch unchanged
+Related Story: US-0158
+Related Task:
+Related AC: AC-0572
+Type: Functional
+Preconditions: parse-cost-log.js exports normalizeBranch
+Steps:
+
+1. Call normalizeBranch('feature/US-0147-workload-widget', gitLog) where gitLog has feature branch entries
+2. Check the return value
+   Expected Result: Returns 'feature/US-0147-workload-widget' unchanged — non-claude/\* branches are passed through
+   Actual Result: Returns 'feature/US-0147-workload-widget' unchanged — confirmed by unit test
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0283: normalizeBranch maps claude/\* branch to nearest feature branch by date
+Related Story: US-0158
+Related Task:
+Related AC: AC-0572
+Type: Functional
+Preconditions: parse-cost-log.js exports normalizeBranch; gitLog has feature branch entries with timestamps
+Steps:
+
+1. Call normalizeBranch('claude/elastic-greider-52b5b1', gitLog, '2026-04-14T12:00:00Z')
+2. gitLog entry for feature/US-0147-workload-widget has date '2026-04-14T10:00:00Z'
+   Expected Result: Returns 'feature/US-0147-workload-widget' — closest by timestamp delta
+   Actual Result: Returns 'feature/US-0147-workload-widget' — confirmed by unit test
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0284: normalizeBranch maps second claude/\* branch to correct nearest feature branch
+Related Story: US-0158
+Related Task:
+Related AC: AC-0572
+Type: Functional
+Preconditions: parse-cost-log.js exports normalizeBranch; gitLog has two feature branch entries on different dates
+Steps:
+
+1. Call normalizeBranch('claude/gifted-johnson-5e162a', gitLog, '2026-04-15T12:00:00Z')
+2. gitLog entry for feature/US-0073-stakeholder-view has date '2026-04-15T10:00:00Z'
+   Expected Result: Returns 'feature/US-0073-stakeholder-view'
+   Actual Result: Returns 'feature/US-0073-stakeholder-view' — confirmed by unit test
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0285: normalizeBranch returns original branch when gitLog is empty
+Related Story: US-0158
+Related Task:
+Related AC: AC-0572
+Type: Edge Case
+Preconditions: parse-cost-log.js exports normalizeBranch
+Steps:
+
+1. Call normalizeBranch('claude/some-branch', []) with empty gitLog array
+   Expected Result: Returns 'claude/some-branch' — no candidates to match against
+   Actual Result: Returns 'claude/some-branch' — confirmed by unit test
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0286: normalizeBranch returns original branch for main (non-claude/\* pattern)
+Related Story: US-0158
+Related Task:
+Related AC: AC-0572
+Type: Edge Case
+Preconditions: parse-cost-log.js exports normalizeBranch
+Steps:
+
+1. Call normalizeBranch('main', gitLog) where gitLog has entries
+   Expected Result: Returns 'main' unchanged — only claude/\* prefix triggers mapping
+   Actual Result: Returns 'main' unchanged — confirmed by unit test
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0287: backfillUnattributed rewrites claude/_ branch rows to nearest feature branch
+Related Story: US-0158
+Related Task:
+Related AC: AC-0573
+Type: Functional
+Preconditions: parse-cost-log.js exports backfillUnattributed; input rows include a claude/_ branch entry
+Steps:
+
+1. Call backfillUnattributed(rows, gitLog) with rows containing sess_004 on claude/elastic-greider-52b5b1
+2. Check the returned row for sess_004
+   Expected Result: sess_004 row has branch='feature/US-0147-workload-widget' and backfilled=true
+   Actual Result: Confirmed by unit test — branch rewritten, backfilled flag set
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0288: backfillUnattributed leaves known feature branch rows unchanged
+Related Story: US-0158
+Related Task:
+Related AC: AC-0573
+Type: Functional
+Preconditions: parse-cost-log.js exports backfillUnattributed; input rows include a feature/\* branch entry
+Steps:
+
+1. Call backfillUnattributed(rows, gitLog) with rows containing sess_005 on feature/US-0001-known
+2. Check the returned row for sess_005
+   Expected Result: sess_005 row has branch='feature/US-0001-known' and backfilled is undefined
+   Actual Result: Confirmed by unit test — feature/\* rows returned unchanged with no backfilled property
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0289: backfillUnattributed returns count of backfilled rows when returnCount option set
+Related Story: US-0158
+Related Task:
+Related AC: AC-0573
+Type: Functional
+Preconditions: parse-cost-log.js exports backfillUnattributed
+Steps:
+
+1. Call backfillUnattributed(rows, gitLog, { returnCount: true }) with 1 claude/_ row and 1 feature/_ row
+   Expected Result: Returns { rows, count: 1 }
+   Actual Result: Confirmed by unit test — count=1 matches single claude/\* row
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0290: parseCostLog correctly parses claude/_ branch names from fixture rows
+Related Story: US-0158
+Related Task:
+Related AC: AC-0572
+Type: Functional
+Preconditions: AI_COST_LOG.md fixture contains sess_004 and sess_005 with claude/_ branches
+Steps:
+
+1. Read fixture from tests/fixtures/AI_COST_LOG.md
+2. Call parseCostLog(fixture) and inspect rows 4 and 5
+   Expected Result: rows[3].branch='claude/elastic-greider-52b5b1'; rows[4].branch='claude/gifted-johnson-5e162a'
+   Actual Result: Confirmed — parseCostLog correctly captures claude/\* branch names
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0291: LESSONS.md contains L-0032 entry for worktree branch attribution lesson
+Related Story: US-0158
+Related Task:
+Related AC: AC-0576
+Type: Functional
+Preconditions: docs/LESSONS.md exists in the repository
+Steps:
+
+1. Search docs/LESSONS.md for 'L-0032'
+2. Verify the entry describes the worktree branch naming gap and the normalizeBranch fix
+   Expected Result: L-0032 section exists; mentions claude/\* pattern, normalizeBranch, and prevention via capture-cost.js
+   Actual Result: L-0032 added with full context, fix description, and prevention note
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+---
+
 ## EPIC-0019 Cycle History & Agentic Dashboard — TC-0288 through TC-0334
 
 ---
@@ -5430,9 +5609,10 @@ Steps:
 1. Run `grep "coverage --\|coverage.*percent\|Circuit.*percent\|coverage.*Circuit" docs/agents/DM_AGENT.md | head -5`
 2. Confirm coverage command documented in Test phase exit checklist
    Expected Result: coverage command with --percent documented in Test-phase exit section of DM_AGENT.md
-   Actual Result: `| Coverage             | \`node tools/update-sdlc-status.js coverage --agent Circuit --percent 90.82\` |`Status: [x] Pass
-Defect Raised: None
-Notes: DM_AGENT.md includes`node tools/update-sdlc-status.js coverage --agent Circuit --percent <pct>` in Test phase exit
+   Actual Result: `| Coverage             | \`node tools/update-sdlc-status.js coverage --agent Circuit --percent 90.82\` |`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: DM_AGENT.md includes `node tools/update-sdlc-status.js coverage --agent Circuit --percent <pct>` in Test phase exit
 
 ---
 

@@ -1,7 +1,13 @@
 'use strict';
 const path = require('path');
 const fs = require('fs');
-const { parseCostLog, deduplicateSessions, aggregateCostByBranch } = require('../../tools/lib/parse-cost-log');
+const {
+  parseCostLog,
+  deduplicateSessions,
+  aggregateCostByBranch,
+  normalizeBranch,
+  backfillUnattributed,
+} = require('../../tools/lib/parse-cost-log');
 
 const fixture = fs.readFileSync(path.join(__dirname, '../fixtures/AI_COST_LOG.md'), 'utf8');
 
@@ -11,7 +17,7 @@ describe('parseCostLog', () => {
     rows = parseCostLog(fixture);
   });
 
-  it('parses 3 rows', () => expect(rows).toHaveLength(3));
+  it('parses 5 rows', () => expect(rows).toHaveLength(5));
   it('parses date', () => expect(rows[0].date).toBe('2026-03-09'));
   it('parses sessionId', () => expect(rows[0].sessionId).toBe('sess_001'));
   it('parses branch', () => expect(rows[0].branch).toBe('main'));
@@ -73,5 +79,80 @@ describe('aggregateCostByBranch', () => {
     // sess_001 appears twice — only the last (0.50) should be counted, not 0.42 + 0.50
     expect(a['main'].costUsd).toBeCloseTo(0.5);
     expect(a['main'].sessions).toBe(1);
+  });
+});
+
+describe('normalizeBranch', () => {
+  const gitLog = [
+    { sha: 'abc1234', date: '2026-04-14T10:00:00Z', branch: 'feature/US-0147-workload-widget' },
+    { sha: 'def5678', date: '2026-04-15T10:00:00Z', branch: 'feature/US-0073-stakeholder-view' },
+  ];
+
+  it('returns feature branch unchanged', () => {
+    expect(normalizeBranch('feature/US-0147-workload-widget', gitLog)).toBe('feature/US-0147-workload-widget');
+  });
+
+  it('maps claude/* branch to nearest feature branch by date', () => {
+    expect(normalizeBranch('claude/elastic-greider-52b5b1', gitLog, '2026-04-14T12:00:00Z')).toBe(
+      'feature/US-0147-workload-widget',
+    );
+  });
+
+  it('maps second claude/* branch to its nearest feature branch', () => {
+    expect(normalizeBranch('claude/gifted-johnson-5e162a', gitLog, '2026-04-15T12:00:00Z')).toBe(
+      'feature/US-0073-stakeholder-view',
+    );
+  });
+
+  it('returns original branch when no gitLog provided', () => {
+    expect(normalizeBranch('claude/some-branch', [])).toBe('claude/some-branch');
+  });
+
+  it('returns original branch for main', () => {
+    expect(normalizeBranch('main', gitLog)).toBe('main');
+  });
+});
+
+describe('backfillUnattributed', () => {
+  const rows = [
+    {
+      date: '2026-04-14',
+      sessionId: 'sess_004',
+      branch: 'claude/elastic-greider-52b5b1',
+      inputTokens: 35000,
+      outputTokens: 9000,
+      cacheReadTokens: 6000,
+      costUsd: 0.31,
+    },
+    {
+      date: '2026-04-15',
+      sessionId: 'sess_005',
+      branch: 'feature/US-0001-known',
+      inputTokens: 10000,
+      outputTokens: 2000,
+      cacheReadTokens: 1000,
+      costUsd: 0.09,
+    },
+  ];
+
+  const gitLog = [{ sha: 'abc1', date: '2026-04-14T08:00:00Z', branch: 'feature/US-0147-workload-widget' }];
+
+  it('rewrites claude/* branch to nearest feature branch', () => {
+    const result = backfillUnattributed(rows, gitLog);
+    const backfilled = result.find((r) => r.sessionId === 'sess_004');
+    expect(backfilled.branch).toBe('feature/US-0147-workload-widget');
+    expect(backfilled.backfilled).toBe(true);
+  });
+
+  it('leaves known feature branches unchanged', () => {
+    const result = backfillUnattributed(rows, gitLog);
+    const unchanged = result.find((r) => r.sessionId === 'sess_005');
+    expect(unchanged.branch).toBe('feature/US-0001-known');
+    expect(unchanged.backfilled).toBeUndefined();
+  });
+
+  it('returns a count of backfilled rows', () => {
+    const { count } = backfillUnattributed(rows, gitLog, { returnCount: true });
+    expect(count).toBe(1);
   });
 });
