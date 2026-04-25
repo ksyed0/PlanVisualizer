@@ -25,7 +25,7 @@ function parseCostLog(markdown) {
 const WORKTREE_BRANCH_RE = /^claude\//;
 
 function normalizeBranch(branch, gitLog, sessionDate) {
-  if (!WORKTREE_BRANCH_RE.test(branch)) return branch;
+  if (branch && !WORKTREE_BRANCH_RE.test(branch)) return branch;
   if (!gitLog || gitLog.length === 0) return branch;
   if (!sessionDate) return branch;
 
@@ -48,7 +48,8 @@ function normalizeBranch(branch, gitLog, sessionDate) {
 function backfillUnattributed(rows, gitLog, opts = {}) {
   let count = 0;
   const result = rows.map((row) => {
-    if (!WORKTREE_BRANCH_RE.test(row.branch)) return row;
+    const isWorktreeBranch = !row.branch || WORKTREE_BRANCH_RE.test(row.branch);
+    if (!isWorktreeBranch) return row;
     const normalized = normalizeBranch(row.branch, gitLog, row.date + 'T12:00:00Z');
     if (normalized === row.branch) return row;
     count += 1;

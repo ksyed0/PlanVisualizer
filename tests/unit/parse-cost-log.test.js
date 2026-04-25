@@ -155,4 +155,12 @@ describe('backfillUnattributed', () => {
     const { count } = backfillUnattributed(rows, gitLog, { returnCount: true });
     expect(count).toBe(1);
   });
+
+  it('attributes rows with null branch using git log', () => {
+    const nullBranchRows = [{ date: '2026-04-14', branch: null, costUsd: 0.5 }];
+    const gitLogEntry = [{ branch: 'feature/US-0100-foo', date: '2026-04-14' }];
+    const result = backfillUnattributed(nullBranchRows, gitLogEntry);
+    expect(result[0].branch).toBe('feature/US-0100-foo');
+    expect(result[0].backfilled).toBe(true);
+  });
 });

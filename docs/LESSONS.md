@@ -440,7 +440,7 @@ _Learned from BUG-0210 — Lessons and Bugs tabs both have epic group headers, b
 
 ---
 
-## L-0032 — Worktree branches not attributed to stories in AI cost log
+## L-0044 — Worktree branches not attributed to stories in AI cost log
 
 **Context:** Claude Code auto-names worktree branches as `claude/<slug>` (e.g. `claude/elastic-greider-52b5b1`). These names don't match any `feature/US-XXXX` branch in the cost log, so all worktree session costs land in the unattributed pool and get diluted across all stories proportionally rather than attributed correctly.
 
