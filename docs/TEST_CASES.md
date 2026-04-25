@@ -4839,7 +4839,7 @@ Steps:
 
 ---
 
-TC-0282: normalizeBranch returns feature branch unchanged
+TC-0335: normalizeBranch returns feature branch unchanged
 Related Story: US-0158
 Related Task:
 Related AC: AC-0572
@@ -4857,7 +4857,7 @@ Steps:
 
 ---
 
-TC-0283: normalizeBranch maps claude/\* branch to nearest feature branch by date
+TC-0336: normalizeBranch maps claude/\* branch to nearest feature branch by date
 Related Story: US-0158
 Related Task:
 Related AC: AC-0572
@@ -4875,7 +4875,7 @@ Steps:
 
 ---
 
-TC-0284: normalizeBranch maps second claude/\* branch to correct nearest feature branch
+TC-0337: normalizeBranch maps second claude/\* branch to correct nearest feature branch
 Related Story: US-0158
 Related Task:
 Related AC: AC-0572
@@ -4893,7 +4893,7 @@ Steps:
 
 ---
 
-TC-0285: normalizeBranch returns original branch when gitLog is empty
+TC-0338: normalizeBranch returns original branch when gitLog is empty
 Related Story: US-0158
 Related Task:
 Related AC: AC-0572
@@ -4910,7 +4910,7 @@ Steps:
 
 ---
 
-TC-0286: normalizeBranch returns original branch for main (non-claude/\* pattern)
+TC-0339: normalizeBranch returns original branch for main (non-claude/\* pattern)
 Related Story: US-0158
 Related Task:
 Related AC: AC-0572
@@ -4927,7 +4927,7 @@ Steps:
 
 ---
 
-TC-0287: backfillUnattributed rewrites claude/_ branch rows to nearest feature branch
+TC-0340: backfillUnattributed rewrites claude/_ branch rows to nearest feature branch
 Related Story: US-0158
 Related Task:
 Related AC: AC-0573
@@ -4945,7 +4945,7 @@ Steps:
 
 ---
 
-TC-0288: backfillUnattributed leaves known feature branch rows unchanged
+TC-0341: backfillUnattributed leaves known feature branch rows unchanged
 Related Story: US-0158
 Related Task:
 Related AC: AC-0573
@@ -4963,7 +4963,7 @@ Steps:
 
 ---
 
-TC-0289: backfillUnattributed returns count of backfilled rows when returnCount option set
+TC-0342: backfillUnattributed returns count of backfilled rows when returnCount option set
 Related Story: US-0158
 Related Task:
 Related AC: AC-0573
@@ -4980,7 +4980,7 @@ Steps:
 
 ---
 
-TC-0290: parseCostLog correctly parses claude/_ branch names from fixture rows
+TC-0343: parseCostLog correctly parses claude/_ branch names from fixture rows
 Related Story: US-0158
 Related Task:
 Related AC: AC-0572
@@ -4998,7 +4998,7 @@ Steps:
 
 ---
 
-TC-0291: LESSONS.md contains L-0032 entry for worktree branch attribution lesson
+TC-0344: LESSONS.md contains L-0032 entry for worktree branch attribution lesson
 Related Story: US-0158
 Related Task:
 Related AC: AC-0576
