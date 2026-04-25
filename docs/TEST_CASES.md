@@ -4998,7 +4998,7 @@ Steps:
 
 ---
 
-TC-0344: LESSONS.md contains L-0032 entry for worktree branch attribution lesson
+TC-0344: LESSONS.md contains L-0044 entry for worktree branch attribution lesson
 Related Story: US-0158
 Related Task:
 Related AC: AC-0576
@@ -5006,10 +5006,10 @@ Type: Functional
 Preconditions: docs/LESSONS.md exists in the repository
 Steps:
 
-1. Search docs/LESSONS.md for 'L-0032'
+1. Search docs/LESSONS.md for 'L-0044'
 2. Verify the entry describes the worktree branch naming gap and the normalizeBranch fix
-   Expected Result: L-0032 section exists; mentions claude/\* pattern, normalizeBranch, and prevention via capture-cost.js
-   Actual Result: L-0032 added with full context, fix description, and prevention note
+   Expected Result: L-0044 section exists; mentions claude/\* pattern, normalizeBranch, and prevention via capture-cost.js
+   Actual Result: L-0044 added with full context, fix description, and prevention note
    Status: [x] Pass
    Defect Raised: None
    Notes:
