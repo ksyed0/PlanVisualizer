@@ -5322,7 +5322,7 @@ Steps:
 1. Run `grep -c "session-start" docs/agents/DM_AGENT.md`
 2. Confirm at least one documented call with session-start command
    Expected Result: Count >= 1
-   Actual Result: `session-start` present in DM_AGENT.md
+   Actual Result: `2`
    Status: [x] Pass
    Defect Raised: None
    Notes: Conductor checklist documents session-start before beginning each epic's story pipeline
@@ -5412,7 +5412,7 @@ Steps:
 1. Run `grep "phase --number\|update-sdlc-status.*phase" docs/agents/DM_AGENT.md | head -5`
 2. Confirm phase command documented with --number and --status flags for both start and complete transitions
    Expected Result: At least two phase command references in DM_AGENT.md (one for in-progress, one for complete)
-   Actual Result: `phase --number` and `phase --status` references confirmed in DM_AGENT.md for both start and complete phase transitions
+   Actual Result: `| Phase transition     | \`node tools/update-sdlc-status.js phase --number 3 --status in-progress|complete\` |`
    Status: [x] Pass
    Defect Raised: None
    Notes: DM_AGENT.md pipeline checklist includes phase command calls at each phase boundary
@@ -5430,10 +5430,9 @@ Steps:
 1. Run `grep "coverage --\|coverage.*percent\|Circuit.*percent\|coverage.*Circuit" docs/agents/DM_AGENT.md | head -5`
 2. Confirm coverage command documented in Test phase exit checklist
    Expected Result: coverage command with --percent documented in Test-phase exit section of DM_AGENT.md
-   Actual Result: `coverage --` reference confirmed in DM_AGENT.md
-   Status: [x] Pass
-   Defect Raised: None
-   Notes: DM_AGENT.md includes `node tools/update-sdlc-status.js coverage --agent Circuit --percent <pct>` in Test phase exit
+   Actual Result: `| Coverage             | \`node tools/update-sdlc-status.js coverage --agent Circuit --percent 90.82\` |`Status: [x] Pass
+Defect Raised: None
+Notes: DM_AGENT.md includes`node tools/update-sdlc-status.js coverage --agent Circuit --percent <pct>` in Test phase exit
 
 ---
 
@@ -5556,7 +5555,7 @@ Steps:
 1. Run `grep -c "Cycles Total\|Success Rate\|Avg Cycle\|Today" docs/dashboard.html`
 2. Confirm all four telemetry tiles present in cycle-telemetry element
    Expected Result: `Cycles Total`, `Today`, `Avg Cycle (min)`, `Success Rate` all rendered in telemetryRow.innerHTML
-   Actual Result: All four tile labels confirmed in dashboard.html patchDOM block (lines 2773-2778)
+   Actual Result: `5`
    Status: [x] Pass
    Defect Raised: None
    Notes: telemetryRow element `id="cycle-telemetry"`; successRate computed as percentage of cycles with testsFailed===0
@@ -5592,7 +5591,7 @@ Steps:
 1. Run `grep -c "cycle-complete" docs/agents/DM_AGENT.md`
 2. Confirm cycle-complete documented as a Conductor post-epic call
    Expected Result: Count >= 1
-   Actual Result: `cycle-complete` present in DM_AGENT.md
+   Actual Result: `2`
    Status: [x] Pass
    Defect Raised: None
    Notes: DM_AGENT.md documents cycle-complete as the final step after all epic stories merge
