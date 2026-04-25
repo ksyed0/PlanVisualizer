@@ -2923,13 +2923,13 @@ Acceptance Criteria:
 US-0153 (EPIC-0021): As a QA lead, I want formal test cases written and executed for EPIC-0014 Follow-Up Changes, so that miscellaneous post-epic improvements are regression-tested.
 Priority: Medium (P1)
 Estimate: M
-Status: Planned
+Status: Done
 Branch: feature/US-0153-tc-audit-epic-0014
 Acceptance Criteria:
 
-- [ ] AC-0557: Test cases written covering all ACs from EPIC-0014 stories (CLI sdlc-status tool, About modal, Agentic dashboard parity)
-- [ ] AC-0558: All written test cases executed and Pass/Fail status recorded
-- [ ] AC-0559: Any failures result in a logged BUG entry in docs/BUGS.md
+- [x] AC-0557: Test cases written covering all ACs from EPIC-0014 stories (CLI sdlc-status tool, About modal, Agentic dashboard parity)
+- [x] AC-0558: All written test cases executed and Pass/Fail status recorded
+- [x] AC-0559: Any failures result in a logged BUG entry in docs/BUGS.md
 ```
 
 ```

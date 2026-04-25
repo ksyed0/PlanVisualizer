@@ -4544,3 +4544,297 @@ Steps:
    Status: [x] Pass
    Defect Raised: None
    Notes: Dotted line extends from last actual data point forward using burnRatePerDay; shown only when burnRatePerDay > 0
+
+---
+
+TC-0266: actions/checkout uses v5 or later in plan-visualizer.yml
+Related Story: US-0153
+Related Task:
+Related AC: AC-0262
+Type: Functional
+Preconditions: .github/workflows/plan-visualizer.yml exists in the repository root
+Steps:
+
+1. Run `grep "actions/checkout" .github/workflows/plan-visualizer.yml`
+2. Verify the pinned SHA comment indicates v5 or later
+   Expected Result: `actions/checkout` line references v5 or later (e.g. `# v6` or `# v5`)
+   Actual Result: `uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6` — v6 confirmed
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: Pinned to full commit SHA with a semver comment per GitHub Actions security best practice
+
+---
+
+TC-0267: actions/setup-node uses v5 or later in plan-visualizer.yml
+Related Story: US-0153
+Related Task:
+Related AC: AC-0263
+Type: Functional
+Preconditions: .github/workflows/plan-visualizer.yml exists in the repository root
+Steps:
+
+1. Run `grep "actions/setup-node" .github/workflows/plan-visualizer.yml`
+2. Verify the pinned SHA comment indicates v5 or later
+   Expected Result: `actions/setup-node` line references v5 or later (e.g. `# v6` or `# v5`)
+   Actual Result: `uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6` — v6 confirmed
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: Both checkout and setup-node upgraded to v6; no Node.js 24-incompatible action versions remain
+
+---
+
+TC-0268: render-html.js is refactored into render-utils, render-shell, render-tabs, render-scripts submodules
+Related Story: US-0153
+Related Task:
+Related AC: AC-0150
+Type: Functional
+Preconditions: tools/lib/ directory present; all render module files checked out
+Steps:
+
+1. Run `ls tools/lib/render-utils.js tools/lib/render-shell.js tools/lib/render-tabs.js tools/lib/render-scripts.js`
+2. Confirm all four files exist
+   Expected Result: All four module files (render-utils.js, render-shell.js, render-tabs.js, render-scripts.js) are present
+   Actual Result: render-utils.js (84 lines), render-shell.js (257 lines), render-tabs.js (2829 lines), render-scripts.js (856 lines) all confirmed present
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: render-html.js is now 490 lines acting as thin orchestrator, down from the original monolith
+
+---
+
+TC-0269: Each render submodule exports a single well-defined interface
+Related Story: US-0153
+Related Task:
+Related AC: AC-0151
+Type: Functional
+Preconditions: Node.js available; all render module files present in tools/lib/
+Steps:
+
+1. Run `node -e "const m = require('./tools/lib/render-utils'); console.log(Object.keys(m).join(', '))"`
+2. Run `node -e "const m = require('./tools/lib/render-shell'); console.log(Object.keys(m).join(', '))"`
+3. Run `node -e "const m = require('./tools/lib/render-scripts'); console.log(Object.keys(m).join(', '))"`
+4. Run `node -e "const m = require('./tools/lib/render-tabs'); console.log(Object.keys(m).join(', '))"`
+5. Confirm each module exports a coherent set of render functions following the existing contract
+   Expected Result: Each module exports named render functions; render-scripts exports renderScripts and renderPrintCSS; render-tabs exports all tab renderer functions (renderHierarchyTab, renderKanbanTab, renderTraceabilityTab, renderStatusTab, renderTrendsTab, renderChartsTab, renderCostsTab, renderBugsTab, renderLessonsTab, renderRecentActivity, renderStakeholderTab)
+   Actual Result: render-utils exports esc, sparkline, BADGE_TONE, badge etc; render-shell exports renderChrome, renderSidebar, renderFilterBar etc; render-scripts exports renderScripts, renderPrintCSS; render-tabs exports renderHierarchyTab, renderKanbanTab, renderTraceabilityTab, renderStatusTab, renderTrendsTab, renderChartsTab, renderCostsTab, renderBugsTab, renderLessonsTab, renderRecentActivity, renderStakeholderTab — all contracts intact
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: render-tabs exports 11 named tab renderers (renderHierarchyTab, renderKanbanTab, etc.)
+
+---
+
+TC-0270: All existing tests pass after render-html.js module split
+Related Story: US-0153
+Related Task:
+Related AC: AC-0152
+Type: Functional
+Preconditions: Node.js and jest installed; all render module files present
+Steps:
+
+1. Run `npx jest --coverage 2>&1 | tail -5`
+2. Confirm no test failures
+   Expected Result: All tests pass; 0 failures
+   Actual Result: 4022 tests passed across 173 suites; 0 failures
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: Test suite expanded significantly since initial split; coverage gate remains green
+
+---
+
+TC-0271: generate-plan.js imports render-html.js orchestrator (not submodules directly)
+Related Story: US-0153
+Related Task:
+Related AC: AC-0153
+Type: Functional
+Preconditions: tools/generate-plan.js and tools/lib/render-html.js exist
+Steps:
+
+1. Run `grep "require" tools/generate-plan.js | grep "render"`
+2. Confirm only render-html.js is imported (no direct imports of render-utils, render-shell, etc.)
+   Expected Result: `require('./lib/render-html')` is the only render-related import in generate-plan.js
+   Actual Result: `const { renderHtml } = require('./lib/render-html');` — only render-html.js imported, no direct submodule imports
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: Orchestrator pattern preserved; render-html.js re-exports badge, BADGE_TONE, sparkline for backward compat
+
+---
+
+TC-0272: update-sdlc-status.js exposes all 10 required commands plus extended handlers
+Related Story: US-0153
+Related Task:
+Related AC: AC-0334
+Type: Functional
+Preconditions: Node.js available; tools/update-sdlc-status.js exists
+Steps:
+
+1. Run `node -e "const {HANDLERS} = require('./tools/update-sdlc-status'); console.log(Object.keys(HANDLERS).join(', '))"`
+2. Confirm agent-start, agent-done, review, test-pass, test-fail, coverage, story-start, story-complete, phase, and log are all present
+   Expected Result: All 10 AC-specified commands present in HANDLERS; --flag parsing supported
+   Actual Result: 16 handlers found: agent-start, agent-done, review, test-pass, test-fail, coverage, story-start, story-complete, epic-start, epic-complete, bug-open, bug-fix, cycle-complete, session-start, phase, log — all 10 required commands present plus 6 extended commands
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: Tool grew beyond original 10 commands to support full pipeline lifecycle; parseArgs also exported
+
+---
+
+TC-0273: update-sdlc-status.js uses atomicReadModifyWriteJson for safe concurrent updates
+Related Story: US-0153
+Related Task:
+Related AC: AC-0335
+Type: Functional
+Preconditions: tools/update-sdlc-status.js and orchestrator/atomic-write.js exist
+Steps:
+
+1. Run `grep "atomicReadModifyWriteJson" tools/update-sdlc-status.js`
+2. Confirm import from orchestrator/atomic-write and usage in the main dispatch path
+   Expected Result: `atomicReadModifyWriteJson` imported from orchestrator/atomic-write and called during command dispatch
+   Actual Result: `const { atomicReadModifyWriteJson, atomicWriteJson } = require('../orchestrator/atomic-write');` at line 55; called at line 390 as `await atomicReadModifyWriteJson(STATUS_PATH, (data) => handler(data, opts))`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: All writes go through the atomic helper; concurrent CLI invocations are safe from JSON corruption
+
+---
+
+TC-0274: phase handler auto-expands phases array when target index does not exist
+Related Story: US-0153
+Related Task:
+Related AC: AC-0336
+Type: Functional
+Preconditions: Node.js available; tools/update-sdlc-status.js loaded
+Steps:
+
+1. Run `node -e "const {HANDLERS} = require('./tools/update-sdlc-status'); const data = {phases:[]}; HANDLERS.phase(data, {number:'3'}); console.log('phases.length:', data.phases.length, 'currentPhase:', data.currentPhase)"`
+2. Confirm phases array was auto-expanded to accommodate index 3 and currentPhase was set
+   Expected Result: phases.length is 3; currentPhase is 3; new phase entries created with default name/agents/deliverables structure
+   Actual Result: phases.length: 3, currentPhase: 3; Phase 1/2/3 entries auto-created with name field set to "Phase N"
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: Auto-expansion fires from the while-loop at line 342; canonical definitions can override these defaults via init-sdlc-status.js
+
+---
+
+TC-0275: log array trimmed to last 200 entries to prevent unbounded growth
+Related Story: US-0153
+Related Task:
+Related AC: AC-0337
+Type: Functional
+Preconditions: Node.js available; tools/update-sdlc-status.js loaded
+Steps:
+
+1. Run `node -e "const {HANDLERS}=require('./tools/update-sdlc-status'); const data={log:[]}; for(let i=0;i<205;i++) HANDLERS.log(data,{message:'entry '+i}); console.log('log.length:', data.log.length)"`
+2. Confirm length does not exceed 200
+   Expected Result: data.log.length === 200 after 205 log calls
+   Actual Result: Log length after 205 entries: 200 — trim enforced correctly; slice(-200) keeps newest entries
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: Trim logic at line 79: `if (data.log.length > 200) data.log = data.log.slice(-200)`
+
+---
+
+TC-0276: DM_AGENT.md updated with update-sdlc-status.js command table
+Related Story: US-0153
+Related Task:
+Related AC: AC-0338
+Type: Functional
+Preconditions: docs/agents/DM_AGENT.md exists
+Steps:
+
+1. Run `grep "update-sdlc-status" docs/agents/DM_AGENT.md | head -5`
+2. Confirm the file contains a command reference table replacing manual JSON-edit instructions
+   Expected Result: DM_AGENT.md references update-sdlc-status.js with a table of pipeline commands
+   Actual Result: Lines 237–250 contain the command table (session-start, epic-start/complete, story-start, agent-start/done, review, test-pass/fail, coverage, phase, log) with full node invocation examples
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: Section at line 237 reads "After each phase transition, use tools/update-sdlc-status.js to update docs/sdlc-status.json"
+
+---
+
+TC-0277: Unit tests cover all command handlers in update-sdlc-status.test.js
+Related Story: US-0153
+Related Task:
+Related AC: AC-0339
+Type: Functional
+Preconditions: tests/unit/update-sdlc-status.test.js exists; jest installed
+Steps:
+
+1. Run `npx jest tests/unit/update-sdlc-status.test.js 2>&1 | tail -3`
+2. Run `wc -l tests/unit/update-sdlc-status.test.js`
+3. Confirm all tests pass
+   Expected Result: All tests pass; test file covers all command handlers
+   Actual Result: 312 tests passed (8 suites); update-sdlc-status.test.js is 516 lines with 39 test/it calls — all handlers covered
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: AC-0339 specified 17 tests minimum; 39 test definitions found showing broader coverage
+
+---
+
+TC-0278: Agentic Dashboard About modal has This Project section with Name, Version, Branch, Build+commit
+Related Story: US-0153
+Related Task:
+Related AC: AC-0340
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists; Node.js available
+Steps:
+
+1. Run `grep -A 6 'meta-supertitle.*This Project' tools/generate-dashboard.js`
+2. Confirm Name, Version, Branch, and Build (with commit SHA) rows are present
+   Expected Result: "This Project" meta section contains meta-row entries for Name, Version, Branch, and Build+commit fields
+   Actual Result: Lines 2583–2587 confirm: meta-supertitle "This Project" with meta-row entries for Name (PROJECT_PKG.name), Version (v${PROJECT_PKG.version}), Branch (GIT_BRANCH), Build (r${BUILD_NUMBER} ${COMMIT_SHA}) — matches plan-status About modal format
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: BUILD_NUMBER and COMMIT_SHA are resolved at generation time from environment/git
+
+---
+
+TC-0279: Agentic Dashboard About modal has Dashboard Tool section identifying Agentic SDLC Dashboard and generation metadata
+Related Story: US-0153
+Related Task:
+Related AC: AC-0341
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `grep -A 6 'meta-supertitle.*Dashboard Tool' tools/generate-dashboard.js`
+2. Confirm View label is "Agentic SDLC Dashboard", Generated by shows tool name+version, Generated at shows timestamp
+   Expected Result: "Dashboard Tool" section has View: "Agentic SDLC Dashboard", Generated by: TOOL_PKG.name + version, Generated at: timestamp
+   Actual Result: Lines 2590–2594 confirm: meta-supertitle "Dashboard Tool" with View: "Agentic SDLC Dashboard", Generated by: ${TOOL_PKG.name} v${TOOL_PKG.version}, Generated at: ${now} — all three fields present
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: TOOL_PKG reads from the PlanVisualizer package.json; `now` is ISO timestamp captured at generation start
+
+---
+
+TC-0280: Agentic Dashboard title and subtitle read from DASH_META (agents.config.json)
+Related Story: US-0153
+Related Task:
+Related AC: AC-0342
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists; agents.config.json configures title and subtitle
+Steps:
+
+1. Run `grep "DASH_META.title\|DASH_META.subtitle" tools/generate-dashboard.js | head -5`
+2. Confirm the modal and page title use DASH_META.title/subtitle not hard-coded strings
+   Expected Result: Modal heading uses `esc(DASH_META.title)` and subtitle uses `esc(DASH_META.subtitle)`
+   Actual Result: Lines 2550–2551 show `<h3>${esc(DASH_META.title)}</h3>` and `<p>${esc(DASH_META.subtitle)}</p>`; page `<title>` at line 422 also uses `${DASH_META.title}`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: DASH_META is populated from agents.config.json via getDashboardMeta() at line 123
+
+---
+
+TC-0281: Author attribution renders as centered footer line when present in agents.config.json
+Related Story: US-0153
+Related Task:
+Related AC: AC-0343
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `grep "DASH_META.author\|meta-attribution" tools/generate-dashboard.js | head -5`
+2. Confirm author attribution is conditionally rendered as a footer line below the metadata sections
+   Expected Result: A conditional block renders `meta-attribution` only when DASH_META.author is truthy; format is "Implemented by {author}[, {authorTitle}]"
+   Actual Result: Line 2595 confirms: `${DASH_META.author ? \`<div class="meta-attribution">Implemented by ${esc(DASH_META.author)}${DASH_META.authorTitle ? ', ' + esc(DASH_META.authorTitle) : ''}</div>\` : ''}` — conditional footer line confirmed
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: authorTitle is appended after a comma only when also present; both fields read from agents.config.json via getDashboardMeta()
+
+---
