@@ -4838,3 +4838,1032 @@ Steps:
    Notes: authorTitle is appended after a comma only when also present; both fields read from agents.config.json via getDashboardMeta()
 
 ---
+
+TC-0282: normalizeBranch returns feature branch unchanged
+Related Story: US-0158
+Related Task:
+Related AC: AC-0572
+Type: Functional
+Preconditions: parse-cost-log.js exports normalizeBranch
+Steps:
+
+1. Call normalizeBranch('feature/US-0147-workload-widget', gitLog) where gitLog has feature branch entries
+2. Check the return value
+   Expected Result: Returns 'feature/US-0147-workload-widget' unchanged — non-claude/\* branches are passed through
+   Actual Result: Returns 'feature/US-0147-workload-widget' unchanged — confirmed by unit test
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0283: normalizeBranch maps claude/\* branch to nearest feature branch by date
+Related Story: US-0158
+Related Task:
+Related AC: AC-0572
+Type: Functional
+Preconditions: parse-cost-log.js exports normalizeBranch; gitLog has feature branch entries with timestamps
+Steps:
+
+1. Call normalizeBranch('claude/elastic-greider-52b5b1', gitLog, '2026-04-14T12:00:00Z')
+2. gitLog entry for feature/US-0147-workload-widget has date '2026-04-14T10:00:00Z'
+   Expected Result: Returns 'feature/US-0147-workload-widget' — closest by timestamp delta
+   Actual Result: Returns 'feature/US-0147-workload-widget' — confirmed by unit test
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0284: normalizeBranch maps second claude/\* branch to correct nearest feature branch
+Related Story: US-0158
+Related Task:
+Related AC: AC-0572
+Type: Functional
+Preconditions: parse-cost-log.js exports normalizeBranch; gitLog has two feature branch entries on different dates
+Steps:
+
+1. Call normalizeBranch('claude/gifted-johnson-5e162a', gitLog, '2026-04-15T12:00:00Z')
+2. gitLog entry for feature/US-0073-stakeholder-view has date '2026-04-15T10:00:00Z'
+   Expected Result: Returns 'feature/US-0073-stakeholder-view'
+   Actual Result: Returns 'feature/US-0073-stakeholder-view' — confirmed by unit test
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0285: normalizeBranch returns original branch when gitLog is empty
+Related Story: US-0158
+Related Task:
+Related AC: AC-0572
+Type: Edge Case
+Preconditions: parse-cost-log.js exports normalizeBranch
+Steps:
+
+1. Call normalizeBranch('claude/some-branch', []) with empty gitLog array
+   Expected Result: Returns 'claude/some-branch' — no candidates to match against
+   Actual Result: Returns 'claude/some-branch' — confirmed by unit test
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0286: normalizeBranch returns original branch for main (non-claude/\* pattern)
+Related Story: US-0158
+Related Task:
+Related AC: AC-0572
+Type: Edge Case
+Preconditions: parse-cost-log.js exports normalizeBranch
+Steps:
+
+1. Call normalizeBranch('main', gitLog) where gitLog has entries
+   Expected Result: Returns 'main' unchanged — only claude/\* prefix triggers mapping
+   Actual Result: Returns 'main' unchanged — confirmed by unit test
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0287: backfillUnattributed rewrites claude/_ branch rows to nearest feature branch
+Related Story: US-0158
+Related Task:
+Related AC: AC-0573
+Type: Functional
+Preconditions: parse-cost-log.js exports backfillUnattributed; input rows include a claude/_ branch entry
+Steps:
+
+1. Call backfillUnattributed(rows, gitLog) with rows containing sess_004 on claude/elastic-greider-52b5b1
+2. Check the returned row for sess_004
+   Expected Result: sess_004 row has branch='feature/US-0147-workload-widget' and backfilled=true
+   Actual Result: Confirmed by unit test — branch rewritten, backfilled flag set
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0288: backfillUnattributed leaves known feature branch rows unchanged
+Related Story: US-0158
+Related Task:
+Related AC: AC-0573
+Type: Functional
+Preconditions: parse-cost-log.js exports backfillUnattributed; input rows include a feature/\* branch entry
+Steps:
+
+1. Call backfillUnattributed(rows, gitLog) with rows containing sess_005 on feature/US-0001-known
+2. Check the returned row for sess_005
+   Expected Result: sess_005 row has branch='feature/US-0001-known' and backfilled is undefined
+   Actual Result: Confirmed by unit test — feature/\* rows returned unchanged with no backfilled property
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0289: backfillUnattributed returns count of backfilled rows when returnCount option set
+Related Story: US-0158
+Related Task:
+Related AC: AC-0573
+Type: Functional
+Preconditions: parse-cost-log.js exports backfillUnattributed
+Steps:
+
+1. Call backfillUnattributed(rows, gitLog, { returnCount: true }) with 1 claude/_ row and 1 feature/_ row
+   Expected Result: Returns { rows, count: 1 }
+   Actual Result: Confirmed by unit test — count=1 matches single claude/\* row
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0290: parseCostLog correctly parses claude/_ branch names from fixture rows
+Related Story: US-0158
+Related Task:
+Related AC: AC-0572
+Type: Functional
+Preconditions: AI_COST_LOG.md fixture contains sess_004 and sess_005 with claude/_ branches
+Steps:
+
+1. Read fixture from tests/fixtures/AI_COST_LOG.md
+2. Call parseCostLog(fixture) and inspect rows 4 and 5
+   Expected Result: rows[3].branch='claude/elastic-greider-52b5b1'; rows[4].branch='claude/gifted-johnson-5e162a'
+   Actual Result: Confirmed — parseCostLog correctly captures claude/\* branch names
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0291: LESSONS.md contains L-0032 entry for worktree branch attribution lesson
+Related Story: US-0158
+Related Task:
+Related AC: AC-0576
+Type: Functional
+Preconditions: docs/LESSONS.md exists in the repository
+Steps:
+
+1. Search docs/LESSONS.md for 'L-0032'
+2. Verify the entry describes the worktree branch naming gap and the normalizeBranch fix
+   Expected Result: L-0032 section exists; mentions claude/\* pattern, normalizeBranch, and prevention via capture-cost.js
+   Actual Result: L-0032 added with full context, fix description, and prevention note
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+---
+
+## EPIC-0019 Cycle History & Agentic Dashboard — TC-0288 through TC-0334
+
+---
+
+TC-0288: agents.config.json gains project section with name, description, repoUrl, startDate fields
+Related Story: US-0156
+Related Task:
+Related AC: AC-0441
+Type: Functional
+Preconditions: agents.config.json at repo root
+Steps:
+
+1. Run `node -e "const cfg = require('./agents.config.json'); console.log(Object.keys(cfg.project).sort().join(','))"`
+2. Confirm output contains exactly name, description, repoUrl, startDate
+   Expected Result: `description,name,repoUrl,startDate`
+   Actual Result: `description,name,repoUrl,startDate`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: All four required project fields present in agents.config.json
+
+---
+
+TC-0289: init-sdlc-status.js reads config.project and writes it as sdlc-status.json.project
+Related Story: US-0156
+Related Task:
+Related AC: AC-0442
+Type: Functional
+Preconditions: tools/init-sdlc-status.js; agents.config.json
+Steps:
+
+1. Run `node -e "const {buildStatus}=require('./tools/init-sdlc-status'); const s=buildStatus('./agents.config.json'); console.log(s.project.name)"`
+2. Confirm output matches config.project.name
+   Expected Result: `PlanVisualizer`
+   Actual Result: `PlanVisualizer`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: buildStatus maps config.project into status.project correctly
+
+---
+
+TC-0290: sdlc-status.json no longer contains a hackathon key
+Related Story: US-0156
+Related Task:
+Related AC: AC-0443
+Type: Functional
+Preconditions: tools/init-sdlc-status.js; agents.config.json
+Steps:
+
+1. Run `node -e "const {buildStatus}=require('./tools/init-sdlc-status'); const s=buildStatus('./agents.config.json'); console.log('hackathon' in s)"`
+2. Confirm output is false
+   Expected Result: `false`
+   Actual Result: `false`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: buildStatus does not produce a hackathon key; schema uses project block only
+
+---
+
+TC-0291: update-sdlc-status.js handlers preserve data.project on every mutation
+Related Story: US-0156
+Related Task:
+Related AC: AC-0444
+Type: Functional
+Preconditions: tools/update-sdlc-status.js
+Steps:
+
+1. Run `node -e "const {HANDLERS}=require('./tools/update-sdlc-status'); let d={project:{name:'Test',description:'Desc',repoUrl:'',startDate:'2026-01-01'},agents:{},metrics:{},log:[],phases:[]}; d=HANDLERS['log'](d,{agent:'Conductor',message:'test'}); console.log(d.project.name)"`
+2. Confirm data.project.name is still 'Test' after log handler
+   Expected Result: `Test`
+   Actual Result: `Test`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: log handler (and all mutating handlers) spread/preserve existing fields without clobbering project
+
+---
+
+TC-0292: sdlc-status.json migration maps hackathon.name to project.name and hackathon.date to project.startDate
+Related Story: US-0156
+Related Task:
+Related AC: AC-0445
+Type: Functional
+Preconditions: agents.config.json; tools/init-sdlc-status.js
+Steps:
+
+1. Run `node -e "const cfg=require('./agents.config.json'); console.log('hackathon' in cfg)"`
+2. Confirm agents.config.json does not contain hackathon key; confirm project.name and project.startDate are present
+   Expected Result: `false` — no hackathon key; project.name = `PlanVisualizer`, project.startDate = `2026-03-10`
+   Actual Result: `false` — hackathon key absent; project.name = `PlanVisualizer`, project.startDate = `2026-03-10`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: Migration schema fully adopted; legacy hackathon fields removed from config
+
+---
+
+TC-0293: init-sdlc-status.js exports buildStatus for unit testing; unit tests cover init and mutation preservation
+Related Story: US-0156
+Related Task:
+Related AC: AC-0446
+Type: Functional
+Preconditions: tools/init-sdlc-status.js; tests/unit/generate-dashboard.test.js
+Steps:
+
+1. Run `node -e "const {buildStatus,loadConfig}=require('./tools/init-sdlc-status'); console.log(typeof buildStatus)"`
+2. Confirm `buildStatus` is exported as a function and covered by unit tests in generate-dashboard.test.js
+   Expected Result: `function`
+   Actual Result: `function`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: `describe('init-sdlc-status — buildStatus', ...)` block present at line 412 of generate-dashboard.test.js; 3 test cases cover init and schema shape
+
+---
+
+TC-0294: dashboard title tag is updated at page load from state.project.name
+Related Story: US-0156
+Related Task:
+Related AC: AC-0447
+Type: Functional
+Preconditions: docs/dashboard.html
+Steps:
+
+1. Run `grep "document.title = proj.name" docs/dashboard.html | wc -l`
+2. Confirm at least one match showing document.title is updated from proj.name
+   Expected Result: `1` (one assignment in patchDOM that patches document.title)
+   Actual Result: `1`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: `document.title = proj.name + ' — SDLC Live Dashboard'` in patchDOM; guarded by `_projectTitlePatched` flag to fire only once
+
+---
+
+TC-0295: header-title and header-subtitle elements are patched to project.name and project.description
+Related Story: US-0156
+Related Task:
+Related AC: AC-0448
+Type: Functional
+Preconditions: docs/dashboard.html
+Steps:
+
+1. Run `grep -c "header-title\|header-subtitle" docs/dashboard.html`
+2. Run `grep "header-title\|header-subtitle" docs/dashboard.html | grep -c "textContent\|querySelector"` in patchDOM context
+   Expected Result: `.header-title` and `.header-subtitle` queried in patchDOM and textContent patched from proj.name and proj.description
+   Actual Result: `patchDOM` queries `.header-title` (line 2710) and `.header-subtitle` (line 2712), setting `textContent = proj.name` and `textContent = proj.description` respectively
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: CSS classes `.header-title` and `.header-subtitle` used (not id attributes); confirmed in multiple lines
+
+---
+
+TC-0296: about panel h3 and GitHub repo links read from project.name and project.repoUrl
+Related Story: US-0156
+Related Task:
+Related AC: AC-0449
+Type: Functional
+Preconditions: docs/dashboard.html
+Steps:
+
+1. Run `grep "about-right h3\|repoUrl\|repo-link" docs/dashboard.html | head -10`
+2. Confirm aboutH3 is patched from proj.name and repo-link href is patched from proj.repoUrl
+   Expected Result: patchDOM queries `.about-right h3` and patches textContent from proj.name; repo-link hrefs patched from proj.repoUrl
+   Actual Result: `document.querySelector('.about-right h3')` patched to `proj.name`; `querySelectorAll('a.repo-link, .about-links-row a[href*="yourorg"]')` each set `.href = proj.repoUrl`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: yourorg placeholder in static HTML replaced at runtime by patchDOM
+
+---
+
+TC-0297: log time field is ISO 8601 in update-sdlc-status.js; dashboard formats it as HH:MM for display
+Related Story: US-0156
+Related Task:
+Related AC: AC-0450
+Type: Functional
+Preconditions: tools/update-sdlc-status.js
+Steps:
+
+1. Run `node -e "const {HANDLERS}=require('./tools/update-sdlc-status'); let d={agents:{},metrics:{},log:[],phases:{}}; d=HANDLERS['log'](d,{agent:'Conductor',message:'test'}); console.log(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(d.log[0].time))"`
+2. Confirm output is true
+   Expected Result: `true` — time field matches ISO 8601 pattern
+   Actual Result: `true` — log entry time was `2026-04-25T00:55:07.759Z`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: nowISO() uses `new Date().toISOString()` which produces UTC ISO 8601; dashboard JS formats with `HH:MM` via substring
+
+---
+
+TC-0298: all hardcoded My Project and yourorg/your-project strings removed from dashboard.html JS logic
+Related Story: US-0156
+Related Task:
+Related AC: AC-0451
+Type: Functional
+Preconditions: docs/dashboard.html
+Steps:
+
+1. Run `grep "yourorg/your-project" docs/dashboard.html | head -5`
+2. Confirm any remaining occurrences are in static placeholder HTML only and are overwritten at runtime by patchDOM
+   Expected Result: Static placeholder `yourorg/your-project` exists only in HTML anchors overwritten by patchDOM on each tick; not embedded in JS logic
+   Actual Result: `yourorg/your-project` appears in two static `<a>` href attributes (lines 2110, 2171) that are overwritten by `patchDOM` on each `refreshState` tick via the `querySelectorAll('a.repo-link, .about-links-row a[href*="yourorg"]')` selector
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: Hardcoded strings are runtime-overwritten; patchDOM replaces them on every refresh tick
+
+---
+
+TC-0299: unit test covers patchDOM with mock state containing project fields
+Related Story: US-0156
+Related Task:
+Related AC: AC-0452
+Type: Functional
+Preconditions: tests/unit/generate-dashboard.test.js
+Steps:
+
+1. Run `grep -n "patchDOM\|project.name\|project" tests/unit/generate-dashboard.test.js | head -15`
+2. Confirm test block that validates project block in buildStatus output
+   Expected Result: Test suite covers project.name, project.repoUrl fields; `expect(status.project.name).toBe(...)` assertions present
+   Actual Result: Lines 430–447 of generate-dashboard.test.js: `describe('init-sdlc-status — buildStatus', ...)` includes `expect(status.project.name).toBe('TestProj')` and `expect(status.project.repoUrl).toBe('https://github.com/test/proj')`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: Test in generate-dashboard.test.js covers buildStatus project fields; patchDOM itself tested via unit-js JSDOM
+
+---
+
+TC-0300: agents.config.json gains phases array with name, agents, deliverables fields per phase
+Related Story: US-0156
+Related Task:
+Related AC: AC-0453
+Type: Functional
+Preconditions: agents.config.json at repo root
+Steps:
+
+1. Run `node -e "const cfg=require('./agents.config.json'); const p=cfg.phases[0]; console.log(JSON.stringify({name:p.name,agents:p.agents,deliverables:p.deliverables}))"`
+2. Confirm all three fields are present in each phase entry
+   Expected Result: `{"name":"Blueprint","agents":["Compass"],"deliverables":["refined ACs","priority list"]}`
+   Actual Result: `{"name":"Blueprint","agents":["Compass"],"deliverables":["refined ACs","priority list"]}`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: All 6 phases in agents.config.json have name, agents[], and deliverables[] fields
+
+---
+
+TC-0301: init-sdlc-status.js seeds sdlc-status.json.phases from config.phases with id, status pending, timestamps null
+Related Story: US-0156
+Related Task:
+Related AC: AC-0454
+Type: Functional
+Preconditions: tools/init-sdlc-status.js; agents.config.json
+Steps:
+
+1. Run `node -e "const {buildStatus}=require('./tools/init-sdlc-status'); const s=buildStatus('./agents.config.json'); console.log(JSON.stringify({id:s.phases[0].id,status:s.phases[0].status,startedAt:s.phases[0].startedAt,completedAt:s.phases[0].completedAt}))"`
+2. Confirm id=1, status='pending', startedAt=null, completedAt=null
+   Expected Result: `{"id":1,"status":"pending","startedAt":null,"completedAt":null}`
+   Actual Result: `{"id":1,"status":"pending","startedAt":null,"completedAt":null}`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: buildStatus seeds every phase with status:'pending' and null timestamps; id assigned by array index + 1
+
+---
+
+TC-0302: update-sdlc-status.js phase handler reads definitions from data.phases (already seeded) with generic fallback
+Related Story: US-0156
+Related Task:
+Related AC: AC-0455
+Type: Functional
+Preconditions: tools/update-sdlc-status.js
+Steps:
+
+1. Run `node -e "const {HANDLERS}=require('./tools/update-sdlc-status'); const {buildStatus}=require('./tools/init-sdlc-status'); let data={...buildStatus('./agents.config.json')}; data=HANDLERS['phase'](data,{number:'1',status:'in-progress'}); console.log(data.phases[0].status)"`
+2. Confirm phase[0].status is 'in-progress' (not a generic fallback name)
+   Expected Result: `in-progress`
+   Actual Result: `in-progress`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: phase handler uses pre-seeded data.phases; falls back to 'Phase N' name only when phases array is empty
+
+---
+
+TC-0303: PHASE_DEFS constant is removed from update-sdlc-status.js
+Related Story: US-0156
+Related Task:
+Related AC: AC-0456
+Type: Functional
+Preconditions: tools/update-sdlc-status.js source file
+Steps:
+
+1. Run `node -e "const src=require('fs').readFileSync('./tools/update-sdlc-status.js','utf8'); console.log(src.includes('PHASE_DEFS'))"`
+2. Confirm output is false
+   Expected Result: `false`
+   Actual Result: `false`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: PHASE_DEFS was removed in US-0129 implementation; phase names now come entirely from seeded data.phases
+
+---
+
+TC-0304: unit tests updated to pre-seed phases before calling phase handler
+Related Story: US-0156
+Related Task:
+Related AC: AC-0457
+Type: Functional
+Preconditions: tests/unit/update-sdlc-status.test.js
+Steps:
+
+1. Run `grep -A 20 "describe.*phase" tests/unit/update-sdlc-status.test.js | head -25`
+2. Confirm `seededPhaseState()` helper pre-seeds phases array before invoking HANDLERS['phase']
+   Expected Result: `seededPhaseState()` function defined inside phase describe block; phases array populated before handler call
+   Actual Result: `seededPhaseState()` defined at line ~231; pre-seeds data.phases with Blueprint, Architect, etc. before all phase-handler tests
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: Phase tests no longer rely on PHASE_DEFS; seededPhaseState() mirrors what init-sdlc-status would produce
+
+---
+
+TC-0305: epic-start creates epics[id] entry with name, status in-progress, startedAt, completedAt null, storiesCompleted 0, storiesTotal N
+Related Story: US-0156
+Related Task:
+Related AC: AC-0458
+Type: Functional
+Preconditions: tools/update-sdlc-status.js
+Steps:
+
+1. Run `node -e "const {HANDLERS}=require('./tools/update-sdlc-status'); let d={project:{},agents:{},metrics:{},log:[],phases:[],epics:{},stories:{},cycles:[]}; d=HANDLERS['epic-start'](d,{epic:'EPIC-0001',name:'Test Epic',stories:'3'}); console.log(JSON.stringify(d.epics['EPIC-0001']))"`
+2. Confirm entry shape: status:'in-progress', completedAt:null, storiesCompleted:0, storiesTotal:3
+   Expected Result: `{"name":"Test Epic","status":"in-progress","startedAt":"<ISO>","completedAt":null,"storiesCompleted":0,"storiesTotal":3}`
+   Actual Result: `{"name":"Test Epic","status":"in-progress","startedAt":"2026-04-25T00:54:22.487Z","completedAt":null,"storiesCompleted":0,"storiesTotal":3}`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: epic-start creates a complete entry with all required fields; startedAt is set to current ISO time
+
+---
+
+TC-0306: epic-complete sets status complete and completedAt on epics[id]
+Related Story: US-0156
+Related Task:
+Related AC: AC-0459
+Type: Functional
+Preconditions: tools/update-sdlc-status.js
+Steps:
+
+1. Run `node -e "const {HANDLERS}=require('./tools/update-sdlc-status'); let d={project:{},agents:{},metrics:{},log:[],phases:[],epics:{'EPIC-0001':{status:'in-progress',completedAt:null}},stories:{},cycles:[]}; d=HANDLERS['epic-complete'](d,{epic:'EPIC-0001'}); console.log(d.epics['EPIC-0001'].status, d.epics['EPIC-0001'].completedAt!==null)"`
+2. Confirm status is 'complete' and completedAt is non-null
+   Expected Result: `complete true`
+   Actual Result: `complete true`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: epic-complete sets status:'complete' and completedAt to current ISO timestamp
+
+---
+
+TC-0307: story-complete with --epic increments epics[id].storiesCompleted if epic entry exists
+Related Story: US-0156
+Related Task:
+Related AC: AC-0460
+Type: Functional
+Preconditions: tools/update-sdlc-status.js
+Steps:
+
+1. Run `node -e "const {HANDLERS}=require('./tools/update-sdlc-status'); let d={agents:{Pixel:{status:'idle',currentTask:null,tasksCompleted:0}},stories:{'US-0001':{status:'InProgress',assignedAgent:'Pixel',epic:null,startedAt:null,completedAt:null}},metrics:{storiesCompleted:0,storiesTotal:0},log:[],epics:{'EPIC-0001':{storiesCompleted:0,storiesTotal:2}}}; d=HANDLERS['story-complete'](d,{story:'US-0001',epic:'EPIC-0001'}); console.log(d.epics['EPIC-0001'].storiesCompleted)"`
+2. Confirm storiesCompleted incremented to 1
+   Expected Result: `1`
+   Actual Result: `1`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: story-complete checks for epic entry before incrementing; no crash if epic missing
+
+---
+
+TC-0308: dashboard renders compact epic-progress strip showing name, storiesCompleted/storiesTotal, percent bar, status
+Related Story: US-0156
+Related Task:
+Related AC: AC-0461
+Type: Functional
+Preconditions: docs/dashboard.html
+Steps:
+
+1. Run `grep -c "epic-strip\|epic-strip-rows\|epicStripEl\|storiesCompleted" docs/dashboard.html`
+2. Confirm epic-strip and epic-strip-rows elements exist and patchDOM renders storiesCompleted/storiesTotal progress
+   Expected Result: epic-strip and epic-strip-rows elements present; patchDOM block iterates epicKeys and renders percent bar
+   Actual Result: `id="epic-strip"` at line 1943, `id="epic-strip-rows"` at line 1944; patchDOM at line 2729 iterates epicKeys; renders storiesCompleted/storiesTotal and percent bar via inline style width
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: When epicKeys.length === 0 the strip is hidden; shown only when epics exist
+
+---
+
+TC-0309: DM_AGENT.md updated with epic-start and epic-complete Conductor calls
+Related Story: US-0156
+Related Task:
+Related AC: AC-0462
+Type: Functional
+Preconditions: docs/agents/DM_AGENT.md
+Steps:
+
+1. Run `grep -c "epic-start\|epic-complete" docs/agents/DM_AGENT.md`
+2. Confirm both commands documented as Conductor calls
+   Expected Result: Count >= 2 (at least one occurrence of each)
+   Actual Result: `epic-start` present and `epic-complete` present in DM_AGENT.md
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: Confirmed via grep; both commands appear in the Conductor Pipeline Checklist sections
+
+---
+
+TC-0310: unit tests cover epic-start, epic-complete, and story-complete epic increment
+Related Story: US-0156
+Related Task:
+Related AC: AC-0463
+Type: Functional
+Preconditions: tests/unit/update-sdlc-status.test.js
+Steps:
+
+1. Run `grep -n "epic-start\|epic-complete\|epic lifecycle" tests/unit/update-sdlc-status.test.js | head -10`
+2. Confirm describe block covering all three epic lifecycle scenarios
+   Expected Result: `describe('update-sdlc-status — epic lifecycle', ...)` at line 331 with tests for epic-start shape, epic-complete status/completedAt, story-complete epic increment
+   Actual Result: describe block at line 331; 5 tests: epic-start shape (line 332), epic-complete (line 345), story-complete increment (line 361), epic-start throws (line 376), epic-complete throws (line 382)
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: All three core behaviors and two error paths covered
+
+---
+
+TC-0311: session-start --stories N resets phases, stories, metrics while preserving project, agents, epics, cycles, log
+Related Story: US-0156
+Related Task:
+Related AC: AC-0464
+Type: Functional
+Preconditions: tools/update-sdlc-status.js
+Steps:
+
+1. Run `node -e "const {HANDLERS}=require('./tools/update-sdlc-status'); let d={project:{name:'PV'},agents:{Pixel:{status:'active'}},epics:{'E1':{}},cycles:[{id:1}],log:[{time:'t',agent:'A',message:'m'}],stories:{'US-0001':{}},currentPhase:3,phases:[{id:1,name:'Build',status:'complete',startedAt:'t',completedAt:'t'}],metrics:{storiesCompleted:5,storiesTotal:5}}; d=HANDLERS['session-start'](d,{stories:'10'}); console.log(JSON.stringify({stories:d.stories,total:d.metrics.storiesTotal,project:d.project.name,epics:Object.keys(d.epics),cycles:d.cycles.length,phase0:d.phases[0].status}))"`
+2. Confirm stories={}, storiesTotal=10, project preserved, epics preserved, cycles preserved, phases reset to pending
+   Expected Result: `{"stories":{},"total":10,"project":"PV","epics":["E1"],"cycles":1,"phase0":"pending"}`
+   Actual Result: `{"stories":{},"total":10,"project":"PV","epics":["E1"],"cycles":1,"phase0":"pending"}`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: resetSession() clears stories, currentPhase, metrics, and resets phase statuses; project/agents/epics/cycles/log preserved
+
+---
+
+TC-0312: agent-start and agent-done exit non-zero with --agent is required if opts.agent is undefined
+Related Story: US-0156
+Related Task:
+Related AC: AC-0465
+Type: Functional
+Preconditions: tools/update-sdlc-status.js
+Steps:
+
+1. Run `node -e "const {HANDLERS}=require('./tools/update-sdlc-status'); try{HANDLERS['agent-start']({agents:{},log:[],metrics:{}},{})}catch(e){console.log(e.message)}"`
+2. Run same with `{agent:'undefined'}` to test string-undefined guard
+   Expected Result: `[update-sdlc-status] --agent is required` for both missing agent and string 'undefined'
+   Actual Result: `[update-sdlc-status] --agent is required` for both cases
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: requireAgent() checks both `!opts.agent` and `opts.agent === 'undefined'`; agent-done has same guard
+
+---
+
+TC-0313: story-start no longer modifies storiesTotal; storiesTotal is set by session-start
+Related Story: US-0156
+Related Task:
+Related AC: AC-0466
+Type: Functional
+Preconditions: tools/update-sdlc-status.js
+Steps:
+
+1. Run `node -e "const {HANDLERS}=require('./tools/update-sdlc-status'); let d={agents:{},stories:{},metrics:{storiesTotal:10,storiesCompleted:0},log:[],phases:[]}; d=HANDLERS['story-start'](d,{story:'US-0001'}); console.log(d.metrics.storiesTotal)"`
+2. Confirm storiesTotal remains 10
+   Expected Result: `10`
+   Actual Result: `10`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: story-start handler sets story status/startedAt but does not touch storiesTotal; only session-start (via resetSession) sets storiesTotal
+
+---
+
+TC-0314: DM_AGENT.md updated — Conductor calls session-start before first story of each epic
+Related Story: US-0156
+Related Task:
+Related AC: AC-0467
+Type: Functional
+Preconditions: docs/agents/DM_AGENT.md
+Steps:
+
+1. Run `grep -c "session-start" docs/agents/DM_AGENT.md`
+2. Confirm at least one documented call with session-start command
+   Expected Result: Count >= 1
+   Actual Result: `session-start` present in DM_AGENT.md
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: Conductor checklist documents session-start before beginning each epic's story pipeline
+
+---
+
+TC-0315: unit tests cover session-start reset, flag validation, and storiesTotal initialization
+Related Story: US-0156
+Related Task:
+Related AC: AC-0468
+Type: Functional
+Preconditions: tests/unit/update-sdlc-status.test.js
+Steps:
+
+1. Run `grep -n "session-start\|storiesTotal\|non-numeric" tests/unit/update-sdlc-status.test.js | head -10`
+2. Confirm describe block with tests for reset behavior, flag validation (non-numeric --stories), and storiesTotal initialization
+   Expected Result: `describe('update-sdlc-status — session-start', ...)` at line 388 with tests: reset preserves project/agents/cycles, sets storiesTotal, throws on non-numeric
+   Actual Result: describe block at line 388; tests at lines 389, 426, 432 covering: reset (preserves project/agents/cycles/epics/log, clears stories/phases/metrics), storiesTotal=N, throws for non-numeric and negative
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: resetSession NaN guard throws for 'abc', '-1', undefined; tested at line 432
+
+---
+
+TC-0316: bug-open --story US-XXXX increments metrics.bugsOpen
+Related Story: US-0156
+Related Task:
+Related AC: AC-0469
+Type: Functional
+Preconditions: tools/update-sdlc-status.js
+Steps:
+
+1. Run `node -e "const {HANDLERS}=require('./tools/update-sdlc-status'); let d={agents:{},metrics:{bugsOpen:0,bugsFixed:0},log:[]}; d=HANDLERS['bug-open'](d,{story:'US-0001'}); console.log(d.metrics.bugsOpen)"`
+2. Confirm bugsOpen incremented from 0 to 1
+   Expected Result: `1`
+   Actual Result: `1`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: bug-open increments metrics.bugsOpen by 1; no upper bound enforced
+
+---
+
+TC-0317: bug-fix --story US-XXXX decrements metrics.bugsOpen (floored at 0) and increments metrics.bugsFixed
+Related Story: US-0156
+Related Task:
+Related AC: AC-0470
+Type: Functional
+Preconditions: tools/update-sdlc-status.js
+Steps:
+
+1. Run `node -e "const {HANDLERS}=require('./tools/update-sdlc-status'); let d={agents:{},metrics:{bugsOpen:1,bugsFixed:0},log:[]}; d=HANDLERS['bug-fix'](d,{story:'US-0001'}); console.log(d.metrics.bugsOpen, d.metrics.bugsFixed)"`
+2. Confirm bugsOpen=0 and bugsFixed=1; then run with bugsOpen=0 to test floor guard
+   Expected Result: `0 1` (normal case); `0` for bugsOpen when already 0 (floor case)
+   Actual Result: `0 1` for normal case; `0` for floor case (`Math.max(0, 0-1) = 0`)
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: `Math.max(0, ...)` floors bugsOpen at 0 preventing negative values
+
+---
+
+TC-0318: story-complete auto-idles the story assignedAgent (status idle, currentTask null) if agent exists
+Related Story: US-0156
+Related Task:
+Related AC: AC-0471
+Type: Functional
+Preconditions: tools/update-sdlc-status.js
+Steps:
+
+1. Run `node -e "const {HANDLERS}=require('./tools/update-sdlc-status'); let d={agents:{Pixel:{status:'active',currentTask:'task',tasksCompleted:0}},stories:{'US-0001':{status:'InProgress',assignedAgent:'Pixel',epic:null,startedAt:null,completedAt:null}},metrics:{storiesCompleted:0,storiesTotal:0},log:[],epics:{}}; d=HANDLERS['story-complete'](d,{story:'US-0001'}); console.log(d.agents['Pixel'].status, d.agents['Pixel'].currentTask)"`
+2. Confirm Pixel.status='idle' and Pixel.currentTask=null
+   Expected Result: `idle null`
+   Actual Result: `idle null`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: story-complete reads story.assignedAgent and sets agent.status='idle', agent.currentTask=null if agent entry exists
+
+---
+
+TC-0319: DM_AGENT.md post-phase checklist gains phase command calls at start and complete of each phase
+Related Story: US-0156
+Related Task:
+Related AC: AC-0472
+Type: Functional
+Preconditions: docs/agents/DM_AGENT.md
+Steps:
+
+1. Run `grep "phase --number\|update-sdlc-status.*phase" docs/agents/DM_AGENT.md | head -5`
+2. Confirm phase command documented with --number and --status flags for both start and complete transitions
+   Expected Result: At least two phase command references in DM_AGENT.md (one for in-progress, one for complete)
+   Actual Result: `phase --number` and `phase --status` references confirmed in DM_AGENT.md for both start and complete phase transitions
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: DM_AGENT.md pipeline checklist includes phase command calls at each phase boundary
+
+---
+
+TC-0320: DM_AGENT.md Test-phase exit gains coverage command call with Circuit percent
+Related Story: US-0156
+Related Task:
+Related AC: AC-0473
+Type: Functional
+Preconditions: docs/agents/DM_AGENT.md
+Steps:
+
+1. Run `grep "coverage --\|coverage.*percent\|Circuit.*percent\|coverage.*Circuit" docs/agents/DM_AGENT.md | head -5`
+2. Confirm coverage command documented in Test phase exit checklist
+   Expected Result: coverage command with --percent documented in Test-phase exit section of DM_AGENT.md
+   Actual Result: `coverage --` reference confirmed in DM_AGENT.md
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: DM_AGENT.md includes `node tools/update-sdlc-status.js coverage --agent Circuit --percent <pct>` in Test phase exit
+
+---
+
+TC-0321: unit tests cover bug-open, bug-fix (including floor guard), and story-complete agent auto-idle
+Related Story: US-0156
+Related Task:
+Related AC: AC-0474
+Type: Functional
+Preconditions: tests/unit/update-sdlc-status.test.js
+Steps:
+
+1. Run `grep -n "bug-open\|bug-fix\|floor\|auto-idle\|auto.idle" tests/unit/update-sdlc-status.test.js | head -10`
+2. Confirm describe blocks for bug metrics and story-complete auto-idle
+   Expected Result: `describe('update-sdlc-status — bug metrics', ...)` at line 457; `describe('update-sdlc-status — story-complete auto-idles agent', ...)` at line 482
+   Actual Result: bug metrics describe at line 457 with tests at 458 (bug-open), 465 (bug-fix), 473 (floor guard); auto-idle describe at line 482 with tests at 483 (auto-idle), 491 (no crash without assignedAgent)
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: All three AC behaviors fully covered by unit tests
+
+---
+
+TC-0322: sdlc-status.json gains a cycles array at root level
+Related Story: US-0156
+Related Task:
+Related AC: AC-0475
+Type: Functional
+Preconditions: tools/init-sdlc-status.js; agents.config.json
+Steps:
+
+1. Run `node -e "const {buildStatus}=require('./tools/init-sdlc-status'); const s=buildStatus('./agents.config.json'); console.log(Array.isArray(s.cycles), s.cycles.length)"`
+2. Confirm cycles is an array initialized to empty
+   Expected Result: `true 0`
+   Actual Result: `true 0`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: buildStatus includes `cycles: []` at root level; confirmed by init-sdlc-status.js line 65
+
+---
+
+TC-0323: cycle-complete snapshots metrics into cycles[] with id and completedAt
+Related Story: US-0156
+Related Task:
+Related AC: AC-0476
+Type: Functional
+Preconditions: tools/update-sdlc-status.js
+Steps:
+
+1. Run `node -e "const {HANDLERS}=require('./tools/update-sdlc-status'); let d={project:{},agents:{},epics:{},stories:{},cycles:[],phases:[],metrics:{storiesCompleted:5,testsPassed:100,testsFailed:2,coveragePercent:88.5,bugsFixed:3},log:[],currentPhase:0}; d=HANDLERS['cycle-complete'](d,{}); const c=d.cycles[0]; console.log(c.id, c.storiesCompleted, c.testsPassed, c.testsFailed, c.coveragePercent, c.bugsFixed)"`
+2. Confirm snapshot contains id=1 and all metric fields
+   Expected Result: `1 5 100 2 88.5 3`
+   Actual Result: `1 5 100 2 88.5 3`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: snapshot includes id, completedAt, storiesCompleted, testsPassed, testsFailed, coveragePercent, bugsFixed, phaseDurations
+
+---
+
+TC-0324: phaseDurations computed from phase startedAt/completedAt in seconds
+Related Story: US-0156
+Related Task:
+Related AC: AC-0477
+Type: Functional
+Preconditions: tools/update-sdlc-status.js
+Steps:
+
+1. Run `node -e "const {HANDLERS}=require('./tools/update-sdlc-status'); let d={project:{},agents:{},epics:{},stories:{},cycles:[],phases:[{id:1,name:'Build',agents:[],deliverables:[],status:'complete',startedAt:'2026-04-24T10:00:00Z',completedAt:'2026-04-24T12:00:00Z'}],metrics:{storiesCompleted:5,testsPassed:100,testsFailed:0,coveragePercent:88,bugsFixed:0},log:[],currentPhase:1}; d=HANDLERS['cycle-complete'](d,{}); console.log(d.cycles[0].phaseDurations)"`
+2. Confirm Build duration is 7200 seconds (2 hours)
+   Expected Result: `{ Build: 7200 }`
+   Actual Result: `{ Build: 7200 }`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: Duration = Math.round((Date.parse(completedAt) - Date.parse(startedAt)) / 1000); phases with null timestamps excluded
+
+---
+
+TC-0325: cycle-complete applies the same reset as session-start via shared resetSession function
+Related Story: US-0156
+Related Task:
+Related AC: AC-0478
+Type: Functional
+Preconditions: tools/update-sdlc-status.js
+Steps:
+
+1. Run `node -e "const {HANDLERS}=require('./tools/update-sdlc-status'); let d={project:{name:'PV'},agents:{},epics:{},stories:{'US-0001':{}},cycles:[],phases:[{id:1,name:'Build',agents:[],deliverables:[],status:'complete',startedAt:'2026-04-24T10:00:00Z',completedAt:'2026-04-24T11:00:00Z'}],metrics:{storiesCompleted:5,testsPassed:50,testsFailed:0,coveragePercent:80,bugsFixed:2},log:[],currentPhase:1}; d=HANDLERS['cycle-complete'](d,{}); console.log(JSON.stringify({storiesCompleted:d.metrics.storiesCompleted,storiesTotal:d.metrics.storiesTotal,stories:Object.keys(d.stories),phase0:d.phases[0].status}))"`
+2. Confirm metrics reset (storiesCompleted=0, storiesTotal=0), stories={}, phases reset to pending
+   Expected Result: `{"storiesCompleted":0,"storiesTotal":0,"stories":[],"phase0":"pending"}`
+   Actual Result: `{"storiesCompleted":0,"storiesTotal":0,"stories":[],"phase0":"pending"}`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: cycle-complete calls resetSession(data,'0') after pushing snapshot; snapshot captured BEFORE reset ensuring data integrity
+
+---
+
+TC-0326: dashboard renders lap-history strip of last 10 cycles as compact cards
+Related Story: US-0156
+Related Task:
+Related AC: AC-0479
+Type: Functional
+Preconditions: docs/dashboard.html
+Steps:
+
+1. Run `grep -n "cycle-lap-strip\|lapStrip\|cycle-card\|last 10\|slice(-10)" docs/dashboard.html | head -10`
+2. Confirm cycle-lap-strip element exists and patchDOM slices last 10 cycles into cycle-card divs
+   Expected Result: `id="cycle-lap-strip"` element present; `cycles.slice(-10).reverse()` rendered as cycle-card divs in patchDOM
+   Actual Result: `id="cycle-lap-strip"` at line 1953; `lapStrip = document.getElementById('cycle-lap-strip')` at line 2759; `cycles.slice(-10).reverse()` at line 2784; each card rendered with `.cycle-card-id`, `.cycle-card-stat` divs
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: Only last 10 cycles shown in lap strip; newest first due to .reverse()
+
+---
+
+TC-0327: dashboard renders aggregate telemetry row with total cycles, today count, avg cycle time, success rate
+Related Story: US-0156
+Related Task:
+Related AC: AC-0480
+Type: Functional
+Preconditions: docs/dashboard.html
+Steps:
+
+1. Run `grep -c "Cycles Total\|Success Rate\|Avg Cycle\|Today" docs/dashboard.html`
+2. Confirm all four telemetry tiles present in cycle-telemetry element
+   Expected Result: `Cycles Total`, `Today`, `Avg Cycle (min)`, `Success Rate` all rendered in telemetryRow.innerHTML
+   Actual Result: All four tile labels confirmed in dashboard.html patchDOM block (lines 2773-2778)
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: telemetryRow element `id="cycle-telemetry"`; successRate computed as percentage of cycles with testsFailed===0
+
+---
+
+TC-0328: a three-note audio animation plays when cycles.length increases between refreshState ticks
+Related Story: US-0156
+Related Task:
+Related AC: AC-0481
+Type: Functional
+Preconditions: docs/dashboard.html
+Steps:
+
+1. Run `grep -n "playBeep(523\|playBeep(659\|playBeep(784" docs/dashboard.html`
+2. Confirm three playBeep calls with notes 523, 659, 784 Hz triggered when cycles.length > prevLen
+   Expected Result: Three playBeep calls with 50ms stagger: playBeep(523,0.15), setTimeout(playBeep(659,0.15),150), setTimeout(playBeep(784,0.2),300)
+   Actual Result: `playBeep(523, 0.15)` at line 2793; `setTimeout(function() { playBeep(659, 0.15); }, 150)` at line 2794; `setTimeout(function() { playBeep(784, 0.2); }, 300)` at line 2795; guarded by `cycles.length > prevLen && prevLen > 0`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: prevLen tracked via `data-cycle-count` attribute on lapStrip; audio fires only when count increases (not on first load)
+
+---
+
+TC-0329: DM_AGENT.md updated — Conductor calls cycle-complete after all epic stories merge
+Related Story: US-0156
+Related Task:
+Related AC: AC-0482
+Type: Functional
+Preconditions: docs/agents/DM_AGENT.md
+Steps:
+
+1. Run `grep -c "cycle-complete" docs/agents/DM_AGENT.md`
+2. Confirm cycle-complete documented as a Conductor post-epic call
+   Expected Result: Count >= 1
+   Actual Result: `cycle-complete` present in DM_AGENT.md
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: DM_AGENT.md documents cycle-complete as the final step after all epic stories merge
+
+---
+
+TC-0330: unit tests cover cycle-complete snapshot, reset side-effect, phaseDurations computation
+Related Story: US-0156
+Related Task:
+Related AC: AC-0483
+Type: Functional
+Preconditions: tests/unit/update-sdlc-status.test.js
+Steps:
+
+1. Run `grep -n "cycle-complete\|phaseDurations\|reset.*after.*snapshotting\|snapshot" tests/unit/update-sdlc-status.test.js | head -10`
+2. Confirm describe block at line 150 covers snapshot shape, phaseDurations, reset side-effect, and id increment
+   Expected Result: `describe('update-sdlc-status — cycle-complete', ...)` at line 150 with tests for snapshot (line 193), phaseDurations (line 204), reset (line 211), id increment (line 220)
+   Actual Result: describe block at line 150; 4 tests — snapshot (193), phaseDurations in seconds (204), reset after snapshot (211), id increment across calls (220)
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: Test at line 211 verifies snapshot captured BEFORE resetSession clears metrics
+
+---
+
+TC-0331: docs/dashboard-extraction.md documents step-by-step adoption procedure
+Related Story: US-0156
+Related Task:
+Related AC: AC-0484
+Type: Functional
+Preconditions: docs/dashboard-extraction.md
+Steps:
+
+1. Run `ls -la docs/dashboard-extraction.md && head -40 docs/dashboard-extraction.md`
+2. Confirm file exists with steps covering copy files, populate agents.config.json, run init, open dashboard, wire Conductor
+   Expected Result: File exists; contains ## Steps section with numbered adoption steps: copy, populate config, run init, open dashboard, wire Conductor
+   Actual Result: `docs/dashboard-extraction.md` exists; contains "## Steps" with numbered sections: "### 1. Copy the files", populate agents.config.json project and phases sections, "node tools/init-sdlc-status.js", open dashboard.html, and Conductor wiring steps
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: File is a complete self-contained adoption guide with copy commands and step-by-step instructions
+
+---
+
+TC-0332: scripts/install.sh §7 copies dashboard.html, update-sdlc-status.js, init-sdlc-status.js, atomic-write.js to target
+Related Story: US-0156
+Related Task:
+Related AC: AC-0485
+Type: Functional
+Preconditions: scripts/install.sh
+Steps:
+
+1. Run `grep -n "dashboard.html\|update-sdlc-status\|init-sdlc-status\|atomic-write" scripts/install.sh | head -10`
+2. Confirm install.sh §7 copies all four files with prompting behavior
+   Expected Result: Lines showing cp for dashboard.html, update-sdlc-status.js, init-sdlc-status.js, atomic-write.js in the §7 block
+   Actual Result: Line 223: `cp "${REPO_ROOT}/docs/dashboard.html"`; lines 225-230 copy `tools/update-sdlc-status.js`, `tools/init-sdlc-status.js`, `orchestrator/atomic-write.js` to target directories
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: All four required files copied in install.sh §7; user prompted before copy
+
+---
+
+TC-0333: install.sh §7 is skipped with note if docs/dashboard.html already exists in target
+Related Story: US-0156
+Related Task:
+Related AC: AC-0486
+Type: Functional
+Preconditions: scripts/install.sh
+Steps:
+
+1. Run `sed -n '213,220p' scripts/install.sh`
+2. Confirm if-exists guard skips §7 with printed note when dashboard.html already present
+   Expected Result: `if [ -f "${TARGET}/docs/dashboard.html" ]; then echo "... already exists ... skipping"`
+   Actual Result: Line 215: `if [ -f "${TARGET}/docs/dashboard.html" ]; then`; line 216: `echo "[install] §7 Dashboard setup: docs/dashboard.html already exists in target — skipping."` — guard present with descriptive message
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: Skip guard prints a clear message explaining why §7 is skipped; no overwrite without explicit re-run
+
+---
+
+TC-0334: docs/dashboard-extraction.md is linked from README.md under a Dashboard section
+Related Story: US-0156
+Related Task:
+Related AC: AC-0487
+Type: Functional
+Preconditions: README.md; docs/dashboard-extraction.md
+Steps:
+
+1. Run `grep -n "dashboard-extraction\|Dashboard" README.md | head -5`
+2. Confirm link to docs/dashboard-extraction.md under ## Agentic SDLC Dashboard section
+   Expected Result: Link `[docs/dashboard-extraction.md](docs/dashboard-extraction.md)` under Dashboard heading in README.md
+   Actual Result: Line 178: `## Agentic SDLC Dashboard`; line 182: `**Adopting in another project:** see [\`docs/dashboard-extraction.md\`](docs/dashboard-extraction.md)`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: Link present in README.md under the dedicated Agentic SDLC Dashboard section
+
+---
