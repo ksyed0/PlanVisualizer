@@ -4,6 +4,34 @@ Timestamped log of every user prompt across all sessions. Append-only. Never edi
 
 ---
 
+## Session 28 — 2026-04-24
+
+| #   | Timestamp            | Prompt                                                                                                                                                               |
+| --- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | 2026-04-24T19:00:00Z | [Context resumed — continued from session 27 mid-session compaction]                                                                                                 |
+| 2   | 2026-04-24T19:10:00Z | in hierarchy tab card view, the epics should be all collapsed by default                                                                                             |
+| 3   | 2026-04-24T19:20:00Z | in the costs tab can you make the epic headers for Stories and Bugs to match the formatting for the Budget section                                                   |
+| 4   | 2026-04-24T19:30:00Z | on the Bugs tab the formatting for the epics for the card view should be the same as column view. Same on the Lessons tab.                                           |
+| 5   | 2026-04-24T19:40:00Z | on the agentic dashboard, none of the buttons are responding to click events, even after a hard reload                                                               |
+| 6   | 2026-04-24T19:50:00Z | can you update the epic formatting on the Hierarchy tab to match the same on the traceability tab for both column and card views                                     |
+| 7   | 2026-04-24T20:00:00Z | remove these redundant buttons from the agentic dashboard [screenshot]                                                                                               |
+| 8   | 2026-04-24T20:10:00Z | did you combine the About box to be the same on both pages                                                                                                           |
+| 9   | 2026-04-24T20:20:00Z | The bugs tab card view is still not using the same formatting and vertical spacing as in the column view                                                             |
+| 10  | 2026-04-24T20:30:00Z | change the About box in the agentic dashboard to use the one in the plan status dashboard                                                                            |
+| 11  | 2026-04-24T20:40:00Z | should the new about box use tailwind css, is this the pattern for the app overall?                                                                                  |
+| 12  | 2026-04-24T20:45:00Z | the close button on the reloaded agentic dashboard about box is not working                                                                                          |
+| 13  | 2026-04-24T20:50:00Z | go ahead and create the tailwinds replacement story                                                                                                                  |
+| 14  | 2026-04-24T21:00:00Z | can you show me a mockup of the new about box and we can iterate on the design                                                                                       |
+| 15  | 2026-04-24T21:10:00Z | Move the team image to the top of the box and make it larger. Make the roster a 3x3 array that takes the full width of the window. Remove the View on GitHub button. |
+| 16  | 2026-04-24T21:20:00Z | remove the plan-status line, reduce the crop of the team image to use the extra space and redisplay                                                                  |
+| 17  | 2026-04-24T21:30:00Z | move the line under the PlanVisualizer title to the right of the title on the same line, increase the height of the team image to use the extra space                |
+| 18  | 2026-04-24T21:40:00Z | remove the word Links, move Implemented by line to the right side of the github link, increase the height of the team image to use the extra space                   |
+| 19  | 2026-04-24T21:50:00Z | this looks good, lets capture this design as a new story, then implement this                                                                                        |
+| 20  | 2026-04-24T22:00:00Z | ok update all docs and close this session                                                                                                                            |
+| 21  | 2026-04-24T22:05:00Z | ok update all docs and create a pr to develop, then monitor CI and fix any issues, then when CI is green merge and close the branch and the session                  |
+
+---
+
 ## Session 27 — 2026-04-24
 
 | #   | Timestamp            | Prompt                                                                                                                            |

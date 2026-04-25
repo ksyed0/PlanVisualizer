@@ -4,6 +4,39 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 28 — 2026-04-24
+
+### What Was Done
+
+1. **Epic header formatting unified across all tabs** — Hierarchy (column + card), Kanban, Costs (Stories + Bugs sections), Bugs tab (column + card), Lessons tab (column + card) all now use `EPIC-0001` full monospace format matching Traceability. Costs Stories/Bugs headers have `border-left:4px solid` accent. Bugs/Lessons card views use flush `border-t-2` format matching their column views. Kanban fixed `EPIC_ACCENT_COLORS` modulo guard (`% length`) to prevent `undefined` crash on >8 epics.
+
+2. **Hierarchy card view collapsed by default** — Added `hidden` class and `▶` arrow to card view epic wrappers so all epics start collapsed.
+
+3. **Agentic dashboard buttons fixed** — Light/Dark and About buttons in `renderChrome()` were silently no-ops because `pvSetTheme()` and `openAbout()` were not defined in `generate-dashboard.js`. Added both functions. Also added missing `closeAbout()` (About modal close button was broken post-consolidation).
+
+4. **Removed redundant buttons from agentic topbar** — Duplicate About and Light/Dark `mc-btn-sm` buttons removed from the sidebar header area (already present in the shared chrome header).
+
+5. **Shared `renderAboutModal()` function** — Extracted from `render-html.js`, both dashboards now call the same function. Uses `pv-about-*` CSS classes with CSS custom property fallback chains (`var(--clr-accent, var(--brand-primary))`) — no Tailwind, no hex literals. `openAbout()`/`closeAbout()` in `render-scripts.js` updated to target `id="about-modal"` with `.open` class (harmonised with agentic pattern).
+
+6. **About modal redesign (US-0161, Done)** — Iterative design via browser preview. Final design: full-width 400px hero image at top; title + tagline on same line; 3×3 agent roster grid spanning modal width; repo link + "Implemented by" attribution on same row (right-aligned); no GitHub button; no "Links" label. Shared across both dashboards.
+
+7. **EPIC-0022 + new stories** — Created EPIC-0022 (Analytics & Charting Enhancements). Added US-0159 (Velocity Chart), US-0160 (Remove Tailwind from plan-status), US-0161 (About modal redesign, Done). ID_REGISTRY.md updated to US-0162 / AC-0591.
+
+### Test Results
+
+- 638 tests, 26 suites — all passing
+- Statement coverage above 80% gate
+
+### Blockers
+
+None.
+
+### PR
+
+`bugfix/hierarchy-hidden-default` → develop (PR pending)
+
+---
+
 ## Session 27 — 2026-04-24
 
 ### What Was Done

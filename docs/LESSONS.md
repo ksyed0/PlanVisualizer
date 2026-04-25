@@ -420,6 +420,24 @@ _Learned from BUG-0173 (self-inflicted) — first version of `scripts/cleanup-br
 
 _Learned during the post-EPIC-0016 cleanup audit (BUG-0175) — US-0113 added `agents.<name>.avatar` and an earlier change required `docs.lessons` in `plan-visualizer.config.json`, but `scripts/install.sh` only created configs from the example when absent; upgrading an existing install quietly skipped both. Target projects on older configs silently lost features. Rule: whenever a field becomes required (code dereferences it without a sane undefined-path), add it to the corresponding example AND to `tools/migrate-config.js` at the same commit. The migrator must be idempotent (re-runnable), preserve user values, and run automatically from install.sh. Expose `plan:migrate-config:dry` so users can preview before applying._
 
+## Session 28 lessons (About modal, shared components, agentic dashboard)
+
+### **`renderChrome()` calls `pvSetTheme()` and `openAbout()` — both must be defined in every dashboard that uses it.**
+
+_Learned from BUG-0226 (agentic dashboard buttons silent no-op) — `render-shell.js:renderChrome()` emits onclick handlers that call `pvSetTheme(theme)` and `openAbout()`. The plan-status dashboard defines both in `render-scripts.js`. The agentic dashboard previously only had `toggleTheme()` — neither alias existed. The fix: add `pvSetTheme()` and `openAbout()` to `generate-dashboard.js` inline script. Corollary: any function called from a shared template must be defined in every consumer, not just the primary one. Also: `closeAbout()` must be paired with `openAbout()` — easy to forget since only the button exercises it._
+
+### **Shared modal functions need matching open/close pairs in every consumer's inline script.**
+
+_Learned from post-consolidation closeAbout() bug — after extracting `renderAboutModal()` into a shared function, the close button called `closeAbout()` which was only defined in plan-status's `render-scripts.js`, not in `generate-dashboard.js`. The modal opened fine (openAbout existed) but close silently failed. Rule: whenever extracting a shared UI component that adds new JS function calls to the DOM, audit every dashboard's inline script block for all function names used by the new component._
+
+### **CSS custom property fallback chains work across dashboard namespaces — use `var(--a, var(--b))` not hardcoded hex.**
+
+_Learned while building `renderAboutModal()` — plan-status uses `--clr-*` variable names; agentic dashboard uses `--brand-*` and `--bg-*`. A shared component can serve both by chaining: `color: var(--clr-accent, var(--brand-primary))`. The plan-status resolves `--clr-accent`; the agentic dashboard falls through to `--brand-primary`. No hex fallback needed. This satisfies AC-0498 (no hex literals in generated HTML) for both dashboards simultaneously._
+
+### **The hex-literal test regex (`/#[0-9a-fA-F]{3,6}\b/`) also catches `#` prefixed build numbers.**
+
+_Learned from AC-0498 failure after adding `renderAboutModal()` — the build meta line used `#${buildNumber}` (e.g. `#573`). The regex matched `#573` as a 3-char hex colour. Fix: use `r${buildNumber}` prefix (revision style) instead of `#`. Rule: never use `#` as a UI prefix for numeric identifiers in HTML output — it collides with the hex colour test._
+
 ## Session 25 lessons (UI consistency, agentic pipeline design)
 
 ### **Worktree test files are included in the main repo's jest run — they must stay in sync with the implementation.**
