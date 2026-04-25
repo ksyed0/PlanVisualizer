@@ -2949,13 +2949,13 @@ Acceptance Criteria:
 US-0155 (EPIC-0021): As a QA lead, I want formal test cases written and executed for EPIC-0017 Agentic Dashboard Effectiveness Review, so that the skills-integration doc and effectiveness audit outputs are verified.
 Priority: Medium (P1)
 Estimate: S
-Status: Planned
+Status: Done
 Branch: feature/US-0155-tc-audit-epic-0017
 Acceptance Criteria:
 
-- [ ] AC-0563: Test cases written covering all ACs from EPIC-0017 stories (skills integration table, superpowers adoption metrics, US-0126)
-- [ ] AC-0564: All written test cases executed and Pass/Fail status recorded
-- [ ] AC-0565: Any failures result in a logged BUG entry in docs/BUGS.md
+- [x] AC-0563: Test cases written covering all ACs from EPIC-0017 stories (skills integration table, superpowers adoption metrics, US-0126)
+- [x] AC-0564: All written test cases executed and Pass/Fail status recorded
+- [x] AC-0565: Any failures result in a logged BUG entry in docs/BUGS.md
 ```
 
 ```
