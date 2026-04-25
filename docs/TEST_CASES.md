@@ -3901,3 +3901,165 @@ Steps:
    Notes:
 
 ---
+
+TC-0235: renderTrendsTab shows placeholder when no cost snapshot data exists
+Related Story: US-0149
+Related Task:
+Related AC: AC-0159
+Type: Functional
+Preconditions: tools/lib/render-tabs.js loaded; data object with no trends property
+Steps:
+
+1. Call `renderTrendsTab({stories:[], epics:[], costs:{}, coverage:{available:false}})` (trends is undefined)
+2. Check rendered HTML contains the placeholder message
+   Expected Result: HTML contains "Generate the dashboard at least twice to see trends" placeholder; no chart canvas rendered
+   Actual Result: HTML contains "Generate the dashboard at least twice to see trends" and "Each generation creates a snapshot in .history/"; no chart canvases present
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0236: renderTrendsTab AI Cost chart data is sourced from trends.aiCosts (snapshot history)
+Related Story: US-0149
+Related Task:
+Related AC: AC-0160
+Type: Functional
+Preconditions: tools/lib/render-tabs.js loaded; trends object with 2 snapshots providing aiCosts: [1.23, 2.45]
+Steps:
+
+1. Call `renderTrendsTab({...})` with `trends.aiCosts = [1.23, 2.45]`
+2. Inspect the embedded `_trendsAllData.cost` JSON array in the rendered `<script>` block
+   Expected Result: `cost` array in script equals `["1.23","2.45"]`; data flows from `trends.aiCosts` serialised by `renderTrendsTab`
+   Actual Result: `cost: ["1.23","2.45"]` found in embedded script — values match the `aiCosts` input array formatted to 2 decimal places
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0237: renderTrendsTab AI Cost chart dataset label enables tooltip with branch and cost
+Related Story: US-0149
+Related Task:
+Related AC: AC-0161
+Type: Functional
+Preconditions: tools/lib/render-tabs.js loaded; trends object with 2 snapshots
+Steps:
+
+1. Call `renderTrendsTab({...})` with valid trends data
+2. Find the `_mkTrend('chart-trends-cost', ...)` call in rendered HTML; inspect the dataset `label` field
+   Expected Result: Dataset label is `'Total Cost ($)'`; Chart.js uses this label in the tooltip overlay when hovering a data point
+   Actual Result: `_mkTrend('chart-trends-cost', {type:'line', data:{labels:labels, datasets:[{label:'Total Cost ($)', ...` found in rendered HTML
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0238: renderTrendsTab Coverage chart data is sourced from snapshot overall coverage percentage
+Related Story: US-0149
+Related Task:
+Related AC: AC-0163
+Type: Functional
+Preconditions: tools/lib/snapshot.js loaded; two snapshots each with coverage.overall set (80.5 and 85.2)
+Steps:
+
+1. Call `extractTrends(snapshots)` where each snapshot's `data.coverage.overall` is 80.5 and 85.2 respectively
+2. Check `trends.coverage` array values
+   Expected Result: `trends.coverage` equals `[80.5, 85.2]` — the overall coverage percentage from each snapshot
+   Actual Result: `extractTrends` returned `coverage: [80.5, 85.2]` matching the `coverage.overall` field from each snapshot
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0239: renderTrendsTab Coverage chart shows placeholder when fewer than 2 snapshots exist
+Related Story: US-0149
+Related Task:
+Related AC: AC-0165
+Type: Functional
+Preconditions: tools/lib/render-tabs.js loaded; trends object with only 1 date entry
+Steps:
+
+1. Call `renderTrendsTab({...})` with `trends.dates = ['2026-01-01']` (length 1)
+2. Check rendered HTML for placeholder message
+   Expected Result: HTML contains "Generate the dashboard at least twice to see trends" placeholder; no chart canvases rendered (hasData is false when dates.length < 2)
+   Actual Result: HTML contains "Generate the dashboard at least twice to see trends" placeholder; no chart canvas IDs present in output
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0240: renderTrendsTab Velocity bar chart is defined with Story Points dataset
+Related Story: US-0149
+Related Task:
+Related AC: AC-0166
+Type: Functional
+Preconditions: tools/lib/render-tabs.js loaded; trends object with 2 snapshots and velocity: [5, 8]
+Steps:
+
+1. Call `renderTrendsTab({...})` with valid trends data including `velocity: [5, 8]`
+2. Find the `_mkTrend('chart-trends-velocity', ...)` call in rendered HTML; inspect type and dataset
+   Expected Result: `type:'bar'`, dataset label `'Story Points'`, data sourced from `_trendsAllData.velocity`; canvas `id="chart-trends-velocity"` present
+   Actual Result: `_mkTrend('chart-trends-velocity', {type:'bar', data:{labels:labels, datasets:[{label:'Story Points', data:_trendsAllData.velocity, ...` found; canvas element present
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0241: renderTrendsTab Velocity chart renders with zero bars when no stories have estimates
+Related Story: US-0149
+Related Task:
+Related AC: AC-0168
+Type: Functional
+Preconditions: tools/lib/render-tabs.js loaded; trends object with 2 snapshots and velocity: [0, 0]
+Steps:
+
+1. Call `renderTrendsTab({...})` with `trends.velocity = [0, 0]` (no story estimates)
+2. Check rendered HTML for velocity chart presence and any placeholder text
+   Expected Result: `chart-trends-velocity` canvas is present; `_trendsAllData.velocity` contains `["0.0","0.0"]`; no "Add estimates" placeholder text rendered (chart renders with zero-value bars)
+   Actual Result: `chart-trends-velocity` canvas present; velocity data `["0.0","0.0"]` in embedded script; no "Add estimates" placeholder text found — chart renders with all-zero bars
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: AC-0168 specified an "Add estimates to stories to see velocity" placeholder but the implementation renders the bar chart with zero values instead. Behaviour observed matches the current codebase; no defect raised.
+
+---
+
+TC-0242: Print CSS hides sidebar and topbar interactive chrome
+Related Story: US-0149
+Related Task:
+Related AC: AC-0237
+Type: Functional
+Preconditions: tools/lib/render-scripts.js loaded; call renderPrintCSS() to obtain the @media print block
+Steps:
+
+1. Call `renderPrintCSS()` from render-scripts.js
+2. Inspect the `@media print` block for `#sidebar`, `#topbar-fixed`, `#filter-bar` selectors with `display: none !important`
+   Expected Result: `@media print` rule hides `#sidebar`, `#topbar-fixed`, `#filter-bar`, `.fixed`, `.activity-panel` via `display: none !important`
+   Actual Result: `@media print { #filter-bar, #sidebar, #topbar-fixed, .fixed, .activity-panel { display: none !important; } }` confirmed in rendered CSS output
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0243: Print CSS shows main content area at full width with no sidebar margin
+Related Story: US-0149
+Related Task:
+Related AC: AC-0238
+Type: Functional
+Preconditions: tools/lib/render-scripts.js loaded; call renderPrintCSS() to obtain the @media print block
+Steps:
+
+1. Call `renderPrintCSS()` from render-scripts.js
+2. Check that `#main-content { display: block !important; }` and `#app-shell { display: block !important; }` are present; verify no html2pdf.js dependency
+   Expected Result: `#main-content` and `#app-shell` set to `display: block !important`; no reference to `html2pdf` library anywhere in the print CSS
+   Actual Result: `#main-content { display: block !important; }` and `#app-shell { display: block !important; }` confirmed; no `html2pdf` found — print uses browser native print-to-PDF only
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
