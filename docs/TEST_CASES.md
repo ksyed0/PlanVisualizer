@@ -4505,7 +4505,7 @@ Steps:
 
 ---
 
-TC-0266: renderCostsTab shows dismissible budget alert banner when spend crosses a threshold
+TC-0345: renderCostsTab shows dismissible budget alert banner when spend crosses a threshold
 Related Story: US-0150
 Related Task:
 Related AC: AC-0178
@@ -4526,7 +4526,7 @@ Steps:
 
 ---
 
-TC-0267: renderTrendsTab Cost Trend chart includes dotted extrapolation line using burn rate
+TC-0346: renderTrendsTab Cost Trend chart includes dotted extrapolation line using burn rate
 Related Story: US-0150
 Related Task:
 Related AC: AC-0176
