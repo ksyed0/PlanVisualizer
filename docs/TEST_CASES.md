@@ -4612,8 +4612,7 @@ Steps:
 1. Run `node -e "const m = require('./tools/lib/render-utils'); console.log(Object.keys(m).join(', '))"`
 2. Run `node -e "const m = require('./tools/lib/render-shell'); console.log(Object.keys(m).join(', '))"`
 3. Run `node -e "const m = require('./tools/lib/render-scripts'); console.log(Object.keys(m).join(', '))"`
-4. Run: node -e "const m = require('./tools/lib/render-tabs'); console.log(Object.keys(m).join(', '))"
-   Expected: A comma-separated list of exported function names (e.g. renderStoriesTab, renderBugsTab, etc.)
+4. Run `node -e "const m = require('./tools/lib/render-tabs'); console.log(Object.keys(m).join(', '))"`
 5. Confirm each module exports a coherent set of render functions following the existing contract
    Expected Result: Each module exports named render functions; render-scripts exports renderScripts and renderPrintCSS; render-tabs exports all tab renderer functions (renderHierarchyTab, renderKanbanTab, renderTraceabilityTab, renderStatusTab, renderTrendsTab, renderChartsTab, renderCostsTab, renderBugsTab, renderLessonsTab, renderRecentActivity, renderStakeholderTab)
    Actual Result: render-utils exports esc, sparkline, BADGE_TONE, badge etc; render-shell exports renderChrome, renderSidebar, renderFilterBar etc; render-scripts exports renderScripts, renderPrintCSS; render-tabs exports renderHierarchyTab, renderKanbanTab, renderTraceabilityTab, renderStatusTab, renderTrendsTab, renderChartsTab, renderCostsTab, renderBugsTab, renderLessonsTab, renderRecentActivity, renderStakeholderTab — all contracts intact
