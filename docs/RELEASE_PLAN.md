@@ -3037,3 +3037,18 @@ Acceptance Criteria:
 - [ ] AC-0584: Visual regression — the budget alert banner, filter bar, and search input render identically in both light and dark mode after conversion
 - [ ] AC-0585: All existing tests pass; no new hex literals are introduced (AC-0498 equivalent enforced for plan-status output)
 ```
+
+```
+US-0161 (EPIC-0022): As a user, I want the About modal on both dashboards to use a redesigned layout with a large full-width hero image at the top and a 3×3 agent roster grid, so that the modal is visually distinctive and the team is showcased prominently.
+Priority: Low (P2)
+Estimate: S
+Status: Done
+Branch: bugfix/hierarchy-hidden-default
+Acceptance Criteria:
+
+- [x] AC-0586: The About modal renders a full-width hero image (team.png) cropped to 400px height at the top of the modal, with object-fit:cover so it fills the space without distortion
+- [x] AC-0587: The project title and tagline appear on the same line below the hero image, with the title in the accent colour and the tagline in muted text to its right
+- [x] AC-0588: The agent roster renders as a 3×3 grid spanning the full modal width; each cell shows avatar, agent name, and role
+- [x] AC-0589: The "View on GitHub" button is removed; the GitHub repo URL appears as an inline text link in the links row, with the "Implemented by" attribution right-aligned on the same row
+- [x] AC-0590: The "Links" section label is removed; the modal contains no redundant section headings above the repo/attribution row
+```

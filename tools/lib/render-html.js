@@ -500,71 +500,63 @@ function renderAboutModal(aboutData) {
   const css = `<style id="pv-about-css">
 .pv-about-overlay{display:none;position:fixed;inset:0;background:oklch(0% 0 0 / 60%);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
 .pv-about-overlay.open{display:flex}
-.pv-about-modal{background:var(--clr-panel-bg,var(--bg-card));border:1px solid var(--clr-border,var(--bg-card-border));border-radius:16px;padding:28px;max-width:720px;width:92%;max-height:88vh;overflow-y:auto;text-align:left;position:relative;box-shadow:0 20px 60px oklch(0% 0 0 / 30%)}
-.pv-about-close{position:absolute;top:12px;right:16px;background:none;border:none;color:var(--clr-text-muted,var(--text-muted));font-size:22px;cursor:pointer;line-height:1;padding:4px 8px;border-radius:6px;transition:background .2s}
-.pv-about-close:hover{background:var(--clr-surface-raised,var(--bg-card-inner));color:var(--clr-text-primary,var(--text-primary))}
-.pv-about-layout{display:grid;grid-template-columns:200px 1fr;gap:20px;align-items:start}
-.pv-about-playbill{border:2px solid var(--clr-border,var(--bg-card-border));border-radius:8px;overflow:hidden;background:var(--clr-surface-raised,var(--bg-card-inner))}
-.pv-about-playbill img{width:100%;display:block}
-.pv-about-right{min-width:0}
-.pv-about-h2{font-size:20px;font-weight:700;margin:0 0 4px;color:var(--clr-accent,var(--brand-primary))}
-.pv-about-tagline{font-size:14px;color:var(--clr-text-muted,var(--text-muted));margin:0 0 6px}
-.pv-about-mission{font-size:13px;color:var(--clr-text-muted,var(--text-muted));margin-bottom:14px;line-height:1.45}
-.pv-about-repo-link{display:inline-block;margin:10px 0 14px;background:var(--clr-accent,var(--brand-primary));color:oklch(100% 0 0);padding:7px 16px;border-radius:8px;text-decoration:none;font-size:12px;font-weight:600;transition:background .2s}
-.pv-about-repo-link:hover{filter:brightness(.85)}
-.pv-about-supertitle{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--clr-text-muted,var(--text-muted));margin:0 0 6px}
-.pv-about-roster{display:grid;grid-template-columns:repeat(${rosterCols},1fr);gap:6px 10px;margin-bottom:14px;list-style:none;padding:0;font-size:12px}
-.pv-about-links{font-size:12px;color:var(--clr-text-muted,var(--text-muted));margin-bottom:14px}
+.pv-about-modal{background:var(--clr-panel-bg,var(--bg-card));border:1px solid var(--clr-border,var(--bg-card-border));border-radius:16px;overflow:hidden;max-width:680px;width:92%;max-height:88vh;overflow-y:auto;text-align:left;position:relative;box-shadow:0 20px 60px oklch(0% 0 0 / 30%)}
+.pv-about-hero{width:100%;height:400px;object-fit:cover;object-position:center top;display:block}
+.pv-about-body{padding:24px 28px 28px}
+.pv-about-close{position:absolute;top:12px;right:14px;background:oklch(0% 0 0 / 40%);border:none;color:oklch(100% 0 0);font-size:20px;cursor:pointer;line-height:1;padding:4px 9px;border-radius:6px;transition:background .2s;backdrop-filter:blur(4px)}
+.pv-about-close:hover{background:oklch(0% 0 0 / 60%)}
+.pv-about-header{display:flex;align-items:baseline;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.pv-about-h2{font-size:22px;font-weight:700;margin:0;color:var(--clr-accent,var(--brand-primary));white-space:nowrap}
+.pv-about-tagline{font-size:13px;color:var(--clr-text-muted,var(--text-muted));margin:0}
+.pv-about-mission{font-size:13px;color:var(--clr-text-muted,var(--text-muted));margin-bottom:16px;line-height:1.5}
+.pv-about-supertitle{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--clr-text-muted,var(--text-muted));margin:0 0 8px}
+.pv-about-roster{display:grid;grid-template-columns:repeat(3,1fr);gap:8px 12px;margin-bottom:16px;list-style:none;padding:0;font-size:12px}
+.pv-about-links{font-size:12px;color:var(--clr-text-muted,var(--text-muted));margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:16px}
 .pv-about-links a{color:var(--clr-accent,var(--brand-primary));text-decoration:none;word-break:break-all}
 .pv-about-links a:hover{text-decoration:underline}
-.pv-about-links-row{margin-bottom:2px}
-.pv-about-divider{border-top:1px solid var(--clr-border,var(--bg-card-border));padding-top:14px;margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:12px}
+.pv-about-links-row{margin-bottom:0}
+.pv-about-divider{border-top:1px solid var(--clr-border,var(--bg-card-border));padding-top:14px;margin-top:6px;display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:12px}
 .pv-about-meta-row{padding-left:8px;margin-bottom:3px;color:var(--clr-text-muted,var(--text-muted))}
 .pv-about-meta-label{color:var(--clr-text-muted,var(--text-muted))}
 .pv-about-meta-value{color:var(--clr-text-primary,var(--text-primary));font-family:monospace;font-size:11px}
 .pv-about-attribution{margin-top:14px;font-size:11px;color:var(--clr-text-muted,var(--text-muted));text-align:center}
-@media(max-width:640px){.pv-about-layout{grid-template-columns:1fr;gap:14px}.pv-about-playbill{max-width:240px;margin:0 auto}.pv-about-roster{grid-template-columns:1fr}}
+@media(max-width:600px){.pv-about-hero{height:160px}.pv-about-body{padding:18px 20px 24px}.pv-about-roster{grid-template-columns:1fr 1fr}.pv-about-divider{grid-template-columns:1fr}}
 </style>`;
 
   const html = `<div id="about-modal" class="pv-about-overlay" onclick="if(event.target===this)closeAbout()">
   <div class="pv-about-modal">
     <button class="pv-about-close" onclick="closeAbout()" aria-label="Close">&#xD7;</button>
-    <div class="pv-about-layout">
-      <div class="pv-about-playbill">
-        <img src="agents/images/team.png" alt="Agent team" onerror="this.closest('.pv-about-playbill').style.display='none'">
-      </div>
-      <div class="pv-about-right">
+    <img class="pv-about-hero" src="agents/images/team.png" alt="Agent team" onerror="this.style.display='none'">
+    <div class="pv-about-body">
+      <div class="pv-about-header">
         <h2 class="pv-about-h2">${esc(title)}</h2>
-        ${tagline ? `<p class="pv-about-tagline">${esc(tagline)}</p>` : ''}
-        ${missionText ? `<p class="pv-about-mission">${esc(missionText)}</p>` : ''}
-        ${/^https?:\/\//.test(githubUrl) ? `<a class="pv-about-repo-link" href="${esc(githubUrl)}" target="_blank" rel="noopener noreferrer">View on GitHub</a>` : ''}
-        ${
-          Object.keys(agents).length > 0
-            ? `<p class="pv-about-supertitle" style="margin-top:16px">Agent Roster</p>
-        <ul class="pv-about-roster">${rosterHtml}</ul>`
-            : ''
-        }
-        <p class="pv-about-supertitle">Links</p>
-        <div class="pv-about-links">
-          ${/^https?:\/\//.test(githubUrl) ? `<div class="pv-about-links-row"><span class="pv-about-meta-label">Repo: </span><a href="${esc(githubUrl)}" target="_blank" rel="noopener">${esc(githubUrl)}</a></div>` : ''}
-          <div class="pv-about-links-row"><span class="pv-about-meta-label">Dashboard: </span><a href="${esc(dashboardLink)}">${esc(dashboardLink)}</a></div>
+        ${tagline ? `<span class="pv-about-tagline">${esc(tagline)}</span>` : ''}
+      </div>
+      ${missionText ? `<p class="pv-about-mission">${esc(missionText)}</p>` : ''}
+      ${
+        Object.keys(agents).length > 0
+          ? `<p class="pv-about-supertitle">Agent Roster</p>
+      <ul class="pv-about-roster">${rosterHtml}</ul>`
+          : ''
+      }
+      <div class="pv-about-links">
+        ${/^https?:\/\//.test(githubUrl) ? `<div class="pv-about-links-row"><span class="pv-about-meta-label">Repo: </span><a href="${esc(githubUrl)}" target="_blank" rel="noopener">${esc(githubUrl)}</a></div>` : ''}
+        ${author ? `<p class="pv-about-attribution" style="margin:0">Implemented by ${esc(author)}</p>` : ''}
+      </div>
+      <div class="pv-about-divider">
+        <div>
+          <p class="pv-about-supertitle">This Project</p>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Name: </span><span class="pv-about-meta-value">${esc(projectName)}</span></div>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Version: </span><span class="pv-about-meta-value">v${esc(version)}</span></div>
+          ${branch ? `<div class="pv-about-meta-row"><span class="pv-about-meta-label">Branch: </span><span class="pv-about-meta-value">${esc(branch)}</span></div>` : ''}
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Build: </span><span class="pv-about-meta-value">r${esc(buildNumber)} ${esc(commitSha)}</span></div>
         </div>
-        <div class="pv-about-divider">
-          <div>
-            <p class="pv-about-supertitle">This Project</p>
-            <div class="pv-about-meta-row"><span class="pv-about-meta-label">Name: </span><span class="pv-about-meta-value">${esc(projectName)}</span></div>
-            <div class="pv-about-meta-row"><span class="pv-about-meta-label">Version: </span><span class="pv-about-meta-value">v${esc(version)}</span></div>
-            ${branch ? `<div class="pv-about-meta-row"><span class="pv-about-meta-label">Branch: </span><span class="pv-about-meta-value">${esc(branch)}</span></div>` : ''}
-            <div class="pv-about-meta-row"><span class="pv-about-meta-label">Build: </span><span class="pv-about-meta-value">r${esc(buildNumber)} ${esc(commitSha)}</span></div>
-          </div>
-          <div>
-            <p class="pv-about-supertitle">Dashboard Tool</p>
-            <div class="pv-about-meta-row"><span class="pv-about-meta-label">View: </span><span class="pv-about-meta-value">${esc(viewLabel)}</span></div>
-            ${appName ? `<div class="pv-about-meta-row"><span class="pv-about-meta-label">Generated by: </span><span class="pv-about-meta-value">${esc(appName)} v${esc(appVersion)}</span></div>` : ''}
-            <div class="pv-about-meta-row"><span class="pv-about-meta-label">Generated at: </span><span id="about-gen-time" data-iso="${esc(generatedAt)}" class="pv-about-meta-value"></span></div>
-          </div>
+        <div>
+          <p class="pv-about-supertitle">Dashboard Tool</p>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">View: </span><span class="pv-about-meta-value">${esc(viewLabel)}</span></div>
+          ${appName ? `<div class="pv-about-meta-row"><span class="pv-about-meta-label">Generated by: </span><span class="pv-about-meta-value">${esc(appName)} v${esc(appVersion)}</span></div>` : ''}
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Generated at: </span><span id="about-gen-time" data-iso="${esc(generatedAt)}" class="pv-about-meta-value"></span></div>
         </div>
-        ${author ? `<p class="pv-about-attribution">Implemented by ${esc(author)}</p>` : ''}
       </div>
     </div>
   </div>
