@@ -412,79 +412,157 @@ function renderHtml(data, options = {}) {
     <div id="search-body" style="max-height:360px;overflow-y:auto"></div>
     <div style="padding:7px 16px;font-size:11px;color:var(--clr-text-muted);text-align:center;border-top:1px solid var(--clr-border);background:var(--clr-surface-raised)">↑↓ navigate &nbsp;·&nbsp; ↵ jump &nbsp;·&nbsp; ESC close</div>
   </div>
-  <div id="aboutModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
-    <div onclick="closeAbout()" class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
-    <div class="relative z-10 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl shadow-2xl w-full max-w-2xl" style="max-height:calc(100vh - 2rem);overflow-y:auto">
-      <button onclick="closeAbout()" class="sticky top-3 float-right mr-4 z-10 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white text-xl leading-none" aria-label="Close">&#x2715;</button>
-      <div class="p-6 pt-5">
-        <div class="grid grid-cols-1 sm:grid-cols-[200px_1fr] gap-5 items-start">
-          <div class="rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-700">
-            <img src="agents/images/team.png" alt="Agent team" class="w-full object-cover" onerror="this.closest('div').style.display='none'">
-          </div>
-          <div>
-            <h2 class="text-2xl font-bold leading-tight" style="color:var(--clr-accent)">${esc(data.projectName)}</h2>
-            <p class="text-slate-500 dark:text-slate-400 text-sm mt-0.5">${esc(data.tagline)}</p>
-            ${
-              /^https?:\/\//.test(data.githubUrl || '')
-                ? `<a href="${esc(data.githubUrl)}" target="_blank" rel="noopener noreferrer"
-               class="inline-flex items-center gap-1.5 mt-3 px-4 py-1.5 text-sm font-semibold rounded-lg text-white"
-               style="background:var(--clr-accent)">View on GitHub</a>`
-                : ''
-            }
-            ${
-              data.agents && Object.keys(data.agents).length > 0
-                ? `
-            <p class="text-[10px] uppercase tracking-wider text-slate-400 dark:text-slate-500 font-semibold mt-4 mb-2">Agent Roster</p>
-            <ul class="grid grid-cols-2 gap-x-4 gap-y-2">
-              ${Object.entries(data.agents)
-                .map(([name, cfg]) => {
-                  const avatar = cfg.avatar || name.toLowerCase();
-                  const icon = esc(cfg.icon || '🤖');
-                  return `<li class="flex items-center gap-2">
-                  <img src="agents/images/optimized/${esc(avatar)}-64.png" alt="${esc(name)}" class="w-8 h-8 rounded-full object-cover flex-shrink-0" onerror="this.outerHTML='&lt;span class=&quot;text-lg flex-shrink-0&quot;&gt;${icon}&lt;/span&gt;'">
-                  <span>
-                    <p class="text-sm font-semibold text-slate-700 dark:text-slate-200 leading-none">${esc(name)}</p>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">${esc(cfg.role || '')}</p>
-                  </span>
-                </li>`;
-                })
-                .join('')}
-            </ul>`
-                : ''
-            }
-            <p class="text-[10px] uppercase tracking-wider text-slate-400 dark:text-slate-500 font-semibold mt-4 mb-1">Links</p>
-            <div class="text-sm space-y-0.5 text-slate-500 dark:text-slate-400">
-              ${/^https?:\/\//.test(data.githubUrl || '') ? `<div>Repo: <a href="${esc(data.githubUrl)}" target="_blank" rel="noopener" class="text-blue-600 dark:text-blue-400 hover:underline">${esc(data.githubUrl)}</a></div>` : ''}
-              <div>Plan: <a href="plan-status.html" class="text-blue-600 dark:text-blue-400 hover:underline">plan-status.html</a></div>
-            </div>
-          </div>
-        </div>
-        <div class="mt-5 pt-4 border-t border-slate-200 dark:border-slate-700 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-          <div>
-            <p class="text-[10px] uppercase tracking-wider text-slate-400 dark:text-slate-500 font-semibold mb-2">This Project</p>
-            <div class="space-y-1 text-slate-500 dark:text-slate-400">
-              <div>Name: <span class="font-mono text-slate-700 dark:text-slate-200">${esc(data.projectName)}</span></div>
-              <div>Version: <span class="font-mono text-slate-700 dark:text-slate-200">v${esc(data.version)}</span></div>
-              ${data.branch ? `<div>Branch: <span class="font-mono text-slate-700 dark:text-slate-200">${esc(data.branch)}</span></div>` : ''}
-              <div>Build: <span class="font-mono text-slate-700 dark:text-slate-200">#${esc(data.buildNumber)} ${esc(data.commitSha)}</span></div>
-            </div>
-          </div>
-          <div>
-            <p class="text-[10px] uppercase tracking-wider text-slate-400 dark:text-slate-500 font-semibold mb-2">Dashboard Tool</p>
-            <div class="space-y-1 text-slate-500 dark:text-slate-400">
-              <div>View: <span class="font-mono text-slate-700 dark:text-slate-200">Plan Status</span></div>
-              ${data.appName ? `<div>Generated by: <span class="font-mono text-slate-700 dark:text-slate-200">${esc(data.appName)} v${esc(data.appVersion)}</span></div>` : ''}
-              <div>Generated at: <span id="about-gen-time" data-iso="${data.generatedAt}" class="font-mono text-slate-700 dark:text-slate-200"></span></div>
-            </div>
-          </div>
-        </div>
-        <p class="mt-4 text-center text-xs text-slate-400">Implemented by Kamal Syed</p>
-      </div>
-    </div>
-  </div>
+  ${renderAboutModal({
+    title: data.projectName,
+    tagline: data.tagline,
+    githubUrl: data.githubUrl || '',
+    agents: data.agents || {},
+    projectName: data.projectName,
+    version: data.version,
+    branch: data.branch,
+    buildNumber: data.buildNumber,
+    commitSha: data.commitSha,
+    appName: data.appName,
+    appVersion: data.appVersion,
+    generatedAt: data.generatedAt,
+    viewLabel: 'Plan Status',
+    dashboardLink: 'plan-status.html',
+    rosterCols: 2,
+    author: 'Kamal Syed',
+  })}
   ${renderScripts(data, options)}
 </body>
 </html>`;
 }
 
-module.exports = { renderHtml, badge, BADGE_TONE, sparkline };
+/**
+ * Renders the shared About modal used by both plan-status and agentic dashboards.
+ * Returns a self-contained string: a <style> block + the modal HTML.
+ * CSS uses pv-about-* class names; custom properties fall back across both
+ * dashboard variable namespaces (--clr-* plan-status, --brand-* agentic).
+ *
+ * @param {object} aboutData
+ * @param {string} aboutData.title          - Modal heading (h2)
+ * @param {string} [aboutData.tagline]      - Subtitle line
+ * @param {string} [aboutData.githubUrl]    - GitHub URL for button/link
+ * @param {object} [aboutData.agents]       - Agent map: name → {avatar, icon, role}
+ * @param {string} [aboutData.missionText]  - Optional mission paragraph
+ * @param {string} [aboutData.projectName]  - Meta: project name
+ * @param {string} [aboutData.version]      - Meta: version string
+ * @param {string} [aboutData.branch]       - Meta: branch name
+ * @param {string} [aboutData.buildNumber]  - Meta: build number
+ * @param {string} [aboutData.commitSha]    - Meta: commit SHA
+ * @param {string} [aboutData.appName]      - Meta: generator app name
+ * @param {string} [aboutData.appVersion]   - Meta: generator app version
+ * @param {string} [aboutData.generatedAt]  - Meta: ISO timestamp (formatted by JS in browser)
+ * @param {string} [aboutData.viewLabel]    - Meta: "Plan Status" or "Agentic SDLC Dashboard"
+ * @param {string} [aboutData.dashboardLink]- Meta: link href for this dashboard
+ * @param {number} [aboutData.rosterCols]   - Columns in agent roster grid (default 3)
+ * @param {string} [aboutData.author]       - Attribution line
+ */
+function renderAboutModal(aboutData) {
+  const {
+    title = '',
+    tagline = '',
+    githubUrl = '',
+    agents = {},
+    missionText = '',
+    projectName = '',
+    version = '',
+    branch = '',
+    buildNumber = '',
+    commitSha = '',
+    appName = '',
+    appVersion = '',
+    generatedAt = '',
+    viewLabel = 'Plan Status',
+    dashboardLink = 'plan-status.html',
+    rosterCols = 3,
+    author = '',
+  } = aboutData;
+
+  const rosterHtml = Object.entries(agents)
+    .map(([name, cfg]) => {
+      const avatar = cfg.avatar || name.toLowerCase();
+      const icon = esc(cfg.icon || '🤖');
+      return `<li style="display:flex;align-items:center;gap:8px;min-width:0">
+        <img src="agents/images/optimized/${esc(avatar)}-64.png" alt="${esc(name)}"
+          style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid var(--clr-border,var(--bg-card-border));background:var(--clr-surface-raised,var(--bg-card-inner))"
+          onerror="this.outerHTML='&lt;span style=&quot;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;border:1px solid var(--clr-border)&quot;&gt;${icon}&lt;/span&gt;'">
+        <span style="min-width:0;display:flex;flex-direction:column">
+          <span style="font-weight:600;font-size:12px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--clr-text-primary,var(--text-primary))">${esc(name)}</span>
+          <span style="font-size:10px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--clr-text-muted,var(--text-muted))">${esc(cfg.role || '')}</span>
+        </span>
+      </li>`;
+    })
+    .join('');
+
+  const css = `<style id="pv-about-css">
+.pv-about-overlay{display:none;position:fixed;inset:0;background:oklch(0% 0 0 / 60%);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.pv-about-overlay.open{display:flex}
+.pv-about-modal{background:var(--clr-panel-bg,var(--bg-card));border:1px solid var(--clr-border,var(--bg-card-border));border-radius:16px;overflow:hidden;max-width:680px;width:92%;max-height:88vh;overflow-y:auto;text-align:left;position:relative;box-shadow:0 20px 60px oklch(0% 0 0 / 30%)}
+.pv-about-hero{width:100%;height:400px;object-fit:cover;object-position:center top;display:block}
+.pv-about-body{padding:24px 28px 28px}
+.pv-about-close{position:absolute;top:12px;right:14px;background:oklch(0% 0 0 / 40%);border:none;color:oklch(100% 0 0);font-size:20px;cursor:pointer;line-height:1;padding:4px 9px;border-radius:6px;transition:background .2s;backdrop-filter:blur(4px)}
+.pv-about-close:hover{background:oklch(0% 0 0 / 60%)}
+.pv-about-header{display:flex;align-items:baseline;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.pv-about-h2{font-size:22px;font-weight:700;margin:0;color:var(--clr-accent,var(--brand-primary));white-space:nowrap}
+.pv-about-tagline{font-size:13px;color:var(--clr-text-muted,var(--text-muted));margin:0}
+.pv-about-mission{font-size:13px;color:var(--clr-text-muted,var(--text-muted));margin-bottom:16px;line-height:1.5}
+.pv-about-supertitle{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--clr-text-muted,var(--text-muted));margin:0 0 8px}
+.pv-about-roster{display:grid;grid-template-columns:repeat(3,1fr);gap:8px 12px;margin-bottom:16px;list-style:none;padding:0;font-size:12px}
+.pv-about-links{font-size:12px;color:var(--clr-text-muted,var(--text-muted));margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.pv-about-links a{color:var(--clr-accent,var(--brand-primary));text-decoration:none;word-break:break-all}
+.pv-about-links a:hover{text-decoration:underline}
+.pv-about-links-row{margin-bottom:0}
+.pv-about-divider{border-top:1px solid var(--clr-border,var(--bg-card-border));padding-top:14px;margin-top:6px;display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:12px}
+.pv-about-meta-row{padding-left:8px;margin-bottom:3px;color:var(--clr-text-muted,var(--text-muted))}
+.pv-about-meta-label{color:var(--clr-text-muted,var(--text-muted))}
+.pv-about-meta-value{color:var(--clr-text-primary,var(--text-primary));font-family:monospace;font-size:11px}
+.pv-about-attribution{margin-top:14px;font-size:11px;color:var(--clr-text-muted,var(--text-muted));text-align:center}
+@media(max-width:600px){.pv-about-hero{height:160px}.pv-about-body{padding:18px 20px 24px}.pv-about-roster{grid-template-columns:1fr 1fr}.pv-about-divider{grid-template-columns:1fr}}
+</style>`;
+
+  const html = `<div id="about-modal" class="pv-about-overlay" onclick="if(event.target===this)closeAbout()">
+  <div class="pv-about-modal">
+    <button class="pv-about-close" onclick="closeAbout()" aria-label="Close">&#xD7;</button>
+    <img class="pv-about-hero" src="agents/images/team.png" alt="Agent team" onerror="this.style.display='none'">
+    <div class="pv-about-body">
+      <div class="pv-about-header">
+        <h2 class="pv-about-h2">${esc(title)}</h2>
+        ${tagline ? `<span class="pv-about-tagline">${esc(tagline)}</span>` : ''}
+      </div>
+      ${missionText ? `<p class="pv-about-mission">${esc(missionText)}</p>` : ''}
+      ${
+        Object.keys(agents).length > 0
+          ? `<p class="pv-about-supertitle">Agent Roster</p>
+      <ul class="pv-about-roster">${rosterHtml}</ul>`
+          : ''
+      }
+      <div class="pv-about-links">
+        ${/^https?:\/\//.test(githubUrl) ? `<div class="pv-about-links-row"><span class="pv-about-meta-label">Repo: </span><a href="${esc(githubUrl)}" target="_blank" rel="noopener">${esc(githubUrl)}</a></div>` : ''}
+        ${author ? `<p class="pv-about-attribution" style="margin:0">Implemented by ${esc(author)}</p>` : ''}
+      </div>
+      <div class="pv-about-divider">
+        <div>
+          <p class="pv-about-supertitle">This Project</p>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Name: </span><span class="pv-about-meta-value">${esc(projectName)}</span></div>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Version: </span><span class="pv-about-meta-value">v${esc(version)}</span></div>
+          ${branch ? `<div class="pv-about-meta-row"><span class="pv-about-meta-label">Branch: </span><span class="pv-about-meta-value">${esc(branch)}</span></div>` : ''}
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Build: </span><span class="pv-about-meta-value">r${esc(buildNumber)} ${esc(commitSha)}</span></div>
+        </div>
+        <div>
+          <p class="pv-about-supertitle">Dashboard Tool</p>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">View: </span><span class="pv-about-meta-value">${esc(viewLabel)}</span></div>
+          ${appName ? `<div class="pv-about-meta-row"><span class="pv-about-meta-label">Generated by: </span><span class="pv-about-meta-value">${esc(appName)} v${esc(appVersion)}</span></div>` : ''}
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Generated at: </span><span id="about-gen-time" data-iso="${esc(generatedAt)}" class="pv-about-meta-value"></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>`;
+
+  return `${css}\n${html}`;
+}
+
+module.exports = { renderHtml, renderAboutModal, badge, BADGE_TONE, sparkline };

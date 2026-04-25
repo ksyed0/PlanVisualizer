@@ -627,56 +627,6 @@
   .btn-header { background: oklch(100% 0 0 / 20%); border: none; color: white; padding: 6px 14px; border-radius: 20px; cursor: pointer; font-size: 13px; transition: background 0.2s; }
   .btn-header:hover { background: oklch(100% 0 0 / 35%); }
 
-  /* About modal */
-  .modal-overlay { display: none; position: fixed; inset: 0; background: oklch(0% 0 0 / 60%); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-  .modal-overlay.open { display: flex; }
-  .modal { background: var(--bg-card); border: 1px solid var(--bg-card-border); border-radius: 16px; padding: 28px; max-width: 720px; width: 92%; max-height: 88vh; overflow-y: auto; text-align: left; position: relative; box-shadow: 0 20px 60px oklch(0% 0 0 / 40%); }
-  .modal h3 { font-size: 18px; font-weight: 700; margin-bottom: 4px; color: var(--brand-primary); }
-  .modal p { font-size: 14px; color: var(--text-secondary); margin-bottom: 6px; }
-  .modal .author { font-size: 15px; font-weight: 600; color: var(--text-primary); margin: 16px 0 8px; }
-  .modal .repo-link { display: inline-block; margin: 10px 0 14px; background: var(--brand-primary); color: white; padding: 7px 16px; border-radius: 8px; text-decoration: none; font-size: 12px; font-weight: 600; transition: background 0.2s; }
-  .modal .repo-link:hover { filter: brightness(0.85); text-decoration: none; }
-
-  /* US-0123: two-column About modal (playbill image | mission + roster + meta) */
-  .modal .about-layout { display: grid; grid-template-columns: 200px 1fr; gap: 20px; align-items: start; }
-  .modal .about-playbill { border: 2px solid var(--divider); border-radius: 8px; padding: 8px; background: oklch(8% 0.015 220); display: flex; align-items: center; justify-content: center; }
-  .modal .about-playbill img { width: 100%; display: block; border-radius: 4px; }
-  .modal .about-right { min-width: 0; }
-  .modal .about-mission { font-size: 13px; color: var(--text-secondary); margin-bottom: 14px; line-height: 1.45; }
-  .modal .about-roster-title,
-  .modal .about-links-title { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted); margin: 0 0 6px; }
-  .modal .about-roster { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; margin-bottom: 14px; list-style: none; padding: 0; }
-  .modal .about-roster li { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-primary); min-width: 0; }
-  .modal .about-roster img,
-  .modal .about-roster .about-roster-fallback { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 1px solid var(--bg-card-border); background: var(--bg-card-inner); }
-  .modal .about-roster .about-roster-fallback { display: flex; align-items: center; justify-content: center; font-size: 14px; }
-  .modal .about-roster-name { font-weight: 600; font-size: 12px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .modal .about-roster-role { font-size: 10px; color: var(--text-muted); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .modal .about-roster-text { min-width: 0; display: flex; flex-direction: column; }
-  .modal .about-links { font-size: 12px; color: var(--text-secondary); margin-bottom: 14px; }
-  .modal .about-links a { color: var(--brand-primary); text-decoration: none; word-break: break-all; }
-  .modal .about-links a:hover { text-decoration: underline; }
-  .modal .about-links-row { margin-bottom: 2px; }
-
-  .modal .meta-divider { border-top: 1px solid var(--bg-card-border); padding-top: 14px; margin-top: 14px; text-align: left; font-size: 12px; color: var(--text-muted); }
-  .modal .meta-section { margin-bottom: 12px; }
-  .modal .meta-section:last-child { margin-bottom: 0; }
-  .modal .meta-supertitle { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted); margin-bottom: 6px; }
-  .modal .meta-row { padding-left: 8px; margin-bottom: 3px; }
-  .modal .meta-label { color: var(--text-muted); }
-  .modal .meta-value { color: var(--text-primary); font-family: var(--font-mono); font-size: 11px; }
-  .modal .meta-attribution { margin-top: 14px; font-size: 11px; color: var(--text-muted); text-align: center; }
-  .modal-close { position: absolute; top: 12px; right: 16px; background: none; border: none; color: var(--text-muted); font-size: 22px; cursor: pointer; line-height: 1; padding: 4px 8px; border-radius: 6px; transition: background 0.2s; }
-  .modal-close:hover { background: var(--bg-card-inner); color: var(--text-primary); }
-
-  /* US-0123: responsive fallback — single column below 640px */
-  @media (max-width: 640px) {
-    .modal { padding: 20px; }
-    .modal .about-layout { grid-template-columns: 1fr; gap: 14px; }
-    .modal .about-playbill { max-width: 240px; margin: 0 auto; }
-    .modal .about-roster { grid-template-columns: 1fr; }
-  }
-
   /* ===== US-0112 BEGIN: .live-dot indicator (keep contiguous for mechanical rebase) ===== */
   /* Reusable presence indicator — base dot + .ok/.warn/.err variants + pulse halo.
      Color alone is not an accessibility signal (§16): callers must add aria-label+title. */
@@ -1621,7 +1571,7 @@
       <button class="pv-seg pv-seg-active" aria-pressed="true">Pipeline</button>
     </div>
     <div class="pv-chrome-spacer"></div>
-    <span id="gen-time" data-iso="2026-04-24T22:16:16.425Z" style="font-size:11px;color:var(--text-mute);white-space:nowrap"></span>
+    <span id="gen-time" data-iso="2026-04-25T01:59:48.159Z" style="font-size:11px;color:var(--text-mute);white-space:nowrap"></span>
     <span class="mode-badge mode-live" aria-label="Mode: Live" tabindex="0">
     <span class="pip" aria-hidden="true"></span>LIVE
   </span>
@@ -1654,8 +1604,6 @@
   </div>
   <div class="mc-topbar-right">
     <span class="mc-live-badge" title="Live — refreshing every 5s"><span class="mc-live-dot" aria-hidden="true"></span>LIVE</span>
-    <button class="mc-btn-sm" onclick="document.getElementById('about-modal').classList.add('open')">About</button>
-    <button class="mc-btn-sm" id="theme-toggle" onclick="toggleTheme()">Light/Dark</button>
   </div>
 </div>
 
@@ -1740,7 +1688,7 @@
     <!-- COVERAGE -->
     <div class="mc-stat-tile">
       <div class="mc-stat-label">COVERAGE</div>
-      <div class="mc-stat-value green" id="mc-stat-coverage">93.19%</div>
+      <div class="mc-stat-value green" id="mc-stat-coverage">93.38%</div>
       <div class="mc-stat-sub">statements</div>
     </div>
     <!-- AI SPEND -->
@@ -1958,7 +1906,7 @@
   <span id="metric-phasesComplete">0 / 0</span>
   <span id="metric-phasesCompleteNum">0</span>
   <span id="metric-phasesTotalNum">0</span>
-  <span id="metric-storiesDone">142 / 158</span>
+  <span id="metric-storiesDone">145 / 161</span>
   <span id="metric-tasksDone">54 / 54</span>
   <span id="metric-testsPassed">0</span>
   <span id="metric-testsFailed">0</span>
@@ -1967,13 +1915,13 @@
   <span id="metric-bugsFixed">174</span>
   <span id="metric-reviewsApproved">0</span>
   <span id="metric-reviewsBlocked">0</span>
-  <span id="metric-coveragePercent">93.19%</span>
-  <b id="stamp-phase-progress">18:16</b>
-  <b id="stamp-quality">18:16</b>
-  <b id="stamp-reviews">18:16</b>
+  <span id="metric-coveragePercent">93.38%</span>
+  <b id="stamp-phase-progress">21:59</b>
+  <b id="stamp-quality">21:59</b>
+  <b id="stamp-reviews">21:59</b>
   <!-- Doughnut for patchDOM coverage -->
-  <div id="metric-coverageDoughnut" data-coverage="93.19" data-tone="green">
-    <circle id="metric-coverageDoughnutFill" class="d-fill green" stroke-dashoffset="6.81"></circle>
+  <div id="metric-coverageDoughnut" data-coverage="93.38" data-tone="green">
+    <circle id="metric-coverageDoughnutFill" class="d-fill green" stroke-dashoffset="6.62"></circle>
   </div>
   <!-- Sparkline for patchDOM -->
   <div id="metric-phasesSparkline">
@@ -2071,7 +2019,7 @@
   <div class="mc-sidebar-panel">
     <div class="mc-sidebar-title">QUALITY</div>
     <div style="display:flex;align-items:center;gap:12px;font-size:12px;">
-      <span style="font-family:var(--font-display),monospace;font-size:28px;color:var(--ok);">93.19%</span>
+      <span style="font-family:var(--font-display),monospace;font-size:28px;color:var(--ok);">93.38%</span>
       <div>
         <div style="color:var(--mc-muted);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;">Coverage</div>
         <div id="card-quality" style="margin-top:4px;font-size:11px;color:var(--mc-muted);">
@@ -2087,106 +2035,132 @@
 
 </div><!-- /mc-container -->
 
-<!-- About Modal — US-0123: two-column (playbill image | mission + roster + meta).
-     Parity target: plan-status.html About modal (US-0109). -->
-<div id="about-modal" class="modal-overlay" onclick="if(event.target===this)this.classList.remove('open')">
-  <div class="modal">
-    <button class="modal-close" onclick="document.getElementById('about-modal').classList.remove('open')">&times;</button>
-    <div class="about-layout">
-      <!-- AC-0421: left column — playbill-framed team image -->
-      <div class="about-playbill">
-        <img src="agents/images/team.png" alt="Agent team" onerror="this.style.display='none'">
+<style id="pv-about-css">
+.pv-about-overlay{display:none;position:fixed;inset:0;background:oklch(0% 0 0 / 60%);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.pv-about-overlay.open{display:flex}
+.pv-about-modal{background:var(--clr-panel-bg,var(--bg-card));border:1px solid var(--clr-border,var(--bg-card-border));border-radius:16px;overflow:hidden;max-width:680px;width:92%;max-height:88vh;overflow-y:auto;text-align:left;position:relative;box-shadow:0 20px 60px oklch(0% 0 0 / 30%)}
+.pv-about-hero{width:100%;height:400px;object-fit:cover;object-position:center top;display:block}
+.pv-about-body{padding:24px 28px 28px}
+.pv-about-close{position:absolute;top:12px;right:14px;background:oklch(0% 0 0 / 40%);border:none;color:oklch(100% 0 0);font-size:20px;cursor:pointer;line-height:1;padding:4px 9px;border-radius:6px;transition:background .2s;backdrop-filter:blur(4px)}
+.pv-about-close:hover{background:oklch(0% 0 0 / 60%)}
+.pv-about-header{display:flex;align-items:baseline;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.pv-about-h2{font-size:22px;font-weight:700;margin:0;color:var(--clr-accent,var(--brand-primary));white-space:nowrap}
+.pv-about-tagline{font-size:13px;color:var(--clr-text-muted,var(--text-muted));margin:0}
+.pv-about-mission{font-size:13px;color:var(--clr-text-muted,var(--text-muted));margin-bottom:16px;line-height:1.5}
+.pv-about-supertitle{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--clr-text-muted,var(--text-muted));margin:0 0 8px}
+.pv-about-roster{display:grid;grid-template-columns:repeat(3,1fr);gap:8px 12px;margin-bottom:16px;list-style:none;padding:0;font-size:12px}
+.pv-about-links{font-size:12px;color:var(--clr-text-muted,var(--text-muted));margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.pv-about-links a{color:var(--clr-accent,var(--brand-primary));text-decoration:none;word-break:break-all}
+.pv-about-links a:hover{text-decoration:underline}
+.pv-about-links-row{margin-bottom:0}
+.pv-about-divider{border-top:1px solid var(--clr-border,var(--bg-card-border));padding-top:14px;margin-top:6px;display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:12px}
+.pv-about-meta-row{padding-left:8px;margin-bottom:3px;color:var(--clr-text-muted,var(--text-muted))}
+.pv-about-meta-label{color:var(--clr-text-muted,var(--text-muted))}
+.pv-about-meta-value{color:var(--clr-text-primary,var(--text-primary));font-family:monospace;font-size:11px}
+.pv-about-attribution{margin-top:14px;font-size:11px;color:var(--clr-text-muted,var(--text-muted));text-align:center}
+@media(max-width:600px){.pv-about-hero{height:160px}.pv-about-body{padding:18px 20px 24px}.pv-about-roster{grid-template-columns:1fr 1fr}.pv-about-divider{grid-template-columns:1fr}}
+</style>
+<div id="about-modal" class="pv-about-overlay" onclick="if(event.target===this)closeAbout()">
+  <div class="pv-about-modal">
+    <button class="pv-about-close" onclick="closeAbout()" aria-label="Close">&#xD7;</button>
+    <img class="pv-about-hero" src="agents/images/team.png" alt="Agent team" onerror="this.style.display='none'">
+    <div class="pv-about-body">
+      <div class="pv-about-header">
+        <h2 class="pv-about-h2">Agentic SDLC Dashboard</h2>
+        <span class="pv-about-tagline">Agentic AI SDLC</span>
       </div>
-      <!-- AC-0422: right column — mission, roster, links, version info -->
-      <div class="about-right">
-        <h3>My Project</h3>
-        <p>Agentic AI SDLC</p>
-        <p class="about-mission">
-          An agentic SDLC mission-control dashboard. Nine role-specialised AI
-          agents plan, build, review, and ship software across a six-phase
-          pipeline — Blueprint, Architect, Build, Integration, Test, Polish —
-          while this view surfaces live progress, blockers, and telemetry.
-        </p>
-        <a class="repo-link" href="https://github.com/yourorg/your-project" target="_blank" rel="noopener">View on GitHub</a>
-        <div class="about-roster-title">Agent Roster</div>
-        <ul class="about-roster">
-          <li>
-            <img src="agents/images/optimized/conductor-64.png" alt="Conductor" onerror="this.outerHTML='&lt;span class=&quot;about-roster-fallback&quot;&gt;🎯&lt;/span&gt;'">
-            <span class="about-roster-text">
-              <span class="about-roster-name">Conductor</span>
-              <span class="about-roster-role">Delivery Manager</span>
-            </span>
-          </li><li>
-            <img src="agents/images/optimized/compass-64.png" alt="Compass" onerror="this.outerHTML='&lt;span class=&quot;about-roster-fallback&quot;&gt;🧭&lt;/span&gt;'">
-            <span class="about-roster-text">
-              <span class="about-roster-name">Compass</span>
-              <span class="about-roster-role">Product Owner</span>
-            </span>
-          </li><li>
-            <img src="agents/images/optimized/keystone-64.png" alt="Keystone" onerror="this.outerHTML='&lt;span class=&quot;about-roster-fallback&quot;&gt;🏗️&lt;/span&gt;'">
-            <span class="about-roster-text">
-              <span class="about-roster-name">Keystone</span>
-              <span class="about-roster-role">Architect</span>
-            </span>
-          </li><li>
-            <img src="agents/images/optimized/lens-64.png" alt="Lens" onerror="this.outerHTML='&lt;span class=&quot;about-roster-fallback&quot;&gt;🔍&lt;/span&gt;'">
-            <span class="about-roster-text">
-              <span class="about-roster-name">Lens</span>
-              <span class="about-roster-role">Code Reviewer</span>
-            </span>
-          </li><li>
-            <img src="agents/images/optimized/palette-64.png" alt="Palette" onerror="this.outerHTML='&lt;span class=&quot;about-roster-fallback&quot;&gt;🎨&lt;/span&gt;'">
-            <span class="about-roster-text">
-              <span class="about-roster-name">Palette</span>
-              <span class="about-roster-role">UI Designer</span>
-            </span>
-          </li><li>
-            <img src="agents/images/optimized/forge-64.png" alt="Forge" onerror="this.outerHTML='&lt;span class=&quot;about-roster-fallback&quot;&gt;⚒️&lt;/span&gt;'">
-            <span class="about-roster-text">
-              <span class="about-roster-name">Forge</span>
-              <span class="about-roster-role">Backend Developer</span>
-            </span>
-          </li><li>
-            <img src="agents/images/optimized/pixel-64.png" alt="Pixel" onerror="this.outerHTML='&lt;span class=&quot;about-roster-fallback&quot;&gt;📱&lt;/span&gt;'">
-            <span class="about-roster-text">
-              <span class="about-roster-name">Pixel</span>
-              <span class="about-roster-role">Frontend Developer</span>
-            </span>
-          </li><li>
-            <img src="agents/images/optimized/sentinel-64.png" alt="Sentinel" onerror="this.outerHTML='&lt;span class=&quot;about-roster-fallback&quot;&gt;🛡️&lt;/span&gt;'">
-            <span class="about-roster-text">
-              <span class="about-roster-name">Sentinel</span>
-              <span class="about-roster-role">Functional Tester</span>
-            </span>
-          </li><li>
-            <img src="agents/images/optimized/circuit-64.png" alt="Circuit" onerror="this.outerHTML='&lt;span class=&quot;about-roster-fallback&quot;&gt;⚡&lt;/span&gt;'">
-            <span class="about-roster-text">
-              <span class="about-roster-name">Circuit</span>
-              <span class="about-roster-role">Automation Tester</span>
-            </span>
-          </li>
-        </ul>
-        <div class="about-links-title">Links</div>
-        <div class="about-links">
-          <div class="about-links-row"><span class="meta-label">Repo:</span> <a href="https://github.com/yourorg/your-project" target="_blank" rel="noopener">https://github.com/yourorg/your-project</a></div>
-          <div class="about-links-row"><span class="meta-label">Dashboard:</span> <a href="dashboard.html">dashboard.html</a></div>
-          <div class="about-links-row"><span class="meta-label">Plan:</span> <a href="plan-status.html">plan-status.html</a></div>
+      <p class="pv-about-mission">An agentic SDLC mission-control dashboard. Nine role-specialised AI agents plan, build, review, and ship software across a six-phase pipeline — Blueprint, Architect, Build, Integration, Test, Polish — while this view surfaces live progress, blockers, and telemetry.</p>
+      <p class="pv-about-supertitle">Agent Roster</p>
+      <ul class="pv-about-roster"><li style="display:flex;align-items:center;gap:8px;min-width:0">
+        <img src="agents/images/optimized/conductor-64.png" alt="Conductor"
+          style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid var(--clr-border,var(--bg-card-border));background:var(--clr-surface-raised,var(--bg-card-inner))"
+          onerror="this.outerHTML='&lt;span style=&quot;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;border:1px solid var(--clr-border)&quot;&gt;🎯&lt;/span&gt;'">
+        <span style="min-width:0;display:flex;flex-direction:column">
+          <span style="font-weight:600;font-size:12px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--clr-text-primary,var(--text-primary))">Conductor</span>
+          <span style="font-size:10px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--clr-text-muted,var(--text-muted))">Delivery Manager</span>
+        </span>
+      </li><li style="display:flex;align-items:center;gap:8px;min-width:0">
+        <img src="agents/images/optimized/compass-64.png" alt="Compass"
+          style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid var(--clr-border,var(--bg-card-border));background:var(--clr-surface-raised,var(--bg-card-inner))"
+          onerror="this.outerHTML='&lt;span style=&quot;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;border:1px solid var(--clr-border)&quot;&gt;🧭&lt;/span&gt;'">
+        <span style="min-width:0;display:flex;flex-direction:column">
+          <span style="font-weight:600;font-size:12px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--clr-text-primary,var(--text-primary))">Compass</span>
+          <span style="font-size:10px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--clr-text-muted,var(--text-muted))">Product Owner</span>
+        </span>
+      </li><li style="display:flex;align-items:center;gap:8px;min-width:0">
+        <img src="agents/images/optimized/keystone-64.png" alt="Keystone"
+          style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid var(--clr-border,var(--bg-card-border));background:var(--clr-surface-raised,var(--bg-card-inner))"
+          onerror="this.outerHTML='&lt;span style=&quot;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;border:1px solid var(--clr-border)&quot;&gt;🏗️&lt;/span&gt;'">
+        <span style="min-width:0;display:flex;flex-direction:column">
+          <span style="font-weight:600;font-size:12px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--clr-text-primary,var(--text-primary))">Keystone</span>
+          <span style="font-size:10px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--clr-text-muted,var(--text-muted))">Architect</span>
+        </span>
+      </li><li style="display:flex;align-items:center;gap:8px;min-width:0">
+        <img src="agents/images/optimized/lens-64.png" alt="Lens"
+          style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid var(--clr-border,var(--bg-card-border));background:var(--clr-surface-raised,var(--bg-card-inner))"
+          onerror="this.outerHTML='&lt;span style=&quot;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;border:1px solid var(--clr-border)&quot;&gt;🔍&lt;/span&gt;'">
+        <span style="min-width:0;display:flex;flex-direction:column">
+          <span style="font-weight:600;font-size:12px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--clr-text-primary,var(--text-primary))">Lens</span>
+          <span style="font-size:10px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--clr-text-muted,var(--text-muted))">Code Reviewer</span>
+        </span>
+      </li><li style="display:flex;align-items:center;gap:8px;min-width:0">
+        <img src="agents/images/optimized/palette-64.png" alt="Palette"
+          style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid var(--clr-border,var(--bg-card-border));background:var(--clr-surface-raised,var(--bg-card-inner))"
+          onerror="this.outerHTML='&lt;span style=&quot;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;border:1px solid var(--clr-border)&quot;&gt;🎨&lt;/span&gt;'">
+        <span style="min-width:0;display:flex;flex-direction:column">
+          <span style="font-weight:600;font-size:12px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--clr-text-primary,var(--text-primary))">Palette</span>
+          <span style="font-size:10px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--clr-text-muted,var(--text-muted))">UI Designer</span>
+        </span>
+      </li><li style="display:flex;align-items:center;gap:8px;min-width:0">
+        <img src="agents/images/optimized/forge-64.png" alt="Forge"
+          style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid var(--clr-border,var(--bg-card-border));background:var(--clr-surface-raised,var(--bg-card-inner))"
+          onerror="this.outerHTML='&lt;span style=&quot;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;border:1px solid var(--clr-border)&quot;&gt;⚒️&lt;/span&gt;'">
+        <span style="min-width:0;display:flex;flex-direction:column">
+          <span style="font-weight:600;font-size:12px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--clr-text-primary,var(--text-primary))">Forge</span>
+          <span style="font-size:10px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--clr-text-muted,var(--text-muted))">Backend Developer</span>
+        </span>
+      </li><li style="display:flex;align-items:center;gap:8px;min-width:0">
+        <img src="agents/images/optimized/pixel-64.png" alt="Pixel"
+          style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid var(--clr-border,var(--bg-card-border));background:var(--clr-surface-raised,var(--bg-card-inner))"
+          onerror="this.outerHTML='&lt;span style=&quot;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;border:1px solid var(--clr-border)&quot;&gt;📱&lt;/span&gt;'">
+        <span style="min-width:0;display:flex;flex-direction:column">
+          <span style="font-weight:600;font-size:12px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--clr-text-primary,var(--text-primary))">Pixel</span>
+          <span style="font-size:10px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--clr-text-muted,var(--text-muted))">Frontend Developer</span>
+        </span>
+      </li><li style="display:flex;align-items:center;gap:8px;min-width:0">
+        <img src="agents/images/optimized/sentinel-64.png" alt="Sentinel"
+          style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid var(--clr-border,var(--bg-card-border));background:var(--clr-surface-raised,var(--bg-card-inner))"
+          onerror="this.outerHTML='&lt;span style=&quot;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;border:1px solid var(--clr-border)&quot;&gt;🛡️&lt;/span&gt;'">
+        <span style="min-width:0;display:flex;flex-direction:column">
+          <span style="font-weight:600;font-size:12px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--clr-text-primary,var(--text-primary))">Sentinel</span>
+          <span style="font-size:10px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--clr-text-muted,var(--text-muted))">Functional Tester</span>
+        </span>
+      </li><li style="display:flex;align-items:center;gap:8px;min-width:0">
+        <img src="agents/images/optimized/circuit-64.png" alt="Circuit"
+          style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid var(--clr-border,var(--bg-card-border));background:var(--clr-surface-raised,var(--bg-card-inner))"
+          onerror="this.outerHTML='&lt;span style=&quot;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;border:1px solid var(--clr-border)&quot;&gt;⚡&lt;/span&gt;'">
+        <span style="min-width:0;display:flex;flex-direction:column">
+          <span style="font-weight:600;font-size:12px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--clr-text-primary,var(--text-primary))">Circuit</span>
+          <span style="font-size:10px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--clr-text-muted,var(--text-muted))">Automation Tester</span>
+        </span>
+      </li></ul>
+      <div class="pv-about-links">
+        <div class="pv-about-links-row"><span class="pv-about-meta-label">Repo: </span><a href="https://github.com/yourorg/your-project" target="_blank" rel="noopener">https://github.com/yourorg/your-project</a></div>
+        <p class="pv-about-attribution" style="margin:0">Implemented by Kamal Syed</p>
+      </div>
+      <div class="pv-about-divider">
+        <div>
+          <p class="pv-about-supertitle">This Project</p>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Name: </span><span class="pv-about-meta-value">plan-visualizer</span></div>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Version: </span><span class="pv-about-meta-value">v1.5.44</span></div>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Branch: </span><span class="pv-about-meta-value">bugfix/hierarchy-hidden-default</span></div>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Build: </span><span class="pv-about-meta-value">r585 70489b4</span></div>
         </div>
-        <div class="meta-divider">
-          <div class="meta-section">
-            <div class="meta-supertitle">This Project</div>
-            <div class="meta-row"><span class="meta-label">Name:</span> <span class="meta-value">plan-visualizer</span></div>
-            <div class="meta-row"><span class="meta-label">Version:</span> <span class="meta-value">v1.5.39</span></div>
-            <div class="meta-row"><span class="meta-label">Branch:</span> <span class="meta-value">bugfix/hierarchy-hidden-default</span></div>
-            <div class="meta-row"><span class="meta-label">Build:</span> <span class="meta-value">r566 755632b</span></div>
-          </div>
-          <div class="meta-section">
-            <div class="meta-supertitle">Dashboard Tool</div>
-            <div class="meta-row"><span class="meta-label">View:</span> <span class="meta-value">Agentic SDLC Dashboard</span></div>
-            <div class="meta-row"><span class="meta-label">Generated by:</span> <span class="meta-value">plan-visualizer v1.5.39</span></div>
-            <div class="meta-row"><span class="meta-label">Generated at:</span> <span class="meta-value">Apr 24, 2026, 06:16 PM</span></div>
-          </div>
-          <div class="meta-attribution">Implemented by Kamal Syed</div>
+        <div>
+          <p class="pv-about-supertitle">Dashboard Tool</p>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">View: </span><span class="pv-about-meta-value">Agentic SDLC Dashboard</span></div>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Generated by: </span><span class="pv-about-meta-value">plan-visualizer v1.5.44</span></div>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Generated at: </span><span id="about-gen-time" data-iso="Apr 24, 2026, 09:59 PM" class="pv-about-meta-value"></span></div>
         </div>
       </div>
     </div>
@@ -2194,26 +2168,30 @@
 </div>
 
 <div class="footer">
-  Claude Code Agentic AI SDLC | Last refreshed: Apr 24, 2026, 06:16 PM
+  Claude Code Agentic AI SDLC | Last refreshed: Apr 24, 2026, 09:59 PM
 </div>
 
 <script>
-function toggleTheme() {
-  const html = document.documentElement;
-  const current = html.getAttribute('data-theme');
-  const next = current === 'light' ? 'dark' : 'light';
-  html.setAttribute('data-theme', next);
-  localStorage.setItem('dashboard-theme', next);
-  updateToggleButton(next);
+// pvSetTheme / openAbout — aliases expected by renderChrome() (shared chrome from render-shell.js)
+function pvSetTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem('dashboard-theme', theme);
+  ['light', 'dark'].forEach(function(t) {
+    var btn = document.getElementById('theme-btn-' + t);
+    if (btn) btn.setAttribute('aria-pressed', String(t === theme));
+  });
 }
-function updateToggleButton(theme) {
-  const btn = document.getElementById('theme-toggle');
-  if (btn) btn.textContent = theme === 'light' ? '🌙 Dark' : '☀️ Light';
+function openAbout() {
+  var m = document.getElementById('about-modal');
+  if (m) m.classList.add('open');
+}
+function closeAbout() {
+  var m = document.getElementById('about-modal');
+  if (m) m.classList.remove('open');
 }
 (function() {
   var saved = localStorage.getItem('dashboard-theme') || 'dark';
-  if (saved === 'light') document.documentElement.setAttribute('data-theme', 'light');
-  updateToggleButton(saved);
+  pvSetTheme(saved);
 })();
 // Shared client-side helpers used by patchDOM() and related rendering code.
 // escH: HTML-escape a value before inserting into innerHTML (prevents XSS).

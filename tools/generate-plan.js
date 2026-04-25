@@ -414,5 +414,6 @@ try {
   }
 } catch (e) {
   console.error('[generate-plan] Fatal:', e.message);
+  console.error('[generate-plan] Stack:', e.stack);
   process.exit(1);
 }

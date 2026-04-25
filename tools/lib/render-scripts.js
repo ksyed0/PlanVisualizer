@@ -155,14 +155,18 @@ function renderScripts(data, options = {}) {
       if (hide) row.classList.add('hidden');
     });
     document.querySelectorAll('.epic-block').forEach(block => {
-      // Card view: story rows live in a sibling div (epic-cards-*), not inside .epic-block
-      const wrapper = block.closest('.mb-8');
-      const searchScope = wrapper || block;
+      // Hierarchy card view: story rows live in a sibling epic-cards-* div, not inside .epic-block
+      // Bugs/Lessons card view: story rows live in a parent .mb-8 wrapper
+      const mb8 = block.closest('.mb-8');
+      const parent = block.parentElement;
+      const sibling = parent && parent.querySelector('[id^="epic-cards-"]');
+      const searchScope = mb8 || sibling || block;
       const visibleChildren = searchScope.querySelectorAll('.story-row:not([style*="display: none"])');
       const header = block.querySelector('div[onclick*="toggleSection"]');
       if (header) header.style.display = visibleChildren.length > 0 ? '' : 'none';
       block.style.display = visibleChildren.length > 0 ? '' : 'none';
-      if (wrapper) wrapper.style.display = visibleChildren.length > 0 ? '' : 'none';
+      if (mb8) mb8.style.display = visibleChildren.length > 0 ? '' : 'none';
+      else if (sibling) parent.style.display = visibleChildren.length > 0 ? '' : 'none';
     });
     document.querySelectorAll('.ksw-swimlane').forEach(swimlane => {
       const visibleChildren = swimlane.querySelectorAll('.story-row:not([style*="display: none"])');
@@ -270,7 +274,7 @@ function renderScripts(data, options = {}) {
 
     // Restore active tab from URL hash or localStorage
     const hash = window.location.hash.replace('#', '');
-    const savedTab = VALID_TABS.includes(hash) ? hash : (VALID_TABS.includes(localStorage.getItem('activeTab')) ? localStorage.getItem('activeTab') : 'status');
+    const savedTab = VALID_TABS.includes(hash) ? hash : 'status';
     showTab(savedTab);
 
     // Restore hierarchy view preference
@@ -358,11 +362,13 @@ function renderScripts(data, options = {}) {
   }
 
   function openAbout() {
-    document.getElementById('aboutModal').classList.remove('hidden');
+    var m = document.getElementById('about-modal');
+    if (m) m.classList.add('open');
     document.body.style.overflow = 'hidden';
   }
   function closeAbout() {
-    document.getElementById('aboutModal').classList.add('hidden');
+    var m = document.getElementById('about-modal');
+    if (m) m.classList.remove('open');
     document.body.style.overflow = '';
   }
   document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeAbout(); });
@@ -749,7 +755,7 @@ function renderPrintCSS() {
   .trends-range-btn.active { background: var(--clr-accent); color: oklch(100% 0 0); border-color: var(--clr-accent); }
   .trends-range-btn:hover:not(.active) { border-color: var(--clr-accent); color: var(--clr-accent); }
   /* US-0105: Costs tab sparklines + polish */
-  .sparkline-svg { display: inline-block; vertical-align: middle; color: var(--clr-accent); opacity: 0.7; }
+  .sparkline-svg { display: inline-block; vertical-align: middle; color: var(--clr-accent); }
   .currency-sign { font-size: 0.72em; vertical-align: super; opacity: 0.65; }
   .delta-arrow { font-size: 11px; font-weight: 600; margin-left: 6px; vertical-align: middle; }
   .delta-up   { color: var(--badge-danger-text); }

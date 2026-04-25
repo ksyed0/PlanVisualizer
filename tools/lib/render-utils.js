@@ -34,7 +34,7 @@ function sparkline(values, w = 24, h = 12) {
       return `${x},${y}`;
     })
     .join(' ');
-  return `<svg width="${w}" height="${h}" class="sparkline-svg" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  return `<svg width="${w}" height="${h}" class="sparkline-svg" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 }
 
 function deltaArrow(delta) {
