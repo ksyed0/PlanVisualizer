@@ -2989,17 +2989,20 @@ Steps:
    Status: [x] Pass
    Defect Raised: None
    Notes:
-   TC-0180: scripts/install.sh §0 detects absent superpowers plugin and prompts Y/N
-   Related Story: US-0126
-   Related Task:
-   Related AC: AC-0435
-   Type: Functional
-   Preconditions: scripts/install.sh present; environment where ~/.claude/plugins/cache/claude-plugins-official/superpowers/ does not exist
-   Steps:
 
-4. Run `ls ~/.claude/plugins/cache/claude-plugins-official/superpowers/ 2>/dev/null || echo absent` to check current state
-5. Run `echo 'Y' | bash scripts/install.sh` to simulate Y response: observe script exits with slash command printed
-6. Run `echo 'N' | bash scripts/install.sh` to simulate N response: observe script continues installation
+---
+
+TC-0180: scripts/install.sh §0 detects absent superpowers plugin and prompts Y/N
+Related Story: US-0126
+Related Task:
+Related AC: AC-0435
+Type: Functional
+Preconditions: scripts/install.sh present; environment where ~/.claude/plugins/cache/claude-plugins-official/superpowers/ does not exist
+Steps:
+
+1. Run `ls ~/.claude/plugins/cache/claude-plugins-official/superpowers/ 2>/dev/null || echo absent` to check current state
+2. Run `echo 'Y' | bash scripts/install.sh` to simulate Y response: observe script exits with slash command printed
+3. Run `echo 'N' | bash scripts/install.sh` to simulate N response: observe script continues installation
    Expected Result: Script detects missing superpowers directory. Prompts "Do you want to install the superpowers plugin? (Y/N)". If Y: prints "/plugin install superpowers@claude-plugins-official" and exits 0. If N: continues with normal installation flow.
    Actual Result: Superpowers plugin is installed (v5.0.7). Running `echo 'Y' | bash scripts/install.sh` shows "[install] superpowers plugin detected (v5.0.7) ✓" — plugin present path executes correctly. Code inspection of scripts/install.sh lines 18-39 confirms: absent path prompts Y/N; Y branch prints slash command and exits 0; N branch prints skip message and continues.
    Status: [x] Pass
