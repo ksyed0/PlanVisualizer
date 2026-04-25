@@ -2884,13 +2884,13 @@ Acceptance Criteria:
 US-0150 (EPIC-0021): As a QA lead, I want formal test cases written and executed for EPIC-0009 Budget Forecasting, so that cost parsing, projection, and display logic is verified.
 Priority: High (P0)
 Estimate: M
-Status: Planned
+Status: Done
 Branch: feature/US-0150-tc-audit-epic-0009
 Acceptance Criteria:
 
-- [ ] AC-0548: Test cases written covering all ACs from EPIC-0009 stories (cost parsing, t-shirt projection, per-epic budget display)
-- [ ] AC-0549: All written test cases executed and Pass/Fail status recorded
-- [ ] AC-0550: Any failures result in a logged BUG entry in docs/BUGS.md
+- [x] AC-0548: Test cases written covering all ACs from EPIC-0009 stories (cost parsing, t-shirt projection, per-epic budget display)
+- [x] AC-0549: All written test cases executed and Pass/Fail status recorded
+- [x] AC-0550: Any failures result in a logged BUG entry in docs/BUGS.md
 ```
 
 ```

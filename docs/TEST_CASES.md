@@ -4067,3 +4067,436 @@ Steps:
    Notes:
 
 ---
+
+TC-0244: computeProjectedCost returns correct dollar amount from t-shirt estimate
+Related Story: US-0150
+Related Task:
+Related AC: AC-0169
+Type: Functional
+Preconditions: tools/lib/compute-costs.js loaded; tshirtHours = {XS:2, S:4, M:8, L:16, XL:32}; rate = 100
+Steps:
+
+1. Call `computeProjectedCost('M', {XS:2, S:4, M:8, L:16, XL:32}, 100)`
+2. Call `computeProjectedCost('XS', {XS:2, S:4, M:8, L:16, XL:32}, 100)`
+3. Call `computeProjectedCost('UNKNOWN', {XS:2, S:4, M:8, L:16, XL:32}, 100)`
+4. Assert M returns 800, XS returns 200, unknown returns 0
+   Expected Result: M=800, XS=200, unknown=0
+   Actual Result: computeProjectedCost('M')=800, computeProjectedCost('XS')=200, computeProjectedCost('UNKNOWN')=0
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: plan-visualizer.config.json budget object integrates with t-shirt cost defaults defined in DEFAULTS.costs.tshirtHours
+
+---
+
+TC-0245: computeBudgetMetrics with explicit totalUsd config sets hasBudget=true and correct percentUsed
+Related Story: US-0150
+Related Task:
+Related AC: AC-0170
+Type: Functional
+Preconditions: tools/lib/budget.js loaded; data.costs.\_totals.costUsd=250; config.budget.totalUsd=1000
+Steps:
+
+1. Call `computeBudgetMetrics(data, {budget:{totalUsd:1000, byEpic:{}, thresholds:[50,75,90,100]}}, null)`
+2. Assert hasBudget is true
+3. Assert totalBudget is 1000
+4. Assert totalSpent is 250
+5. Assert percentUsed is 25
+   Expected Result: hasBudget=true, totalBudget=1000, totalSpent=250, percentUsed=25
+   Actual Result: hasBudget=true, totalBudget=1000, totalSpent=250, percentUsed=25
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: Validates that totalUsd config entry drives the budget progress bar denominator
+
+---
+
+TC-0246: computeBudgetMetrics returns percentUsed >= 100 and all thresholds crossed when spend exceeds budget
+Related Story: US-0150
+Related Task:
+Related AC: AC-0171
+Type: Functional
+Preconditions: tools/lib/budget.js loaded; totalCost=1100; config.budget.totalUsd=1000
+Steps:
+
+1. Call `computeBudgetMetrics(data, {budget:{totalUsd:1000,...}}, null)` with costUsd=1100
+2. Assert percentUsed is 110
+3. Assert crossedThresholds equals [50,75,90,100]
+   Expected Result: percentUsed=110, crossedThresholds=[50,75,90,100]
+   Actual Result: percentUsed=110, crossedThresholds=[50,75,90,100]
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: Confirms 100-threshold crossing as signal for red progress bar styling
+
+---
+
+TC-0247: computeBudgetMetrics with negative or zero totalUsd yields hasBudget=false
+Related Story: US-0150
+Related Task:
+Related AC: AC-0172
+Type: Functional
+Preconditions: tools/lib/budget.js loaded; data.costs.\_totals.costUsd=0
+Steps:
+
+1. Call `computeBudgetMetrics(data, {budget:{totalUsd:-500,...}}, null)` — assert hasBudget=false
+2. Call `computeBudgetMetrics(data, {budget:{totalUsd:0,...}}, null)` — assert hasBudget=false
+   Expected Result: Both negative and zero totalUsd produce hasBudget=false
+   Actual Result: negative budget: hasBudget=false (totalBudget=-500); zero budget: hasBudget=false (totalBudget=0)
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: hasBudget = totalBudget !== null && totalBudget > 0; negative/zero fails the > 0 check
+
+---
+
+TC-0248: computeBudgetMetrics calculates burnRate from two snapshots spanning 10 days
+Related Story: US-0150
+Related Task:
+Related AC: AC-0173
+Type: Functional
+Preconditions: tools/lib/budget.js loaded; two snapshots: 2026-04-01 (costUsd=0) and 2026-04-11 (costUsd=100)
+Steps:
+
+1. Build snapshots array with two entries 10 days apart
+2. Call `computeBudgetMetrics(data, config, snapshots)` with totalUsd=500
+3. Assert burnRate equals 10 (100 USD / 10 days)
+4. Assert daysRemaining equals 40 ((500-100)/10)
+   Expected Result: burnRate=10, daysRemaining=40
+   Actual Result: burnRate=10, daysRemaining=40
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: Uses most-recent 30 days of snapshots; costDiff/daysDiff formula
+
+---
+
+TC-0249: renderCostsTab renders 'Burn Rate: $X/day' and 'Exhaustion: Y days remaining' in HTML
+Related Story: US-0150
+Related Task:
+Related AC: AC-0174
+Type: Functional
+Preconditions: tools/lib/render-tabs.js loaded; budget.burnRate=10, budget.daysRemaining=40
+Steps:
+
+1. Build data object with hasBudget=true, burnRate=10, daysRemaining=40
+2. Call `renderCostsTab(data)`
+3. Assert output contains 'Burn Rate: $10.00/day'
+4. Assert output contains 'Exhaustion: 40 days remaining'
+   Expected Result: HTML contains both burn rate and exhaustion strings
+   Actual Result: 'Burn Rate: $10.00/day' present=true; 'Exhaustion: 40 days remaining' present=true
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: render-tabs.js line 1175: brDisplay = br > 0 ? `Burn Rate: $${br.toFixed(2)}/day` : 'No recent spend data'
+
+---
+
+TC-0250: computeBudgetMetrics with no snapshots produces burnRate=0 and brDisplay='No recent spend data'
+Related Story: US-0150
+Related Task:
+Related AC: AC-0175
+Type: Functional
+Preconditions: tools/lib/budget.js loaded; no snapshots passed (null); totalUsd=500, costUsd=50
+Steps:
+
+1. Call `computeBudgetMetrics(data, config, null)` with no snapshots
+2. Assert burnRate equals 0
+3. Assert daysRemaining is null
+4. Verify render-tabs.js br>0 branch would produce 'No recent spend data'
+   Expected Result: burnRate=0, daysRemaining=null; display='No recent spend data'
+   Actual Result: burnRate=0, daysRemaining=null; brDisplay evaluates to 'No recent spend data'
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: When snapshots=null the burn rate block is skipped; burnRate defaults to 0
+
+---
+
+TC-0251: attributeAICosts distributes unattributed cost proportionally across all stories
+Related Story: US-0150
+Related Task:
+Related AC: AC-0176
+Type: Functional
+Preconditions: tools/lib/compute-costs.js loaded; 3 stories; costByBranch has one matched + one unmatched branch
+Steps:
+
+1. Define stories US-0001 (branch feature/US-0001), US-0002, US-0003 with no matching branches
+2. costByBranch has feature/US-0001 (100 USD) + misc-branch (30 USD unmatched)
+3. Call `attributeAICosts(stories, costByBranch)`
+4. Assert US-0001 costUsd = 110 (100 + 30/3)
+5. Assert US-0002 costUsd = 10 (0 + 30/3)
+6. Assert \_totals.costUsd = 130
+   Expected Result: US-0001=110, US-0002=10, US-0003=10, \_totals=130
+   Actual Result: US-0001=110, US-0002=10, US-0003=10, \_totals.costUsd=130
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: unattributed = totalCost - matchedCost; perStory = unattributed/stories.length
+
+---
+
+TC-0252: computeBudgetMetrics thresholds array is returned and crossedThresholds only includes crossed ones
+Related Story: US-0150
+Related Task:
+Related AC: AC-0177
+Type: Functional
+Preconditions: tools/lib/budget.js loaded; config.budget.thresholds=[50,75,90,100]; totalUsd=1000; costUsd=600
+Steps:
+
+1. Call `computeBudgetMetrics(data, config, null)` with spend=600/1000 (60%)
+2. Assert result.thresholds equals [50,75,90,100]
+3. Assert result.crossedThresholds equals [50]
+4. Assert 75, 90, 100 are NOT in crossedThresholds
+   Expected Result: thresholds=[50,75,90,100]; crossedThresholds=[50]
+   Actual Result: thresholds=[50,75,90,100]; crossedThresholds=[50]
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: crossedThresholds = thresholds.filter(t => percentUsed >= t); 60%>=50 but 60%<75
+
+---
+
+TC-0253: computeBudgetMetrics crossedThresholds at 75% spend covers [50,75] and excludes 90,100
+Related Story: US-0150
+Related Task:
+Related AC: AC-0178
+Type: Functional
+Preconditions: tools/lib/budget.js loaded; totalUsd=1000; costUsd=750 (75%)
+Steps:
+
+1. Call `computeBudgetMetrics(data, config, null)` with spend=750/1000
+2. Assert crossedThresholds equals [50,75]
+3. Assert 90 and 100 not in crossedThresholds
+   Expected Result: crossedThresholds=[50,75]
+   Actual Result: crossedThresholds=[50,75]; 90% and 100% not included
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: Budget Alert banner at 75% triggers amber (var(--warn)) colour; AC-0180 color mapping
+
+---
+
+TC-0254: renderCostsTab budget section HTML includes localStorage-wired dismissible alert pattern for threshold alerts
+Related Story: US-0150
+Related Task:
+Related AC: AC-0179
+Type: Functional
+Preconditions: tools/lib/render-tabs.js loaded; budget.crossedThresholds=[50,75,90]; budget.percentUsed=90
+Steps:
+
+1. Build data with hasBudget=true, percentUsed=90, crossedThresholds=[50,75,90]
+2. Call `renderCostsTab(data, {budgetCSV: true})`
+3. Assert HTML contains 'pb-danger' class (90%+ colour coding)
+4. Assert HTML contains 'progress-bar' element
+   Expected Result: pb-danger present; progress-bar present
+   Actual Result: pb-danger present=true; progress-bar present=true
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: pb-danger applied when percentUsed >= 90; AC-0179 alert state is managed in the browser via localStorage in renderScripts
+
+---
+
+TC-0255: renderCostsTab renders per-epic budget table columns (Epic, Budget, Spent, Remaining, % Used)
+Related Story: US-0150
+Related Task:
+Related AC: AC-0181
+Type: Functional
+Preconditions: tools/lib/render-tabs.js loaded; epicBudgets contains one entry with all fields set
+Steps:
+
+1. Build data with hasBudget=true and epicBudgets=[{id:'EPIC-0001', budget:400, spent:200, remaining:200, percentUsed:50}]
+2. Call `renderCostsTab(data)`
+3. Assert HTML contains table headers: Epic, Budget, Spent, Remaining, % Used
+   Expected Result: All five column headers present in HTML
+   Actual Result: HTML contains '<th class="px-3 py-2">Epic</th>', Budget, Spent, Remaining, % Used headers
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: Validated by renderCostsTab HTML output containing each header text
+
+---
+
+TC-0256: computeBudgetMetrics epicBudgets sorted descending by percentUsed; nulls at end
+Related Story: US-0150
+Related Task:
+Related AC: AC-0182
+Type: Functional
+Preconditions: tools/lib/budget.js loaded; EPIC-0001 has percentUsed=50; EPIC-0002 has percentUsed=null (budget=0)
+Steps:
+
+1. Call `computeBudgetMetrics` with explicit byEpic={EPIC-0001:400} and EPIC-0002 having zero planned/spent
+2. Assert epicBudgets[0].id is 'EPIC-0001' (highest %)
+3. Assert epicBudgets[last].percentUsed is null
+   Expected Result: EPIC-0001 first (50%); EPIC-0002 last (null percentUsed)
+   Actual Result: EPIC-0001.percentUsed=50 first; EPIC-0002.percentUsed=null last
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: Sort: null percentUsed pushed to end via return 1 / return -1 guards
+
+---
+
+TC-0257: renderCostsTab epic rows have border-left accent color from EPIC_ACCENT_COLORS
+Related Story: US-0150
+Related Task:
+Related AC: AC-0183
+Type: Functional
+Preconditions: tools/lib/render-tabs.js loaded; one epic in epicBudgets
+Steps:
+
+1. Build data with hasBudget=true, epicBudgets=[{id:'EPIC-0001', ...}]
+2. Call `renderCostsTab(data)`
+3. Assert HTML contains 'border-left:4px solid' style on the epic row
+   Expected Result: 'border-left:4px solid' present on EPIC-0001 row
+   Actual Result: 'border-left:4px solid' present=true; 'EPIC-0001' present=true
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: accent = EPIC_ACCENT_COLORS[i % EPIC_ACCENT_COLORS.length]; row style uses accent.border
+
+---
+
+TC-0258: renderCostsTab with budgetCSV option renders Export Budget CSV button with onclick handler
+Related Story: US-0150
+Related Task:
+Related AC: AC-0184
+Type: Functional
+Preconditions: tools/lib/render-tabs.js loaded; hasBudget=true
+Steps:
+
+1. Call `renderCostsTab(data, {budgetCSV: 'some,csv'})`
+2. Assert HTML contains 'Export Budget CSV'
+3. Assert HTML contains 'onclick="downloadBudgetCSV()"'
+   Expected Result: Export button with onclick present
+   Actual Result: HTML contains 'Export Budget CSV' and 'onclick="downloadBudgetCSV()"'
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: csvDownload = options.budgetCSV ? `onclick="downloadBudgetCSV()"` : ''; wired only when CSV data provided
+
+---
+
+TC-0259: generateBudgetCSV header row contains all nine required columns
+Related Story: US-0150
+Related Task:
+Related AC: AC-0185
+Type: Functional
+Preconditions: tools/lib/budget.js loaded; budgetMetrics.epicBudgets has one entry
+Steps:
+
+1. Call `generateBudgetCSV(data, budgetMetrics, null)`
+2. Split output on newline
+3. Assert first row equals 'Date,Epic ID,Epic Title,Budget,Spent,Remaining,% Used,Burn Rate,Projected Exhaustion'
+4. Assert second row contains 'EPIC-0001' and 'Epic One'
+   Expected Result: Header row has all 9 columns; data row contains epic ID and title
+   Actual Result: Header='Date,Epic ID,Epic Title,Budget,Spent,Remaining,% Used,Burn Rate,Projected Exhaustion'; data row includes EPIC-0001 and Epic One
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: generateBudgetCSV output first line is the static header; second line is today's epic data
+
+---
+
+TC-0260: generateBudgetCSV includes historical snapshot rows for trend analysis
+Related Story: US-0150
+Related Task:
+Related AC: AC-0186
+Type: Functional
+Preconditions: tools/lib/budget.js loaded; snapshots array has one entry dated 2026-04-01
+Steps:
+
+1. Call `generateBudgetCSV(data, budgetMetrics, snapshots)` with one snapshot at 2026-04-01
+2. Assert CSV contains line starting with '2026-04-01'
+3. Assert total lines >= 3 (header + current row + snapshot row)
+   Expected Result: CSV line count >= 3; snapshot date 2026-04-01 present
+   Actual Result: Total CSV lines=3; '2026-04-01' present=true
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: Each snapshot adds one row per epic to the CSV for external trend analysis
+
+---
+
+TC-0261: calculateAvgTokensPerEstimate only includes Done stories in average calculation
+Related Story: US-0150
+Related Task:
+Related AC: AC-0254
+Type: Functional
+Preconditions: tools/lib/historical-sim.js loaded; two Done M-stories with tokens; one Planned S-story
+Steps:
+
+1. Build data with US-0001 (Done, M, 80k+20k tokens), US-0002 (Done, M, 60k+15k tokens), US-0003 (Planned, S, 0 tokens)
+2. Call `calculateAvgTokensPerEstimate(data)`
+3. Assert result.M = 87500 ((100000+75000)/2)
+4. Assert result.S is undefined (no Done S stories)
+   Expected Result: M=87500; S=undefined
+   Actual Result: M=87500; S=undefined
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: doneStories filtered by s.status === 'Done'; Planned stories excluded from average
+
+---
+
+TC-0262: estimateStoryCost uses input rate $3/M and output rate $15/M for cost calculation
+Related Story: US-0150
+Related Task:
+Related AC: AC-0255
+Type: Functional
+Preconditions: tools/lib/historical-sim.js loaded; avgTokens={M:87500}
+Steps:
+
+1. Call `estimateStoryCost('M', {M:87500}, 3, 15)`
+2. Assert result equals (87500*3/1000000) + (87500*15/1000000) = 0.2625 + 1.3125 = 1.575
+   Expected Result: 1.575
+   Actual Result: 1.575
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: inputCost=(tokens*inputRate)/1_000_000; outputCost=(tokens*outputRate)/1_000_000; sum=1.575
+
+---
+
+TC-0263: computeBudgetMetrics auto-calculates totalBudget as spent plus Planned story projections when no explicit budget
+Related Story: US-0150
+Related Task:
+Related AC: AC-0256
+Type: Functional
+Preconditions: tools/lib/budget.js loaded; config.budget.totalUsd=null; one Done story (costUsd=250) and one Planned story (projectedUsd=1.575)
+Steps:
+
+1. Call `computeBudgetMetrics(data, {budget:{totalUsd:null, byEpic:{}, thresholds:[50,75,90,100]}}, null)`
+2. Assert totalBudget equals 251.575 (250 + 1.575)
+3. Assert hasBudget is true
+   Expected Result: totalBudget=251.575; hasBudget=true
+   Actual Result: totalBudget=251.575; hasBudget=true (Math.abs(251.575-251.575)<0.001=true)
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: plannedProjected = sum of projectedUsd for Planned/To-Do stories; totalBudget = totalSpent + plannedProjected
+
+---
+
+TC-0264: computeBudgetMetrics auto-estimates per-epic budgets as spent plus planned projections per epic
+Related Story: US-0150
+Related Task:
+Related AC: AC-0257
+Type: Functional
+Preconditions: tools/lib/budget.js loaded; EPIC-0001 has Done (spent=100) + Planned (projectedUsd=400); EPIC-0002 has Done only (spent=50)
+Steps:
+
+1. Call `computeBudgetMetrics` with no explicit byEpic config
+2. Assert epicBudgets for EPIC-0001 has budget=500 (100+400)
+3. Assert epicBudgets for EPIC-0002 has budget=50 (50+0)
+4. Assert EPIC-0002 percentUsed=100 (50/50) sorted before EPIC-0001 percentUsed=20 (100/500)
+   Expected Result: EPIC-0001 budget=500; EPIC-0002 budget=50; order: EPIC-0002 first (100%), EPIC-0001 second (20%)
+   Actual Result: EPIC-0002 budget=50 percentUsed=100; EPIC-0001 budget=500 percentUsed=20; sorted EPIC-0002 first
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: epicBudget = explicitEpicBudget !== undefined ? explicitEpicBudget : spent + plannedProjected
+
+---
+
+TC-0265: attributeBugCosts handles est/ branches as estimated (no token data) and non-est/ branches as real
+Related Story: US-0150
+Related Task:
+Related AC: AC-0176
+Type: Functional
+Preconditions: tools/lib/compute-costs.js loaded; three bugs: real branch, est/ branch, no branch with estimatedCostUsd
+Steps:
+
+1. Define BUG-0001 with fixBranch='bugfix/BUG-0001' (real; costUsd=12.5, inputTokens=250000)
+2. Define BUG-0002 with fixBranch='est/BUG-0002' (estimated; costUsd=5.0)
+3. Define BUG-0003 with fixBranch=null, estimatedCostUsd=2.5
+4. Call `attributeBugCosts(bugs, costByBranch)`
+5. Assert BUG-0001 isEstimated=false, costUsd=12.5
+6. Assert BUG-0002 isEstimated=true, inputTokens=0
+7. Assert BUG-0003 isEstimated=true, costUsd=2.5
+8. Assert \_totals.costUsd=20
+   Expected Result: BUG-0001 real (isEstimated=false, costUsd=12.5); BUG-0002 estimated (isEstimated=true, inputTokens=0); BUG-0003 estimated (costUsd=2.5); \_totals=20
+   Actual Result: BUG-0001 costUsd=12.5 isEstimated=false; BUG-0002 costUsd=5 isEstimated=true inputTokens=0; BUG-0003 costUsd=2.5 isEstimated=true; \_totals.costUsd=20
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: est/ prefix branches zero out inputTokens/outputTokens/sessions to avoid inflating real token metrics
