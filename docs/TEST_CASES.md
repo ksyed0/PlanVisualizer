@@ -4612,9 +4612,11 @@ Steps:
 1. Run `node -e "const m = require('./tools/lib/render-utils'); console.log(Object.keys(m).join(', '))"`
 2. Run `node -e "const m = require('./tools/lib/render-shell'); console.log(Object.keys(m).join(', '))"`
 3. Run `node -e "const m = require('./tools/lib/render-scripts'); console.log(Object.keys(m).join(', '))"`
-4. Confirm each module exports a coherent set of render functions following the existing contract
-   Expected Result: Each module exports named render functions; render-scripts exports renderScripts and renderPrintCSS
-   Actual Result: render-utils exports esc, sparkline, BADGE_TONE, badge etc; render-shell exports renderChrome, renderSidebar, renderFilterBar etc; render-scripts exports renderScripts, renderPrintCSS — all contracts intact
+4. Run: node -e "const m = require('./tools/lib/render-tabs'); console.log(Object.keys(m).join(', '))"
+   Expected: A comma-separated list of exported function names (e.g. renderStoriesTab, renderBugsTab, etc.)
+5. Confirm each module exports a coherent set of render functions following the existing contract
+   Expected Result: Each module exports named render functions; render-scripts exports renderScripts and renderPrintCSS; render-tabs exports all tab renderer functions (renderHierarchyTab, renderKanbanTab, renderTraceabilityTab, renderStatusTab, renderTrendsTab, renderChartsTab, renderCostsTab, renderBugsTab, renderLessonsTab, renderRecentActivity, renderStakeholderTab)
+   Actual Result: render-utils exports esc, sparkline, BADGE_TONE, badge etc; render-shell exports renderChrome, renderSidebar, renderFilterBar etc; render-scripts exports renderScripts, renderPrintCSS; render-tabs exports renderHierarchyTab, renderKanbanTab, renderTraceabilityTab, renderStatusTab, renderTrendsTab, renderChartsTab, renderCostsTab, renderBugsTab, renderLessonsTab, renderRecentActivity, renderStakeholderTab — all contracts intact
    Status: [x] Pass
    Defect Raised: None
    Notes: render-tabs exports 11 named tab renderers (renderHierarchyTab, renderKanbanTab, etc.)
@@ -4719,7 +4721,7 @@ Type: Functional
 Preconditions: Node.js available; tools/update-sdlc-status.js loaded
 Steps:
 
-1. Run a node one-liner that calls HANDLERS.log 205 times then checks data.log.length
+1. Run `node -e "const {HANDLERS}=require('./tools/update-sdlc-status'); const data={log:[]}; for(let i=0;i<205;i++) HANDLERS.log(data,{message:'entry '+i}); console.log('log.length:', data.log.length)"`
 2. Confirm length does not exceed 200
    Expected Result: data.log.length === 200 after 205 log calls
    Actual Result: Log length after 205 entries: 200 — trim enforced correctly; slice(-200) keeps newest entries
