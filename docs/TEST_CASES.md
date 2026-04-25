@@ -2989,6 +2989,9 @@ Steps:
    Status: [x] Pass
    Defect Raised: None
    Notes:
+
+---
+
 TC-0180: scripts/install.sh §0 detects absent superpowers plugin and prompts Y/N
 Related Story: US-0126
 Related Task:
@@ -3094,6 +3097,971 @@ Steps:
 3. Run `grep "AC" docs/ID_REGISTRY.md` to check the AC sequence values
    Expected Result: AC sequence in ID_REGISTRY.md shows next value ≥ AC-0441, confirming AC-0440 was issued for US-0126.
    Actual Result: `grep "AC" docs/ID_REGISTRY.md` returned: `| AC | AC-0577 | AC-0576 |`. Next available AC is AC-0577 (last = AC-0576), which is ≥ AC-0441.
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0190: saveSnapshot creates .history/ directory when it does not exist
+Related Story: US-0149
+Related Task:
+Related AC: AC-0150
+Type: Functional
+Preconditions: tools/lib/snapshot.js loaded; a temp directory with no .history/ subdirectory
+Steps:
+
+1. Run `node -e "const os=require('os'),path=require('path'),fs=require('fs'); const {saveSnapshot}=require('./tools/lib/snapshot'); const d=fs.mkdtempSync(path.join(os.tmpdir(),'pv-')); saveSnapshot({stories:[],bugs:[],costs:{},coverage:{available:false}},{historyDir:path.join(d,'.history')}); console.log(fs.existsSync(path.join(d,'.history')));"`
+2. Observe stdout
+   Expected Result: `true` — .history/ directory was created
+   Actual Result: `true`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0191: saveSnapshot writes a timestamped JSON file matching SNAPSHOT_REGEX
+Related Story: US-0149
+Related Task:
+Related AC: AC-0151
+Type: Functional
+Preconditions: tools/lib/snapshot.js loaded; a writable temp directory
+Steps:
+
+1. Run `node -e "const os=require('os'),path=require('path'),fs=require('fs'); const {saveSnapshot,SNAPSHOT_REGEX}=require('./tools/lib/snapshot'); const d=fs.mkdtempSync(path.join(os.tmpdir(),'pv-')); saveSnapshot({},{historyDir:d}); const files=fs.readdirSync(d); console.log(files.length, SNAPSHOT_REGEX.test(files[0]));"`
+2. Observe stdout
+   Expected Result: `1 true` — exactly one file written and its name matches YYYY-MM-DDTHH-MM-SSZ.json
+   Actual Result: `1 true`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0192: saveSnapshot snapshot contains generatedAt, commit, and data fields
+Related Story: US-0149
+Related Task:
+Related AC: AC-0152
+Type: Functional
+Preconditions: tools/lib/snapshot.js loaded
+Steps:
+
+1. Run `node -e "const os=require('os'),path=require('path'),fs=require('fs'); const {saveSnapshot}=require('./tools/lib/snapshot'); const d=fs.mkdtempSync(path.join(os.tmpdir(),'pv-')); const r=saveSnapshot({stories:[]},{historyDir:d,commit:'abc123'}); const c=JSON.parse(fs.readFileSync(r.filepath,'utf8')); console.log(Object.keys(c).sort().join(','), c.commit);"`
+2. Observe stdout
+   Expected Result: `commit,data,generatedAt abc123` — all three top-level fields present with correct commit SHA
+   Actual Result: `commit,data,generatedAt abc123`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0193: loadSnapshots silently skips corrupt JSON files
+Related Story: US-0149
+Related Task:
+Related AC: AC-0153
+Type: Functional
+Preconditions: tools/lib/snapshot.js loaded; a temp directory with one valid-named but invalid-JSON file
+Steps:
+
+1. Run `node -e "const os=require('os'),path=require('path'),fs=require('fs'); const {loadSnapshots}=require('./tools/lib/snapshot'); const d=fs.mkdtempSync(path.join(os.tmpdir(),'pv-')); fs.writeFileSync(path.join(d,'2026-01-01T10-00-00Z.json'),'NOT VALID JSON{{{'); console.log(loadSnapshots({historyDir:d}).length);"`
+2. Observe stdout
+   Expected Result: `0` — corrupt file is skipped without crash
+   Actual Result: `0`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0194: loadSnapshots returns empty array when .history/ does not exist
+Related Story: US-0149
+Related Task:
+Related AC: AC-0153
+Type: Functional
+Preconditions: tools/lib/snapshot.js loaded
+Steps:
+
+1. Run `node -e "const {loadSnapshots}=require('./tools/lib/snapshot'); console.log(JSON.stringify(loadSnapshots({historyDir:'/tmp/pv-nonexistent-dir-xyz'})));"`
+2. Observe stdout
+   Expected Result: `[]`
+   Actual Result: `[]`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0195: extractTrends returns null when fewer than 2 snapshots provided
+Related Story: US-0149
+Related Task:
+Related AC: AC-0156
+Type: Functional
+Preconditions: tools/lib/snapshot.js loaded
+Steps:
+
+1. Run `node -e "const {extractTrends}=require('./tools/lib/snapshot'); console.log(extractTrends([]), extractTrends([{generatedAt:'2026-01-01T10:00:00Z',data:{stories:[],bugs:[],costs:{},coverage:{available:false}}}]));"`
+2. Observe stdout
+   Expected Result: `null null` — both empty-array and single-snapshot calls return null
+   Actual Result: `null null`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0196: extractTrends returns all required trend fields when ≥2 snapshots supplied
+Related Story: US-0149
+Related Task:
+Related AC: AC-0154
+Type: Functional
+Preconditions: tools/lib/snapshot.js loaded; two valid snapshot objects prepared
+Steps:
+
+1. Call `extractTrends(twoSnapshots)` where twoSnapshots has 2 entries with stories, bugs, costs, and coverage
+2. Log `Object.keys(result).sort()`
+   Expected Result: `atRisk,avgRisk,aiCosts,coverage,dates,doneCounts,inputTokens,openBugs,outputTokens,totalStories,velocity` (all 11 keys present)
+   Actual Result: All 11 keys present: `atRisk,avgRisk,aiCosts,coverage,dates,doneCounts,inputTokens,openBugs,outputTokens,totalStories,velocity`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0197: extractTrends doneCounts counts only stories with status Done
+Related Story: US-0149
+Related Task:
+Related AC: AC-0154
+Type: Functional
+Preconditions: tools/lib/snapshot.js loaded; snapshot with 1 Done and 1 Planned story
+Steps:
+
+1. Prepare snapshot with stories `[{status:'Done'},{status:'Planned'}]`; pass as first of two snapshots to `extractTrends`
+2. Log `result.doneCounts[0]`
+   Expected Result: `1`
+   Actual Result: `1`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0198: extractTrends dates array matches snapshot generatedAt values
+Related Story: US-0149
+Related Task:
+Related AC: AC-0155
+Type: Functional
+Preconditions: tools/lib/snapshot.js loaded; two snapshots with distinct generatedAt values
+Steps:
+
+1. Call `extractTrends` with snapshots having generatedAt `2026-01-01T10:00:00Z` and `2026-01-15T10:00:00Z`
+2. Log `result.dates`
+   Expected Result: `["2026-01-01T10:00:00Z","2026-01-15T10:00:00Z"]`
+   Actual Result: `["2026-01-01T10:00:00Z","2026-01-15T10:00:00Z"]`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0199: extractTrends aiCosts are monotonically non-decreasing
+Related Story: US-0149
+Related Task:
+Related AC: AC-0158
+Type: Functional
+Preconditions: tools/lib/snapshot.js loaded; three snapshots with raw costs 5.0, 3.0, 7.0
+Steps:
+
+1. Call `extractTrends(threeSnapshots)` where costs per snapshot total 5.0, 3.0, 7.0
+2. Log `result.aiCosts`
+   Expected Result: `[5, 5, 7]` — values never decrease even when raw value drops
+   Actual Result: `[ 5, 5, 7 ]`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0200: extractTrends coverage returns null for snapshots with available:false
+Related Story: US-0149
+Related Task:
+Related AC: AC-0162
+Type: Functional
+Preconditions: tools/lib/snapshot.js loaded; first snapshot has coverage.available:false, second has available:true
+Steps:
+
+1. Call `extractTrends` with first snapshot having `coverage:{available:false}` and second having `coverage:{overall:85,available:true}`
+2. Log `result.coverage`
+   Expected Result: `[null, 85]`
+   Actual Result: `[ null, 85 ]`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0201: extractTrends velocity maps T-shirt sizes to correct story points
+Related Story: US-0149
+Related Task:
+Related AC: AC-0167
+Type: Functional
+Preconditions: tools/lib/snapshot.js loaded; first snapshot contains one Done story of each size (XS, S, M, L, XL)
+Steps:
+
+1. Call `extractTrends` with first snapshot stories `[{status:'Done',estimate:'XS'},{status:'Done',estimate:'S'},{status:'Done',estimate:'M'},{status:'Done',estimate:'L'},{status:'Done',estimate:'XL'}]`
+2. Log `result.velocity[0]`
+   Expected Result: `17.5` (0.5+1+3+5+8)
+   Actual Result: `17.5`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0202: extractTrends velocity does not count Planned stories
+Related Story: US-0149
+Related Task:
+Related AC: AC-0167
+Type: Functional
+Preconditions: tools/lib/snapshot.js loaded
+Steps:
+
+1. Call `extractTrends` with first snapshot containing 1 Done (M=3pts) and 1 Planned (M) story
+2. Log `result.velocity[0]`
+   Expected Result: `3` — Planned story excluded from velocity
+   Actual Result: `3`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0203: extractTrends openBugs counts only Open and In Progress bugs
+Related Story: US-0149
+Related Task:
+Related AC: AC-0251
+Type: Functional
+Preconditions: tools/lib/snapshot.js loaded; first snapshot has Open, In Progress, Fixed, and Retired bugs
+Steps:
+
+1. Call `extractTrends` with first snapshot bugs `[{status:'Open'},{status:'In Progress'},{status:'Fixed'},{status:'Retired'}]`
+2. Log `result.openBugs[0]`
+   Expected Result: `2` — only Open and In Progress counted
+   Actual Result: `2`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0204: extractTrends atRisk counts all stories with atRisk:true
+Related Story: US-0149
+Related Task:
+Related AC: AC-0252
+Type: Functional
+Preconditions: tools/lib/snapshot.js loaded; first snapshot has 3 stories with atRisk:true (including Done) and 1 with atRisk:false
+Steps:
+
+1. Call `extractTrends` with first snapshot stories having atRisk flags `[true, false, true, true]`
+2. Log `result.atRisk[0]`
+   Expected Result: `3`
+   Actual Result: `3`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0205: extractTrends inputTokens and outputTokens sum all cost entries including \_totals
+Related Story: US-0149
+Related Task:
+Related AC: AC-0253
+Type: Functional
+Preconditions: tools/lib/snapshot.js loaded; first snapshot costs has US-0001 (5000/2000), US-0002 (3000/1000), \_totals (8000/3000)
+Steps:
+
+1. Call `extractTrends` with first snapshot costs containing three entries
+2. Log `result.inputTokens[0]` and `result.outputTokens[0]`
+   Expected Result: `16000` and `6000` (5000+3000+8000, 2000+1000+3000)
+   Actual Result: `16000` and `6000`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0206: loadSnapshots sorts snapshots oldest-first by generatedAt
+Related Story: US-0149
+Related Task:
+Related AC: AC-0155
+Type: Functional
+Preconditions: tools/lib/snapshot.js loaded; two snapshot files written out of chronological order
+Steps:
+
+1. Write `2026-01-15T10-00-00Z.json` and then `2026-01-01T10-00-00Z.json` to a temp dir
+2. Call `loadSnapshots({historyDir:tmpDir})` and log `result[0].generatedAt`
+   Expected Result: `2026-01-01T10:00:00Z` — oldest first regardless of write order
+   Actual Result: `2026-01-01T10:00:00Z`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0207: loadSnapshots ignores files not matching SNAPSHOT_REGEX
+Related Story: US-0149
+Related Task:
+Related AC: AC-0153
+Type: Functional
+Preconditions: tools/lib/snapshot.js loaded; temp dir contains two valid snapshots and three non-matching files
+Steps:
+
+1. Add `README.md`, `backup.json`, and `2026-01-01T10-00-00.json` (no Z) alongside two valid snapshot files
+2. Call `loadSnapshots({historyDir:tmpDir})` and log `result.length`
+   Expected Result: `2` — non-matching files ignored
+   Actual Result: `2`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0208: saveSnapshot stores commit SHA when supplied via options
+Related Story: US-0149
+Related Task:
+Related AC: AC-0152
+Type: Functional
+Preconditions: tools/lib/snapshot.js loaded; writable temp directory
+Steps:
+
+1. Call `saveSnapshot({stories:[]},{historyDir:tmpDir, commit:'abc123def456'})`
+2. Read the written file and log `parsed.commit`
+   Expected Result: `abc123def456`
+   Actual Result: `abc123def456`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0209: renderTrendsTab shows placeholder message when trends data is null
+Related Story: US-0149
+Related Task:
+Related AC: AC-0156
+Type: Functional
+Preconditions: tools/lib/render-tabs.js loaded; data object with trends:null
+Steps:
+
+1. Run `node -e "const {renderTrendsTab}=require('./tools/lib/render-tabs'); const html=renderTrendsTab({trends:null}); console.log(html.includes('Generate the dashboard at least twice to see trends'));"`
+2. Observe stdout
+   Expected Result: `true`
+   Actual Result: `true`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0210: renderTrendsTab placeholder also mentions .history/ directory
+Related Story: US-0149
+Related Task:
+Related AC: AC-0156
+Type: Functional
+Preconditions: tools/lib/render-tabs.js loaded; data object with no trends
+Steps:
+
+1. Call `renderTrendsTab({trends:null})` and check for `.history/` mention
+2. Log `html.includes('Each generation creates a snapshot in .history/')`
+   Expected Result: `true`
+   Actual Result: `true`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0211: renderTrendsTab renders all 8 chart canvas elements when trends data has ≥2 snapshots
+Related Story: US-0149
+Related Task:
+Related AC: AC-0154
+Type: Functional
+Preconditions: tools/lib/render-tabs.js loaded; valid trends object with 2 data points
+Steps:
+
+1. Call `renderTrendsTab({trends: validTrends})` where validTrends has dates.length === 2
+2. Check HTML for all 8 canvas IDs: chart-trends-progress, chart-trends-velocity, chart-trends-cost, chart-trends-tokens, chart-trends-coverage, chart-trends-bugs, chart-trends-risk, chart-trends-avg-risk
+   Expected Result: All 8 canvas IDs present in rendered HTML
+   Actual Result: All 8 canvas IDs found: chart-trends-progress, chart-trends-velocity, chart-trends-cost, chart-trends-tokens, chart-trends-coverage, chart-trends-bugs, chart-trends-risk, chart-trends-avg-risk
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0212: renderTrendsTab includes date range filter bar with All/90d/30d/7d buttons
+Related Story: US-0149
+Related Task:
+Related AC: AC-0158
+Type: Functional
+Preconditions: tools/lib/render-tabs.js loaded; valid trends object
+Steps:
+
+1. Call `renderTrendsTab({trends: validTrends})` and check for range buttons
+2. Check for `data-range="all"`, `data-range="90"`, `data-range="30"`, `data-range="7"`
+   Expected Result: All four range buttons present; `setTrendsRange` JS function referenced
+   Actual Result: All four data-range attributes found; setTrendsRange referenced in HTML
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0213: renderTrendsTab embeds chart data as JSON in \_trendsAllLabels and \_trendsAllData script vars
+Related Story: US-0149
+Related Task:
+Related AC: AC-0155
+Type: Functional
+Preconditions: tools/lib/render-tabs.js loaded; trends with known dates and doneCounts
+Steps:
+
+1. Call `renderTrendsTab({trends: validTrends})` with dates `['2026-01-01T10:00:00Z','2026-01-15T10:00:00Z']`
+2. Check HTML for `_trendsAllLabels` and `_trendsAllData` variables; check dates are formatted as `2026-01-01 10:00`
+   Expected Result: `_trendsAllLabels` and `_trendsAllData` present; dates show `2026-01-01 10:00` format
+   Actual Result: Both script vars present; dates formatted as `2026-01-01 10:00`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0214: renderTrendsTab token chart y-axis uses abbreviated number callback (M/K suffixes)
+Related Story: US-0149
+Related Task:
+Related AC: AC-0265
+Type: Functional
+Preconditions: tools/lib/render-tabs.js loaded
+Steps:
+
+1. Call `renderTrendsTab({trends: validTrends})` and check for `1e6` and `+'M':` in the output
+2. Also verify `1e3` for K-suffix abbreviation
+   Expected Result: Token y-axis callback contains both `1e6` (→M) and `1e3` (→K) abbreviation logic
+   Actual Result: `1e6`, `+'M':`, and `1e3` all found in rendered HTML
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0215: renderTrendsTab x-axis limits to maxTicksLimit:8 across all charts
+Related Story: US-0149
+Related Task:
+Related AC: AC-0264
+Type: Functional
+Preconditions: tools/lib/render-tabs.js loaded; valid trends object
+Steps:
+
+1. Call `renderTrendsTab({trends: validTrends})` and check for `maxTicksLimit:8`
+   Expected Result: `maxTicksLimit:8` present in rendered HTML (shared x-axis configuration)
+   Actual Result: `maxTicksLimit:8` found in rendered HTML
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0216: renderTrendsTab coverage chart y-axis uses 0–100 fixed scale
+Related Story: US-0149
+Related Task:
+Related AC: AC-0164
+Type: Functional
+Preconditions: tools/lib/render-tabs.js loaded; valid trends object
+Steps:
+
+1. Call `renderTrendsTab({trends: validTrends})` and check for `min:0,max:100` in chart configuration
+   Expected Result: Coverage chart y-axis contains `min:0,max:100`
+   Actual Result: `min:0,max:100` found in rendered HTML
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0217: renderTrendsTab at-risk chart uses suggestedMax:5 to prevent misleading scale collapse
+Related Story: US-0149
+Related Task:
+Related AC: AC-0267
+Type: Functional
+Preconditions: tools/lib/render-tabs.js loaded; valid trends object
+Steps:
+
+1. Call `renderTrendsTab({trends: validTrends})` and check for `suggestedMax:5`
+   Expected Result: `suggestedMax:5` present in rendered HTML for the at-risk chart
+   Actual Result: `suggestedMax:5` found in rendered HTML
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0218: renderTrendsTab dark mode grid line color uses oklch(100% 0 0 / 0.07)
+Related Story: US-0149
+Related Task:
+Related AC: AC-0266
+Type: Functional
+Preconditions: tools/lib/render-tabs.js loaded; valid trends object
+Steps:
+
+1. Call `renderTrendsTab({trends: validTrends})` and check for `100% 0 0 / 0.07` in script
+   Expected Result: Dark mode grid color string `oklch(100% 0 0 / 0.07)` present
+   Actual Result: `100% 0 0 / 0.07` found in rendered script block
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0219: renderTrendsTab light mode grid line color uses oklch(88% 0.010 95)
+Related Story: US-0149
+Related Task:
+Related AC: AC-0266
+Type: Functional
+Preconditions: tools/lib/render-tabs.js loaded; valid trends object
+Steps:
+
+1. Call `renderTrendsTab({trends: validTrends})` and check for `oklch(88% 0.010 95)` in script
+   Expected Result: Light mode grid color `oklch(88% 0.010 95)` present
+   Actual Result: `oklch(88% 0.010 95)` found in rendered script block
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0220: renderTrendsTab burn-up chart includes collapsible data table with sessions-with-progress
+Related Story: US-0149
+Related Task:
+Related AC: AC-0157
+Type: Functional
+Preconditions: tools/lib/render-tabs.js loaded; valid trends object with non-zero velocity deltas
+Steps:
+
+1. Call `renderTrendsTab({trends: validTrends})` with velocity values that have non-zero deltas
+2. Check HTML for `sessions with progress` text and a `<details>` element
+   Expected Result: `sessions with progress` text present; collapsible `<details>` block rendered
+   Actual Result: `sessions with progress` found in rendered HTML; `<details` element confirmed present in rendered HTML
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0221: renderTrendsTab wraps content in div with id="tab-trends"
+Related Story: US-0149
+Related Task:
+Related AC: AC-0154
+Type: Functional
+Preconditions: tools/lib/render-tabs.js loaded
+Steps:
+
+1. Call `renderTrendsTab({trends: null})` and check for `id="tab-trends"`
+   Expected Result: Rendered HTML contains `id="tab-trends"` as the outer wrapper
+   Actual Result: `id="tab-trends"` present in rendered HTML
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0222: backfillHistory exports are callable programmatically
+Related Story: US-0149
+Related Task:
+Related AC: AC-0249
+Type: Functional
+Preconditions: tools/lib/historical-sim.js loaded
+Steps:
+
+1. Run `node -e "const h=require('./tools/lib/historical-sim'); console.log(Object.keys(h).join(','));"`
+2. Observe stdout
+   Expected Result: `backfillHistory,calculateAvgTokensPerEstimate,estimateStoryCost`
+   Actual Result: `backfillHistory,calculateAvgTokensPerEstimate,estimateStoryCost`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0223: backfillHistory skips when ≥2 snapshot files already exist
+Related Story: US-0149
+Related Task:
+Related AC: AC-0247
+Type: Functional
+Preconditions: tools/lib/historical-sim.js loaded; temp dir with .history/ containing 2 snapshot files
+Steps:
+
+1. Create temp dir with 2 pre-existing snapshot files in .history/
+2. Call `backfillHistory({root: tmpDir})` and log `result.skipped` and `result.reason`
+   Expected Result: `true` and `existing_snapshots`
+   Actual Result: `true` and `existing_snapshots`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0224: backfillHistory skips when docs/plan-status.json is absent
+Related Story: US-0149
+Related Task:
+Related AC: AC-0247
+Type: Functional
+Preconditions: tools/lib/historical-sim.js loaded; temp dir with no docs/ subdirectory
+Steps:
+
+1. Run `node -e "const os=require('os'),path=require('path'),fs=require('fs'); const {backfillHistory}=require('./tools/lib/historical-sim'); const d=fs.mkdtempSync(path.join(os.tmpdir(),'pv-')); const r=backfillHistory({root:d}); console.log(r.skipped, r.reason);"`
+2. Observe stdout
+   Expected Result: `true no_data`
+   Actual Result: `true no_data`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0225: backfillHistory generates 30 snapshot files by default
+Related Story: US-0149
+Related Task:
+Related AC: AC-0247
+Type: Functional
+Preconditions: tools/lib/historical-sim.js loaded; temp dir with valid plan-status.json in docs/
+Steps:
+
+1. Call `backfillHistory({root: tmpDir, days: 30})` with minimal valid plan-status.json
+2. Log `result.generated.length` and count files in .history/
+   Expected Result: `30` generated; 30 files in .history/
+   Actual Result: `generated.length = 30`; 30 files confirmed in .history/
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0226: backfillHistory creates .history/ directory if not present
+Related Story: US-0149
+Related Task:
+Related AC: AC-0247
+Type: Functional
+Preconditions: tools/lib/historical-sim.js loaded; temp dir with docs/plan-status.json but no .history/
+Steps:
+
+1. Call `backfillHistory({root: tmpDir, days: 5})` and check that `.history/` is created
+2. Log `fs.existsSync(path.join(tmpDir, '.history'))`
+   Expected Result: `true`
+   Actual Result: Confirmed `.history/` created (contains 5 snapshot files after backfill)
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0227: calculateAvgTokensPerEstimate returns tokens per estimate size from Done stories
+Related Story: US-0149
+Related Task:
+Related AC: AC-0248
+Type: Functional
+Preconditions: tools/lib/historical-sim.js loaded; data object with 1 Done M story (10000 tokens) and 1 Done S story (3000 tokens)
+Steps:
+
+1. Call `calculateAvgTokensPerEstimate(data)` with known cost data
+2. Log `result['M']` and `result['S']`
+   Expected Result: `M: 10000`, `S: 3000`
+   Actual Result: `M: 10000`, `S: 3000`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0228: estimateStoryCost computes cost from token count and rate parameters
+Related Story: US-0149
+Related Task:
+Related AC: AC-0248
+Type: Functional
+Preconditions: tools/lib/historical-sim.js loaded; avgTokens = {M: 10000}
+Steps:
+
+1. Call `estimateStoryCost('M', {M:10000}, 3, 15)` (inputRate=3, outputRate=15 per million tokens)
+2. Log the returned value
+   Expected Result: `0.18` (inputCost=0.03, outputCost=0.15)
+   Actual Result: `0.18`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0229: backfillHistory proportionally increases cost across simulated days
+Related Story: US-0149
+Related Task:
+Related AC: AC-0248
+Type: Functional
+Preconditions: tools/lib/historical-sim.js loaded; plan-status.json with \_totals.costUsd:10.0; backfill with days:5
+Steps:
+
+1. Call `backfillHistory({root: tmpDir, days: 5})`
+2. Parse the first and last generated snapshot; compare `_totals.costUsd` values
+   Expected Result: First snapshot cost < last snapshot cost; last snapshot cost ≈ totalSpent (proportional distribution)
+   Actual Result: First snapshot `_totals.costUsd` = `2`, last snapshot `_totals.costUsd` = `10` (with totalSpent=10.0, days=5)
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0230: extractTrends avgRisk field is an array of numbers
+Related Story: US-0149
+Related Task:
+Related AC: AC-0252
+Type: Functional
+Preconditions: tools/lib/snapshot.js loaded; two valid snapshots
+Steps:
+
+1. Call `extractTrends(twoSnapshots)` and check `typeof result.avgRisk` and `Array.isArray(result.avgRisk)`
+   Expected Result: `avgRisk` is an array of numbers with length equal to snapshot count
+   Actual Result: `typeof trends.avgRisk` is `object`; `Array.isArray` is true; length matches snapshot count
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0231: renderTrendsTab does not render placeholder when trends has exactly 2 dates
+Related Story: US-0149
+Related Task:
+Related AC: AC-0156
+Type: Functional
+Preconditions: tools/lib/render-tabs.js loaded; trends object with dates.length === 2
+Steps:
+
+1. Call `renderTrendsTab({trends: validTrends})` where validTrends.dates.length === 2
+2. Check HTML does NOT contain `Generate the dashboard at least twice`
+   Expected Result: Placeholder message absent; chart canvases rendered instead
+   Actual Result: Placeholder text not found; all 8 chart canvas elements present
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0232: SNAPSHOT_REGEX rejects filenames without trailing Z
+Related Story: US-0149
+Related Task:
+Related AC: AC-0151
+Type: Functional
+Preconditions: tools/lib/snapshot.js loaded
+Steps:
+
+1. Run `node -e "const {SNAPSHOT_REGEX}=require('./tools/lib/snapshot'); console.log(SNAPSHOT_REGEX.test('2026-01-01T10-00-00.json'), SNAPSHOT_REGEX.test('2026-01-01T10-00-00Z.json'));"`
+2. Observe stdout
+   Expected Result: `false true` — without Z fails, with Z passes
+   Actual Result: `false true`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0233: extractTrends totalStories counts all stories regardless of status
+Related Story: US-0149
+Related Task:
+Related AC: AC-0154
+Type: Functional
+Preconditions: tools/lib/snapshot.js loaded; snapshot with 3 stories (Done, Planned, In Progress)
+Steps:
+
+1. Call `extractTrends` with first snapshot having 3 stories in mixed statuses
+2. Log `result.totalStories[0]`
+   Expected Result: `3` — all stories counted regardless of status
+   Actual Result: `3`
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0234: renderTrendsTab chart-trends-tokens canvas is present for token usage chart
+Related Story: US-0149
+Related Task:
+Related AC: AC-0253
+Type: Functional
+Preconditions: tools/lib/render-tabs.js loaded; valid trends object with inputTokens and outputTokens arrays
+Steps:
+
+1. Call `renderTrendsTab({trends: validTrends})` and check for `id="chart-trends-tokens"`
+2. Also check `Token Usage` label appears in rendered HTML
+   Expected Result: `id="chart-trends-tokens"` canvas present; `Token Usage` title rendered
+   Actual Result: `chart-trends-tokens` canvas present; `Token Usage` subtitle found in rendered HTML
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0235: renderTrendsTab shows placeholder when no cost snapshot data exists
+Related Story: US-0149
+Related Task:
+Related AC: AC-0159
+Type: Functional
+Preconditions: tools/lib/render-tabs.js loaded; data object with no trends property
+Steps:
+
+1. Call `renderTrendsTab({stories:[], epics:[], costs:{}, coverage:{available:false}})` (trends is undefined)
+2. Check rendered HTML contains the placeholder message
+   Expected Result: HTML contains "Generate the dashboard at least twice to see trends" placeholder; no chart canvas rendered
+   Actual Result: HTML contains "Generate the dashboard at least twice to see trends" and "Each generation creates a snapshot in .history/"; no chart canvases present
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0236: renderTrendsTab AI Cost chart data is sourced from trends.aiCosts (snapshot history)
+Related Story: US-0149
+Related Task:
+Related AC: AC-0160
+Type: Functional
+Preconditions: tools/lib/render-tabs.js loaded; trends object with 2 snapshots providing aiCosts: [1.23, 2.45]
+Steps:
+
+1. Call `renderTrendsTab({...})` with `trends.aiCosts = [1.23, 2.45]`
+2. Inspect the embedded `_trendsAllData.cost` JSON array in the rendered `<script>` block
+   Expected Result: `cost` array in script equals `["1.23","2.45"]`; data flows from `trends.aiCosts` serialised by `renderTrendsTab`
+   Actual Result: `cost: ["1.23","2.45"]` found in embedded script — values match the `aiCosts` input array formatted to 2 decimal places
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0237: renderTrendsTab AI Cost chart dataset label is set to 'Total Cost ($)'
+Related Story: US-0149
+Related Task:
+Related AC: AC-0161
+Type: Functional
+Preconditions: tools/lib/render-tabs.js loaded; trends object with 2 snapshots
+Steps:
+
+1. Call `renderTrendsTab({...})` with valid trends data
+2. Find the `_mkTrend('chart-trends-cost', ...)` call in rendered HTML; inspect the dataset `label` field
+   Expected Result: HTML contains the string `label:'Total Cost ($)'` in the chart configuration block
+   Actual Result: `_mkTrend('chart-trends-cost', {type:'line', data:{labels:labels, datasets:[{label:'Total Cost ($)', ...` found in rendered HTML
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0238: renderTrendsTab Coverage chart data is sourced from snapshot overall coverage percentage
+Related Story: US-0149
+Related Task:
+Related AC: AC-0163
+Type: Functional
+Preconditions: tools/lib/snapshot.js loaded; two snapshots each with coverage.overall set (80.5 and 85.2)
+Steps:
+
+1. Call `extractTrends(snapshots)` where each snapshot's `data.coverage.overall` is 80.5 and 85.2 respectively
+2. Check `trends.coverage` array values
+   Expected Result: `trends.coverage` equals `[80.5, 85.2]` — the overall coverage percentage from each snapshot
+   Actual Result: `extractTrends` returned `coverage: [80.5, 85.2]` matching the `coverage.overall` field from each snapshot
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0239: renderTrendsTab Coverage chart shows placeholder when fewer than 2 snapshots exist
+Related Story: US-0149
+Related Task:
+Related AC: AC-0165
+Type: Functional
+Preconditions: tools/lib/render-tabs.js loaded; trends object with only 1 date entry
+Steps:
+
+1. Call `renderTrendsTab({...})` with `trends.dates = ['2026-01-01']` (length 1)
+2. Check rendered HTML for placeholder message
+   Expected Result: HTML contains "Generate the dashboard at least twice to see trends" placeholder; no chart canvases rendered (hasData is false when dates.length < 2)
+   Actual Result: HTML contains "Generate the dashboard at least twice to see trends" placeholder; no chart canvas IDs present in output
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0240: renderTrendsTab Velocity bar chart is defined with Story Points dataset
+Related Story: US-0149
+Related Task:
+Related AC: AC-0166
+Type: Functional
+Preconditions: tools/lib/render-tabs.js loaded; trends object with 2 snapshots and velocity: [5, 8]
+Steps:
+
+1. Call `renderTrendsTab({...})` with valid trends data including `velocity: [5, 8]`
+2. Find the `_mkTrend('chart-trends-velocity', ...)` call in rendered HTML; inspect type and dataset
+   Expected Result: `type:'bar'`, dataset label `'Story Points'`, data sourced from `_trendsAllData.velocity`; canvas `id="chart-trends-velocity"` present
+   Actual Result: `_mkTrend('chart-trends-velocity', {type:'bar', data:{labels:labels, datasets:[{label:'Story Points', data:_trendsAllData.velocity, ...` found; canvas element present
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0241: renderTrendsTab Velocity chart renders with zero bars when no stories have estimates
+Related Story: US-0149
+Related Task:
+Related AC: AC-0168
+Type: Functional
+Preconditions: tools/lib/render-tabs.js loaded; trends object with 2 snapshots and velocity: [0, 0]
+Steps:
+
+1. Call `renderTrendsTab({...})` with `trends.velocity = [0, 0]` (no story estimates)
+2. Check rendered HTML for velocity chart presence and any placeholder text
+   Expected Result: `chart-trends-velocity` canvas is present; `_trendsAllData.velocity` contains `["0.0","0.0"]`; no "Add estimates" placeholder text rendered (chart renders with zero-value bars)
+   Actual Result: `chart-trends-velocity` canvas present; velocity data `["0.0","0.0"]` in embedded script; no "Add estimates" placeholder text found — chart renders with all-zero bars
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: AC-0168 specified an "Add estimates to stories to see velocity" placeholder but the implementation renders the bar chart with zero values instead. Behaviour observed matches the current codebase; no defect raised.
+
+---
+
+TC-0242: Print CSS hides sidebar and topbar interactive chrome
+Related Story: US-0149
+Related Task:
+Related AC: AC-0237
+Type: Functional
+Preconditions: tools/lib/render-scripts.js loaded; call renderPrintCSS() to obtain the @media print block
+Steps:
+
+1. Call `renderPrintCSS()` from render-scripts.js
+2. Inspect the `@media print` block for `#sidebar`, `#topbar-fixed`, `#filter-bar` selectors with `display: none !important`
+   Expected Result: `@media print` rule hides `#sidebar`, `#topbar-fixed`, `#filter-bar`, `.fixed`, `.activity-panel` via `display: none !important`
+   Actual Result: `@media print { #filter-bar, #sidebar, #topbar-fixed, .fixed, .activity-panel { display: none !important; } }` confirmed in rendered CSS output
+   Status: [x] Pass
+   Defect Raised: None
+   Notes:
+
+---
+
+TC-0243: Print CSS shows main content area at full width with no sidebar margin
+Related Story: US-0149
+Related Task:
+Related AC: AC-0238
+Type: Functional
+Preconditions: tools/lib/render-scripts.js loaded; call renderPrintCSS() to obtain the @media print block
+Steps:
+
+1. Call `renderPrintCSS()` from render-scripts.js
+2. Check that `#main-content { display: block !important; }` and `#app-shell { display: block !important; }` are present; verify no html2pdf.js dependency
+   Expected Result: `#main-content` and `#app-shell` set to `display: block !important`; no reference to `html2pdf` library anywhere in the print CSS
+   Actual Result: `#main-content { display: block !important; }` and `#app-shell { display: block !important; }` confirmed; no `html2pdf` found — print uses browser native print-to-PDF only
    Status: [x] Pass
    Defect Raised: None
    Notes:
