@@ -92,4 +92,11 @@ function aggregateCostByBranch(rows) {
   return agg;
 }
 
-module.exports = { parseCostLog, deduplicateSessions, aggregateCostByBranch, normalizeBranch, backfillUnattributed };
+module.exports = {
+  parseCostLog,
+  deduplicateSessions,
+  aggregateCostByBranch,
+  normalizeBranch,
+  backfillUnattributed,
+  WORKTREE_BRANCH_RE,
+};

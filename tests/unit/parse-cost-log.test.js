@@ -164,3 +164,12 @@ describe('backfillUnattributed', () => {
     expect(result[0].backfilled).toBe(true);
   });
 });
+
+describe('WORKTREE_BRANCH_RE export', () => {
+  it('exports WORKTREE_BRANCH_RE regex', () => {
+    const { WORKTREE_BRANCH_RE } = require('../../tools/lib/parse-cost-log');
+    expect(WORKTREE_BRANCH_RE).toBeInstanceOf(RegExp);
+    expect(WORKTREE_BRANCH_RE.test('claude/some-branch')).toBe(true);
+    expect(WORKTREE_BRANCH_RE.test('feature/US-0100-foo')).toBe(false);
+  });
+});
