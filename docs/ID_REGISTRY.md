@@ -11,6 +11,7 @@ Single source of truth for the next available ID in every artefact sequence.
 | AC           | AC-0577               | AC-0576           |
 | TC           | TC-0347               | TC-0346           |
 | BUG          | BUG-0227              | BUG-0226          |
+| Lesson       | L-0045                | L-0044            |
 
 **Rules:**
 

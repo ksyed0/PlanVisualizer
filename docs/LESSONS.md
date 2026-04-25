@@ -437,3 +437,15 @@ _Learned from BUG-0205 re-audit — `setHierarchyView` was already updated to us
 ### **Tabs developed independently will drift from each other's header conventions — enforce a shared pattern early.**
 
 _Learned from BUG-0210 — Lessons and Bugs tabs both have epic group headers, but were developed at different times. Bugs established the definitive format (monospaced EPIC-XXXX + badge + title + accent border), but Lessons was never updated. The pattern should have been extracted to a shared helper function `_epicGroupHeader(epicId, epic, accent, countLabel)` from the start. Rule: whenever a second tab adopts a pattern pioneered by the first, immediately extract it into a shared helper and wire both tabs to it — don't leave duplication to drift._
+
+---
+
+## L-0044 — Worktree branches not attributed to stories in AI cost log
+
+**Context:** Claude Code auto-names worktree branches as `claude/<slug>` (e.g. `claude/elastic-greider-52b5b1`). These names don't match any `feature/US-XXXX` branch in the cost log, so all worktree session costs land in the unattributed pool and get diluted across all stories proportionally rather than attributed correctly.
+
+**Fix:** `parse-cost-log.js` now exports `normalizeBranch(branch, gitLog, sessionDate)` which maps `claude/*` patterns to the nearest feature branch by timestamp. `backfillUnattributed(rows, gitLog)` applies this to all rows.
+
+**Prevention:** The Stop hook (`capture-cost.js`) should resolve the current feature branch (via `git rev-parse --abbrev-ref HEAD` on the main repo) and log it instead of the worktree branch name. See `tools/capture-cost.js`.
+**Bugs:** N/A
+**Date:** 2026-04-24
