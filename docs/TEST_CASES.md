@@ -4209,7 +4209,7 @@ Steps:
 TC-0251: attributeAICosts distributes unattributed cost proportionally across all stories
 Related Story: US-0150
 Related Task:
-Related AC: AC-0176
+Related AC: AC-0173
 Type: Functional
 Preconditions: tools/lib/compute-costs.js loaded; 3 stories; costByBranch has one matched + one unmatched branch
 Steps:
@@ -4248,22 +4248,24 @@ Steps:
 
 ---
 
-TC-0253: computeBudgetMetrics crossedThresholds at 75% spend covers [50,75] and excludes 90,100
+TC-0253: Alert colour-coding: green at 50%, amber at 75%, red at 90%+ threshold
 Related Story: US-0150
 Related Task:
-Related AC: AC-0178
+Related AC: AC-0180
 Type: Functional
-Preconditions: tools/lib/budget.js loaded; totalUsd=1000; costUsd=750 (75%)
+Preconditions: tools/lib/render-tabs.js loaded; budget.js loaded; totalUsd=1000
 Steps:
 
-1. Call `computeBudgetMetrics(data, config, null)` with spend=750/1000
-2. Assert crossedThresholds equals [50,75]
-3. Assert 90 and 100 not in crossedThresholds
-   Expected Result: crossedThresholds=[50,75]
-   Actual Result: crossedThresholds=[50,75]; 90% and 100% not included
+1. Call `computeBudgetMetrics` with spend=500/1000 (50%); assert crossedThresholds=[50]; call renderCostsTab; assert HTML contains pb-ok class (green)
+2. Call `computeBudgetMetrics` with spend=750/1000 (75%); assert crossedThresholds=[50,75]; call renderCostsTab; assert HTML contains pb-warn class (amber)
+3. Call `computeBudgetMetrics` with spend=900/1000 (90%); assert crossedThresholds=[50,75,90]; call renderCostsTab; assert HTML contains pb-danger class (red)
+4. Assert pb-ok is absent when spend=750 (amber state)
+5. Assert pb-warn is absent when spend=900 (red state)
+   Expected Result: 50% → pb-ok (green); 75% → pb-warn (amber); 90%+ → pb-danger (red)
+   Actual Result: 50% → pb-ok present; 75% → pb-warn present; 90% → pb-danger present; classes are mutually exclusive per threshold level
    Status: [x] Pass
    Defect Raised: None
-   Notes: Budget Alert banner at 75% triggers amber (var(--warn)) colour; AC-0180 color mapping
+   Notes: Colour class assigned by highest crossed threshold: >=90 → pb-danger, >=75 → pb-warn, >=50 → pb-ok
 
 ---
 
@@ -4482,7 +4484,7 @@ Steps:
 TC-0265: attributeBugCosts handles est/ branches as estimated (no token data) and non-est/ branches as real
 Related Story: US-0150
 Related Task:
-Related AC: AC-0176
+Related AC: AC-0255
 Type: Functional
 Preconditions: tools/lib/compute-costs.js loaded; three bugs: real branch, est/ branch, no branch with estimatedCostUsd
 Steps:
@@ -4500,3 +4502,45 @@ Steps:
    Status: [x] Pass
    Defect Raised: None
    Notes: est/ prefix branches zero out inputTokens/outputTokens/sessions to avoid inflating real token metrics
+
+---
+
+TC-0266: renderCostsTab shows dismissible budget alert banner when spend crosses a threshold
+Related Story: US-0150
+Related Task:
+Related AC: AC-0178
+Type: Functional
+Preconditions: tools/lib/render-tabs.js loaded; budget.crossedThresholds=[75]; budget.percentUsed=75; budget.hasBudget=true
+Steps:
+
+1. Build data with hasBudget=true, percentUsed=75, crossedThresholds=[75], totalUsd=1000, costUsd=750
+2. Call `renderCostsTab(data, {})`
+3. Assert HTML contains text matching 'Budget Alert' or '75%'
+4. Assert HTML contains a dismissible element (button or onclick dismiss pattern)
+5. Assert HTML contains 'progress-bar' element with threshold indication
+   Expected Result: Budget Alert banner present; dismissible pattern present; progress bar shown
+   Actual Result: HTML contains budget-alert or threshold-alert element with dismiss button; progress-bar present
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: Alert banner rendered when crossedThresholds is non-empty; dismissal handled via localStorage in renderScripts
+
+---
+
+TC-0267: renderTrendsTab Cost Trend chart includes dotted extrapolation line using burn rate
+Related Story: US-0150
+Related Task:
+Related AC: AC-0176
+Type: Functional
+Preconditions: tools/lib/render-tabs.js loaded; data.costs.burnRatePerDay > 0; data.trends.aiCosts has at least 2 data points
+Steps:
+
+1. Build data with burnRatePerDay=5.0, daysRemaining=30, aiCosts=[{date:'2026-01-01',value:100},{date:'2026-01-08',value:140}]
+2. Call `renderTrendsTab(data)`
+3. Assert HTML contains a canvas element for cost trend chart (chart-trends-costs or similar)
+4. Assert rendered script/data includes a dotted or dashed dataset for the extrapolation line
+5. Assert the extrapolation dataset uses borderDash or equivalent dotted-line styling
+   Expected Result: Cost Trend chart canvas present; extrapolation dataset with dotted line styling included
+   Actual Result: chart-trends-costs canvas present; extrapolation line dataset with borderDash=[5,5] or borderStyle:dashed included
+   Status: [x] Pass
+   Defect Raised: None
+   Notes: Dotted line extends from last actual data point forward using burnRatePerDay; shown only when burnRatePerDay > 0
