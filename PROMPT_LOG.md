@@ -439,3 +439,12 @@ _(Bug sweep session — see progress.md Session 16 entry. Was primarily spent fi
 | #   | Timestamp            | Prompt                                                                                                                                                                   |
 | --- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | 1   | 2026-03-10T15:00:00Z | Implement the following plan: Fix BUG-0003 and BUG-0004 — update TC statuses to Pass (TC-0001–TC-0020) in TEST_CASES.md, and add sticky header wrapper in render-html.js |
+
+## Session 30 — 2026-04-27
+
+| #   | Timestamp            | Prompt                                                                                                 |
+| --- | -------------------- | ------------------------------------------------------------------------------------------------------ |
+| 1   | 2026-04-27T00:00:00Z | (continuation from Session 29) Continue Wave 2 spec reviews, fix issues, merge PRs #447 #446 #449 #448 |
+| 2   | 2026-04-27T00:30:00Z | Launch Wave 3 Tasks 8/9/10 (US-0152 US-0154 US-0157) in parallel with worktree isolation               |
+| 3   | 2026-04-27T02:00:00Z | continue                                                                                               |
+| 4   | 2026-04-27T02:30:00Z | close the session                                                                                      |

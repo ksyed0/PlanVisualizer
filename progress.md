@@ -4,6 +4,36 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 30 — 2026-04-27 (EPIC-0021 Closure)
+
+### What Was Done
+
+**Wave 2 merged** (PRs #447, #446, #449, #448):
+
+- US-0150 EPIC-0009 Budget: TC-0244–TC-0265, TC-0345, TC-0346 (24 TCs)
+- US-0153 EPIC-0014 Follow-Up: TC-0266–TC-0281 (16 TCs)
+- US-0156 EPIC-0019 Cycle History: TC-0288–TC-0334 (47 TCs)
+- US-0158 AI Cost Attribution: TC-0335–TC-0344 (10 TCs) + normalizeBranch/backfillUnattributed added to parse-cost-log.js; handles claude/\* and null branches; L-0044 lesson logged
+
+**Wave 3 merged** (PRs #457, #458, #459):
+
+- US-0152 EPIC-0013 Agentic Dashboard: TC-0347–TC-0377 (31 TCs); 4 Fail — BUG-0227–BUG-0230
+- US-0154 EPIC-0016 Mission Control: TC-0402–TC-0474 (73 TCs); all Pass
+- US-0157 EPIC-0020 Cross-Dashboard: TC-0502–TC-0552 (51 TCs); 2 Fail — BUG-0231–BUG-0232
+
+**EPIC-0021 marked Done** — All 11 stories (US-0149–US-0158) Status: Done with ACs checked.
+
+### Test Results
+
+- 648 tests, 26 suites — all passing (statement coverage ~93%)
+- All CI gates green on develop
+
+### Blockers
+
+None.
+
+---
+
 ## Session 29 — 2026-04-25
 
 ### What Was Done
