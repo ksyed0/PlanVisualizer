@@ -3180,3 +3180,67 @@ Steps to Reproduce:
    Lesson Encoded: No
    Estimated Cost USD: 0.00
    Notes: Bugs card view and Lessons card view updated to use same flat row style as column view (border-t-2 + border-left:4px + accent.bg). Kanban also updated.
+
+---
+
+BUG-0227: docs/AGENT_PLAN.md referenced in DM_AGENT.md and BUGS.md but file does not exist
+Severity: Medium
+Related Story: US-0088 (EPIC-0013)
+Steps to Reproduce:
+
+1. Run `ls docs/AGENT_PLAN.md`
+   Expected: File exists documenting the 6-phase pipeline per AC-0280
+   Actual: `ls: docs/AGENT_PLAN.md: No such file or directory`
+   Status: Open
+   Fix Branch:
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Discovered via TC-0352 (AC-0280). DM_AGENT.md line 22 instructs agents to read the file; BUGS.md references it. File must be created to satisfy AC-0280.
+
+---
+
+BUG-0228: dashboard.html has external Google Fonts dependencies violating AC-0290 self-contained requirement
+Severity: Medium
+Related Story: US-0091 (EPIC-0013)
+Steps to Reproduce:
+
+1. Run `grep "fonts.googleapis" docs/dashboard.html | head -2`
+   Expected: No external dependencies per AC-0290
+   Actual: Two `<link rel="stylesheet" href="https://fonts.googleapis.com/...">` tags present
+   Status: Open
+   Fix Branch:
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Discovered via TC-0362 (AC-0290). dashboard.html loads Departure Mono and JetBrains Mono from Google Fonts CDN. To fix: inline the font-face declarations or use system font fallbacks.
+
+---
+
+BUG-0229: npm run plan:generate and plan:watch scripts not defined per AC-0304
+Severity: Low
+Related Story: US-0093 (EPIC-0013)
+Steps to Reproduce:
+
+1. Run `node -e "const p = require('./package.json'); console.log(p.scripts['plan:generate'])"`
+   Expected: `node tools/generate-plan.js`
+   Actual: `undefined` — scripts are named `generate` and `generate:watch` instead
+   Status: Open
+   Fix Branch:
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Discovered via TC-0376 (AC-0304). Add `"plan:generate": "node tools/generate-plan.js"` and `"plan:watch": "node tools/generate-plan.js --watch"` to package.json scripts.
+
+---
+
+BUG-0230: plan-status.html loads Tailwind CSS, Chart.js, and Google Fonts from external CDNs, violating AC-0305
+Severity: Medium
+Related Story: US-0093 (EPIC-0013)
+Steps to Reproduce:
+
+1. Run `grep "cdn\.\|googleapis" docs/plan-status.html | head -3`
+   Expected: No external dependencies per AC-0305
+   Actual: Tailwind CSS via cdn.tailwindcss.com, Chart.js via cdn.jsdelivr.net, Google Fonts via fonts.googleapis.com
+   Status: Open
+   Fix Branch:
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Discovered via TC-0377 (AC-0305). plan-status.html has 3 external CDN dependencies. To fix: bundle Tailwind, inline Chart.js, and inline or remove Google Fonts.
