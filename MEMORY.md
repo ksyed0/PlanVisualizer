@@ -117,11 +117,11 @@ Branch name in `AI_COST_LOG.md` row must exactly match `Branch:` field in story 
 
 ---
 
-## Project Completion Status (as of 2026-04-24 Session 28)
+## Project Completion Status (as of 2026-04-25 Session 29)
 
 22 EPICs (EPIC-0010/0014/0015/0016/0017/0019/0020 Done; EPIC-0022 Planned), 161 active stories, 193 bugs.
-Open PRs: bugfix/hierarchy-hidden-default → develop (Session 28 UI polish + About modal redesign).
-Next IDs: EPIC-0023, US-0162, TASK-0055, AC-0591, TC-0158, BUG-0227.
+Develop is fully green — all CI gates passing after PR #444 (Session 28 UI polish + About modal) and PR #455 (Prettier fix) merged.
+Next IDs: check `docs/ID_REGISTRY.md` — as of Session 29: EPIC-0023, US-0162, TASK-0055, AC-0591, TC-0475, BUG-0231, L-0046.
 
 Key additions (Sessions 26–28):
 
@@ -141,7 +141,7 @@ Architecture decision: `Assignee:` field in RELEASE_PLAN.md stories is not meani
 ## Coverage Thresholds
 
 Jest coverage gate: 80% statements (global).
-Current coverage (2026-04-24 Session 28): 638 tests, 26 suites, all passing. Statement coverage above 80% gate.
+Current coverage (2026-04-25 Session 29): 648 tests, 26 suites, all passing. Statement coverage above 80% gate.
 
 ---
 
@@ -178,6 +178,9 @@ Current coverage (2026-04-24 Session 28): 638 tests, 26 suites, all passing. Sta
 
 ## Lessons Learned
 
+- **`v.toFixed ? …` is NOT a null guard — use `v !== null && v !== undefined`.** Accessing any property on `null` throws before the ternary branches. ESLint's `eqeqeq` rule rejects `v != null`, so use the explicit two-condition form. (L-0045, 2026-04-25)
+- **Replace `existsSync` + `readFileSync` two-step with try-catch on `readFileSync` for `ENOENT`.** The two-step is a TOCTOU race (CWE-367): CodeQL flags it as "Potential file system race condition". The try-catch pattern handles the missing-file case atomically. (L-0044, 2026-04-25)
+- **Prettier fixes committed after auto-merge fires will not land on develop.** Auto-merge triggers the moment the PR becomes MERGEABLE — often before a follow-up Prettier-fix push. Always run `npx prettier --write .` and commit before the rebase+force-push that makes the PR mergeable. (2026-04-25)
 - **Always upgrade Jest when transitive deps emit deprecation warnings.** Jest 29 → 30 eliminated the `inflight` and `glob@7` deprecation warnings with zero test changes. (2026-03-10)
 - **CodeQL cannot be scoped with per-job `on:` triggers** — it requires its own workflow file (`codeql.yml`) to control trigger conditions independently from the main CI workflow.
 - **GitHub Pages: always include docs/index.html.** Without it Pages falls back to README.md. Use `<meta http-equiv="refresh">` to redirect to the real entry point.

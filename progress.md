@@ -4,6 +4,35 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 29 — 2026-04-25
+
+### What Was Done
+
+1. **CI build crash fixed** (`render-tabs.js:2291`) — The guard `v.toFixed ? v.toFixed(1) : v` in the Status tab coverage bar tooltip was itself throwing `TypeError: Cannot read properties of null (reading 'toFixed')` because accessing any property on `null` throws before the ternary can protect. Fixed to `v !== null && v !== undefined ? v.toFixed(1) : '?'`. Stack trace was obtained by adding `e.stack` logging to the `generate-plan.js` catch block in the previous push.
+
+2. **CodeQL TOCTOU fixes** (`migrate-config.js`) — Two CWE-367 "Potential file system race condition" findings at lines 82 and 125: `fs.existsSync(filePath)` check followed by `fs.writeFileSync(filePath)` write (with an intermediate `readFileSync`), creating a race window where a symlink swap could redirect the write. Removed the `existsSync` guard in both `migratePlanVisualizerConfig()` and `migrateAgentsConfig()`, replaced with `try { raw = fs.readFileSync(...) } catch (err) { if (err.code === 'ENOENT') ... }` — atomically handles the missing-file case. Both PRs merged into develop.
+
+3. **Rebase + merge of `bugfix/hierarchy-hidden-default` (PR #444)** — Rebased across 18 commits against the latest develop. Three rounds of `docs/ID_REGISTRY.md` conflicts resolved by taking the maximum ID per sequence (AC and US from incoming when higher; TC from HEAD which was at TC-0347 due to EPIC-0020 TC audit work). PR #444 squash-merged into develop.
+
+4. **Prettier fix (PR #455)** — `docs/TEST_CASES.md` had trailing Prettier violations that weren't in the squash-merged PR content (auto-merge fired before the Prettier-fix commit). Opened `fix/prettier-test-cases` → develop, merged via PR #455. Develop CI fully green.
+
+### Test Results
+
+- 648 tests, 26 suites — all passing
+- Statement coverage above 80% gate
+- All CI gates green on develop (Build, Lint, Prettier, Test+Coverage, CodeQL SAST, Analyze JS, Secret Scan, Dependency Audit, Orchestrator Validation)
+
+### Blockers
+
+None.
+
+### PRs
+
+- PR #444 `bugfix/hierarchy-hidden-default` → develop — ✅ Merged
+- PR #455 `fix/prettier-test-cases` → develop — ✅ Merged
+
+---
+
 ## Session 28 — 2026-04-24
 
 ### What Was Done
