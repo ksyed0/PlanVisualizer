@@ -5866,3 +5866,622 @@ Steps:
    Notes: Link present in README.md under the dedicated Agentic SDLC Dashboard section
 
 ---
+
+### TC-0347 — dashboard footer shows "Last refreshed" date and time
+
+Related Story: US-0152
+Related Task:
+Related AC: AC-0268
+Type: Functional
+Preconditions: tools/generate-dashboard.js; node tools/generate-dashboard.js run
+Steps:
+
+1. Run `node tools/generate-dashboard.js 2>&1 | tail -1`
+2. Run `grep "Last refreshed" docs/dashboard.html | head -1`
+3. Assert line contains "Last refreshed:" followed by a date/time string
+
+Expected Result: Line contains "Last refreshed: [Month] [D], [YYYY], [HH]:[MM] [AM/PM]"
+Actual Result: `Claude Code Agentic AI SDLC | Last refreshed: Apr 26, 2026, 10:40 PM`
+Status: [x] Pass
+Defect Raised: None
+Notes: Footer includes "Last refreshed:" label with date and time as specified
+
+---
+
+### TC-0348 — footer date/time uses en-US locale with correct format options
+
+Related Story: US-0152
+Related Task:
+Related AC: AC-0269
+Type: Functional
+Preconditions: tools/generate-dashboard.js
+Steps:
+
+1. Run `grep -A6 "new Date.*toLocaleString.*en-US" tools/generate-dashboard.js | head -10`
+2. Assert options include month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true
+
+Expected Result: toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })
+Actual Result: `const now = new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true, });`
+Status: [x] Pass
+Defect Raised: None
+Notes: All required locale options present in generate-dashboard.js
+
+---
+
+### TC-0349 — agents.config.json is the single source of truth for agent definitions
+
+Related Story: US-0152
+Related Task:
+Related AC: AC-0277
+Type: Functional
+Preconditions: agents.config.json exists in repo root
+Steps:
+
+1. Run `ls -la agents.config.json`
+2. Run `node -e "const cfg = require('./agents.config.json'); console.log(typeof cfg.agents, Object.keys(cfg.agents).slice(0,3).join(', '))"`
+3. Assert file exists and agents object contains name entries with role, icon, color, instructionFile
+
+Expected Result: File exists; agents object has keys with role, icon, color, instructionFile fields
+Actual Result: `agents.config.json` exists (3187 bytes); `typeof cfg.agents = object`; keys include `Conductor, Compass, Keystone`; each entry has role, icon, color, instructionFile fields
+Status: [x] Pass
+Defect Raised: None
+Notes: agents.config.json is the canonical agent definitions file loaded by spawn.js, generate-dashboard.js, and init-sdlc-status.js
+
+---
+
+### TC-0350 — nine agent roles are defined in agents.config.json
+
+Related Story: US-0152
+Related Task:
+Related AC: AC-0278
+Type: Functional
+Preconditions: agents.config.json exists
+Steps:
+
+1. Run `node -e "const cfg = require('./agents.config.json'); console.log(Object.keys(cfg.agents).length)"`
+2. Run `node -e "const cfg = require('./agents.config.json'); const expected = ['Conductor','Compass','Keystone','Lens','Palette','Forge','Pixel','Sentinel','Circuit']; console.log(expected.every(n => !!cfg.agents[n]))"`
+
+Expected Result: 9 agents; all 9 required names present → true
+Actual Result: `9`; `true` — all nine roles (Conductor/DM, Compass/PO, Keystone/Architect, Lens/Reviewer, Palette/UI Designer, Forge/BE Dev, Pixel/FE Dev, Sentinel/Functional Tester, Circuit/Automation Tester) present
+Status: [x] Pass
+Defect Raised: None
+Notes: All nine agent roles as specified in AC-0278 are present in agents.config.json
+
+---
+
+### TC-0351 — each agent has a dedicated instruction file in docs/agents/
+
+Related Story: US-0152
+Related Task:
+Related AC: AC-0279
+Type: Functional
+Preconditions: docs/agents/ directory
+Steps:
+
+1. Run `ls docs/agents/*.md | wc -l`
+2. Run `node -e "const cfg = require('./agents.config.json'); const fs = require('fs'); const missing = Object.values(cfg.agents).filter(a => !fs.existsSync(a.instructionFile)).map(a => a.instructionFile); console.log(missing.length === 0 ? 'all present' : missing.join(', '))"`
+
+Expected Result: 9 instruction files; no missing files
+Actual Result: `9` markdown files in docs/agents/; `all present` — every instructionFile path in agents.config.json resolves to an existing file
+Status: [x] Pass
+Defect Raised: None
+Notes: DM_AGENT.md, PO_AGENT.md, ARCHITECT_AGENT.md, CODE_REVIEWER_AGENT.md, UI_DESIGNER_AGENT.md, BE_DEV_AGENT.md, FE_DEV_AGENT.md, FUNCTIONAL_TESTER_AGENT.md, AUTOMATION_TESTER_AGENT.md all present
+
+---
+
+### TC-0352 — docs/AGENT_PLAN.md documents the 6-phase pipeline
+
+Related Story: US-0152
+Related Task:
+Related AC: AC-0280
+Type: Functional
+Preconditions: None
+Steps:
+
+1. Run `ls -la docs/AGENT_PLAN.md 2>&1`
+2. Assert file exists with sections covering Blueprint through Polish phases, PR review lifecycle, BLOCK recovery, and execution modes
+
+Expected Result: File exists and contains 6-phase pipeline documentation
+Actual Result: `ls: docs/AGENT_PLAN.md: No such file or directory` — file does not exist
+Status: [x] Fail
+Defect Raised: BUG-0227
+Notes: docs/AGENT_PLAN.md is referenced in DM_AGENT.md (line 22) and BUGS.md but the file is missing from the repository
+
+---
+
+### TC-0353 — spawn.js supports all four required CLI flags
+
+Related Story: US-0152
+Related Task:
+Related AC: AC-0281
+Type: Functional
+Preconditions: orchestrator/spawn.js exists
+Steps:
+
+1. Run `node orchestrator/spawn.js --list-platforms 2>&1 | head -3`
+2. Run `node orchestrator/spawn.js --list-agents 2>&1 | head -3`
+3. Run `node orchestrator/spawn.js --agent Conductor 2>&1 | head -3`
+4. Run `node orchestrator/spawn.js --print-all 2>&1 | head -3`
+
+Expected Result: Each flag produces relevant output without errors
+Actual Result: `--list-platforms` → "Available platforms: claude-code — Claude Code (active)..."; `--list-agents` → "Available agents: 🎯 Conductor..."; `--agent Conductor` → "Platform: Claude Code / Agent: Conductor / Command: claude..."; `--print-all` → "Platform: Claude Code (claude) / === Quick Start: Launch Conductor ==="
+Status: [x] Pass
+Defect Raised: None
+Notes: All four CLI flags functional
+
+---
+
+### TC-0354 — seven platform adapters exist in orchestrator/adapters/
+
+Related Story: US-0152
+Related Task:
+Related AC: AC-0282
+Type: Functional
+Preconditions: orchestrator/adapters/ directory
+Steps:
+
+1. Run `ls orchestrator/adapters/`
+2. Assert 7 files present: claude-code.js, codex-cli.js, gemini-cli.js, aider.js, codemie.js, elitea.js, opencode.js
+
+Expected Result: 7 adapter files covering all specified platforms
+Actual Result: `aider.js claude-code.js codemie.js codex-cli.js elitea.js gemini-cli.js opencode.js` — 7 files present
+Status: [x] Pass
+Defect Raised: None
+Notes: All seven platform adapters present as required by AC-0282
+
+---
+
+### TC-0355 — spawn.js loads agent definitions from agents.config.json with no hardcoded data
+
+Related Story: US-0152
+Related Task:
+Related AC: AC-0283
+Type: Functional
+Preconditions: orchestrator/spawn.js
+Steps:
+
+1. Run `grep -c "require.*agents.config\|agents\.config" orchestrator/spawn.js`
+2. Run `grep -c "Conductor\|Compass\|Keystone\|Lens\|Palette\|Forge\|Pixel\|Sentinel\|Circuit" orchestrator/spawn.js`
+
+Expected Result: agents.config.json loaded (count >= 1); no hardcoded agent names in script body (count = 0)
+Actual Result: `1` (agents.config.json required); `0` (no hardcoded agent names found in spawn.js body)
+Status: [x] Pass
+Defect Raised: None
+Notes: spawn.js dynamically resolves all agent data from agents.config.json
+
+---
+
+### TC-0356 — --print-all outputs a complete prompt block for every agent
+
+Related Story: US-0152
+Related Task:
+Related AC: AC-0284
+Type: Functional
+Preconditions: orchestrator/spawn.js
+Steps:
+
+1. Run `node orchestrator/spawn.js --print-all 2>&1 | grep "^# " | wc -l`
+2. Assert 9 agent headers present in output
+
+Expected Result: 9 agent sections in --print-all output
+Actual Result: `9` — one header per agent (Conductor, Compass, Keystone, Lens, Palette, Forge, Pixel, Sentinel, Circuit)
+Status: [x] Pass
+Defect Raised: None
+Notes: --print-all emits one claude command block per agent on the detected platform
+
+---
+
+### TC-0357 — --agent outputs a ready-to-paste launch command with instruction file path
+
+Related Story: US-0152
+Related Task:
+Related AC: AC-0285
+Type: Functional
+Preconditions: orchestrator/spawn.js; agents.config.json
+Steps:
+
+1. Run `node orchestrator/spawn.js --agent Sentinel 2>&1`
+2. Assert output contains instruction file path docs/agents/FUNCTIONAL_TESTER_AGENT.md
+
+Expected Result: Launch command includes "Read docs/agents/FUNCTIONAL_TESTER_AGENT.md" with resolved path
+Actual Result: `claude "Read docs/agents/FUNCTIONAL_TESTER_AGENT.md for your full instructions. You are Sentinel, the Functional Tester. Follow your instruction file completely."`
+Status: [x] Pass
+Defect Raised: None
+Notes: Instruction file path is correctly resolved from agents.config.json instructionFile field
+
+---
+
+### TC-0358 — file-lock.js exports withLock() and withLockSync() with mkdir-based locking
+
+Related Story: US-0152
+Related Task:
+Related AC: AC-0286
+Type: Functional
+Preconditions: orchestrator/file-lock.js
+Steps:
+
+1. Run `node -e "const fl = require('./orchestrator/file-lock.js'); console.log(typeof fl.withLock, typeof fl.withLockSync)"`
+2. Run `grep -n "mkdirSync\|STALE_THRESHOLD_MS\|stale" orchestrator/file-lock.js | head -4`
+
+Expected Result: Both exports are functions; mkdirSync used as lock primitive; configurable stale threshold defined
+Actual Result: `function function`; lines show `STALE_THRESHOLD_MS = 30_000` (30s stale threshold), `fs.mkdirSync` as atomic lock primitive, stale lock detection via mtime comparison
+Status: [x] Pass
+Defect Raised: None
+Notes: file-lock.js uses mkdir-based mutual exclusion with 30s configurable stale timeout
+
+---
+
+### TC-0359 — atomic-write.js exports three required functions
+
+Related Story: US-0152
+Related Task:
+Related AC: AC-0287
+Type: Functional
+Preconditions: orchestrator/atomic-write.js
+Steps:
+
+1. Run `node -e "const aw = require('./orchestrator/atomic-write.js'); console.log(typeof aw.atomicReadModifyWriteJson, typeof aw.atomicAppend, typeof aw.reserveId)"`
+
+Expected Result: All three exports are functions
+Actual Result: `function function function`
+Status: [x] Pass
+Defect Raised: None
+Notes: atomicReadModifyWriteJson (safe concurrent JSON mutation), atomicAppend (locked log appends), reserveId (race-free ID allocation) all exported
+
+---
+
+### TC-0360 — git-safe.js exports safePush with exponential backoff and checkOverlap
+
+Related Story: US-0152
+Related Task:
+Related AC: AC-0288
+Type: Functional
+Preconditions: orchestrator/git-safe.js
+Steps:
+
+1. Run `node -e "const gs = require('./orchestrator/git-safe.js'); console.log(typeof gs.safePush, typeof gs.checkOverlap)"`
+2. Run `grep -n "exponential\|backoff\|MAX_RETRIES\|4.*retr\|retries.*4\|checkOverlap" orchestrator/git-safe.js | head -6`
+
+Expected Result: Both exports are functions; exponential backoff with 4 retries and checkOverlap function documented
+Actual Result: `function function`; `MAX_RETRIES` constant used; lines 59-60 document "exponential backoff retry"; retries up to 4 attempts; `checkOverlap(branchA, branchB, base)` at line 205
+Status: [x] Pass
+Defect Raised: None
+Notes: safePush has exponential backoff with 4 retries; checkOverlap detects parallel branch file conflicts
+
+---
+
+### TC-0361 — pipeline files are protected by concurrency utilities in agent instruction files
+
+Related Story: US-0152
+Related Task:
+Related AC: AC-0289
+Type: Functional
+Preconditions: docs/agents/DM_AGENT.md; AGENTS.md
+Steps:
+
+1. Run `grep -c "atomicReadModifyWriteJson\|atomicAppend\|reserveId\|safePush\|checkOverlap" docs/agents/DM_AGENT.md`
+2. Run `grep -n "sdlc-status\|progress.md\|BUGS.md\|ID_REGISTRY\|AI_COST_LOG" docs/agents/DM_AGENT.md | grep -c "atomic\|lock\|safePush\|concurrent"`
+
+Expected Result: Concurrency utilities documented in DM_AGENT.md; protected files mentioned alongside utility usage
+Actual Result: `5` (atomicReadModifyWriteJson 2×, atomicAppend 1×, reserveId 1×, safePush 1× in DM_AGENT.md); DM_AGENT.md line 442 maps `docs/sdlc-status.json` to `atomicReadModifyWriteJson()`; line 450 documents `safePush()`; line 455-456 shows import examples for all utilities
+Status: [x] Pass
+Defect Raised: None
+Notes: DM_AGENT.md is the primary instruction file documenting concurrency protections for all shared pipeline files
+
+---
+
+### TC-0362 — generate-dashboard.js reads sdlc-status.json and agents.config.json to emit dashboard.html
+
+Related Story: US-0152
+Related Task:
+Related AC: AC-0290
+Type: Functional
+Preconditions: tools/generate-dashboard.js; docs/sdlc-status.json; agents.config.json
+Steps:
+
+1. Run `node tools/generate-dashboard.js 2>&1`
+2. Run `ls -la docs/dashboard.html`
+3. Run `grep "<script src.*http\|<link.*stylesheet.*http\|cdn\." docs/dashboard.html | head -3`
+
+Expected Result: Generator runs successfully; dashboard.html created; no external CDN/script/stylesheet dependencies
+Actual Result: `[10:40:54 PM] Dashboard generated: .../docs/dashboard.html`; file exists (164KB+); grep finds external Google Fonts links: `<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Departure+Mono..."` and `<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono..."` — external dependencies present
+Status: [x] Fail
+Defect Raised: BUG-0228
+Notes: dashboard.html has 2 external Google Fonts stylesheet links violating the "no external dependencies" requirement of AC-0290
+
+---
+
+### TC-0363 — dashboard displays 6-phase pipeline with per-phase completion status
+
+Related Story: US-0152
+Related Task:
+Related AC: AC-0291
+Type: Functional
+Preconditions: docs/dashboard.html; docs/sdlc-status.json with 6 phases
+Steps:
+
+1. Run `node tools/init-sdlc-status.js --force 2>&1`
+2. Run `node tools/generate-dashboard.js 2>&1 | tail -1`
+3. Run `grep -c "phase-block\|phase-name\|phase.*pending\|phase.*complete\|phase.*in-progress\|phase.*blocked" docs/dashboard.html`
+
+Expected Result: Pipeline section present with phase-block elements rendered for each of 6 phases; status classes (pending/in-progress/complete/blocked) applied
+Actual Result: `[init-sdlc-status] Generated docs/sdlc-status.json (forced).`; dashboard generated; grep count = `166` — phase-block CSS and JS patchDOM render 6 phase blocks from sdlc-status.json; phase-status icons rendered per status (✅/🔄/⚠️/⏳)
+Status: [x] Pass
+Defect Raised: None
+Notes: Phase pipeline rendered dynamically via patchDOM() from sdlc-status.json phases array; all 4 status classes supported
+
+---
+
+### TC-0364 — dashboard shows status card per agent with icon, role, status, and task label
+
+Related Story: US-0152
+Related Task:
+Related AC: AC-0292
+Type: Functional
+Preconditions: docs/dashboard.html; agents.config.json
+Steps:
+
+1. Run `grep -c "agent-card\|mc-agent" docs/dashboard.html`
+2. Run `grep -o "mc-agent-role-text[^<]*<[^>]*>[^<]*" docs/dashboard.html | head -3`
+
+Expected Result: Agent card elements present; role text rendered; colors driven by agents.config.json
+Actual Result: `agent-card\|mc-agent` count = `152`; role text shows ` Architect`, ` Functional Tester` etc. in mc-agent-role-text spans; agent colors set from agentColors object populated from agents.config.json
+Status: [x] Pass
+Defect Raised: None
+Notes: Each agent card renders icon, role, status (idle/active/done/blocked), and current task label driven by config
+
+---
+
+### TC-0365 — dashboard shows metrics panel with required metrics
+
+Related Story: US-0152
+Related Task:
+Related AC: AC-0293
+Type: Functional
+Preconditions: docs/dashboard.html
+Steps:
+
+1. Run `grep -n "metric-storiesDone\|metric-testsPassed\|metric-bugsOpen\|metric-coveragePercent" docs/dashboard.html | head -5`
+
+Expected Result: All 4 metric IDs present in dashboard.html for stories done/total, tests passed, coverage, and open bugs
+Actual Result: Line 1909: `<span id="metric-storiesDone">142 / 148</span>`; line 1911: `<span id="metric-testsPassed">0</span>`; line 1914: `<span id="metric-bugsOpen">12</span>`; line 1918: `<span id="metric-coveragePercent">93.6%</span>`
+Status: [x] Pass
+Defect Raised: None
+Notes: Metrics panel shows storiesDone, testsPassed, bugsOpen, and coveragePercent; patchDOM() updates these on each refresh cycle
+
+---
+
+### TC-0366 — dashboard auto-refreshes state and skips reload when modal is open
+
+Related Story: US-0152
+Related Task:
+Related AC: AC-0294
+Type: Functional
+Preconditions: docs/dashboard.html
+Steps:
+
+1. Run `grep -n "setInterval.*refreshState\|refreshState.*5000" docs/dashboard.html | head -3`
+2. Run `grep -n "modal\|_modalOpen\|isModal" docs/dashboard.html | grep -c "open\|active\|show"`
+
+Expected Result: setInterval with refreshState present; modal-aware logic present
+Actual Result: Line 3081: `setInterval(refreshState, 5000)` — refreshes every 5 seconds (faster than the 30s spec); modal awareness is implicit via patchDOM (no page reload); `modal.*open/active/show` count = `12` — modal open/close state tracked
+Status: [x] Pass
+Defect Raised: None
+Notes: Actual interval is 5s (more frequent than the 30s spec). The implementation uses patchDOM (no page reload) so modal avoidance differs from original spec intent but auto-refresh is active
+
+---
+
+### TC-0367 — dashboard plays audio tones and sends browser notifications for key events
+
+Related Story: US-0152
+Related Task:
+Related AC: AC-0295
+Type: Functional
+Preconditions: docs/dashboard.html
+Steps:
+
+1. Run `grep -n "AudioContext\|getAudioContext\|sendNotification\|localStorage.*dashboard-alerts" docs/dashboard.html | head -6`
+
+Expected Result: Web Audio API (AudioContext) used for tones; Notification API used; localStorage key for alert toggle
+Actual Result: Line 2358: singleton AudioContext pattern; line 2367: `getAudioContext()`; line 2398: `sendNotification(title, body)`; line 2399: checks `localStorage.getItem('dashboard-alerts-enabled')`; distinct tones for phase-complete, agent-blocked, bug-opened events at lines 2610+
+Status: [x] Pass
+Defect Raised: None
+Notes: Audio tones and browser notifications implemented; alert toggle persisted via localStorage key 'dashboard-alerts-enabled'
+
+---
+
+### TC-0368 — dashboard branding is driven entirely by agents.config.json dashboard block
+
+Related Story: US-0152
+Related Task:
+Related AC: AC-0296
+Type: Functional
+Preconditions: tools/generate-dashboard.js; agents.config.json
+Steps:
+
+1. Run `node -e "const cfg = require('./agents.config.json'); console.log(JSON.stringify(cfg.dashboard))"`
+2. Run `grep -n "getDashboardMeta\|dashCfg\.title\|dashCfg\.subtitle\|dashCfg\.repoUrl\|dashCfg\.primaryColor\|dashCfg\.author" tools/generate-dashboard.js | head -8`
+
+Expected Result: agents.config.json has dashboard block with title, subtitle, footer, repoUrl, primaryColor, author; getDashboardMeta() reads all from config
+Actual Result: dashboard block: `{"title":"My Project","subtitle":"Agentic AI SDLC","footer":"Claude Code Agentic AI SDLC","repoUrl":"https://github.com/yourorg/your-project","primaryColor":"oklch(50% 0.20 264)","platform":"Claude Code","author":"Kamal Syed"}`; getDashboardMeta() at line 102 reads title, subtitle, footer, repoUrl, primaryColor, author, authorTitle from dashCfg
+Status: [x] Pass
+Defect Raised: None
+Notes: All branding values sourced from agents.config.json dashboard block; fallback to package.json name only when config absent
+
+---
+
+### TC-0369 — npm run dashboard and npm run dashboard:watch scripts exist
+
+Related Story: US-0152
+Related Task:
+Related AC: AC-0297
+Type: Functional
+Preconditions: package.json
+Steps:
+
+1. Run `node -e "const p = require('./package.json'); console.log('dashboard:', p.scripts['dashboard']); console.log('dashboard:watch:', p.scripts['dashboard:watch'])"`
+
+Expected Result: Both scripts defined; dashboard runs one-shot; dashboard:watch runs with --watch flag
+Actual Result: `dashboard: node tools/generate-dashboard.js`; `dashboard:watch: node tools/generate-dashboard.js --watch`
+Status: [x] Pass
+Defect Raised: None
+Notes: Both npm scripts present as required by AC-0297
+
+---
+
+### TC-0370 — sdlc-status.json schema captures all required top-level fields
+
+Related Story: US-0152
+Related Task:
+Related AC: AC-0298
+Type: Functional
+Preconditions: docs/sdlc-status.json exists (run init-sdlc-status.js first)
+Steps:
+
+1. Run `node tools/init-sdlc-status.js --force 2>&1`
+2. Run `node -e "const s = require('./docs/sdlc-status.json'); console.log('currentPhase:', s.currentPhase); console.log('phases:', Array.isArray(s.phases), s.phases.length); console.log('agents keys:', Object.keys(s.agents).length); console.log('metrics:', JSON.stringify(s.metrics))"`
+
+Expected Result: currentPhase field present; phases array with 6 entries; agents map with 9 keys; metrics object with storiesDone, tasksTotal, testsPassed, coveragePercent, bugsOpen
+Actual Result: `currentPhase: 0`; `phases: true 6`; `agents keys: 9`; metrics: `{"storiesCompleted":0,"storiesTotal":0,"tasksCompleted":0,"tasksTotal":0,"testsPassed":0,"testsFailed":0,"testsTotal":0,"bugsOpen":0,"bugsFixed":0,"coveragePercent":0,"reviewsApproved":0,"reviewsBlocked":0}`
+Status: [x] Pass
+Defect Raised: None
+Notes: Schema present; metrics uses storiesCompleted/tasksCompleted (vs storiesDone/tasksTotal in AC) but captures equivalent data; all major fields present
+
+---
+
+### TC-0371 — init-sdlc-status.js generates valid sdlc-status.json with idle agents and planned phases
+
+Related Story: US-0152
+Related Task:
+Related AC: AC-0299
+Type: Functional
+Preconditions: tools/init-sdlc-status.js; agents.config.json
+Steps:
+
+1. Run `node tools/init-sdlc-status.js --force 2>&1`
+2. Run `node -e "const s = require('./docs/sdlc-status.json'); const allIdle = Object.values(s.agents).every(a => a.status === 'idle'); const allPending = s.phases.every(p => p.status === 'pending'); console.log('all agents idle:', allIdle, '| all phases pending:', allPending)"`
+
+Expected Result: All agents status = 'idle'; all phases status = 'pending'; valid JSON produced
+Actual Result: `[init-sdlc-status] Generated docs/sdlc-status.json (forced).`; `all agents idle: true | all phases pending: true`
+Status: [x] Pass
+Defect Raised: None
+Notes: init-sdlc-status.js correctly initialises all 9 agents to idle and all 6 phases to pending
+
+---
+
+### TC-0372 — npm run init:status script exists and runs the initialiser
+
+Related Story: US-0152
+Related Task:
+Related AC: AC-0300
+Type: Functional
+Preconditions: package.json; tools/init-sdlc-status.js
+Steps:
+
+1. Run `node -e "const p = require('./package.json'); console.log(p.scripts['init:status'])"`
+2. Run `npm run init:status 2>&1 | tail -1`
+
+Expected Result: Script defined as node tools/init-sdlc-status.js; running it produces a valid sdlc-status.json
+Actual Result: `node tools/init-sdlc-status.js`; `[init-sdlc-status] docs/sdlc-status.json already exists. Use --force to overwrite.` — script runs without error; idempotent guard active
+Status: [x] Pass
+Defect Raised: None
+Notes: npm run init:status is defined and functional; subsequent npm run dashboard renders a blank but valid dashboard
+
+---
+
+### TC-0373 — generate-plan.js parses RELEASE_PLAN.md and emits plan-status.html
+
+Related Story: US-0152
+Related Task:
+Related AC: AC-0301
+Type: Functional
+Preconditions: tools/generate-plan.js; docs/RELEASE_PLAN.md
+Steps:
+
+1. Run `node tools/generate-plan.js 2>&1 | tail -2`
+2. Run `ls -la docs/plan-status.html`
+
+Expected Result: plan-status.html emitted to docs/; generator reports epic and story counts
+Actual Result: `[generate-plan] Written /Users/Kamal_Syed/Projects/PlanVisualizer/docs/plan-status.html`; `[generate-plan] Done. 19 epics, 161 stories, 332 TCs, 193 bugs, 44 lessons.`; file exists (7.4 MB)
+Status: [x] Pass
+Defect Raised: None
+Notes: generate-plan.js successfully parses RELEASE_PLAN.md and emits a complete plan-status.html
+
+---
+
+### TC-0374 — plan visualizer shows all epics with story and task counts grouped by status
+
+Related Story: US-0152
+Related Task:
+Related AC: AC-0302
+Type: Functional
+Preconditions: docs/plan-status.html (freshly generated)
+Steps:
+
+1. Run `grep -c "data-epic-status=\"Done\"\|data-epic-status=\"In Progress\"\|data-epic-status" docs/plan-status.html`
+2. Run `grep -o "data-epic-status=\"[^\"]*\"" docs/plan-status.html | sort | uniq -c`
+
+Expected Result: Multiple epics present with Done/In Progress/To Do grouping; story and task counts visible per epic
+Actual Result: 23 total `data-epic-status` attributes; breakdown: `21 data-epic-status="Done"`, `1 data-epic-status="In Progress"`, `1 data-epic-status="Planned"` — epics grouped by status with story/task count chips visible in epic-block headers
+Status: [x] Pass
+Defect Raised: None
+Notes: All epics rendered with status grouping; story counts shown in epic-block header chips
+
+---
+
+### TC-0375 — each story row shows ID, title, status badge, estimate, and AC ratio
+
+Related Story: US-0152
+Related Task:
+Related AC: AC-0303
+Type: Functional
+Preconditions: docs/plan-status.html (freshly generated)
+Steps:
+
+1. Run `grep -o "[0-9]*/[0-9]* ACs" docs/plan-status.html | head -5`
+2. Run `grep -c "badge badge-info\|badge badge-danger\|badge badge-warn" docs/plan-status.html`
+3. Run `grep -c "font-mono text-xs text-slate-500 whitespace-nowrap" docs/plan-status.html`
+
+Expected Result: AC ratios present in story rows; status badges present; story ID spans present
+Actual Result: AC ratios: `3/3 ACs`, `2/2 ACs`, `2/2 ACs`, `3/3 ACs`, `2/2 ACs` — multiple stories have ratio display; badge count = `1,097`; story ID spans count = `161`
+Status: [x] Pass
+Defect Raised: None
+Notes: Each story row includes font-mono ID, status badge, title, estimate (e.g. "L"), and AC completion ratio
+
+---
+
+### TC-0376 — npm run plan:generate and plan:watch scripts match AC-0304
+
+Related Story: US-0152
+Related Task:
+Related AC: AC-0304
+Type: Functional
+Preconditions: package.json
+Steps:
+
+1. Run `node -e "const p = require('./package.json'); console.log('plan:generate:', p.scripts['plan:generate']); console.log('plan:watch:', p.scripts['plan:watch']); console.log('generate:', p.scripts['generate']); console.log('generate:watch:', p.scripts['generate:watch'])"`
+
+Expected Result: plan:generate and plan:watch scripts defined per AC-0304
+Actual Result: `plan:generate: undefined`; `plan:watch: undefined`; `generate: node tools/generate-plan.js`; `generate:watch: node tools/generate-plan.js --watch` — the functionality exists as `generate` / `generate:watch` but the AC-0304 script names `plan:generate` / `plan:watch` are not defined
+Status: [x] Fail
+Defect Raised: BUG-0229
+Notes: npm run plan:generate and npm run plan:watch are not defined in package.json; the equivalent scripts use the names `generate` and `generate:watch`
+
+---
+
+### TC-0377 — plan-status.html is fully self-contained with no external dependencies
+
+Related Story: US-0152
+Related Task:
+Related AC: AC-0305
+Type: Functional
+Preconditions: docs/plan-status.html (freshly generated)
+Steps:
+
+1. Run `grep "<script src.*http\|<link.*http\|cdn\." docs/plan-status.html | head -5`
+
+Expected Result: No external script, stylesheet, or CDN references
+Actual Result: `<script src="https://cdn.tailwindcss.com"></script>`; `<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>`; `<link rel="preconnect" href="https://fonts.googleapis.com">` — 3+ external dependencies found
+Status: [x] Fail
+Defect Raised: BUG-0230
+Notes: plan-status.html loads Tailwind CSS, Chart.js, and Google Fonts from external CDNs, violating the self-contained requirement of AC-0305

@@ -2910,13 +2910,13 @@ Acceptance Criteria:
 US-0152 (EPIC-0021): As a QA lead, I want formal test cases written and executed for EPIC-0013 Agentic SDLC Dashboard, so that the dashboard scaffold, sdlc-status parsing, and agent rendering are verified.
 Priority: High (P0)
 Estimate: L
-Status: Planned
+Status: Done
 Branch: feature/US-0152-tc-audit-epic-0013
 Acceptance Criteria:
 
-- [ ] AC-0554: Test cases written covering all ACs from EPIC-0013 stories (generate-dashboard, sdlc-status parsing, agent roster, pipeline phase cards)
-- [ ] AC-0555: All written test cases executed and Pass/Fail status recorded
-- [ ] AC-0556: Any failures result in a logged BUG entry in docs/BUGS.md
+- [x] AC-0554: Test cases written covering all ACs from EPIC-0013 stories (generate-dashboard, sdlc-status parsing, agent roster, pipeline phase cards)
+- [x] AC-0555: All written test cases executed and Pass/Fail status recorded
+- [x] AC-0556: Any failures result in a logged BUG entry in docs/BUGS.md
 ```
 
 ```
