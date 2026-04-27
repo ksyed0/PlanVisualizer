@@ -2975,13 +2975,13 @@ Acceptance Criteria:
 US-0157 (EPIC-0021): As a QA lead, I want formal test cases written and executed for EPIC-0020 Cross-Dashboard Redesign, so that the shared theme tokens, neutral chrome, status hero, and agent workload widget are verified.
 Priority: High (P0)
 Estimate: L
-Status: Planned
+Status: Done
 Branch: feature/US-0157-tc-audit-epic-0020
 Acceptance Criteria:
 
-- [ ] AC-0569: Test cases written covering all ACs from EPIC-0020 stories (theme.js tokens, render-chrome.js, CSS custom properties, no hex literals, status hero density, agent workload from sdlc-status)
-- [ ] AC-0570: All written test cases executed and Pass/Fail status recorded
-- [ ] AC-0571: Any failures result in a logged BUG entry in docs/BUGS.md
+- [x] AC-0569: Test cases written covering all ACs from EPIC-0020 stories (theme.js tokens, render-chrome.js, CSS custom properties, no hex literals, status hero density, agent workload from sdlc-status)
+- [x] AC-0570: All written test cases executed and Pass/Fail status recorded
+- [x] AC-0571: Any failures result in a logged BUG entry in docs/BUGS.md
 ```
 
 ```
