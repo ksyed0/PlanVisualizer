@@ -8554,7 +8554,7 @@ Steps:
 Expected Result: dispatch counter element or incrementing counter on Conductor card present
 Actual Result: no dispatchCount/dispatch-counter element found (0 matches); setConductorActive has 3 references (definition + 2 call sites)
 Status: [x] Fail
-Defect Raised: None
+Defect Raised: BUG-0227
 Notes: AC-0522 requires a "(37 tasks)" counter on the Conductor card that animates on change. Only is-active toggling is implemented; no incrementing counter element present.
 
 ---
@@ -8853,7 +8853,7 @@ Steps:
 Expected Result: inFlight excludes done/complete stories; "(N done)" sub-label present
 Actual Result: line 219: const inFlight = assigned.filter((s) => !/done|complete/i.test(s.status || '')).length; no (N done) sub-label found (0 matches)
 Status: [x] Fail
-Defect Raised: None
+Defect Raised: BUG-0228
 Notes: Done story exclusion from bar length is implemented. The "(N done)" sub-label required by AC-0537 is NOT rendered — only inFlight count is shown.
 
 ---

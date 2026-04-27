@@ -3244,3 +3244,37 @@ Steps to Reproduce:
    Lesson Encoded: No
    Estimated Cost USD: 0.00
    Notes: Discovered via TC-0377 (AC-0305). plan-status.html has 3 external CDN dependencies. To fix: bundle Tailwind, inline Chart.js, and inline or remove Google Fonts.
+
+---
+
+BUG-0231: dashboard.html missing dispatch counter element on Conductor card (AC-0522)
+Severity: Low
+Related Story: US-0143 (EPIC-0020)
+Steps to Reproduce:
+
+1. Run `grep -n "dispatch.*counter\|dispatchCount\|dispatch-count\|tasks.*count\|counter.*dispatch" docs/dashboard.html | head -5`
+2. Observe 0 matches for any dispatch counter element
+   Expected: Conductor card contains a visible dispatch counter element (e.g. "37 tasks") that increments and animates on change
+   Actual: No dispatch counter element found in dashboard.html; only setConductorActive toggling is implemented
+   Status: Open
+   Fix Branch: TBD
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: TC-0536 verifies AC-0522 "Conductor card shows incrementing dispatch counter". The dispatch-counter/dispatchCount element is not present in docs/dashboard.html. Only setConductorActive toggling is implemented; no counter element is rendered.
+
+---
+
+BUG-0232: Agent Workload widget missing "(N done)" sub-label (AC-0537)
+Severity: Low
+Related Story: US-0147 (EPIC-0020)
+Steps to Reproduce:
+
+1. Run `grep -n "N done\|done.*sub-label\|pv-workload.*done" tools/generate-dashboard.js | head -3`
+2. Observe 0 matches for any (N done) sub-label
+   Expected: Agent Workload widget renders a "(N done)" sub-label showing the count of completed stories per agent
+   Actual: Sub-label absent from dashboard.html output; inFlight filtering is implemented but the (N done) count is never rendered
+   Status: Open
+   Fix Branch: TBD
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: TC-0551 verifies AC-0537 "Agent Workload bars show (N done) sub-label". The inFlight filtering in tools/generate-dashboard.js is implemented but the (N done) sub-label is never rendered.
