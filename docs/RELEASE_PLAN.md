@@ -2862,7 +2862,8 @@ Acceptance Criteria:
 ```
 EPIC-0021
 Title: Test Case Audit
-Status: In-Progress
+Status: Done
+Completed: 2026-04-27
 ReleaseTarget: v1.x
 Description: Retroactive test case coverage for epics shipped without formal TCs. One story per epic; each story produces written TCs, executed results, and any defects logged.
 ```
