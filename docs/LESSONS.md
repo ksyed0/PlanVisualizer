@@ -4,6 +4,22 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
+## L-0045 — `v.toFixed ? …` does NOT protect against null — use `v !== null && v !== undefined`
+
+**Rule:** The ternary `v.toFixed ? v.toFixed(1) : v` is not a null-safe pattern. Accessing `.toFixed` on `null` throws `TypeError: Cannot read properties of null (reading 'toFixed')` before the ternary branches. The correct guard is `v !== null && v !== undefined ? v.toFixed(1) : fallback`. Equivalently, `v != null` (loose inequality) catches both null and undefined in a single check, but ESLint's `eqeqeq` rule rejects it — use the explicit two-check form to satisfy the linter.
+_Learned during Session 29: CI build crashed at render-tabs.js:2291 with this exact error. The guard looked like it should work but it doesn't._
+**Date:** 2026-04-25
+
+---
+
+## L-0044 — Replace `existsSync` + `readFileSync` two-step with try-catch on `readFileSync` for ENOENT
+
+**Rule:** The pattern `if (!fs.existsSync(path)) return; const raw = fs.readFileSync(path)` is a TOCTOU (CWE-367) race: between the check and the read, another process can delete or symlink-swap the file. CodeQL flags it as "Potential file system race condition". Fix: remove `existsSync` and wrap `readFileSync` in `try { raw = fs.readFileSync(path, 'utf8') } catch (err) { if (err.code === 'ENOENT') { /* handle missing */ } throw err; }`. This handles the missing-file case atomically and eliminates the race window.
+_Learned during Session 29: CodeQL SAST flagged two High-severity findings in tools/migrate-config.js at lines 82 and 125._
+**Date:** 2026-04-25
+
+---
+
 ## L-0041 — Chart.js has no built-in data labels; use HTML bar charts when text annotations are required
 
 **Rule:** When a spec requires text labels (score values, badges) alongside chart bars, do not use Chart.js canvas — it requires the `chartjs-plugin-datalabels` external dependency which is not in this project. Use an HTML/CSS bar chart instead: `<div style="width:${pct}%;background:${col}">` rows with adjacent text spans. This is simpler, controllable, and produces exactly the required output without adding a dependency.
