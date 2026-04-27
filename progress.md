@@ -4,6 +4,42 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 30 — 2026-04-24 (EPIC-0021 Closure)
+
+### What Was Done
+
+1. **EPIC-0021 marked Done** — All 11 stories (US-0148–US-0158) confirmed `Status: Done` with checked ACs on develop. EPIC-0021 block in `docs/RELEASE_PLAN.md` updated from `Status: In-Progress` to `Status: Done` with `Completed: 2026-04-24`.
+
+2. **Wave 2 merged** (PRs #447, #446, #449, #448): US-0150 (EPIC-0009 Budget), US-0153 (EPIC-0014 Follow-Up), US-0156 (EPIC-0019 Cycle History), US-0158 (AI cost attribution). US-0158 added `normalizeBranch`/`backfillUnattributed` to `parse-cost-log.js`; handles `claude/*` and null branches. L-0044 lesson added for worktree branch attribution gap.
+
+3. **Wave 3 merged** (PRs #457, #458, #459): US-0152 (EPIC-0013 Agentic Dashboard), US-0154 (EPIC-0016 Mission Control), US-0157 (EPIC-0020 Cross-Dashboard Redesign). BUG-0227–BUG-0230: 4 EPIC-0013 spec violations (missing AGENT_PLAN.md, external CDN deps). BUG-0231–BUG-0232: 2 EPIC-0020 spec violations (dispatch counter, agent workload sub-label).
+
+4. **TC range** — TC-0190–TC-0552 written across 11 stories (363 new TCs total for EPIC-0021 audit). Final ID state: TC-0553 next, BUG-0233 next, L-0045 next.
+
+5. **Session docs updated** — `docs/ID_REGISTRY.md` confirmed final. `MEMORY.md`, `PROMPT_LOG.md`, `progress.md` updated.
+
+### Test Results
+
+- 648 tests, 26 suites — all passing
+- Statement coverage above 80% gate
+- All CI gates green on develop
+
+### Blockers
+
+None.
+
+### PRs
+
+- PR #447 `feature/US-0150-tc-audit-epic-0009` → develop — ✅ Merged
+- PR #446 `feature/US-0153-tc-audit-epic-0014` → develop — ✅ Merged
+- PR #449 `feature/US-0156-tc-audit-epic-0019` → develop — ✅ Merged
+- PR #448 `feature/US-0158-ai-cost-attribution-fix` → develop — ✅ Merged
+- PR #457 `feature/US-0152-tc-audit-epic-0013` → develop — ✅ Merged
+- PR #458 `feature/US-0154-tc-audit-epic-0016` → develop — ✅ Merged
+- PR #459 `feature/US-0157-tc-audit-epic-0020` → develop — ✅ Merged
+
+---
+
 ## Session 29 — 2026-04-25
 
 ### What Was Done

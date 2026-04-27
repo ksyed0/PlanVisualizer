@@ -4,6 +4,14 @@ Timestamped log of every user prompt across all sessions. Append-only. Never edi
 
 ---
 
+## Session 30 — 2026-04-24 (EPIC-0021 Closure)
+
+| #   | Timestamp            | Prompt                                                                                |
+| --- | -------------------- | ------------------------------------------------------------------------------------- |
+| 1   | 2026-04-24T23:00:00Z | [auto] EPIC-0021 closure — mark Done, update session docs, ID registry final, open PR |
+
+---
+
 ## Session 29 — 2026-04-25
 
 | #   | Timestamp            | Prompt                                                               |

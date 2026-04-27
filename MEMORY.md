@@ -117,11 +117,11 @@ Branch name in `AI_COST_LOG.md` row must exactly match `Branch:` field in story 
 
 ---
 
-## Project Completion Status (as of 2026-04-25 Session 29)
+## Project Completion Status (as of 2026-04-24 Session 30)
 
-22 EPICs (EPIC-0010/0014/0015/0016/0017/0019/0020 Done; EPIC-0022 Planned), 161 active stories, 193 bugs.
-Develop is fully green — all CI gates passing after PR #444 (Session 28 UI polish + About modal) and PR #455 (Prettier fix) merged.
-Next IDs: check `docs/ID_REGISTRY.md` — as of Session 29: EPIC-0023, US-0162, TASK-0055, AC-0591, TC-0475, BUG-0231, L-0046.
+23 EPICs (EPIC-0010/0014/0015/0016/0017/0019/0020/0021 Done; EPIC-0022 Planned), 161 active stories, 232 bugs (BUG-0227–BUG-0232 added).
+Develop is fully green — all CI gates passing. EPIC-0021 TC Audit complete: TC-0001–TC-0552 populated across 11 stories, 363 new TCs.
+Next IDs: check `docs/ID_REGISTRY.md` — as of Session 30: EPIC-0023, US-0162, TASK-0055, AC-0591, TC-0553, BUG-0233, L-0045.
 
 Key additions (Sessions 26–28):
 
@@ -178,6 +178,8 @@ Current coverage (2026-04-25 Session 29): 648 tests, 26 suites, all passing. Sta
 
 ## Lessons Learned
 
+- **TC audit parallel ID allocation:** Pre-allocate non-overlapping TC and BUG ID ranges per parallel branch before launch. When parallel agents independently read ID_REGISTRY.md from the same develop base, they draw identical IDs. Fix: specify exact first ID in implementer prompt; renumber before merge if collision detected. (Session 30, 2026-04-24)
+- **EPIC-0021 TC audit complete (Session 30):** TC-0001 through TC-0552 populated. Next available: TC-0553. All 11 EPIC-0021 stories Done. 6 new bugs logged (BUG-0227–BUG-0232) for genuine spec gaps in shipped epics. (Session 30, 2026-04-24)
 - **`v.toFixed ? …` is NOT a null guard — use `v !== null && v !== undefined`.** Accessing any property on `null` throws before the ternary branches. ESLint's `eqeqeq` rule rejects `v != null`, so use the explicit two-condition form. (L-0045, 2026-04-25)
 - **Replace `existsSync` + `readFileSync` two-step with try-catch on `readFileSync` for `ENOENT`.** The two-step is a TOCTOU race (CWE-367): CodeQL flags it as "Potential file system race condition". The try-catch pattern handles the missing-file case atomically. (L-0044, 2026-04-25)
 - **Prettier fixes committed after auto-merge fires will not land on develop.** Auto-merge triggers the moment the PR becomes MERGEABLE — often before a follow-up Prettier-fix push. Always run `npx prettier --write .` and commit before the rebase+force-push that makes the PR mergeable. (2026-04-25)
