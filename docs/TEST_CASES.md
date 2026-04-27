@@ -5609,10 +5609,9 @@ Steps:
 1. Run `grep "coverage --\|coverage.*percent\|Circuit.*percent\|coverage.*Circuit" docs/agents/DM_AGENT.md | head -5`
 2. Confirm coverage command documented in Test phase exit checklist
    Expected Result: coverage command with --percent documented in Test-phase exit section of DM_AGENT.md
-   Actual Result: `| Coverage             | \`node tools/update-sdlc-status.js coverage --agent Circuit --percent 90.82\` |`
-   Status: [x] Pass
-   Defect Raised: None
-   Notes: DM_AGENT.md includes `node tools/update-sdlc-status.js coverage --agent Circuit --percent <pct>` in Test phase exit
+   Actual Result: `| Coverage             | \`node tools/update-sdlc-status.js coverage --agent Circuit --percent 90.82\` |`Status: [x] Pass
+Defect Raised: None
+Notes: DM_AGENT.md includes`node tools/update-sdlc-status.js coverage --agent Circuit --percent <pct>` in Test phase exit
 
 ---
 
