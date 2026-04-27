@@ -2936,13 +2936,13 @@ Acceptance Criteria:
 US-0154 (EPIC-0021): As a QA lead, I want formal test cases written and executed for EPIC-0016 Agentic Dashboard Mission Control Redesign, so that the MC layout, roster, pipeline, and live bar widgets are verified.
 Priority: High (P0)
 Estimate: L
-Status: Planned
+Status: Done
 Branch: feature/US-0154-tc-audit-epic-0016
 Acceptance Criteria:
 
-- [ ] AC-0560: Test cases written covering all ACs from EPIC-0016 stories (MC header/roster/pipeline/live-bar redesign, US-0148 layout closure)
-- [ ] AC-0561: All written test cases executed and Pass/Fail status recorded
-- [ ] AC-0562: Any failures result in a logged BUG entry in docs/BUGS.md
+- [x] AC-0560: Test cases written covering all ACs from EPIC-0016 stories (MC header/roster/pipeline/live-bar redesign, US-0148 layout closure)
+- [x] AC-0561: All written test cases executed and Pass/Fail status recorded
+- [x] AC-0562: Any failures result in a logged BUG entry in docs/BUGS.md
 ```
 
 ```

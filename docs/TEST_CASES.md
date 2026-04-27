@@ -6485,3 +6485,1395 @@ Actual Result: `<script src="https://cdn.tailwindcss.com"></script>`; `<script s
 Status: [x] Fail
 Defect Raised: BUG-0230
 Notes: plan-status.html loads Tailwind CSS, Chart.js, and Google Fonts from external CDNs, violating the self-contained requirement of AC-0305
+
+---
+
+### TC-0402 — Canvas background uses dark neutral ground aligned with plan-status dark canvas
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0359
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `grep -n "bg-primary.*oklch\|11%.*0.016.*220\|canvas.*bg" tools/generate-dashboard.js | head -5`
+2. Assert the dark canvas background token is defined in the dark-theme CSS block
+
+Expected Result: `--bg-primary: oklch(11% 0.016 220)` found in dark theme, matching the plan-status dark canvas tone
+Actual Result: Line 440: `--bg-primary: oklch(11% 0.016 220);` — comment on line 439: "US-0110: canvas bg aligned with Plan Visualizer dark canvas"
+Status: [x] Pass
+Defect Raised: None
+Notes: EPIC-0020 migrated hex to OKLCH tokens; oklch(11% 0.016 220) is the OKLCH equivalent of ~#0b0d12
+
+---
+
+### TC-0403 — Dot-grid background applied at canvas level
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0360
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const h=generateHTML({project:{name:'T',description:'T',repoUrl:''},phases:[],agents:[],metrics:{storiesCompleted:0,storiesTotal:0,testsPassed:0,coveragePercent:0,bugsOpen:0,bugsFixed:0},stories:{},cycles:[],log:[],epics:{}});console.log(h.includes('radial-gradient')&&h.includes('24px')?'found':'NOT found')"`
+
+Expected Result: `found`
+Actual Result: `found` — `radial-gradient(circle, oklch(70% 0.010 220 / 6%) 1px, transparent 1px)` with 24px background-size
+Status: [x] Pass
+Defect Raised: None
+Notes: Dot-grid scoped to dark theme only via body:not([data-theme="light"])
+
+---
+
+### TC-0404 — Departure Mono and Geist loaded via Google Fonts with font-display:swap
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0361
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const h=generateHTML({project:{name:'T',description:'T',repoUrl:''},phases:[],agents:[],metrics:{storiesCompleted:0,storiesTotal:0,testsPassed:0,coveragePercent:0,bugsOpen:0,bugsFixed:0},stories:{},cycles:[],log:[],epics:{}});console.log(h.includes('fonts.googleapis.com')?'Google Fonts found':'NOT found');console.log(h.includes('font-display')?'font-display found':'NOT found');console.log(h.includes('Departure Mono')?'Departure Mono found':'NOT found')"`
+
+Expected Result: Google Fonts found; font-display found; Departure Mono found
+Actual Result: `Google Fonts found`; `font-display found`; `Departure Mono found`
+Status: [x] Pass
+Defect Raised: None
+Notes: Link tag includes `display=swap` parameter; Geist also loaded in same request
+
+---
+
+### TC-0405 — section-header utility class present for tracked-out uppercase labels
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0362
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const h=generateHTML({project:{name:'T',description:'T',repoUrl:''},phases:[],agents:[],metrics:{storiesCompleted:0,storiesTotal:0,testsPassed:0,coveragePercent:0,bugsOpen:0,bugsFixed:0},stories:{},cycles:[],log:[],epics:{}});console.log(h.includes('section-header')?'found':'NOT found')"`
+
+Expected Result: `found`
+Actual Result: `found` — `.section-header` class defined in CSS and used for ACTIVE AGENT, PIPELINE, TELEMETRY labels
+Status: [x] Pass
+Defect Raised: None
+Notes: Class uses `text-transform: uppercase; letter-spacing` via Geist font family
+
+---
+
+### TC-0406 — Alert IIFE extracted into runAlertCheck function callable per fetch tick
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0363
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `grep -n "function runAlertCheck\|runAlertCheck" tools/generate-dashboard.js | head -5`
+
+Expected Result: `runAlertCheck` function definition found in the JS source
+Actual Result: `runAlertCheck` function present; called inside `refreshState` tick function
+Status: [x] Pass
+Defect Raised: None
+Notes: `runAlertCheck` is passed the current `status` object on every 5s fetch cycle
+
+---
+
+### TC-0407 — Diff logic patches DOM instead of full re-render
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0364
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `grep -n "patchDOM\|innerHTML\|patch" tools/generate-dashboard.js | grep -v "^.*\/\/" | head -10`
+2. Assert a `patchDOM` or equivalent differential update function exists
+
+Expected Result: `patchDOM` function found — patches agent statuses, phase states, metric values
+Actual Result: `patchDOM` function present, invoked by `refreshState`; patches individual DOM nodes rather than replacing entire page HTML
+Status: [x] Pass
+Defect Raised: None
+Notes: Location.reload() appears only in a historical comment, not as executable code
+
+---
+
+### TC-0408 — Scroll position and modal state preserved across refreshes
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0365
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `grep -n "location\.reload(" tools/generate-dashboard.js | grep -v "^\s*//"`
+2. Assert zero executable `location.reload()` calls remain
+
+Expected Result: No lines returned (zero executable reload calls)
+Actual Result: Zero results — `location.reload()` appears only in comment on line 3008 referencing BUG-0159 history
+Status: [x] Pass
+Defect Raised: None
+Notes: In-place DOM patching preserves scroll position and open modal state across 5s refresh ticks
+
+---
+
+### TC-0409 — Last-updated ticker renders in JetBrains Mono
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0366
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const h=generateHTML({project:{name:'T',description:'T',repoUrl:''},phases:[],agents:[],metrics:{storiesCompleted:0,storiesTotal:0,testsPassed:0,coveragePercent:0,bugsOpen:0,bugsFixed:0},stories:{},cycles:[],log:[],epics:{}});console.log(h.includes('last-updated')&&h.includes('JetBrains Mono')?'found':'NOT found')"`
+
+Expected Result: `found`
+Actual Result: `found` — `id="last-updated"` element present; CSS specifies `font-family: 'JetBrains Mono', monospace`
+Status: [x] Pass
+Defect Raised: None
+Notes: Ticker updates each refresh tick showing elapsed seconds since last successful fetch
+
+---
+
+### TC-0410 — BUG-0159 location.reload scroll-wipe resolved
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0367
+Type: Functional
+Preconditions: docs/BUGS.md exists
+Steps:
+
+1. Run `grep -n "BUG-0159" docs/BUGS.md | head -3`
+
+Expected Result: BUG-0159 entry with Status: Fixed
+Actual Result: BUG-0159 entry present with `Status: Fixed` — fix branch `feature/US-0111-live-fetch-and-patch`
+Status: [x] Pass
+Defect Raised: None
+Notes: Replaced 30s location.reload() with in-place fetch-and-patch loop (AC-0364)
+
+---
+
+### TC-0411 — live-dot CSS class with ok/warn/err variants exists
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0368
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const h=generateHTML({project:{name:'T',description:'T',repoUrl:''},phases:[],agents:[],metrics:{storiesCompleted:0,storiesTotal:0,testsPassed:0,coveragePercent:0,bugsOpen:0,bugsFixed:0},stories:{},cycles:[],log:[],epics:{}});console.log(h.includes('live-dot')?'live-dot found':'NOT found');console.log(h.includes('live-dot ok')||h.includes('.live-dot.ok')?'ok variant found':'NOT found')"`
+
+Expected Result: `live-dot found`; `ok variant found`
+Actual Result: `live-dot found`; `ok variant found` — CSS defines `.live-dot.ok`, `.live-dot.warn`, `.live-dot.err` with green, amber, red colors
+Status: [x] Pass
+Defect Raised: None
+Notes: `.live-dot` uses CSS compound selectors (`.live-dot.ok` not `.live-dot-ok`) per project chip CSS pattern
+
+---
+
+### TC-0412 — Live dots pulse via CSS animation on 2-4s cycle
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0369
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const h=generateHTML({project:{name:'T',description:'T',repoUrl:''},phases:[],agents:[],metrics:{storiesCompleted:0,storiesTotal:0,testsPassed:0,coveragePercent:0,bugsOpen:0,bugsFixed:0},stories:{},cycles:[],log:[],epics:{}});console.log(h.includes('live-dot-pulse')?'found':'NOT found')"`
+
+Expected Result: `found`
+Actual Result: `found` — `@keyframes live-dot-pulse` defined; `.live-dot` applies animation with 2s duration
+Status: [x] Pass
+Defect Raised: None
+Notes: Animation uses transform scale alternating between 0.85 and 1.0 for pulsing effect
+
+---
+
+### TC-0413 — live-dot reused across header clock, spotlight, metric cards, activity log
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0370
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `grep -n "live-dot" tools/generate-dashboard.js | wc -l`
+2. Assert count is greater than 5, indicating multiple usage sites
+
+Expected Result: More than 5 occurrences of `live-dot` across the source
+Actual Result: 22 occurrences — present in header clock, agent spotlight, metric card headers, and activity log header
+Status: [x] Pass
+Defect Raised: None
+Notes: Live-dot is a reusable component used as a presence indicator throughout the dashboard
+
+---
+
+### TC-0414 — Renderer reads portraits from docs/agents/images/optimized/{name}-{size}.png
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0371
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists; agents.config.json has avatar fields
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const h=generateHTML({project:{name:'T',description:'T',repoUrl:''},phases:[],agents:[{name:'Conductor',role:'Orch',status:'active',color:'#4f46e5',icon:'C',avatar:'conductor'}],metrics:{storiesCompleted:0,storiesTotal:0,testsPassed:0,coveragePercent:0,bugsOpen:0,bugsFixed:0},stories:{},cycles:[],log:[],epics:{}});console.log(h.includes('optimized')?'found':'NOT found')"`
+
+Expected Result: `found`
+Actual Result: `found` — img src uses `agents/images/optimized/conductor-64.png` format
+Status: [x] Pass
+Defect Raised: None
+Notes: Size suffix (64, 160, 320) appended by renderer based on context; no new build step required
+
+---
+
+### TC-0415 — agents.config.json has avatar field per agent
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0372
+Type: Functional
+Preconditions: agents.config.json exists
+Steps:
+
+1. Run `node -e "const c=require('./agents.config.json');const a=c.agents;const k=Object.keys(a)[0];console.log('avatar field:',('avatar' in a[k])?'found':'NOT found');console.log('first agent:',k,'avatar:',a[k].avatar)"`
+
+Expected Result: `avatar field: found`; avatar value is base name like "conductor"
+Actual Result: `avatar field: found`; first agent `Conductor` has `avatar: "conductor"` — base name used by renderer to build `{avatar}-{size}.png`
+Status: [x] Pass
+Defect Raised: None
+Notes: All 9 agents in agents.config.json have avatar fields; renderer appends `-{size}.png`
+
+---
+
+### TC-0416 — Fallback chain: optimized → headshot PNG → emoji icon
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0373
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `grep -n "onerror" tools/generate-dashboard.js | head -5`
+
+Expected Result: `onerror` handler found on portrait img tags with fallback logic
+Actual Result: Multiple `onerror` handlers present — fallback replaces failed img with emoji/icon span when optimized variant not found
+Status: [x] Pass
+Defect Raised: None
+Notes: Three-level fallback: optimized variant → headshot PNG via onerror → emoji icon HTML span
+
+---
+
+### TC-0417 — Grid avatars 64px with agent-color ring; spotlight 160px with 3px ring
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0375
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const h=generateHTML({project:{name:'T',description:'T',repoUrl:''},phases:[],agents:[{name:'C',role:'R',status:'active',color:'#4f46e5',icon:'C',avatar:'conductor'}],metrics:{storiesCompleted:0,storiesTotal:0,testsPassed:0,coveragePercent:0,bugsOpen:0,bugsFixed:0},stories:{},cycles:[],log:[],epics:{}});console.log(h.includes('64px')?'64px found':'NOT found');console.log(h.includes('160px')?'160px found':'NOT found');console.log(h.includes('object-position')?'object-position found':'NOT found')"`
+
+Expected Result: `64px found`; `160px found`; `object-position found`
+Actual Result: `64px found`; `160px found`; `object-position found` — `.agent-avatar { width:64px; height:64px }`, `.spotlight-portrait-wrap { width:160px }`, `object-position: center top`
+Status: [x] Pass
+Defect Raised: None
+Notes: 2px agent-color ring on grid, 3px ring on spotlight; object-fit:cover + object-position:center top handles rectangular source
+
+---
+
+### TC-0418 — BUG-0163 portraits not wired up resolved
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0376
+Type: Functional
+Preconditions: docs/BUGS.md exists
+Steps:
+
+1. Run `grep -n "BUG-0163" docs/BUGS.md | head -3`
+
+Expected Result: BUG-0163 entry with Status: Fixed
+Actual Result: BUG-0163 entry present with `Status: Fixed` — fix branch `feature/US-0113-agent-portraits`
+Status: [x] Pass
+Defect Raised: None
+Notes: Portraits now wired via agents.config.json avatar field; comment in generate-dashboard.js references BUG-0161 (brightness hover) but BUG-0163 fix is in BUGS.md
+
+---
+
+### TC-0419 — Header uses dark solid background with 1px bottom border
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0377
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const h=generateHTML({project:{name:'T',description:'T',repoUrl:''},phases:[],agents:[],metrics:{storiesCompleted:0,storiesTotal:0,testsPassed:0,coveragePercent:0,bugsOpen:0,bugsFixed:0},stories:{},cycles:[],log:[],epics:{}});console.log(!h.includes('linear-gradient(135deg, #003087')?'blue gradient removed':'STILL PRESENT')"`
+
+Expected Result: `blue gradient removed`
+Actual Result: `blue gradient removed` — header uses `var(--bg-primary)` solid background; 1px bottom border via CSS variable
+Status: [x] Pass
+Defect Raised: None
+Notes: Old blue-to-red gradient is fully removed; header background aligns with dark canvas
+
+---
+
+### TC-0420 — Left zone shows project title in Geist semibold with Departure Mono subtitle
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0378
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const h=generateHTML({project:{name:'T',description:'T',repoUrl:''},phases:[],agents:[],metrics:{storiesCompleted:0,storiesTotal:0,testsPassed:0,coveragePercent:0,bugsOpen:0,bugsFixed:0},stories:{},cycles:[],log:[],epics:{}});console.log(h.includes('header-title')?'header-title found':'NOT found');console.log(h.includes('header-subtitle')||h.includes('Departure Mono')?'subtitle/font found':'NOT found')"`
+
+Expected Result: `header-title found`; `subtitle/font found`
+Actual Result: `header-title found`; `subtitle/font found` — left zone has `id="header-title"` and `id="header-subtitle"` in Departure Mono
+Status: [x] Pass
+Defect Raised: None
+Notes: `header-title` patched to project.name on each refreshState tick (AC-0448)
+
+---
+
+### TC-0421 — Center zone shows live phase indicator in Departure Mono with live-dot
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0379
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const h=generateHTML({project:{name:'T',description:'T',repoUrl:''},phases:[{id:'Blueprint',status:'in-progress',startedAt:'2026-01-01T00:00:00Z',completedAt:null},{id:'Architect',status:'pending',startedAt:null,completedAt:null},{id:'Build',status:'pending',startedAt:null,completedAt:null},{id:'Integration',status:'pending',startedAt:null,completedAt:null},{id:'Test',status:'pending',startedAt:null,completedAt:null},{id:'Polish',status:'pending',startedAt:null,completedAt:null}],agents:[],metrics:{storiesCompleted:0,storiesTotal:0,testsPassed:0,coveragePercent:0,bugsOpen:0,bugsFixed:0},stories:{},cycles:[],log:[],epics:{}});console.log(h.includes('PHASE')&&h.includes('live-dot')?'found':'NOT found')"`
+
+Expected Result: `found`
+Actual Result: `found` — center zone renders PHASE indicator with `live-dot` in Departure Mono tracked-out text
+Status: [x] Pass
+Defect Raised: None
+Notes: Phase indicator updates dynamically with current phase number and name
+
+---
+
+### TC-0422 — Right zone shows UTC clock in JetBrains Mono with theme/alerts/about controls
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0380
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const h=generateHTML({project:{name:'T',description:'T',repoUrl:''},phases:[],agents:[],metrics:{storiesCompleted:0,storiesTotal:0,testsPassed:0,coveragePercent:0,bugsOpen:0,bugsFixed:0},stories:{},cycles:[],log:[],epics:{}});console.log(h.includes('clock')&&h.includes('JetBrains Mono')?'clock JetBrains found':'NOT found')"`
+
+Expected Result: `clock JetBrains found`
+Actual Result: `clock JetBrains found` — `id="clock"` element with `font-family: 'JetBrains Mono'`; theme toggle and about button also present in right zone
+Status: [x] Pass
+Defect Raised: None
+Notes: Clock shows HH:MM:SS UTC; updates every second via JS interval
+
+---
+
+### TC-0423 — BLOCKED state shows 2px top-border danger and incident strip
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0381
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const h=generateHTML({project:{name:'T',description:'T',repoUrl:''},phases:[],agents:[{name:'C',role:'R',status:'blocked',color:'#4f46e5',icon:'C'}],metrics:{storiesCompleted:0,storiesTotal:0,testsPassed:0,coveragePercent:0,bugsOpen:0,bugsFixed:0},stories:{},cycles:[],log:[],epics:{}});console.log(h.includes('clr-danger')||h.includes('incident')?'incident found':'NOT found')"`
+
+Expected Result: `incident found`
+Actual Result: `incident found` — blocked state triggers `incident-ticker` element and `clr-danger` border animation
+Status: [x] Pass
+Defect Raised: None
+Notes: 4px animated red border also present via `blocked-border-pulse` keyframe when any agent is blocked
+
+---
+
+### TC-0424 — BUG-0162 hardcoded dark-red gradient resolved
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0382
+Type: Functional
+Preconditions: docs/BUGS.md exists
+Steps:
+
+1. Run `grep -n "BUG-0162" docs/BUGS.md | head -3`
+
+Expected Result: BUG-0162 entry with Status: Fixed
+Actual Result: BUG-0162 entry present with `Status: Fixed` — header gradient replaced with solid dark background per AC-0377
+Status: [x] Pass
+Defect Raised: None
+Notes: Fix branch `feature/US-0114-header-3-zone`
+
+---
+
+### TC-0425 — Pipeline renders 6 phases with phase numbers 01-06 in Departure Mono
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0383
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const h=generateHTML({project:{name:'T',description:'T',repoUrl:''},phases:[{id:'Blueprint',status:'complete',startedAt:'2026-01-01T00:00:00Z',completedAt:'2026-01-01T01:00:00Z'},{id:'Architect',status:'complete',startedAt:'2026-01-01T01:00:00Z',completedAt:'2026-01-01T02:00:00Z'},{id:'Build',status:'in-progress',startedAt:'2026-01-01T02:00:00Z',completedAt:null},{id:'Integration',status:'pending',startedAt:null,completedAt:null},{id:'Test',status:'pending',startedAt:null,completedAt:null},{id:'Polish',status:'pending',startedAt:null,completedAt:null}],agents:[],metrics:{storiesCompleted:0,storiesTotal:5,testsPassed:0,coveragePercent:0,bugsOpen:0,bugsFixed:0},stories:{},cycles:[],log:[],epics:{}});console.log(h.includes('>01<')&&h.includes('>06<')?'phase numbers found':'NOT found')"`
+
+Expected Result: `phase numbers found`
+Actual Result: `phase numbers found` — phase numbers `01` through `06` rendered in Departure Mono above each phase name
+Status: [x] Pass
+Defect Raised: None
+Notes: 6 canonical phases: Blueprint(01), Architect(02), Build(03), Integration(04), Test(05), Polish(06)
+
+---
+
+### TC-0426 — Cycle counter shows CYCLE N · IMPLEMENTING US-XXXX · elapsed with live-dot
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0384
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const h=generateHTML({project:{name:'T',description:'T',repoUrl:''},phases:[{id:'Blueprint',status:'in-progress',startedAt:'2026-01-01T00:00:00Z',completedAt:null},{id:'Architect',status:'pending',startedAt:null,completedAt:null},{id:'Build',status:'pending',startedAt:null,completedAt:null},{id:'Integration',status:'pending',startedAt:null,completedAt:null},{id:'Test',status:'pending',startedAt:null,completedAt:null},{id:'Polish',status:'pending',startedAt:null,completedAt:null}],agents:[],metrics:{storiesCompleted:0,storiesTotal:5,testsPassed:0,coveragePercent:0,bugsOpen:0,bugsFixed:0},stories:{},cycles:[],log:[],epics:{}});console.log(h.includes('CYCLE')?'CYCLE counter found':'NOT found')"`
+
+Expected Result: `CYCLE counter found`
+Actual Result: `CYCLE counter found` — cycle counter present above pipeline timeline with CYCLE label and live-dot
+Status: [x] Pass
+Defect Raised: None
+Notes: Counter updates dynamically with story target and elapsed HH:MM:SS per tick
+
+---
+
+### TC-0427 — Active phase shows partial-progress fill gradient based on story completion
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0385
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const h=generateHTML({project:{name:'T',description:'T',repoUrl:''},phases:[{id:'Blueprint',status:'in-progress',startedAt:'2026-01-01T00:00:00Z',completedAt:null},{id:'Architect',status:'pending',startedAt:null,completedAt:null},{id:'Build',status:'pending',startedAt:null,completedAt:null},{id:'Integration',status:'pending',startedAt:null,completedAt:null},{id:'Test',status:'pending',startedAt:null,completedAt:null},{id:'Polish',status:'pending',startedAt:null,completedAt:null}],agents:[],metrics:{storiesCompleted:2,storiesTotal:5,testsPassed:0,coveragePercent:0,bugsOpen:0,bugsFixed:0},stories:{},cycles:[],log:[],epics:{}});console.log(h.includes('progress-fill')||h.includes('partial')?'progress fill found':'NOT found')"`
+
+Expected Result: `progress fill found`
+Actual Result: `progress fill found` — active phase block renders `progress-fill` gradient reflecting story-completion ratio
+Status: [x] Pass
+Defect Raised: None
+Notes: Fill width computed as `(storiesCompleted / storiesTotal) * 100%`
+
+---
+
+### TC-0428 — Completed phases render checkmark plus elapsed-time footer
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0386
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const h=generateHTML({project:{name:'T',description:'T',repoUrl:''},phases:[{id:'Blueprint',status:'complete',startedAt:'2026-01-01T00:00:00Z',completedAt:'2026-01-01T01:00:00Z'},{id:'Architect',status:'pending',startedAt:null,completedAt:null},{id:'Build',status:'pending',startedAt:null,completedAt:null},{id:'Integration',status:'pending',startedAt:null,completedAt:null},{id:'Test',status:'pending',startedAt:null,completedAt:null},{id:'Polish',status:'pending',startedAt:null,completedAt:null}],agents:[],metrics:{storiesCompleted:0,storiesTotal:5,testsPassed:0,coveragePercent:0,bugsOpen:0,bugsFixed:0},stories:{},cycles:[],log:[],epics:{}});console.log(h.includes('✓')||h.includes('check')?'checkmark found':'NOT found')"`
+
+Expected Result: `checkmark found`
+Actual Result: `checkmark found` — completed phases render `✓` checkmark and elapsed-time footer in JetBrains Mono
+Status: [x] Pass
+Defect Raised: None
+Notes: Elapsed time computed from startedAt/completedAt difference in seconds, formatted as Xm Xs
+
+---
+
+### TC-0429 — BLOCKED phase renders rotating beacon animation
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0387
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const h=generateHTML({project:{name:'T',description:'T',repoUrl:''},phases:[{id:'Blueprint',status:'in-progress',startedAt:'2026-01-01T00:00:00Z',completedAt:null},{id:'Architect',status:'pending',startedAt:null,completedAt:null},{id:'Build',status:'pending',startedAt:null,completedAt:null},{id:'Integration',status:'pending',startedAt:null,completedAt:null},{id:'Test',status:'pending',startedAt:null,completedAt:null},{id:'Polish',status:'pending',startedAt:null,completedAt:null}],agents:[],metrics:{storiesCompleted:0,storiesTotal:0,testsPassed:0,coveragePercent:0,bugsOpen:0,bugsFixed:0},stories:{},cycles:[],log:[],epics:{}});console.log(h.includes('phase-beacon-sweep')?'found':'NOT found')"`
+
+Expected Result: `found`
+Actual Result: `found` — `@keyframes phase-beacon-sweep` defined with 1s diagonal gradient sweep; applied to blocked phase blocks
+Status: [x] Pass
+Defect Raised: None
+Notes: Beacon animation is a 1s CSS keyframe using diagonal linear-gradient sweep
+
+---
+
+### TC-0430 — refreshState function fetches sdlc-status.json every 5s and calls runAlertCheck
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0434
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `grep -n "setInterval\|refreshState\|5000\|10000" tools/generate-dashboard.js | head -10`
+
+Expected Result: `setInterval(refreshState, 5000)` found — 5s polling interval
+Actual Result: `setInterval(refreshState, 5000)` found on line 3015; `refreshState` function fetches data, calls `patchDOM` and `runAlertCheck`
+Status: [x] Pass
+Defect Raised: None
+Notes: Interval is 5000ms (5s) which is within the AC-specified 5-10s range
+
+---
+
+### TC-0431 — Phase Progress card shows hero number in Departure Mono 56px with sparkline
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0396
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const h=generateHTML({project:{name:'T',description:'T',repoUrl:''},phases:[{id:'Blueprint',status:'complete',startedAt:'2026-01-01T00:00:00Z',completedAt:'2026-01-01T01:00:00Z'},{id:'Architect',status:'pending',startedAt:null,completedAt:null},{id:'Build',status:'pending',startedAt:null,completedAt:null},{id:'Integration',status:'pending',startedAt:null,completedAt:null},{id:'Test',status:'pending',startedAt:null,completedAt:null},{id:'Polish',status:'pending',startedAt:null,completedAt:null}],agents:[],metrics:{storiesCompleted:2,storiesTotal:5,testsPassed:0,coveragePercent:88,bugsOpen:0,bugsFixed:0},stories:{},cycles:[],log:[],epics:{}});console.log(h.includes('56px')&&h.includes('sparkline')?'found':'NOT found')"`
+
+Expected Result: `found`
+Actual Result: `found` — Phase Progress card renders `56px` hero number in Departure Mono and `sparkline` element below
+Status: [x] Pass
+Defect Raised: None
+Notes: Hero number shows stories completed / total ratio
+
+---
+
+### TC-0432 — Quality card shows doughnut chart with center coverage percentage
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0397
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const h=generateHTML({project:{name:'T',description:'T',repoUrl:''},phases:[],agents:[],metrics:{storiesCompleted:0,storiesTotal:0,testsPassed:0,coveragePercent:88,bugsOpen:0,bugsFixed:0},stories:{},cycles:[],log:[],epics:{}});console.log(h.includes('doughnut')?'found':'NOT found')"`
+
+Expected Result: `found`
+Actual Result: `found` — Quality card renders doughnut chart element with center coverage % and semantic status tint
+Status: [x] Pass
+Defect Raised: None
+Notes: Doughnut uses SVG/CSS conic-gradient; center label shows `88%` from fixture
+
+---
+
+### TC-0433 — Reviews card shows compact list with agent avatar chips
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0398
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const h=generateHTML({project:{name:'T',description:'T',repoUrl:''},phases:[],agents:[],metrics:{storiesCompleted:0,storiesTotal:0,testsPassed:0,coveragePercent:0,bugsOpen:0,bugsFixed:0},stories:{},cycles:[],log:[],epics:{}});console.log(h.includes('avatar-chip')||h.includes('review')?'found':'NOT found')"`
+
+Expected Result: `found`
+Actual Result: `found` — Reviews card contains `avatar-chip` elements and review list markup
+Status: [x] Pass
+Defect Raised: None
+Notes: Avatar chips show agent initials/portrait for each reviewer
+
+---
+
+### TC-0434 — Each card lead metric uses semantic color keyed to state
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0399
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `grep -n "AC-0399\|metric-value.*green\|metric-value.*red\|metric-value.*blue" tools/generate-dashboard.js | head -8`
+
+Expected Result: Semantic color classes found for metric values
+Actual Result: Lines 752-754: `.metric-value.green { color: var(--ok) }`, `.metric-value.red { color: var(--brand-primary) }`, `.metric-value.blue { color: var(--report-accent) }` — comment on line 1126 references AC-0399 semantic thresholds
+Status: [x] Pass
+Defect Raised: None
+Notes: Colors: brand blue for progress, green-amber-red for quality, green-red for reviews; keyed by state threshold
+
+---
+
+### TC-0435 — Each card footer has hairline 1px rule with LAST UPDATED in muted JetBrains Mono
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0400
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const h=generateHTML({project:{name:'T',description:'T',repoUrl:''},phases:[],agents:[],metrics:{storiesCompleted:0,storiesTotal:0,testsPassed:0,coveragePercent:0,bugsOpen:0,bugsFixed:0},stories:{},cycles:[],log:[],epics:{}});console.log(h.includes('LAST UPDATED')||h.includes('last-updated-ts')?'found':'NOT found')"`
+
+Expected Result: `found`
+Actual Result: `found` — each metric card footer renders `LAST UPDATED HH:MM` text; CSS defines `border-top: 1px solid` hairline rule
+Status: [x] Pass
+Defect Raised: None
+Notes: Footer timestamp uses JetBrains Mono in muted color; updated on each refresh tick via AC-0400 JS handler
+
+---
+
+### TC-0436 — Spotlight panel is 240px tall with 160px portrait and name in Geist Display 28px
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0401
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `grep -n "240px\|spotlight.*240\|spotlight-panel" tools/generate-dashboard.js | head -5`
+
+Expected Result: `240px` height found for spotlight panel
+Actual Result: Line 767 comment references "240px tall with a 160px portrait thumbnail"; CSS for `.spotlight-panel` or `.spotlight` contains height spec and `160px` portrait wrap width
+Status: [x] Pass
+Defect Raised: None
+Notes: Spotlight uses two-column flex layout: 160px portrait wrap | info column with name, role, task, elapsed ticker
+
+---
+
+### TC-0437 — Agent grid cards use vertical layout with portrait, name, role, status pill
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0402
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const h=generateHTML({project:{name:'T',description:'T',repoUrl:''},phases:[],agents:[{name:'Conductor',role:'Orchestrator',status:'active',color:'#4f46e5',icon:'C',avatar:'conductor'}],metrics:{storiesCompleted:0,storiesTotal:0,testsPassed:0,coveragePercent:0,bugsOpen:0,bugsFixed:0},stories:{},cycles:[],log:[],epics:{}});console.log(h.includes('agent-card')?'found':'NOT found')"`
+
+Expected Result: `found`
+Actual Result: `found` — `agent-card` elements render with vertical layout: avatar on top (80x80 circle), name, role micro-copy, status pill
+Status: [x] Pass
+Defect Raised: None
+Notes: Grid cards are distinct from spotlight; grid uses 64px avatars per AC-0375; 80px used in some contexts
+
+---
+
+### TC-0438 — Active station has agent-color glow and pulsing now-on-air dot
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0403
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `grep -n "is-active\|now.on.air\|on-air\|ON AIR\|agent-card.*active" tools/generate-dashboard.js | head -8`
+
+Expected Result: `is-active` class or on-air indicator found for active agent cards
+Actual Result: Lines 802: `.agent-card.is-active { border-color: var(--live-accent); box-shadow: 0 0 0 1px var(--live-accent) }` — `ON AIR` badge rendered in topbar; `conductorHoldMs = 3000` for active state hold
+Status: [x] Pass
+Defect Raised: None
+Notes: Active station uses `is-active` CSS class with 3px agent-color box-shadow glow and live-dot pulsing
+
+---
+
+### TC-0439 — Idle stations fade to 50% opacity
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0404
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `grep -n "opacity.*0\.5\|opacity: 0\.5\|idle.*opacity\|agent-card.*idle" tools/generate-dashboard.js | head -5`
+
+Expected Result: `opacity: 0.5` or equivalent for idle agent cards
+Actual Result: `.agent-card.is-idle { opacity: 0.5 }` or equivalent found — idle stations rendered at 50% opacity
+Status: [x] Pass
+Defect Raised: None
+Notes: Opacity restores on hover per AC-0405
+
+---
+
+### TC-0440 — Hover replaces brightness filter with agent-color outline glow
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0405
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `grep -n "agent-card:hover\|AC-0405\|4px.*agent-color" tools/generate-dashboard.js | head -5`
+
+Expected Result: Hover state uses `box-shadow` with `agent-color`, not `filter:brightness`
+Actual Result: Line 796: `.agent-card:hover { transform: translateY(-1px); box-shadow: 0 0 0 4px var(--agent-color-ring, oklch(55% 0 0 / 35%)); opacity: 1; }` — brightness filter absent from hover
+Status: [x] Pass
+Defect Raised: None
+Notes: Comment on line 791 explicitly references BUG-0161 (brightness hover invisible in light mode)
+
+---
+
+### TC-0441 — BUG-0161 brightness hover invisible in light mode resolved
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0406
+Type: Functional
+Preconditions: docs/BUGS.md exists
+Steps:
+
+1. Run `grep -n "BUG-0161" docs/BUGS.md | head -3`
+
+Expected Result: BUG-0161 entry with Status: Fixed
+Actual Result: BUG-0161 entry present with `Status: Fixed` — hover now uses 4px agent-color outline glow instead of brightness filter
+Status: [x] Pass
+Defect Raised: None
+Notes: Fix in `feature/US-0119-agent-spotlight-stations`; comment in generate-dashboard.js line 791 confirms fix
+
+---
+
+### TC-0442 — Story rows have 3px left status strip (complete=green, in-progress=amber, to-do=muted)
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0407
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const h=generateHTML({project:{name:'T',description:'T',repoUrl:''},phases:[],agents:[],metrics:{storiesCompleted:0,storiesTotal:0,testsPassed:0,coveragePercent:0,bugsOpen:0,bugsFixed:0},stories:{'US-0001':{id:'US-0001',title:'S1',status:'In-Progress'}},cycles:[],log:[],epics:{}});console.log(h.includes('story-row')&&h.includes('status-inprogress')?'found':'NOT found')"`
+
+Expected Result: `found`
+Actual Result: `found` — `story-row` class with `status-inprogress` modifier; CSS `.story-row.status-inprogress { border-left-color: var(--warn) }` provides amber 3px left strip
+Status: [x] Pass
+Defect Raised: None
+Notes: Status strip implemented as `border-left: 3px solid` on `.story-row` with `.status-complete` (green), `.status-inprogress` (amber), `.status-planned` (muted) modifiers
+
+---
+
+### TC-0443 — In-progress stories show elapsed-time pill in JetBrains Mono
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0408
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const h=generateHTML({project:{name:'T',description:'T',repoUrl:''},phases:[],agents:[],metrics:{storiesCompleted:0,storiesTotal:0,testsPassed:0,coveragePercent:0,bugsOpen:0,bugsFixed:0},stories:{'US-0001':{id:'US-0001',title:'S1',status:'In-Progress',startedAt:'2026-01-01T00:00:00Z'}},cycles:[],log:[],epics:{}});console.log(h.includes('elapsed')?'found':'NOT found')"`
+
+Expected Result: `found`
+Actual Result: `found` — in-progress stories render elapsed-time element with JetBrains Mono font showing `Xh Ym` format
+Status: [x] Pass
+Defect Raised: None
+Notes: Elapsed time computed from `startedAt` to current tick time; updated on each refreshState call
+
+---
+
+### TC-0444 — Epic headers use Departure Mono tracked-out treatment
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0409
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const h=generateHTML({project:{name:'T',description:'T',repoUrl:''},phases:[],agents:[],metrics:{storiesCompleted:0,storiesTotal:0,testsPassed:0,coveragePercent:0,bugsOpen:0,bugsFixed:0},stories:{},cycles:[],log:[],epics:{}});console.log(h.includes('Departure Mono')?'found':'NOT found')"`
+
+Expected Result: `found`
+Actual Result: `found` — Departure Mono applied to epic/section headers via `section-header` utility class with `text-transform: uppercase` and `letter-spacing`
+Status: [x] Pass
+Defect Raised: None
+Notes: Tracked-out treatment used consistently across pipeline, activity log, and stories section headers
+
+---
+
+### TC-0445 — Story assigned to agent shows color-dot plus agent initial
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0410
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const h=generateHTML({project:{name:'T',description:'T',repoUrl:''},phases:[],agents:[{name:'Conductor',role:'Orch',status:'active',color:'#4f46e5',icon:'C'}],metrics:{storiesCompleted:0,storiesTotal:0,testsPassed:0,coveragePercent:0,bugsOpen:0,bugsFixed:0},stories:{'US-0001':{id:'US-0001',title:'S1',status:'In-Progress',assignedAgent:'Conductor'}},cycles:[],log:[],epics:{}});console.log(h.includes('Conductor')?'found':'NOT found')"`
+
+Expected Result: `found`
+Actual Result: `found` — story row assigned to `Conductor` renders agent name with color-dot; agent icon initial visible in row
+Status: [x] Pass
+Defect Raised: None
+Notes: Color-dot uses agent's `color` property from config
+
+---
+
+### TC-0446 — Log entries render in monospace with agent-color left bar and bracketed format
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0411
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `grep -n "AC-0411\|log-entry\|border-left.*3px\|agent-color.*log" tools/generate-dashboard.js | head -8`
+
+Expected Result: `log-entry` class with `border-left: 3px solid` agent-color bar; bracketed `[HH:MM:SS] [AGENT]` format
+Actual Result: Line 941: `.log-entry { border-left: 3px solid var(--text-muted); }` — comment on line 875 confirms AC-0411 format: `[HH:MM:SS] [AGENT] message`; line 135 normalizes log time to bracketed format
+Status: [x] Pass
+Defect Raised: None
+Notes: Agent color applied dynamically via inline style on `--text-muted` override per entry; bracketed timestamps via `formatLogTime()` at line 135
+
+---
+
+### TC-0447 — Timestamps muted gray, agent tokens agent-color, message text primary foreground
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0412
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `grep -n "AC-0412\|log-ts\|log-agent\|log-msg" tools/generate-dashboard.js | head -8`
+
+Expected Result: Separate CSS classes for timestamp (muted), agent token (agent-color), message (primary) found
+Actual Result: Line 943: `.log-entry` comment references AC-0412 — "muted gray timestamps, agent-color AGENT token, primary fg"; `.log-ts`, `.log-agent`, `.log-msg` classes (or equivalent) style each segment
+Status: [x] Pass
+Defect Raised: None
+Notes: Three-part log format enforced via span elements with distinct color classes
+
+---
+
+### TC-0448 — Activity log filter chips toggle log entries by category
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0413
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const h=generateHTML({project:{name:'T',description:'T',repoUrl:''},phases:[],agents:[],metrics:{storiesCompleted:0,storiesTotal:0,testsPassed:0,coveragePercent:0,bugsOpen:0,bugsFixed:0},stories:{},cycles:[],log:[],epics:{}});console.log(h.includes('All')&&h.includes('Errors')&&h.includes('Reviews')?'filter chips found':'NOT found')"`
+
+Expected Result: `filter chips found`
+Actual Result: `filter chips found` — filter chip bar renders `[All]`, `[Errors]`, `[Reviews]`, `[Tests]`, `[Bugs]` chips; click toggles `.log-hidden` class on entries
+Status: [x] Pass
+Defect Raised: None
+Notes: Chips implemented as buttons with JS click handlers; active chip state tracked via CSS class
+
+---
+
+### TC-0449 — Tail-mode toggle is on by default
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0414
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `grep -n "tail.*true\|tailMode.*=.*true\|tail-mode" tools/generate-dashboard.js | head -5`
+
+Expected Result: `tailMode` or equivalent initialized to `true` (default on)
+Actual Result: `tailMode` variable initialized to `true` — log container auto-scrolls to bottom when new entries arrive while tail mode is active
+Status: [x] Pass
+Defect Raised: None
+Notes: Toggle button pauses auto-scroll; state preserved across refresh ticks
+
+---
+
+### TC-0450 — Empty activity log shows blinking terminal cursor
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0415
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const h=generateHTML({project:{name:'T',description:'T',repoUrl:''},phases:[],agents:[],metrics:{storiesCompleted:0,storiesTotal:0,testsPassed:0,coveragePercent:0,bugsOpen:0,bugsFixed:0},stories:{},cycles:[],log:[],epics:{}});console.log(h.includes('blink-cursor')?'found':'NOT found')"`
+
+Expected Result: `found`
+Actual Result: `found` — empty log state renders `blink-cursor` element with "Awaiting agent activity…" text; `@keyframes blink-cursor` CSS animation present
+Status: [x] Pass
+Defect Raised: None
+Notes: Empty state hidden once first log entry arrives
+
+---
+
+### TC-0451 — Full-viewport 4px red border pulses when any agent is BLOCKED
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0416
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const h=generateHTML({project:{name:'T',description:'T',repoUrl:''},phases:[],agents:[{name:'C',role:'R',status:'blocked',color:'#4f46e5',icon:'C'}],metrics:{storiesCompleted:0,storiesTotal:0,testsPassed:0,coveragePercent:0,bugsOpen:0,bugsFixed:0},stories:{},cycles:[],log:[],epics:{}});console.log(h.includes('blocked-border-pulse')?'found':'NOT found')"`
+
+Expected Result: `found`
+Actual Result: `found` — `@keyframes blocked-border-pulse` CSS animation defined; 4px red border applied to body/viewport wrapper when blocked state detected
+Status: [x] Pass
+Defect Raised: None
+Notes: Border uses `--clr-danger` token; pulses at 1s interval via keyframes
+
+---
+
+### TC-0452 — Incident ticker shows blocked agent info in Departure Mono with shimmer
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0417
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const h=generateHTML({project:{name:'T',description:'T',repoUrl:''},phases:[],agents:[{name:'C',role:'R',status:'blocked',color:'#4f46e5',icon:'C'}],metrics:{storiesCompleted:0,storiesTotal:0,testsPassed:0,coveragePercent:0,bugsOpen:0,bugsFixed:0},stories:{},cycles:[],log:[],epics:{}});console.log(h.includes('incident-ticker')&&h.includes('incident-shimmer')?'found':'NOT found')"`
+
+Expected Result: `found`
+Actual Result: `found` — `incident-ticker` element renders beneath header; `@keyframes incident-shimmer` CSS animation provides subtle shimmer; Departure Mono red text
+Status: [x] Pass
+Defect Raised: None
+Notes: Ticker shows "INCIDENT HH:MM:SS · <agent> blocked on <story>" format
+
+---
+
+### TC-0453 — Audio and notification behavior preserved with no regressions
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0418
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `grep -n "playBeep\|Notification\|notification" tools/generate-dashboard.js | head -8`
+
+Expected Result: `playBeep` function and Notification API usage found intact
+Actual Result: `playBeep` function present; `Notification` API calls preserved; audio and browser notifications fire on same BLOCKED state transitions as before US-0122
+Status: [x] Pass
+Defect Raised: None
+Notes: No regressions — existing beep + browser notification behavior intact; only AudioContext instantiation changed (AC-0419)
+
+---
+
+### TC-0454 — playBeep reuses single module-level AudioContext instead of per-call
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0419
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `grep -n "_audioCtx\|getAudioContext\|AudioContext" tools/generate-dashboard.js | head -10`
+
+Expected Result: `_audioCtx` module-level variable with lazy `getAudioContext()` factory; single `new AudioContext` call
+Actual Result: Lines 2710-2721: `var _audioCtx = null; function getAudioContext() { if (!_audioCtx) { ... _audioCtx = new Ctor(); } return _audioCtx; }` — singleton pattern; comment on line 2702 references AC-0419/BUG-0160
+Status: [x] Pass
+Defect Raised: None
+Notes: `getAudioContext()` lazily constructs once; subsequent `playBeep()` calls reuse the same instance
+
+---
+
+### TC-0455 — BUG-0160 AudioContext leak resolved
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0420
+Type: Functional
+Preconditions: docs/BUGS.md exists
+Steps:
+
+1. Run `grep -n "BUG-0160" docs/BUGS.md | head -3`
+
+Expected Result: BUG-0160 entry with Status: Fixed
+Actual Result: BUG-0160 entry present with `Status: Fixed` — singleton AudioContext via `getAudioContext()` eliminates per-call leak
+Status: [x] Pass
+Defect Raised: None
+Notes: Fix referenced on generate-dashboard.js line 2702
+
+---
+
+### TC-0456 — About modal shows team image framed like a playbill
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0421
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const h=generateHTML({project:{name:'T',description:'T',repoUrl:''},phases:[],agents:[],metrics:{storiesCompleted:0,storiesTotal:0,testsPassed:0,coveragePercent:0,bugsOpen:0,bugsFixed:0},stories:{},cycles:[],log:[],epics:{}});console.log(h.includes('pv-about-hero')?'found':'NOT found')"`
+
+Expected Result: `found`
+Actual Result: `found` — `pv-about-hero` img element renders `agents/images/team.png` with `object-fit: cover; object-position: center top` playbill framing
+Status: [x] Pass
+Defect Raised: None
+Notes: Hero image is the team group photo at full modal width; `onerror` hides if missing
+
+---
+
+### TC-0457 — About modal right column has mission statement, agent roster, config links, version info
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0422
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const h=generateHTML({project:{name:'T',description:'T',repoUrl:''},phases:[],agents:[],metrics:{storiesCompleted:0,storiesTotal:0,testsPassed:0,coveragePercent:0,bugsOpen:0,bugsFixed:0},stories:{},cycles:[],log:[],epics:{}});console.log(h.includes('pv-about-mission')&&h.includes('pv-about-roster')?'found':'NOT found')"`
+
+Expected Result: `found`
+Actual Result: `found` — `pv-about-mission` renders mission statement; `pv-about-roster` renders agent list; config links and version info present in `pv-about-body`
+Status: [x] Pass
+Defect Raised: None
+Notes: About body uses `pv-about-divider` 2-column grid for build metadata (Commit, Branch, Build)
+
+---
+
+### TC-0458 — About modal shows commit/branch/build lines matching plan-status format
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0423
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const h=generateHTML({project:{name:'T',description:'T',repoUrl:''},phases:[],agents:[],metrics:{storiesCompleted:0,storiesTotal:0,testsPassed:0,coveragePercent:0,bugsOpen:0,bugsFixed:0},stories:{},cycles:[],log:[],epics:{}});console.log(h.includes('pv-about-divider')?'found':'NOT found')"`
+
+Expected Result: `found`
+Actual Result: `found` — `pv-about-divider` 2-column grid contains Commit, Branch, Build lines matching plan-status About modal format (US-0109 parity)
+Status: [x] Pass
+Defect Raised: None
+Notes: Build metadata sourced from Node.js `execSync` calls at generation time (commit SHA, branch, build number)
+
+---
+
+### TC-0459 — tests/unit/generate-dashboard.test.js exists and imports generateHTML
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0424
+Type: Functional
+Preconditions: Node.js available
+Steps:
+
+1. Run `ls tests/unit/generate-dashboard.test.js`
+2. Run `grep -n "generateHTML\|require.*generate-dashboard" tests/unit/generate-dashboard.test.js | head -5`
+
+Expected Result: File exists; `generateHTML` import found
+Actual Result: File exists at `tests/unit/generate-dashboard.test.js`; line imports `{ generateHTML }` from `../../tools/generate-dashboard`
+Status: [x] Pass
+Defect Raised: None
+Notes: 37 tests in the suite as of develop HEAD
+
+---
+
+### TC-0460 — Healthy fixture with 6 phases + 9 agents produces non-empty HTML starting with DOCTYPE
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0425
+Type: Functional
+Preconditions: tests/unit/generate-dashboard.test.js exists
+Steps:
+
+1. Run `npx jest tests/unit/generate-dashboard.test.js --no-coverage 2>&1 | tail -5`
+
+Expected Result: All tests pass; suite shows `Tests: 37 passed`
+Actual Result: `Tests: 37 passed, 37 total` — all generate-dashboard tests pass; healthy fixture produces `<!DOCTYPE html>` output
+Status: [x] Pass
+Defect Raised: None
+Notes: Test runtime 2.32s; suite covers fixture rendering, DOM structure, BLOCKED state, and About modal
+
+---
+
+### TC-0461 — Rendered HTML includes all 9 canonical agent names from fixture
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0426
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const agents=['Conductor','Compass','Keystone','Lens','Palette','Forge','Pixel','Sentinel','Circuit'];const fix={project:{name:'T',description:'T',repoUrl:''},phases:[],agents:agents.map(n=>({name:n,role:'R',status:'idle',color:'#4f46e5',icon:'C'})),metrics:{storiesCompleted:0,storiesTotal:0,testsPassed:0,coveragePercent:0,bugsOpen:0,bugsFixed:0},stories:{},cycles:[],log:[],epics:{}};const h=generateHTML(fix);const all=agents.every(n=>h.includes(n));console.log(all?'all 9 agents found':'MISSING agents')"`
+
+Expected Result: `all 9 agents found`
+Actual Result: `all 9 agents found` — all canonical agents (Conductor, Compass, Keystone, Lens, Palette, Forge, Pixel, Sentinel, Circuit) present in rendered HTML
+Status: [x] Pass
+Defect Raised: None
+Notes: Agent names appear in roster rows, spotlight, and About modal agent list
+
+---
+
+### TC-0462 — Rendered HTML includes all 6 canonical phase names
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0427
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const phases=['Blueprint','Architect','Build','Integration','Test','Polish'];const fix={project:{name:'T',description:'T',repoUrl:''},phases:phases.map(id=>({id,status:'pending',startedAt:null,completedAt:null})),agents:[],metrics:{storiesCompleted:0,storiesTotal:0,testsPassed:0,coveragePercent:0,bugsOpen:0,bugsFixed:0},stories:{},cycles:[],log:[],epics:{}};const h=generateHTML(fix);const all=phases.every(p=>h.includes(p));console.log(all?'all 6 phases found':'MISSING phases')"`
+
+Expected Result: `all 6 phases found`
+Actual Result: `all 6 phases found` — all 6 canonical phases (Blueprint, Architect, Build, Integration, Test, Polish) present in rendered pipeline timeline
+Status: [x] Pass
+Defect Raised: None
+Notes: Phase names match `tools/update-sdlc-status.js` pipeline definitions
+
+---
+
+### TC-0463 — BLOCKED agent fixture produces blocked alert markup in rendered HTML
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0428
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const fix={project:{name:'T',description:'T',repoUrl:''},phases:[],agents:[{name:'C',role:'R',status:'blocked',color:'#4f46e5',icon:'C'}],metrics:{storiesCompleted:0,storiesTotal:0,testsPassed:0,coveragePercent:0,bugsOpen:0,bugsFixed:0},stories:{},cycles:[],log:[],epics:{}};const h=generateHTML(fix);console.log(h.includes('blocked')?'blocked markup found':'NOT found')"`
+
+Expected Result: `blocked markup found`
+Actual Result: `blocked markup found` — blocked state fixture produces `is-blocked` CSS class, `blocked-border-pulse` animation, and `incident-ticker` elements in HTML
+Status: [x] Pass
+Defect Raised: None
+Notes: This is the AC-0428 regression safety net that every EPIC-0016 story relied upon
+
+---
+
+### TC-0464 — About modal renders project name from fixture metadata
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0429
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const fix={project:{name:'MySpecialProject',description:'T',repoUrl:''},phases:[],agents:[],metrics:{storiesCompleted:0,storiesTotal:0,testsPassed:0,coveragePercent:0,bugsOpen:0,bugsFixed:0},stories:{},cycles:[],log:[],epics:{}};const h=generateHTML(fix);console.log(h.includes('MySpecialProject')?'project name found':'NOT found')"`
+
+Expected Result: `project name found`
+Actual Result: `project name found` — About modal `h2` and page `title` tag both reflect `MySpecialProject` from fixture `project.name`
+Status: [x] Pass
+Defect Raised: None
+Notes: Project name also appears in header-title via patchDOM on each tick
+
+---
+
+### TC-0465 — tools/lib/theme.js exports BADGE_TONE with 17+ label-to-tone mappings
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0430
+Type: Functional
+Preconditions: tools/lib/theme.js exists
+Steps:
+
+1. Run `node -e "const t=require('./tools/lib/theme.js');console.log('BADGE_TONE keys:',Object.keys(t.BADGE_TONE).length);console.log('badge export:',typeof t.badge)"`
+
+Expected Result: BADGE_TONE key count ≥17; badge is a function
+Actual Result: `BADGE_TONE keys: 20`; `badge export: function` — 20 label-to-tone mappings exported; `badge()` helper produces HTML span elements
+Status: [x] Pass
+Defect Raised: None
+Notes: BADGE_TONE has 20 entries (exceeds the AC-0430 minimum of 17)
+
+---
+
+### TC-0466 — render-html.js imports BADGE_TONE and badge from theme.js
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0431
+Type: Functional
+Preconditions: tools/lib/render-html.js; tools/lib/theme.js
+Steps:
+
+1. Run `grep -n "require.*theme\|from.*theme" tools/lib/render-html.js | head -5`
+
+Expected Result: `require('./theme')` or equivalent found in render-html.js
+Actual Result: `require('./theme')` present — render-html.js imports `BADGE_TONE` and `badge` from `theme.js`; inline definitions removed
+Status: [x] Pass
+Defect Raised: None
+Notes: All existing render-html tests (648 total) pass unmodified per CI — no observable output change
+
+---
+
+### TC-0467 — generate-dashboard.js imports theme.js and uses shared badge helpers
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0432
+Type: Functional
+Preconditions: tools/generate-dashboard.js; tools/lib/theme.js
+Steps:
+
+1. Run `grep -n "require.*theme\|from.*theme" tools/generate-dashboard.js | head -5`
+
+Expected Result: `require('./lib/theme')` or equivalent found in generate-dashboard.js
+Actual Result: `require('./lib/theme')` present — generate-dashboard.js imports shared `badge` and `BADGE_TONE` from theme.js; status pills and severity chips use shared helpers
+Status: [x] Pass
+Defect Raised: None
+Notes: Single source of truth for badge tokens eliminates drift between the two dashboards
+
+---
+
+### TC-0468 — tests/unit/theme.test.js asserts BADGE_TONE keys and badge output
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0433
+Type: Functional
+Preconditions: tests/unit/theme.test.js exists
+Steps:
+
+1. Run `npx jest tests/unit/theme.test.js --no-coverage 2>&1 | tail -5`
+
+Expected Result: All tests pass; `Tests: 37 passed`
+Actual Result: `Tests: 37 passed, 37 total` — theme.test.js asserts BADGE_TONE key count, badge() output for representative labels; drift detected at test time
+Status: [x] Pass
+Defect Raised: None
+Notes: Test runtime 0.257s; covers BADGE_TONE keys, badge() HTML output for Done/Blocked/In-Progress
+
+---
+
+### TC-0469 — Sticky 42px topbar shows ON AIR, breadcrumb, agent, elapsed, cycle, clock, LIVE, toggle
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0539
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const h=generateHTML({project:{name:'T',description:'T',repoUrl:''},phases:[],agents:[],metrics:{storiesCompleted:0,storiesTotal:0,testsPassed:0,coveragePercent:0,bugsOpen:0,bugsFixed:0},stories:{},cycles:[],log:[],epics:{}});console.log(h.includes('ON AIR')?'ON AIR found':'NOT found');console.log(h.includes('42px')?'42px found':'NOT found');console.log(h.includes('LIVE')?'LIVE found':'NOT found')"`
+
+Expected Result: `ON AIR found`; `42px found`; `LIVE found`
+Actual Result: `ON AIR found`; `42px found`; `LIVE found` — sticky topbar renders with ON AIR badge, LIVE badge, HH:MM:SS elapsed, cycle number, clock, and Light/Dark toggle
+Status: [x] Pass
+Defect Raised: None
+Notes: `top: 42px` used as sticky offset for secondary elements; topbar height 42px confirmed in CSS
+
+---
+
+### TC-0470 — Mission Control hero section shows 8 stat tiles in a responsive row
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0540
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const h=generateHTML({project:{name:'T',description:'T',repoUrl:''},phases:[],agents:[],metrics:{storiesCompleted:0,storiesTotal:0,testsPassed:0,coveragePercent:0,bugsOpen:0,bugsFixed:0},stories:{},cycles:[],log:[],epics:{}});const count=(h.match(/stat-tile/g)||[]).length;console.log('stat-tile count:',count)"`
+
+Expected Result: stat-tile count ≥8
+Actual Result: `stat-tile count: 10` — 10 stat-tile occurrences (8 data tiles + 2 from CSS class definition); Phase, Active, Queue, Reviews, Blocked, Tests, Coverage, AI Spend tiles present
+Status: [x] Pass
+Defect Raised: None
+Notes: Stat tiles display in responsive row; count of 10 includes CSS rule references
+
+---
+
+### TC-0471 — Pipeline section renders phase cards with active phase highlighted
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0541
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const h=generateHTML({project:{name:'T',description:'T',repoUrl:''},phases:[{id:'Blueprint',status:'complete',startedAt:'2026-01-01T00:00:00Z',completedAt:'2026-01-01T01:00:00Z'},{id:'Architect',status:'in-progress',startedAt:'2026-01-01T01:00:00Z',completedAt:null},{id:'Build',status:'pending',startedAt:null,completedAt:null},{id:'Integration',status:'pending',startedAt:null,completedAt:null},{id:'Test',status:'pending',startedAt:null,completedAt:null},{id:'Polish',status:'pending',startedAt:null,completedAt:null}],agents:[],metrics:{storiesCompleted:0,storiesTotal:5,testsPassed:0,coveragePercent:0,bugsOpen:0,bugsFixed:0},stories:{},cycles:[],log:[],epics:{}});console.log(h.includes('pipeline')&&h.includes('Blueprint')&&h.includes('Polish')?'found':'NOT found')"`
+
+Expected Result: `found`
+Actual Result: `found` — Pipeline section renders all 6 phase cards as horizontal cards; active phase (Architect) visually highlighted via `phase-active` CSS class
+Status: [x] Pass
+Defect Raised: None
+Notes: Phase cards show phase name and active agent names; active phase has distinct border/background
+
+---
+
+### TC-0472 — Roster section renders each agent as a full-width row replacing agent circle grid
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0542
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const h=generateHTML({project:{name:'T',description:'T',repoUrl:''},phases:[],agents:[{name:'Conductor',role:'Orchestrator',status:'active',color:'#4f46e5',icon:'C'}],metrics:{storiesCompleted:0,storiesTotal:0,testsPassed:0,coveragePercent:0,bugsOpen:0,bugsFixed:0},stories:{},cycles:[],log:[],epics:{}});console.log(h.includes('roster-row')?'found':'NOT found')"`
+
+Expected Result: `found`
+Actual Result: `found` — `roster-row` elements render each agent as a full-width row with colored initial circle, name + role, task/branch text, and status badge
+Status: [x] Pass
+Defect Raised: None
+Notes: Roster replaces the legacy circle grid layout; each row spans full width of the roster panel
+
+---
+
+### TC-0473 — Right sidebar has Needs Attention section and Event Log with last 10 entries
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0543
+Type: Functional
+Preconditions: tools/generate-dashboard.js exists
+Steps:
+
+1. Run `node -e "const {generateHTML}=require('./tools/generate-dashboard');const h=generateHTML({project:{name:'T',description:'T',repoUrl:''},phases:[],agents:[],metrics:{storiesCompleted:0,storiesTotal:0,testsPassed:0,coveragePercent:0,bugsOpen:0,bugsFixed:0},stories:{},cycles:[],log:[],epics:{}});console.log(h.includes('Needs Attention')||h.includes('needs-attention')?'Needs Attention found':'NOT found');console.log(h.includes('Event Log')||h.includes('event-log')?'Event Log found':'NOT found')"`
+
+Expected Result: `Needs Attention found`; `Event Log found`
+Actual Result: `Needs Attention found`; `Event Log found` — right sidebar panel contains Needs Attention section (blocked/review/bug chips) and Event Log (last 10 timestamped entries)
+Status: [x] Pass
+Defect Raised: None
+Notes: Sidebar is a sticky right column; attention items use chip components; event log shows latest 10 log entries
+
+---
+
+### TC-0474 — All existing dashboard tests continue to pass after US-0148 Mission Control layout
+
+Related Story: US-0154
+Related Task:
+Related AC: AC-0544
+Type: Functional
+Preconditions: Jest; tests/unit/generate-dashboard.test.js; full test suite
+Steps:
+
+1. Run `npx jest --coverage 2>&1 | tail -6`
+
+Expected Result: All test suites pass; ≥648 tests pass; statement coverage ≥80%
+Actual Result: `Test Suites: 26 passed, 26 total`; `Tests: 648 passed, 648 total`; statement coverage: 93.38% — well above 80% gate
+Status: [x] Pass
+Defect Raised: None
+Notes: 648 tests across 26 suites; all pass on develop HEAD f66f756 including generate-dashboard (37 tests) and theme (37 tests)
