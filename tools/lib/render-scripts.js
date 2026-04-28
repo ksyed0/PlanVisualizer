@@ -326,7 +326,7 @@ function renderScripts(data, options = {}) {
   // when no stored preference exists.
   function pvSetTheme(t) {
     document.documentElement.setAttribute('data-theme', t);
-    /* BUG-0190: Tailwind darkMode:'class' requires .dark on <html> */
+    /* BUG-0190: .dark on <html> required for [data-theme=dark] selector compatibility. Tailwind CDN removed by BUG-0230 but class retained for CSS selector consistency. */
     document.documentElement.classList.toggle('dark', t === 'dark');
     localStorage.setItem('pv-theme', t);
     var lb = document.getElementById('theme-btn-light');

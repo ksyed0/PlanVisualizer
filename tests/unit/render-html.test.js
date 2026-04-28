@@ -1830,7 +1830,7 @@ describe('renderHtml — US-0137/0141 token system', () => {
     expect(html).toContain('ui-monospace');
   });
 
-  it('theme init uses setAttribute and also toggles .dark class for Tailwind', () => {
+  it('theme init uses setAttribute and also toggles .dark class for dark-mode selectors', () => {
     // BUG-0190: Tailwind darkMode:'class' requires .dark on <html>.
     // Both setAttribute('data-theme') AND classList.add('dark') must be present.
     expect(html).toContain("setAttribute('data-theme'");
