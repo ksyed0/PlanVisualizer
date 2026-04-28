@@ -147,7 +147,9 @@ function renderHtml(data, options = {}) {
     .nav-item:last-child { border-bottom: none; }
     .nav-item:hover { color: var(--clr-text-primary); background: color-mix(in oklab, var(--clr-accent) 8%, transparent); }
     .nav-item.nav-active { color: var(--clr-accent); background: color-mix(in oklab, var(--clr-accent) 12%, transparent); border-left-color: var(--clr-accent); font-weight: 600; }
-    /* Active view-toggle button (column / card / compact) — all tabs */
+    /* View-toggle buttons (column / card / compact) — all tabs */
+    .view-toggle-btn { padding: 2px 10px; font-size: 12px; border-radius: 4px; border: 1px solid var(--clr-border); color: var(--clr-text-secondary); background: var(--clr-panel-bg); cursor: pointer; transition: background 0.15s; }
+    .view-toggle-btn:hover { background: color-mix(in oklab, var(--clr-accent) 8%, var(--clr-panel-bg)); color: var(--clr-text-primary); }
     button.active-view { background: var(--clr-accent) !important; color: oklch(100% 0 0) !important; border-color: var(--clr-accent) !important; font-weight: 600 !important; }
     .nav-item svg { flex-shrink: 0; }
     .nav-label { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

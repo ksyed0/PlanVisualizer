@@ -10862,6 +10862,17 @@
       "fixBranch": "bugfix/BUG-0229-0231-0232-quick-wins",
       "lessonEncoded": "No",
       "estimatedCostUsd": 0
+    },
+    {
+      "id": "BUG-0233",
+      "title": "CDN removal regression — `.hidden` utility missing and Chart.js not inlined",
+      "severity": "Critical",
+      "relatedStory": "US-0160 (EPIC-0022)",
+      "relatedTask": "",
+      "status": "Fixed",
+      "fixBranch": "bugfix/BUG-0233-cdn-removal-regressions",
+      "lessonEncoded": "No",
+      "estimatedCostUsd": 0
     }
   ],
   "costs": {
@@ -13405,6 +13416,14 @@
         "isEstimated": false,
         "projectedUsd": 400
       },
+      "BUG-0233": {
+        "costUsd": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "sessions": 0,
+        "isEstimated": false,
+        "projectedUsd": 1600
+      },
       "_totals": {
         "costUsd": 2443.9069,
         "inputTokens": 182841880,
@@ -14547,7 +14566,7 @@
   },
   "coverage": {
     "lines": 95.6,
-    "statements": 93.47,
+    "statements": 93.48,
     "functions": 94.58,
     "branches": 80.48,
     "overall": 95.6,
@@ -14965,10 +14984,10 @@
       "bugIds": []
     }
   ],
-  "generatedAt": "2026-04-28T21:02:39.651Z",
-  "commitSha": "ae922b1",
-  "buildNumber": "602",
-  "branch": "bugfix/BUG-0233-cdn-removal-regressions",
+  "generatedAt": "2026-04-28T21:53:04.377Z",
+  "commitSha": "06ee599",
+  "buildNumber": "604",
+  "branch": "bugfix/BUG-0234-toggle-btn-contrast",
   "sessionTimeline": [
     {
       "date": "2026-03-09",
@@ -15590,9 +15609,9 @@
   "deltaSpend": 27.44,
   "projectName": "PlanVisualizer",
   "tagline": "Self-documenting project dashboards for Agentic coding platforms.",
-  "version": "1.5.60",
+  "version": "1.5.61",
   "appName": "plan-visualizer",
-  "appVersion": "1.5.60",
+  "appVersion": "1.5.61",
   "githubUrl": "https://github.com/ksyed0/PlanVisualizer",
   "agents": {
     "Conductor": {
@@ -15974,7 +15993,8 @@
       "2026-04-28T18:34:45.581Z",
       "2026-04-28T18:40:29.421Z",
       "2026-04-28T20:46:06.876Z",
-      "2026-04-28T21:02:39.740Z"
+      "2026-04-28T21:02:39.740Z",
+      "2026-04-28T21:53:04.456Z"
     ],
     "doneCounts": [
       2,
@@ -16110,6 +16130,7 @@
       153,
       153,
       155,
+      155,
       155
     ],
     "totalStories": [
@@ -16234,6 +16255,7 @@
       158,
       158,
       148,
+      161,
       161,
       161,
       161,
@@ -16382,6 +16404,7 @@
       4463.6072,
       4463.6072,
       4463.6072,
+      4463.6072,
       4463.6072
     ],
     "coverage": [
@@ -16517,6 +16540,7 @@
       95.49,
       95.49,
       95.59,
+      95.6,
       95.6,
       95.6
     ],
@@ -16654,6 +16678,7 @@
       274,
       274,
       280,
+      280,
       280
     ],
     "openBugs": [
@@ -16790,9 +16815,11 @@
       17,
       17,
       11,
+      11,
       11
     ],
     "atRisk": [
+      0,
       0,
       0,
       0,
@@ -17062,6 +17089,7 @@
       276680193,
       276680193,
       277178904,
+      276680193,
       276680193
     ],
     "outputTokens": [
@@ -17198,6 +17226,7 @@
       35316621,
       35316621,
       35521373,
+      35316621,
       35316621
     ],
     "avgRisk": [
@@ -17333,6 +17362,7 @@
       1.7000000000000002,
       1.6714285714285715,
       1.6714285714285715,
+      1.6600000000000001,
       1.6600000000000001,
       1.6600000000000001
     ],

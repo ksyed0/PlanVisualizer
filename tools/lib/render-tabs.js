@@ -179,11 +179,11 @@ function renderHierarchyTab(data) {
     <div class="flex items-center justify-end mb-4 flex-shrink-0">
       <div class="flex gap-1">
         <button id="hier-col-btn" onclick="setHierarchyView('column')"
-          class="px-3 py-1 text-xs rounded border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+          class="view-toggle-btn">
           ≡ Column
         </button>
         <button id="hier-card-btn" onclick="setHierarchyView('card')"
-          class="px-3 py-1 text-xs rounded border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+          class="view-toggle-btn">
           ⊞ Card
         </button>
       </div>
@@ -1589,11 +1589,11 @@ function renderCostsTab(data, options = {}) {
       <span class="text-sm text-slate-500 dark:text-slate-400">${data.stories.length} stories · ${data.bugs.length} bugs</span>
       <div class="flex gap-1">
         <button id="costs-col-btn" onclick="setCostsView('column')"
-          class="px-3 py-1 text-xs rounded border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+          class="view-toggle-btn">
           ≡ Column
         </button>
         <button id="costs-card-btn" onclick="setCostsView('card')"
-          class="px-3 py-1 text-xs rounded border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+          class="view-toggle-btn">
           ⊞ Card
         </button>
       </div>
@@ -1820,15 +1820,15 @@ function renderBugsTab(data) {
       <span class="text-sm text-slate-500 dark:text-slate-400">${data.bugs.length} bug${data.bugs.length !== 1 ? 's' : ''}</span>
       <div class="flex gap-1">
         <button id="bugs-col-btn" onclick="setBugsView('column')"
-          class="px-3 py-1 text-xs rounded border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+          class="view-toggle-btn">
           ≡ Column
         </button>
         <button id="bugs-card-btn" onclick="setBugsView('card')"
-          class="px-3 py-1 text-xs rounded border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+          class="view-toggle-btn">
           ⊞ Card
         </button>
         <button id="bugs-compact-btn" onclick="setBugsView('compact')"
-          class="px-3 py-1 text-xs rounded border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+          class="view-toggle-btn">
           ☰ Compact
         </button>
       </div>
@@ -2051,11 +2051,11 @@ function renderLessonsTab(data) {
       <span class="text-sm text-slate-500 dark:text-slate-400">${lessons.length} lesson${lessons.length !== 1 ? 's' : ''}</span>
       <div class="flex gap-1">
         <button id="lessons-col-btn" onclick="setLessonsView('column')"
-          class="px-3 py-1 text-xs rounded border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+          class="view-toggle-btn">
           ≡ Column
         </button>
         <button id="lessons-card-btn" onclick="setLessonsView('card')"
-          class="px-3 py-1 text-xs rounded border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+          class="view-toggle-btn">
           ⊞ Card
         </button>
       </div>
