@@ -474,9 +474,8 @@ function renderTrendsTab(data, options = {}) {
         </details>`;
       })()}
     </div>
-    <div class="card-elev rounded-lg p-4 col-span-full anim-stagger" style="--i:1b">
+    <div class="card-elev rounded-lg p-4 col-span-full anim-stagger" style="--i:5">
       <div class="chart-header-rule"><span class="display-title">Weekly Velocity</span><span class="chart-subtitle">t-shirt points completed per week</span></div>
-      <h3 style="margin:20px 0 8px;font-size:14px;font-weight:600;color:var(--text)">Weekly Velocity</h3>
       ${
         hasVbw
           ? `<div style="height:250px;position:relative"><canvas id="chart-velocity-weekly"></canvas></div>`
@@ -602,33 +601,41 @@ function initTrendsCharts() {
   ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:leg}, scales:{x:xA,y:yA({min:0,suggestedMax:4})}}});
   ${
     hasVbw
-      ? `_mkTrend('chart-velocity-weekly', {
-    type: 'bar',
-    data: {
-      labels: velWeeklyLabels,
-      datasets: [
-        {
-          type: 'bar',
-          label: 'Points completed',
-          data: velWeeklyPoints,
-          backgroundColor: pvChartColors.info,
+      ? `if (velWeeklyLabels && velWeeklyLabels.length >= 2) {
+    _mkTrend('chart-velocity-weekly', {
+      type: 'bar',
+      data: {
+        labels: velWeeklyLabels,
+        datasets: [
+          {
+            type: 'bar',
+            label: 'Points completed',
+            data: velWeeklyPoints,
+            backgroundColor: pvChartColors.info,
+          },
+          {
+            type: 'line',
+            label: '4-wk rolling avg',
+            data: velWeeklyAvg,
+            borderColor: pvChartColors.warn,
+            borderWidth: 2,
+            pointRadius: 3,
+            tension: 0.3,
+            fill: false,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: leg },
+        scales: {
+          x: xA,
+          y: yA({ min: 0, title: { display: true, text: 't-shirt points', color: tc } }),
         },
-        {
-          type: 'line',
-          label: '4-wk rolling avg',
-          data: velWeeklyAvg,
-          borderColor: pvChartColors.warn,
-          borderWidth: 2,
-          pointRadius: 3,
-          tension: 0.3,
-          fill: false,
-        },
-      ],
-    },
-    options: {
-      scales: { y: { title: { display: true, text: 't-shirt points' } } },
-    },
-  });`
+      },
+    });
+  }`
       : ''
   }
   var saved = localStorage.getItem('pv-trends-range');
@@ -643,6 +650,7 @@ function setTrendsRange(btn, range) {
   localStorage.setItem('pv-trends-range', range);
   var n = range === 'all' ? _trendsAllLabels.length : Math.min(Number(range), _trendsAllLabels.length);
   Object.keys(_trendsChartRefs).forEach(function(id) {
+    ${hasVbw ? "if (id === 'chart-velocity-weekly') return;" : ''}
     var ch = _trendsChartRefs[id]; if (!ch._allData) return;
     ch.data.labels = _trendsAllLabels.slice(-n);
     ch.data.datasets.forEach(function(ds, i){ ds.data = ch._allData[i].slice(-n); });

@@ -187,7 +187,7 @@ function isoWeek(date) {
 const TSHIRT_POINTS = { XS: 0.5, S: 1, M: 3, L: 5, XL: 8 };
 
 function snapshotCumulativeVelocity(snap) {
-  const stories = snap.data.stories || [];
+  const stories = (snap.data && snap.data.stories) || [];
   return stories
     .filter((st) => st.status === 'Done')
     .reduce((sum, st) => {
@@ -204,6 +204,7 @@ function velocityByWeek(snapshots) {
   // Group snapshots by ISO week; keep snapshot with highest cumulative velocity per week
   const weekMap = new Map();
   for (const snap of snapshots) {
+    if (!snap.generatedAt) continue;
     const week = isoWeek(new Date(snap.generatedAt));
     const cumul = snapshotCumulativeVelocity(snap);
     if (!weekMap.has(week) || cumul > weekMap.get(week).cumul) {

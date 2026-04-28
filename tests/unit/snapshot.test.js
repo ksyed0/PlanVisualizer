@@ -6,7 +6,7 @@ const {
   saveSnapshot,
   loadSnapshots,
   extractTrends,
-  velocityByWeek, // ADD THIS
+  velocityByWeek,
   SNAPSHOT_REGEX,
 } = require('../../tools/lib/snapshot');
 
