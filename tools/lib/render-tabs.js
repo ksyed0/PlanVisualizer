@@ -166,7 +166,7 @@ function renderHierarchyTab(data) {
       <div id="epic-cards-${epic.id}" class="border border-t-0 border-slate-200 dark:border-slate-700 rounded-b-lg p-3 hidden">
         ${
           storyCards
-            ? `<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">${storyCards}</div>`
+            ? `<div class="story-card-grid">${storyCards}</div>`
             : '<p class="text-slate-500 dark:text-slate-400 text-sm">No stories yet.</p>'
         }
       </div>
@@ -420,7 +420,7 @@ function renderTrendsTab(data, options = {}) {
 
   return `
 <div id="tab-trends" class="p-6 hidden" role="tabpanel" aria-labelledby="tab-btn-trends">
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+  <div class="charts-grid">
     ${
       !hasData
         ? placeholder
@@ -946,7 +946,7 @@ function renderChartsTab(data) {
   <div id="tab-charts" class="p-6 hidden" role="tabpanel" aria-labelledby="tab-btn-charts">
     ${_renderStatusHero(data)}
     ${_renderDecisionWidgets(data)}
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="charts-grid">
 
       <div class="chart-supertitle">Delivery</div>
 
@@ -1454,7 +1454,7 @@ function renderCostsTab(data, options = {}) {
           <span class="ml-auto text-xs text-slate-400">${esc(story.estimate || '?')}</span>
         </div>
         <p class="text-sm font-medium dark:text-slate-200">${esc(story.title)}</p>
-        <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs mt-1">
+        <div class="cost-detail-grid text-xs mt-1">
           <div>
             <span class="text-slate-500 block">Projected</span>
             <span class="font-mono dark:text-slate-200">${usd(projected)}</span>
@@ -1484,7 +1484,7 @@ function renderCostsTab(data, options = {}) {
         <span class="ml-auto text-xs text-slate-500">Proj ${usd(epicProjTotal)} · AI ${usd(epicAITotal)}</span>
       </div>
       <div id="${cceid}" class="p-3 hidden">
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">${storyCards}</div>
+        <div class="story-card-grid">${storyCards}</div>
       </div>
     </div>`;
     })
@@ -1520,7 +1520,7 @@ function renderCostsTab(data, options = {}) {
         </div>
         <p class="text-sm font-medium dark:text-slate-200">${esc(bug.title)}</p>
         <div class="text-xs text-slate-500">Story: <span class="font-mono">${esc(bug.relatedStory || '—')}</span></div>
-        <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs mt-1">
+        <div class="cost-detail-grid text-xs mt-1">
           <div>
             <span class="text-slate-500 block">Projected</span>
             <span class="font-mono dark:text-slate-200">${bc.projectedUsd > 0 ? usd(bc.projectedUsd) : '—'}</span>
@@ -1543,7 +1543,7 @@ function renderCostsTab(data, options = {}) {
         <span class="ml-auto text-xs text-slate-500">Proj ${usd(epicBugProjected)} · AI ${usd(epicBugAI)}</span>
       </div>
       <div id="${bcceid}" class="p-3 hidden">
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">${bugCardItems}</div>
+        <div class="story-card-grid">${bugCardItems}</div>
       </div>
     </div>`;
     })
@@ -1808,7 +1808,7 @@ function renderBugsTab(data) {
         <span class="ml-auto text-xs text-slate-500 bug-count">${open} open &middot; ${bugs.length} total</span>
       </div>
       <div id="${bceid}" class="p-3 hidden">
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">${bugs.map((b, bugIdx) => renderBugCard(b, bugIdx)).join('')}</div>
+        <div class="story-card-grid">${bugs.map((b, bugIdx) => renderBugCard(b, bugIdx)).join('')}</div>
       </div>
     </div>`;
     })
