@@ -8,6 +8,8 @@
     "lint": "eslint .",
     "generate": "node tools/generate-plan.js",
     "generate:watch": "node tools/generate-plan.js --watch",
+    "plan:generate": "node tools/generate-plan.js",
+    "plan:watch": "node tools/generate-plan.js --watch",
     "dashboard": "node tools/generate-dashboard.js",
     "dashboard:watch": "node tools/generate-dashboard.js --watch",
     "init:status": "node tools/init-sdlc-status.js",
