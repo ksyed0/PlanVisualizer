@@ -4,6 +4,22 @@ Timestamped log of every user prompt across all sessions. Append-only. Never edi
 
 ---
 
+## Session 31 — 2026-04-28
+
+| #   | Timestamp            | Prompt                                                                                                                                         |
+| --- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | 2026-04-28T14:00:00Z | clean up all unused branches, then use the brainstorming skill and execute the following prompt [session goal: fix 6 bugs + implement US-0159] |
+| 2   | 2026-04-28T14:20:00Z | yes [accepted visual companion offer]                                                                                                          |
+| 3   | 2026-04-28T14:25:00Z | B, but for any stories not estimated we should go back and estimate them historically [velocity metric: t-shirt points]                        |
+| 4   | 2026-04-28T14:30:00Z | A [velocity data source: snapshot deltas]                                                                                                      |
+| 5   | 2026-04-28T14:35:00Z | yes [approved bug fixes design]                                                                                                                |
+| 6   | 2026-04-28T14:40:00Z | yes [approved US-0159 design]                                                                                                                  |
+| 7   | 2026-04-28T14:50:00Z | Please continue [spec approved, proceed to writing-plans]                                                                                      |
+| 8   | 2026-04-28T15:00:00Z | 1 [chosen subagent-driven development]                                                                                                         |
+| 9   | 2026-04-28T19:20:00Z | monitor the PRs, fix any issues, when CI is successful then merge and delete the branches, then update documents and close the session         |
+
+---
+
 ## Session 29 — 2026-04-25
 
 | #   | Timestamp            | Prompt                                                               |

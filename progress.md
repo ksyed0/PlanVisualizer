@@ -4,6 +4,48 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 31 — 2026-04-28 (Bug Fixes + US-0159 Velocity Chart)
+
+### What Was Done
+
+**Branch cleanup** — Removed 25 stale merged branches and 4 stale locked worktrees from local repo before starting work.
+
+**BUG-0229 Fixed (PR #468):** Added `plan:generate` and `plan:watch` npm aliases to `package.json` (AC-0304).
+
+**BUG-0231 Fixed (PR #468):** Added `data-agent` attribute to all agent card rows; added `conductor-dispatch-count` element with `0 dispatched` text and `pv-dispatch-flash` CSS animation to the Conductor card; wired `_dispatchCount` module-level counter in `setConductorActive` (AC-0522 — counter + animate).
+
+**BUG-0232 Fixed (PR #468):** Added `(N done)` sub-label to Agent Workload widget rows via `done = total - inFlight` computed in `renderAgentWorkload()` (AC-0537).
+
+**BUG-0227 Fixed (PR #469):** Created `docs/AGENT_PLAN.md` (286 lines) documenting 6-phase pipeline, entry/exit criteria, PR review lifecycle, and BLOCK recovery protocol — all content from `DM_AGENT.md` (AC-0280).
+
+**BUG-0228 Fixed (PR #470):** Removed Google Fonts CDN links from `tools/generate-dashboard.js`; added system font stack (`system-ui`, `ui-monospace`). `docs/dashboard.html` no longer loads external fonts (AC-0290).
+
+**BUG-0230 Fixed + US-0160 Done (PR #470):** Removed Tailwind CDN, Chart.js CDN, Google Fonts from `tools/lib/render-html.js`. Replaced all Tailwind utility classes in budget alert and filter bar with named CSS classes using `var(--clr-*)` OKLCH tokens in `render-shell.js`. Dark mode via `[data-theme=dark]` selectors (AC-0305, AC-0581–0585).
+
+**US-0159 Done (PR #471):** Implemented Weekly Velocity Chart in Trends tab:
+
+- `tools/lib/snapshot.js`: `velocityByWeek(snapshots)` — groups by ISO week, computes per-week t-shirt point deltas (XS=0.5, S=1, M=3, L=5, XL=8), clamps negatives, 4-period rolling average
+- `tools/generate-plan.js`: attaches `data.trends.velocityByWeek`
+- `tools/lib/render-tabs.js`: "Weekly Velocity" bar+line Chart.js card using `pvChartColors.info`/`.warn`; excluded from `setTrendsRange` (ISO week labels ≠ timestamp labels); empty-state placeholder when <2 weeks of data
+- 19 new tests across snapshot.test.js and render-tabs.test.js
+
+### Test Results
+
+2301 tests pass across 98 suites. Statement coverage ~88% (gate: 80%).
+
+### Blockers
+
+None.
+
+### PRs
+
+- [#468](https://github.com/ksyed0/PlanVisualizer/pull/468) BUG-0229/0231/0232 — Merged
+- [#469](https://github.com/ksyed0/PlanVisualizer/pull/469) BUG-0227 — Merged
+- [#470](https://github.com/ksyed0/PlanVisualizer/pull/470) BUG-0228/0230 + US-0160 — Merged
+- [#471](https://github.com/ksyed0/PlanVisualizer/pull/471) US-0159 — Merged
+
+---
+
 ## Session 30 — 2026-04-27 (EPIC-0021 Closure)
 
 ### What Was Done

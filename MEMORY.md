@@ -20,7 +20,7 @@ Persistent semantic knowledge base. Organised by topic. Updated every session.
 - Node.js 18+, no production runtime dependencies
 - Jest 30 for testing (upgraded from 29 on 2026-03-10 to eliminate `inflight` deprecation warning)
 - ESLint 9 flat config (`eslint.config.js`) — `eslint:recommended` + `no-eval`, `eqeqeq`, `no-implied-eval` as errors
-- Tailwind CSS (CDN) + Chart.js v4 (CDN) in generated HTML
+- Chart.js v4 (inlined) in generated plan-status.html; no Tailwind (removed BUG-0230/Session 31)
 - GitHub Actions for CI (ci.yml + codeql.yml + plan-visualizer.yml)
 - Dependabot for weekly npm + Actions updates
 
@@ -117,11 +117,20 @@ Branch name in `AI_COST_LOG.md` row must exactly match `Branch:` field in story 
 
 ---
 
-## Project Completion Status (as of 2026-04-25 Session 29)
+## Project Completion Status (as of 2026-04-28 Session 31)
 
-22 EPICs (EPIC-0010/0014/0015/0016/0017/0019/0020 Done; EPIC-0022 Planned), 161 active stories, 193 bugs.
-Develop is fully green — all CI gates passing after PR #444 (Session 28 UI polish + About modal) and PR #455 (Prettier fix) merged.
-Next IDs: check `docs/ID_REGISTRY.md` — as of Session 29: EPIC-0023, US-0162, TASK-0055, AC-0591, TC-0475, BUG-0231, L-0046.
+22 EPICs (EPIC-0021 Done, EPIC-0022 in-progress: US-0159 Done, US-0160 Done, US-0161 Done; US-0162+ planned), 161+ active stories, 200 bugs.
+Develop is fully green — all CI gates passing after PRs #468–471 merged (Session 31 bug fixes + US-0159 Velocity Chart).
+Next IDs: check `docs/ID_REGISTRY.md` (as of Session 31: BUG-0233, L-0047, TC-0553 unchanged).
+
+Key additions (Session 31):
+
+- `velocityByWeek(snapshots)` exported from `tools/lib/snapshot.js` — ISO week bucketing, t-shirt point deltas, 4-period rolling average, negative clamping.
+- Weekly Velocity bar+line chart in Trends tab (`renderTrendsTab`). Uses `pvChartColors.info`/`.warn`. Excluded from `setTrendsRange` (ISO week labels are not snapshot timestamps).
+- CDN-free: plan-status.html and dashboard.html no longer load Tailwind, Chart.js CDN, or Google Fonts. All styling via system font stacks and `var(--clr-*)` custom properties.
+- `docs/AGENT_PLAN.md` created — 6-phase pipeline reference (AC-0280).
+- Conductor card: `data-agent` attribute added; `conductor-dispatch-count` element with `pv-dispatch-flash` animation wired to `_dispatchCount` counter.
+- Agent Workload widget: `(N done)` sub-label added via `done = total - inFlight`.
 
 Key additions (Sessions 26–28):
 
@@ -141,7 +150,7 @@ Architecture decision: `Assignee:` field in RELEASE_PLAN.md stories is not meani
 ## Coverage Thresholds
 
 Jest coverage gate: 80% statements (global).
-Current coverage (2026-04-25 Session 29): 648 tests, 26 suites, all passing. Statement coverage above 80% gate.
+Current coverage (2026-04-28 Session 31): 2301 tests, 98 suites, all passing. Statement coverage ~88% above 80% gate.
 
 ---
 
@@ -202,7 +211,7 @@ Current coverage (2026-04-25 Session 29): 648 tests, 26 suites, all passing. Sta
 - **AI cost attribution uses exact branch name matching.** `attributeAICosts()` matches `story.branch` against cost log `Branch` values — case-sensitive exact match. Backfill missing cost rows with `[est]` entries when a branch has no matching rows. (BUG-0023, 2026-03-16)
 - **Generate-plan.js and render-html.js must use identical key names for cost data.** Any field passed through the JSON data object must use the same key in both files. The `aiCostUsd` vs `costUsd` mismatch caused all per-story AI costs to show $0 while the totals row (which reads `costs._totals.costUsd` directly) was unaffected. (L-0014, BUG-0023, 2026-03-16)
 - **Dual y-axes are required when Chart.js datasets differ by 3+ orders of magnitude.** Sharing one y-axis makes the smaller dataset sub-pixel. Use `yAxisID` on each dataset and define two separate `scales` entries (position: left / right). (L-0015, BUG-0024, 2026-03-16)
-- **Mobile layout: use `@media (max-width: 767px)` with `!important` to override Tailwind CDN utilities.** Tailwind CDN emits utility classes at runtime — inline `!important` overrides in a `<style>` block are needed to beat specificity. (L-0016, BUG-0020, 2026-03-16)
+- **Mobile layout: use `@media (max-width: 767px)` with `!important` to override any utility class or inline style.** Tailwind CDN was removed (BUG-0230, Session 31); mobile overrides must now beat inline `style=""` attributes rather than Tailwind classes. (L-0016, BUG-0020, 2026-03-16; updated 2026-04-28)
 - **Activity panel z-order: give the close button a higher z-index than the panel, or place it inside the panel.** The toggle button was at `z-50` but the panel covered it once opened. Fixed by adding a `×` button inside the panel header with `md:hidden`. (L-0017, BUG-0022, 2026-03-16)
 - **Bug status `Fixed (...)` strings must use prefix regex, not equality.** `!/^Fixed/i.test(b.status)` catches extended status strings like "Fixed (false positive — …)". Plain `=== 'Fixed'` would count those bugs as open. (BUG-0011, 2026-03-30)
 - **Default collapsed state: set `hidden` class on content elements + ▶ (&#9654;) on arrows in templates.** `toggleSection()` logic uses `classList.toggle('hidden')` and sets arrow based on resulting hidden state — no JS init code needed. Use `replace_all` on `&#9660;</span>` → `&#9654;</span>` to batch-change all template arrows without touching JS toggle logic. (Session 13, 2026-03-30)
@@ -260,7 +269,7 @@ Current coverage (2026-04-25 Session 29): 648 tests, 26 suites, all passing. Sta
 ### EPIC-0016 architecture legacy
 
 - 6 phases canonical: Blueprint, Architect, Build, Integration, Test, Polish (no Deploy — that's EPIC-0019 scope).
-- Departure Mono (display), Geist (sans), JetBrains Mono (monospace tickers/coverage %) are the 3 dashboard typefaces.
+- System font stacks are used since CDN removal (BUG-0228/0230, Session 31): `system-ui, -apple-system, 'Segoe UI', sans-serif` (UI) and `ui-monospace, 'JetBrains Mono', 'Cascadia Code', monospace` (code). Google Fonts (Departure Mono, Geist, JetBrains Mono, Inter Tight) no longer loaded.
 - `tools/lib/theme.js` now owns the BADGE_TONE map + badge() helper; both `render-html.js` and `generate-dashboard.js` import from it. Drift eliminated.
 - `.section-header` utility: Geist, 11px/700, uppercase, 0.14em tracking. Shared across sections.
 - `.live-dot` component: 6×6 circle, ok/warn/err variants, pulse animation with `prefers-reduced-motion` guard. Used in header clock, spotlight, Quality card, Activity log.

@@ -12,6 +12,14 @@ _Learned during Session 29: CI build crashed at render-tabs.js:2291 with this ex
 
 ---
 
+## L-0046 — Squash-merge repos: use `gh pr list --state merged` to detect stale branches, not `git merge-base`
+
+**Rule:** `git merge-base --is-ancestor <branch> develop` returns false for every feature branch in a squash-merge repo because squash creates a new SHA with no ancestry back to the source branch. To reliably detect which branches are safe to delete, cross-reference with `gh pr list --state merged --json headRefName` — if a matching PR is merged, the branch content is in develop regardless of ancestry. Never trust `merge-base` alone for cleanup decisions in squash-merge repos.
+_Learned during Session 31: 24 local branches showed NOT-MERGED; all 24 had merged PRs confirmed via gh._
+**Date:** 2026-04-28
+
+---
+
 ## L-0044 — Replace `existsSync` + `readFileSync` two-step with try-catch on `readFileSync` for ENOENT
 
 **Rule:** The pattern `if (!fs.existsSync(path)) return; const raw = fs.readFileSync(path)` is a TOCTOU (CWE-367) race: between the check and the read, another process can delete or symlink-swap the file. CodeQL flags it as "Potential file system race condition". Fix: remove `existsSync` and wrap `readFileSync` in `try { raw = fs.readFileSync(path, 'utf8') } catch (err) { if (err.code === 'ENOENT') { /* handle missing */ } throw err; }`. This handles the missing-file case atomically and eliminates the race window.
