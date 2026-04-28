@@ -97,7 +97,10 @@ describe('AC-0498 — no hex literals in generated HTML', () => {
       completion: null,
     };
     const html = renderHtml(data);
-    const hits = html.match(/#[0-9a-fA-F]{3,6}\b|rgb\(|rgba\(/g) || [];
+    // Strip the inlined Chart.js library block before checking — Chart.js itself
+    // contains hex literals and rgb/rgba calls that are outside our control.
+    const stripped = html.replace(/<script>\/\*![\s\S]*?Chart\.js[\s\S]*?<\/script>/, '');
+    const hits = stripped.match(/#[0-9a-fA-F]{3,6}\b|rgb\(|rgba\(/g) || [];
     expect(hits).toHaveLength(0);
   });
 });

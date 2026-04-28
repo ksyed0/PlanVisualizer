@@ -3278,3 +3278,19 @@ Steps to Reproduce:
    Lesson Encoded: No
    Estimated Cost USD: 0.00
    Notes: TC-0551 verifies AC-0537 "Agent Workload bars show (N done) sub-label". The inFlight filtering in tools/generate-dashboard.js is implemented but the (N done) sub-label is never rendered.
+
+---
+
+BUG-0233: CDN removal regression — `.hidden` utility missing and Chart.js not inlined
+Severity: Critical
+Related Story: US-0160 (EPIC-0022)
+Steps to Reproduce:
+
+1. Open docs/plan-status.html in a browser after PR #470 merged
+   Expected: Tabs switch correctly; charts render; epic headers collapse by default
+   Actual: All tabs visible simultaneously (tab switching broken); no charts render; all epic headers expanded
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0233-cdn-removal-regressions
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Two root causes: (1) Tailwind CDN provided a global `.hidden { display: none !important; }` utility used throughout the app for tab visibility, epic collapse, and filter bar toggling — removing Tailwind without adding this rule broke all hide/show behavior. Fix: add `.hidden { display: none !important; }` to the base CSS in render-html.js. (2) Chart.js was loaded entirely from CDN and was NOT inlined — the "21 references" claim in the original review referred to Chart.js API call sites (new Chart(), etc.) not the library itself. Fix: npm install chart.js as devDependency, read chart.umd.min.js at build time and inline as a <script> block in render-html.js.
