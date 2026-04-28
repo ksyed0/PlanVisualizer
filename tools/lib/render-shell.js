@@ -84,11 +84,10 @@ function renderFilterBar(data) {
   const epicOptions = data.epics
     .map((e) => `<option value="${esc(e.id)}">${esc(e.id)}: ${esc(e.title)}</option>`)
     .join('');
-  const sel =
-    'border border-slate-300 dark:border-slate-600 rounded px-2 py-1 text-sm dark:bg-slate-700 dark:text-slate-100';
+  const sel = 'filter-select';
   return `
-  <div class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-2 flex flex-wrap gap-2 items-center hidden" id="filter-bar">
-    <span id="fgrp-story" class="hidden flex-wrap gap-2 flex">
+  <div class="filter-bar hidden" id="filter-bar">
+    <span id="fgrp-story" class="fgrp hidden">
       <select id="f-epic" onchange="applyFilters()" class="${sel}" aria-label="Filter by epic">
         <option value="">All Epics</option>${epicOptions}
       </select>
@@ -101,7 +100,7 @@ function renderFilterBar(data) {
         <option>P0</option><option>P1</option><option>P2</option>
       </select>
     </span>
-    <span id="fgrp-bug" class="hidden flex-wrap gap-2 flex">
+    <span id="fgrp-bug" class="fgrp hidden">
       <select id="f-bug-epic" onchange="applyFilters()" class="${sel}" aria-label="Filter bugs by epic">
         <option value="">All Epics</option>${epicOptions}
       </select>
@@ -115,8 +114,8 @@ function renderFilterBar(data) {
       </select>
     </span>
     <input id="f-search" oninput="applyFilters()" type="text" placeholder="Search IDs, titles…"
-      class="${sel} w-full sm:w-48 dark:placeholder-slate-400" aria-label="Search" />
-    <button onclick="clearFilters()" class="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 underline">Clear</button>
+      class="${sel} filter-search" aria-label="Search" />
+    <button onclick="clearFilters()" class="filter-clear">Clear</button>
   </div>`;
 }
 

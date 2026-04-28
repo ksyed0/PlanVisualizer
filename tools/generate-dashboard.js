@@ -423,21 +423,16 @@ function generateHTML(status) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${DASH_META.title} — SDLC Live Dashboard</title>
-<!-- US-0110 AC-0361: Departure Mono (display numerics) + Geist (sans), font-display:swap via Google Fonts. -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Departure+Mono&family=Geist:wght@400;500;600;700&display=swap">
-<!-- US-0111 AC-0366: JetBrains Mono for the "Last updated: N ago" live-tick ticker. -->
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap">
 <style>
   ${generateDashboardCssTokens()}
   ${SHELL_CHROME_CSS}
   :root {
     --brand-primary: ${DASH_META.primaryColor};
     /* US-0110 AC-0361: scoped font stacks — do NOT reassign existing typography
-       to avoid cascade into unrelated surfaces; only .section-header opts in. */
-    --font-display: 'Departure Mono', 'SF Mono', Menlo, Consolas, monospace;
-    --font-sans: 'Geist', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+       to avoid cascade into unrelated surfaces; only .section-header opts in.
+       BUG-0228: CDN fonts removed; system fonts are primary fallbacks. */
+    --font-display: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     /* US-0110: canvas bg aligned with Plan Visualizer dark canvas (US-0094/US-0095). */
     --bg-primary: oklch(11% 0.016 220);
     --bg-card: oklch(20% 0.025 240);
@@ -503,6 +498,13 @@ function generateHTML(status) {
     transition: background 0.3s, color 0.3s;
   }
   [data-theme="light"] body { background-image: none; }
+  /* BUG-0228: system font stack — CDN fonts removed */
+  body, .mc-agent-name-line, .mc-agent-role-text, .mc-status-badge {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  }
+  code, .mono, .pv-workload-name, .evt-time {
+    font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+  }
 
   /* Old .header CSS removed — now uses pv-chrome from render-chrome.js (US-0137) */
 

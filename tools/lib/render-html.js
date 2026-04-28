@@ -40,19 +40,21 @@ function renderHtml(data, options = {}) {
   document.documentElement.setAttribute('data-theme',dark?'dark':'light');
   if(dark){document.documentElement.classList.add('dark');}else{document.documentElement.classList.remove('dark');}
 })()</script>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>tailwind.config={darkMode:'class'}</script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     /* === Base === */
-    body { font-family: var(--font-sans, 'Inter Tight', sans-serif); padding-top: 52px; background-color: var(--clr-body-bg); color: var(--clr-text-primary); }
+    body { min-height: 100vh; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; padding-top: 52px; background-color: var(--clr-body-bg); color: var(--clr-text-primary); }
     body.has-alert { padding-top: 80px; }
     #topbar-fixed.has-alert { top: 28px; }
     #sidebar.has-alert { top: 80px; height: calc(100vh - 80px); }
-    code, .font-mono { font-family: var(--font-mono, 'JetBrains Mono', monospace); }
+    code, .font-mono { font-family: ui-monospace, 'JetBrains Mono', 'Cascadia Code', monospace; }
+    /* BUG-0228/BUG-0230: budget alert — replaces Tailwind utility classes */
+    .budget-alert { position: fixed; top: 0; left: 0; right: 0; z-index: 50; padding: 8px 16px; display: flex; align-items: center; justify-content: space-between; color: oklch(100% 0 0); }
+    .budget-alert-critical { background: oklch(45% 0.22 25); }
+    .budget-alert-warn     { background: oklch(58% 0.18 55); }
+    .budget-alert-caution  { background: oklch(65% 0.17 80); }
+    .budget-alert-text     { font-weight: 500; }
+    .budget-alert-dismiss  { color: inherit; font-size: 13px; font-weight: 700; background: none; border: none; cursor: pointer; padding: 2px 8px; opacity: 0.85; }
+    .budget-alert-dismiss:hover { opacity: 1; }
 
     /* === Typography utilities (US-0094) === */
     .font-display { font-family: var(--font-display, 'Inter Tight', sans-serif); font-weight: 400; letter-spacing: -0.005em; }
@@ -144,6 +146,16 @@ function renderHtml(data, options = {}) {
     /* === Main content === */
     #main-content { flex: 1; min-width: 0; }
     #filter-sticky { position: sticky; top: 52px; z-index: 20; }
+    /* BUG-0230: filter bar — replaces Tailwind utility classes */
+    .filter-bar { background: var(--clr-panel-bg); border-bottom: 1px solid var(--clr-border); padding: 8px 24px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .filter-bar.hidden { display: none; }
+    .fgrp { display: flex; flex-wrap: wrap; gap: 8px; }
+    .fgrp.hidden { display: none; }
+    .filter-select { border: 1px solid var(--clr-input-border); border-radius: 4px; padding: 2px 8px; font-size: 13px; background: var(--clr-input-bg); color: var(--clr-input-text); }
+    .filter-select:focus { outline: 2px solid var(--clr-accent); outline-offset: -1px; }
+    .filter-search { width: 100%; max-width: 192px; }
+    .filter-clear { font-size: 13px; color: var(--clr-text-secondary); text-decoration: underline; background: none; border: none; cursor: pointer; padding: 2px 4px; }
+    .filter-clear:hover { color: var(--clr-text-primary); }
 
     /* ── Responsive tiers ───────────────────────────── */
     /* Activity panel offset: ≥768px */
@@ -364,15 +376,15 @@ function renderHtml(data, options = {}) {
   </style>
   ${renderPrintCSS()}
 </head>
-<body class="min-h-screen ${data.budget && data.budget.crossedThresholds && data.budget.crossedThresholds.length > 0 ? 'has-alert' : ''}">
+<body class="${data.budget && data.budget.crossedThresholds && data.budget.crossedThresholds.length > 0 ? 'has-alert' : ''}">
   ${
     data.budget && data.budget.crossedThresholds && data.budget.crossedThresholds.length > 0
       ? `
-  <div id="budget-alert" class="fixed top-0 left-0 right-0 z-50 px-4 py-2 flex items-center justify-between ${data.budget.percentUsed >= 90 ? 'bg-red-600' : data.budget.percentUsed >= 75 ? 'bg-orange-500' : 'bg-amber-500'} text-white">
-    <span class="font-medium">
+  <div id="budget-alert" class="budget-alert ${data.budget.percentUsed >= 90 ? 'budget-alert-critical' : data.budget.percentUsed >= 75 ? 'budget-alert-warn' : 'budget-alert-caution'}">
+    <span class="budget-alert-text">
       ${data.budget.percentUsed >= 90 ? '⛔' : '⚠️'} Budget Alert: ${data.budget.percentUsed}% of budget consumed
     </span>
-    <button onclick="dismissBudgetAlert()" class="text-white hover:text-gray-200 text-sm font-bold px-2">✕</button>
+    <button onclick="dismissBudgetAlert()" class="budget-alert-dismiss">✕</button>
   </div>
   <script>function dismissBudgetAlert(){document.getElementById('budget-alert').style.display='none';document.body.classList.remove('has-alert');localStorage.setItem('budgetAlertDismissed','${data.generatedAt}');}</script>
   `

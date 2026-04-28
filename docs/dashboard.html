@@ -4,12 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>My Project — SDLC Live Dashboard</title>
-<!-- US-0110 AC-0361: Departure Mono (display numerics) + Geist (sans), font-display:swap via Google Fonts. -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Departure+Mono&family=Geist:wght@400;500;600;700&display=swap">
-<!-- US-0111 AC-0366: JetBrains Mono for the "Last updated: N ago" live-tick ticker. -->
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap">
 <style>
   :root {
   --live-accent: oklch(72% 0.19 46); --live-accent-soft: oklch(72% 0.12 46 / 0.15);
@@ -55,9 +49,10 @@
   :root {
     --brand-primary: oklch(50% 0.20 264);
     /* US-0110 AC-0361: scoped font stacks — do NOT reassign existing typography
-       to avoid cascade into unrelated surfaces; only .section-header opts in. */
-    --font-display: 'Departure Mono', 'SF Mono', Menlo, Consolas, monospace;
-    --font-sans: 'Geist', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+       to avoid cascade into unrelated surfaces; only .section-header opts in.
+       BUG-0228: CDN fonts removed; system fonts are primary fallbacks. */
+    --font-display: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     /* US-0110: canvas bg aligned with Plan Visualizer dark canvas (US-0094/US-0095). */
     --bg-primary: oklch(11% 0.016 220);
     --bg-card: oklch(20% 0.025 240);
@@ -123,6 +118,13 @@
     transition: background 0.3s, color 0.3s;
   }
   [data-theme="light"] body { background-image: none; }
+  /* BUG-0228: system font stack — CDN fonts removed */
+  body, .mc-agent-name-line, .mc-agent-role-text, .mc-status-badge {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  }
+  code, .mono, .pv-workload-name, .evt-time {
+    font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+  }
 
   /* Old .header CSS removed — now uses pv-chrome from render-chrome.js (US-0137) */
 
@@ -1140,6 +1142,8 @@
   .pv-workload-done { font-size: 10px; color: var(--text-muted); min-width: 52px; }
   .pv-workload-empty { font-size: 12px; color: var(--text-muted); padding: 8px 0; }
   .conductor-dispatch-count { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .conductor-dispatch-count.pv-dispatch-flash { animation: dispatchFlash 0.4s ease-out; }
+  @keyframes dispatchFlash { 0% { transform: scale(1.15); color: var(--warn); } 100% { transform: scale(1); color: var(--text-muted); } }
 
   /* ===== MISSION CONTROL REDESIGN (US-0148) ===== */
 
@@ -1573,7 +1577,7 @@
       <button class="pv-seg pv-seg-active" aria-pressed="true">Pipeline</button>
     </div>
     <div class="pv-chrome-spacer"></div>
-    <span id="gen-time" data-iso="2026-04-28T17:57:25.797Z" style="font-size:11px;color:var(--text-mute);white-space:nowrap"></span>
+    <span id="gen-time" data-iso="2026-04-28T19:22:30.837Z" style="font-size:11px;color:var(--text-mute);white-space:nowrap"></span>
     <span class="mode-badge mode-live" aria-label="Mode: Live" tabindex="0">
     <span class="pip" aria-hidden="true"></span>LIVE
   </span>
@@ -1667,7 +1671,7 @@
     <!-- QUEUE (stories in progress/planned) -->
     <div class="mc-stat-tile">
       <div class="mc-stat-label">QUEUE</div>
-      <div class="mc-stat-value" id="mc-stat-queue">8</div>
+      <div class="mc-stat-value" id="mc-stat-queue">0</div>
       <div class="mc-stat-sub">stories remaining</div>
     </div>
     <!-- REVIEWS -->
@@ -1690,7 +1694,7 @@
     <!-- COVERAGE -->
     <div class="mc-stat-tile">
       <div class="mc-stat-label">COVERAGE</div>
-      <div class="mc-stat-value green" id="mc-stat-coverage">93.38%</div>
+      <div class="mc-stat-value red" id="mc-stat-coverage">0%</div>
       <div class="mc-stat-sub">statements</div>
     </div>
     <!-- AI SPEND -->
@@ -1976,22 +1980,22 @@
   <span id="metric-phasesComplete">0 / 6</span>
   <span id="metric-phasesCompleteNum">0</span>
   <span id="metric-phasesTotalNum">6</span>
-  <span id="metric-storiesDone">153 / 161</span>
-  <span id="metric-tasksDone">54 / 54</span>
+  <span id="metric-storiesDone">0 / 0</span>
+  <span id="metric-tasksDone">—</span>
   <span id="metric-testsPassed">0</span>
   <span id="metric-testsFailed">0</span>
   <span id="metric-testsTotal">0</span>
-  <span id="metric-bugsOpen">18</span>
-  <span id="metric-bugsFixed">174</span>
+  <span id="metric-bugsOpen">0</span>
+  <span id="metric-bugsFixed">0</span>
   <span id="metric-reviewsApproved">0</span>
   <span id="metric-reviewsBlocked">0</span>
-  <span id="metric-coveragePercent">93.38%</span>
-  <b id="stamp-phase-progress">13:57</b>
-  <b id="stamp-quality">13:57</b>
-  <b id="stamp-reviews">13:57</b>
+  <span id="metric-coveragePercent">0%</span>
+  <b id="stamp-phase-progress">15:22</b>
+  <b id="stamp-quality">15:22</b>
+  <b id="stamp-reviews">15:22</b>
   <!-- Doughnut for patchDOM coverage -->
-  <div id="metric-coverageDoughnut" data-coverage="93.38" data-tone="green">
-    <circle id="metric-coverageDoughnutFill" class="d-fill green" stroke-dashoffset="6.62"></circle>
+  <div id="metric-coverageDoughnut" data-coverage="0" data-tone="red">
+    <circle id="metric-coverageDoughnutFill" class="d-fill red" stroke-dashoffset="100.00"></circle>
   </div>
   <!-- Sparkline for patchDOM -->
   <div id="metric-phasesSparkline">
@@ -2004,8 +2008,8 @@
   </div>
   <!-- Progress bars -->
   <div class="progress-bar"><div id="metric-phasesBar" class="progress-fill blue" style="width:0%"></div></div>
-  <div class="progress-bar"><div id="metric-storiesBar" class="progress-fill green" style="width:95%"></div></div>
-  <div class="progress-bar"><div id="metric-tasksBar" class="progress-fill red" style="width:100%"></div></div>
+  <div class="progress-bar"><div id="metric-storiesBar" class="progress-fill green" style="width:0%"></div></div>
+  <div class="progress-bar"><div id="metric-tasksBar" class="progress-fill red" style="width:0%"></div></div>
 </div>
 
 <!-- User Stories (collapsed; patchDOM reads these) -->
@@ -2063,7 +2067,7 @@
     <div class="mc-attn-chips">
         <span class="mc-attn-chip">0 blocked</span>
         <span class="mc-attn-chip">0 review</span>
-        <span class="mc-attn-chip warn">18 bugs</span>
+        <span class="mc-attn-chip">0 bugs</span>
       </div><div style="font-size:11px;color:var(--mc-muted);font-style:italic;padding:4px 0;">All clear — no blockers.</div>
   </div>
 
@@ -2099,11 +2103,11 @@
   <div class="mc-sidebar-panel">
     <div class="mc-sidebar-title">QUALITY</div>
     <div style="display:flex;align-items:center;gap:12px;font-size:12px;">
-      <span style="font-family:var(--font-display),monospace;font-size:28px;color:var(--ok);">93.38%</span>
+      <span style="font-family:var(--font-display),monospace;font-size:28px;color:var(--risk);">0%</span>
       <div>
         <div style="color:var(--mc-muted);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;">Coverage</div>
         <div id="card-quality" style="margin-top:4px;font-size:11px;color:var(--mc-muted);">
-          <span style="color:var(--ok);">0 pass</span> &middot; <span style="color:var(--mc-muted);">0 fail</span> &middot; <span style="color:var(--risk);">18 bugs</span>
+          <span style="color:var(--ok);">0 pass</span> &middot; <span style="color:var(--mc-muted);">0 fail</span> &middot; <span style="color:var(--mc-muted);">0 bugs</span>
         </div>
       </div>
     </div>
@@ -2233,14 +2237,14 @@
           <p class="pv-about-supertitle">This Project</p>
           <div class="pv-about-meta-row"><span class="pv-about-meta-label">Name: </span><span class="pv-about-meta-value">plan-visualizer</span></div>
           <div class="pv-about-meta-row"><span class="pv-about-meta-label">Version: </span><span class="pv-about-meta-value">v1.5.56</span></div>
-          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Branch: </span><span class="pv-about-meta-value">bugfix/BUG-0229-0231-0232-quick-wins</span></div>
-          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Build: </span><span class="pv-about-meta-value">r597 9e2a2c3</span></div>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Branch: </span><span class="pv-about-meta-value">HEAD</span></div>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Build: </span><span class="pv-about-meta-value">r595 19fc1b2</span></div>
         </div>
         <div>
           <p class="pv-about-supertitle">Dashboard Tool</p>
           <div class="pv-about-meta-row"><span class="pv-about-meta-label">View: </span><span class="pv-about-meta-value">Agentic SDLC Dashboard</span></div>
           <div class="pv-about-meta-row"><span class="pv-about-meta-label">Generated by: </span><span class="pv-about-meta-value">plan-visualizer v1.5.56</span></div>
-          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Generated at: </span><span id="about-gen-time" data-iso="Apr 28, 2026, 01:57 PM" class="pv-about-meta-value"></span></div>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Generated at: </span><span id="about-gen-time" data-iso="Apr 28, 2026, 03:22 PM" class="pv-about-meta-value"></span></div>
         </div>
       </div>
     </div>
@@ -2248,7 +2252,7 @@
 </div>
 
 <div class="footer">
-  Claude Code Agentic AI SDLC | Last refreshed: Apr 28, 2026, 01:57 PM
+  Claude Code Agentic AI SDLC | Last refreshed: Apr 28, 2026, 03:22 PM
 </div>
 
 <script>
@@ -2318,7 +2322,12 @@ function setConductorActive(dispatchMsg) {
   var card = document.querySelector('[data-agent="Conductor"]');
   _dispatchCount++;
   var dispEl = document.getElementById('conductor-dispatch-count');
-  if (dispEl) dispEl.textContent = _dispatchCount + ' dispatched';
+  if (dispEl) {
+    dispEl.textContent = _dispatchCount + ' dispatched';
+    dispEl.classList.remove('pv-dispatch-flash');
+    void dispEl.offsetWidth; // force reflow so re-adding the class re-triggers the animation
+    dispEl.classList.add('pv-dispatch-flash');
+  }
   if (card) {
     card.classList.add('is-active');
     card.classList.remove('is-idle');
@@ -2432,7 +2441,7 @@ function _applyLogFilter(filter) {
 // ── Dashboard Alert System ────────────────────────────────────────────────────
 // Detects state changes across page refreshes using localStorage, then plays
 // a Web Audio tone and fires a browser Notification when attention is needed.
-var DASH_SNAPSHOT = {"currentPhase":0,"bugsOpen":18,"agentStatuses":{"Conductor":"idle","Compass":"idle","Keystone":"idle","Lens":"idle","Palette":"idle","Forge":"idle","Pixel":"idle","Sentinel":"idle","Circuit":"idle"},"phaseStatuses":[{"id":1,"status":"pending"},{"id":2,"status":"pending"},{"id":3,"status":"pending"},{"id":4,"status":"pending"},{"id":5,"status":"pending"},{"id":6,"status":"pending"}],"pipelineComplete":false};
+var DASH_SNAPSHOT = {"currentPhase":0,"bugsOpen":0,"agentStatuses":{"Conductor":"idle","Compass":"idle","Keystone":"idle","Lens":"idle","Palette":"idle","Forge":"idle","Pixel":"idle","Sentinel":"idle","Circuit":"idle"},"phaseStatuses":[{"id":1,"status":"pending"},{"id":2,"status":"pending"},{"id":3,"status":"pending"},{"id":4,"status":"pending"},{"id":5,"status":"pending"},{"id":6,"status":"pending"}],"pipelineComplete":false};
 
 // US-0111: expose agent colors to the client so patchDOM() can restyle
 // agent-status pills when an agent transitions between idle/active/blocked
