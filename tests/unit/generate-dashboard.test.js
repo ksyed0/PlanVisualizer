@@ -500,6 +500,30 @@ describe('generate-dashboard — US-0143 conductor dispatch hold', () => {
     );
     expect(src).toContain('appendEventLog');
   });
+
+  it('Conductor card has data-agent attribute matching setConductorActive selector', () => {
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    const fixture = makeHealthyFixture();
+    const html = generateHTML(fixture);
+    expect(html).toContain('data-agent="Conductor"');
+  });
+
+  it('Conductor card contains conductor-dispatch-count element', () => {
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    const fixture = makeHealthyFixture();
+    const html = generateHTML(fixture);
+    expect(html).toContain('conductor-dispatch-count');
+    expect(html).toContain('0 dispatched');
+  });
+
+  it('setConductorActive increments dispatch counter in JS source', () => {
+    const src = require('fs').readFileSync(
+      require('path').join(__dirname, '../../tools/generate-dashboard.js'),
+      'utf8',
+    );
+    expect(src).toContain('_dispatchCount++');
+    expect(src).toContain('conductor-dispatch-count');
+  });
 });
 
 describe('generate-dashboard — US-0145 event log', () => {

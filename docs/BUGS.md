@@ -3223,8 +3223,8 @@ Steps to Reproduce:
 1. Run `node -e "const p = require('./package.json'); console.log(p.scripts['plan:generate'])"`
    Expected: `node tools/generate-plan.js`
    Actual: `undefined` — scripts are named `generate` and `generate:watch` instead
-   Status: Open
-   Fix Branch:
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0229-0231-0232-quick-wins
    Lesson Encoded: No
    Estimated Cost USD: 0.00
    Notes: Discovered via TC-0376 (AC-0304). Add `"plan:generate": "node tools/generate-plan.js"` and `"plan:watch": "node tools/generate-plan.js --watch"` to package.json scripts.
@@ -3256,8 +3256,8 @@ Steps to Reproduce:
 2. Observe 0 matches for any dispatch counter element
    Expected: Conductor card contains a visible dispatch counter element (e.g. "37 tasks") that increments and animates on change
    Actual: No dispatch counter element found in dashboard.html; only setConductorActive toggling is implemented
-   Status: Open
-   Fix Branch: TBD
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0229-0231-0232-quick-wins
    Lesson Encoded: No
    Estimated Cost USD: 0.00
    Notes: TC-0536 verifies AC-0522 "Conductor card shows incrementing dispatch counter". The dispatch-counter/dispatchCount element is not present in docs/dashboard.html. Only setConductorActive toggling is implemented; no counter element is rendered.
@@ -3273,8 +3273,8 @@ Steps to Reproduce:
 2. Observe 0 matches for any (N done) sub-label
    Expected: Agent Workload widget renders a "(N done)" sub-label showing the count of completed stories per agent
    Actual: Sub-label absent from dashboard.html output; inFlight filtering is implemented but the (N done) count is never rendered
-   Status: Open
-   Fix Branch: TBD
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0229-0231-0232-quick-wins
    Lesson Encoded: No
    Estimated Cost USD: 0.00
    Notes: TC-0551 verifies AC-0537 "Agent Workload bars show (N done) sub-label". The inFlight filtering in tools/generate-dashboard.js is implemented but the (N done) sub-label is never rendered.
