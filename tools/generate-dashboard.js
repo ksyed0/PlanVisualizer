@@ -1520,6 +1520,8 @@ function generateHTML(status) {
   .pv-workload-done { font-size: 10px; color: var(--text-muted); min-width: 52px; }
   .pv-workload-empty { font-size: 12px; color: var(--text-muted); padding: 8px 0; }
   .conductor-dispatch-count { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .conductor-dispatch-count.pv-dispatch-flash { animation: dispatchFlash 0.4s ease-out; }
+  @keyframes dispatchFlash { 0% { transform: scale(1.15); color: var(--warn); } 100% { transform: scale(1); color: var(--text-muted); } }
 
   /* ===== MISSION CONTROL REDESIGN (US-0148) ===== */
 
@@ -2581,7 +2583,12 @@ function setConductorActive(dispatchMsg) {
   var card = document.querySelector('[data-agent="Conductor"]');
   _dispatchCount++;
   var dispEl = document.getElementById('conductor-dispatch-count');
-  if (dispEl) dispEl.textContent = _dispatchCount + ' dispatched';
+  if (dispEl) {
+    dispEl.textContent = _dispatchCount + ' dispatched';
+    dispEl.classList.remove('pv-dispatch-flash');
+    void dispEl.offsetWidth; // force reflow so re-adding the class re-triggers the animation
+    dispEl.classList.add('pv-dispatch-flash');
+  }
   if (card) {
     card.classList.add('is-active');
     card.classList.remove('is-idle');
