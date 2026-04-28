@@ -2039,7 +2039,7 @@ function renderLessonsTab(data) {
         <span class="ml-auto text-xs text-slate-500">${ls.length} lesson${ls.length !== 1 ? 's' : ''}</span>
       </div>
       <div id="${lceid}" class="p-3 hidden">
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">${ls.map((l, lessonIdx) => renderLessonCard(l, accent, lessonIdx)).join('')}</div>
+        <div class="story-card-grid">${ls.map((l, lessonIdx) => renderLessonCard(l, accent, lessonIdx)).join('')}</div>
       </div>
     </div>`;
     })
