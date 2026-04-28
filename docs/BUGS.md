@@ -3191,8 +3191,8 @@ Steps to Reproduce:
 1. Run `ls docs/AGENT_PLAN.md`
    Expected: File exists documenting the 6-phase pipeline per AC-0280
    Actual: `ls: docs/AGENT_PLAN.md: No such file or directory`
-   Status: Open
-   Fix Branch:
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0227-agent-plan-doc
    Lesson Encoded: No
    Estimated Cost USD: 0.00
    Notes: Discovered via TC-0352 (AC-0280). DM_AGENT.md line 22 instructs agents to read the file; BUGS.md references it. File must be created to satisfy AC-0280.
