@@ -1,5 +1,13 @@
 'use strict';
 
+const fs = require('fs');
+const path = require('path');
+
+const CHARTJS_INLINE = fs.readFileSync(
+  path.join(__dirname, '../../node_modules/chart.js/dist/chart.umd.min.js'),
+  'utf8',
+);
+
 const { generateCssTokens } = require('./theme');
 const { esc, sparkline, BADGE_TONE, badge } = require('./render-utils');
 const {
@@ -42,6 +50,7 @@ function renderHtml(data, options = {}) {
 })()</script>
   <style>
     /* === Base === */
+    .hidden { display: none !important; }
     body { min-height: 100vh; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; padding-top: 52px; background-color: var(--clr-body-bg); color: var(--clr-text-primary); }
     body.has-alert { padding-top: 80px; }
     #topbar-fixed.has-alert { top: 28px; }
@@ -375,6 +384,7 @@ function renderHtml(data, options = {}) {
     }
   </style>
   ${renderPrintCSS()}
+  <script>${CHARTJS_INLINE}</script>
 </head>
 <body class="${data.budget && data.budget.crossedThresholds && data.budget.crossedThresholds.length > 0 ? 'has-alert' : ''}">
   ${

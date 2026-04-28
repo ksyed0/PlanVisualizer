@@ -28,6 +28,7 @@
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
+    "chart.js": "^4.5.1",
     "eslint": "10.2.0",
     "husky": "^9.1.7",
     "jest": "^30.3.0",

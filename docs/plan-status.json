@@ -4781,7 +4781,7 @@
       "title": "As a project lead, I want a Velocity chart in the Trends tab showing story points (or story count) completed per sprint/week over time, so that I can see team throughput trends and forecast delivery pace.",
       "priority": "P1",
       "estimate": "L",
-      "status": "Planned",
+      "status": "Done",
       "branch": "feature/US-0159-velocity-chart",
       "acs": [],
       "dependencies": []
@@ -4792,8 +4792,8 @@
       "title": "As a developer, I want the remaining Tailwind CSS utility classes in plan-status removed and replaced with the OKLCH CSS custom property system already used throughout the codebase, so that the CDN dependency is eliminated and the styling system is unified across both dashboards.",
       "priority": "P2",
       "estimate": "S",
-      "status": "Planned",
-      "branch": "feature/US-0160-remove-tailwind",
+      "status": "Done",
+      "branch": "bugfix/BUG-0228-0230-remove-cdn-deps",
       "acs": [],
       "dependencies": []
     },
@@ -10803,8 +10803,8 @@
       "severity": "Medium",
       "relatedStory": "US-0088 (EPIC-0013)",
       "relatedTask": "",
-      "status": "Open",
-      "fixBranch": "",
+      "status": "Fixed",
+      "fixBranch": "bugfix/BUG-0227-agent-plan-doc",
       "lessonEncoded": "No",
       "estimatedCostUsd": 0
     },
@@ -10814,8 +10814,8 @@
       "severity": "Medium",
       "relatedStory": "US-0091 (EPIC-0013)",
       "relatedTask": "",
-      "status": "Open",
-      "fixBranch": "",
+      "status": "Fixed",
+      "fixBranch": "bugfix/BUG-0228-0230-remove-cdn-deps",
       "lessonEncoded": "No",
       "estimatedCostUsd": 0
     },
@@ -10825,8 +10825,8 @@
       "severity": "Low",
       "relatedStory": "US-0093 (EPIC-0013)",
       "relatedTask": "",
-      "status": "Open",
-      "fixBranch": "",
+      "status": "Fixed",
+      "fixBranch": "bugfix/BUG-0229-0231-0232-quick-wins",
       "lessonEncoded": "No",
       "estimatedCostUsd": 0
     },
@@ -10836,8 +10836,8 @@
       "severity": "Medium",
       "relatedStory": "US-0093 (EPIC-0013)",
       "relatedTask": "",
-      "status": "Open",
-      "fixBranch": "",
+      "status": "Fixed",
+      "fixBranch": "bugfix/BUG-0228-0230-remove-cdn-deps",
       "lessonEncoded": "No",
       "estimatedCostUsd": 0
     },
@@ -10847,8 +10847,8 @@
       "severity": "Low",
       "relatedStory": "US-0143 (EPIC-0020)",
       "relatedTask": "",
-      "status": "Open",
-      "fixBranch": "TBD",
+      "status": "Fixed",
+      "fixBranch": "bugfix/BUG-0229-0231-0232-quick-wins",
       "lessonEncoded": "No",
       "estimatedCostUsd": 0
     },
@@ -10858,8 +10858,8 @@
       "severity": "Low",
       "relatedStory": "US-0147 (EPIC-0020)",
       "relatedTask": "",
-      "status": "Open",
-      "fixBranch": "TBD",
+      "status": "Fixed",
+      "fixBranch": "bugfix/BUG-0229-0231-0232-quick-wins",
       "lessonEncoded": "No",
       "estimatedCostUsd": 0
     }
@@ -11166,7 +11166,7 @@
       "outputTokens": 340311
     },
     "US-0049": {
-      "projectedUsd": 26.111808,
+      "projectedUsd": 25.808184,
       "costUsd": 58.4156,
       "inputTokens": 3568348,
       "outputTokens": 340311
@@ -11304,7 +11304,7 @@
       "outputTokens": 435797
     },
     "US-0068": {
-      "projectedUsd": 38.856672,
+      "projectedUsd": 35.324244,
       "costUsd": 0,
       "inputTokens": 0,
       "outputTokens": 0
@@ -11358,13 +11358,13 @@
       "outputTokens": 0
     },
     "US-0077": {
-      "projectedUsd": 38.856672,
+      "projectedUsd": 35.324244,
       "costUsd": 0,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0078": {
-      "projectedUsd": 26.111808,
+      "projectedUsd": 25.808184,
       "costUsd": 0,
       "inputTokens": 0,
       "outputTokens": 0
@@ -11622,7 +11622,7 @@
       "outputTokens": 0
     },
     "US-0117": {
-      "projectedUsd": 26.111808,
+      "projectedUsd": 25.808184,
       "costUsd": 0,
       "inputTokens": 0,
       "outputTokens": 0
@@ -11814,13 +11814,13 @@
       "outputTokens": 0
     },
     "US-0159": {
-      "projectedUsd": 38.856672,
+      "projectedUsd": 1600,
       "costUsd": 0,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0160": {
-      "projectedUsd": 26.111808,
+      "projectedUsd": 400,
       "costUsd": 0,
       "inputTokens": 0,
       "outputTokens": 0
@@ -14546,15 +14546,20 @@
     "byEpic": {}
   },
   "coverage": {
-    "lines": 95.59,
-    "statements": 93.52,
+    "lines": 95.6,
+    "statements": 93.47,
     "functions": 94.58,
     "branches": 80.48,
-    "overall": 95.59,
+    "overall": 95.6,
     "meetsTarget": true,
     "available": true
   },
   "recentActivity": [
+    {
+      "sessionNum": 31,
+      "date": "2026-04-28",
+      "summary": "**Branch cleanup** — Removed 25 stale merged branches and 4 stale locked worktrees from local repo before starting work.; ; **BUG-0229 Fixed (PR #468):** Added `plan:generate` and `plan:watch` npm aliases to `package.json` (AC-0304)."
+    },
     {
       "sessionNum": 30,
       "date": "2026-04-27",
@@ -14574,11 +14579,6 @@
       "sessionNum": 27,
       "date": "2026-04-24",
       "summary": "1. **Font consistency (all tabs)** — Replaced all hardcoded font stacks (`'Inter Tight', sans-serif`, `'JetBrains Mono', monospace`, etc.) with CSS custom properties (`var(--font-sans)`, `var(--font-mono)`, `var(--font-display)`) across `render-tabs.js`, `render-scripts.js`, and `generate-dashboard.js`. Chart.js resolves vars at init time via `getComputedStyle`.; ; 2. **Epic header card/column alignment (Bugs + Lessons)** — Column and card view epic headers now use the same \"EPIC / 0001\" two-part coloured format as Hierarchy. `epic-id-label` + `epic-id-num` with `accent.text` colour, guarded for `_ungrouped` section."
-    },
-    {
-      "sessionNum": 26,
-      "date": "2026-04-22",
-      "summary": "1. **EPIC-0012 Stakeholder View — fully implemented and merged (PR #420)**;    - `renderStakeholderTab(data)` added to `tools/lib/render-tabs.js` (~515 lines): 3-tile summary bar (progress, budget, risks), expandable epic milestone rows, story/AC drill-down, plain-language status mapping, OKLCH token colours;    - Sidebar nav entry added to `renderSidebar()` in `tools/lib/render-shell.js`"
     }
   ],
   "lessons": [
@@ -14588,6 +14588,14 @@
       "rule": "The ternary `v.toFixed ? v.toFixed(1) : v` is not a null-safe pattern. Accessing `.toFixed` on `null` throws `TypeError: Cannot read properties of null (reading 'toFixed')` before the ternary branches. The correct guard is `v !== null && v !== undefined ? v.toFixed(1) : fallback`. Equivalently, `v != null` (loose inequality) catches both null and undefined in a single check, but ESLint's `eqeqeq` rule rejects it — use the explicit two-check form to satisfy the linter.\n_Learned during Session 29: CI build crashed at render-tabs.js:2291 with this exact error. The guard looked like it should work but it doesn't._",
       "context": "",
       "date": "2026-04-25",
+      "bugIds": []
+    },
+    {
+      "id": "L-0046",
+      "title": "Squash-merge repos: use `gh pr list --state merged` to detect stale branches, not `git merge-base`",
+      "rule": "`git merge-base --is-ancestor <branch> develop` returns false for every feature branch in a squash-merge repo because squash creates a new SHA with no ancestry back to the source branch. To reliably detect which branches are safe to delete, cross-reference with `gh pr list --state merged --json headRefName` — if a matching PR is merged, the branch content is in develop regardless of ancestry. Never trust `merge-base` alone for cleanup decisions in squash-merge repos.\n_Learned during Session 31: 24 local branches showed NOT-MERGED; all 24 had merged PRs confirmed via gh._",
+      "context": "",
+      "date": "2026-04-28",
       "bugIds": []
     },
     {
@@ -14957,10 +14965,10 @@
       "bugIds": []
     }
   ],
-  "generatedAt": "2026-04-28T18:40:29.335Z",
-  "commitSha": "fac270c",
-  "buildNumber": "597",
-  "branch": "feature/US-0159-velocity-chart",
+  "generatedAt": "2026-04-28T21:02:39.651Z",
+  "commitSha": "ae922b1",
+  "buildNumber": "602",
+  "branch": "bugfix/BUG-0233-cdn-removal-regressions",
   "sessionTimeline": [
     {
       "date": "2026-03-09",
@@ -15582,9 +15590,9 @@
   "deltaSpend": 27.44,
   "projectName": "PlanVisualizer",
   "tagline": "Self-documenting project dashboards for Agentic coding platforms.",
-  "version": "1.5.56",
+  "version": "1.5.60",
   "appName": "plan-visualizer",
-  "appVersion": "1.5.56",
+  "appVersion": "1.5.60",
   "githubUrl": "https://github.com/ksyed0/PlanVisualizer",
   "agents": {
     "Conductor": {
@@ -15652,13 +15660,13 @@
     }
   },
   "budget": {
-    "totalBudget": 817.5570619999999,
+    "totalBudget": 744.9164779999999,
     "totalSpent": 580.0306999999999,
-    "totalProjected": 89463.63817,
-    "percentUsed": 71,
+    "totalProjected": 91390.693962,
+    "percentUsed": 78,
     "burnRate": 16.111963888888887,
-    "daysRemaining": 14,
-    "projectedExhaustion": 14,
+    "daysRemaining": 10,
+    "projectedExhaustion": 10,
     "thresholds": [
       50,
       75,
@@ -15666,7 +15674,8 @@
       100
     ],
     "crossedThresholds": [
-      50
+      50,
+      75
     ],
     "epicBudgets": [
       {
@@ -15760,25 +15769,25 @@
       {
         "id": "EPIC-0010",
         "title": "Risk Analytics",
-        "budget": 148.61387200000001,
+        "budget": 145.081444,
         "spent": 109.7572,
-        "remaining": 38.85667200000002,
-        "percentUsed": 74
+        "remaining": 35.32424400000001,
+        "percentUsed": 76
       },
       {
         "id": "EPIC-0012",
         "title": "Stakeholder View",
-        "budget": 64.96848,
+        "budget": 61.132428000000004,
         "spent": 0,
-        "remaining": 64.96848,
+        "remaining": 61.132428000000004,
         "percentUsed": 0
       },
       {
         "id": "EPIC-0019",
         "title": "Dashboard Cycle History",
-        "budget": 68.73273,
+        "budget": 68.429106,
         "spent": 0,
-        "remaining": 68.73273,
+        "remaining": 68.429106,
         "percentUsed": 0
       },
       {
@@ -15825,9 +15834,9 @@
     "hasBudget": true
   },
   "completion": {
-    "likelyDate": "May 2",
-    "rangeStart": "May 2",
-    "rangeEnd": "May 3",
+    "likelyDate": "May 1",
+    "rangeStart": "May 1",
+    "rangeEnd": "May 2",
     "velocityWeeks": 8
   },
   "trends": {
@@ -15963,7 +15972,9 @@
       "2026-04-28T18:20:12.287Z",
       "2026-04-28T18:20:32.433Z",
       "2026-04-28T18:34:45.581Z",
-      "2026-04-28T18:40:29.421Z"
+      "2026-04-28T18:40:29.421Z",
+      "2026-04-28T20:46:06.876Z",
+      "2026-04-28T21:02:39.740Z"
     ],
     "doneCounts": [
       2,
@@ -16097,7 +16108,9 @@
       154,
       154,
       153,
-      153
+      153,
+      155,
+      155
     ],
     "totalStories": [
       81,
@@ -16221,6 +16234,8 @@
       158,
       158,
       148,
+      161,
+      161,
       161,
       161,
       161,
@@ -16365,6 +16380,8 @@
       4463.6072,
       4463.6072,
       4463.6072,
+      4463.6072,
+      4463.6072,
       4463.6072
     ],
     "coverage": [
@@ -16499,7 +16516,9 @@
       95.49,
       95.49,
       95.49,
-      95.59
+      95.59,
+      95.6,
+      95.6
     ],
     "velocity": [
       8,
@@ -16633,7 +16652,9 @@
       275,
       275,
       274,
-      274
+      274,
+      280,
+      280
     ],
     "openBugs": [
       66,
@@ -16767,9 +16788,13 @@
       15,
       15,
       17,
-      17
+      17,
+      11,
+      11
     ],
     "atRisk": [
+      0,
+      0,
       0,
       0,
       0,
@@ -17035,6 +17060,8 @@
       323612023,
       323612023,
       276680193,
+      276680193,
+      277178904,
       276680193
     ],
     "outputTokens": [
@@ -17169,6 +17196,8 @@
       43079024,
       43079024,
       35316621,
+      35316621,
+      35521373,
       35316621
     ],
     "avgRisk": [
@@ -17303,7 +17332,9 @@
       1.7000000000000002,
       1.7000000000000002,
       1.6714285714285715,
-      1.6714285714285715
+      1.6714285714285715,
+      1.6600000000000001,
+      1.6600000000000001
     ],
     "velocityByWeek": {
       "labels": [
@@ -17326,7 +17357,7 @@
         56,
         51,
         58.5,
-        16
+        21
       ],
       "rollingAvg": [
         31,
@@ -17337,7 +17368,7 @@
         24.1,
         33.4,
         44.6,
-        45.4
+        46.6
       ]
     }
   }
