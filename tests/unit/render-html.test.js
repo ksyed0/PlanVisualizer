@@ -51,8 +51,8 @@ describe('renderHtml', () => {
 
   it('returns a string', () => expect(typeof html).toBe('string'));
   it('includes DOCTYPE', () => expect(html).toMatch(/<!DOCTYPE html>/));
-  it('includes Tailwind CDN', () => expect(html).toContain('cdn.tailwindcss.com'));
-  it('includes Chart.js CDN', () => expect(html).toContain('cdn.jsdelivr.net'));
+  it('does not include Tailwind CDN (BUG-0230)', () => expect(html).not.toContain('cdn.tailwindcss.com'));
+  it('does not include Chart.js CDN (BUG-0230)', () => expect(html).not.toContain('cdn.jsdelivr.net'));
   it('includes project name', () => expect(html).toMatch(/NomadCode/));
   it('includes generated timestamp', () => expect(html).toMatch(/2026-03-10/));
   it('includes commit SHA', () => expect(html).toMatch(/abc1234/));
@@ -1796,9 +1796,10 @@ describe('renderHtml — US-0137/0141 token system', () => {
     html = renderHtml(sampleData);
   });
 
-  it('loads Inter Tight font (not plain Inter)', () => {
-    expect(html).toContain('Inter+Tight');
-    expect(html).not.toContain('family=Inter:wght');
+  it('uses system-ui font stack instead of CDN Inter Tight (BUG-0230)', () => {
+    expect(html).not.toContain('Inter+Tight');
+    expect(html).not.toContain('googleapis.com');
+    expect(html).toContain('system-ui');
   });
 
   it('does not load Instrument Serif or Fraunces', () => {
@@ -1824,8 +1825,9 @@ describe('renderHtml — US-0137/0141 token system', () => {
     expect(html).toContain('--live-accent');
   });
 
-  it('loads JetBrains Mono font', () => {
-    expect(html).toContain('JetBrains+Mono');
+  it('uses system monospace font stack instead of CDN JetBrains Mono (BUG-0230)', () => {
+    expect(html).not.toContain('JetBrains+Mono');
+    expect(html).toContain('ui-monospace');
   });
 
   it('theme init uses setAttribute and also toggles .dark class for Tailwind', () => {

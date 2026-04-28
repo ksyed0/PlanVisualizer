@@ -3207,8 +3207,8 @@ Steps to Reproduce:
 1. Run `grep "fonts.googleapis" docs/dashboard.html | head -2`
    Expected: No external dependencies per AC-0290
    Actual: Two `<link rel="stylesheet" href="https://fonts.googleapis.com/...">` tags present
-   Status: Open
-   Fix Branch:
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0228-0230-remove-cdn-deps
    Lesson Encoded: No
    Estimated Cost USD: 0.00
    Notes: Discovered via TC-0362 (AC-0290). dashboard.html loads Departure Mono and JetBrains Mono from Google Fonts CDN. To fix: inline the font-face declarations or use system font fallbacks.
@@ -3239,8 +3239,8 @@ Steps to Reproduce:
 1. Run `grep "cdn\.\|googleapis" docs/plan-status.html | head -3`
    Expected: No external dependencies per AC-0305
    Actual: Tailwind CSS via cdn.tailwindcss.com, Chart.js via cdn.jsdelivr.net, Google Fonts via fonts.googleapis.com
-   Status: Open
-   Fix Branch:
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0228-0230-remove-cdn-deps
    Lesson Encoded: No
    Estimated Cost USD: 0.00
    Notes: Discovered via TC-0377 (AC-0305). plan-status.html has 3 external CDN dependencies. To fix: bundle Tailwind, inline Chart.js, and inline or remove Google Fonts.
