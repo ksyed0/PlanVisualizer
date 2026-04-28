@@ -218,12 +218,14 @@ function renderAgentWorkload(agents, stories) {
       const assigned = storyList.filter((s) => s.agent === name);
       const inFlight = assigned.filter((s) => !/done|complete/i.test(s.status || '')).length;
       const total = assigned.length;
+      const done = total - inFlight;
       const pct = total > 0 ? Math.round((inFlight / total) * 100) : 0;
       return (
         `<div class="pv-workload-row">` +
         `<span class="pv-workload-name">${esc(name)}</span>` +
         `<div class="pv-workload-track"><div class="pv-workload-bar" style="width:${pct}%"></div></div>` +
         `<span class="pv-workload-count">${inFlight}</span>` +
+        `<span class="pv-workload-done">(${done} done)</span>` +
         `</div>`
       );
     })
@@ -1515,6 +1517,7 @@ function generateHTML(status) {
   .pv-workload-track { flex: 1; height: 6px; background: var(--bg-progress, oklch(100% 0 0 / 10%)); border-radius: 3px; overflow: hidden; }
   .pv-workload-bar { height: 100%; background: var(--live-accent, oklch(72% 0.19 38)); border-radius: 3px; transition: width 0.3s; }
   .pv-workload-count { font-size: 11px; color: var(--text-muted); min-width: 24px; text-align: right; }
+  .pv-workload-done { font-size: 10px; color: var(--text-muted); min-width: 52px; }
   .pv-workload-empty { font-size: 12px; color: var(--text-muted); padding: 8px 0; }
 
   /* ===== MISSION CONTROL REDESIGN (US-0148) ===== */

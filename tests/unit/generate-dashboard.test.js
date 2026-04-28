@@ -599,6 +599,16 @@ describe('generate-dashboard — US-0147 agent workload live data', () => {
     Object.values(fixture.stories).forEach((s) => delete s.agent);
     expect(() => generateHTML(fixture)).not.toThrow();
   });
+
+  it('renders (N done) sub-label in workload rows', () => {
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    const fixture = makeHealthyFixture();
+    fixture.stories['US-0010'] = { title: 'Done story', status: 'Done', epic: 'EPIC-0016', agent: 'Pixel' };
+    fixture.stories['US-0011'] = { title: 'Active story', status: 'In Progress', epic: 'EPIC-0016', agent: 'Pixel' };
+    const html = generateHTML(fixture);
+    expect(html).toContain('pv-workload-done');
+    expect(html).toContain('(1 done)');
+  });
 });
 
 // AC-0498: generated dashboard HTML must contain zero hex color literals
