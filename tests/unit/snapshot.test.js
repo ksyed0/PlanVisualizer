@@ -6,6 +6,7 @@ const {
   saveSnapshot,
   loadSnapshots,
   extractTrends,
+  velocityByWeek,
   SNAPSHOT_REGEX,
 } = require('../../tools/lib/snapshot');
 
@@ -273,5 +274,104 @@ describe('extractTrends', () => {
     const trends = extractTrends(snaps);
     expect(trends.inputTokens).toEqual([1000, 3000]);
     expect(trends.outputTokens).toEqual([500, 1300]);
+  });
+});
+
+describe('velocityByWeek', () => {
+  function makeSnap(dateStr, stories) {
+    return { generatedAt: dateStr, data: { stories, costs: {}, coverage: {} } };
+  }
+
+  it('returns empty arrays for 0 snapshots', () => {
+    const result = velocityByWeek([]);
+    expect(result).toEqual({ labels: [], points: [], rollingAvg: [] });
+  });
+
+  it('returns empty arrays for 1 snapshot', () => {
+    const snaps = [makeSnap('2026-04-07T10:00:00Z', [{ id: 'US-0001', status: 'Done', estimate: 'M' }])];
+    const result = velocityByWeek(snaps);
+    expect(result).toEqual({ labels: [], points: [], rollingAvg: [] });
+  });
+
+  it('single week: points[0] equals cumulative points of that week', () => {
+    const snaps = [
+      makeSnap('2026-04-07T08:00:00Z', []),
+      makeSnap('2026-04-09T10:00:00Z', [{ id: 'US-0001', status: 'Done', estimate: 'M' }]),
+    ];
+    const result = velocityByWeek(snaps);
+    expect(result.labels).toHaveLength(1);
+    expect(result.points[0]).toBeCloseTo(3, 1);
+  });
+
+  it('two different weeks: computes per-week delta', () => {
+    const snaps = [
+      makeSnap('2026-04-01T10:00:00Z', [{ id: 'US-0001', status: 'Done', estimate: 'S' }]),
+      makeSnap('2026-04-08T10:00:00Z', [
+        { id: 'US-0001', status: 'Done', estimate: 'S' },
+        { id: 'US-0002', status: 'Done', estimate: 'L' },
+      ]),
+    ];
+    const result = velocityByWeek(snaps);
+    expect(result.labels).toHaveLength(2);
+    expect(result.points[0]).toBeCloseTo(1, 1);
+    expect(result.points[1]).toBeCloseTo(5, 1);
+  });
+
+  it('clamps negative delta to 0', () => {
+    const snaps = [
+      makeSnap('2026-04-01T10:00:00Z', [
+        { id: 'US-0001', status: 'Done', estimate: 'L' },
+        { id: 'US-0002', status: 'Done', estimate: 'M' },
+      ]),
+      makeSnap('2026-04-08T10:00:00Z', [{ id: 'US-0001', status: 'Done', estimate: 'L' }]),
+    ];
+    const result = velocityByWeek(snaps);
+    expect(result.points[1]).toBe(0);
+  });
+
+  it('4-period rolling average uses available data for early periods', () => {
+    const snaps = [
+      makeSnap('2026-03-25T00:00:00Z', [{ id: 'US-0001', status: 'Done', estimate: 'M' }]),
+      makeSnap('2026-04-01T00:00:00Z', [
+        { id: 'US-0001', status: 'Done', estimate: 'M' },
+        { id: 'US-0002', status: 'Done', estimate: 'S' },
+      ]),
+      makeSnap('2026-04-08T00:00:00Z', [
+        { id: 'US-0001', status: 'Done', estimate: 'M' },
+        { id: 'US-0002', status: 'Done', estimate: 'S' },
+        { id: 'US-0003', status: 'Done', estimate: 'L' },
+      ]),
+      makeSnap('2026-04-15T00:00:00Z', [
+        { id: 'US-0001', status: 'Done', estimate: 'M' },
+        { id: 'US-0002', status: 'Done', estimate: 'S' },
+        { id: 'US-0003', status: 'Done', estimate: 'L' },
+        { id: 'US-0004', status: 'Done', estimate: 'XS' },
+      ]),
+    ];
+    const result = velocityByWeek(snaps);
+    // points: [3, 1, 5, 0.5]
+    expect(result.rollingAvg[0]).toBeCloseTo(3.0, 1);
+    expect(result.rollingAvg[1]).toBeCloseTo(2.0, 1);
+    expect(result.rollingAvg[2]).toBeCloseTo(3.0, 1);
+    expect(result.rollingAvg[3]).toBeCloseTo(2.4, 1);
+  });
+
+  it('two snapshots in same ISO week uses snapshot with higher cumulative velocity', () => {
+    const snaps = [
+      makeSnap('2026-04-07T06:00:00Z', [{ id: 'US-0001', status: 'Done', estimate: 'S' }]),
+      makeSnap('2026-04-07T14:00:00Z', [
+        { id: 'US-0001', status: 'Done', estimate: 'S' },
+        { id: 'US-0002', status: 'Done', estimate: 'M' },
+      ]),
+      makeSnap('2026-04-14T10:00:00Z', [
+        { id: 'US-0001', status: 'Done', estimate: 'S' },
+        { id: 'US-0002', status: 'Done', estimate: 'M' },
+        { id: 'US-0003', status: 'Done', estimate: 'L' },
+      ]),
+    ];
+    const result = velocityByWeek(snaps);
+    expect(result.labels).toHaveLength(2);
+    expect(result.points[0]).toBeCloseTo(4, 1);
+    expect(result.points[1]).toBeCloseTo(5, 1);
   });
 });

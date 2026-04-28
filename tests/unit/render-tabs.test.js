@@ -1,5 +1,5 @@
 'use strict';
-const { renderStakeholderTab } = require('../../tools/lib/render-tabs');
+const { renderStakeholderTab, renderTrendsTab } = require('../../tools/lib/render-tabs');
 
 // Minimal but complete data fixture for stakeholder tab tests
 const mkData = (overrides = {}) => ({
@@ -163,5 +163,72 @@ describe('renderStakeholderTab', () => {
     expect(epic2Pos).toBeGreaterThan(-1);
     expect(ungroupedPos).toBeGreaterThan(-1);
     expect(ungroupedPos).toBeGreaterThan(Math.max(epic1Pos, epic2Pos));
+  });
+});
+
+function mkTrendsData(overrides = {}) {
+  return {
+    epics: [],
+    stories: [],
+    bugs: [],
+    costs: {},
+    budget: { hasBudget: false },
+    recentActivity: [],
+    coverage: { available: false },
+    trends: {
+      dates: ['2026-04-01T00:00:00Z', '2026-04-08T00:00:00Z'],
+      doneCounts: [2, 4],
+      totalStories: [5, 5],
+      aiCosts: [1.0, 2.0],
+      coverage: [80, 85],
+      velocity: [5, 8],
+      openBugs: [3, 2],
+      atRisk: [1, 1],
+      inputTokens: [1000, 2000],
+      outputTokens: [500, 1000],
+      avgRisk: [1.0, 0.8],
+      velocityByWeek: {
+        labels: ['2026-W14', '2026-W15'],
+        points: [3, 5],
+        rollingAvg: [3.0, 4.0],
+      },
+      ...(overrides.trends || {}),
+    },
+    ...overrides,
+  };
+}
+
+describe('renderTrendsTab — US-0159 Weekly Velocity chart', () => {
+  it('renders chart-velocity-weekly canvas in Trends tab', () => {
+    const html = renderTrendsTab(mkTrendsData());
+    expect(html).toContain('chart-velocity-weekly');
+  });
+
+  it('renders velWeeklyLabels, velWeeklyPoints, velWeeklyAvg JS vars', () => {
+    const html = renderTrendsTab(mkTrendsData());
+    expect(html).toContain('velWeeklyLabels');
+    expect(html).toContain('velWeeklyPoints');
+    expect(html).toContain('velWeeklyAvg');
+  });
+
+  it('renders empty-state placeholder when velocityByWeek has fewer than 2 labels', () => {
+    const data = mkTrendsData({
+      trends: { velocityByWeek: { labels: ['2026-W14'], points: [3], rollingAvg: [3] } },
+    });
+    const html = renderTrendsTab(data);
+    expect(html).not.toContain('chart-velocity-weekly');
+  });
+
+  it('renders empty-state placeholder when velocityByWeek is absent', () => {
+    const data = mkTrendsData({ trends: { velocityByWeek: null } });
+    const html = renderTrendsTab(data);
+    expect(html).not.toContain('chart-velocity-weekly');
+  });
+
+  it('uses pvChartColors.info and pvChartColors.warn — no hardcoded hex in chart JS', () => {
+    const html = renderTrendsTab(mkTrendsData());
+    const idx = html.indexOf('chart-velocity-weekly');
+    const chartSection = idx >= 0 ? html.slice(idx, idx + 600) : '';
+    expect(chartSection).not.toMatch(/#[0-9a-fA-F]{3,6}\b/);
   });
 });

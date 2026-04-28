@@ -390,17 +390,24 @@ function renderTrendsTab(data, options = {}) {
   const trends = options.trends || data.trends || null;
   const hasData = trends && trends.dates && trends.dates.length >= 2;
 
-  const datesJson = trends ? JSON.stringify(trends.dates.map((d) => d.replace('T', ' ').slice(0, 16))) : '[]';
-  const doneJson = trends ? JSON.stringify(trends.doneCounts) : '[]';
-  const totalJson = trends ? JSON.stringify(trends.totalStories) : '[]';
-  const costJson = trends ? JSON.stringify(trends.aiCosts.map((c) => c.toFixed(2))) : '[]';
-  const coverageJson = trends ? JSON.stringify(trends.coverage.map((c) => (c !== null ? c.toFixed(1) : null))) : '[]';
-  const velocityJson = trends ? JSON.stringify(trends.velocity.map((v) => v.toFixed(1))) : '[]';
-  const bugsJson = trends ? JSON.stringify(trends.openBugs) : '[]';
-  const riskJson = trends ? JSON.stringify(trends.atRisk) : '[]';
-  const inputTokensJson = trends ? JSON.stringify(trends.inputTokens) : '[]';
-  const outputTokensJson = trends ? JSON.stringify(trends.outputTokens) : '[]';
+  const datesJson =
+    trends && trends.dates ? JSON.stringify(trends.dates.map((d) => d.replace('T', ' ').slice(0, 16))) : '[]';
+  const doneJson = trends && trends.doneCounts ? JSON.stringify(trends.doneCounts) : '[]';
+  const totalJson = trends && trends.totalStories ? JSON.stringify(trends.totalStories) : '[]';
+  const costJson = trends && trends.aiCosts ? JSON.stringify(trends.aiCosts.map((c) => c.toFixed(2))) : '[]';
+  const coverageJson =
+    trends && trends.coverage ? JSON.stringify(trends.coverage.map((c) => (c !== null ? c.toFixed(1) : null))) : '[]';
+  const velocityJson = trends && trends.velocity ? JSON.stringify(trends.velocity.map((v) => v.toFixed(1))) : '[]';
+  const bugsJson = trends && trends.openBugs ? JSON.stringify(trends.openBugs) : '[]';
+  const riskJson = trends && trends.atRisk ? JSON.stringify(trends.atRisk) : '[]';
+  const inputTokensJson = trends && trends.inputTokens ? JSON.stringify(trends.inputTokens) : '[]';
+  const outputTokensJson = trends && trends.outputTokens ? JSON.stringify(trends.outputTokens) : '[]';
   const avgRiskJson = trends ? JSON.stringify((trends.avgRisk || []).map((v) => v.toFixed(2))) : '[]';
+  const vbw = (data.trends && data.trends.velocityByWeek) || null;
+  const hasVbw = vbw && Array.isArray(vbw.labels) && vbw.labels.length >= 2;
+  const velWeeklyLabels = hasVbw ? JSON.stringify(vbw.labels) : '[]';
+  const velWeeklyPoints = hasVbw ? JSON.stringify(vbw.points) : '[]';
+  const velWeeklyAvg = hasVbw ? JSON.stringify(vbw.rollingAvg) : '[]';
 
   const placeholder = `
     <div class="col-span-full flex flex-col items-center justify-center py-16 text-center">
@@ -467,6 +474,14 @@ function renderTrendsTab(data, options = {}) {
         </details>`;
       })()}
     </div>
+    <div class="card-elev rounded-lg p-4 col-span-full anim-stagger" style="--i:5">
+      <div class="chart-header-rule"><span class="display-title">Weekly Velocity</span><span class="chart-subtitle">t-shirt points completed per week</span></div>
+      ${
+        hasVbw
+          ? `<div style="height:250px;position:relative"><canvas id="chart-velocity-weekly"></canvas></div>`
+          : `<p style="color:var(--text-mute);font-size:13px;padding:16px 0;">Not enough snapshot data yet — run generate at least twice in different weeks.</p>`
+      }
+    </div>
 
     <div class="chart-supertitle">Cost &amp; Spend</div>
 
@@ -522,6 +537,9 @@ var _trendsAllData = {
   inputTokens: ${inputTokensJson}, outputTokens: ${outputTokensJson},
   avgRisk: ${avgRiskJson}
 };
+var velWeeklyLabels = ${velWeeklyLabels};
+var velWeeklyPoints = ${velWeeklyPoints};
+var velWeeklyAvg = ${velWeeklyAvg};
 var _trendsChartRefs = {};
 function _cssToRgb(color) {
   var c = document.createElement('canvas'); c.width = c.height = 1;
@@ -581,6 +599,45 @@ function initTrendsCharts() {
   _mkTrend('chart-trends-avg-risk', {type:'line', data:{labels:labels, datasets:[
     {label:'Avg Risk Score', data:_trendsAllData.avgRisk, borderColor:pvChartColors.warn, _gc:pvChartColors.warn, fill:true, tension:0.3}
   ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:leg}, scales:{x:xA,y:yA({min:0,suggestedMax:4})}}});
+  ${
+    hasVbw
+      ? `if (velWeeklyLabels && velWeeklyLabels.length >= 2) {
+    _mkTrend('chart-velocity-weekly', {
+      type: 'bar',
+      data: {
+        labels: velWeeklyLabels,
+        datasets: [
+          {
+            type: 'bar',
+            label: 'Points completed',
+            data: velWeeklyPoints,
+            backgroundColor: pvChartColors.info,
+          },
+          {
+            type: 'line',
+            label: '4-wk rolling avg',
+            data: velWeeklyAvg,
+            borderColor: pvChartColors.warn,
+            borderWidth: 2,
+            pointRadius: 3,
+            tension: 0.3,
+            fill: false,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: leg },
+        scales: {
+          x: xA,
+          y: yA({ min: 0, title: { display: true, text: 't-shirt points', color: tc } }),
+        },
+      },
+    });
+  }`
+      : ''
+  }
   var saved = localStorage.getItem('pv-trends-range');
   if (saved && saved !== 'all') {
     var btn = document.querySelector('.trends-range-btn[data-range="'+saved+'"]');
@@ -593,6 +650,7 @@ function setTrendsRange(btn, range) {
   localStorage.setItem('pv-trends-range', range);
   var n = range === 'all' ? _trendsAllLabels.length : Math.min(Number(range), _trendsAllLabels.length);
   Object.keys(_trendsChartRefs).forEach(function(id) {
+    ${hasVbw ? "if (id === 'chart-velocity-weekly') return;" : ''}
     var ch = _trendsChartRefs[id]; if (!ch._allData) return;
     ch.data.labels = _trendsAllLabels.slice(-n);
     ch.data.datasets.forEach(function(ds, i){ ds.data = ch._allData[i].slice(-n); });
