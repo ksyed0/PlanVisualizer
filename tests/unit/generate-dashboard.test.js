@@ -500,6 +500,30 @@ describe('generate-dashboard — US-0143 conductor dispatch hold', () => {
     );
     expect(src).toContain('appendEventLog');
   });
+
+  it('Conductor card has data-agent attribute matching setConductorActive selector', () => {
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    const fixture = makeHealthyFixture();
+    const html = generateHTML(fixture);
+    expect(html).toContain('data-agent="Conductor"');
+  });
+
+  it('Conductor card contains conductor-dispatch-count element', () => {
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    const fixture = makeHealthyFixture();
+    const html = generateHTML(fixture);
+    expect(html).toContain('conductor-dispatch-count');
+    expect(html).toContain('0 dispatched');
+  });
+
+  it('setConductorActive increments dispatch counter in JS source', () => {
+    const src = require('fs').readFileSync(
+      require('path').join(__dirname, '../../tools/generate-dashboard.js'),
+      'utf8',
+    );
+    expect(src).toContain('_dispatchCount++');
+    expect(src).toContain('conductor-dispatch-count');
+  });
 });
 
 describe('generate-dashboard — US-0145 event log', () => {
@@ -598,6 +622,16 @@ describe('generate-dashboard — US-0147 agent workload live data', () => {
     // stories without agent field
     Object.values(fixture.stories).forEach((s) => delete s.agent);
     expect(() => generateHTML(fixture)).not.toThrow();
+  });
+
+  it('renders (N done) sub-label in workload rows', () => {
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    const fixture = makeHealthyFixture();
+    fixture.stories['US-0010'] = { title: 'Done story', status: 'Done', epic: 'EPIC-0016', agent: 'Pixel' };
+    fixture.stories['US-0011'] = { title: 'Active story', status: 'In Progress', epic: 'EPIC-0016', agent: 'Pixel' };
+    const html = generateHTML(fixture);
+    expect(html).toContain('pv-workload-done');
+    expect(html).toContain('(1 done)');
   });
 });
 

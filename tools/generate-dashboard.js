@@ -218,12 +218,14 @@ function renderAgentWorkload(agents, stories) {
       const assigned = storyList.filter((s) => s.agent === name);
       const inFlight = assigned.filter((s) => !/done|complete/i.test(s.status || '')).length;
       const total = assigned.length;
+      const done = total - inFlight;
       const pct = total > 0 ? Math.round((inFlight / total) * 100) : 0;
       return (
         `<div class="pv-workload-row">` +
         `<span class="pv-workload-name">${esc(name)}</span>` +
         `<div class="pv-workload-track"><div class="pv-workload-bar" style="width:${pct}%"></div></div>` +
         `<span class="pv-workload-count">${inFlight}</span>` +
+        `<span class="pv-workload-done">(${done} done)</span>` +
         `</div>`
       );
     })
@@ -1515,7 +1517,11 @@ function generateHTML(status) {
   .pv-workload-track { flex: 1; height: 6px; background: var(--bg-progress, oklch(100% 0 0 / 10%)); border-radius: 3px; overflow: hidden; }
   .pv-workload-bar { height: 100%; background: var(--live-accent, oklch(72% 0.19 38)); border-radius: 3px; transition: width 0.3s; }
   .pv-workload-count { font-size: 11px; color: var(--text-muted); min-width: 24px; text-align: right; }
+  .pv-workload-done { font-size: 10px; color: var(--text-muted); min-width: 52px; }
   .pv-workload-empty { font-size: 12px; color: var(--text-muted); padding: 8px 0; }
+  .conductor-dispatch-count { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .conductor-dispatch-count.pv-dispatch-flash { animation: dispatchFlash 0.4s ease-out; }
+  @keyframes dispatchFlash { 0% { transform: scale(1.15); color: var(--warn); } 100% { transform: scale(1); color: var(--text-muted); } }
 
   /* ===== MISSION CONTROL REDESIGN (US-0148) ===== */
 
@@ -2153,7 +2159,7 @@ ${(() => {
       const statusColor = isActive ? 'var(--ok)' : statusStr === 'complete' ? 'var(--info)' : 'var(--text-muted)';
       const fallbackStyle = `border-color:${color};`;
       const onerror = `this.replaceWith(Object.assign(document.createElement('div'),{className:'agent-avatar-fallback',textContent:'${initial}',style:'${fallbackStyle}'}))`;
-      return `    <div class="mc-agent-row ${rowCls} agent-card ${isActive ? 'is-active active' : isBlocked ? 'is-blocked' : isReview ? 'is-review' : 'is-idle'}" id="agent-${esc(name)}" data-agent-name="${esc(name)}" data-agent-status="${esc(statusStr)}" style="--agent-color:${color};--agent-color-ring:${color}40;">
+      return `    <div class="mc-agent-row ${rowCls} agent-card ${isActive ? 'is-active active' : isBlocked ? 'is-blocked' : isReview ? 'is-review' : 'is-idle'}" id="agent-${esc(name)}" data-agent-name="${esc(name)}" data-agent="${esc(name)}" data-agent-status="${esc(statusStr)}" style="--agent-color:${color};--agent-color-ring:${color}40;">
       ${isActive ? '<div class="agent-rail"></div>' : ''}
       <img class="agent-avatar" src="${imgBase}/optimized/${esc(avatar)}-64.png" alt="${esc(name)}" style="border-color:${color};" onerror="${esc(onerror)}">
       <div class="agent-info">
@@ -2163,6 +2169,7 @@ ${(() => {
             <span class="mc-agent-role-text">&middot; ${esc(role)}</span>
           </div>
           <div class="mc-agent-task-line" id="agent-${esc(name)}-task">${taskDisplay}</div>
+          ${name === dmAgentName ? `<div class="conductor-dispatch-count" id="conductor-dispatch-count">0 dispatched</div>` : ''}
         </div>
         <span class="mc-status-badge ${statusCls}">${esc(statusStr)}</span>
         <!-- Hidden agent-status for AC-0428 test compat -->
@@ -2541,6 +2548,7 @@ function escH(s) {
 // for conductorHoldMs ms after each dispatch, then reverts to is-idle.
 var conductorHoldMs = 3000;
 var _conductorHoldTimer = null;
+var _dispatchCount = 0;
 
 function appendEventLog(entry) {
   var body = document.getElementById('pv-log-body');
@@ -2573,6 +2581,14 @@ function appendEventLog(entry) {
 
 function setConductorActive(dispatchMsg) {
   var card = document.querySelector('[data-agent="Conductor"]');
+  _dispatchCount++;
+  var dispEl = document.getElementById('conductor-dispatch-count');
+  if (dispEl) {
+    dispEl.textContent = _dispatchCount + ' dispatched';
+    dispEl.classList.remove('pv-dispatch-flash');
+    void dispEl.offsetWidth; // force reflow so re-adding the class re-triggers the animation
+    dispEl.classList.add('pv-dispatch-flash');
+  }
   if (card) {
     card.classList.add('is-active');
     card.classList.remove('is-idle');
