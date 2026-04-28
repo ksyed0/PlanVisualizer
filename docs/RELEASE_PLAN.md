@@ -3014,14 +3014,14 @@ Description: New data visualisations that deepen delivery insight — velocity, 
 US-0159 (EPIC-0022): As a project lead, I want a Velocity chart in the Trends tab showing story points (or story count) completed per sprint/week over time, so that I can see team throughput trends and forecast delivery pace.
 Priority: Medium (P1)
 Estimate: L
-Status: Planned
+Status: Done
 Branch: feature/US-0159-velocity-chart
 Acceptance Criteria:
 
-- [ ] AC-0577: Velocity chart renders as a bar chart in the Trends tab, with one bar per completed sprint or rolling week, height representing story count (or t-shirt-size points) completed in that period
-- [ ] AC-0578: Chart draws data from existing parse-progress.js session logs and RELEASE_PLAN.md story completion dates; no new data-source files are required
-- [ ] AC-0579: A 4-period rolling average trend line is overlaid on the bars so viewers can distinguish noise from trend
-- [ ] AC-0580: Chart respects the shared semantic palette from theme.js (no hardcoded hex literals); renders correctly in both light and dark mode
+- [x] AC-0577: Velocity chart renders as a bar chart in the Trends tab, with one bar per completed sprint or rolling week, height representing story count (or t-shirt-size points) completed in that period
+- [x] AC-0578: Chart draws data from existing parse-progress.js session logs and RELEASE_PLAN.md story completion dates; no new data-source files are required
+- [x] AC-0579: A 4-period rolling average trend line is overlaid on the bars so viewers can distinguish noise from trend
+- [x] AC-0580: Chart respects the shared semantic palette from theme.js (no hardcoded hex literals); renders correctly in both light and dark mode
 ```
 
 ```
