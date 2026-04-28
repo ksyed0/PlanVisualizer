@@ -4,6 +4,104 @@ Append-only defect log. Never delete entries. Mark resolved bugs as Fixed or Clo
 
 ---
 
+BUG-0183: Plan-Status Status tab is sparse — lacks release-health summary and forecast
+Severity: Low
+Related Story: US-0135 (EPIC-0020)
+Steps to Reproduce:
+
+1. Open docs/plan-status.html → Status tab
+   Expected: A single-glance answer to "is the release on track?" with forecast, velocity, and top risks
+   Actual: The tab leans on stat tiles and the Charts-style doughnut without an editorial hero summary; users have to visit 3+ tabs to infer health
+   Status: Open
+   Notes: Tracked as visual/IA change under EPIC-0020 (CD-Redesign). See US-0135 Status Hero card.
+
+---
+
+BUG-0184: Chart palette drifts between Status, Charts and Trends tabs
+Severity: Low
+Related Story: US-0140 (EPIC-0020)
+Steps to Reproduce:
+
+1. Open Status → doughnut (green/grey)
+2. Open Charts → Epic progress bars (chart.js default green/amber)
+3. Open Trends → Coverage line (blue)
+   Expected: All charts share a single semantic palette (ok/warn/risk/info/accent) so the same color always means the same thing
+   Actual: Each tab uses a different legend and fill palette; "Done" is several different greens across tabs
+   Status: Open
+   Notes: Fix by routing every chart through a shared palette token map (see AC in US-0140).
+
+---
+
+BUG-0185: Active agents are hard to pick out on the Agentic dashboard at a glance
+Severity: Medium
+Related Story: US-0142 (EPIC-0020)
+Steps to Reproduce:
+
+1. Open docs/dashboard.html with 2–4 active agents
+2. Glance at the agent grid
+   Expected: A 2-second glance identifies who is currently working
+   Actual: All 9 agent cards carry the same visual weight; status pill is small, and the "now on air" dot is subtle; the currently-executing agent is not visually promoted
+   Status: Open
+   Notes: Fix by adding a left accent rail, tinted background, and outline glow on is-active cards; see US-0142.
+
+---
+
+BUG-0186: Conductor rarely shown as Active because dispatches complete in milliseconds
+Severity: Medium
+Related Story: US-0143 (EPIC-0020)
+Steps to Reproduce:
+
+1. Watch docs/dashboard.html during a live dispatch cycle
+2. Observe the Conductor agent card
+   Expected: Conductor's role in each hand-off is visible (it did just dispatch a task)
+   Actual: Conductor transitions to active and back to idle faster than the 1s refresh can render, so the card is near-permanently idle and hand-offs appear to happen by magic
+   Status: Open
+   Notes: Fix by holding a visible "dispatching" state for a minimum of N seconds, and by promoting the most recent dispatch into the event ticker. See US-0143.
+
+---
+
+BUG-0187: Timeline pipeline and agent roster encode overlapping information
+Severity: Low
+Related Story: US-0144 (EPIC-0020)
+Steps to Reproduce:
+
+1. Open docs/dashboard.html
+2. Compare the 6-phase Pipeline strip and the Agent Roster
+   Expected: Each widget earns its space — pipeline shows macro phase progress, roster shows micro agent state
+   Actual: Both widgets double-encode which agent is doing what right now (phase.agents field duplicates the active agent card); the pipeline loses its job as a cycle-progress artifact
+   Status: Open
+   Notes: Fix by trimming the pipeline to phase name + elapsed + partial fill, and letting the roster own "who is doing what." See US-0144.
+
+---
+
+BUG-0188: Activity events are buried in the right rail on the Agentic dashboard
+Severity: Low
+Related Story: US-0145 (EPIC-0020)
+Steps to Reproduce:
+
+1. Open docs/dashboard.html
+2. Look for a chronological log of what the agents just did
+   Expected: Event log is one of the most prominent artefacts on a mission-control surface
+   Actual: The "recent activity" pane is a 320px sidebar card with low contrast and no dedicated terminal-style event stream
+   Status: Open
+   Notes: Fix by promoting the stream to a full-width Event Log card in the main column with terminal monospace styling, while keeping a compressed feed in the rail. See US-0145.
+
+---
+
+BUG-0189: Corporate navy gradient header is the dominant visual element on both dashboards
+Severity: Low
+Related Story: US-0136 (EPIC-0020)
+Steps to Reproduce:
+
+1. Open either dashboard
+2. Observe the first ~72px of page chrome
+   Expected: Chrome is quiet; content leads
+   Actual: Saturated navy gradient overpowers content — especially in light mode — and makes the two dashboards hard to distinguish because the header dominates identity
+   Status: Open
+   Notes: Fix by replacing with a thin neutral chrome + mode badge (REPORT / LIVE) and per-dashboard accent ornaments. See US-0136.
+
+---
+
 BUG-0100: Coverage Over Time chart showed fabricated data — linear ramp from 2% to 61% instead of realistic values
 Severity: High
 Related Story: US-0084
@@ -231,10 +329,11 @@ Steps to Reproduce:
 3. Inspect result[0].date
    Expected: Most recent session is always first regardless of file order (AC-0013 requires reverse-chronological)
    Actual: Sessions are returned in the order they appear in the file — if appended at bottom, oldest appears first
-   Status: Fixed (false positive — progress.md is written newest-first; regression test added)
+   Status: Rejected
    Fix Branch: bugfix/BUG-0007-0011-parser-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.25
+   Notes: Rejected as false positive — progress.md is written newest-first by convention; no parser change needed. Regression test added to confirm ordering.
 
 BUG-0012: GitHub Actions workflow steps pinned to mutable version tags, not commit digests
 Severity: High
@@ -2427,18 +2526,755 @@ Steps to Reproduce:
 
 ---
 
-BUG-0227: docs/AGENT_PLAN.md missing — Conductor startup step 5 references a file that does not exist
-Severity: Medium
-Related Story: n/a
+BUG-0190: Dark mode applies only to topbar/sidebar — body and content areas remain light
+Severity: High
+Related Story: US-0135 (EPIC-0020)
 Steps to Reproduce:
 
-1. Read docs/agents/DM_AGENT.md — Mandatory Startup step 5: "Read docs/AGENT_PLAN.md (orchestration framework, PR flow, execution modes)"
-2. Run: ls docs/AGENT_PLAN.md
-   Expected: File exists and contains the 6-phase pipeline reference, PR review lifecycle, and BLOCK recovery protocol
-   Actual: File not found — FileNotFoundError. Conductor startup fails silently when the file is absent; the orchestration framework reference is missing entirely.
-   Root Cause: docs/AGENT_PLAN.md was referenced in DM_AGENT.md Mandatory Startup but was never created. The document describing the canonical pipeline, entry/exit criteria, PR review lifecycle, and BLOCK recovery protocol existed only inside DM_AGENT.md itself with no standalone reference file.
+1. Open plan-status.html in a browser with system dark mode preference OR click the moon icon
+2. Observe the page appearance
+   Expected: All surfaces (body background, panels, tab content, cards) switch to dark palette
+   Actual: Only the topbar/sidebar update; the main content area stays white (uses --clr-_ tokens unresolved to any value)
+   Root Cause: Two compounding defects: (1) EPIC-0020 replaced --clr-_ CSS variable names with new OKLCH tokens (--bg, --text, --surface, --border, etc.) but left all CSS consumers still referencing the old --clr-_ names, so those resolved to empty strings. (2) Tailwind darkMode:'class' requires a .dark class on <html>, but setTheme() only set data-theme attribute — making all dark:_ Tailwind variants no-ops.
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0190-0197-ui-fixes
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed by: (a) Adding --clr-\* backward-compat alias variables in generateCssTokens() in theme.js, mapping each old token to its new OKLCH equivalent in both [data-theme="light"] and [data-theme="dark"] blocks; (b) Adding classList.toggle('dark', t==='dark') in setTheme() in render-scripts.js; (c) Adding classList.add('dark') in the inline theme-init script in render-html.js.
+
+---
+
+BUG-0191: Blank white area (52px) appears at top of page below topbar
+Severity: Medium
+Related Story: US-0135 (EPIC-0020)
+Steps to Reproduce:
+
+1. Open plan-status.html in any browser
+2. Observe the space between the topbar and the first content element
+   Expected: Content starts immediately below the sticky topbar with no gap
+   Actual: A blank 52px white strip appears between the topbar and content, caused by stale body { padding-top: 52px } left over from when .pv-chrome was position:fixed
+   Root Cause: EPIC-0020 changed .pv-chrome from position:fixed to position:sticky (in-flow layout), eliminating the need for body padding-top offset. The padding rule was not removed during the migration.
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0190-0197-ui-fixes
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed by changing body { padding-top: 52px } to body { padding-top: 0 } in the embedded CSS block in render-html.js and removing redundant responsive padding-top overrides.
+
+---
+
+BUG-0192: Story title wraps instead of truncating with ellipsis in hierarchy column view
+Severity: Medium
+Related Story: US-0131 (EPIC-0019)
+Steps to Reproduce:
+
+1. Open plan-status.html → Hierarchy tab → Column view
+2. Find any story with a long title (e.g., "Implement cross-tab filter persistence and deep-link support")
+3. Observe the story row
+   Expected: Title truncates at available width with trailing ellipsis; badge labels appear at line end on a single row
+   Actual: The full title wraps onto multiple lines, pushing labels to a new line and misaligning the row with its fixed-width sibling columns
+   Root Cause: Row container used flex flex-wrap allowing unconstrained width; title element lacked min-w-0 + truncate constraints; status/ID columns lacked min-width floor; labels lacked ml-auto + flex-shrink-0 anchoring.
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0190-0197-ui-fixes
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed in render-tabs.js story row template: changed wrapper to flex items-center gap-2 min-w-0, added flex-shrink-0 on ID/status/epic columns, added min-width:5.5rem floor on ID/status, applied min-w-0 truncate with title attribute on the story title span, and ml-auto flex-shrink-0 on the right-side labels group.
+
+---
+
+BUG-0193: Global search (⌘K) button missing from page header
+Severity: Medium
+Related Story: US-0131 (EPIC-0019)
+Steps to Reproduce:
+
+1. Open plan-status.html
+2. Look at the top-right area of the header/topbar
+   Expected: A search button (⌘K keyboard shortcut affordance) is visible between the mode badge and the About button
+   Actual: No search button rendered; the searchBox element exists in DOM but has no visible trigger in the masthead
+   Root Cause: renderChrome() in render-shell.js never included the ⌘K trigger button in the masthead markup; it was designed but omitted during the EPIC-0020 shell refactor.
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0190-0197-ui-fixes
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed by adding a <button id="searchBtn"> with ⌘K label and SVG icon between the mode badge and About button in renderChrome() in render-shell.js.
+
+---
+
+BUG-0194: Card view epic headers disappear when any filter is applied
+Severity: High
+Related Story: US-0106 (EPIC-0015)
+Steps to Reproduce:
+
+1. Open plan-status.html → Hierarchy tab → Card view
+2. Apply any filter (e.g., status = "In Progress")
+3. Observe epic section headers
+   Expected: Epic headers remain visible; only story cards outside the filter are hidden
+   Actual: All epic headers vanish — the entire card view becomes an empty page with only matching story cards and no grouping headers
+   Root Cause: applyFilters() scoped story-row searches via block.closest('.mb-8') to find the ancestor epic wrapper. Card view wrappers used class mb-4 (not mb-8), so closest('.mb-8') returned null for every story — the filter logic resolved to a scope of 0 rows per header, hiding every epic section.
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0190-0197-ui-fixes
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed by changing the card view epic wrapper class from mb-4 to mb-8 in the renderHierarchyCardView template in render-tabs.js, matching the class applyFilters() expects.
+
+---
+
+BUG-0195: Estimated project cost missing from page masthead
+Severity: Low
+Related Story: US-0135 (EPIC-0020)
+Steps to Reproduce:
+
+1. Open plan-status.html
+2. Inspect the metadata row in the masthead (below the project name/tagline)
+   Expected: A meta tile labelled "Est. budget" shows the total projected USD cost derived from t-shirt sizing
+   Actual: The meta row shows Stories, Open Bugs, Coverage, and Last Updated — but no cost figure
+   Root Cause: renderMasthead() in render-shell.js did not compute or render a budget meta tile; the feature was specified in US-0135 ACs but omitted during EPIC-0020 implementation.
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0190-0197-ui-fixes
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed by computing totalProjected (sum of data.costs[st.id].projectedUsd across active stories) in renderMasthead() and adding a pv-meta-item tile with pv-meta-item--hide-sm class to keep it off small viewports.
+
+---
+
+BUG-0196: Status badge column too narrow — "In Progress" and "Planned" text overflows into title column
+Severity: Medium
+Related Story: US-0131 (EPIC-0019)
+Steps to Reproduce:
+
+1. Open plan-status.html → Hierarchy tab → Column view
+2. Scroll to any story with status "In Progress" or "Planned"
+3. Observe alignment relative to stories with shorter statuses like "Done"
+   Expected: All status badges align in a fixed-width column; title column begins at the same x-position for every row
+   Actual: "In Progress" text overflows the status column and pushes the story title to the right (or causes wrap); "Planned" likewise overflows
+   Root Cause: Status span had no min-width floor — it shrank to fit "Done" and then overflowed for longer strings. Combined with BUG-0192 flex-wrap issue, rows were visually misaligned.
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0190-0197-ui-fixes
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed as part of BUG-0192 row layout overhaul: added inline style min-width:5.5rem on the status badge span in render-tabs.js, ensuring all rows reserve the same floor width for the status column regardless of text length.
+
+---
+
+BUG-0197: Traceability tab legend text is invisible (white-on-white in light mode)
+Severity: Medium
+Related Story: US-0131 (EPIC-0019)
+Steps to Reproduce:
+
+1. Open plan-status.html → Traceability tab → Light mode
+2. Observe the legend at the bottom of the SVG canvas
+   Expected: Legend labels (e.g., "Story", "Test Case", "Bug") are readable in a dark-on-light colour
+   Actual: Legend text renders in white (CSS class trace-caption used rgba(255,255,255,0.5) as its fallback colour) and is invisible against the white panel background
+   Root Cause: render-scripts.js set .trace-caption colour fallback to rgba(255,255,255,0.5) — visible only in dark mode. The EPIC-0020 token migration broke the light-mode value; --clr-text-secondary was unresolved (see BUG-0190 root cause).
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0190-0197-ui-fixes
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed by changing the .trace-caption fallback colour in render-scripts.js from rgba(255,255,255,0.5) to #64748b (slate-500), which is readable in both light and dark modes as a secondary text tone.
+
+---
+
+BUG-0198: Trends tab date-range selector button text is invisible
+Severity: Medium
+Related Story: US-0131 (EPIC-0019)
+Steps to Reproduce:
+
+1. Open plan-status.html → Trends tab
+2. Observe the date-range selector buttons (4W / 8W / 12W / All)
+   Expected: Button labels are clearly readable; selected range button has a highlighted background
+   Actual: Button text is invisible (white text on white/near-white background); unselected state offers no contrast
+   Root Cause: Range button styles relied on --clr-text-primary which was unresolved due to the BUG-0190 EPIC-0020 token migration gap. The active-range class also lost its background reference.
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0190-0197-ui-fixes
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed as a side effect of BUG-0190 --clr-\* alias restoration in theme.js. The --clr-text-primary alias maps to var(--text) in both themes, resolving button text colour. No separate CSS change was required.
+
+---
+
+BUG-0199: Bugs section on Costs tab expanded by default — should be collapsed like Stories
+Severity: Low
+Related Story: US-0116 (EPIC-0016)
+Steps to Reproduce:
+
+1. Open plan-status.html → Costs tab
+2. Observe the Bug Fix Costs section
+   Expected: Bug Fix Costs section is collapsed by default, consistent with the Stories section; user clicks to expand
+   Actual: Bug Fix Costs section is fully expanded on page load, adding excessive scroll depth to the Costs tab
+   Root Cause: The bug-fix cost section markup had no collapsible wrapper or toggleSection() handler — it was rendered as an always-visible block, inconsistent with the collapsible-by-default pattern used for the Stories section.
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0190-0197-ui-fixes
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed by wrapping the bug fix column and card sections in a collapsible panel with a toggleSection() handler in render-tabs.js. The section body element has the hidden class set by default, matching the collapsed-by-default behaviour of the Stories section.
+
+---
+
+BUG-0200: Long bug status text (e.g., "Fixed (false positive…)") breaks Costs tab column layout
+Severity: Medium
+Related Story: US-0116 (EPIC-0016)
+Steps to Reproduce:
+
+1. Open plan-status.html → Costs tab → Bug Fix Costs section
+2. Find bug BUG-0011 (or any bug with a parenthetical explanation in its Status field)
+   Expected: Status cell shows a short badge keyword ("Fixed", "Rejected", etc.); full explanation is accessible via tooltip/title
+   Actual: The entire status string including the parenthetical explanation renders in the badge, expanding the status column to 300px+ and misaligning all other rows
+   Root Cause: badge() is called with the full status string including parenthetical suffixes. BUGS.md allows freeform status fields (e.g., "Fixed (false positive — …)").
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0190-0197-ui-fixes
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed in two parts: (1) BUG-0011 in docs/BUGS.md was updated — status changed to "Rejected" with a Notes: field containing the full explanation, removing the inline parenthetical from the status string. (2) All badge(bug.status) calls in render-tabs.js now use badge((bug.status||'').split(/[\s(]/)[0]) with a title attribute carrying the full status text for accessibility/tooltip display.
+
+---
+
+BUG-0201: Status tab (release-health hero, decision widgets, epic progress) never implemented despite EPIC-0020 being marked Done
+Severity: Critical
+Related Story: US-0135 (EPIC-0020)
+Steps to Reproduce:
+
+1. Open plan-status.html → Status tab (first nav item)
+2. Compare against the EPIC-0020 design mockup / US-0135 ACs
+   Expected: Release health editorial landing page with: verdict hero card (On track / At risk / Off track), forecast/velocity/budget stats, 14-week progress mini-bars, 30-day coverage sparkline, decision-widgets grid (Overall Progress, Epic Progress, Top Risks), quality/snapshot row
+   Actual: The Status tab renders only a minimal placeholder — no hero, no charts, no decision widgets, no quality section. The tab was entirely absent from the render-tabs.js module.
+   Root Cause: EPIC-0020 (PR #412) marked all US-0135–US-0146 stories as Done but the renderStatusTab() function was never written. The tab section in the HTML output contained no content. The gap was not caught by CI because no acceptance tests asserted on Status tab content rendering.
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0190-0197-ui-fixes
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed by implementing renderStatusTab(data) in render-tabs.js with the full US-0135/US-0139 scope: verdict computation from open bugs/blocked stories/budget, Release Health Hero card, 14-week progress mini-bars from trends data, 30-day coverage dots from coverage history, Decision Widgets grid (Overall Progress, Epic Progress, Top Risks cards), and Quality + Snapshot row. Function exported and called as first tab in render-html.js.
+
+---
+
+BUG-0202: Dark mode surface/background contrast too low — panels indistinguishable from page background
+Severity: High
+Related Story: US-0135 (EPIC-0020)
+Steps to Reproduce:
+
+1. Open plan-status.html in dark mode
+2. Compare the page background colour to panel/card surface colours
+   Expected: Cards and panels are visibly lighter than the page background — distinct layering
+   Actual: --surface (ink9, oklch(10%)) sits only 4 percentage points above --bg (ink10, oklch(6%)) — imperceptible contrast at typical viewing distances; panels appear to float on an identical-tone background
+   Root Cause: EPIC-0020 chose ink9/ink8 for dark surface/surface-2, producing ~1.2:1 contrast ratio between layers. Good dark-mode layering requires at least 1.4:1 per layer step.
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0202-0208-ui-polish
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed by bumping dark theme tokens in theme.js: --surface from ink9(10%) to ink8(16%), --surface-2 from ink8(16%) to ink7(24%), --border from oklch(22%) to oklch(28%). Gives ~1.45:1 contrast between bg and surface — visually distinct but still clearly dark.
+
+---
+
+BUG-0203: Plan-Status About modal is a narrow single-column card — doesn't match the wider two-column About design used on the agentic dashboard
+Severity: Low
+Related Story: US-0135 (EPIC-0020)
+Steps to Reproduce:
+
+1. Open plan-status.html → click the About button
+2. Compare the modal to the agentic dashboard About modal
+   Expected: Wide two-column modal with branding panel on left (icon, tool version, GitHub link) and project details on right (name, tagline, version, branch, build, generated-at)
+   Actual: Narrow max-w-sm text-center single-column card with minimal project metadata — inconsistent with the unified About design implemented in the agentic dashboard (US-0123)
+   Root Cause: render-html.js About modal was never updated to match the generate-dashboard.js two-column design adopted in US-0123.
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0202-0208-ui-polish
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed by rewriting the About modal in render-html.js to use a two-column sm:grid layout: left panel has branding icon + tool version + GitHub link; right panel has project name, tagline, version/branch/build rows, and generated-at. Max width bumped from max-w-sm to max-w-2xl.
+
+---
+
+BUG-0204: Top Risks widget shows "No active risks" when release health verdict is "At risk"
+Severity: Medium
+Related Story: US-0139 (EPIC-0020)
+Steps to Reproduce:
+
+1. Open plan-status.html → Status tab
+2. Observe the Release Health hero (verdict "At risk") and the Top Risks decision widget
+   Expected: Top Risks shows risk items consistent with the "At risk" verdict
+   Actual: "No active risks — looking good 🎉" is displayed even though the verdict is "At risk" — completely contradictory
+   Root Cause: The verdict's "At risk" condition triggers when openBugs.length > 3 even if all open bugs are Medium severity. The Top Risks widget only collects High/Critical bugs and blocked stories. When all open bugs are Medium-or-lower, the risks array is empty and the fallback message is displayed.
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0202-0208-ui-polish
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed in renderStatusTab() in render-tabs.js: after collecting criticalBugs/highBugs/blockedStories, if risks is still empty and hasRisk is true (i.e., openBugs.length > 3), add Medium-severity open bugs (up to 3) as MED risk items. If no Medium bugs either, add an aggregate "N open bugs require attention" item. This ensures the Top Risks widget is never empty when the verdict is At risk.
+
+---
+
+BUG-0205: Column / Card view toggle has no visual active-state — impossible to tell which view is selected
+Severity: Medium
+Related Story: US-0131 (EPIC-0019)
+Steps to Reproduce:
+
+1. Open plan-status.html → Hierarchy tab
+2. Look at the Column / Card toggle buttons in the top-right of the tab
+   Expected: The active view button is highlighted (filled background, contrasting text)
+   Actual: Both buttons look identical — same border, same text, same background; no visual cue for active state
+   Root Cause: setHierarchyView() applies classList.toggle('active-view', ...) correctly, but no CSS rule for button.active-view was ever defined — the class is toggled but has no visual effect.
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0202-0208-ui-polish
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed by adding button.active-view { background: var(--clr-accent) !important; color: #fff !important; border-color: var(--clr-accent) !important; } to the embedded CSS in render-scripts.js.
+
+---
+
+BUG-0206: Hierarchy tab epics all expanded by default — should start collapsed
+Severity: Low
+Related Story: US-0131 (EPIC-0019)
+Steps to Reproduce:
+
+1. Open plan-status.html → Hierarchy tab → Column view
+2. Observe the epic sections on first load
+   Expected: All epic sections are collapsed; user expands epics of interest
+   Actual: Only Done-status epics auto-collapse; all active/in-progress epics are fully expanded, producing a very long page on initial load
+   Root Cause: The DOMContentLoaded handler in render-scripts.js only collapsed epics matching [data-epic-status="Done"]. Active epics were intentionally left expanded by the original design but user preference is for all-collapsed.
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0202-0208-ui-polish
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed by extending the auto-collapse logic to target ALL epic-stories-_ and epic-cards-_ elements (not just Done ones) in the DOMContentLoaded handler in render-scripts.js.
+
+---
+
+BUG-0207: Epic section headers use inconsistent styling across tabs — Costs/Bugs lack the accent left-border used in Hierarchy
+Severity: Low
+Related Story: US-0131 (EPIC-0019)
+Steps to Reproduce:
+
+1. Open plan-status.html → Hierarchy tab. Note epic headers: accent left-border + EPIC / XXXX format
+2. Open Costs tab (story section) and Costs tab (bug section). Note epic headers: only border-t-2, no accent border-left, no EPIC/XXXX format — visual inconsistency
+   Expected: Epic headers across all tabs share the same accent left-border style and EPIC / XXXX ID format
+   Actual: Hierarchy has 4px left-border accent + "EPIC / 0001" style; Costs and Bugs epic headers use only a top border and raw epic ID string — different look and feel
+   Root Cause: The Costs and Bugs tab epic header tr elements were written before the Hierarchy unified epic header style was established.
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0202-0208-ui-polish
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed by adding border-left:4px solid ${accent.border} and the EPIC / XXXX format to the story-costs epic headers and bug-costs epic headers in render-tabs.js.
+
+---
+
+BUG-0208: Costs tab Per-Epic Budget table is flat — cannot expand an epic to see per-story cost breakdown
+Severity: Medium
+Related Story: US-0116 (EPIC-0016)
+Steps to Reproduce:
+
+1. Open plan-status.html → Costs tab → Per-Epic Budget section
+2. Click on an epic row
+   Expected: Epic row expands to reveal per-story rows (Story ID, title, estimate, projected cost, AI cost) — same expand pattern as the Bugs tab epic sections
+   Actual: Epic rows are static table rows with no click handler and no expand behaviour; per-story data is only visible in the separate "Story Costs" section further down the page
+   Root Cause: The Per-Epic Budget section was designed as a summary-only view. The expand/collapse pattern existed in the Story Costs section below but was never added to the budget summary table.
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0202-0208-ui-polish
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Fixed by converting the Per-Epic Budget table from a flat tbody to a series of expandable tbody pairs (header row + hidden story sub-rows) using toggleSection(). Each epic header now expands to show per-story rows with Story ID, title, estimate, projected cost, and AI cost columns. Column headers updated to "Epic / Story", "Budget / Est.", "Spent / AI", "Remaining", "% Used" to reflect the dual-level data.
+
+---
+
+BUG-0209: Hierarchy tab — card view epic spacing wider than column view
+Severity: Low
+Related Story: US-0002 (EPIC-0002)
+Steps to Reproduce:
+
+1. Open plan-status.html → Hierarchy tab
+2. Switch to Card view — note the gap between each epic group
+3. Switch to Column view — gap is noticeably smaller
+   Expected: Card and column views use the same vertical spacing between epic groups
+   Actual: Card view wrapper used mb-4; column view used mb-2
+   Root Cause: Card view template was written independently and never synced to column view spacing conventions.
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0202-0208-ui-polish
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Changed mb-4 to mb-2 on the card view epic group wrapper div.
+
+---
+
+BUG-0210: Lessons tab — epic group headers don't match Bugs tab format
+Severity: Low
+Related Story: US-0107 (EPIC-0013)
+Steps to Reproduce:
+
+1. Open plan-status.html → Lessons tab (column or card view)
+2. Observe the epic group headers: "EPIC-0003: Installation and Distribution (1)"
+3. Compare to Bugs tab epic headers: "EPIC-0003 [Done] Installation and Distribution · N open · M total" with left accent bar
+   Expected: Lessons epic headers use the same format as Bugs — EPIC-XXXX monospaced id + status badge + title + count, with border-left accent bar
+   Actual: Lessons headers used a plain concatenated label string with no badge, no accent border, and old formatting
+   Root Cause: Lessons tab was developed before the Bugs tab established the shared epic-header pattern; the pattern was never backported.
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0202-0208-ui-polish
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Updated both lessonColGroups and lessonCardGroups to use the Bugs tab format: font-mono epic id + badge(epic.status) + title span + count, with border-left:4px solid ${accent.border} on the cell. Card view wrapper changed from mb-6 to mb-2 to match Bugs card view spacing.
+
+---
+
+BUG-0211: Status tab blank — no content renders below header stat row
+Severity: High
+Related Story: US-0135 (EPIC-0020)
+Steps to Reproduce:
+
+1. Open plan-status.html → Status tab
+2. Observe main content area below "PLANVISUALIZER · Status REPORT" header is completely empty
+   Expected: Status Hero card (verdict, density toggle, stat blocks, mini-viz) + Rich Status widgets render
+   Actual: White blank area
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0211-0226-dashboard-polish
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: data.trends was extracted but never assigned to data object before JSON serialisation; fixed by adding data.trends = trends in generate-plan.js.
+
+---
+
+BUG-0212: Hierarchy tab — card view is blank
+Severity: High
+Related Story: US-0049 (EPIC-0006)
+Steps to Reproduce:
+
+1. Open plan-status.html → Hierarchy tab → switch to Card view
+2. Observe no epic/story cards render
+   Expected: Cards render with epic groupings and story cards
+   Actual: Blank content area
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0211-0226-dashboard-polish
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: applyFilters used block.closest('.mb-8') — stale class after refactor. Fixed to .mb-2.
+
+---
+
+BUG-0213: Kanban tab — epic group headers missing Epic status label
+Severity: Low
+Related Story: US-0060 (EPIC-0007)
+Steps to Reproduce:
+
+1. Open plan-status.html → Kanban tab
+2. Observe epic group headers
+   Expected: Epic header includes status badge/label (Done, In Progress, Planned)
+   Actual: No status label shown
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0211-0226-dashboard-polish
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Added epicStatusMap + badge() call to Kanban swimlane header template.
+
+---
+
+BUG-0214: Epic header formatting inconsistent across tabs — should match Traceability tab style
+Severity: Medium
+Related Story: US-0049 (EPIC-0006)
+Steps to Reproduce:
+
+1. Compare epic group headers across Hierarchy, Kanban, Costs, Bugs, Lessons tabs
+2. Compare to Traceability tab epic headers
+   Expected: All tabs use same epic header format (monospaced EPIC-XXXX + status badge + title + count + left accent border)
+   Actual: Each tab uses a different header style
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0211-0226-dashboard-polish
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Kanban, Bugs card, and Lessons card views updated to use EPIC_ACCENT_COLORS with border-t-2 + border-left:4px accent style matching Traceability tab.
+
+---
+
+BUG-0215: Charts tab — L/M/S density toggle on "On Track" Status Hero bar has no effect
+Severity: Medium
+Related Story: US-0135 (EPIC-0020)
+Steps to Reproduce:
+
+1. Open plan-status.html → Charts/Status tab
+2. Find the L/M/S density toggle on the hero "On Track" verdict section
+3. Click L or S — layout does not change
+   Expected: Hero card changes density (compact/medium/large)
+   Actual: No visual change
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0215-0222-dashboard-fixes
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: No CSS rules consumed the data-density attribute. Added .pv-hero[data-density="M/S"] rules to render-scripts.js to hide vizrow at M/S and stats at S.
+
+---
+
+BUG-0216: Charts tab — Story Status Distribution chart does not scale to fill available width
+Severity: Low
+Related Story: US-0070 (EPIC-0010)
+Steps to Reproduce:
+
+1. Open plan-status.html → Charts tab
+2. Observe Story Status Distribution doughnut chart
+   Expected: Chart fills available column width responsively
+   Actual: Chart renders at a fixed small size with large empty area around it
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0215-0222-dashboard-fixes
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Container div was missing height:300px; Chart.js needs an explicit height on the container to size the canvas responsively.
+
+---
+
+BUG-0217: Costs tab — AI cost attribution incorrect (EPIC-0013 too high; EPIC-0016/0017/0020 show $0.00)
+Severity: Medium
+Related Story: US-0084 (EPIC-0008)
+Steps to Reproduce:
+
+1. Open plan-status.html → Costs tab
+2. Expand EPIC-0016, EPIC-0017, EPIC-0020 — AI cost shows $0.00
+3. Compare EPIC-0013 AI cost — appears inflated
+   Expected: AI costs accurately attributed to epics via story branch matching
+   Actual: Recent epics show $0; older epics may absorb costs that belong elsewhere
+   Status: Open
+   Fix Branch:
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Root cause — branch-name matching in parse-cost-log.js uses story branch prefix matching. Recent epics (0016/0017/0020) have branches whose prefixes aren't captured in the AI_COST_LOG.md session rows. Separate investigation needed.
+
+---
+
+BUG-0218: Costs tab — EPIC-0018 missing from epic cost breakdown
+Severity: Medium
+Related Story: US-0084 (EPIC-0008)
+Steps to Reproduce:
+
+1. Open plan-status.html → Costs tab
+2. Scroll through epic list — EPIC-0018 is absent
+   Expected: All epics including EPIC-0018 appear in the cost breakdown
+   Actual: EPIC-0018 row is missing
+   Status: Retired
+   Fix Branch:
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Not a code bug. EPIC-0018 was never created — project numbering skips from EPIC-0017 to EPIC-0019. No row to display. Retiring as invalid.
+
+---
+
+BUG-0219: Status/Charts tab — Risk Score by Epic shows Done epics; should suppress them
+Severity: Low
+Related Story: US-0068 (EPIC-0010)
+Steps to Reproduce:
+
+1. Open plan-status.html → Charts or Status tab → Risk Score by Epic section
+2. Observe Done epics appearing in the chart
+   Expected: Only non-Done epics shown; a note states "Showing incomplete epics only"
+   Actual: All epics including Done ones shown, cluttering the chart
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0211-0226-dashboard-polish
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Added epicStatusMap filter — Risk Score chart now suppresses Done epics and renders a note "Showing incomplete epics only".
+
+---
+
+BUG-0220: Trends tab — Velocity chart ambiguous (cumulative vs per-session unclear); recent values appear inflated
+Severity: Medium
+Related Story: US-0055 (EPIC-0008)
+Steps to Reproduce:
+
+1. Open plan-status.html → Trends tab → Velocity chart
+2. Observe Y-axis and recent data points — last few sessions show unusually high story counts
+   Expected: Chart clearly labelled as "Stories Shipped per Session" with realistic values
+   Actual: Axis label is ambiguous; recent sessions show values inconsistent with actual output
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0215-0222-dashboard-fixes
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Velocity metric is cumulative (total done stories at each snapshot). Changed chart subtitle from "story points per session" to "cumulative done points".
+
+---
+
+BUG-0221: Trends tab — AI Costs and Token Usage charts show no change for recent sessions
+Severity: Medium
+Related Story: US-0055 (EPIC-0008)
+Steps to Reproduce:
+
+1. Open plan-status.html → Trends tab → AI Costs chart and Token Usage chart
+2. Observe the last several sessions — values appear flat/unchanged
+   Expected: Charts reflect actual AI spend and token counts per session
+   Actual: Recent sessions show identical or zero values
+   Status: Open
+   Fix Branch:
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Architectural limitation — snapshot.js records cumulative AI_COST_LOG.md state at each progress.md snapshot. If new sessions don't generate new progress.md entries, no new snapshots are captured. Separate investigation needed to verify capture-cost.js is appending correctly.
+
+---
+
+BUG-0222: Costs tab — Budget section and Stories section use different epic header formatting
+Severity: Low
+Related Story: US-0084 (EPIC-0008)
+Steps to Reproduce:
+
+1. Open plan-status.html → Costs tab
+2. Compare Budget epic group headers with Stories epic group headers
+   Expected: Both sections use identical epic header format
+   Actual: Budget and Stories use visually different header styles
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0215-0222-dashboard-fixes
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Budget epic table rows now use accent.bg background and 4px accent left-border on the first td, matching the Stories section header style.
+
+---
+
+BUG-0223: Bugs tab — epic groups should be collapsed by default
+Severity: Low
+Related Story: US-0064 (EPIC-0007)
+Steps to Reproduce:
+
+1. Open plan-status.html → Bugs tab
+2. Observe all epic groups are expanded on load
+   Expected: All epic groups collapsed by default; user expands as needed
+   Actual: All groups expanded, causing long scroll on first load
+   Status: Open
+   Fix Branch:
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Default collapsed state requires server-rendered hidden class on bug-group tbody + collapsed arrow state in markup. Deferred to a future polish story.
+
+---
+
+BUG-0224: Costs tab — Bug AI costs are identical across many bugs and do not match actual spend
+Severity: Medium
+Related Story: US-0084 (EPIC-0008)
+Steps to Reproduce:
+
+1. Open plan-status.html → Costs tab → expand any epic → view bug rows
+2. Many bugs show identical AI cost values (e.g. $207.41); many show blank
+   Expected: Each bug's AI cost attributed from sessions where it was fixed (via fix branch)
+   Actual: Costs appear to be divided equally or mis-attributed
+   Status: Open
+   Fix Branch:
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Architectural limitation — attributeBugCosts() in compute-costs.js splits session cost equally across all bugs fixed in that session (identified by fix branch). True per-bug attribution would require sub-session timing data not available in AI_COST_LOG.md.
+
+---
+
+BUG-0225: Bugs tab compact view — bugs not sorted ascending by Bug ID by default
+Severity: Low
+Related Story: US-0064 (EPIC-0007)
+Steps to Reproduce:
+
+1. Open plan-status.html → Bugs tab → Compact view
+2. Observe default sort order
+   Expected: Bugs sorted ascending by BUG-XXXX ID by default
+   Actual: Sort order is not ascending by ID
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0211-0226-dashboard-polish
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Added .sort((a,b) => (a.id||'').localeCompare(b.id||'')) to compactRows in renderBugsTab.
+
+---
+
+BUG-0226: Multiple tabs — column view and card view use different epic header formatting on same tab
+Severity: Low
+Related Story: US-0049 (EPIC-0006)
+Steps to Reproduce:
+
+1. Open any tab with column/card toggle (Hierarchy, Bugs, Lessons, Costs)
+2. Toggle between column and card view — epic group headers look different
+   Expected: Epic headers are visually identical in both views
+   Actual: Column view and card view render different header markup/styles
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0211-0226-dashboard-polish
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Bugs card view and Lessons card view updated to use same flat row style as column view (border-t-2 + border-left:4px + accent.bg). Kanban also updated.
+
+---
+
+BUG-0227: docs/AGENT_PLAN.md referenced in DM_AGENT.md and BUGS.md but file does not exist
+Severity: Medium
+Related Story: US-0088 (EPIC-0013)
+Steps to Reproduce:
+
+1. Run `ls docs/AGENT_PLAN.md`
+   Expected: File exists documenting the 6-phase pipeline per AC-0280
+   Actual: `ls: docs/AGENT_PLAN.md: No such file or directory`
    Status: Fixed
    Fix Branch: bugfix/BUG-0227-agent-plan-doc
    Lesson Encoded: No
    Estimated Cost USD: 0.00
-   Notes: Fixed by creating docs/AGENT_PLAN.md with the 6-phase pipeline overview table, per-phase entry/exit criteria, PR review lifecycle steps, and BLOCK recovery protocol — all content derived from docs/agents/DM_AGENT.md.
+   Notes: Discovered via TC-0352 (AC-0280). DM_AGENT.md line 22 instructs agents to read the file; BUGS.md references it. File must be created to satisfy AC-0280.
+
+---
+
+BUG-0228: dashboard.html has external Google Fonts dependencies violating AC-0290 self-contained requirement
+Severity: Medium
+Related Story: US-0091 (EPIC-0013)
+Steps to Reproduce:
+
+1. Run `grep "fonts.googleapis" docs/dashboard.html | head -2`
+   Expected: No external dependencies per AC-0290
+   Actual: Two `<link rel="stylesheet" href="https://fonts.googleapis.com/...">` tags present
+   Status: Open
+   Fix Branch:
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Discovered via TC-0362 (AC-0290). dashboard.html loads Departure Mono and JetBrains Mono from Google Fonts CDN. To fix: inline the font-face declarations or use system font fallbacks.
+
+---
+
+BUG-0229: npm run plan:generate and plan:watch scripts not defined per AC-0304
+Severity: Low
+Related Story: US-0093 (EPIC-0013)
+Steps to Reproduce:
+
+1. Run `node -e "const p = require('./package.json'); console.log(p.scripts['plan:generate'])"`
+   Expected: `node tools/generate-plan.js`
+   Actual: `undefined` — scripts are named `generate` and `generate:watch` instead
+   Status: Open
+   Fix Branch:
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Discovered via TC-0376 (AC-0304). Add `"plan:generate": "node tools/generate-plan.js"` and `"plan:watch": "node tools/generate-plan.js --watch"` to package.json scripts.
+
+---
+
+BUG-0230: plan-status.html loads Tailwind CSS, Chart.js, and Google Fonts from external CDNs, violating AC-0305
+Severity: Medium
+Related Story: US-0093 (EPIC-0013)
+Steps to Reproduce:
+
+1. Run `grep "cdn\.\|googleapis" docs/plan-status.html | head -3`
+   Expected: No external dependencies per AC-0305
+   Actual: Tailwind CSS via cdn.tailwindcss.com, Chart.js via cdn.jsdelivr.net, Google Fonts via fonts.googleapis.com
+   Status: Open
+   Fix Branch:
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Discovered via TC-0377 (AC-0305). plan-status.html has 3 external CDN dependencies. To fix: bundle Tailwind, inline Chart.js, and inline or remove Google Fonts.
+
+---
+
+BUG-0231: dashboard.html missing dispatch counter element on Conductor card (AC-0522)
+Severity: Low
+Related Story: US-0143 (EPIC-0020)
+Steps to Reproduce:
+
+1. Run `grep -n "dispatch.*counter\|dispatchCount\|dispatch-count\|tasks.*count\|counter.*dispatch" docs/dashboard.html | head -5`
+2. Observe 0 matches for any dispatch counter element
+   Expected: Conductor card contains a visible dispatch counter element (e.g. "37 tasks") that increments and animates on change
+   Actual: No dispatch counter element found in dashboard.html; only setConductorActive toggling is implemented
+   Status: Open
+   Fix Branch: TBD
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: TC-0536 verifies AC-0522 "Conductor card shows incrementing dispatch counter". The dispatch-counter/dispatchCount element is not present in docs/dashboard.html. Only setConductorActive toggling is implemented; no counter element is rendered.
+
+---
+
+BUG-0232: Agent Workload widget missing "(N done)" sub-label (AC-0537)
+Severity: Low
+Related Story: US-0147 (EPIC-0020)
+Steps to Reproduce:
+
+1. Run `grep -n "N done\|done.*sub-label\|pv-workload.*done" tools/generate-dashboard.js | head -3`
+2. Observe 0 matches for any (N done) sub-label
+   Expected: Agent Workload widget renders a "(N done)" sub-label showing the count of completed stories per agent
+   Actual: Sub-label absent from dashboard.html output; inFlight filtering is implemented but the (N done) count is never rendered
+   Status: Open
+   Fix Branch: TBD
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: TC-0551 verifies AC-0537 "Agent Workload bars show (N done) sub-label". The inFlight filtering in tools/generate-dashboard.js is implemented but the (N done) sub-label is never rendered.
