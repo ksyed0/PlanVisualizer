@@ -2271,7 +2271,7 @@ ${(() => {
         .map((s) => {
           const statusClass = s.status === 'In Progress' ? 'InProgress' : s.status;
           const isComplete = s.status === 'Complete' || s.status === 'Done';
-          const isInProgress = s.status === 'In Progress';
+          const isInProgress = s.status === 'In Progress' || s.status === 'InProgress';
           const stripClass = isComplete ? 'status-complete' : isInProgress ? 'status-inprogress' : 'status-planned';
           const title = storyTitles[s.id] || s.title || '';
           const agentName = s.assignedAgent || '';
