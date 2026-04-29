@@ -635,6 +635,16 @@ describe('generate-dashboard — US-0147 agent workload live data', () => {
   });
 });
 
+// BUG-0245: patchDOM task element must use innerHTML to preserve branch link anchor
+describe('generate-dashboard — BUG-0245 patchDOM branch link anchor', () => {
+  it('patchDOM task element uses innerHTML to preserve branch link anchor', () => {
+    const src = fs.readFileSync(path.join(__dirname, '../../tools/generate-dashboard.js'), 'utf8');
+    expect(src).toContain('taskEl.innerHTML');
+    // Must NOT use bare textContent assignment for the task element
+    expect(src).not.toMatch(/taskEl\.textContent\s*=\s*newTask/);
+  });
+});
+
 // AC-0498: generated dashboard HTML must contain zero hex color literals
 // (#RGB / #RRGGBB), rgb(), or rgba() calls. All colours must use oklch(),
 // color-mix(in oklab, ...) or CSS custom properties.

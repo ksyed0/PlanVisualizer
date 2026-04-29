@@ -3225,9 +3225,13 @@ function patchDOM(status) {
     }
     var taskEl = document.getElementById('agent-' + name + '-task');
     if (taskEl) {
+      var branch = (a && a.branch) || '';
       var newTask = a.currentTask || '';
-      if (taskEl.textContent !== newTask) taskEl.textContent = newTask;
-      taskEl.style.display = newTask ? '' : 'none';
+      var newHtml = branch
+        ? '<a href="' + escH(branch) + '">' + escH(newTask || branch) + '</a>'
+        : escH(newTask);
+      if (taskEl.innerHTML !== newHtml) taskEl.innerHTML = newHtml;
+      taskEl.style.display = newTask || branch ? '' : 'none';
     }
   });
 
