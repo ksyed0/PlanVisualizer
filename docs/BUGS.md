@@ -3355,11 +3355,11 @@ Steps to Reproduce:
 1. Open Charts or Trends tab in dark mode
    Expected: Chart axis labels and grid lines use theme text/border colors
    Actual: Chart.js ignores CSS custom property strings (e.g. 'var(--text-muted)') — all text defaults to Chart.js built-in grey (#666)
-   Status: Open
-   Fix Branch:
+   Status: Fixed
+   Fix Branch: feature/US-0164-BUG-0242-0244-chart-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.00
-   Notes: render-scripts.js sets Chart.defaults.color = 'var(--text-muted)' and Chart.defaults.borderColor = 'var(--border)'. Chart.js does not resolve CSS custom properties. The correct approach is to resolve via getComputedStyle at init time (pattern already used by pvChartColors helpers).
+   Notes: render-scripts.js sets Chart.defaults.color = 'var(--text-muted)' and Chart.defaults.borderColor = 'var(--border)'. Chart.js does not resolve CSS custom properties. The correct approach is to resolve via getComputedStyle at init time (pattern already used by pvChartColors helpers). Fixed in PR #499 (commit 63a003f, AC-0591): Chart.defaults.color now resolved via getComputedStyle(document.documentElement).getPropertyValue('--text-mute').trim() at init time.
 
 ---
 
@@ -3371,11 +3371,11 @@ Steps to Reproduce:
 1. Open Trends tab in Safari or older Chromium
    Expected: Chart area fills show gradient
    Actual: Area fills may be transparent — Canvas 2D addColorStop does not support space-separated rgb(r g b / a) syntax in all browsers
-   Status: Open
-   Fix Branch:
+   Status: Fixed
+   Fix Branch: feature/US-0164-BUG-0242-0244-chart-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.00
-   Notes: \_trendGrad helper in render-tabs.js builds color stops as 'rgb(r g b / 0.35)'. Canvas 2D requires legacy rgba(r, g, b, a) comma-separated syntax. Fix: replace with rgba(${r}, ${g}, ${b}, 0.35).
+   Notes: \_trendGrad helper in render-tabs.js builds color stops as 'rgb(r g b / 0.35)'. Canvas 2D requires legacy rgba(r, g, b, a) comma-separated syntax. Fix: replace with rgba(${r}, ${g}, ${b}, 0.35). Fixed in PR #499 (AC-0592): gradient stops now use rgba(r, g, b, a) comma-separated form (render-tabs.js lines 555-556).
 
 ---
 
@@ -3483,11 +3483,11 @@ Steps to Reproduce:
 1. Set an agent's branch in sdlc-status.json; open dashboard; wait 5 seconds for first patchDOM tick
    Expected: Agent task cell shows clickable branch link
    Actual: textContent assignment destroys the server-rendered <a href="..."> — plain text URL, not clickable
-   Status: Open
-   Fix Branch:
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0245-0246-0247-dashboard-fixes
    Lesson Encoded: No
    Estimated Cost UUID: 0.00
-   Notes: patchDOM at generate-dashboard.js uses taskEl.textContent = newTask unconditionally. Server renderer has branch→link logic (line 2154) but client patcher does not replicate it. Fix: check if newTask value matches branch and render an anchor, or use innerHTML with escH.
+   Notes: patchDOM at generate-dashboard.js uses taskEl.textContent = newTask unconditionally. Server renderer has branch→link logic (line 2154) but client patcher does not replicate it. Fix: check if newTask value matches branch and render an anchor, or use innerHTML with escH. Fixed in PR #490 (AC-0597): patchDOM now rebuilds branch anchor via taskEl.innerHTML = '<a href="' + escH(branch) + '">' + escH(newTask || branch) + '</a>' (generate-dashboard.js lines 3247-3249).
 
 ---
 
@@ -3499,11 +3499,11 @@ Steps to Reproduce:
 1. Fire a dispatch event via setConductorActive
    Expected: Dispatch event appears with distinct styling in event log
    Actual: appendEventLog maps unknown tag to 'evt-start' tone — dispatch events visually identical to story-start events
-   Status: Open
-   Fix Branch:
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0245-0246-0247-dashboard-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.00
-   Notes: dispatch tag added in Session 31 was not added to appendEventLog tone-map or mc-evt-tag-dispatch CSS. Fix: add 'dispatch' → 'evt-dispatch' mapping and .mc-evt-tag-dispatch CSS rule.
+   Notes: dispatch tag added in Session 31 was not added to appendEventLog tone-map or mc-evt-tag-dispatch CSS. Fix: add 'dispatch' → 'evt-dispatch' mapping and .mc-evt-tag-dispatch CSS rule. Fixed in PR #490 (AC-0599): 'dispatch' tag added to appendEventLog tone-map → 'evt-dispatch' class with dedicated CSS rule (generate-dashboard.js lines 1494-1495, 2572-2573).
 
 ---
 
@@ -3516,11 +3516,11 @@ Steps to Reproduce:
 2. Open dashboard
    Expected: Story renders with In Progress (amber) styling
    Actual: Story renders with Planned (grey) styling — isInProgress check uses 'In Progress' (space) but updater writes 'InProgress' (camelCase)
-   Status: Open
-   Fix Branch:
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0245-0246-0247-dashboard-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.00
-   Notes: generate-dashboard.js story section uses s.status === 'In Progress' (line 2270). update-sdlc-status.js writes 'InProgress'. Fix: use /^In[ -]?Progress$/i regex consistent with patchCycleCounter (line 3510).
+   Notes: generate-dashboard.js story section uses s.status === 'In Progress' (line 2270). update-sdlc-status.js writes 'InProgress'. Fix: use /^In[ -]?Progress$/i regex consistent with patchCycleCounter (line 3510). Fixed in PR #490 (commit 36ceece, AC-0598): isInProgress now accepts both variants via OR comparison `s.status === 'In Progress' || s.status === 'InProgress'` (generate-dashboard.js line 2274).
 
 ---
 
