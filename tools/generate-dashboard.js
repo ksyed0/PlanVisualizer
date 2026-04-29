@@ -1491,6 +1491,8 @@ function generateHTML(status) {
   .evt-done .evt-agent { color: var(--ok, oklch(68% 0.15 150)); }
   .evt-block .evt-agent { color: var(--risk, oklch(64% 0.20 25)); }
   .evt-review .evt-agent { color: var(--info, oklch(66% 0.14 240)); }
+  .evt-dispatch .evt-agent { color: oklch(62% 0.19 268); }
+  .evt-dispatch .evt-msg { color: var(--text-secondary); font-style: italic; }
   .pv-log-status { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; padding: 2px 6px; border-radius: 4px; background: var(--live-accent, oklch(72% 0.19 38)); color: oklch(12% 0.02 60); margin-left: auto; }
   .card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
   .card-head h3 { margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; }
@@ -2556,7 +2558,16 @@ function appendEventLog(entry) {
   var body = document.getElementById('pv-log-body');
   if (!body) return;
   var tag = entry.tag || 'start';
-  var tone = tag === 'done' ? 'evt-done' : tag === 'block' ? 'evt-block' : tag === 'review' ? 'evt-review' : 'evt-start';
+  var tone =
+    tag === 'done'
+      ? 'evt-done'
+      : tag === 'block'
+        ? 'evt-block'
+        : tag === 'review'
+          ? 'evt-review'
+          : tag === 'dispatch'
+            ? 'evt-dispatch'
+            : 'evt-start';
   var row = document.createElement('div');
   row.className = 'pv-log-row ' + tone;
   row.innerHTML = '<span class="evt-time">' + escH(entry.t || '') + '</span>' +

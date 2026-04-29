@@ -645,6 +645,15 @@ describe('generate-dashboard — BUG-0245 patchDOM branch link anchor', () => {
   });
 });
 
+// BUG-0246: appendEventLog tone map must include dispatch tag
+describe('generate-dashboard — BUG-0246 appendEventLog dispatch tone', () => {
+  it('appendEventLog tone map includes dispatch tag mapping to evt-dispatch', () => {
+    const src = fs.readFileSync(path.join(__dirname, '../../tools/generate-dashboard.js'), 'utf8');
+    expect(src).toContain("'dispatch'");
+    expect(src).toContain('evt-dispatch');
+  });
+});
+
 // AC-0498: generated dashboard HTML must contain zero hex color literals
 // (#RGB / #RRGGBB), rgb(), or rgba() calls. All colours must use oklch(),
 // color-mix(in oklab, ...) or CSS custom properties.
