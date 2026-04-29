@@ -3142,24 +3142,24 @@ Acceptance Criteria:
 US-0165 (EPIC-0023): As a project lead, I want the Stakeholder tab to correctly flag epics that have open Critical/High bugs as Needs Attention, so that risk is accurately communicated to stakeholders.
 Priority: High (P1)
 Estimate: XS
-Status: Planned
-Branch:
+Status: Done
+Branch: bugfix/BUG-0239-0241-0248-stakeholder-fixes
 Acceptance Criteria:
 
-- [ ] AC-0595: shEpicCompositeStatus cross-references bugs via story→epic map (using normalizeStoryRef) instead of b.epicId (which is never set)
-- [ ] AC-0596: Open bug count filter in _renderStatusHero uses the same canonical denylist pattern as renderStatusTab: !/^(Fixed|Retired|Cancelled|Rejected)/i
+- [x] AC-0595: shEpicCompositeStatus cross-references bugs via story→epic map (using normalizeStoryRef) instead of b.epicId (which is never set)
+- [x] AC-0596: Open bug count filter in _renderStatusHero uses the same canonical denylist pattern as renderStatusTab: !/^(Fixed|Retired|Cancelled|Rejected)/i
 ```
 
 ```
 US-0166 (EPIC-0023): As a user, I want patchDOM to preserve branch link anchors in agent task cells and correctly style InProgress stories, so that live updates do not degrade the agentic dashboard display.
 Priority: Medium (P1)
 Estimate: S
-Status: Planned
-Branch:
+Status: In Progress
+Branch: bugfix/BUG-0245-0246-0247-dashboard-fixes
 Acceptance Criteria:
 
-- [ ] AC-0597: patchDOM updates agent task cell with an <a href="..."> anchor when branch is set, not raw textContent that destroys the link
-- [ ] AC-0598: isInProgress check in generate-dashboard.js story renderer uses /^In[ -]?Progress$/i regex, matching both 'In Progress' (space) and 'InProgress' (camelCase from update-sdlc-status.js)
-- [ ] AC-0599: dispatch tag added to appendEventLog tone-map with a distinct evt-dispatch CSS class, making conductor dispatch events visually distinct from story-start events
+- [x] AC-0597: patchDOM updates agent task cell with an <a href="..."> anchor when branch is set, not raw textContent that destroys the link
+- [x] AC-0598: isInProgress check in generate-dashboard.js story renderer uses /^In[ -]?Progress$/i regex, matching both 'In Progress' (space) and 'InProgress' (camelCase from update-sdlc-status.js)
+- [x] AC-0599: dispatch tag added to appendEventLog tone-map with a distinct evt-dispatch CSS class, making conductor dispatch events visually distinct from story-start events
 - [ ] AC-0600: _dispatchCount persists across page loads (initialized from localStorage or computed from status.log)
 ```
