@@ -257,9 +257,11 @@ function renderScripts(data, options = {}) {
   }
 
   // US-0140: Wire Chart.js global defaults to CSS custom properties
+  // AC-0591: resolve CSS vars at init time — canvas fillStyle cannot resolve CSS custom properties
   if (typeof Chart !== 'undefined') {
-    Chart.defaults.color = 'var(--text-muted)';
-    Chart.defaults.borderColor = 'var(--border)';
+    var _chartTextColor = getComputedStyle(document.documentElement).getPropertyValue('--text-mute').trim() || getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim();
+    Chart.defaults.color = _chartTextColor || 'oklch(65% 0.014 95)';
+    Chart.defaults.borderColor = getComputedStyle(document.documentElement).getPropertyValue('--border').trim() || 'oklch(88% 0.010 95)';
   }
   function cssVar(name) {
     return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -337,6 +339,8 @@ function renderScripts(data, options = {}) {
     var chromeToggle = document.getElementById('pv-theme-toggle');
     if (chromeToggle) chromeToggle.setAttribute('aria-label', t === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
     updateChartTheme();
+    // AC-0594: update trend chart axes when theme changes
+    if (typeof updateTrendsChartTheme === 'function') updateTrendsChartTheme();
   }
   // Backward-compat alias — existing callers use setTheme()
   var setTheme = pvSetTheme;

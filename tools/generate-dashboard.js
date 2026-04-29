@@ -2552,7 +2552,11 @@ function escH(s) {
 // for conductorHoldMs ms after each dispatch, then reverts to is-idle.
 var conductorHoldMs = 3000;
 var _conductorHoldTimer = null;
-var _dispatchCount = 0;
+var _dispatchCount = parseInt(localStorage.getItem('pv-dispatch-count') || '0', 10);
+(function () {
+  var _initDispEl = document.getElementById('conductor-dispatch-count');
+  if (_initDispEl && _dispatchCount > 0) _initDispEl.textContent = _dispatchCount + ' dispatched';
+})();
 
 function appendEventLog(entry) {
   var body = document.getElementById('pv-log-body');
@@ -2595,6 +2599,7 @@ function appendEventLog(entry) {
 function setConductorActive(dispatchMsg) {
   var card = document.querySelector('[data-agent="Conductor"]');
   _dispatchCount++;
+  localStorage.setItem('pv-dispatch-count', _dispatchCount);
   var dispEl = document.getElementById('conductor-dispatch-count');
   if (dispEl) {
     dispEl.textContent = _dispatchCount + ' dispatched';

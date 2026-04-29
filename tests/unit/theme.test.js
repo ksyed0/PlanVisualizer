@@ -100,7 +100,10 @@ describe('AC-0498 — no hex literals in generated HTML', () => {
     // Strip the inlined Chart.js library block before checking — Chart.js itself
     // contains hex literals and rgb/rgba calls that are outside our control.
     const stripped = html.replace(/<script>\/\*![\s\S]*?Chart\.js[\s\S]*?<\/script>/, '');
-    const hits = stripped.match(/#[0-9a-fA-F]{3,6}\b|rgb\(|rgba\(/g) || [];
+    // Match hardcoded CSS color literals only — rgb(NNN) / rgba(NNN) with leading digit.
+    // Exclude dynamically-constructed color strings like 'rgba('+r+','+g+','+b+',0.35)'
+    // which appear in _trendGrad as JS string fragments, not as hardcoded colour values (AC-0592).
+    const hits = stripped.match(/#[0-9a-fA-F]{3,6}\b|rgb\(\d|rgba\(\d/g) || [];
     expect(hits).toHaveLength(0);
   });
 });
