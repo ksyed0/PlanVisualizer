@@ -772,14 +772,6 @@ function renderPrintCSS() {
   .lesson-bug-inline summary::-webkit-details-marker { display: none; }
   .lesson-bug-inline summary { display: flex; }
   /* EPIC-0012: Stakeholder tab ───────────────────────────── */
-  .sh-summary-bar { display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 12px; margin-bottom: 20px; }
-  .sh-tile { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; }
-  .sh-tile-wide { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; }
-  .sh-tile-label { font-size: 9px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-mute); margin-bottom: 4px; }
-  .sh-tile-value { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-  .sh-big-num { font-family: var(--font-mono); font-size: 22px; font-weight: 600; color: var(--text); }
-  .sh-tile-sub { font-size: 12px; color: var(--text-dim); }
-  .sh-tl-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; display: inline-block; }
   .sh-section-label { font-size: 9px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-mute); margin-bottom: 8px; }
   .sh-epics-list { display: flex; flex-direction: column; gap: 4px; }
   .sh-epic-row { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
@@ -789,6 +781,7 @@ function renderPrintCSS() {
   .sh-epic-name { font-size: 12px; font-weight: 600; color: var(--text); }
   .sh-epic-id { font-family: var(--font-mono); font-size: 10px; font-weight: 500; color: var(--text-dim); margin-right: 5px; }
   .sh-epic-costs { display: flex; gap: 10px; font-size: 10px; color: var(--text-mute); }
+  .sh-epic-dates { font-size: 11px; font-family: var(--font-mono); color: var(--clr-text-muted); margin-top: 2px; }
   .sh-cost-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em; }
   .sh-cost-val { font-family: var(--font-mono); font-size: 10px; font-weight: 500; color: var(--text-dim); }
   .sh-progress-track { width: 72px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; flex-shrink: 0; }

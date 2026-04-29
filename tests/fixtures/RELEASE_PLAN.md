@@ -7,6 +7,8 @@ EPIC-0001: Code Editing
 Description: Core editor.
 Release Target: MVP (v0.1)
 Status: In Progress
+StartDate: 2026-03-05
+DoneDate: 2026-03-10
 Dependencies: None
 
 EPIC-0002: File Management

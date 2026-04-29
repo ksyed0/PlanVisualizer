@@ -19,6 +19,10 @@ describe('parseReleasePlan', () => {
     it('parses epic releaseTarget', () => expect(result.epics[0].releaseTarget).toBe('MVP (v0.1)'));
     it('parses epic dependencies as array', () => expect(result.epics[0].dependencies).toEqual([]));
     it('parses EPIC-0002 dependencies', () => expect(result.epics[1].dependencies).toEqual(['EPIC-0001']));
+    it('parses epic startDate when present', () => expect(result.epics[0].startDate).toBe('2026-03-05'));
+    it('parses epic doneDate when present', () => expect(result.epics[0].doneDate).toBe('2026-03-10'));
+    it('returns null startDate when field absent', () => expect(result.epics[1].startDate).toBeNull());
+    it('returns null doneDate when field absent', () => expect(result.epics[1].doneDate).toBeNull());
   });
 
   describe('stories', () => {
@@ -111,5 +115,13 @@ Dependencies: None
       '```\nEPIC-0020: Alpha\nDescription: A\nRelease Target: v1\nStatus: Planned\nDependencies: None\n```\n\n```\nEPIC-0021: Beta\nDescription: B\nRelease Target: v1\nStatus: Planned\nDependencies: None\n```';
     const result = parseReleasePlan(md);
     expect(result.epics).toHaveLength(2);
+  });
+
+  it('parses StartDate and DoneDate from inline epic block', () => {
+    const md =
+      '```\nEPIC-0012: Dated\nDescription: Test\nRelease Target: v1\nStatus: Done\nStartDate: 2026-04-01\nDoneDate: 2026-04-15\nDependencies: None\n```';
+    const r = parseReleasePlan(md);
+    expect(r.epics[0].startDate).toBe('2026-04-01');
+    expect(r.epics[0].doneDate).toBe('2026-04-15');
   });
 });
