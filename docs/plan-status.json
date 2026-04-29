@@ -6,6 +6,8 @@
       "description": "Regex-based parsers for all AGENTS.md markdown file formats — release plan, test cases, bugs, cost log, coverage JSON, and progress log.",
       "releaseTarget": "MVP (v1.0)",
       "status": "Done",
+      "startDate": null,
+      "doneDate": null,
       "dependencies": []
     },
     {
@@ -14,6 +16,8 @@
       "description": "Static HTML generation with six tabs (Hierarchy, Kanban, Traceability, Charts, Costs, Bugs), top bar stats, filters, and recent activity panel.",
       "releaseTarget": "MVP (v1.0)",
       "status": "Done",
+      "startDate": null,
+      "doneDate": null,
       "dependencies": [
         "EPIC-0001"
       ]
@@ -24,6 +28,8 @@
       "description": "One-command bash installer, JSON config system, and Claude Code stop hook for automated cost capture.",
       "releaseTarget": "MVP (v1.0)",
       "status": "Done",
+      "startDate": null,
+      "doneDate": null,
       "dependencies": [
         "EPIC-0001",
         "EPIC-0002"
@@ -35,6 +41,8 @@
       "description": "Consolidated GitHub Actions pipeline with ESLint, Jest coverage gate, npm audit, CodeQL analysis, GitHub Pages deployment, and Dependabot.",
       "releaseTarget": "Release 1.1",
       "status": "Done",
+      "startDate": "2026-03-11",
+      "doneDate": "2026-04-13",
       "dependencies": [
         "EPIC-0001"
       ]
@@ -45,6 +53,8 @@
       "description": "Full AGENTS.md-compliant documentation including design doc, architecture, release plan, test cases, ID registry, and all supporting project files.",
       "releaseTarget": "Release 1.1",
       "status": "Done",
+      "startDate": "2026-03-11",
+      "doneDate": "2026-03-11",
       "dependencies": []
     },
     {
@@ -53,6 +63,8 @@
       "description": "Mobile-responsive layout fixes, display accuracy improvements, navigation state persistence, and developer-experience enhancements for the generated dashboard.",
       "releaseTarget": "Release 1.2",
       "status": "Done",
+      "startDate": "2026-03-16",
+      "doneDate": "2026-03-16",
       "dependencies": [
         "EPIC-0002"
       ]
@@ -63,6 +75,8 @@
       "description": "Replace the generic Tailwind slate palette and default blue accent with a distinctive dark design system. Improvements span the colour palette, badge styling, tab indicator, typography, hover interactions, and background texture to produce a visually unique dashboard.",
       "releaseTarget": "Release 1.3",
       "status": "Done",
+      "startDate": "2026-03-16",
+      "doneDate": "2026-04-13",
       "dependencies": [
         "EPIC-0006"
       ]
@@ -73,6 +87,8 @@
       "description": "Capture and visualise project metrics over time. Store snapshots of dashboard data on each generation and display trend charts showing progress, costs, coverage, and velocity.",
       "releaseTarget": "Release 1.4",
       "status": "Done",
+      "startDate": "2026-03-30",
+      "doneDate": "2026-04-13",
       "dependencies": [
         "EPIC-0007"
       ]
@@ -83,6 +99,8 @@
       "description": "Track burn rate and predict when budget exhausts. Alert when projected costs exceed thresholds. Help teams stay on budget by visualising spend velocity and forecasting future costs.",
       "releaseTarget": "Release 1.5",
       "status": "Done",
+      "startDate": "2026-04-08",
+      "doneDate": "2026-04-27",
       "dependencies": [
         "EPIC-0008"
       ]
@@ -93,6 +111,8 @@
       "description": "Composite risk scoring per story, risk trend charts, velocity-based completion prediction, at-risk epic summary, and Monte Carlo delivery simulation.",
       "releaseTarget": "Release 1.6",
       "status": "Planned",
+      "startDate": "2026-04-19",
+      "doneDate": null,
       "dependencies": [
         "EPIC-0009"
       ]
@@ -103,6 +123,8 @@
       "description": "Global search across all stories, bugs, and lessons. Quick jump to any item by ID.",
       "releaseTarget": "Release 1.7",
       "status": "Done",
+      "startDate": "2026-04-08",
+      "doneDate": "2026-04-08",
       "dependencies": [
         "EPIC-0010"
       ]
@@ -113,6 +135,8 @@
       "description": "Non-technical stakeholder dashboard with milestone progress, budget traffic lights, PDF export, email digests, and password protection.",
       "releaseTarget": "Release 1.8",
       "status": "Planned",
+      "startDate": "2026-04-22",
+      "doneDate": null,
       "dependencies": [
         "EPIC-0011"
       ]
@@ -123,6 +147,8 @@
       "description": "Secondary dashboard visualising the multi-agent orchestration layer — agent roles, delegation flow, session timeline, and SDLC metrics.",
       "releaseTarget": "Release 1.5",
       "status": "Done",
+      "startDate": "2026-04-13",
+      "doneDate": "2026-04-27",
       "dependencies": [
         "EPIC-0002"
       ]
@@ -133,6 +159,8 @@
       "description": "Planned and in-progress work that was added after its original epic was marked Done. Collects follow-up stories to preserve the integrity of completed epics.",
       "releaseTarget": "Backlog",
       "status": "Done",
+      "startDate": "2026-04-13",
+      "doneDate": "2026-04-27",
       "dependencies": []
     },
     {
@@ -141,6 +169,8 @@
       "description": "Editorial Operations Dashboard aesthetic pass. Promotes PlanVisualizer from \"generic utility dashboard\" to a refined, information-dense interface with display typography, semantic badge tokens, shadow-based cards, zebra-striped tables, and per-tab polish across Hierarchy, Kanban, Traceability, Status, Trends, Costs, Bugs, and Lessons.",
       "releaseTarget": "Release 1.9",
       "status": "Done",
+      "startDate": "2026-04-13",
+      "doneDate": "2026-04-18",
       "dependencies": [
         "EPIC-0007"
       ]
@@ -151,6 +181,8 @@
       "description": "Mission Control / Broadcast Studio aesthetic pass on the Agentic SDLC Dashboard (docs/dashboard.html). Replaces the 30s location.reload() with live fetch-and-patch, wires up size-appropriate agent portraits, redesigns the phase pipeline (6-phase timeline with partial progress fill), differentiates the metric cards, gives the activity log a terminal aesthetic, tightens header/footer/alert treatments, and adds a baseline test harness + shared theme module for durable cross-dashboard token reuse. Cycle-history visualization is deferred to EPIC-0019. Sibling to EPIC-0015 (shared semantic badge tokens from US-0097, distinct voice — report vs. live channel).",
       "releaseTarget": "Release 1.10",
       "status": "Done",
+      "startDate": "2026-04-13",
+      "doneDate": "2026-04-27",
       "dependencies": [
         "EPIC-0013",
         "EPIC-0015"
@@ -162,6 +194,8 @@
       "description": "Discovery / retrospective epic. Review the Agentic SDLC Dashboard (originally built for a hackathon demo, now extracted as a reusable component) and define what it takes to make it genuinely effective as a general-purpose agentic pipeline visualization. Output: a gap analysis and a set of implementation stories in a follow-on epic. Complements EPIC-0016 (Mission Control aesthetic redesign) by focusing on schema, data model, workflow coverage, and integration patterns — not just visual polish.",
       "releaseTarget": "Release 2.0",
       "status": "Done",
+      "startDate": "2026-04-13",
+      "doneDate": "2026-04-18",
       "dependencies": [
         "EPIC-0013",
         "EPIC-0016"
@@ -173,6 +207,8 @@
       "description": "Comprehensive effectiveness improvement for the Agentic SDLC Dashboard. Covers three tracks: (A) schema generalization — replacing hackathon framing with a project config block, externalizing phase definitions, and removing hardcoded project identity from the HTML; (B) CLI completeness — epic lifecycle commands, session reset, coverage/bug/phase wiring in DM_AGENT.md; (C) new features — cycle history lap strip, aggregate telemetry, and a dashboard extraction guide for adopting projects. Supersedes the original narrow cycle-history scope.",
       "releaseTarget": "Release 1.11",
       "status": "Done",
+      "startDate": "2026-04-15",
+      "doneDate": "2026-04-27",
       "dependencies": [
         "EPIC-0016"
       ]
@@ -183,6 +219,8 @@
       "description": "Unify Plan-Status and Agentic dashboards under a single Editorial × Mission Control design language. Share a token set (neutrals, semantic colors, typography, card/chip/bar primitives) while differentiating each dashboard with its own accent hue, mode badge (REPORT vs LIVE), and voice (calm report vs live broadcast). First-class light and dark themes. Replaces the saturated navy gradient header, consolidates the chart palette, lifts the Status tab out of sparseness, promotes active agents and event activity on the Agentic surface, and removes pipeline/agent-roster redundancy.",
       "releaseTarget": "Release 1.11",
       "status": "Done",
+      "startDate": "2026-04-21",
+      "doneDate": "2026-04-27",
       "dependencies": [
         "EPIC-0015",
         "EPIC-0016"
@@ -11843,9 +11881,9 @@
       "outputTokens": 0
     },
     "_totals": {
-      "costUsd": 580.0306999999999,
-      "inputTokens": 35637993,
-      "outputTokens": 5659845
+      "costUsd": 629.2417999999999,
+      "inputTokens": 36904101,
+      "outputTokens": 5989274
     },
     "_bugs": {
       "BUG-0183": {
@@ -14568,7 +14606,7 @@
     "lines": 95.6,
     "statements": 93.48,
     "functions": 94.58,
-    "branches": 80.48,
+    "branches": 80.52,
     "overall": 95.6,
     "meetsTarget": true,
     "available": true
@@ -14984,10 +15022,10 @@
       "bugIds": []
     }
   ],
-  "generatedAt": "2026-04-28T23:03:20.034Z",
-  "commitSha": "8e73720",
-  "buildNumber": "608",
-  "branch": "bugfix/BUG-0236-remaining-tailwind-stragglers",
+  "generatedAt": "2026-04-29T02:45:26.070Z",
+  "commitSha": "3df6bba",
+  "buildNumber": "613",
+  "branch": "feature/US-0162-stakeholder-hero-epic-dates",
   "sessionTimeline": [
     {
       "date": "2026-03-09",
@@ -15252,6 +15290,10 @@
     {
       "date": "2026-04-19",
       "cumCost": 580.0307
+    },
+    {
+      "date": "2026-04-28",
+      "cumCost": 629.2418
     }
   ],
   "costHistory": {
@@ -15604,14 +15646,20 @@
         "date": "2026-04-19",
         "costUsd": 27.4393
       }
+    ],
+    "claude/quizzical-cannon-606127": [
+      {
+        "date": "2026-04-28",
+        "costUsd": 49.2111
+      }
     ]
   },
-  "deltaSpend": 27.44,
+  "deltaSpend": 49.21,
   "projectName": "PlanVisualizer",
   "tagline": "Self-documenting project dashboards for Agentic coding platforms.",
-  "version": "1.5.63",
+  "version": "1.5.64",
   "appName": "plan-visualizer",
-  "appVersion": "1.5.63",
+  "appVersion": "1.5.64",
   "githubUrl": "https://github.com/ksyed0/PlanVisualizer",
   "agents": {
     "Conductor": {
@@ -15679,13 +15727,13 @@
     }
   },
   "budget": {
-    "totalBudget": 744.9164779999999,
-    "totalSpent": 580.0306999999999,
+    "totalBudget": 794.1275779999999,
+    "totalSpent": 629.2417999999999,
     "totalProjected": 91390.693962,
-    "percentUsed": 78,
-    "burnRate": 16.111963888888887,
-    "daysRemaining": 10,
-    "projectedExhaustion": 10,
+    "percentUsed": 79,
+    "burnRate": 17.635640888888883,
+    "daysRemaining": 9,
+    "projectedExhaustion": 9,
     "thresholds": [
       50,
       75,
@@ -15853,7 +15901,7 @@
     "hasBudget": true
   },
   "completion": {
-    "likelyDate": "May 1",
+    "likelyDate": "May 2",
     "rangeStart": "May 1",
     "rangeEnd": "May 2",
     "velocityWeeks": 8
@@ -15997,7 +16045,8 @@
       "2026-04-28T21:53:04.456Z",
       "2026-04-28T21:59:07.251Z",
       "2026-04-28T22:00:09.951Z",
-      "2026-04-28T23:03:20.152Z"
+      "2026-04-28T23:03:20.152Z",
+      "2026-04-29T02:45:26.158Z"
     ],
     "doneCounts": [
       2,
@@ -16137,6 +16186,7 @@
       155,
       155,
       155,
+      155,
       155
     ],
     "totalStories": [
@@ -16261,6 +16311,7 @@
       158,
       158,
       148,
+      161,
       161,
       161,
       161,
@@ -16417,6 +16468,7 @@
       4463.6072,
       4463.6072,
       4463.6072,
+      4463.6072,
       4463.6072
     ],
     "coverage": [
@@ -16552,6 +16604,7 @@
       95.49,
       95.49,
       95.59,
+      95.6,
       95.6,
       95.6,
       95.6,
@@ -16697,6 +16750,7 @@
       280,
       280,
       280,
+      280,
       280
     ],
     "openBugs": [
@@ -16837,9 +16891,11 @@
       11,
       11,
       11,
+      11,
       11
     ],
     "atRisk": [
+      0,
       0,
       0,
       0,
@@ -17117,7 +17173,8 @@
       276680193,
       276680193,
       276680193,
-      276680193
+      276680193,
+      277946301
     ],
     "outputTokens": [
       396518,
@@ -17257,7 +17314,8 @@
       35316621,
       35316621,
       35316621,
-      35316621
+      35316621,
+      35646050
     ],
     "avgRisk": [
       1.61025641025641,
@@ -17392,6 +17450,7 @@
       1.7000000000000002,
       1.6714285714285715,
       1.6714285714285715,
+      1.6600000000000001,
       1.6600000000000001,
       1.6600000000000001,
       1.6600000000000001,

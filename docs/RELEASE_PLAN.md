@@ -43,90 +43,118 @@ EPIC-0004: CI/CD Pipeline
 Description: Consolidated GitHub Actions pipeline with ESLint, Jest coverage gate, npm audit, CodeQL analysis, GitHub Pages deployment, and Dependabot.
 Release Target: Release 1.1
 Status: Done
+StartDate: 2026-03-11
+DoneDate: 2026-04-13
 Dependencies: EPIC-0001
 
 EPIC-0005: Project Self-Documentation
 Description: Full AGENTS.md-compliant documentation including design doc, architecture, release plan, test cases, ID registry, and all supporting project files.
 Release Target: Release 1.1
 Status: Done
+StartDate: 2026-03-11
+DoneDate: 2026-03-11
 Dependencies: None
 
 EPIC-0006: Dashboard UX & Quality Improvements
 Description: Mobile-responsive layout fixes, display accuracy improvements, navigation state persistence, and developer-experience enhancements for the generated dashboard.
 Release Target: Release 1.2
 Status: Done
+StartDate: 2026-03-16
+DoneDate: 2026-03-16
 Dependencies: EPIC-0002
 
 EPIC-0007: Dashboard Visual Design Overhaul
 Description: Replace the generic Tailwind slate palette and default blue accent with a distinctive dark design system. Improvements span the colour palette, badge styling, tab indicator, typography, hover interactions, and background texture to produce a visually unique dashboard.
 Release Target: Release 1.3
 Status: Done
+StartDate: 2026-03-16
+DoneDate: 2026-04-13
 Dependencies: EPIC-0006
 
 EPIC-0008: Trend Analysis & Historical Tracking
 Description: Capture and visualise project metrics over time. Store snapshots of dashboard data on each generation and display trend charts showing progress, costs, coverage, and velocity.
 Release Target: Release 1.4
 Status: Done
+StartDate: 2026-03-30
+DoneDate: 2026-04-13
 Dependencies: EPIC-0007
 
 EPIC-0009: Budget Forecasting
 Description: Track burn rate and predict when budget exhausts. Alert when projected costs exceed thresholds. Help teams stay on budget by visualising spend velocity and forecasting future costs.
 Release Target: Release 1.5
 Status: Done
+StartDate: 2026-04-08
+DoneDate: 2026-04-27
 Dependencies: EPIC-0008
 
 EPIC-0010: Risk Analytics
 Description: Composite risk scoring per story, risk trend charts, velocity-based completion prediction, at-risk epic summary, and Monte Carlo delivery simulation.
 Release Target: Release 1.6
 Status: Planned
+StartDate: 2026-04-19
 Dependencies: EPIC-0009
 
 EPIC-0011: Search
 Description: Global search across all stories, bugs, and lessons. Quick jump to any item by ID.
 Release Target: Release 1.7
 Status: Done
+StartDate: 2026-04-08
+DoneDate: 2026-04-08
 Dependencies: EPIC-0010
 
 EPIC-0012: Stakeholder View
 Description: Non-technical stakeholder dashboard with milestone progress, budget traffic lights, PDF export, email digests, and password protection.
 Release Target: Release 1.8
 Status: Planned
+StartDate: 2026-04-22
 Dependencies: EPIC-0011
 
 EPIC-0013: Agentic SDLC Dashboard
 Description: Secondary dashboard visualising the multi-agent orchestration layer — agent roles, delegation flow, session timeline, and SDLC metrics.
 Release Target: Release 1.5
 Status: Done
+StartDate: 2026-04-13
+DoneDate: 2026-04-27
 Dependencies: EPIC-0002
 
 EPIC-0014: Follow-Up Changes
 Description: Planned and in-progress work that was added after its original epic was marked Done. Collects follow-up stories to preserve the integrity of completed epics.
 Release Target: Backlog
 Status: Done
+StartDate: 2026-04-13
+DoneDate: 2026-04-27
 Dependencies: None
 
 EPIC-0015: UI Review and Redesign
 Description: Editorial Operations Dashboard aesthetic pass. Promotes PlanVisualizer from "generic utility dashboard" to a refined, information-dense interface with display typography, semantic badge tokens, shadow-based cards, zebra-striped tables, and per-tab polish across Hierarchy, Kanban, Traceability, Status, Trends, Costs, Bugs, and Lessons.
 Release Target: Release 1.9
 Status: Done
+StartDate: 2026-04-13
+DoneDate: 2026-04-18
 Dependencies: EPIC-0007
 
 EPIC-0016: Agentic Dashboard Mission Control Redesign
 Description: Mission Control / Broadcast Studio aesthetic pass on the Agentic SDLC Dashboard (docs/dashboard.html). Replaces the 30s location.reload() with live fetch-and-patch, wires up size-appropriate agent portraits, redesigns the phase pipeline (6-phase timeline with partial progress fill), differentiates the metric cards, gives the activity log a terminal aesthetic, tightens header/footer/alert treatments, and adds a baseline test harness + shared theme module for durable cross-dashboard token reuse. Cycle-history visualization is deferred to EPIC-0019. Sibling to EPIC-0015 (shared semantic badge tokens from US-0097, distinct voice — report vs. live channel).
 Release Target: Release 1.10
 Status: Done
+StartDate: 2026-04-13
+DoneDate: 2026-04-27
 Dependencies: EPIC-0013, EPIC-0015
 
 EPIC-0017: Agentic Dashboard Effectiveness Review
 Description: Discovery / retrospective epic. Review the Agentic SDLC Dashboard (originally built for a hackathon demo, now extracted as a reusable component) and define what it takes to make it genuinely effective as a general-purpose agentic pipeline visualization. Output: a gap analysis and a set of implementation stories in a follow-on epic. Complements EPIC-0016 (Mission Control aesthetic redesign) by focusing on schema, data model, workflow coverage, and integration patterns — not just visual polish.
 Release Target: Release 2.0
 Status: Done
+StartDate: 2026-04-13
+DoneDate: 2026-04-18
 Dependencies: EPIC-0013, EPIC-0016
 
 EPIC-0019: Dashboard Cycle History
 Description: Comprehensive effectiveness improvement for the Agentic SDLC Dashboard. Covers three tracks: (A) schema generalization — replacing hackathon framing with a project config block, externalizing phase definitions, and removing hardcoded project identity from the HTML; (B) CLI completeness — epic lifecycle commands, session reset, coverage/bug/phase wiring in DM_AGENT.md; (C) new features — cycle history lap strip, aggregate telemetry, and a dashboard extraction guide for adopting projects. Supersedes the original narrow cycle-history scope.
 Release Target: Release 1.11
 Status: Done
+StartDate: 2026-04-15
+DoneDate: 2026-04-27
 Dependencies: EPIC-0016
 ```
 
@@ -941,6 +969,8 @@ EPIC-0007: Dashboard Visual Design Overhaul
 Description: Replace the generic Tailwind slate palette and default blue accent with a distinctive dark design system. Improvements span the colour palette, badge styling, tab indicator, typography, hover interactions, and background texture to produce a visually unique dashboard.
 Release Target: Release 1.3
 Status: Done
+StartDate: 2026-03-16
+DoneDate: 2026-04-13
 Dependencies: EPIC-0006
 ```
 
@@ -1125,6 +1155,8 @@ EPIC-0008: Trend Analysis & Historical Tracking
 Description: Capture and visualise project metrics over time. Store snapshots of dashboard data on each generation and display trend charts showing progress, costs, coverage, and velocity.
 Release Target: Release 1.4
 Status: Done
+StartDate: 2026-03-30
+DoneDate: 2026-04-13
 Dependencies: EPIC-0007
 ```
 
@@ -1239,6 +1271,8 @@ EPIC-0009: Budget Forecasting
 Description: Track burn rate and predict when budget exhausts. Alert when projected costs exceed thresholds. Help teams stay on budget by visualising spend velocity and forecasting future costs.
 Release Target: Release 1.5
 Status: Done
+StartDate: 2026-04-08
+DoneDate: 2026-04-27
 Dependencies: EPIC-0008
 ```
 
@@ -1327,6 +1361,7 @@ EPIC-0010: Risk Analytics
 Description: More sophisticated risk scoring weighted by priority and severity. Risk trend chart over time. Predict project completion date based on velocity.
 Release Target: Release 1.6
 Status: Planned
+StartDate: 2026-04-19
 Dependencies: EPIC-0009
 ```
 
@@ -1406,6 +1441,8 @@ EPIC-0011: Search
 Description: Global search across all stories, bugs, and lessons. Quick jump to any item by ID.
 Release Target: Release 1.7
 Status: Done
+StartDate: 2026-04-08
+DoneDate: 2026-04-08
 Dependencies: EPIC-0010
 ```
 
@@ -1472,6 +1509,7 @@ EPIC-0012: Stakeholder View
 Description: Simplified read-only view for non-technical stakeholders. Exportable summary report.
 Release Target: Release 1.8
 Status: Done
+StartDate: 2026-04-22
 Dependencies: EPIC-0011
 ```
 
@@ -1695,6 +1733,8 @@ EPIC-0013: Agentic SDLC Pipeline & Live Dashboard
 Description: The orchestration framework, agent roster, multi-platform spawn helper, concurrency safety utilities, live HTML dashboard, sdlc-status schema, and plan visualizer that powered the agentic build of the CTC-Mobile-Wishlist POC and now ship as features of PlanVisualizer.
 Release Target: Tooling (internal)
 Status: Done
+StartDate: 2026-04-13
+DoneDate: 2026-04-27
 Dependencies: None
 ```
 
@@ -1913,6 +1953,8 @@ EPIC-0014: Follow-Up Changes
 Description: Planned and in-progress work that was added after its original epic was marked Done. Collects follow-up stories to preserve the integrity of completed epics.
 Release Target: Backlog
 Status: Done
+StartDate: 2026-04-13
+DoneDate: 2026-04-27
 Dependencies: None
 ```
 
@@ -1981,6 +2023,8 @@ EPIC-0015: UI Review and Redesign
 Description: Editorial Operations Dashboard aesthetic pass. Promotes PlanVisualizer from "generic utility dashboard" to a refined, information-dense interface with display typography, semantic badge tokens, shadow-based cards, zebra-striped tables, and per-tab polish across Hierarchy, Kanban, Traceability, Status, Trends, Costs, Bugs, and Lessons.
 Release Target: Release 1.9
 Status: Done
+StartDate: 2026-04-13
+DoneDate: 2026-04-18
 Dependencies: EPIC-0007
 ```
 
@@ -2190,6 +2234,8 @@ EPIC-0016: Agentic Dashboard Mission Control Redesign
 Description: Mission Control / Broadcast Studio aesthetic pass on the Agentic SDLC Dashboard (docs/dashboard.html). Replaces the 30s location.reload() with live fetch-and-patch, wires up agent portraits, rebuilds the phase pipeline as an iterative three-tier display (current lap + lap history + telemetry), differentiates the metric cards, gives the activity log a terminal aesthetic, and tightens header/footer/alert treatments. Sibling to EPIC-0015 (shared semantic badge tokens from US-0097, distinct voice — report vs. live channel).
 Release Target: Release 1.10
 Status: Done
+StartDate: 2026-04-13
+DoneDate: 2026-04-27
 Dependencies: EPIC-0013, EPIC-0015
 ```
 
@@ -2427,6 +2473,8 @@ EPIC-0017: Agentic Dashboard Effectiveness Review
 Description: Discovery / retrospective epic. Review the Agentic SDLC Dashboard (originally built for a hackathon demo, now extracted as a reusable component) and define what it takes to make it genuinely effective as a general-purpose agentic pipeline visualization. Output: a gap analysis and a set of implementation stories in a follow-on epic. Complements EPIC-0016 (Mission Control aesthetic redesign) by focusing on schema, data model, workflow coverage, and integration patterns — not just visual polish.
 Release Target: Release 2.0
 Status: Done
+StartDate: 2026-04-13
+DoneDate: 2026-04-18
 Dependencies: EPIC-0013, EPIC-0016
 ```
 
@@ -2459,6 +2507,8 @@ EPIC-0019: Dashboard Cycle History
 Description: Comprehensive effectiveness improvement for the Agentic SDLC Dashboard. Covers three tracks: (A) schema generalization — replacing hackathon framing with a project config block, externalizing phase definitions, and removing hardcoded project identity from the HTML; (B) CLI completeness — epic lifecycle commands, session reset, coverage/bug/phase wiring in DM_AGENT.md; (C) new features — cycle history lap strip, aggregate telemetry, and a dashboard extraction guide for adopting projects. Supersedes the original narrow cycle-history scope.
 Release Target: Release 1.11
 Status: Done
+StartDate: 2026-04-15
+DoneDate: 2026-04-27
 Dependencies: EPIC-0016
 ```
 
@@ -2633,6 +2683,8 @@ EPIC-0020: Cross-Dashboard Redesign
 Description: Unify Plan-Status and Agentic dashboards under a single Editorial × Mission Control design language. Share a token set (neutrals, semantic colors, typography, card/chip/bar primitives) while differentiating each dashboard with its own accent hue, mode badge (REPORT vs LIVE), and voice (calm report vs live broadcast). First-class light and dark themes. Replaces the saturated navy gradient header, consolidates the chart palette, lifts the Status tab out of sparseness, promotes active agents and event activity on the Agentic surface, and removes pipeline/agent-roster redundancy.
 Release Target: Release 1.11
 Status: Done
+StartDate: 2026-04-21
+DoneDate: 2026-04-27
 Dependencies: EPIC-0015, EPIC-0016
 
 ```
@@ -2863,6 +2915,8 @@ Acceptance Criteria:
 EPIC-0021
 Title: Test Case Audit
 Status: Done
+StartDate: 2026-04-27
+DoneDate: 2026-04-27
 Completed: 2026-04-27
 ReleaseTarget: v1.x
 Description: Retroactive test case coverage for epics shipped without formal TCs. One story per epic; each story produces written TCs, executed results, and any defects logged.
@@ -3004,6 +3058,7 @@ Acceptance Criteria:
 EPIC-0022
 Title: Analytics & Charting Enhancements
 Status: Planned
+StartDate: 2026-04-24
 ReleaseTarget: v2.x
 Description: New data visualisations that deepen delivery insight — velocity, throughput, and flow metrics — giving teams a clearer picture of team pace and predictability over time.
 ```
