@@ -3537,3 +3537,31 @@ Steps to Reproduce:
    Lesson Encoded: No
    Estimated Cost USD: 0.00
    Notes: US-0163 called \_renderStatusHero(data) which is a compact helper used by the Charts tab — not the full inline hero rendered by renderStatusTab. The fix is to extract the Status tab's inline hero block into a proper shared function (e.g. \_renderFullStatusHero) that produces the complete layout, and call that from renderStakeholderTab instead.
+
+---
+
+BUG-0249: Chart-init fallback string `oklch(65% 0.014 95)` matches dark theme, not light (default)
+Severity: Low
+Related Story: US-0164 (EPIC-0023)
+Steps to Reproduce:
+
+1. Hard-reload `plan-status.html` in light mode (default)
+2. Inspect a Trends chart's tick color before any theme toggle:
+   `Chart.getChart('chart-trends-velocity').options.scales.x.ticks.color`
+
+Expected: Resolves to light theme's `--text-mute` (`oklch(78% 0.012 95)`).
+Actual: Most charts resolve correctly via `getComputedStyle('--text-mute')`. However if the variable read returns an empty string for any reason (e.g., during very early initial render before CSS variables resolve, or in environments where the variable is undefined), the fallback string `'oklch(65% 0.014 95)'` is used — that exact value matches **dark** theme's `--text-mute`, not light's. So a chart that hits the fallback in light mode renders with dark-mode tick color.
+
+The misleading fallback appears in three places:
+
+- `tools/lib/render-scripts.js:263` — `Chart.defaults.color = _chartTextColor || 'oklch(65% 0.014 95)';`
+- `tools/lib/render-tabs.js:663` — `var tc = ... || 'oklch(65% 0.014 95)';` (inside `updateTrendsChartTheme`)
+- `tools/lib/render-tabs.js:1319` — `chartTextColor()` for Charts tab
+
+A fourth inconsistent fallback exists in `render-tabs.js:1313` — the Charts tab's `pvChartColors.mute` falls back to `'oklch(70% 0.012 95)'` (a third value, neither light's 78% nor dark's 65%).
+
+Status: Open
+Fix Branch:
+Lesson Encoded: No
+Estimated Cost USD: 0.00
+Notes: Self-corrects after any explicit theme toggle (`pvSetTheme` → `updateTrendsChartTheme()` re-reads computed properties). Discovered during automated Playwright testing in Session 33 follow-up — verified `--text-mute` evaluates correctly in normal browsing, so user impact is minimal. Fix: use light theme's value (`oklch(78% 0.012 95)`) as the fallback since light is the default theme, OR drop the hardcoded fallback string entirely and rely on Chart.js default behavior. Make the four fallback strings consistent.
