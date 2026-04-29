@@ -3565,3 +3565,30 @@ Fix Branch:
 Lesson Encoded: No
 Estimated Cost USD: 0.00
 Notes: Self-corrects after any explicit theme toggle (`pvSetTheme` → `updateTrendsChartTheme()` re-reads computed properties). Discovered during automated Playwright testing in Session 33 follow-up — verified `--text-mute` evaluates correctly in normal browsing, so user impact is minimal. Fix: use light theme's value (`oklch(78% 0.012 95)`) as the fallback since light is the default theme, OR drop the hardcoded fallback string entirely and rely on Chart.js default behavior. Make the four fallback strings consistent.
+
+---
+
+BUG-0250: Theme preference does not persist across the two dashboards — different localStorage keys
+Severity: Medium
+Related Story: US-0157 (EPIC-0020 Cross-Dashboard Redesign)
+Steps to Reproduce:
+
+1. Open `plan-status.html`, click `Dark` theme button — page goes dark, `localStorage['pv-theme'] = 'dark'`.
+2. Navigate to `dashboard.html` (agentic dashboard) — page does not respect the user's just-chosen theme.
+3. Click `Light` on the agentic dashboard — `localStorage['dashboard-theme'] = 'light'`. `pv-theme` is not updated.
+4. Navigate back to `plan-status.html` — still dark, ignoring the just-set light preference.
+
+Expected: Theme is a global user preference. Both dashboards share the same chrome (header, theme toggle, About modal — see EPIC-0020), so toggling theme in one should persist into the other.
+
+Actual: Each dashboard reads/writes its own localStorage key:
+
+- `tools/lib/render-scripts.js:333,349,355` (plan-status) → `'pv-theme'`
+- `tools/generate-dashboard.js:2527,2542` (agentic dashboard) → `'dashboard-theme'`
+
+The two keys never sync. A user who switches dashboards mid-session has to set theme twice. Both keys also accumulate in localStorage indefinitely, which is mild but unnecessary clutter.
+
+Status: Open
+Fix Branch:
+Lesson Encoded: No
+Estimated Cost USD: 0.00
+Notes: Discovered during Session 33 follow-up Playwright testing of the agentic dashboard. Two reasonable fixes: (a) consolidate to a single shared key (`'pv-theme'`) in both `pvSetTheme` implementations and migrate `'dashboard-theme'` reads with a one-time fallback for users with the legacy key set; (b) keep the two keys but have each dashboard write to BOTH on toggle (cheaper, no migration). Option (a) is the cleaner long-term solution and matches the Cross-Dashboard Redesign intent of EPIC-0020. The agentic dashboard's `pvSetTheme` also doesn't toggle the `.dark` class on `<html>` — plan-status does (per BUG-0190 comment in render-scripts.js). Worth investigating whether the agentic dashboard CSS depends on that class anywhere; if so, add it for parity.
