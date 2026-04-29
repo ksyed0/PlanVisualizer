@@ -117,11 +117,23 @@ Branch name in `AI_COST_LOG.md` row must exactly match `Branch:` field in story 
 
 ---
 
-## Project Completion Status (as of 2026-04-28 Session 31)
+## Project Completion Status (as of 2026-04-29 Session 33)
 
-22 EPICs (EPIC-0021 Done, EPIC-0022 in-progress: US-0159 Done, US-0160 Done, US-0161 Done; US-0162+ planned), 161+ active stories, 200 bugs.
-Develop is fully green — all CI gates passing after PRs #468–471 merged (Session 31 bug fixes + US-0159 Velocity Chart).
-Next IDs: check `docs/ID_REGISTRY.md` (as of Session 31: BUG-0233, L-0047, TC-0553 unchanged).
+23 EPICs (EPIC-0022 Done, EPIC-0023 Done — all dashboard quality stories shipped), 163+ active stories, 216+ bugs (BUG-0242/0243/0244 Fixed this session).
+Develop fully green. Next IDs: always check `docs/ID_REGISTRY.md` — as of Session 33: Next US = US-0170, Next AC = AC-0606, Next BUG = BUG-0249, Next L = L-0049.
+
+Key additions (Session 33):
+
+- EPIC-0010 status corrected: `Planned` → `Done`, `DoneDate: 2026-04-19` (shipped Session 23, never updated in RELEASE_PLAN.md).
+- EPIC-0012 DoneDate added: `2026-04-28`.
+- EPIC-0023 closed: `Done`, `DoneDate: 2026-04-29`. All 5 stories Done.
+- US-0169 created: deferred risk sort/filter ACs (AC-0601–0605) from EPIC-0010 US-0064/0065/0067.
+- `Chart.defaults.color` must use `getComputedStyle` (see L-0048) — raw `'var(--text-muted)'` strings are silently ignored by canvas. Fix in `render-scripts.js`.
+- `pvChartColors` singleton guard: `window.pvChartColors = window.pvChartColors || (function(){...})()` in `renderChartsTab` prevents double-declaration overwrite.
+- `updateTrendsChartTheme()` added to Trends script block; called from `pvSetTheme()` — re-reads computed colors and calls `chart.update('none')` for each trend chart so light/dark switch live-updates axis labels.
+- `_dispatchCount` in `generate-dashboard.js` now persisted via `localStorage` — seeded on page load, written on every increment.
+- `snapshot.js` `openBugs` filter switched from allowlist to canonical denylist `!/^(Fixed|Retired|Cancelled|Rejected)/i`.
+- BUG-0242: week label fixed at month boundaries (`Apr 28–May 4` correct, was `Apr 28–4`).
 
 Key additions (Session 31):
 
@@ -150,7 +162,7 @@ Architecture decision: `Assignee:` field in RELEASE_PLAN.md stories is not meani
 ## Coverage Thresholds
 
 Jest coverage gate: 80% statements (global).
-Current coverage (2026-04-28 Session 31): 2301 tests, 98 suites, all passing. Statement coverage ~88% above 80% gate.
+Current coverage (2026-04-29 Session 33): ~93.8% statements / 80.6% branches. All tests passing. Gate: 80% statements.
 
 ---
 

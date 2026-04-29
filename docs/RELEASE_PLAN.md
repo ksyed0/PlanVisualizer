@@ -3131,9 +3131,9 @@ Acceptance Criteria:
 EPIC-0023: Dashboard Quality & Reliability
 Description: Fix bugs identified by Session 31 Lens code review across both the plan-status and agentic dashboards. Covers chart rendering correctness, CSS token consistency, Stakeholder tab bug-risk accuracy, and agentic dashboard live-update reliability.
 Release Target: v2.x
-Status: In-Progress
+Status: Done
 StartDate: 2026-04-29
-DoneDate:
+DoneDate: 2026-04-29
 Dependencies: EPIC-0022
 ```
 
@@ -3143,14 +3143,14 @@ Dependencies: EPIC-0022
 US-0164 (EPIC-0023): As a developer, I want chart axis labels, grid lines, and legend text to use the correct theme colours in both light and dark mode, so that charts are readable without hardcoded greys.
 Priority: High (P1)
 Estimate: S
-Status: Planned
-Branch:
+Status: Done
+Branch: feature/US-0164-BUG-0242-0244-chart-fixes
 Acceptance Criteria:
 
-- [ ] AC-0591: Chart.defaults.color and Chart.defaults.borderColor resolve to actual colour values at init time using getComputedStyle, not raw CSS custom-property strings
-- [ ] AC-0592: Canvas gradient color stops use rgba(r, g, b, a) comma-separated syntax, not space-separated rgb(), ensuring compatibility across all browsers
-- [ ] AC-0593: pvChartColors is defined once in a shared script block (or with window.pvChartColors = window.pvChartColors || ...) — not twice as separate var declarations
-- [ ] AC-0594: Switching between light and dark mode after visiting the Trends tab updates trend chart label and grid colours (updateTrendsChartTheme added, called from pvSetTheme)
+- [x] AC-0591: Chart.defaults.color and Chart.defaults.borderColor resolve to actual colour values at init time using getComputedStyle, not raw CSS custom-property strings
+- [x] AC-0592: Canvas gradient color stops use rgba(r, g, b, a) comma-separated syntax, not space-separated rgb(), ensuring compatibility across all browsers
+- [x] AC-0593: pvChartColors is defined once in a shared script block (or with window.pvChartColors = window.pvChartColors || ...) — not twice as separate var declarations
+- [x] AC-0594: Switching between light and dark mode after visiting the Trends tab updates trend chart label and grid colours (updateTrendsChartTheme added, called from pvSetTheme)
 ```
 
 ```
@@ -3169,12 +3169,12 @@ Acceptance Criteria:
 US-0166 (EPIC-0023): As a user, I want patchDOM to preserve branch link anchors in agent task cells and correctly style InProgress stories, so that live updates do not degrade the agentic dashboard display.
 Priority: Medium (P1)
 Estimate: S
-Status: In Progress
+Status: Done
 Branch: bugfix/BUG-0245-0246-0247-dashboard-fixes
 Acceptance Criteria:
 
 - [x] AC-0597: patchDOM updates agent task cell with an <a href="..."> anchor when branch is set, not raw textContent that destroys the link
 - [x] AC-0598: isInProgress check in generate-dashboard.js story renderer uses /^In[ -]?Progress$/i regex, matching both 'In Progress' (space) and 'InProgress' (camelCase from update-sdlc-status.js)
 - [x] AC-0599: dispatch tag added to appendEventLog tone-map with a distinct evt-dispatch CSS class, making conductor dispatch events visually distinct from story-start events
-- [ ] AC-0600: _dispatchCount persists across page loads (initialized from localStorage or computed from status.log)
+- [x] AC-0600: _dispatchCount persists across page loads (initialized from localStorage or computed from status.log)
 ```

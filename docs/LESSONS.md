@@ -4,6 +4,14 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
+## L-0048 — Chart.js ignores CSS custom properties in Chart.defaults.color; use getComputedStyle
+
+**Rule:** Assigning `Chart.defaults.color = 'var(--text-mute)'` looks valid but is silently ignored. Chart.js passes the string directly to `canvas.fillStyle` at draw time, and the browser's canvas API cannot resolve CSS custom property references — it treats the value as an unknown color and falls back to black. Always resolve the computed value at init time: `Chart.defaults.color = getComputedStyle(document.documentElement).getPropertyValue('--text-mute').trim()`. The same applies to any canvas-drawn color (gradients, grid lines, tick labels). For theme switching, re-read via `getComputedStyle` and call `chart.update('none')`.
+_Learned during Session 33: AC-0591 fix — the `'var(--text-muted)'` string had been in place since the chart was first introduced but the bug was only caught by Lens review because Chart.js silently uses an invisible fallback rather than throwing._
+**Date:** 2026-04-29
+
+---
+
 ## L-0047 — Scope parallel agents to files, not just bugs; enforce with explicit file lists
 
 **Rule:** When dispatching parallel worktree agents, the prompt must explicitly list which files the agent may commit and instruct the agent to `git add` only those paths. Saying "your scope is BUG-X" is insufficient — agents will fix related bugs they encounter and commit the changes, causing rebase conflicts in sibling agents. Use: "Only commit changes to: `tools/lib/render-tabs.js`, `tests/unit/render-tabs.test.js`, `docs/BUGS.md`. Run `git add` with explicit file paths, never `git add -A`."

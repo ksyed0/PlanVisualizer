@@ -3435,8 +3435,8 @@ Steps to Reproduce:
 1. Open dashboard when the current week spans two months (e.g. Apr 28 – May 4)
    Expected: "Apr 28–May 4"
    Actual: "Apr 28–4" — end month name dropped
-   Status: Open
-   Fix Branch:
+   Status: Fixed
+   Fix Branch: feature/US-0164-BUG-0242-0244-chart-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.00
    Notes: thisWeek label uses MONTHS[wStart.getMonth()] only. Fix: conditionally include MONTHS[wEnd.getMonth()] when wEnd.getMonth() !== wStart.getMonth().
@@ -3451,8 +3451,8 @@ Steps to Reproduce:
 1. Open dashboard with both Charts and Trends tabs
    Expected: pvChartColors single authoritative definition
    Actual: var pvChartColors = ... declared in both renderChartsTab and renderTrendsTab inline scripts; second overwrites first silently
-   Status: Open
-   Fix Branch:
+   Status: Fixed
+   Fix Branch: feature/US-0164-BUG-0242-0244-chart-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.00
    Notes: Both tab scripts define the same top-level var. Fix: use window.pvChartColors = window.pvChartColors || (function(){...})() in both, or extract to a shared script block in render-html.js.
@@ -3467,8 +3467,8 @@ Steps to Reproduce:
 1. Add a bug with status "Blocked" or "Verified" to BUGS.md; open Trends tab
    Expected: Open Bugs trend line matches the open bug count shown on Status tab
    Actual: Trend only counts Open and In Progress; Blocked/Verified/Reopened excluded
-   Status: Open
-   Fix Branch:
+   Status: Fixed
+   Fix Branch: feature/US-0164-BUG-0242-0244-chart-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.00
    Notes: snapshot.js extractTrends openBugs uses status === 'Open' || status === 'In Progress' allowlist. Canonical pattern is !/^(Fixed|Retired|Cancelled)/i denylist.

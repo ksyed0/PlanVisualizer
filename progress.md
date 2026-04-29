@@ -4,6 +4,51 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 33 — 2026-04-29 (EPIC-0023 Done — US-0164 chart colors, US-0166 AC-0600, BUG-0242/0243/0244, EPIC-0010/0012 audit)
+
+### What Was Done
+
+**Branch cleanup:** Force-removed stale locked worktree `agent-aceccfe31f287395d`; deleted 3 stale local branches (`bugfix/BUG-0240-burnup-epic022-closure`, `claude/modest-cohen-959f76`, `worktree-agent-aceccfe31f287395d`). All content verified present in develop before deletion.
+
+**Three parallel worktree agents dispatched** (all PRs CI-green, squash-merged into develop):
+
+**Group A — [PR #499](https://github.com/ksyed0/PlanVisualizer/pull/499): Chart color correctness + BUG-0242/0244**
+
+- AC-0591: `Chart.defaults.color` now resolved via `getComputedStyle` at init time (was raw `'var(--text-muted)'` string canvas cannot resolve) — fix in `render-scripts.js`.
+- AC-0592: Gradient stops changed from CSS Level 4 `rgb(r g b / a)` to canvas-compatible `rgba(r,g,b,a)` in `render-tabs.js`.
+- AC-0593 / BUG-0243: Second `pvChartColors` declaration wrapped in `window.pvChartColors = window.pvChartColors || (...)` singleton guard.
+- AC-0594: `updateTrendsChartTheme()` added; called from `pvSetTheme()` so theme toggle refreshes chart axis/grid colors.
+- BUG-0242: Week label now correctly shows end-month name at month boundaries (`Apr 28–May 4` not `Apr 28–4`).
+- BUG-0244: `openBugs` snapshot filter in `snapshot.js` switched from allowlist to canonical denylist `!/^(Fixed|Retired|Cancelled|Rejected)/i`.
+- Test files updated to match new `getComputedStyle`-based init and `rgba()` syntax assertions.
+
+**Group B — [PR #497](https://github.com/ksyed0/PlanVisualizer/pull/497): \_dispatchCount localStorage persistence**
+
+- AC-0600: `_dispatchCount` seeded from `localStorage.getItem('pv-dispatch-count')` on init; `localStorage.setItem` called on every increment. Conductor dispatch count now survives page reloads.
+
+**Group C — [PR #496](https://github.com/ksyed0/PlanVisualizer/pull/496): EPIC-0010/0012 audit + US-0169**
+
+- EPIC-0010: `Status: Planned` → `Done`, `DoneDate: 2026-04-19` (shipped Session 23, never updated).
+- EPIC-0012: Added missing `DoneDate: 2026-04-28`.
+- US-0169 created: 5 deferred risk sort/filter ACs (AC-0601–AC-0605) from EPIC-0010 stories US-0064/0065/0067.
+- ID_REGISTRY.md advanced: Next US = US-0170, Next AC = AC-0606.
+
+**Session-close docs (this commit):**
+
+- RELEASE_PLAN.md: EPIC-0023 `Status: Done`, `DoneDate: 2026-04-29`; US-0164 Done (all 4 ACs [x]); US-0166 Done (AC-0600 [x]).
+- BUGS.md: BUG-0242, BUG-0243, BUG-0244 marked Fixed.
+
+### Test Results
+
+- Coverage: ~93.8% statements / 80.6% branches (gate: 80% — passing).
+- All tests green across all three PR CI runs.
+
+### Blockers
+
+None.
+
+---
+
 ## Session 32 — 2026-04-29 (Dashboard Quality — BUG-0239/0241/0245/0246/0247/0248, BUG-0240, EPIC-0022 Done)
 
 ### What Was Done
