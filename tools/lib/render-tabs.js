@@ -2662,75 +2662,9 @@ function shUsdLabel(n) {
 
 function renderStakeholderTab(data) {
   const costs = data.costs || null;
-  const budget = data.budget || {};
   const stories = data.stories || [];
   const epics = data.epics || [];
   const bugs = data.bugs || [];
-
-  // ── Summary bar ─────────────────────────────────────────────────────────────
-  const nonRetired = stories.filter((s) => s.status !== 'Retired');
-  const doneCnt = nonRetired.filter((s) => /^done$/i.test(s.status)).length;
-  const totalCnt = nonRetired.length;
-  const overallPct = totalCnt ? Math.round((doneCnt / totalCnt) * 100) : 0;
-
-  const pctUsed = budget.percentUsed !== null && budget.percentUsed !== undefined ? budget.percentUsed : null;
-  let tlColor = 'var(--ok)';
-  let tlLabel = 'On track';
-  if (pctUsed !== null && pctUsed > 80) {
-    tlColor = 'var(--risk)';
-    tlLabel = 'At risk';
-  } else if (pctUsed !== null && pctUsed >= 50) {
-    tlColor = 'var(--warn)';
-    tlLabel = 'Watch';
-  }
-
-  const totalSpent = (costs && costs._totals && costs._totals.costUsd) || 0;
-  const totalProjected = costs
-    ? Object.entries(costs)
-        .filter(([k]) => k !== '_totals')
-        .reduce((sum, [, c]) => sum + (c && c.projectedUsd ? c.projectedUsd : 0), 0)
-    : 0;
-
-  let budgetLine = '';
-  if (budget.hasBudget) {
-    budgetLine = `${esc(tlLabel)} · Est. ${shUsdLabel(totalProjected)} · AI spend ${shUsdLabel(totalSpent)}`;
-    if (budget.daysRemaining !== null && budget.daysRemaining !== undefined && budget.burnRate > 0) {
-      const wks = Math.round(budget.daysRemaining / 7);
-      if (wks >= 1) budgetLine += ` · At current pace, budget lasts ${wks} more week${wks !== 1 ? 's' : ''}`;
-    }
-  } else if (costs) {
-    budgetLine = `Est. ${shUsdLabel(totalProjected)} · AI spend ${shUsdLabel(totalSpent)}`;
-  }
-
-  const openHighBugs = bugs.filter(
-    (b) => /^(Critical|High)$/i.test(b.severity) && !/^(Fixed|Retired|Cancelled)/i.test(b.status),
-  );
-  const blockedStoriesCnt = stories.filter((s) => /^blocked$/i.test(s.status)).length;
-
-  const summaryBar = `
-  <div class="sh-summary-bar">
-    <div class="sh-tile">
-      <div class="sh-tile-label">Overall Progress</div>
-      <div class="sh-tile-value">
-        <span class="sh-big-num">${overallPct}%</span>
-        <span class="sh-tile-sub">${doneCnt} of ${totalCnt} stories done</span>
-      </div>
-    </div>
-    <div class="sh-tile sh-tile-wide">
-      <div class="sh-tile-label">Budget Health</div>
-      <div class="sh-tile-value">
-        ${budget.hasBudget ? `<span class="sh-tl-dot" style="background:${tlColor}"></span>` : ''}
-        <span class="sh-tile-sub">${budgetLine}</span>
-      </div>
-    </div>
-    <div class="sh-tile">
-      <div class="sh-tile-label">Open Risks</div>
-      <div class="sh-tile-value">
-        <span class="sh-big-num">${openHighBugs.length + blockedStoriesCnt}</span>
-        <span class="sh-tile-sub">${openHighBugs.length} high bug${openHighBugs.length !== 1 ? 's' : ''} · ${blockedStoriesCnt} blocked ${blockedStoriesCnt !== 1 ? 'stories' : 'story'}</span>
-      </div>
-    </div>
-  </div>`;
 
   // ── Milestones ───────────────────────────────────────────────────────────────
   const activeEpics = epics.filter((e) => e.status !== 'Retired');
@@ -2858,7 +2792,8 @@ function renderStakeholderTab(data) {
 
   return `
   <div id="tab-stakeholder" class="p-6 hidden tab-fill" role="tabpanel" aria-labelledby="tab-btn-stakeholder">
-    ${summaryBar}
+    ${_renderStatusHero(data)}
+    ${_renderDecisionWidgets(data)}
     <div class="sh-milestone-section">
       <div class="sh-section-label">Milestones</div>
       <div class="sh-epics-list">

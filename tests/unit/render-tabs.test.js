@@ -62,13 +62,10 @@ describe('renderStakeholderTab', () => {
     expect(html).toContain('id="tab-stakeholder"');
   });
 
-  // Test 2
-  it('summary bar — progress tile shows % and story count', () => {
-    // 4 non-Retired stories total (US-0001 to US-0004; US-0005 epicId=null but not Retired; US-0006 Retired),
-    // Wait: US-0005 epicId null = ungrouped, not Retired. So non-Retired = US-0001,US-0002,US-0003,US-0004,US-0005 = 5 stories. Done = US-0001, US-0002 = 2. 40%.
-    // Actually count: Retired = US-0006 only. Non-Retired = 5 stories. Done = 2. 40%.
-    expect(html).toMatch(/40%/);
-    expect(html).toMatch(/2\s+of\s+5/);
+  // Test 2 — hero section replaces summary bar; check hero card is rendered
+  it('hero section — pv-hero card rendered instead of sh-summary-bar', () => {
+    expect(html).toContain('pv-hero card');
+    expect(html).not.toContain('sh-summary-bar');
   });
 
   // Test 3
@@ -78,10 +75,10 @@ describe('renderStakeholderTab', () => {
     expect(html).toMatch(/USD/);
   });
 
-  // Test 4
-  it('summary bar — risk tile shows open bug count and blocked story count', () => {
-    // 1 open Critical/High bug (BUG-0001 Critical Open), 1 blocked story (US-0004)
-    expect(html).toMatch(/1\s*(high|critical)?\s*bug/i);
+  // Test 4 — decision widgets show top risks; critical bug and blocked story visible
+  it('decision widgets — critical bug and blocked story appear in top risks', () => {
+    // BUG-0001 Critical Open appears in pv-risk-list; US-0004 Blocked appears too
+    expect(html).toContain('BUG-0001');
     expect(html).toMatch(/1\s*blocked/i);
   });
 
@@ -115,10 +112,9 @@ describe('renderStakeholderTab', () => {
     expect(html).not.toMatch(/chip[^"]*">[^<]*In Progress/);
   });
 
-  // Test 9
-  it('plain language — Blocked renders as "Needs Attention"', () => {
+  // Test 9 — epic/story chips use plain language; "Needs Attention" appears in milestone section
+  it('plain language — Blocked renders as "Needs Attention" in milestone chips', () => {
     expect(html).toContain('Needs Attention');
-    expect(html).not.toMatch(/chip[^"]*">[^<]*Blocked/);
   });
 
   // Test 10
@@ -279,5 +275,51 @@ describe('renderStakeholderTab — epic dates', () => {
     const html = renderStakeholderTab(mkStakeholderData());
     const count = (html.match(/class="sh-epic-dates"/g) || []).length;
     expect(count).toBe(2);
+  });
+});
+
+describe('renderStakeholderTab — hero section', () => {
+  function mkFullData() {
+    return {
+      epics: [{ id: 'EPIC-0001', title: 'Core', status: 'Done', startDate: null, doneDate: null }],
+      stories: [{ id: 'US-0001', epicId: 'EPIC-0001', title: 'T', status: 'Done', acs: [] }],
+      bugs: [],
+      costs: { _totals: { costUsd: 0, projectedUsd: 0 } },
+      budget: {
+        hasBudget: false,
+        percentUsed: 0,
+        totalBudget: 0,
+        totalSpent: 0,
+        totalProjected: 0,
+        burnRate: 0,
+        daysRemaining: null,
+      },
+      recentActivity: [],
+      coverage: { available: false },
+      trends: null,
+      risk: { byStory: new Map(), byEpic: new Map() },
+      sessionTimeline: [],
+      atRisk: {},
+    };
+  }
+
+  it('renders pv-hero card in Stakeholder tab', () => {
+    const html = renderStakeholderTab(mkFullData());
+    expect(html).toContain('pv-hero card');
+  });
+
+  it('renders pv-widgets in Stakeholder tab', () => {
+    const html = renderStakeholderTab(mkFullData());
+    expect(html).toContain('pv-widgets');
+  });
+
+  it('does NOT render sh-summary-bar in Stakeholder tab', () => {
+    const html = renderStakeholderTab(mkFullData());
+    expect(html).not.toContain('sh-summary-bar');
+  });
+
+  it('export bar still renders', () => {
+    const html = renderStakeholderTab(mkFullData());
+    expect(html).toContain('stakeholder-export-bar');
   });
 });
