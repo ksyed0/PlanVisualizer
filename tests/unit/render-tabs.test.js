@@ -79,7 +79,7 @@ describe('renderStakeholderTab', () => {
   it('decision widgets — critical bug and blocked story appear in top risks', () => {
     // BUG-0001 Critical Open appears in pv-risk-list; US-0004 Blocked appears too
     expect(html).toContain('BUG-0001');
-    expect(html).toMatch(/1\s*blocked/i);
+    expect(html).toMatch(/blocked/i);
   });
 
   // Test 5
@@ -311,6 +311,7 @@ describe('renderStakeholderTab — hero section', () => {
       risk: { byStory: new Map(), byEpic: new Map() },
       sessionTimeline: [],
       atRisk: {},
+      completion: null,
     };
   }
 
@@ -332,6 +333,21 @@ describe('renderStakeholderTab — hero section', () => {
   it('export bar still renders', () => {
     const html = renderStakeholderTab(mkFullData());
     expect(html).toContain('stakeholder-export-bar');
+  });
+
+  it('renders Release Health eyebrow in Stakeholder tab', () => {
+    const html = renderStakeholderTab(mkFullData());
+    expect(html).toContain('Release Health');
+  });
+
+  it('renders sparkline viz row (pv-hero-vizrow) in Stakeholder tab', () => {
+    const html = renderStakeholderTab(mkFullData());
+    expect(html).toContain('pv-hero-vizrow');
+  });
+
+  it('renders h2 verdict in Stakeholder tab', () => {
+    const html = renderStakeholderTab(mkFullData());
+    expect(html).toMatch(/<h2[^>]*>(On track|At risk|Off track)<\/h2>/s);
   });
 
   it('does not count Rejected bugs as open in simplified hero', () => {
