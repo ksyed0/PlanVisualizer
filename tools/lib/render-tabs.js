@@ -551,9 +551,9 @@ function _trendGrad(ctx, color) {
   var rgb = _cssToRgb(color);
   var r = rgb.r, g = rgb.g, b = rgb.b;
   var grad = ctx.createLinearGradient(0,0,0,200);
-  var fn = ['r','g','b'].join(''); // assemble color function name at runtime
-  grad.addColorStop(0, fn+'('+r+' '+g+' '+b+' / 0.35)');
-  grad.addColorStop(1, fn+'('+r+' '+g+' '+b+' / 0.0)');
+  // AC-0592: use rgba() comma syntax — canvas does not support CSS level-4 space-separated rgb()
+  grad.addColorStop(0, 'rgba('+r+','+g+','+b+',0.35)');
+  grad.addColorStop(1, 'rgba('+r+','+g+','+b+',0)');
   return grad;
 }
 function _mkTrend(id, cfg) {
@@ -656,6 +656,25 @@ function setTrendsRange(btn, range) {
     ch.data.labels = _trendsAllLabels.slice(-n);
     ch.data.datasets.forEach(function(ds, i){ ds.data = ch._allData[i].slice(-n); });
     ch.update('none');
+  });
+}
+// AC-0594: update trend chart axis colours on theme switch
+function updateTrendsChartTheme() {
+  var tc = getComputedStyle(document.documentElement).getPropertyValue('--text-mute').trim() || 'oklch(65% 0.014 95)';
+  var gc = getComputedStyle(document.documentElement).getPropertyValue('--border').trim() || 'oklch(88% 0.010 95)';
+  Object.values(_trendsChartRefs).forEach(function(chart) {
+    if (!chart) return;
+    if (chart.options && chart.options.scales) {
+      if (chart.options.scales.x) {
+        if (chart.options.scales.x.ticks) chart.options.scales.x.ticks.color = tc;
+        if (chart.options.scales.x.grid) chart.options.scales.x.grid.color = gc;
+      }
+      if (chart.options.scales.y) {
+        if (chart.options.scales.y.ticks) chart.options.scales.y.ticks.color = tc;
+        if (chart.options.scales.y.grid) chart.options.scales.y.grid.color = gc;
+      }
+    }
+    chart.update('none');
   });
 }
 </script>`;
@@ -1281,7 +1300,8 @@ function renderChartsTab(data) {
     </div>
   </div>
   <script>
-  var pvChartColors = (function() {
+  // AC-0593: use window singleton guard to prevent double-declaration overwrite when both Trends and Charts tabs are rendered on the same page
+  window.pvChartColors = window.pvChartColors || (function() {
     var cs = getComputedStyle(document.documentElement);
     function tok(v, fb) { var r = cs.getPropertyValue(v).trim(); return r || fb; }
     return {
@@ -1293,6 +1313,7 @@ function renderChartsTab(data) {
       mute:   tok('--text-mute',   'oklch(70% 0.012 95)'),
     };
   })();
+  var pvChartColors = window.pvChartColors;
   var _charts = {};
   function chartTextColor() {
     return getComputedStyle(document.documentElement).getPropertyValue('--clr-chart-text').trim() || getComputedStyle(document.documentElement).getPropertyValue('--text-dim').trim() || 'oklch(65% 0.014 95)';
@@ -2461,7 +2482,10 @@ function renderStatusTab(data) {
     wStart.setHours(0, 0, 0, 0);
     const wEnd = new Date(wStart);
     wEnd.setDate(wStart.getDate() + 6);
-    const label = `${MONTHS[wStart.getMonth()]} ${wStart.getDate()}–${wEnd.getDate()}`;
+    // BUG-0242: include end-month name when week spans a month boundary
+    const endLabel =
+      wEnd.getMonth() !== wStart.getMonth() ? `${MONTHS[wEnd.getMonth()]} ${wEnd.getDate()}` : `${wEnd.getDate()}`;
+    const label = `${MONTHS[wStart.getMonth()]} ${wStart.getDate()}–${endLabel}`;
 
     if (!trends || !trends.dates || trends.dates.length < 2) {
       return { label, storiesShipped: '—', bugsOpened: '—', bugsFixed: '—', aiSpend: '—' };
