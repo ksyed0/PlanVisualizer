@@ -3387,8 +3387,8 @@ Steps to Reproduce:
 1. Open Stakeholder tab for a project with open Critical/High bugs linked to stories in a non-Done epic
    Expected: That epic shows Needs Attention status
    Actual: Epic always shows On Track or In Progress — hasOpenCritical always false because b.epicId is never set on parsed bug objects (parser sets relatedStory, not epicId)
-   Status: Open
-   Fix Branch:
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0239-0241-0248-stakeholder-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.00
    Notes: shEpicCompositeStatus in render-tabs.js filters data.bugs with b.epicId === epicId. Bugs have relatedStory (e.g. US-0012), not epicId. Fix: cross-reference via story→epic map (same as renderBugsTab and renderCostsTab normalizeStoryRef pattern).
@@ -3419,8 +3419,8 @@ Steps to Reproduce:
 1. Open a project with bugs having status "Rejected"
    Expected: Open bug count consistent across Status hero and Status tab widgets
    Actual: renderStatusTab uses !/^(Fixed|Retired|Cancelled|Rejected)/i — \_renderStatusHero uses !/^(Fixed|Retired|Cancelled)/i (missing Rejected). Different counts show on same page.
-   Status: Open
-   Fix Branch:
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0239-0241-0248-stakeholder-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.00
    Notes: Since Stakeholder tab now calls \_renderStatusHero, it also inherits the inconsistency. Fix: align all open-bug filters to the project canonical pattern.
@@ -3532,8 +3532,8 @@ Steps to Reproduce:
 1. Open plan-status.html → navigate to Stakeholder tab
    Expected: Same hero as Status tab — "Release Health" eyebrow, large h2 verdict, 3-column sparkline row (Progress · past 14 snapshots, Coverage · last 30, Burn · cumulative), plus KPI tiles and decision widgets
    Actual: Simplified variant — small chip with verdict, one-line narrative, a 30-cell coverage heat strip only; missing the eyebrow label, h2, and sparkline columns
-   Status: Open
-   Fix Branch:
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0239-0241-0248-stakeholder-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.00
    Notes: US-0163 called \_renderStatusHero(data) which is a compact helper used by the Charts tab — not the full inline hero rendered by renderStatusTab. The fix is to extract the Status tab's inline hero block into a proper shared function (e.g. \_renderFullStatusHero) that produces the complete layout, and call that from renderStakeholderTab instead.
