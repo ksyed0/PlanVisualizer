@@ -100,4 +100,96 @@ describe('attributeBugCosts', () => {
     expect(result['BUG-0004'].isEstimated).toBe(false);
     expect(result['BUG-0004'].costUsd).toBe(0);
   });
+
+  // BUG-0224: bugs sharing a fix branch must split the branch cost, not duplicate it.
+  it('splits branch cost equally across bugs sharing the same fixBranch', () => {
+    const sharedBugs = [
+      { id: 'BUG-1001', fixBranch: 'bugfix/BUG-1001-1002-shared' },
+      { id: 'BUG-1002', fixBranch: 'bugfix/BUG-1001-1002-shared' },
+      { id: 'BUG-1003', fixBranch: 'bugfix/BUG-1001-1002-shared' },
+      { id: 'BUG-1004', fixBranch: 'bugfix/BUG-1001-1002-shared' },
+    ];
+    const sharedByBranch = {
+      'bugfix/BUG-1001-1002-shared': { costUsd: 4.0, inputTokens: 100000, outputTokens: 20000, sessions: 4 },
+    };
+    const result = attributeBugCosts(sharedBugs, sharedByBranch);
+    expect(result['BUG-1001'].costUsd).toBeCloseTo(1.0);
+    expect(result['BUG-1002'].costUsd).toBeCloseTo(1.0);
+    expect(result['BUG-1003'].costUsd).toBeCloseTo(1.0);
+    expect(result['BUG-1004'].costUsd).toBeCloseTo(1.0);
+    // _totals must equal branch total exactly (no double-counting).
+    expect(result._totals.costUsd).toBeCloseTo(4.0);
+    // Tokens & sessions are also split.
+    expect(result['BUG-1001'].inputTokens).toBe(25000);
+    expect(result['BUG-1001'].outputTokens).toBe(5000);
+    expect(result['BUG-1001'].sessions).toBe(1);
+  });
+
+  it('does not divide cost when only one bug claims a branch', () => {
+    const oneBug = [{ id: 'BUG-2001', fixBranch: 'bugfix/BUG-2001-solo' }];
+    const byBranch = {
+      'bugfix/BUG-2001-solo': { costUsd: 3.0, inputTokens: 30000, outputTokens: 9000, sessions: 2 },
+    };
+    const result = attributeBugCosts(oneBug, byBranch);
+    expect(result['BUG-2001'].costUsd).toBeCloseTo(3.0);
+    expect(result['BUG-2001'].inputTokens).toBe(30000);
+    expect(result['BUG-2001'].outputTokens).toBe(9000);
+    expect(result['BUG-2001'].sessions).toBe(2);
+  });
+});
+
+// BUG-0217: stories sharing a branch (e.g. multiple stories that all merged via develop)
+// must split that branch's cost so a single $X cost is not double-counted across N stories.
+describe('attributeAICosts — multi-story branch sharing (BUG-0217)', () => {
+  it('splits a shared branch cost equally across all stories that claim it', () => {
+    const stories = [
+      { id: 'US-1001', branch: 'develop' },
+      { id: 'US-1002', branch: 'develop' },
+      { id: 'US-1003', branch: 'develop' },
+      { id: 'US-1004', branch: 'develop' },
+    ];
+    const costByBranch = {
+      develop: { costUsd: 4.0, inputTokens: 80000, outputTokens: 16000, sessions: 4 },
+    };
+    const result = attributeAICosts(stories, costByBranch);
+    expect(result['US-1001'].costUsd).toBeCloseTo(1.0);
+    expect(result['US-1002'].costUsd).toBeCloseTo(1.0);
+    expect(result['US-1003'].costUsd).toBeCloseTo(1.0);
+    expect(result['US-1004'].costUsd).toBeCloseTo(1.0);
+    // _totals == branch total (no inflation).
+    expect(result._totals.costUsd).toBeCloseTo(4.0);
+  });
+
+  it('keeps full branch cost on a story that uniquely claims it', () => {
+    const stories = [
+      { id: 'US-2001', branch: 'feature/US-2001-solo' },
+      { id: 'US-2002', branch: 'feature/US-2002-other' },
+    ];
+    const costByBranch = {
+      'feature/US-2001-solo': { costUsd: 2.0, inputTokens: 50000, outputTokens: 12000, sessions: 1 },
+      'feature/US-2002-other': { costUsd: 1.5, inputTokens: 30000, outputTokens: 8000, sessions: 1 },
+    };
+    const result = attributeAICosts(stories, costByBranch);
+    expect(result['US-2001'].costUsd).toBeCloseTo(2.0);
+    expect(result['US-2002'].costUsd).toBeCloseTo(1.5);
+    expect(result._totals.costUsd).toBeCloseTo(3.5);
+  });
+
+  it('still distributes truly-unattributed cost across all stories', () => {
+    // Branch "main" is in cost log but no story claims it.
+    const stories = [
+      { id: 'US-3001', branch: 'feature/US-3001' },
+      { id: 'US-3002', branch: 'feature/US-3002' },
+    ];
+    const costByBranch = {
+      'feature/US-3001': { costUsd: 1.0, inputTokens: 10000, outputTokens: 2000, sessions: 1 },
+      'feature/US-3002': { costUsd: 1.0, inputTokens: 10000, outputTokens: 2000, sessions: 1 },
+      main: { costUsd: 0.4, inputTokens: 5000, outputTokens: 1000, sessions: 1 },
+    };
+    const result = attributeAICosts(stories, costByBranch);
+    // Each story gets its own $1.00 + $0.20 share of orphan main cost.
+    expect(result['US-3001'].costUsd).toBeCloseTo(1.2);
+    expect(result['US-3002'].costUsd).toBeCloseTo(1.2);
+    expect(result._totals.costUsd).toBeCloseTo(2.4);
+  });
 });

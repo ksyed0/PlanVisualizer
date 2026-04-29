@@ -174,6 +174,43 @@ describe('extractTrends', () => {
     expect(trends.aiCosts).toEqual([10.5, 15.75]);
   });
 
+  // BUG-0221: when costs include the published `_totals` aggregate, do not
+  // double-count it on top of the per-story rows.
+  it('uses published _totals.costUsd when present (no double-count)', () => {
+    const snaps = [
+      {
+        generatedAt: '2026-03-01T10:00:00Z',
+        data: {
+          stories: [],
+          costs: {
+            'US-0001': { costUsd: 4.0, inputTokens: 100, outputTokens: 50 },
+            'US-0002': { costUsd: 2.0, inputTokens: 60, outputTokens: 30 },
+            _totals: { costUsd: 6.0, inputTokens: 160, outputTokens: 80 },
+            _bugs: { _totals: { costUsd: 1.5, inputTokens: 40, outputTokens: 20 } },
+          },
+          coverage: {},
+        },
+      },
+      {
+        generatedAt: '2026-03-02T10:00:00Z',
+        data: {
+          stories: [],
+          costs: {
+            'US-0001': { costUsd: 4.0, inputTokens: 100, outputTokens: 50 },
+            'US-0002': { costUsd: 3.0, inputTokens: 80, outputTokens: 40 },
+            _totals: { costUsd: 7.0, inputTokens: 180, outputTokens: 90 },
+            _bugs: { _totals: { costUsd: 2.0, inputTokens: 50, outputTokens: 25 } },
+          },
+          coverage: {},
+        },
+      },
+    ];
+    const trends = extractTrends(snaps);
+    expect(trends.aiCosts).toEqual([6.0, 7.0]); // not 12 / 14
+    expect(trends.inputTokens).toEqual([160, 180]); // not 360 / 410
+    expect(trends.outputTokens).toEqual([80, 90]); // not 180 / 205
+  });
+
   it('extracts coverage', () => {
     const snaps = [
       {

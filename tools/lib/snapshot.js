@@ -98,9 +98,22 @@ function extractTrends(snapshots) {
 
   const totalStories = snapshots.map((s) => (s.data.stories || []).length);
 
+  // BUG-0221 follow-up: prefer the explicit aggregate when present.
+  // `Object.values(costs)` includes the `_totals` and `_bugs` aggregate entries,
+  // which double-count the per-story totals (e.g. `_totals.costUsd` equals the sum
+  // of all per-story `costUsd` values). Use the published aggregate when it exists
+  // and only fall back to per-story summing for older snapshots that lack it.
+  const _sumStoryCosts = (costs, field) =>
+    Object.entries(costs).reduce((sum, [k, c]) => {
+      if (k === '_totals' || k === '_bugs') return sum;
+      return sum + (c[field] || 0);
+    }, 0);
   const rawAiCosts = snapshots.map((s) => {
     const costs = s.data.costs || {};
-    return Object.values(costs).reduce((sum, c) => sum + (c.costUsd || 0), 0);
+    if (costs._totals && typeof costs._totals.costUsd === 'number') {
+      return costs._totals.costUsd;
+    }
+    return _sumStoryCosts(costs, 'costUsd');
   });
   // Cumulative costs must never decrease — enforce monotonicity
   const aiCosts = [];
@@ -143,12 +156,18 @@ function extractTrends(snapshots) {
 
   const inputTokens = snapshots.map((s) => {
     const costs = s.data.costs || {};
-    return Object.values(costs).reduce((sum, c) => sum + (c.inputTokens || 0), 0);
+    if (costs._totals && typeof costs._totals.inputTokens === 'number') {
+      return costs._totals.inputTokens;
+    }
+    return _sumStoryCosts(costs, 'inputTokens');
   });
 
   const outputTokens = snapshots.map((s) => {
     const costs = s.data.costs || {};
-    return Object.values(costs).reduce((sum, c) => sum + (c.outputTokens || 0), 0);
+    if (costs._totals && typeof costs._totals.outputTokens === 'number') {
+      return costs._totals.outputTokens;
+    }
+    return _sumStoryCosts(costs, 'outputTokens');
   });
 
   const avgRisk = snapshots.map((s) => {
