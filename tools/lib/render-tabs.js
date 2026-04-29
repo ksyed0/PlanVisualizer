@@ -2826,6 +2826,21 @@ function renderStakeholderTab(data) {
           <span class="sh-dot" style="background:${SH_DOT_COLOR[dotKey]}"></span>
           <div class="sh-epic-name-block">
             <div class="sh-epic-name"><span class="sh-epic-id">${esc(epic.id)}</span>${esc(epic.title)}</div>
+            ${(() => {
+              const fmt = (d) =>
+                d
+                  ? new Date(d + 'T00:00:00').toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })
+                  : null;
+              const start = fmt(epic.startDate);
+              const done = fmt(epic.doneDate);
+              if (!start && !done) return '';
+              const end = done ? done : '<em>in progress</em>';
+              return `<div class="sh-epic-dates">${start} → ${end}</div>`;
+            })()}
             ${costLine}
           </div>
           <div class="sh-progress-track"><div class="sh-progress-fill" style="width:${pct}%;background:${SH_DOT_COLOR[dotKey]}"></div></div>

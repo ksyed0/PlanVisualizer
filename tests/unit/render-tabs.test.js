@@ -232,3 +232,52 @@ describe('renderTrendsTab — US-0159 Weekly Velocity chart', () => {
     expect(chartSection).not.toMatch(/#[0-9a-fA-F]{3,6}\b/);
   });
 });
+
+describe('renderStakeholderTab — epic dates', () => {
+  function mkStakeholderData(epicOverrides = {}) {
+    return {
+      epics: [
+        Object.assign(
+          { id: 'EPIC-0001', title: 'Core', status: 'Done', startDate: '2026-03-05', doneDate: '2026-03-10' },
+          epicOverrides,
+        ),
+        { id: 'EPIC-0002', title: 'Renderer', status: 'In Progress', startDate: '2026-03-11', doneDate: null },
+        { id: 'EPIC-0003', title: 'No Dates', status: 'Planned', startDate: null, doneDate: null },
+      ],
+      stories: [],
+      bugs: [],
+      costs: null,
+      budget: { hasBudget: false },
+      recentActivity: [],
+      coverage: { available: false },
+      trends: null,
+      risk: { byStory: new Map(), byEpic: new Map() },
+    };
+  }
+
+  it('renders sh-epic-dates element for epic with both dates', () => {
+    const html = renderStakeholderTab(mkStakeholderData());
+    expect(html).toContain('sh-epic-dates');
+  });
+
+  it('contains formatted start date text', () => {
+    const html = renderStakeholderTab(mkStakeholderData());
+    expect(html).toContain('Mar 5, 2026');
+  });
+
+  it('contains formatted done date text', () => {
+    const html = renderStakeholderTab(mkStakeholderData());
+    expect(html).toContain('Mar 10, 2026');
+  });
+
+  it('shows "in progress" for epic with startDate but no doneDate', () => {
+    const html = renderStakeholderTab(mkStakeholderData());
+    expect(html).toContain('in progress');
+  });
+
+  it('omits date line for epics with no dates (only 2 date divs for 3 epics)', () => {
+    const html = renderStakeholderTab(mkStakeholderData());
+    const count = (html.match(/class="sh-epic-dates"/g) || []).length;
+    expect(count).toBe(2);
+  });
+});
