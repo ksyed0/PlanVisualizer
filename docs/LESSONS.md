@@ -4,6 +4,14 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
+## L-0046 — When removing a CSS framework, audit every utility class it silently provided
+
+**Rule:** Removing a CSS CDN (Tailwind, Bootstrap, etc.) eliminates not just the classes you knowingly used but also invisible primitives like `.hidden { display: none }`, `.flex { display: flex }`, `.w-full { width: 100% }` that are used pervasively without any visible import. Before removing any CSS framework: (1) grep the entire codebase for class names, (2) map each class to a named replacement or CSS rule, (3) verify the map is complete by loading the page with CDN blocked before merging.
+_Learned during Session 31: Tailwind CDN removal broke tab switching, epic collapse, filter toggles, and all layout across every tab because `.hidden { display: none !important }` and ~55 layout utilities were never replaced._
+**Date:** 2026-04-28
+
+---
+
 ## L-0045 — `v.toFixed ? …` does NOT protect against null — use `v !== null && v !== undefined`
 
 **Rule:** The ternary `v.toFixed ? v.toFixed(1) : v` is not a null-safe pattern. Accessing `.toFixed` on `null` throws `TypeError: Cannot read properties of null (reading 'toFixed')` before the ternary branches. The correct guard is `v !== null && v !== undefined ? v.toFixed(1) : fallback`. Equivalently, `v != null` (loose inequality) catches both null and undefined in a single check, but ESLint's `eqeqeq` rule rejects it — use the explicit two-check form to satisfy the linter.
