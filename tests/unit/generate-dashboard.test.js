@@ -654,6 +654,15 @@ describe('generate-dashboard — BUG-0246 appendEventLog dispatch tone', () => {
   });
 });
 
+// BUG-0247: isInProgress must cover both 'In Progress' and 'InProgress' status variants
+describe('generate-dashboard — BUG-0247 isInProgress status variants', () => {
+  it('story strip class covers both In Progress and InProgress status variants', () => {
+    const src = fs.readFileSync(path.join(__dirname, '../../tools/generate-dashboard.js'), 'utf8');
+    // Verify isInProgress covers the camelCase variant written by update-sdlc-status.js
+    expect(src).toMatch(/isInProgress.*=.*In Progress.*InProgress|isInProgress.*=.*InProgress.*In Progress/);
+  });
+});
+
 // AC-0498: generated dashboard HTML must contain zero hex color literals
 // (#RGB / #RRGGBB), rgb(), or rgba() calls. All colours must use oklch(),
 // color-mix(in oklab, ...) or CSS custom properties.
