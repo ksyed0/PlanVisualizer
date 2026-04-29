@@ -2773,7 +2773,8 @@ function renderStakeholderTab(data) {
               const done = fmt(epic.doneDate);
               if (!start && !done) return '';
               const end = done ? done : '<em>in progress</em>';
-              return `<div class="sh-epic-dates">${start} → ${end}</div>`;
+              const startPart = start ? `${start} → ` : '';
+              return `<div class="sh-epic-dates">${startPart}${end}</div>`;
             })()}
             ${costLine}
           </div>

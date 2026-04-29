@@ -781,7 +781,7 @@ function renderPrintCSS() {
   .sh-epic-name { font-size: 12px; font-weight: 600; color: var(--text); }
   .sh-epic-id { font-family: var(--font-mono); font-size: 10px; font-weight: 500; color: var(--text-dim); margin-right: 5px; }
   .sh-epic-costs { display: flex; gap: 10px; font-size: 10px; color: var(--text-mute); }
-  .sh-epic-dates { font-size: 11px; font-family: ui-monospace, 'JetBrains Mono', monospace; color: var(--clr-text-muted); margin-top: 2px; }
+  .sh-epic-dates { font-size: 11px; font-family: var(--font-mono); color: var(--clr-text-muted); margin-top: 2px; }
   .sh-cost-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em; }
   .sh-cost-val { font-family: var(--font-mono); font-size: 10px; font-weight: 500; color: var(--text-dim); }
   .sh-progress-track { width: 72px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; flex-shrink: 0; }
