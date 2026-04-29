@@ -82,11 +82,15 @@ describe('renderHtml', () => {
   });
 
   describe('US-0140 — Unified Chart Palette', () => {
-    test('rendered HTML wires Chart.defaults.color to CSS variable', () => {
-      expect(html).toContain("Chart.defaults.color = 'var(--text-muted)'");
+    test('rendered HTML resolves Chart.defaults.color via getComputedStyle at init time', () => {
+      // AC-0591: must use getComputedStyle to resolve CSS vars — canvas cannot resolve 'var(--x)'
+      expect(html).toContain('Chart.defaults.color =');
+      expect(html).toContain('getComputedStyle(document.documentElement).getPropertyValue(');
+      expect(html).not.toContain("Chart.defaults.color = 'var(");
     });
-    test('rendered HTML wires Chart.defaults.borderColor to CSS variable', () => {
-      expect(html).toContain("Chart.defaults.borderColor = 'var(--border)'");
+    test('rendered HTML resolves Chart.defaults.borderColor via getComputedStyle at init time', () => {
+      expect(html).toContain('Chart.defaults.borderColor =');
+      expect(html).not.toContain("Chart.defaults.borderColor = 'var(");
     });
   });
 

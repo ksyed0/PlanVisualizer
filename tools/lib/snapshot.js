@@ -133,7 +133,7 @@ function extractTrends(snapshots) {
 
   const openBugs = snapshots.map((s) => {
     const bugs = s.data.bugs || [];
-    return bugs.filter((b) => b.status === 'Open' || b.status === 'In Progress').length;
+    return bugs.filter((b) => !/^(Fixed|Retired|Cancelled|Rejected)/i.test(b.status)).length;
   });
 
   const atRisk = snapshots.map((s) => {
