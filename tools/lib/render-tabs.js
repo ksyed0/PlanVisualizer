@@ -668,7 +668,7 @@ function _renderStatusHero(data) {
   const total = activeStories.length;
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
 
-  const openBugs = (data.bugs || []).filter((b) => !/^(Fixed|Retired|Cancelled)/i.test(b.status));
+  const openBugs = (data.bugs || []).filter((b) => !/^(Fixed|Retired|Cancelled|Rejected)/i.test(b.status));
   const criticalBugs = openBugs.filter((b) => ['Critical', 'High'].includes(b.severity)).length;
   const blockedStories = activeStories.filter((s) => s.status === 'Blocked').length;
 

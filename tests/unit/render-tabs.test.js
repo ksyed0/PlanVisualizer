@@ -322,4 +322,31 @@ describe('renderStakeholderTab — hero section', () => {
     const html = renderStakeholderTab(mkFullData());
     expect(html).toContain('stakeholder-export-bar');
   });
+
+  it('does not count Rejected bugs as open in simplified hero', () => {
+    const data = {
+      epics: [{ id: 'EPIC-0001', title: 'Core', status: 'In Progress', startDate: null, doneDate: null }],
+      stories: [{ id: 'US-0001', epicId: 'EPIC-0001', title: 'Auth', status: 'In Progress', acs: [] }],
+      bugs: [{ id: 'BUG-X', title: 'Old', status: 'Rejected', severity: 'High', relatedStory: 'US-0001' }],
+      costs: { _totals: { costUsd: 0, projectedUsd: 0 } },
+      budget: {
+        hasBudget: false,
+        percentUsed: 0,
+        totalBudget: 0,
+        totalSpent: 0,
+        totalProjected: 0,
+        burnRate: 0,
+        daysRemaining: null,
+      },
+      recentActivity: [],
+      coverage: { available: false },
+      trends: null,
+      risk: { byStory: new Map(), byEpic: new Map() },
+      sessionTimeline: [],
+      atRisk: {},
+      completion: null,
+    };
+    const html = renderStakeholderTab(data);
+    expect(html).not.toMatch(/Off track/);
+  });
 });
