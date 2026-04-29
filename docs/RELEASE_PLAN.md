@@ -90,8 +90,9 @@ Dependencies: EPIC-0008
 EPIC-0010: Risk Analytics
 Description: Composite risk scoring per story, risk trend charts, velocity-based completion prediction, at-risk epic summary, and Monte Carlo delivery simulation.
 Release Target: Release 1.6
-Status: Planned
+Status: Done
 StartDate: 2026-04-19
+DoneDate: 2026-04-19
 Dependencies: EPIC-0009
 
 EPIC-0011: Search
@@ -105,8 +106,9 @@ Dependencies: EPIC-0010
 EPIC-0012: Stakeholder View
 Description: Non-technical stakeholder dashboard with milestone progress, budget traffic lights, PDF export, email digests, and password protection.
 Release Target: Release 1.8
-Status: Planned
+Status: Done
 StartDate: 2026-04-22
+DoneDate: 2026-04-28
 Dependencies: EPIC-0011
 
 EPIC-0013: Agentic SDLC Dashboard
