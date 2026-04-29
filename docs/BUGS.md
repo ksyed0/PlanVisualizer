@@ -3403,8 +3403,8 @@ Steps to Reproduce:
 1. Open Trends tab, observe "Story Velocity" chart
    Expected: Burn-up chart with two lines: total scope and completed work over time
    Actual: Bar chart of cumulative story points per snapshot — monotonically growing, visually misleading
-   Status: Open
-   Fix Branch:
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0240-burnup-epic022-closure
    Lesson Encoded: No
    Estimated Cost USD: 0.00
    Notes: The chart uses the cumulative velocity array as bars. A true burn-up requires two datasets (done vs total scope). The existing velocityByWeek() in snapshot.js provides per-week deltas which would be more accurate for a velocity view.

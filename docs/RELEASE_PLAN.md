@@ -3057,7 +3057,8 @@ Acceptance Criteria:
 ```
 EPIC-0022
 Title: Analytics & Charting Enhancements
-Status: Planned
+Status: Done
+DoneDate: 2026-04-29
 StartDate: 2026-04-24
 ReleaseTarget: v2.x
 Description: New data visualisations that deepen delivery insight — velocity, throughput, and flow metrics — giving teams a clearer picture of team pace and predictability over time.
@@ -3115,8 +3116,8 @@ Acceptance Criteria:
 EPIC-0023: Dashboard Quality & Reliability
 Description: Fix bugs identified by Session 31 Lens code review across both the plan-status and agentic dashboards. Covers chart rendering correctness, CSS token consistency, Stakeholder tab bug-risk accuracy, and agentic dashboard live-update reliability.
 Release Target: v2.x
-Status: Planned
-StartDate:
+Status: In-Progress
+StartDate: 2026-04-29
 DoneDate:
 Dependencies: EPIC-0022
 ```
