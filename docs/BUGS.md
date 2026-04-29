@@ -3022,11 +3022,11 @@ Steps to Reproduce:
 3. Compare EPIC-0013 AI cost — appears inflated
    Expected: AI costs accurately attributed to epics via story branch matching
    Actual: Recent epics show $0; older epics may absorb costs that belong elsewhere
-   Status: Open
-   Fix Branch:
-   Lesson Encoded: No
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0217-0221-0224-cost-attribution
+   Lesson Encoded: Yes — see L-0049
    Estimated Cost USD: 0.00
-   Notes: Root cause — branch-name matching in parse-cost-log.js uses story branch prefix matching. Recent epics (0016/0017/0020) have branches whose prefixes aren't captured in the AI_COST_LOG.md session rows. Separate investigation needed.
+   Notes: Root cause — `attributeAICosts()` in compute-costs.js credited the FULL branch cost to every story sharing that branch (e.g. 36 stories all named `Branch: develop`, each getting the full $26.77 develop branch cost = $964 of phantom inflation). Older epics with finished `feature/US-XXXX-*` branches absorbed that inflation. Fix: split each branch's cost evenly across the N stories that claim it, then distribute truly-orphan branch costs proportionally as before. After fix EPIC-0017 = $0.64, EPIC-0020 = $8.30, EPIC-0013 reduced from inflated total. See tests/unit/compute-costs.test.js "multi-story branch sharing".
 
 ---
 
@@ -3090,11 +3090,11 @@ Steps to Reproduce:
 2. Observe the last several sessions — values appear flat/unchanged
    Expected: Charts reflect actual AI spend and token counts per session
    Actual: Recent sessions show identical or zero values
-   Status: Open
-   Fix Branch:
-   Lesson Encoded: No
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0217-0221-0224-cost-attribution
+   Lesson Encoded: Yes — see L-0049
    Estimated Cost USD: 0.00
-   Notes: Architectural limitation — snapshot.js records cumulative AI_COST_LOG.md state at each progress.md snapshot. If new sessions don't generate new progress.md entries, no new snapshots are captured. Separate investigation needed to verify capture-cost.js is appending correctly.
+   Notes: Two distinct causes. (1) Code bug: `extractTrends()` in snapshot.js summed `Object.values(s.data.costs)` which includes the `_totals` aggregate alongside per-story rows — double-counting every snapshot's cost and inflating the chart. Fix: prefer the explicit `_totals.costUsd` aggregate when present, with skip-`_totals`/`_bugs` fallback for legacy snapshots. (2) Environmental: AI_COST_LOG.md last-entry is 2026-04-19 (10 days stale at fix time) because the Stop hook stopped writing rows for recent sessions. The chart correctly shows flat values when the underlying log is flat — that is expected behaviour, not a chart bug. Hook-not-firing investigation tracked separately under capture-cost.js. See tests/unit/snapshot.test.js "uses published \_totals.costUsd when present".
 
 ---
 
@@ -3141,11 +3141,11 @@ Steps to Reproduce:
 2. Many bugs show identical AI cost values (e.g. $207.41); many show blank
    Expected: Each bug's AI cost attributed from sessions where it was fixed (via fix branch)
    Actual: Costs appear to be divided equally or mis-attributed
-   Status: Open
-   Fix Branch:
-   Lesson Encoded: No
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0217-0221-0224-cost-attribution
+   Lesson Encoded: Yes — see L-0049
    Estimated Cost USD: 0.00
-   Notes: Architectural limitation — attributeBugCosts() in compute-costs.js splits session cost equally across all bugs fixed in that session (identified by fix branch). True per-bug attribution would require sub-session timing data not available in AI_COST_LOG.md.
+   Notes: Root cause — `attributeBugCosts()` in compute-costs.js credited the full branch cost to EVERY bug sharing that fix branch (e.g. 12 bugs share `bugfix/BUG-0190-0197-ui-fixes`, all reading the same $X = 12·$X total inflation). Fix: split each branch's cost evenly across the N bugs that claim it, mirroring the stories fix. The same identical-looking value can still appear across N bugs (a fair share is the truthful split when sub-session timing is not available), but the bug-cost grand total is no longer inflated by the count of bugs per branch. Tokens and session counts are also split. See tests/unit/compute-costs.test.js "splits branch cost equally across bugs sharing the same fixBranch".
 
 ---
 

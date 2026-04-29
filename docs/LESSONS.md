@@ -4,6 +4,14 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
+## L-0049 — Cost attribution by branch must split, not duplicate, when multiple artefacts share the branch
+
+**Rule:** Any function that maps an aggregate (a branch's session cost in `AI_COST_LOG.md`) to N artefacts (stories with the same `Branch:` field, or bugs with the same `Fix Branch:`) MUST divide the aggregate by N — never credit the full aggregate to each artefact. Naive `result[id] = match.costUsd` produces double-counting that compounds with branch popularity: 36 stories on `Branch: develop` × $26.77 = $964 of phantom inflation; 12 bugs sharing one bugfix branch all read identical $X with bug-cost grand total = 12·$X. The cost log is a single source of truth — every dollar should appear exactly once across the rolled-up totals. Apply the same rule to tokens and session counts. When summing per-snapshot aggregates in trend extractors, prefer a published `_totals.costUsd` field over `Object.values(costs).reduce(...)` — the latter sums the aggregate again on top of the per-row entries.
+_Learned during Session 34: BUG-0217 (epic costs wildly inflated for older epics, $0 for recent ones), BUG-0224 (12 bugs showing identical AI cost), BUG-0221 (chart double-counting `_totals` on top of per-story rows). All three traced to the same "credit the aggregate to every claimant" pattern._
+**Date:** 2026-04-29
+
+---
+
 ## L-0048 — Chart.js ignores CSS custom properties in Chart.defaults.color; use getComputedStyle
 
 **Rule:** Assigning `Chart.defaults.color = 'var(--text-mute)'` looks valid but is silently ignored. Chart.js passes the string directly to `canvas.fillStyle` at draw time, and the browser's canvas API cannot resolve CSS custom property references — it treats the value as an unknown color and falls back to black. Always resolve the computed value at init time: `Chart.defaults.color = getComputedStyle(document.documentElement).getPropertyValue('--text-mute').trim()`. The same applies to any canvas-drawn color (gradients, grid lines, tick labels). For theme switching, re-read via `getComputedStyle` and call `chart.update('none')`.
