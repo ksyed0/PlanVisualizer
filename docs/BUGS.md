@@ -3521,3 +3521,19 @@ Steps to Reproduce:
    Lesson Encoded: No
    Estimated Cost USD: 0.00
    Notes: generate-dashboard.js story section uses s.status === 'In Progress' (line 2270). update-sdlc-status.js writes 'InProgress'. Fix: use /^In[ -]?Progress$/i regex consistent with patchCycleCounter (line 3510).
+
+---
+
+BUG-0248: Stakeholder tab hero section shows simplified chip variant, not the full Status tab hero
+Severity: High
+Related Story: US-0163 (EPIC-0022)
+Steps to Reproduce:
+
+1. Open plan-status.html → navigate to Stakeholder tab
+   Expected: Same hero as Status tab — "Release Health" eyebrow, large h2 verdict, 3-column sparkline row (Progress · past 14 snapshots, Coverage · last 30, Burn · cumulative), plus KPI tiles and decision widgets
+   Actual: Simplified variant — small chip with verdict, one-line narrative, a 30-cell coverage heat strip only; missing the eyebrow label, h2, and sparkline columns
+   Status: Open
+   Fix Branch:
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: US-0163 called \_renderStatusHero(data) which is a compact helper used by the Charts tab — not the full inline hero rendered by renderStatusTab. The fix is to extract the Status tab's inline hero block into a proper shared function (e.g. \_renderFullStatusHero) that produces the complete layout, and call that from renderStakeholderTab instead.
