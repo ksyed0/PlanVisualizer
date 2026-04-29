@@ -439,7 +439,7 @@ function renderTrendsTab(data, options = {}) {
       <div style="height:250px;position:relative"><canvas id="chart-trends-progress"></canvas></div>
     </div>
     <div class="card-elev rounded-lg p-4 anim-stagger" style="--i:1">
-      <div class="chart-header-rule"><span class="display-title">Burn Up</span><span class="chart-subtitle">cumulative story points completed</span></div>
+      <div class="chart-header-rule"><span class="display-title">Burn Up</span><span class="chart-subtitle">stories completed vs total scope</span></div>
       <div style="height:250px;position:relative"><canvas id="chart-trends-velocity"></canvas></div>
       ${(() => {
         if (!trends || !trends.velocity || trends.velocity.length < 2) return '';
@@ -577,8 +577,9 @@ function initTrendsCharts() {
     {label:'Done', data:_trendsAllData.done, borderColor:pvChartColors.ok, _gc:pvChartColors.ok, fill:true, tension:0.3},
     {label:'Total', data:_trendsAllData.total, borderColor:pvChartColors.mute, backgroundColor:'transparent', borderDash:[5,5], tension:0.3}
   ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:leg}, scales:{x:xA,y:yA()}}});
-  _mkTrend('chart-trends-velocity', {type:'bar', data:{labels:labels, datasets:[
-    {label:'Story Points', data:_trendsAllData.velocity, backgroundColor:pvChartColors.info}
+  _mkTrend('chart-trends-velocity', {type:'line', data:{labels:labels, datasets:[
+    {label:'Completed', data:_trendsAllData.done, borderColor:pvChartColors.ok, _gc:pvChartColors.ok, fill:true, tension:0.3},
+    {label:'Total Scope', data:_trendsAllData.total, borderColor:pvChartColors.mute, backgroundColor:'transparent', borderDash:[5,5], tension:0.3}
   ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:leg}, scales:{x:xA,y:yA()}}});
   _mkTrend('chart-trends-cost', {type:'line', data:{labels:labels, datasets:[
     {label:'Total Cost ($)', data:_trendsAllData.cost, borderColor:pvChartColors.warn, _gc:pvChartColors.warn, fill:true, tension:0.3}
@@ -2638,9 +2639,12 @@ function shEpicCompositeStatus(epicId, stories, bugs) {
 
   const allDone = epicStories.every((s) => /^done$/i.test(s.status));
   const anyBlocked = epicStories.some((s) => /^blocked$/i.test(s.status));
+  const epicStoryIds = new Set(epicStories.map((s) => s.id));
   const hasOpenCritical = (bugs || []).some(
     (b) =>
-      b.epicId === epicId && /^(Critical|High)$/i.test(b.severity) && !/^(Fixed|Retired|Cancelled)/i.test(b.status),
+      epicStoryIds.has(normalizeStoryRef(b.relatedStory)) &&
+      /^(Critical|High)$/i.test(b.severity) &&
+      !/^(Fixed|Retired|Cancelled)/i.test(b.status),
   );
   const anyActive = epicStories.some((s) => /^(done|in[ -]progress)$/i.test(s.status));
   const allPlanned = epicStories.every((s) => /^planned$/i.test(s.status));

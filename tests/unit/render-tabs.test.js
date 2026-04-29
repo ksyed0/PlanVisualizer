@@ -229,6 +229,17 @@ describe('renderTrendsTab — US-0159 Weekly Velocity chart', () => {
   });
 });
 
+describe('renderTrendsTab — Burn Up chart', () => {
+  it('uses line chart type with Completed and Total Scope datasets', () => {
+    const html = renderTrendsTab(mkTrendsData());
+    // Must be a line chart, not bar
+    expect(html).toMatch(/chart-trends-velocity[\s\S]{0,300}type:'line'/);
+    // Must have both dataset labels
+    expect(html).toContain("label:'Completed'");
+    expect(html).toContain("label:'Total Scope'");
+  });
+});
+
 describe('renderStakeholderTab — epic dates', () => {
   function mkStakeholderData(epicOverrides = {}) {
     return {
@@ -348,5 +359,61 @@ describe('renderStakeholderTab — hero section', () => {
     };
     const html = renderStakeholderTab(data);
     expect(html).not.toMatch(/Off track/);
+  });
+});
+
+describe('shEpicCompositeStatus — bug cross-reference via relatedStory', () => {
+  it('marks epic Needs Attention when a High bug is linked via relatedStory', () => {
+    const data = {
+      epics: [{ id: 'EPIC-0001', title: 'Core', status: 'In Progress', startDate: null, doneDate: null }],
+      stories: [{ id: 'US-0001', epicId: 'EPIC-0001', title: 'Auth', status: 'In Progress', acs: [] }],
+      bugs: [{ id: 'BUG-0001', title: 'Critical failure', status: 'Open', severity: 'High', relatedStory: 'US-0001' }],
+      costs: null,
+      coverage: { available: false },
+      trends: null,
+      risk: { byStory: new Map(), byEpic: new Map() },
+      recentActivity: [],
+      sessionTimeline: [],
+      atRisk: {},
+      completion: null,
+      budget: {
+        hasBudget: false,
+        percentUsed: 0,
+        totalBudget: 0,
+        totalSpent: 0,
+        totalProjected: 0,
+        burnRate: 0,
+        daysRemaining: null,
+      },
+    };
+    const html = renderStakeholderTab(data);
+    expect(html).toContain('Needs Attention');
+  });
+
+  it('does NOT mark Needs Attention when bug is Fixed', () => {
+    const data = {
+      epics: [{ id: 'EPIC-0001', title: 'Core', status: 'In Progress', startDate: null, doneDate: null }],
+      stories: [{ id: 'US-0001', epicId: 'EPIC-0001', title: 'Auth', status: 'In Progress', acs: [] }],
+      bugs: [{ id: 'BUG-0001', title: 'Was critical', status: 'Fixed', severity: 'High', relatedStory: 'US-0001' }],
+      costs: null,
+      coverage: { available: false },
+      trends: null,
+      risk: { byStory: new Map(), byEpic: new Map() },
+      recentActivity: [],
+      sessionTimeline: [],
+      atRisk: {},
+      completion: null,
+      budget: {
+        hasBudget: false,
+        percentUsed: 0,
+        totalBudget: 0,
+        totalSpent: 0,
+        totalProjected: 0,
+        burnRate: 0,
+        daysRemaining: null,
+      },
+    };
+    const html = renderStakeholderTab(data);
+    expect(html).not.toContain('Needs Attention');
   });
 });
