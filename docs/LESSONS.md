@@ -4,6 +4,14 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
+## L-0047 — Scope parallel agents to files, not just bugs; enforce with explicit file lists
+
+**Rule:** When dispatching parallel worktree agents, the prompt must explicitly list which files the agent may commit and instruct the agent to `git add` only those paths. Saying "your scope is BUG-X" is insufficient — agents will fix related bugs they encounter and commit the changes, causing rebase conflicts in sibling agents. Use: "Only commit changes to: `tools/lib/render-tabs.js`, `tests/unit/render-tabs.test.js`, `docs/BUGS.md`. Run `git add` with explicit file paths, never `git add -A`."
+_Learned during Session 32: Group A agent fixed BUG-0245/0246/0240 (Group B/C scope) while modifying render-tabs.js, requiring manual rebase conflict resolution on two sibling PRs._
+**Date:** 2026-04-29
+
+---
+
 ## L-0046 — When removing a CSS framework, audit every utility class it silently provided
 
 **Rule:** Removing a CSS CDN (Tailwind, Bootstrap, etc.) eliminates not just the classes you knowingly used but also invisible primitives like `.hidden { display: none }`, `.flex { display: flex }`, `.w-full { width: 100% }` that are used pervasively without any visible import. Before removing any CSS framework: (1) grep the entire codebase for class names, (2) map each class to a named replacement or CSS rule, (3) verify the map is complete by loading the page with CDN blocked before merging.

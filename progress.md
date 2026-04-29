@@ -4,6 +4,44 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 32 — 2026-04-29 (Dashboard Quality — BUG-0239/0241/0245/0246/0247/0248, BUG-0240, EPIC-0022 Done)
+
+### What Was Done
+
+**Branch cleanup:** Deleted 7 stale local branches (all `[gone]`), closed stale PR #472 (superseded version bump), deleted 4 remote stale branches (`BUG-0215-0222`, `hierarchy-hidden-default`, `version-bump-ad1926d`, `EPIC-0021-closure`).
+
+**Three parallel worktree agents dispatched** (all PRs CI-green, squash-merged into develop):
+
+**Group A — [PR #492](https://github.com/ksyed0/PlanVisualizer/pull/492): Stakeholder Tab fixes**
+
+- BUG-0248: Extracted `_renderFullStatusHero(data)` from `renderStatusTab`; Stakeholder tab now shows full Release Health hero (eyebrow, h2 verdict, 3-column viz row: progress bars · coverage dots · burn-up SVG, KPI tiles).
+- BUG-0239: Fixed `shEpicCompositeStatus` to cross-reference via `epicStoryIds.has(normalizeStoryRef(b.relatedStory))` instead of non-existent `b.epicId`. Epics with open High/Critical bugs now correctly show "Needs Attention".
+- BUG-0241: Added `Rejected` to `_renderStatusHero` open-bug filter (`!/^(Fixed|Retired|Cancelled|Rejected)/i`).
+- Group A agent also included BUG-0245/0246/0240 fixes (out of scope, but correct and CI-verified).
+
+**Group B — [PR #490](https://github.com/ksyed0/PlanVisualizer/pull/490): Agentic Dashboard fixes**
+
+- BUG-0247: `isInProgress` now covers both `'In Progress'` and `'InProgress'` camelCase variant so agent-start story gets amber strip.
+- BUG-0245: `patchDOM` uses `innerHTML` + `escH` to reconstruct branch `<a href>` anchor.
+- BUG-0246: `dispatch` added to `appendEventLog` tone map → `evt-dispatch` CSS class (violet accent).
+
+**Group C — [PR #491](https://github.com/ksyed0/PlanVisualizer/pull/491): Chart fix + Release Plan closure**
+
+- BUG-0240: `chart-trends-velocity` converted from bar to two-line burn-up: Completed (done stories) vs Total Scope.
+- EPIC-0022: Status → Done, DoneDate: 2026-04-29 in RELEASE_PLAN.md.
+- EPIC-0023: Status → In-Progress, StartDate: 2026-04-29 in RELEASE_PLAN.md.
+
+### Test Results
+
+- Full suite: ~2300+ tests passing across 98+ suites, ~93% statement coverage (gate: 80%).
+
+### Blockers / Issues
+
+- Group A agent exceeded its file scope (also fixed BUG-0245/0246/0240 in render-tabs.js and generate-dashboard.js). Required manual rebase coordination for Groups B and C. All conflicts resolved cleanly.
+- EPIC-0010 and EPIC-0012 appear to have status drift (marked Planned but all stories Done). Not corrected this session — needs verification of ACs before closing.
+
+---
+
 ## Session 31 (continued) — 2026-04-28 (Tailwind Regressions + US-0162/US-0163 + Lens Review)
 
 ### What Was Done
