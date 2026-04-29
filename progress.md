@@ -4,6 +4,49 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 31 (continued) — 2026-04-28 (Tailwind Regressions + US-0162/US-0163 + Lens Review)
+
+### What Was Done
+
+**Tailwind CDN removal regressions fixed (PRs #478–#485):**
+
+- BUG-0233: Added `.hidden { display: none !important }` and inlined Chart.js from node_modules
+- BUG-0234: `.view-toggle-btn` CSS class replaced 9 Tailwind class strings on Column/Card buttons
+- BUG-0235: ~55 CSS utility rules added as shim; `.charts-grid`, `.story-card-grid`, `.cost-detail-grid` named classes replaced Tailwind grid strings in render-tabs.js
+- BUG-0236: Lessons card view grid class (gap-4 variant) replaced with `.story-card-grid`
+
+**Branch cleanup:** Removed 25 stale merged branches + 4 stale locked worktrees at session start.
+
+**US-0162/US-0163 shipped (PR #486):**
+
+- `StartDate`/`DoneDate` optional fields added to RELEASE_PLAN.md epic format; parser updated; pre-populated for EPIC-0004–0021
+- Stakeholder tab epic rows display formatted date ranges: `Mar 11, 2026 → Apr 13, 2026`
+- Stakeholder tab `summaryBar` replaced with `_renderStatusHero(data)` + `_renderDecisionWidgets(data)` — Release Health hero, sparklines, KPI tiles, Overall Progress, Epic Progress, Top Risks, This Week now all appear at top of Stakeholder tab
+
+**Lens code review (Session 31 close):**
+
+- plan-status: 11 bugs found (BUG-0237–BUG-0244 + 3 chart rendering issues)
+- agentic dashboard: 8 bugs found (BUG-0245–BUG-0247 + enhancements)
+- Enhancement epic EPIC-0023 (Dashboard Quality & Reliability) created with US-0164/0165/0166
+
+### Test Results
+
+2301+ tests pass across 98 suites. Statement coverage ~88%. Gate: 80% (passing).
+
+### Blockers
+
+None.
+
+### PRs (Session 31 continuation)
+
+- [#478](https://github.com/ksyed0/PlanVisualizer/pull/478) BUG-0233 — Merged
+- [#480](https://github.com/ksyed0/PlanVisualizer/pull/480) BUG-0234 — Merged
+- [#482](https://github.com/ksyed0/PlanVisualizer/pull/482) BUG-0235 — Merged
+- [#484](https://github.com/ksyed0/PlanVisualizer/pull/484) BUG-0236 — Merged
+- [#486](https://github.com/ksyed0/PlanVisualizer/pull/486) US-0162/US-0163 — Merged
+
+---
+
 ## Session 31 — 2026-04-28 (Bug Fixes + US-0159 Velocity Chart)
 
 ### What Was Done

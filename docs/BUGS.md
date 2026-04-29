@@ -3294,3 +3294,230 @@ Steps to Reproduce:
    Lesson Encoded: No
    Estimated Cost USD: 0.00
    Notes: Two root causes: (1) Tailwind CDN provided a global `.hidden { display: none !important; }` utility used throughout the app for tab visibility, epic collapse, and filter bar toggling — removing Tailwind without adding this rule broke all hide/show behavior. Fix: add `.hidden { display: none !important; }` to the base CSS in render-html.js. (2) Chart.js was loaded entirely from CDN and was NOT inlined — the "21 references" claim in the original review referred to Chart.js API call sites (new Chart(), etc.) not the library itself. Fix: npm install chart.js as devDependency, read chart.umd.min.js at build time and inline as a <script> block in render-html.js.
+
+---
+
+BUG-0234: view-toggle button contrast — Column/Card buttons unreadable after Tailwind CDN removal
+Severity: Medium
+Related Story: US-0160 (EPIC-0022)
+Steps to Reproduce:
+
+1. Open docs/plan-status.html in a browser after Tailwind CDN removal
+2. Navigate to Hierarchy, Costs, Bugs, or Lessons tab
+   Expected: Column and Card toggle buttons are clearly styled with readable text and border
+   Actual: Buttons render with no styling (browser defaults) — text and borders near-invisible on light backgrounds
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0234-toggle-btn-contrast
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Nine Tailwind class strings on view-toggle buttons were not replaced during BUG-0230 CDN removal. Fixed by creating .view-toggle-btn CSS class with var(--clr-\*) tokens.
+
+---
+
+BUG-0235: comprehensive Tailwind utility regression — all tabs broken after CDN removal
+Severity: Critical
+Related Story: US-0160 (EPIC-0022)
+Steps to Reproduce:
+
+1. Open docs/plan-status.html after Tailwind CDN removal
+2. Observe Costs/Bugs/Lessons/Hierarchy column views compressed to half width; card views lose padding/grid/borders; Charts/Trends not in 2-column layout; tab containers missing 24px padding
+   Expected: All tabs render with correct spacing, full-width tables, and card grid layouts
+   Actual: ~55 Tailwind utility classes (flex, grid, gap-_, p-_, w-full, etc.) had no CSS replacements, causing widespread layout breakage
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0235-tailwind-utility-shim
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: A CSS utility shim was added to render-html.js covering all remaining Tailwind utilities. Named grid classes (.charts-grid, .story-card-grid, .cost-detail-grid) replaced the Tailwind grid strings in render-tabs.js.
+
+---
+
+BUG-0236: Lessons card view grid class missed in BUG-0235 sweep
+Severity: Low
+Related Story: US-0160 (EPIC-0022)
+Steps to Reproduce:
+
+1. Open Lessons tab, switch to Card view after BUG-0235 fix
+   Expected: Lessons render as multi-column card grid
+   Actual: Cards stack vertically as full-width blocks (grid class used gap-4 not gap-3 and was missed by the sed replacement)
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0236-remaining-tailwind-stragglers
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: One remaining Tailwind grid class (grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4) in lessonCardGroups was not replaced. Fixed by replacing with .story-card-grid.
+
+---
+
+BUG-0237: Chart.defaults.color set to CSS custom property string — Chart.js ignores it
+Severity: High
+Related Story: US-0093 (EPIC-0013)
+Steps to Reproduce:
+
+1. Open Charts or Trends tab in dark mode
+   Expected: Chart axis labels and grid lines use theme text/border colors
+   Actual: Chart.js ignores CSS custom property strings (e.g. 'var(--text-muted)') — all text defaults to Chart.js built-in grey (#666)
+   Status: Open
+   Fix Branch:
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: render-scripts.js sets Chart.defaults.color = 'var(--text-muted)' and Chart.defaults.borderColor = 'var(--border)'. Chart.js does not resolve CSS custom properties. The correct approach is to resolve via getComputedStyle at init time (pattern already used by pvChartColors helpers).
+
+---
+
+BUG-0238: Canvas gradient uses space-separated rgb() syntax — fails in some browsers
+Severity: High
+Related Story: US-0058 (EPIC-0008)
+Steps to Reproduce:
+
+1. Open Trends tab in Safari or older Chromium
+   Expected: Chart area fills show gradient
+   Actual: Area fills may be transparent — Canvas 2D addColorStop does not support space-separated rgb(r g b / a) syntax in all browsers
+   Status: Open
+   Fix Branch:
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: \_trendGrad helper in render-tabs.js builds color stops as 'rgb(r g b / 0.35)'. Canvas 2D requires legacy rgba(r, g, b, a) comma-separated syntax. Fix: replace with rgba(${r}, ${g}, ${b}, 0.35).
+
+---
+
+BUG-0239: shEpicCompositeStatus checks b.epicId — field does not exist on bug objects
+Severity: High
+Related Story: US-0094 (EPIC-0013)
+Steps to Reproduce:
+
+1. Open Stakeholder tab for a project with open Critical/High bugs linked to stories in a non-Done epic
+   Expected: That epic shows Needs Attention status
+   Actual: Epic always shows On Track or In Progress — hasOpenCritical always false because b.epicId is never set on parsed bug objects (parser sets relatedStory, not epicId)
+   Status: Open
+   Fix Branch:
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: shEpicCompositeStatus in render-tabs.js filters data.bugs with b.epicId === epicId. Bugs have relatedStory (e.g. US-0012), not epicId. Fix: cross-reference via story→epic map (same as renderBugsTab and renderCostsTab normalizeStoryRef pattern).
+
+---
+
+BUG-0240: Trends tab "Burn Up" chart is not a burn-up — renders cumulative totals as bars
+Severity: Medium
+Related Story: US-0058 (EPIC-0008)
+Steps to Reproduce:
+
+1. Open Trends tab, observe "Story Velocity" chart
+   Expected: Burn-up chart with two lines: total scope and completed work over time
+   Actual: Bar chart of cumulative story points per snapshot — monotonically growing, visually misleading
+   Status: Open
+   Fix Branch:
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: The chart uses the cumulative velocity array as bars. A true burn-up requires two datasets (done vs total scope). The existing velocityByWeek() in snapshot.js provides per-week deltas which would be more accurate for a velocity view.
+
+---
+
+BUG-0241: Open bug count inconsistent between \_renderStatusHero and renderStatusTab
+Severity: Medium
+Related Story: US-0093 (EPIC-0013)
+Steps to Reproduce:
+
+1. Open a project with bugs having status "Rejected"
+   Expected: Open bug count consistent across Status hero and Status tab widgets
+   Actual: renderStatusTab uses !/^(Fixed|Retired|Cancelled|Rejected)/i — \_renderStatusHero uses !/^(Fixed|Retired|Cancelled)/i (missing Rejected). Different counts show on same page.
+   Status: Open
+   Fix Branch:
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Since Stakeholder tab now calls \_renderStatusHero, it also inherits the inconsistency. Fix: align all open-bug filters to the project canonical pattern.
+
+---
+
+BUG-0242: Week label truncates month name at month boundaries in "This Week" widget
+Severity: Low
+Related Story: US-0093 (EPIC-0013)
+Steps to Reproduce:
+
+1. Open dashboard when the current week spans two months (e.g. Apr 28 – May 4)
+   Expected: "Apr 28–May 4"
+   Actual: "Apr 28–4" — end month name dropped
+   Status: Open
+   Fix Branch:
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: thisWeek label uses MONTHS[wStart.getMonth()] only. Fix: conditionally include MONTHS[wEnd.getMonth()] when wEnd.getMonth() !== wStart.getMonth().
+
+---
+
+BUG-0243: pvChartColors defined twice — second definition silently overwrites first
+Severity: Low
+Related Story: US-0058 (EPIC-0008)
+Steps to Reproduce:
+
+1. Open dashboard with both Charts and Trends tabs
+   Expected: pvChartColors single authoritative definition
+   Actual: var pvChartColors = ... declared in both renderChartsTab and renderTrendsTab inline scripts; second overwrites first silently
+   Status: Open
+   Fix Branch:
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: Both tab scripts define the same top-level var. Fix: use window.pvChartColors = window.pvChartColors || (function(){...})() in both, or extract to a shared script block in render-html.js.
+
+---
+
+BUG-0244: Trends openBugs uses allowlist — undercounts vs all other open-bug counts
+Severity: Low
+Related Story: US-0058 (EPIC-0008)
+Steps to Reproduce:
+
+1. Add a bug with status "Blocked" or "Verified" to BUGS.md; open Trends tab
+   Expected: Open Bugs trend line matches the open bug count shown on Status tab
+   Actual: Trend only counts Open and In Progress; Blocked/Verified/Reopened excluded
+   Status: Open
+   Fix Branch:
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: snapshot.js extractTrends openBugs uses status === 'Open' || status === 'In Progress' allowlist. Canonical pattern is !/^(Fixed|Retired|Cancelled)/i denylist.
+
+---
+
+BUG-0245: patchDOM textContent destroys branch link anchor in agent task cell (agentic dashboard)
+Severity: High
+Related Story: US-0143 (EPIC-0016)
+Steps to Reproduce:
+
+1. Set an agent's branch in sdlc-status.json; open dashboard; wait 5 seconds for first patchDOM tick
+   Expected: Agent task cell shows clickable branch link
+   Actual: textContent assignment destroys the server-rendered <a href="..."> — plain text URL, not clickable
+   Status: Open
+   Fix Branch:
+   Lesson Encoded: No
+   Estimated Cost UUID: 0.00
+   Notes: patchDOM at generate-dashboard.js uses taskEl.textContent = newTask unconditionally. Server renderer has branch→link logic (line 2154) but client patcher does not replicate it. Fix: check if newTask value matches branch and render an anchor, or use innerHTML with escH.
+
+---
+
+BUG-0246: dispatch tag not in appendEventLog tone map — styled as story-start event (agentic dashboard)
+Severity: Low
+Related Story: US-0143 (EPIC-0016)
+Steps to Reproduce:
+
+1. Fire a dispatch event via setConductorActive
+   Expected: Dispatch event appears with distinct styling in event log
+   Actual: appendEventLog maps unknown tag to 'evt-start' tone — dispatch events visually identical to story-start events
+   Status: Open
+   Fix Branch:
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: dispatch tag added in Session 31 was not added to appendEventLog tone-map or mc-evt-tag-dispatch CSS. Fix: add 'dispatch' → 'evt-dispatch' mapping and .mc-evt-tag-dispatch CSS rule.
+
+---
+
+BUG-0247: InProgress vs "In Progress" mismatch — story status badge wrong color (agentic dashboard)
+Severity: Medium
+Related Story: US-0119 (EPIC-0016)
+Steps to Reproduce:
+
+1. Set a story status to InProgress via update-sdlc-status.js agent-start command
+2. Open dashboard
+   Expected: Story renders with In Progress (amber) styling
+   Actual: Story renders with Planned (grey) styling — isInProgress check uses 'In Progress' (space) but updater writes 'InProgress' (camelCase)
+   Status: Open
+   Fix Branch:
+   Lesson Encoded: No
+   Estimated Cost USD: 0.00
+   Notes: generate-dashboard.js story section uses s.status === 'In Progress' (line 2270). update-sdlc-status.js writes 'InProgress'. Fix: use /^In[ -]?Progress$/i regex consistent with patchCycleCounter (line 3510).

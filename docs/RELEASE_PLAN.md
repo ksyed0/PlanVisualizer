@@ -3108,3 +3108,57 @@ Acceptance Criteria:
 - [x] AC-0589: The "View on GitHub" button is removed; the GitHub repo URL appears as an inline text link in the links row, with the "Implemented by" attribution right-aligned on the same row
 - [x] AC-0590: The "Links" section label is removed; the modal contains no redundant section headings above the repo/attribution row
 ```
+
+## EPIC-0023: Dashboard Quality & Reliability
+
+```
+EPIC-0023: Dashboard Quality & Reliability
+Description: Fix bugs identified by Session 31 Lens code review across both the plan-status and agentic dashboards. Covers chart rendering correctness, CSS token consistency, Stakeholder tab bug-risk accuracy, and agentic dashboard live-update reliability.
+Release Target: v2.x
+Status: Planned
+StartDate:
+DoneDate:
+Dependencies: EPIC-0022
+```
+
+## User Stories — EPIC-0023: Dashboard Quality & Reliability
+
+```
+US-0164 (EPIC-0023): As a developer, I want chart axis labels, grid lines, and legend text to use the correct theme colours in both light and dark mode, so that charts are readable without hardcoded greys.
+Priority: High (P1)
+Estimate: S
+Status: Planned
+Branch:
+Acceptance Criteria:
+
+- [ ] AC-0591: Chart.defaults.color and Chart.defaults.borderColor resolve to actual colour values at init time using getComputedStyle, not raw CSS custom-property strings
+- [ ] AC-0592: Canvas gradient color stops use rgba(r, g, b, a) comma-separated syntax, not space-separated rgb(), ensuring compatibility across all browsers
+- [ ] AC-0593: pvChartColors is defined once in a shared script block (or with window.pvChartColors = window.pvChartColors || ...) — not twice as separate var declarations
+- [ ] AC-0594: Switching between light and dark mode after visiting the Trends tab updates trend chart label and grid colours (updateTrendsChartTheme added, called from pvSetTheme)
+```
+
+```
+US-0165 (EPIC-0023): As a project lead, I want the Stakeholder tab to correctly flag epics that have open Critical/High bugs as Needs Attention, so that risk is accurately communicated to stakeholders.
+Priority: High (P1)
+Estimate: XS
+Status: Planned
+Branch:
+Acceptance Criteria:
+
+- [ ] AC-0595: shEpicCompositeStatus cross-references bugs via story→epic map (using normalizeStoryRef) instead of b.epicId (which is never set)
+- [ ] AC-0596: Open bug count filter in _renderStatusHero uses the same canonical denylist pattern as renderStatusTab: !/^(Fixed|Retired|Cancelled|Rejected)/i
+```
+
+```
+US-0166 (EPIC-0023): As a user, I want patchDOM to preserve branch link anchors in agent task cells and correctly style InProgress stories, so that live updates do not degrade the agentic dashboard display.
+Priority: Medium (P1)
+Estimate: S
+Status: Planned
+Branch:
+Acceptance Criteria:
+
+- [ ] AC-0597: patchDOM updates agent task cell with an <a href="..."> anchor when branch is set, not raw textContent that destroys the link
+- [ ] AC-0598: isInProgress check in generate-dashboard.js story renderer uses /^In[ -]?Progress$/i regex, matching both 'In Progress' (space) and 'InProgress' (camelCase from update-sdlc-status.js)
+- [ ] AC-0599: dispatch tag added to appendEventLog tone-map with a distinct evt-dispatch CSS class, making conductor dispatch events visually distinct from story-start events
+- [ ] AC-0600: _dispatchCount persists across page loads (initialized from localStorage or computed from status.log)
+```
