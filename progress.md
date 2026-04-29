@@ -4,6 +4,45 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 33 — 2026-04-29 (EPIC-0023 Closure — US-0164 charts, US-0166 dispatch persistence, BUG-0242/0244)
+
+### What Was Done
+
+Resumed Session 33 from prior pre-staging: design spec at [docs/superpowers/specs/2026-04-29-session33-design.md](docs/superpowers/specs/2026-04-29-session33-design.md) split work into three parallel groups; PR #497 (Group B) had already merged before this session resumed; PR #499 (Group A) and PR #496 (Group C) were both CI-green but BEHIND develop.
+
+**Sequential rebase + auto-merge:**
+
+- **PR [#499](https://github.com/ksyed0/PlanVisualizer/pull/499)** (Group A — US-0164 chart correctness + BUG-0242 week label + BUG-0244 openBugs denylist): `gh pr update-branch` → all 10 CI checks remained green → `gh pr merge --auto --squash --delete-branch` → merged at `63a003f`. Version-bump auto-PR #500 fired and merged.
+- **PR [#496](https://github.com/ksyed0/PlanVisualizer/pull/496)** (Group C — EPIC-0010 Done, EPIC-0012 DoneDate, US-0169 deferred risk UI story): `gh pr update-branch` → CI re-ran clean → auto-merge → merged at `44fb595`. Version-bump auto-PR #501 fired and merged.
+
+**Session-close docs (this PR):**
+
+- RELEASE_PLAN.md summary section: EPIC-0010 `Status: Planned → Done` + `DoneDate: 2026-04-19`; EPIC-0012 `Status: Planned → Done` + `DoneDate: 2026-04-28`. (Group C had only updated the detail section near the bottom of the file — the top-of-file summary table had drifted.)
+- RELEASE_PLAN.md detail section: EPIC-0023 `Status: In-Progress → Done` + `DoneDate: 2026-04-29`; US-0164 `Status: Planned → Done` with `Branch: feature/US-0164-BUG-0242-0244-chart-fixes` and all 4 ACs checked; US-0166 `Status: In Progress → Done` with AC-0600 checked.
+
+### Test Results
+
+Inherited from CI on develop tip `f317750`: ~2300+ tests pass across 98+ suites, statement coverage ~93% (gate: 80%, passing). All 10 CI gates green on every merge: Lint, Analyze JavaScript, Test & Coverage Gate, Build, Orchestrator Validation, Prettier Format Check, Dependency Audit, CodeQL SAST, Secret Scanning, CodeQL.
+
+### Blockers / Issues
+
+None. EPIC-0023 fully closed. The summary-section drift (EPIC-0010/0012 Done in detail but Planned in summary) was the only gap from Group C's earlier merge — corrected this session.
+
+### PRs (Session 33)
+
+- [#497](https://github.com/ksyed0/PlanVisualizer/pull/497) US-0166 dispatch persistence (Group B) — Merged 2026-04-29T14:54Z (pre-resume)
+- [#499](https://github.com/ksyed0/PlanVisualizer/pull/499) US-0164 chart correctness + BUG-0242/0244 (Group A) — Merged
+- [#496](https://github.com/ksyed0/PlanVisualizer/pull/496) EPIC-0010/0012 closure + US-0169 deferred (Group C) — Merged
+- (Session-close PR — this commit)
+
+### Lessons
+
+- **`gh pr update-branch` is a merge-update, not a rebase** — it merges develop into the PR head, which is why CI didn't have to re-run from scratch (the Test+Coverage check stayed green within seconds). Faster than local rebase + force-push for the typical "BEHIND, MERGEABLE" case.
+- **Group C ran before A/B merged** — so the closure of EPIC-0023, US-0164, US-0166 had to land in a follow-up commit. When sequencing parallel PRs that depend on each other's merges to be truthful, always plan for a post-merge "trailing close" PR rather than expecting the last group to encode the others' completion.
+- **RELEASE_PLAN.md has both summary and detail epic blocks** — at lines ~80–159 (summary) and ~1300+ (detail). Status flips must update both, not just one.
+
+---
+
 ## Session 32 — 2026-04-29 (Dashboard Quality — BUG-0239/0241/0245/0246/0247/0248, BUG-0240, EPIC-0022 Done)
 
 ### What Was Done

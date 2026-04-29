@@ -117,11 +117,12 @@ Branch name in `AI_COST_LOG.md` row must exactly match `Branch:` field in story 
 
 ---
 
-## Project Completion Status (as of 2026-04-28 Session 31)
+## Project Completion Status (as of 2026-04-29 Session 33)
 
-22 EPICs (EPIC-0021 Done, EPIC-0022 in-progress: US-0159 Done, US-0160 Done, US-0161 Done; US-0162+ planned), 161+ active stories, 200 bugs.
-Develop is fully green — all CI gates passing after PRs #468–471 merged (Session 31 bug fixes + US-0159 Velocity Chart).
-Next IDs: check `docs/ID_REGISTRY.md` (as of Session 31: BUG-0233, L-0047, TC-0553 unchanged).
+23 EPICs (EPIC-0010, EPIC-0012, EPIC-0022, EPIC-0023 all Done as of Session 33), 166+ active stories, 216 bugs.
+Develop is fully green — all CI gates passing after PRs #496/#499 merged (Session 33 EPIC-0023 closure).
+EPIC-0023 (Dashboard Quality & Reliability) closed with US-0164 chart correctness, US-0165/US-0166 dashboard fixes, and BUG-0242/BUG-0244 sweeps.
+Next IDs: check `docs/ID_REGISTRY.md` (as of Session 33: EPIC-0024, US-0170, AC-0606, BUG-0249, L-0048).
 
 Key additions (Session 31):
 
