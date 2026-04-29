@@ -1360,8 +1360,9 @@ Dependencies: US-0059, US-0079
 EPIC-0010: Risk Analytics
 Description: More sophisticated risk scoring weighted by priority and severity. Risk trend chart over time. Predict project completion date based on velocity.
 Release Target: Release 1.6
-Status: Planned
+Status: Done
 StartDate: 2026-04-19
+DoneDate: 2026-04-19
 Dependencies: EPIC-0009
 ```
 
@@ -1430,6 +1431,19 @@ Acceptance Criteria:
   - [ ] AC-0206: Show as a date range in the top bar: "Completion: Mar 15 — Apr 20 (likely Apr 1)"
   - [ ] AC-0207: If velocity data is insufficient (< 4 weeks), fall back to the simple projection from US-0066
 Dependencies: US-0066
+
+US-0169 (EPIC-0010): As a project manager, I want sort, filter, and threshold UI enhancements for risk analytics, so that I can quickly surface the highest-risk stories and epics in the Hierarchy tab.
+Priority: Low (P2)
+Estimate: M
+Status: Planned
+Branch:
+Acceptance Criteria:
+  - [ ] AC-0601: Stories can be sorted by risk score descending in the Hierarchy tab (deferred from AC-0190)
+  - [ ] AC-0602: Risk trend chart shows a horizontal reference line at 2.0 (High threshold) (deferred from AC-0193)
+  - [ ] AC-0603: Hierarchy tab epic headers display a risk indicator badge matching the epic's aggregate risk score (deferred from AC-0201)
+  - [ ] AC-0604: Epics are sorted by risk score descending by default within tabs that show epics (deferred from AC-0202)
+  - [ ] AC-0605: A filter in the Hierarchy tab allows showing only High/Critical risk epics (deferred from AC-0203)
+Dependencies: US-0064, US-0065, US-0067
 ```
 
 ---
@@ -1510,6 +1524,7 @@ Description: Simplified read-only view for non-technical stakeholders. Exportabl
 Release Target: Release 1.8
 Status: Done
 StartDate: 2026-04-22
+DoneDate: 2026-04-28
 Dependencies: EPIC-0011
 ```
 
