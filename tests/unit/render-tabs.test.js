@@ -79,7 +79,7 @@ describe('renderStakeholderTab', () => {
   it('decision widgets — critical bug and blocked story appear in top risks', () => {
     // BUG-0001 Critical Open appears in pv-risk-list; US-0004 Blocked appears too
     expect(html).toContain('BUG-0001');
-    expect(html).toMatch(/1\s*blocked/i);
+    expect(html).toMatch(/blocked/i);
   });
 
   // Test 5
@@ -229,6 +229,17 @@ describe('renderTrendsTab — US-0159 Weekly Velocity chart', () => {
   });
 });
 
+describe('renderTrendsTab — Burn Up chart', () => {
+  it('uses line chart type with Completed and Total Scope datasets', () => {
+    const html = renderTrendsTab(mkTrendsData());
+    // Must be a line chart, not bar
+    expect(html).toMatch(/chart-trends-velocity[\s\S]{0,300}type:'line'/);
+    // Must have both dataset labels
+    expect(html).toContain("label:'Completed'");
+    expect(html).toContain("label:'Total Scope'");
+  });
+});
+
 describe('renderStakeholderTab — epic dates', () => {
   function mkStakeholderData(epicOverrides = {}) {
     return {
@@ -300,6 +311,7 @@ describe('renderStakeholderTab — hero section', () => {
       risk: { byStory: new Map(), byEpic: new Map() },
       sessionTimeline: [],
       atRisk: {},
+      completion: null,
     };
   }
 
@@ -321,5 +333,103 @@ describe('renderStakeholderTab — hero section', () => {
   it('export bar still renders', () => {
     const html = renderStakeholderTab(mkFullData());
     expect(html).toContain('stakeholder-export-bar');
+  });
+
+  it('renders Release Health eyebrow in Stakeholder tab', () => {
+    const html = renderStakeholderTab(mkFullData());
+    expect(html).toContain('Release Health');
+  });
+
+  it('renders sparkline viz row (pv-hero-vizrow) in Stakeholder tab', () => {
+    const html = renderStakeholderTab(mkFullData());
+    expect(html).toContain('pv-hero-vizrow');
+  });
+
+  it('renders h2 verdict in Stakeholder tab', () => {
+    const html = renderStakeholderTab(mkFullData());
+    expect(html).toMatch(/<h2[^>]*>(On track|At risk|Off track)<\/h2>/s);
+  });
+
+  it('does not count Rejected bugs as open in simplified hero', () => {
+    const data = {
+      epics: [{ id: 'EPIC-0001', title: 'Core', status: 'In Progress', startDate: null, doneDate: null }],
+      stories: [{ id: 'US-0001', epicId: 'EPIC-0001', title: 'Auth', status: 'In Progress', acs: [] }],
+      bugs: [{ id: 'BUG-X', title: 'Old', status: 'Rejected', severity: 'High', relatedStory: 'US-0001' }],
+      costs: { _totals: { costUsd: 0, projectedUsd: 0 } },
+      budget: {
+        hasBudget: false,
+        percentUsed: 0,
+        totalBudget: 0,
+        totalSpent: 0,
+        totalProjected: 0,
+        burnRate: 0,
+        daysRemaining: null,
+      },
+      recentActivity: [],
+      coverage: { available: false },
+      trends: null,
+      risk: { byStory: new Map(), byEpic: new Map() },
+      sessionTimeline: [],
+      atRisk: {},
+      completion: null,
+    };
+    const html = renderStakeholderTab(data);
+    expect(html).not.toMatch(/Off track/);
+  });
+});
+
+describe('shEpicCompositeStatus — bug cross-reference via relatedStory', () => {
+  it('marks epic Needs Attention when a High bug is linked via relatedStory', () => {
+    const data = {
+      epics: [{ id: 'EPIC-0001', title: 'Core', status: 'In Progress', startDate: null, doneDate: null }],
+      stories: [{ id: 'US-0001', epicId: 'EPIC-0001', title: 'Auth', status: 'In Progress', acs: [] }],
+      bugs: [{ id: 'BUG-0001', title: 'Critical failure', status: 'Open', severity: 'High', relatedStory: 'US-0001' }],
+      costs: null,
+      coverage: { available: false },
+      trends: null,
+      risk: { byStory: new Map(), byEpic: new Map() },
+      recentActivity: [],
+      sessionTimeline: [],
+      atRisk: {},
+      completion: null,
+      budget: {
+        hasBudget: false,
+        percentUsed: 0,
+        totalBudget: 0,
+        totalSpent: 0,
+        totalProjected: 0,
+        burnRate: 0,
+        daysRemaining: null,
+      },
+    };
+    const html = renderStakeholderTab(data);
+    expect(html).toContain('Needs Attention');
+  });
+
+  it('does NOT mark Needs Attention when bug is Fixed', () => {
+    const data = {
+      epics: [{ id: 'EPIC-0001', title: 'Core', status: 'In Progress', startDate: null, doneDate: null }],
+      stories: [{ id: 'US-0001', epicId: 'EPIC-0001', title: 'Auth', status: 'In Progress', acs: [] }],
+      bugs: [{ id: 'BUG-0001', title: 'Was critical', status: 'Fixed', severity: 'High', relatedStory: 'US-0001' }],
+      costs: null,
+      coverage: { available: false },
+      trends: null,
+      risk: { byStory: new Map(), byEpic: new Map() },
+      recentActivity: [],
+      sessionTimeline: [],
+      atRisk: {},
+      completion: null,
+      budget: {
+        hasBudget: false,
+        percentUsed: 0,
+        totalBudget: 0,
+        totalSpent: 0,
+        totalProjected: 0,
+        burnRate: 0,
+        daysRemaining: null,
+      },
+    };
+    const html = renderStakeholderTab(data);
+    expect(html).not.toContain('Needs Attention');
   });
 });

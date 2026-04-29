@@ -439,7 +439,7 @@ function renderTrendsTab(data, options = {}) {
       <div style="height:250px;position:relative"><canvas id="chart-trends-progress"></canvas></div>
     </div>
     <div class="card-elev rounded-lg p-4 anim-stagger" style="--i:1">
-      <div class="chart-header-rule"><span class="display-title">Burn Up</span><span class="chart-subtitle">cumulative story points completed</span></div>
+      <div class="chart-header-rule"><span class="display-title">Burn Up</span><span class="chart-subtitle">stories completed vs total scope</span></div>
       <div style="height:250px;position:relative"><canvas id="chart-trends-velocity"></canvas></div>
       ${(() => {
         if (!trends || !trends.velocity || trends.velocity.length < 2) return '';
@@ -577,8 +577,9 @@ function initTrendsCharts() {
     {label:'Done', data:_trendsAllData.done, borderColor:pvChartColors.ok, _gc:pvChartColors.ok, fill:true, tension:0.3},
     {label:'Total', data:_trendsAllData.total, borderColor:pvChartColors.mute, backgroundColor:'transparent', borderDash:[5,5], tension:0.3}
   ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:leg}, scales:{x:xA,y:yA()}}});
-  _mkTrend('chart-trends-velocity', {type:'bar', data:{labels:labels, datasets:[
-    {label:'Story Points', data:_trendsAllData.velocity, backgroundColor:pvChartColors.info}
+  _mkTrend('chart-trends-velocity', {type:'line', data:{labels:labels, datasets:[
+    {label:'Completed', data:_trendsAllData.done, borderColor:pvChartColors.ok, _gc:pvChartColors.ok, fill:true, tension:0.3},
+    {label:'Total Scope', data:_trendsAllData.total, borderColor:pvChartColors.mute, backgroundColor:'transparent', borderDash:[5,5], tension:0.3}
   ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:leg}, scales:{x:xA,y:yA()}}});
   _mkTrend('chart-trends-cost', {type:'line', data:{labels:labels, datasets:[
     {label:'Total Cost ($)', data:_trendsAllData.cost, borderColor:pvChartColors.warn, _gc:pvChartColors.warn, fill:true, tension:0.3}
@@ -668,7 +669,7 @@ function _renderStatusHero(data) {
   const total = activeStories.length;
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
 
-  const openBugs = (data.bugs || []).filter((b) => !/^(Fixed|Retired|Cancelled)/i.test(b.status));
+  const openBugs = (data.bugs || []).filter((b) => !/^(Fixed|Retired|Cancelled|Rejected)/i.test(b.status));
   const criticalBugs = openBugs.filter((b) => ['Critical', 'High'].includes(b.severity)).length;
   const blockedStories = activeStories.filter((s) => s.status === 'Blocked').length;
 
@@ -746,6 +747,186 @@ function _renderStatusHero(data) {
       <div class="pv-heat" aria-label="30-day coverage heat strip">${cells30}</div>
     </div>
   </div>`;
+}
+
+function _renderFullStatusHero(data) {
+  const activeStories = data.stories.filter((s) => s.status !== 'Retired');
+  const doneStories = activeStories.filter((s) => s.status === 'Done');
+  const openBugs = (data.bugs || []).filter((b) => !/^(Fixed|Retired|Cancelled|Rejected)/i.test(b.status));
+  const criticalBugs = openBugs.filter((b) => b.severity === 'Critical');
+  const highBugs = openBugs.filter((b) => b.severity === 'High');
+  const blockedStories = activeStories.filter((s) => s.status === 'Blocked');
+  const cov = data.coverage;
+  const covPct = cov && cov.available !== false ? cov.overall : null;
+  const totalAI = (data.costs && data.costs._totals && data.costs._totals.costUsd) || 0;
+  const totalProjected = activeStories.reduce(
+    (s, st) => s + ((data.costs && data.costs[st.id] && data.costs[st.id].projectedUsd) || 0),
+    0,
+  );
+  const budgetPct = totalProjected > 0 ? Math.round((totalAI / totalProjected) * 100) : 0;
+  const donePct = activeStories.length > 0 ? Math.round((doneStories.length / activeStories.length) * 100) : 0;
+
+  const hasBlocker = blockedStories.length > 0 || criticalBugs.length > 0;
+  const hasRisk = highBugs.length > 0 || openBugs.length > 3 || budgetPct > 80;
+  const verdict = hasBlocker ? 'Off track' : hasRisk ? 'At risk' : 'On track';
+  const verdictColor = hasBlocker ? 'var(--risk)' : hasRisk ? 'var(--warn)' : 'var(--ok)';
+  const chipCls = hasBlocker ? 'risk' : hasRisk ? 'warn' : 'ok';
+  const narrative = hasBlocker
+    ? `${criticalBugs.length} critical bug${criticalBugs.length !== 1 ? 's' : ''} or blocked stories need immediate attention.`
+    : hasRisk
+      ? `${openBugs.length} open bug${openBugs.length !== 1 ? 's' : ''} and ${100 - donePct}% of stories remaining — watch velocity closely.`
+      : `${doneStories.length} of ${activeStories.length} stories done at ${covPct !== null ? covPct.toFixed(1) + '% coverage' : 'unknown coverage'}. Release is on track.`;
+
+  const comp = data.completion;
+  const forecastLabel = comp ? `${comp.likelyDate}` : '—';
+  const rangeLabel = comp ? `${comp.rangeStart} – ${comp.rangeEnd}` : '—';
+  const velocityLabel = comp ? `${comp.velocityWeeks}wk` : '—';
+
+  const trends = data.trends;
+
+  const progressBars = (() => {
+    if (!trends || !trends.dates || trends.dates.length < 2)
+      return '<span style="font-size:11px;color:var(--text-mute)">No history</span>';
+    const recent = trends.dates.slice(-14);
+    const doneCounts = (trends.doneCounts || []).slice(-14);
+    const totalCounts = (trends.totalStories || []).slice(-14);
+    const maxDone = Math.max(...doneCounts, 1);
+    return recent
+      .map((d, i) => {
+        const pct = Math.round((doneCounts[i] / maxDone) * 100);
+        return `<div title="${d}: ${doneCounts[i]}/${totalCounts[i]} done"
+        style="width:8px;background:color-mix(in oklab,var(--plan-accent) ${Math.max(pct, 8)}%,var(--border));border-radius:2px;height:${Math.max(Math.round((doneCounts[i] / maxDone) * 32), 4)}px;align-self:flex-end;flex-shrink:0"></div>`;
+      })
+      .join('');
+  })();
+
+  const coverageDots = (() => {
+    if (!trends || !trends.dates || trends.dates.length < 2)
+      return '<span style="font-size:11px;color:var(--text-mute)">No history</span>';
+    const recent30 = trends.dates.slice(-30);
+    const covVals = (trends.coverage || []).slice(-30);
+    return recent30
+      .map((d, i) => {
+        const v = covVals[i] || 0;
+        const good = v >= 80;
+        const warn = v >= 60 && v < 80;
+        const color = good ? 'var(--ok)' : warn ? 'var(--warn)' : 'var(--risk)';
+        return `<span title="${d}: ${v.toFixed(1)}%" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${color};margin:1px;opacity:${v > 0 ? 0.85 : 0.2}"></span>`;
+      })
+      .join('');
+  })();
+
+  const burnUpSvg = (() => {
+    if (!trends || !trends.velocity || trends.velocity.length < 2)
+      return '<span style="font-size:11px;color:var(--text-mute)">No data</span>';
+    const vals = trends.velocity.slice(-60);
+    const W = 200,
+      H = 44;
+    const maxV = Math.max(...vals, 1);
+    const pts = vals
+      .map((v, i) => {
+        const x = +((i / (vals.length - 1)) * W).toFixed(1);
+        const y = +(H - (v / maxV) * (H - 2) - 1).toFixed(1);
+        return `${x},${y}`;
+      })
+      .join(' ');
+    const areaPts = `${pts} ${W},${H} 0,${H}`;
+    return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px" preserveAspectRatio="none" aria-hidden="true">
+      <defs><linearGradient id="bu-grad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="var(--plan-accent)" stop-opacity="0.35"/>
+        <stop offset="100%" stop-color="var(--plan-accent)" stop-opacity="0.03"/>
+      </linearGradient></defs>
+      <polygon points="${areaPts}" fill="url(#bu-grad)"/>
+      <polyline points="${pts}" fill="none" stroke="var(--plan-accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`;
+  })();
+
+  const kpiTiles = (() => {
+    if (!trends || !trends.dates || trends.dates.length < 2) return '';
+    const n = trends.dates.length;
+    const donePctSeries = (trends.doneCounts || []).map((c, i) => {
+      const tot = (trends.totalStories || [])[i] || 1;
+      return +((c / tot) * 100).toFixed(1);
+    });
+    const covSeries = (trends.coverage || []).map((v) => v || 0);
+    const bugSeries = trends.openBugs || [];
+    const costSeries = trends.aiCosts || [];
+    function lastDelta(series) {
+      for (let i = series.length - 1; i > 0; i--) {
+        const d = +(series[i] - series[i - 1]).toFixed(1);
+        if (d !== 0) return d;
+      }
+      return 0;
+    }
+    function kpiTile(label, val, unit, delta, deltaUnit, series, upGood) {
+      const isUp = delta > 0;
+      const good = upGood ? isUp : !isUp;
+      const dColor = delta === 0 ? 'var(--text-mute)' : good ? 'var(--ok)' : 'var(--risk)';
+      const arrow = delta > 0 ? '▲' : delta < 0 ? '▼' : '—';
+      const spark = sparkline(series.slice(-16), 56, 20);
+      return `<div class="card" style="padding:14px 16px;position:relative;overflow:hidden">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-mute);margin-bottom:4px">${label}</div>
+        <div style="position:absolute;top:10px;right:10px;color:var(--text-mute);opacity:.45">${spark}</div>
+        <div style="font-family:var(--font-display);font-size:clamp(22px,2.5vw,30px);font-weight:700;line-height:1;margin-bottom:5px">${val}<span style="font-size:13px;font-weight:400;color:var(--text-mute)">${unit}</span></div>
+        <div style="font-size:12px;color:${dColor};font-weight:600">${arrow} ${delta > 0 ? '+' : ''}${delta}${deltaUnit}<span style="font-weight:400;color:var(--text-mute)"> / wk</span></div>
+      </div>`;
+    }
+    return `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
+      ${kpiTile('Overall Progress', donePctSeries[n - 1] || donePct, '%', lastDelta(donePctSeries), '%', donePctSeries, true)}
+      ${kpiTile('Test Coverage', covSeries[n - 1] !== undefined ? covSeries[n - 1].toFixed(1) : covPct !== null ? covPct.toFixed(1) : '—', '%', lastDelta(covSeries), '%', covSeries, true)}
+      ${kpiTile('Open Bugs', bugSeries[n - 1] !== undefined ? bugSeries[n - 1] : openBugs.length, '', lastDelta(bugSeries), '', bugSeries, false)}
+      ${kpiTile('AI Spend', usd(costSeries[n - 1] || totalAI), '', +((costSeries[n - 1] || 0) - (costSeries[n - 2] || 0)).toFixed(2), '', costSeries, null)}
+    </div>`;
+  })();
+
+  return `
+  <!-- Release Health Hero -->
+  <div class="pv-hero card mb-4 p-0 overflow-hidden">
+    <div class="pv-hero-head">
+      <div class="pv-hero-verdict" style="position:relative">
+        <p class="pv-eyebrow">Release Health</p>
+        <h2 style="margin:4px 0 6px;font-family:var(--font-display);font-size:clamp(28px,4vw,44px);font-weight:600;letter-spacing:-0.02em;line-height:1;color:${verdictColor}">${verdict}</h2>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span class="chip ${chipCls}"><span class="d"></span>${hasBlocker ? 'BLOCKED' : hasRisk ? 'AT RISK' : 'STABLE'}</span>
+          <p class="pv-hero-narrative">${narrative}</p>
+        </div>
+      </div>
+      <div class="pv-hero-stats">
+        <div class="pv-stat">
+          <span class="pv-stat-lbl">Forecast</span>
+          <span class="pv-stat-val">${esc(forecastLabel)}</span>
+          <span class="pv-delta" style="color:var(--text-mute);font-size:11px">${esc(rangeLabel)}</span>
+        </div>
+        <div class="pv-stat">
+          <span class="pv-stat-lbl">Velocity</span>
+          <span class="pv-stat-val">${esc(velocityLabel)}</span>
+          <span class="pv-delta" style="color:var(--text-mute);font-size:11px">stories/wk</span>
+        </div>
+        <div class="pv-stat">
+          <span class="pv-stat-lbl">Budget</span>
+          <span class="pv-stat-val" style="color:${budgetPct > 90 ? 'var(--risk)' : budgetPct > 75 ? 'var(--warn)' : 'inherit'}">${budgetPct}%</span>
+          <span class="pv-delta" style="color:var(--text-mute);font-size:11px">${usd(totalAI)} / ${usd(totalProjected)}</span>
+        </div>
+      </div>
+    </div>
+    <!-- Mini-viz row: progress bars | coverage dots | burn-up -->
+    <div class="pv-hero-vizrow pv-hero-viz" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
+      <div>
+        <p class="pv-eyebrow" style="margin-bottom:6px">Progress · Past 14 snapshots</p>
+        <div style="display:flex;align-items:flex-end;gap:3px;height:36px">${progressBars}</div>
+      </div>
+      <div>
+        <p class="pv-eyebrow" style="margin-bottom:6px">Coverage · Last 30 snapshots</p>
+        <div style="line-height:1;display:flex;flex-wrap:wrap;align-items:center">${coverageDots}</div>
+      </div>
+      <div>
+        <p class="pv-eyebrow" style="margin-bottom:6px">Burn · Cumulative</p>
+        ${burnUpSvg}
+      </div>
+    </div>
+  </div>
+  <!-- KPI sparkline tiles -->
+  ${kpiTiles}`;
 }
 
 function _renderDecisionWidgets(data) {
@@ -2148,124 +2329,11 @@ function renderStatusTab(data) {
   const budgetPct = totalProjected > 0 ? Math.round((totalAI / totalProjected) * 100) : 0;
   const donePct = activeStories.length > 0 ? Math.round((doneStories.length / activeStories.length) * 100) : 0;
 
-  // Release health verdict
-  const hasBlocker = blockedStories.length > 0 || criticalBugs.length > 0;
+  // hasRisk used in risks list below
   const hasRisk = highBugs.length > 0 || openBugs.length > 3 || budgetPct > 80;
-  const verdict = hasBlocker ? 'Off track' : hasRisk ? 'At risk' : 'On track';
-  const verdictColor = hasBlocker ? 'var(--risk)' : hasRisk ? 'var(--warn)' : 'var(--ok)';
-  const chipCls = hasBlocker ? 'risk' : hasRisk ? 'warn' : 'ok';
-  const narrative = hasBlocker
-    ? `${criticalBugs.length} critical bug${criticalBugs.length !== 1 ? 's' : ''} or blocked stories need immediate attention.`
-    : hasRisk
-      ? `${openBugs.length} open bug${openBugs.length !== 1 ? 's' : ''} and ${100 - donePct}% of stories remaining — watch velocity closely.`
-      : `${doneStories.length} of ${activeStories.length} stories done at ${covPct !== null ? covPct.toFixed(1) + '% coverage' : 'unknown coverage'}. Release is on track.`;
 
-  // ── Completion data ───────────────────────────────────────────────
-  const comp = data.completion;
-  const forecastLabel = comp ? `${comp.likelyDate}` : '—';
-  const rangeLabel = comp ? `${comp.rangeStart} – ${comp.rangeEnd}` : '—';
-  const velocityLabel = comp ? `${comp.velocityWeeks}wk` : '—';
-
-  // ── 14-week progress mini-bar ─────────────────────────────────────
+  // ── Trends data (used in this-week section below) ─────────────────
   const trends = data.trends;
-  const progressBars = (() => {
-    if (!trends || !trends.dates || trends.dates.length < 2)
-      return '<span class="text-xs text-slate-400">No history</span>';
-    const recent = trends.dates.slice(-14);
-    const doneCounts = (trends.doneCounts || []).slice(-14);
-    const totalCounts = (trends.totalStories || []).slice(-14);
-    const maxDone = Math.max(...doneCounts, 1);
-    return recent
-      .map((d, i) => {
-        const pct = Math.round((doneCounts[i] / maxDone) * 100);
-        return `<div title="${d}: ${doneCounts[i]}/${totalCounts[i]} done"
-        style="width:8px;background:color-mix(in oklab,var(--plan-accent) ${Math.max(pct, 8)}%,var(--border));border-radius:2px;height:${Math.max(Math.round((doneCounts[i] / maxDone) * 32), 4)}px;align-self:flex-end;flex-shrink:0"></div>`;
-      })
-      .join('');
-  })();
-
-  // ── 30-day coverage dots ──────────────────────────────────────────
-  const coverageDots = (() => {
-    if (!trends || !trends.dates || trends.dates.length < 2)
-      return '<span class="text-xs text-slate-400">No history</span>';
-    const recent30 = trends.dates.slice(-30);
-    const covVals = (trends.coverage || []).slice(-30);
-    return recent30
-      .map((d, i) => {
-        const v = covVals[i] || 0;
-        const good = v >= 80;
-        const warn = v >= 60 && v < 80;
-        const color = good ? 'var(--ok)' : warn ? 'var(--warn)' : 'var(--risk)';
-        return `<span title="${d}: ${v.toFixed(1)}%" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${color};margin:1px;opacity:${v > 0 ? 0.85 : 0.2}"></span>`;
-      })
-      .join('');
-  })();
-
-  // ── Burn-up area SVG ─────────────────────────────────────────────
-  const burnUpSvg = (() => {
-    if (!trends || !trends.velocity || trends.velocity.length < 2)
-      return '<span style="font-size:11px;color:var(--text-mute)">No data</span>';
-    const vals = trends.velocity.slice(-60);
-    const W = 200,
-      H = 44;
-    const maxV = Math.max(...vals, 1);
-    const pts = vals
-      .map((v, i) => {
-        const x = +((i / (vals.length - 1)) * W).toFixed(1);
-        const y = +(H - (v / maxV) * (H - 2) - 1).toFixed(1);
-        return `${x},${y}`;
-      })
-      .join(' ');
-    const areaPts = `${pts} ${W},${H} 0,${H}`;
-    return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px" preserveAspectRatio="none" aria-hidden="true">
-      <defs><linearGradient id="bu-grad" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="var(--plan-accent)" stop-opacity="0.35"/>
-        <stop offset="100%" stop-color="var(--plan-accent)" stop-opacity="0.03"/>
-      </linearGradient></defs>
-      <polygon points="${areaPts}" fill="url(#bu-grad)"/>
-      <polyline points="${pts}" fill="none" stroke="var(--plan-accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>`;
-  })();
-
-  // ── KPI sparkline tiles ───────────────────────────────────────────
-  const kpiTiles = (() => {
-    if (!trends || !trends.dates || trends.dates.length < 2) return '';
-    const n = trends.dates.length;
-    const donePctSeries = (trends.doneCounts || []).map((c, i) => {
-      const tot = (trends.totalStories || [])[i] || 1;
-      return +((c / tot) * 100).toFixed(1);
-    });
-    const covSeries = (trends.coverage || []).map((v) => v || 0);
-    const bugSeries = trends.openBugs || [];
-    const costSeries = trends.aiCosts || [];
-
-    function lastDelta(series) {
-      for (let i = series.length - 1; i > 0; i--) {
-        const d = +(series[i] - series[i - 1]).toFixed(1);
-        if (d !== 0) return d;
-      }
-      return 0;
-    }
-    function kpiTile(label, val, unit, delta, deltaUnit, series, upGood) {
-      const isUp = delta > 0;
-      const good = upGood ? isUp : !isUp;
-      const dColor = delta === 0 ? 'var(--text-mute)' : good ? 'var(--ok)' : 'var(--risk)';
-      const arrow = delta > 0 ? '▲' : delta < 0 ? '▼' : '—';
-      const spark = sparkline(series.slice(-16), 56, 20);
-      return `<div class="card" style="padding:14px 16px;position:relative;overflow:hidden">
-        <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-mute);margin-bottom:4px">${label}</div>
-        <div style="position:absolute;top:10px;right:10px;color:var(--text-mute);opacity:.45">${spark}</div>
-        <div style="font-family:var(--font-display);font-size:clamp(22px,2.5vw,30px);font-weight:700;line-height:1;margin-bottom:5px">${val}<span style="font-size:13px;font-weight:400;color:var(--text-mute)">${unit}</span></div>
-        <div style="font-size:12px;color:${dColor};font-weight:600">${arrow} ${delta > 0 ? '+' : ''}${delta}${deltaUnit}<span style="font-weight:400;color:var(--text-mute)"> / wk</span></div>
-      </div>`;
-    }
-    return `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
-      ${kpiTile('Overall Progress', donePctSeries[n - 1] || donePct, '%', lastDelta(donePctSeries), '%', donePctSeries, true)}
-      ${kpiTile('Test Coverage', covSeries[n - 1] !== undefined ? covSeries[n - 1].toFixed(1) : covPct !== null ? covPct.toFixed(1) : '—', '%', lastDelta(covSeries), '%', covSeries, true)}
-      ${kpiTile('Open Bugs', bugSeries[n - 1] !== undefined ? bugSeries[n - 1] : openBugs.length, '', lastDelta(bugSeries), '', bugSeries, false)}
-      ${kpiTile('AI Spend', usd(costSeries[n - 1] || totalAI), '', +((costSeries[n - 1] || 0) - (costSeries[n - 2] || 0)).toFixed(2), '', costSeries, null)}
-    </div>`;
-  })();
 
   // ── Epic progress list ────────────────────────────────────────────
   const epicProgress = data.epics
@@ -2420,54 +2488,7 @@ function renderStatusTab(data) {
   return `
   <div id="tab-status" class="p-6" role="tabpanel" aria-labelledby="tab-btn-status">
 
-    <!-- Release Health Hero -->
-    <div class="pv-hero card mb-4 p-0 overflow-hidden">
-      <div class="pv-hero-head">
-        <div class="pv-hero-verdict" style="position:relative">
-          <p class="pv-eyebrow">Release Health</p>
-          <h2 style="margin:4px 0 6px;font-family:var(--font-display);font-size:clamp(28px,4vw,44px);font-weight:600;letter-spacing:-0.02em;line-height:1;color:${verdictColor}">${verdict}</h2>
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-            <span class="chip ${chipCls}"><span class="d"></span>${hasBlocker ? 'BLOCKED' : hasRisk ? 'AT RISK' : 'STABLE'}</span>
-            <p class="pv-hero-narrative">${narrative}</p>
-          </div>
-        </div>
-        <div class="pv-hero-stats">
-          <div class="pv-stat">
-            <span class="pv-stat-lbl">Forecast</span>
-            <span class="pv-stat-val">${esc(forecastLabel)}</span>
-            <span class="pv-delta" style="color:var(--text-mute);font-size:11px">${esc(rangeLabel)}</span>
-          </div>
-          <div class="pv-stat">
-            <span class="pv-stat-lbl">Velocity</span>
-            <span class="pv-stat-val">${esc(velocityLabel)}</span>
-            <span class="pv-delta" style="color:var(--text-mute);font-size:11px">stories/wk</span>
-          </div>
-          <div class="pv-stat">
-            <span class="pv-stat-lbl">Budget</span>
-            <span class="pv-stat-val" style="color:${budgetPct > 90 ? 'var(--risk)' : budgetPct > 75 ? 'var(--warn)' : 'inherit'}">${budgetPct}%</span>
-            <span class="pv-delta" style="color:var(--text-mute);font-size:11px">${usd(totalAI)} / ${usd(totalProjected)}</span>
-          </div>
-        </div>
-      </div>
-      <!-- Mini-viz row: progress bars | coverage dots | burn-up -->
-      <div class="pv-hero-vizrow pv-hero-viz" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
-        <div>
-          <p class="pv-eyebrow" style="margin-bottom:6px">Progress · Past 14 snapshots</p>
-          <div style="display:flex;align-items:flex-end;gap:3px;height:36px">${progressBars}</div>
-        </div>
-        <div>
-          <p class="pv-eyebrow" style="margin-bottom:6px">Coverage · Last 30 snapshots</p>
-          <div style="line-height:1;display:flex;flex-wrap:wrap;align-items:center">${coverageDots}</div>
-        </div>
-        <div>
-          <p class="pv-eyebrow" style="margin-bottom:6px">Burn · Cumulative</p>
-          ${burnUpSvg}
-        </div>
-      </div>
-    </div>
-
-    <!-- KPI sparkline tiles -->
-    ${kpiTiles}
+    ${_renderFullStatusHero(data)}
 
     <!-- Decision widgets row -->
     <div class="pv-widgets mb-4">
@@ -2638,9 +2659,12 @@ function shEpicCompositeStatus(epicId, stories, bugs) {
 
   const allDone = epicStories.every((s) => /^done$/i.test(s.status));
   const anyBlocked = epicStories.some((s) => /^blocked$/i.test(s.status));
+  const epicStoryIds = new Set(epicStories.map((s) => s.id));
   const hasOpenCritical = (bugs || []).some(
     (b) =>
-      b.epicId === epicId && /^(Critical|High)$/i.test(b.severity) && !/^(Fixed|Retired|Cancelled)/i.test(b.status),
+      epicStoryIds.has(normalizeStoryRef(b.relatedStory)) &&
+      /^(Critical|High)$/i.test(b.severity) &&
+      !/^(Fixed|Retired|Cancelled)/i.test(b.status),
   );
   const anyActive = epicStories.some((s) => /^(done|in[ -]progress)$/i.test(s.status));
   const allPlanned = epicStories.every((s) => /^planned$/i.test(s.status));
@@ -2793,7 +2817,7 @@ function renderStakeholderTab(data) {
 
   return `
   <div id="tab-stakeholder" class="p-6 hidden tab-fill" role="tabpanel" aria-labelledby="tab-btn-stakeholder">
-    ${_renderStatusHero(data)}
+    ${_renderFullStatusHero(data)}
     ${_renderDecisionWidgets(data)}
     <div class="sh-milestone-section">
       <div class="sh-section-label">Milestones</div>
