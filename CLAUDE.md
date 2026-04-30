@@ -67,5 +67,6 @@ Types: `feat`, `fix`, `test`, `docs`, `refactor`, `chore`, `style`, `perf`
 - [ ] `MIGRATION_LOG.md` updated if cross-platform changes were made
 - [ ] `docs/LESSONS.md` updated if bugs were fixed or lessons learned
 - [ ] `docs/AI_COST_LOG.md` committed if the Stop hook accumulated rows during this session (fixes BUG-0251 — the hook writes locally every turn but never commits, so the committed tree drifts unless we sync at session close)
+- [ ] **Before any `git stash` or branch-switch:** commit `docs/AI_COST_LOG.md` first (`git add docs/AI_COST_LOG.md && git commit -m "chore: sync AI_COST_LOG before branch-switch"`). Rows trapped in stashes are orphaned and never reach develop — see BUG-0252 / L-0051.
 - [ ] Coverage verified above 80%
 - [ ] All stories shipped this session show `Status: Done` with all ACs checked in `docs/RELEASE_PLAN.md` (fixes BUG-0182)
