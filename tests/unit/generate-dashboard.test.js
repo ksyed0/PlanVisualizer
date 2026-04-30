@@ -683,3 +683,33 @@ describe('AC-0498 — no hex literals in generated dashboard HTML', () => {
     expect(hits).toHaveLength(0);
   });
 });
+
+describe('generate-dashboard — BUG-0250 theme localStorage key consolidation', () => {
+  const { generateHTML } = require('../../tools/generate-dashboard');
+  const fixture = {
+    phases: [],
+    agents: {},
+    metrics: {},
+    cycles: [],
+    log: [],
+    stories: {},
+    epics: {},
+  };
+  const html = generateHTML(fixture);
+
+  it("pvSetTheme writes to canonical 'pv-theme' key (shared with plan-status)", () => {
+    expect(html).toContain("localStorage.setItem('pv-theme', theme)");
+  });
+
+  it("pvSetTheme also mirrors to legacy 'dashboard-theme' for backwards compatibility", () => {
+    expect(html).toContain("localStorage.setItem('dashboard-theme', theme)");
+  });
+
+  it("init reads 'pv-theme' first with 'dashboard-theme' as legacy fallback", () => {
+    expect(html).toMatch(/localStorage\.getItem\('pv-theme'\)\s*\|\|\s*localStorage\.getItem\('dashboard-theme'\)/);
+  });
+
+  it('pvSetTheme toggles .dark class on <html> for parity with plan-status (BUG-0190)', () => {
+    expect(html).toContain("classList.toggle('dark', theme === 'dark')");
+  });
+});

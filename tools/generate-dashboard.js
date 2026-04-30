@@ -2522,8 +2522,14 @@ ${renderAboutModal({
 
 <script>
 // pvSetTheme / openAbout — aliases expected by renderChrome() (shared chrome from render-shell.js)
+// BUG-0250: write to canonical 'pv-theme' key (shared with plan-status dashboard) so
+// theme preference syncs across both dashboards. Mirror to legacy 'dashboard-theme'
+// for any external consumer still reading the old key. Toggle .dark class on <html>
+// for parity with plan-status' pvSetTheme (BUG-0190 selector compatibility).
 function pvSetTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
+  document.documentElement.classList.toggle('dark', theme === 'dark');
+  localStorage.setItem('pv-theme', theme);
   localStorage.setItem('dashboard-theme', theme);
   ['light', 'dark'].forEach(function(t) {
     var btn = document.getElementById('theme-btn-' + t);
@@ -2539,7 +2545,10 @@ function closeAbout() {
   if (m) m.classList.remove('open');
 }
 (function() {
-  var saved = localStorage.getItem('dashboard-theme') || 'dark';
+  // BUG-0250: read canonical 'pv-theme' first; fall back to legacy 'dashboard-theme'
+  // for users who set theme before the consolidation. Default to 'dark' — agentic
+  // dashboard's design baseline.
+  var saved = localStorage.getItem('pv-theme') || localStorage.getItem('dashboard-theme') || 'dark';
   pvSetTheme(saved);
 })();
 // Shared client-side helpers used by patchDOM() and related rendering code.

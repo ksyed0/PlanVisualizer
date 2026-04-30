@@ -526,7 +526,7 @@ var pvChartColors = (function() {
     risk:   tok('--risk',        'oklch(64% 0.20 25)'),
     info:   tok('--info',        'oklch(66% 0.14 240)'),
     accent: tok('--plan-accent', 'oklch(62% 0.19 268)'),
-    mute:   tok('--text-mute',   'oklch(70% 0.012 95)'),
+    mute:   tok('--text-mute',   'oklch(78% 0.012 95)'), // BUG-0249: light theme value
   };
 })();
 var _trendsAllLabels = ${datesJson};
@@ -659,8 +659,10 @@ function setTrendsRange(btn, range) {
   });
 }
 // AC-0594: update trend chart axis colours on theme switch
+// BUG-0249: tc/gc fallbacks match light theme's --text-mute / --border, since
+// light is the default theme. Self-corrects on next theme toggle either way.
 function updateTrendsChartTheme() {
-  var tc = getComputedStyle(document.documentElement).getPropertyValue('--text-mute').trim() || 'oklch(65% 0.014 95)';
+  var tc = getComputedStyle(document.documentElement).getPropertyValue('--text-mute').trim() || 'oklch(78% 0.012 95)';
   var gc = getComputedStyle(document.documentElement).getPropertyValue('--border').trim() || 'oklch(88% 0.010 95)';
   Object.values(_trendsChartRefs).forEach(function(chart) {
     if (!chart) return;
@@ -1310,13 +1312,14 @@ function renderChartsTab(data) {
       risk:   tok('--risk',        'oklch(64% 0.20 25)'),
       info:   tok('--info',        'oklch(66% 0.14 240)'),
       accent: tok('--plan-accent', 'oklch(62% 0.19 268)'),
-      mute:   tok('--text-mute',   'oklch(70% 0.012 95)'),
+      mute:   tok('--text-mute',   'oklch(78% 0.012 95)'),
     };
   })();
   var pvChartColors = window.pvChartColors;
   var _charts = {};
   function chartTextColor() {
-    return getComputedStyle(document.documentElement).getPropertyValue('--clr-chart-text').trim() || getComputedStyle(document.documentElement).getPropertyValue('--text-dim').trim() || 'oklch(65% 0.014 95)';
+    // BUG-0249: fallback matches light theme's --text-mute (light is the default).
+    return getComputedStyle(document.documentElement).getPropertyValue('--clr-chart-text').trim() || getComputedStyle(document.documentElement).getPropertyValue('--text-dim').trim() || 'oklch(78% 0.012 95)';
   }
   function initCharts() {
     var tc = chartTextColor();

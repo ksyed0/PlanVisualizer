@@ -260,7 +260,10 @@ function renderScripts(data, options = {}) {
   // AC-0591: resolve CSS vars at init time — canvas fillStyle cannot resolve CSS custom properties
   if (typeof Chart !== 'undefined') {
     var _chartTextColor = getComputedStyle(document.documentElement).getPropertyValue('--text-mute').trim() || getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim();
-    Chart.defaults.color = _chartTextColor || 'oklch(65% 0.014 95)';
+    // BUG-0249: fallback matches light theme's --text-mute (oklch(78% 0.012 95)).
+    // Light is the default theme, so a chart that hits this fallback in light mode
+    // should render with light-mode tick colours, not dark.
+    Chart.defaults.color = _chartTextColor || 'oklch(78% 0.012 95)';
     Chart.defaults.borderColor = getComputedStyle(document.documentElement).getPropertyValue('--border').trim() || 'oklch(88% 0.010 95)';
   }
   function cssVar(name) {
