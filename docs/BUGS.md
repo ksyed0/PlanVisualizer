@@ -3630,11 +3630,11 @@ Expected: Every Stop hook fire's row eventually lands on develop via a regular c
 
 Actual: Rows for the 2026-04-20→04-28 window were stashed during normal branch-switching (`git stash` followed by `git checkout <other-branch>`) and never popped. Each stash carries the appended rows away. When the next branch is checked out, the file reverts to the committed state, the hook appends a new row on top of that older base, and the stashed rows are orphaned.
 
-Status: Open
-Fix Branch:
+Status: Fixed
+Fix Branch: bugfix/BUG-0252-stash-recovery
 Lesson Encoded: No
 Estimated Cost USD: 0.00
-Notes: Diagnosed by a Session 34 background agent (the same one that "hit the org limit") which had completed its analysis before the limit cut it off. Companion to BUG-0251 — that one fixed the "not committed back to develop" symptom (PR #513 caught up the most recent rows); this one is the upstream cause of _why_ rows accumulate locally without being committed.
+Notes: Diagnosed by a Session 34 background agent (the same one that "hit the org limit") which had completed its analysis before the limit cut it off. Companion to BUG-0251 — that one fixed the "not committed back to develop" symptom (PR #513 caught up the most recent rows); this one is the upstream cause of _why_ rows accumulate locally without being committed. Fixed in Session 35: extracted 169 unique rows from 33 stashes covering 2026-04-20→04-29 plus 3 current-session rows (2026-04-30); appended to docs/AI_COST_LOG.md. No stash data for April 26 (no sessions that day). Option 3 (recovery + manual hygiene) implemented; guardrail added to CLAUDE.md and LESSONS.md.
 
 **Recovery options** (per the agent's diagnosis):
 

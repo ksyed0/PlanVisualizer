@@ -531,3 +531,16 @@ _Learned from BUG-0210 — Lessons and Bugs tabs both have epic group headers, b
 **Prevention:** The Stop hook (`capture-cost.js`) should resolve the current feature branch (via `git rev-parse --abbrev-ref HEAD` on the main repo) and log it instead of the worktree branch name. See `tools/capture-cost.js`.
 **Bugs:** N/A
 **Date:** 2026-04-24
+
+---
+
+## L-0051 — Always commit docs/AI_COST_LOG.md before git stash or branch-switch
+
+**Context:** The Stop hook appends rows to `docs/AI_COST_LOG.md` locally after every turn. If you run `git stash` (or `git stash && git checkout <branch>`) without first committing the file, those rows are trapped in the stash. The next branch checkout reverts to the committed base, the hook appends on top of that older base, and the stashed rows are orphaned. Over 9 sessions (2026-04-20→04-28), 33 stash entries accumulated 169 rows that never reached develop.
+
+**Fix:** Recover via `for s in $(seq 0 N); do git stash show -p stash@{$s} 2>/dev/null | grep "^+|.*<date-prefix>"; done | sort -u | sed 's/^+//' >> docs/AI_COST_LOG.md`. Then commit the recovered rows.
+
+**Prevention:** Before any `git stash` or branch-switch, run `git add docs/AI_COST_LOG.md && git commit -m "chore: sync AI_COST_LOG before branch-switch"`. The Session Close Checklist in CLAUDE.md now enforces this.
+
+**Bugs:** BUG-0252
+**Date:** 2026-04-30
