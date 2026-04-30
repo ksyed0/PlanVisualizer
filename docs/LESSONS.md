@@ -4,6 +4,14 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
+## L-0050 — Files written by a Stop hook (or any per-turn local-only writer) drift from the committed tree
+
+**Rule:** A Claude Code Stop hook that appends to a tracked file every turn (e.g. `tools/capture-cost.js` writing to `docs/AI_COST_LOG.md`) creates a "live working copy" that no commit step ever touches. Without an explicit sync, the committed file lags the local one by weeks — silently breaking any downstream tool that reads the committed version (parsers, dashboards, GitHub Pages). The Stop hook itself shouldn't auto-commit (commit-per-turn is spammy and conflicts with normal feature-branch workflow), but the **session close protocol must explicitly include the locally-written file in its commit list**. Document this in `CLAUDE.md` so future sessions don't re-discover the drift. If a "git add -A caution" rule was added to keep the file out of normal commits, balance it with a "commit-at-session-close" rule for the same file.
+_Learned during Session 33 follow-up while diagnosing why the Trends tab "AI Costs" chart showed a flat line for ten days. PR #507 fixed the cost attribution math; this lesson addresses the freshness gap. Bug: BUG-0251._
+**Date:** 2026-04-30
+
+---
+
 ## L-0049 — Cost attribution by branch must split, not duplicate, when multiple artefacts share the branch
 
 **Rule:** Any function that maps an aggregate (a branch's session cost in `AI_COST_LOG.md`) to N artefacts (stories with the same `Branch:` field, or bugs with the same `Fix Branch:`) MUST divide the aggregate by N — never credit the full aggregate to each artefact. Naive `result[id] = match.costUsd` produces double-counting that compounds with branch popularity: 36 stories on `Branch: develop` × $26.77 = $964 of phantom inflation; 12 bugs sharing one bugfix branch all read identical $X with bug-cost grand total = 12·$X. The cost log is a single source of truth — every dollar should appear exactly once across the rolled-up totals. Apply the same rule to tokens and session counts. When summing per-snapshot aggregates in trend extractors, prefer a published `_totals.costUsd` field over `Object.values(costs).reduce(...)` — the latter sums the aggregate again on top of the per-row entries.

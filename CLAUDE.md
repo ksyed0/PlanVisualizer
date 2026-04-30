@@ -66,5 +66,6 @@ Types: `feat`, `fix`, `test`, `docs`, `refactor`, `chore`, `style`, `perf`
 - [ ] `PROMPT_LOG.md` updated with all prompts from this session
 - [ ] `MIGRATION_LOG.md` updated if cross-platform changes were made
 - [ ] `docs/LESSONS.md` updated if bugs were fixed or lessons learned
+- [ ] `docs/AI_COST_LOG.md` committed if the Stop hook accumulated rows during this session (fixes BUG-0251 — the hook writes locally every turn but never commits, so the committed tree drifts unless we sync at session close)
 - [ ] Coverage verified above 80%
 - [ ] All stories shipped this session show `Status: Done` with all ACs checked in `docs/RELEASE_PLAN.md` (fixes BUG-0182)
