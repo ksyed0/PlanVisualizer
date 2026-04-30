@@ -92,6 +92,19 @@ describe('renderHtml', () => {
       expect(html).toContain('Chart.defaults.borderColor =');
       expect(html).not.toContain("Chart.defaults.borderColor = 'var(");
     });
+    test("BUG-0249: chart-init fallback strings use light theme's --text-mute (light is default)", () => {
+      // Reject the dark-theme value 'oklch(65% 0.014 95)' as a hardcoded fallback —
+      // light is the default theme, so the fallback should match light.
+      // Spec value (dark theme): oklch(65% 0.014 95). Spec value (light theme): oklch(78% 0.012 95).
+      // Either resolved CSS-variable values or themed gradients in chart data may legitimately
+      // use oklch(65%) — the rule only applies to fallback strings that follow `||` after a
+      // getComputedStyle / tok call.
+      expect(html).not.toMatch(/\|\|\s*'oklch\(65% 0\.014 95\)'/);
+      expect(html).not.toMatch(/tok\([^,]+,\s*'oklch\(70% 0\.012 95\)'\)/); // pvChartColors.mute fallback was inconsistent
+      // Confirm at least one fallback now uses the light value (sanity check that the
+      // consolidation actually happened, not that all fallbacks were just deleted).
+      expect(html).toContain("'oklch(78% 0.012 95)'");
+    });
   });
 
   describe('US-0135 — Status Hero Card', () => {

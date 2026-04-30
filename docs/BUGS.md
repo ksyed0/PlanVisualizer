@@ -3560,11 +3560,11 @@ The misleading fallback appears in three places:
 
 A fourth inconsistent fallback exists in `render-tabs.js:1313` — the Charts tab's `pvChartColors.mute` falls back to `'oklch(70% 0.012 95)'` (a third value, neither light's 78% nor dark's 65%).
 
-Status: Open
-Fix Branch:
+Status: Fixed
+Fix Branch: bugfix/BUG-0249-0250-chart-fallback-and-theme-sync
 Lesson Encoded: No
 Estimated Cost USD: 0.00
-Notes: Self-corrects after any explicit theme toggle (`pvSetTheme` → `updateTrendsChartTheme()` re-reads computed properties). Discovered during automated Playwright testing in Session 33 follow-up — verified `--text-mute` evaluates correctly in normal browsing, so user impact is minimal. Fix: use light theme's value (`oklch(78% 0.012 95)`) as the fallback since light is the default theme, OR drop the hardcoded fallback string entirely and rely on Chart.js default behavior. Make the four fallback strings consistent.
+Notes: Self-corrects after any explicit theme toggle (`pvSetTheme` → `updateTrendsChartTheme()` re-reads computed properties). Discovered during automated Playwright testing in Session 33 follow-up — verified `--text-mute` evaluates correctly in normal browsing, so user impact is minimal. **Fixed:** all four fallback strings now use `'oklch(78% 0.012 95)'` (light theme's `--text-mute` — light is the default). Locations updated: `render-scripts.js:263`, `render-tabs.js:663`, `render-tabs.js:1313`, `render-tabs.js:1319`. Test added in `tests/unit/render-html.test.js` rejects the dark-theme value as a fallback string and confirms the light-theme value is present.
 
 ---
 
@@ -3587,11 +3587,11 @@ Actual: Each dashboard reads/writes its own localStorage key:
 
 The two keys never sync. A user who switches dashboards mid-session has to set theme twice. Both keys also accumulate in localStorage indefinitely, which is mild but unnecessary clutter.
 
-Status: Open
-Fix Branch:
+Status: Fixed
+Fix Branch: bugfix/BUG-0249-0250-chart-fallback-and-theme-sync
 Lesson Encoded: No
 Estimated Cost USD: 0.00
-Notes: Discovered during Session 33 follow-up Playwright testing of the agentic dashboard. Two reasonable fixes: (a) consolidate to a single shared key (`'pv-theme'`) in both `pvSetTheme` implementations and migrate `'dashboard-theme'` reads with a one-time fallback for users with the legacy key set; (b) keep the two keys but have each dashboard write to BOTH on toggle (cheaper, no migration). Option (a) is the cleaner long-term solution and matches the Cross-Dashboard Redesign intent of EPIC-0020. The agentic dashboard's `pvSetTheme` also doesn't toggle the `.dark` class on `<html>` — plan-status does (per BUG-0190 comment in render-scripts.js). Worth investigating whether the agentic dashboard CSS depends on that class anywhere; if so, add it for parity.
+Notes: Discovered during Session 33 follow-up Playwright testing of the agentic dashboard. **Fixed via the hybrid approach:** the agentic `pvSetTheme` now writes BOTH `'pv-theme'` (canonical, shared with plan-status) AND `'dashboard-theme'` (legacy, mirrored for any external consumer); init reads `'pv-theme'` first with `'dashboard-theme'` as legacy fallback so users who set theme before this fix don't lose their preference; and the agentic dashboard now toggles the `.dark` class on `<html>` for parity with plan-status' BUG-0190 selector requirement. Plan-status `pvSetTheme` was unchanged — it already uses `'pv-theme'`. Tests added in `tests/unit/generate-dashboard.test.js` (4 assertions) cover the new write/read paths and the `.dark` class toggle.
 
 ---
 
