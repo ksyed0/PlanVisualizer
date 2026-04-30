@@ -3613,4 +3613,34 @@ Status: Fixed
 Fix Branch: bugfix/BUG-0251-cost-log-commit-drift
 Lesson Encoded: Yes (L-0050)
 Estimated Cost USD: 0.00
-Notes: Initially surfaced as a side-finding while diagnosing PR #507 (cost attribution). PR #507 fixed the **math**; this fix addresses the **freshness**. Resolution in this PR has two parts: (1) one-time catch-up — copy the live working-copy file from the main repo into develop so the trend chart reflects current data; (2) prevention — `CLAUDE.md`'s Session Close Checklist now explicitly includes `docs/AI_COST_LOG.md` as a file to commit at session close. The Stop hook itself is unchanged: silent local-only writes remain the design (avoids per-turn commit spam), but session close is now the canonical sync point. A future session may consider a smarter mechanism (auto-stage in the hook, or a `npm run sync-cost-log` script) but the documentation fix is sufficient given current operating frequency.
+Notes: Initially surfaced as a side-finding while diagnosing PR #507 (cost attribution). PR #507 fixed the **math**; this fix addresses the **freshness**. Resolution in this PR has two parts: (1) one-time catch-up — copy the live working-copy file from the main repo into develop so the trend chart reflects current data; (2) prevention — `CLAUDE.md`'s Session Close Checklist now explicitly includes `docs/AI_COST_LOG.md` as a file to commit at session close. The Stop hook itself is unchanged: silent local-only writes remain the design (avoids per-turn commit spam), but session close is now the canonical sync point. A future session may consider a smarter mechanism (auto-stage in the hook, or a `npm run sync-cost-log` script) but the documentation fix is sufficient given current operating frequency. **Update (Session 34):** see also BUG-0252 — a parallel agent diagnosed that ~33 git stash entries hold trapped rows from 2026-04-20→04-28 that were stashed during branch-switching and never popped. PR #513 caught up only the most recent uncommitted rows; the stashed ones remain unrecovered. BUG-0252 tracks the stash-trap root cause and recovery.
+
+---
+
+BUG-0252: ~33 git stash entries hold trapped AI_COST_LOG.md rows from 2026-04-20→04-28 that were never popped
+Severity: Medium
+Related Story: US-0012 / EPIC-0009 (Cost Tracking)
+Steps to Reproduce:
+
+1. Run `git -C /Users/Kamal_Syed/Projects/PlanVisualizer stash list` — observe 33 stash entries, almost all of them touching `docs/AI_COST_LOG.md`.
+2. Run `git stash show -p stash@{1}` — observe rows for branch `claude/quizzical-cannon-606127` worth ~$73–81 trapped in the stash.
+3. Inspect any session JSONL transcript from the gap (e.g. `~/.claude/projects/-Users-Kamal-Syed-Projects-PlanVisualizer--claude-worktrees-gifted-johnson-5e162a/08bfef3d-…jsonl`) and `grep capture-cost` — the Stop hook fired successfully (`exitCode: 0`, `[capture-cost] $1.0458 | …`) but the row never reached the committed log.
+
+Expected: Every Stop hook fire's row eventually lands on develop via a regular commit/PR cycle, and the cost dashboard reflects all sessions on/after 2026-04-19.
+
+Actual: Rows for the 2026-04-20→04-28 window were stashed during normal branch-switching (`git stash` followed by `git checkout <other-branch>`) and never popped. Each stash carries the appended rows away. When the next branch is checked out, the file reverts to the committed state, the hook appends a new row on top of that older base, and the stashed rows are orphaned.
+
+Status: Open
+Fix Branch:
+Lesson Encoded: No
+Estimated Cost USD: 0.00
+Notes: Diagnosed by a Session 34 background agent (the same one that "hit the org limit") which had completed its analysis before the limit cut it off. Companion to BUG-0251 — that one fixed the "not committed back to develop" symptom (PR #513 caught up the most recent rows); this one is the upstream cause of _why_ rows accumulate locally without being committed.
+
+**Recovery options** (per the agent's diagnosis):
+
+1. **Hook commits its own row** — extend `tools/capture-cost.js` to auto-commit each appended row. Cleanest but introduces commit noise on develop and requires guarded auto-commit logic. Risk: medium.
+2. **Move the cost log out of the working tree** — write to a path not tracked by git (e.g. `~/.claude/plan-visualizer/AI_COST_LOG.md`), then sync into `docs/AI_COST_LOG.md` at session-close. Eliminates stash interaction entirely but breaks the "single committed source of truth" model. Risk: medium-high.
+3. **Recovery + manual hygiene** — recover lost rows with `for s in $(seq 0 32); do git stash show -p "stash@{$s}" -- docs/AI_COST_LOG.md; done | grep "^+| 2026" | sort -u`, merge unique rows into `docs/AI_COST_LOG.md`. Document "always commit `docs/AI_COST_LOG.md` before stashing or switching branches" in `MEMORY.md` / `CLAUDE.md`. Cheapest, but relies on human discipline.
+4. **Combine 2 + 3** — recover what's recoverable, then move the live log out of the working tree to prevent recurrence. Recommended long-term path.
+
+Recommendation: Option 3 immediately (recover the trapped data) and evaluate options 1 vs 2/4 in a future session. Not addressed in Session 34 — the recovery is a sizeable multi-stash merge that deserves its own focused PR with careful conflict resolution.

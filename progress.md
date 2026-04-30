@@ -4,6 +4,107 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 34 — 2026-04-29 → 2026-04-30 (Session 33 trailing close + Playwright dashboard testing + BUG sweep)
+
+### What Was Done
+
+This session resumed mid-day on 2026-04-29 with Session 33's three parallel groups still open. Drove the merges, ran exhaustive Playwright testing on both dashboards, fixed every bug found, and addressed the stale cost-attribution / Stop-hook drift that had been masking the cost-trends chart.
+
+**Session 33 closure (drove the unfinished merges):**
+
+- [PR #499](https://github.com/ksyed0/PlanVisualizer/pull/499) Group A — US-0164 chart correctness + BUG-0242/0244 — Merged via `gh pr update-branch` + auto-merge.
+- [PR #496](https://github.com/ksyed0/PlanVisualizer/pull/496) Group C — EPIC-0010/0012 closure + US-0169 — Merged via update-branch + auto-merge.
+- [PR #503](https://github.com/ksyed0/PlanVisualizer/pull/503) trailing close — fixed summary-section drift in RELEASE_PLAN.md (EPIC-0010/0012 still listed as Planned at the top of the file even after PR #496 corrected the detail section). Logged Session 34 resume prompts to PROMPT_LOG.md.
+- A parallel session committed `d42f0f2` directly to develop with the EPIC-0023/US-0164/US-0166 detail-section closures, BUGS.md flips for BUG-0242/0243/0244, and L-0048. PR #502 was closed (superseded by `d42f0f2`); PR #503 added only the summary-section drift fix that `d42f0f2` had missed.
+
+**Automated Playwright testing of plan-status dashboard ([PR #508](https://github.com/ksyed0/PlanVisualizer/pull/508) — BUG-0249):**
+
+Verified all Session 32/33 fixes work in the browser via `mcp__plugin_playwright_playwright__*` tools:
+
+- AC-0591 `Chart.defaults.color` resolves to actual OKLCH triple, not raw `var()` string ✅
+- AC-0593 `window.pvChartColors` singleton with 6 keys ✅
+- AC-0594 theme-switch updates chart tick + grid colours via `getComputedStyle` re-read ✅
+- BUG-0240 Burn Up chart is `type: 'line'` with `[Completed, Total Scope]` datasets ✅
+- BUG-0242 "This Week Apr 27–May 3" label crosses month boundary correctly ✅
+- BUG-0244 open-bug count uses denylist filter (`!/^(Fixed|Retired|Cancelled|Rejected)/i`) ✅
+- BUG-0248 Stakeholder full Release Health hero renders with eyebrow + h2 + KPI tiles ✅
+- All 10 tabs navigate and render with no JS errors (only favicon 404) ✅
+
+One new bug logged: **BUG-0249** — chart-init fallback strings hardcoded to `oklch(65%)` (dark theme value) instead of light theme's `oklch(78%)`. Light is the default theme so the fallback should match. PR #508 logged it (docs-only); PR #515 fixed the code.
+
+**Automated Playwright testing of agentic dashboard ([PR #510](https://github.com/ksyed0/PlanVisualizer/pull/510) — BUG-0250):**
+
+Verified Session 31–33 agentic fixes:
+
+- AC-0600 dispatch persistence: `setConductorActive()` increments + writes `localStorage['pv-dispatch-count']` ✅
+- BUG-0231 Conductor `#conductor-dispatch-count` element renders ✅
+- BUG-0232 Workload `(N done)` sub-label renders for 8 of 9 agents (Conductor excluded by design) ✅
+- BUG-0245 patchDOM defined ✅
+- BUG-0246 dispatch tone in event log → row gets `evt-dispatch` class ✅
+- BUG-0247 InProgress normalization ✅
+- About modal opens/closes via `openAbout()` / `closeAbout()` ✅
+- All 9 agents render as cards in the roster ✅
+
+One new bug logged: **BUG-0250** — agentic dashboard wrote `localStorage['dashboard-theme']` while plan-status wrote `localStorage['pv-theme']`. Theme didn't sync across the two dashboards, contradicting EPIC-0020 cross-dashboard chrome design. PR #510 logged it; PR #515 fixed it.
+
+**Cost-attribution agent ([PR #507](https://github.com/ksyed0/PlanVisualizer/pull/507) — BUG-0217/0221/0224):**
+
+Background subagent fixed the cost-attribution math. Single root cause: `attributeAICosts` and `attributeBugCosts` credited the FULL branch cost to every artefact sharing that branch — pre-counting claimants per branch and dividing by N fixed it. `extractTrends` also summed `_totals` alongside per-story rows, doubling chart values. 26 suites / 694 tests all pass; coverage 93.8%. Lesson L-0049 added.
+
+**Drift sweep agent ([PR #505](https://github.com/ksyed0/PlanVisualizer/pull/505) — BUG-0237/0238/0245/0246/0247):**
+
+Background subagent verified each bug's fix is actually present in develop (with file:line evidence), then flipped status `Open → Fixed` for all five. Per-bug verification table in PR body.
+
+**Stop-hook investigation:**
+
+A third background agent investigated why `docs/AI_COST_LOG.md` had a 10-day gap. The agent hit the org's monthly Anthropic API quota mid-investigation, but had committed its diagnosis to `bugfix/BUG-0251-stop-hook-stash-loss` before the cut-off. **Critical finding I'd missed:** ~33 git stash entries hold trapped cost-log rows from 2026-04-20→04-28. Each stash carries the appended rows away during normal branch-switching; the next checkout reverts the file to its committed state, the hook appends a new row on top of that older base, and the previous stash is never popped. Logged as **BUG-0252** with four recovery options.
+
+**BUG-0251 fix ([PR #513](https://github.com/ksyed0/PlanVisualizer/pull/513)):**
+
+Two-part fix for the cost-log staleness symptom:
+
+1. One-time catch-up: copied the live working-copy `AI_COST_LOG.md` from the main repo into develop (caught up the most recent ~16 rows).
+2. Prevention: `CLAUDE.md` Session Close Checklist now explicitly lists `docs/AI_COST_LOG.md` as a file to commit at session close.
+
+Lesson L-0050 added (Stop-hook drift pattern). Note: this fixed the symptom of "rows not committed", but BUG-0252 (stash-trap) is the upstream cause of _why_ they accumulate uncommitted, and that recovery is deferred to a future session.
+
+**BUG-0249 + BUG-0250 fix ([PR #515](https://github.com/ksyed0/PlanVisualizer/pull/515)):**
+
+- BUG-0249: 5 chart-init fallback strings (one more than originally tallied — there are TWO `pvChartColors` declarations in `render-tabs.js`, one for Trends at line 529 and one for Charts at line 1313) consolidated to `'oklch(78% 0.012 95)'` (light theme value).
+- BUG-0250: Hybrid resolution — agentic `pvSetTheme` writes both `'pv-theme'` (canonical) and `'dashboard-theme'` (legacy mirror); init reads `pv-theme` first with `dashboard-theme` as legacy fallback; `.dark` class on `<html>` toggled for parity with plan-status' BUG-0190 selector requirement.
+- Tests: +5 assertions (1 chart-fallback in `render-html.test.js`, 4 theme-key in `generate-dashboard.test.js`).
+
+### Test Results
+
+- Full suite: **699/699 pass** across 26 suites (was 694 at session start; +5 new assertions).
+- Statement coverage: ~93.8% (gate: 80%, well above).
+- All 10 CI gates green on every PR merge: Lint, Test+Coverage, Build, Orchestrator, Prettier, Audit, CodeQL SAST, Secret Scanning, Analyze JavaScript, CodeQL.
+
+### Blockers / Issues
+
+- **Anthropic org monthly usage limit hit during the Stop-hook investigation agent run.** Background agents will not work until the org quota resets (typically 1st of next month or when the org owner adds capacity). Foreground work in this session unaffected. Future parallel-agent work should account for this.
+- **BUG-0252 (stash recovery) deferred.** The 33-stash recovery is a non-trivial multi-stash merge with conflict-resolution risk; it deserves its own focused PR. Tracked in BUGS.md with four recovery options ranked by risk; recommendation is option 3 (recover + document discipline) immediately, with options 2/4 evaluated long-term.
+
+### Lessons added
+
+- **L-0050** (Session 33 close commit, by parallel agent) — Files written by Stop hooks drift from committed tree; session close protocol must explicitly include them.
+
+### PRs (Session 34)
+
+- [#499](https://github.com/ksyed0/PlanVisualizer/pull/499) Group A — chart correctness + BUG-0242/0244 — Merged
+- [#496](https://github.com/ksyed0/PlanVisualizer/pull/496) Group C — EPIC-0010/0012 closure — Merged
+- [#502](https://github.com/ksyed0/PlanVisualizer/pull/502) Session 33 trailing close — Closed (superseded by `d42f0f2`)
+- [#503](https://github.com/ksyed0/PlanVisualizer/pull/503) Summary-section drift + resume prompts — Merged
+- [#505](https://github.com/ksyed0/PlanVisualizer/pull/505) Drift sweep — BUG-0237/0238/0245/0246/0247 — Merged
+- [#507](https://github.com/ksyed0/PlanVisualizer/pull/507) Cost attribution — BUG-0217/0221/0224 — Merged
+- [#508](https://github.com/ksyed0/PlanVisualizer/pull/508) BUG-0249 logged (docs-only) — Merged
+- [#510](https://github.com/ksyed0/PlanVisualizer/pull/510) BUG-0250 logged (docs-only) — Merged
+- [#513](https://github.com/ksyed0/PlanVisualizer/pull/513) BUG-0251 fix — Merged
+- [#515](https://github.com/ksyed0/PlanVisualizer/pull/515) BUG-0249 + BUG-0250 code fix — Merged
+- (Session-close PR — this commit)
+
+---
+
 ## Session 33 — 2026-04-29 (EPIC-0023 Done — US-0164 chart colors, US-0166 AC-0600, BUG-0242/0243/0244, EPIC-0010/0012 audit)
 
 ### What Was Done
