@@ -117,10 +117,20 @@ Branch name in `AI_COST_LOG.md` row must exactly match `Branch:` field in story 
 
 ---
 
-## Project Completion Status (as of 2026-04-29 Session 33)
+## Project Completion Status (as of 2026-04-30 Session 34)
 
-23 EPICs (EPIC-0022 Done, EPIC-0023 Done — all dashboard quality stories shipped), 163+ active stories, 216+ bugs (BUG-0242/0243/0244 Fixed this session).
-Develop fully green. Next IDs: always check `docs/ID_REGISTRY.md` — as of Session 33: Next US = US-0170, Next AC = AC-0606, Next BUG = BUG-0249, Next L = L-0049.
+23 EPICs (EPIC-0023 fully closed last session). 165+ active stories. 218 BUGs total — Session 34 closed 8 (BUG-0237/0238/0245/0246/0247 via drift sweep PR #505; BUG-0217/0221/0224 via cost-attribution PR #507; BUG-0249/0250/0251 via PRs #515/#513). Two new bugs **Open**: BUG-0249/BUG-0250 (already fixed in PR #515 actually — both closed) and BUG-0252 (stash-trap, deferred to a future session — see below).
+Develop fully green throughout. Next IDs: always check `docs/ID_REGISTRY.md` — as of end of Session 34: Next BUG = BUG-0253, Next L = L-0051.
+
+Key additions (Session 34):
+
+- **5 chart-init fallback string locations** consolidated to `'oklch(78% 0.012 95)'` (light theme value, since light is default). Locations: `render-scripts.js:263`, `render-tabs.js:529` (Trends `pvChartColors.mute`), `render-tabs.js:663` (`updateTrendsChartTheme`), `render-tabs.js:1313` (Charts `pvChartColors.mute`), `render-tabs.js:1319` (`chartTextColor` for Charts tab). **There are TWO `pvChartColors` declarations** in render-tabs.js — one at ~520 for Trends and one at ~1304 for Charts — when fixing color tokens find both.
+- **Theme localStorage key consolidated.** Agentic `pvSetTheme` now writes BOTH `'pv-theme'` (canonical, shared with plan-status) AND `'dashboard-theme'` (legacy mirror). Init reads `pv-theme` first with `dashboard-theme` as legacy fallback. `.dark` class on `<html>` toggled in agentic too (was missing — caused selector parity issues per BUG-0190).
+- **Cost attribution math** (PR #507, L-0049): `attributeAICosts` and `attributeBugCosts` must DIVIDE branch cost by N (count of artefacts sharing the branch), not credit the full aggregate to each. `extractTrends` should prefer `_totals.costUsd` over `Object.values(costs).reduce(...)` to avoid double-counting `_totals` alongside per-story rows.
+- **Cost log drift root cause** (BUG-0252, deferred to future session): ~33 git stash entries hold trapped `AI_COST_LOG.md` rows from 2026-04-20→04-28. Branch-switching with `git stash` carries the appended rows away; the next checkout reverts to the committed state, the hook appends on top, and the previous stash is orphaned. Recovery: `for s in $(seq 0 32); do git stash show -p "stash@{$s}" -- docs/AI_COST_LOG.md; done | grep "^+| 2026" | sort -u` then merge unique rows.
+- **Session Close Checklist** in `CLAUDE.md` now explicitly includes `docs/AI_COST_LOG.md` as a file to commit at session close (per L-0050).
+- **Anthropic org usage limit hit during Session 34.** Background subagents fail with "You've hit your org's monthly usage limit" once the org cap is reached. Foreground sessions continue but new subagent spawns return that error. Resets at next billing cycle. Plan parallel work accordingly.
+- **Playwright is the right tool for dashboard automated testing.** `mcp__plugin_playwright_playwright__*` runs headless Chromium against a local HTTP server (Playwright blocks `file://`). `browser_evaluate` is the primary verification primitive — read runtime state directly rather than relying on visual screenshots. `getComputedStyle` reads in tests must account for default theme (light for plan-status, dark for agentic).
 
 Key additions (Session 33):
 
