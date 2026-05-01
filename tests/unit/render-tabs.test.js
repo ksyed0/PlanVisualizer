@@ -433,3 +433,55 @@ describe('shEpicCompositeStatus — bug cross-reference via relatedStory', () =>
     expect(html).not.toContain('Needs Attention');
   });
 });
+
+// BUG-0223 regression tests for card-view epic group collapse
+const { renderBugsTab } = require('../../tools/lib/render-tabs');
+
+const mkBugsData = () => ({
+  epics: [
+    { id: 'EPIC-0001', title: 'Core', status: 'In Progress' },
+    { id: 'EPIC-0002', title: 'UX', status: 'Planned' },
+  ],
+  stories: [
+    { id: 'US-0001', epicId: 'EPIC-0001', title: 'Parser', status: 'Done', acs: [] },
+    { id: 'US-0002', epicId: 'EPIC-0002', title: 'Nav', status: 'Planned', acs: [] },
+  ],
+  bugs: [
+    { id: 'BUG-0001', title: 'Parser crash', severity: 'High', status: 'Open', relatedStory: 'US-0001', fixBranch: '' },
+    { id: 'BUG-0002', title: 'Nav overflow', severity: 'Low', status: 'Open', relatedStory: 'US-0002', fixBranch: '' },
+    {
+      id: 'BUG-0003',
+      title: 'Old bug',
+      severity: 'Low',
+      status: 'Fixed',
+      relatedStory: 'US-0001',
+      fixBranch: 'feature/fix',
+    },
+  ],
+  costs: { _totals: { costUsd: 0 } },
+  trends: null,
+  lessons: [],
+  snapshots: [],
+  completion: null,
+  coverage: null,
+  risk: null,
+});
+
+describe('renderBugsTab — BUG-0223 regression', () => {
+  let html;
+  beforeAll(() => {
+    html = renderBugsTab(mkBugsData());
+  });
+
+  test('BUG-0223: card-view epic group content is hidden by default', () => {
+    expect(html).toMatch(/id="bugs-card-ep-EPIC-0001"[^>]*class="[^"]*hidden/);
+  });
+
+  test('BUG-0223: card-view epic group arrow shows ▶ not ▼', () => {
+    expect(html).toContain('id="bugs-card-ep-EPIC-0001-arrow"');
+    const arrowIdx = html.indexOf('id="bugs-card-ep-EPIC-0001-arrow"');
+    const arrowSnippet = html.slice(arrowIdx, arrowIdx + 150);
+    expect(arrowSnippet).toContain('▶');
+    expect(arrowSnippet).not.toContain('▼');
+  });
+});

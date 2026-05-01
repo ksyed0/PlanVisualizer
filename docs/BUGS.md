@@ -3134,8 +3134,8 @@ Steps to Reproduce:
 2. Observe all epic groups are expanded on load
    Expected: All epic groups collapsed by default; user expands as needed
    Actual: All groups expanded, causing long scroll on first load
-   Status: Open
-   Fix Branch:
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0183-0184-0223-plan-status-quality
    Lesson Encoded: No
    Estimated Cost USD: 0.00
    Notes: Default collapsed state requires server-rendered hidden class on bug-group tbody + collapsed arrow state in markup. Deferred to a future polish story.
