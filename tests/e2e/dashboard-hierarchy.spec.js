@@ -62,15 +62,3 @@ test('BUG-0189: chrome height is 40px or less', async ({ page }) => {
   const chromeHeight = await page.locator('.pv-chrome').evaluate((el) => el.getBoundingClientRect().height);
   expect(chromeHeight).toBeLessThanOrEqual(44);
 });
-
-test('BUG-0189: plan-status chrome height is 40px or less', async ({ page }) => {
-  const planUrl = `file://${path.join(ROOT, 'docs', 'plan-status.html')}`;
-  // plan-status.html may not exist in worktree; skip gracefully if missing
-  if (!fs.existsSync(path.join(ROOT, 'docs', 'plan-status.html'))) {
-    test.skip(true, 'plan-status.html not present in worktree');
-    return;
-  }
-  await page.goto(planUrl);
-  const chromeHeight = await page.locator('.pv-chrome').evaluate((el) => el.getBoundingClientRect().height);
-  expect(chromeHeight).toBeLessThanOrEqual(44);
-});

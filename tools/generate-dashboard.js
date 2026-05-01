@@ -1859,7 +1859,7 @@ function generateHTML(status) {
     transition: opacity .15s;
   }
   .mc-idle-card:hover { opacity: 1; }
-  .mc-idle-portrait { width: 100%; aspect-ratio: 1; overflow: hidden; }
+  .mc-idle-portrait { width: 100%; height: 80px; overflow: hidden; }
   .mc-idle-portrait img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
   .mc-idle-name { font-size: 9px; font-weight: 600; color: var(--text-muted); margin-top: 5px; text-align: center; }
   .mc-idle-role { font-size: 7.5px; color: var(--mc-dim); margin-top: 1px; text-align: center; padding: 0 4px; }
