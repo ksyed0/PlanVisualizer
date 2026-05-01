@@ -728,3 +728,27 @@ describe('generate-dashboard — BUG-0187 remove agent names from pipeline', () 
     expect(pipelineHtml).not.toContain('>Forge<');
   });
 });
+
+describe('generate-dashboard — BUG-0185 BUG-0186 active card + conductor dispatch strip', () => {
+  test('BUG-0185: active agent renders .mc-active-card with portrait banner', () => {
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    const html = generateHTML(makeHealthyFixture());
+    expect(html).toContain('mc-active-card');
+    expect(html).toContain('class="mc-active-portrait-banner"');
+    expect(html).toMatch(/src="agents\/images\/pixel\.png"/);
+  });
+
+  test('BUG-0186: conductor dispatch strip always rendered regardless of Conductor status', () => {
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    const html = generateHTML(makeHealthyFixture());
+    expect(html).toContain('id="mc-conductor-dispatch"');
+    expect(html).toContain('data-agent="Conductor"');
+  });
+
+  test('BUG-0185: idle agents rendered in mc-idle-roster', () => {
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    const html = generateHTML(makeHealthyFixture());
+    expect(html).toContain('id="mc-idle-roster"');
+    expect(html).toContain('mc-idle-card');
+  });
+});

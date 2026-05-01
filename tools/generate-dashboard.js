@@ -1772,6 +1772,101 @@ function generateHTML(status) {
   .mc-main { min-width: 0; }
   .mc-sidebar { min-width: 0; }
 
+  /* ── BUG-0185/0186: Active agent hero card ── */
+  .mc-active-card {
+    border: 1px solid oklch(72% 0.19 38 / 35%);
+    border-left: 5px solid oklch(72% 0.19 38);
+    border-radius: 10px;
+    overflow: hidden;
+    background: oklch(10% 0.03 38);
+    box-shadow: 0 0 28px oklch(72% 0.19 38 / 10%);
+    margin-bottom: 10px;
+  }
+  .mc-active-portrait-banner {
+    width: 100%;
+    height: 200px;
+    background: oklch(6% 0.02 38);
+    position: relative;
+    overflow: hidden;
+  }
+  .mc-active-portrait-banner img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center center;
+    display: block;
+  }
+  .mc-active-portrait-banner::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 55%, oklch(10% 0.03 38) 100%);
+    pointer-events: none;
+  }
+  .mc-active-status-dot {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 11px;
+    height: 11px;
+    background: var(--ok);
+    border-radius: 50%;
+    border: 2px solid oklch(6% 0.02 38);
+    box-shadow: 0 0 8px var(--ok);
+    z-index: 2;
+    animation: mc-status-pulse 2s infinite;
+  }
+  @keyframes mc-status-pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .mc-active-info { padding: 10px 14px 12px; }
+  .mc-active-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 6px; }
+  .mc-active-name { font-size: 17px; font-weight: 700; color: oklch(93% 0.10 70); line-height: 1; }
+  .mc-active-role { font-size: 10px; color: oklch(70% 0.15 50); margin-top: 3px; }
+  .mc-active-badge { background: oklch(72% 0.19 38); color: oklch(0% 0 0); font-size: 9px; font-weight: 800; letter-spacing: .1em; padding: 3px 11px; border-radius: 20px; flex-shrink: 0; margin-top: 2px; }
+  .mc-active-story { background: oklch(0% 0 0 / .35); border-radius: 6px; padding: 7px 10px; font-size: 10px; margin-bottom: 6px; }
+  .mc-active-story-id { color: oklch(83% 0.15 70); font-weight: 700; margin-right: 6px; }
+  .mc-active-story-desc { color: oklch(70% 0.15 50); }
+  .mc-active-meta { display: flex; gap: 14px; font-size: 9px; color: var(--text-muted); font-family: var(--font-mono); flex-wrap: wrap; }
+  .mc-active-meta span { color: var(--text-secondary); }
+  /* ── BUG-0186: Conductor last-dispatch strip ── */
+  .mc-conductor-dispatch {
+    background: oklch(12% 0.04 264);
+    border: 1px solid oklch(45% 0.15 264 / 25%);
+    border-left: 4px solid oklch(60% 0.19 264);
+    border-radius: 8px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .mc-conductor-portrait { width: 32px; height: 32px; border-radius: 50%; overflow: hidden; border: 1px solid oklch(45% 0.15 264 / 35%); flex-shrink: 0; }
+  .mc-conductor-portrait img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+  .mc-conductor-label { font-size: 9px; color: oklch(72% 0.19 264); font-weight: 700; letter-spacing: .08em; }
+  .mc-conductor-value { font-size: 11px; color: oklch(80% 0.12 264); }
+  .mc-conductor-time { margin-left: auto; font-size: 9px; color: var(--text-muted); font-family: var(--font-mono); white-space: nowrap; }
+  /* ── BUG-0185: Idle roster 4-col grid ── */
+  .mc-idle-roster { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 10px; }
+  .mc-idle-card {
+    background: var(--mc-surface);
+    border: 1px solid var(--mc-border);
+    border-radius: 7px;
+    overflow: hidden;
+    opacity: 0.65;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 8px;
+    transition: opacity .15s;
+  }
+  .mc-idle-card:hover { opacity: 1; }
+  .mc-idle-portrait { width: 100%; aspect-ratio: 1; overflow: hidden; }
+  .mc-idle-portrait img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+  .mc-idle-name { font-size: 9px; font-weight: 600; color: var(--text-muted); margin-top: 5px; text-align: center; }
+  .mc-idle-role { font-size: 7.5px; color: var(--mc-dim); margin-top: 1px; text-align: center; padding: 0 4px; }
+  .mc-idle-badge { margin-top: 4px; background: var(--mc-surface); color: var(--mc-dim); font-size: 7px; font-weight: 700; letter-spacing: .06em; padding: 1px 6px; border-radius: 10px; border: 1px solid var(--mc-border); }
+  @media (max-width: 768px) { .mc-idle-roster { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 480px) { .mc-idle-roster { grid-template-columns: repeat(2, 1fr); } }
+
   /* ── Roster section ── */
   .mc-roster { margin-bottom: 14px; }
   .mc-roster-rows { display: flex; flex-direction: column; gap: 4px; }
@@ -2120,84 +2215,108 @@ ${
 
 <!-- ROSTER section -->
 ${(() => {
-  const agentList = Object.entries(agents);
-  const activeCount = agentList.filter(([, a]) => a && a.status === 'active').length;
-  const idleCount = agentList.filter(
-    ([, a]) => !a || (a.status !== 'active' && a.status !== 'blocked' && a.status !== 'needs-review'),
-  ).length;
-  const blockedCount = agentList.filter(([, a]) => a && a.status === 'blocked').length;
-  const imgBase = 'agents/images';
   const dmAgentName = (AGENT_CONFIG.orchestrator || {}).dmAgent || 'Conductor';
+  const agentList = Object.entries(agents);
+  const imgBase = 'agents/images';
 
-  const rows = agentList
+  const lastDispatch = [...log].reverse().find(
+    (e) =>
+      e.tag === 'dispatch' ||
+      String(e.message || '')
+        .toLowerCase()
+        .startsWith('dispatch'),
+  );
+
+  // Split: active non-Conductor agents | idle/other non-Conductor agents
+  const activeAgents = agentList.filter(([n, a]) => n !== dmAgentName && a && a.status === 'active');
+  const idleAgents = agentList.filter(([n]) => n !== dmAgentName && !activeAgents.find(([an]) => an === n));
+
+  // Active cards (expanded with full portrait)
+  const activeCardsHtml = activeAgents
     .map(([name, agent]) => {
-      const color = agentColors[name] || 'oklch(55% 0 0)';
       const avatar = agentAvatars[name] || name.toLowerCase();
-      const initial = name.charAt(0).toUpperCase();
+      const color = agentColors[name] || 'oklch(55% 0 0)';
       const role = agentRoles[name] || name;
-      const isActive = agent && agent.status === 'active';
-      const isBlocked = agent && agent.status === 'blocked';
-      const isReview = agent && agent.status === 'needs-review';
-      const statusStr = (agent && agent.status) || 'idle';
-      const statusCls = isActive
-        ? 'status-active'
-        : isBlocked
-          ? 'status-blocked'
-          : isReview
-            ? 'status-review'
-            : statusStr === 'complete'
-              ? 'status-complete'
-              : 'status-idle';
-      const rowCls = isActive ? 'mc-agent-active' : isBlocked ? 'mc-agent-blocked' : isReview ? 'mc-agent-review' : '';
       const task = (agent && agent.currentTask) || '';
       const branch = (agent && agent.branch) || '';
-      const taskDisplay = branch
-        ? `<a href="${esc(branch)}">${esc(task || branch)}</a>`
-        : task
-          ? esc(task)
-          : '<span style="opacity:0.5;">—</span>';
-      // US-0119 / US-0142: keep agent-card + stable IDs for patchDOM compatibility
-      const icon = agentIcons[name] || '';
-      const statusBg = isActive ? 'oklch(66% 0.17 145 / 20%)' : 'oklch(55% 0 0 / 15%)';
-      const statusColor = isActive ? 'var(--ok)' : statusStr === 'complete' ? 'var(--info)' : 'var(--text-muted)';
-      const fallbackStyle = `border-color:${color};`;
-      const onerror = `this.replaceWith(Object.assign(document.createElement('div'),{className:'agent-avatar-fallback',textContent:'${initial}',style:'${fallbackStyle}'}))`;
-      return `    <div class="mc-agent-row ${rowCls} agent-card ${isActive ? 'is-active active' : isBlocked ? 'is-blocked' : isReview ? 'is-review' : 'is-idle'}" id="agent-${esc(name)}" data-agent-name="${esc(name)}" data-agent="${esc(name)}" data-agent-status="${esc(statusStr)}" style="--agent-color:${color};--agent-color-ring:${color}40;">
-      ${isActive ? '<div class="agent-rail"></div>' : ''}
-      <img class="agent-avatar" src="${imgBase}/optimized/${esc(avatar)}-64.png" alt="${esc(name)}" style="border-color:${color};" onerror="${esc(onerror)}">
-      <div class="agent-info">
-        <div class="mc-agent-identity">
-          <div class="mc-agent-name-line">
-            <span>${esc(name)}</span>
-            <span class="mc-agent-role-text">&middot; ${esc(role)}</span>
-          </div>
-          <div class="mc-agent-task-line" id="agent-${esc(name)}-task">${taskDisplay}</div>
-          ${name === dmAgentName ? `<div class="conductor-dispatch-count" id="conductor-dispatch-count">0 dispatched</div>` : ''}
-        </div>
-        <span class="mc-status-badge ${statusCls}">${esc(statusStr)}</span>
-        <!-- Hidden agent-status for AC-0428 test compat -->
-        <div class="agent-status" id="agent-${esc(name)}-status" style="display:none;background:${statusBg};color:${statusColor}">${esc(statusStr)}</div>
+      const startedAt = (agent && agent.startedAt) || '';
+      const storyId = (task.match(/US-\d{4}/) || [])[0] || '';
+      const onerror = `this.src='${imgBase}/optimized/${esc(avatar)}-160.png'`;
+      return `<div class="mc-active-card agent-card is-active active" id="agent-${esc(name)}" data-agent-name="${esc(name)}" data-agent="${esc(name)}" data-agent-status="active" style="--agent-color:${color};">
+  <div class="mc-active-portrait-banner">
+    <img src="${imgBase}/${esc(avatar)}.png" alt="${esc(name)}" onerror="${esc(onerror)}">
+    <span class="mc-active-status-dot" aria-hidden="true"></span>
+  </div>
+  <div class="mc-active-info">
+    <div class="mc-active-top">
+      <div>
+        <div class="mc-active-name">${esc(name)}</div>
+        <div class="mc-active-role">${esc(role)}</div>
       </div>
-      <span class="live-dot ok on-air-dot${isActive ? ' dot-pulse' : ''}" aria-label="now on air" title="now on air" style="${isActive ? '' : 'display:none;'}"></span>
-    </div>`;
+      <span class="mc-active-badge">ACTIVE</span>
+    </div>
+    ${task ? `<div class="mc-active-story"><span class="mc-active-story-id">${esc(storyId)}</span><span class="mc-active-story-desc">${esc(task)}</span></div>` : ''}
+    <div class="mc-active-meta">
+      ${branch ? `<div>Branch <span>${esc(branch)}</span></div>` : ''}
+      ${startedAt ? `<div>Started <span>${esc(startedAt)}</span></div>` : ''}
+    </div>
+  </div>
+  <div class="agent-status" id="agent-${esc(name)}-status" style="display:none;">active</div>
+  <div id="agent-${esc(name)}-task" style="display:none;">${esc(task)}</div>
+</div>`;
     })
     .join('\n');
 
-  return `<div class="mc-roster mc-legacy-section">
-  <div class="mc-section-bar">
-    <span class="mc-section-label">ROSTER</span>
-    <div class="mc-roster-counts">
-      <span class="mc-count-active"><span class="mc-count-dot"></span>${activeCount} ACTIVE</span>
-      <span class="mc-count-idle"><span class="mc-count-dot"></span>${idleCount} IDLE</span>
-      <span class="mc-count-blocked"><span class="mc-count-dot"></span>${blockedCount} BLOCKED</span>
-    </div>
+  // Conductor last-dispatch strip (always visible)
+  const conductorAvatar = agentAvatars[dmAgentName] || dmAgentName.toLowerCase();
+  const dispatchMsg = lastDispatch ? esc(String(lastDispatch.message || '')) : 'No dispatches yet';
+  const dispatchTime = lastDispatch ? esc(String(lastDispatch.time || '')) : '';
+  const conductorAgent = agents[dmAgentName] || {};
+  const conductorTask = (conductorAgent && conductorAgent.currentTask) || '';
+  const conductorDispatchHtml = `<div class="mc-conductor-dispatch" id="mc-conductor-dispatch" data-agent="${esc(dmAgentName)}">
+  <div class="mc-conductor-portrait">
+    <img src="${imgBase}/optimized/${esc(conductorAvatar)}-64.png" alt="${esc(dmAgentName)}" onerror="this.style.display='none'">
   </div>
-  <div class="mc-roster-rows agent-grid" id="mc-roster-rows">
-${rows}
+  <div>
+    <div class="mc-conductor-label">${esc(dmAgentName)} · Last Dispatch</div>
+    <div class="mc-conductor-value">${dispatchMsg}</div>
   </div>
-</div>
+  <span class="mc-conductor-time">${dispatchTime}</span>
+  <div id="agent-${esc(dmAgentName)}-task" style="display:none;">${esc(conductorTask)}</div>
+  <div class="agent-status" id="agent-${esc(dmAgentName)}-status" style="display:none;">${esc((conductorAgent && conductorAgent.status) || 'idle')}</div>
+  <div class="conductor-dispatch-count" id="conductor-dispatch-count" style="display:none;">0 dispatched</div>
+</div>`;
 
-<!-- Hidden spotlight stub for patchDOM agent-spotlight compatibility -->
+  // Idle 4-col grid
+  const idleCardsHtml = idleAgents
+    .map(([name, agent]) => {
+      const avatar = agentAvatars[name] || name.toLowerCase();
+      const color = agentColors[name] || 'oklch(55% 0 0)';
+      const role = agentRoles[name] || name;
+      const statusStr = (agent && agent.status) || 'idle';
+      const task = (agent && agent.currentTask) || '';
+      const initial = name.charAt(0).toUpperCase();
+      const onerror = `this.parentElement.innerHTML='<div style="width:100%;aspect-ratio:1;background:var(--mc-surface);display:flex;align-items:center;justify-content:center;font-size:22px;">${initial}</div>'`;
+      return `<div class="mc-idle-card agent-card is-idle" id="agent-${esc(name)}" data-agent-name="${esc(name)}" data-agent="${esc(name)}" data-agent-status="${esc(statusStr)}" style="--agent-color:${color};">
+  <div class="mc-idle-portrait"><img src="${imgBase}/optimized/${esc(avatar)}-64.png" alt="${esc(name)}" onerror="${esc(onerror)}"></div>
+  <div class="mc-idle-name">${esc(name)}</div>
+  <div class="mc-idle-role">${esc(role)}</div>
+  <div class="mc-idle-badge">IDLE</div>
+  <div class="agent-status" id="agent-${esc(name)}-status" style="display:none;">${esc(statusStr)}</div>
+  <div id="agent-${esc(name)}-task" style="display:none;">${esc(task)}</div>
+</div>`;
+    })
+    .join('\n');
+
+  return `${activeCardsHtml}
+${conductorDispatchHtml}
+<div class="mc-section-bar" style="margin-bottom:6px;">
+  <span class="mc-section-label">ALL AGENTS</span>
+</div>
+<div class="mc-idle-roster" id="mc-idle-roster">
+${idleCardsHtml}
+</div>
+<!-- Hidden spotlight stub for patchDOM compatibility -->
 <div id="agent-spotlight" style="display:none;" data-agent-name="" data-started-at="">
   <div id="agent-spotlight-name"></div>
   <div id="agent-spotlight-role"></div>
