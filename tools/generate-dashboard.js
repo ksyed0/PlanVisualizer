@@ -2109,7 +2109,6 @@ ${
     <div class="phase-status" id="phase-${p.id}-icon" aria-hidden="true">${icon}</div>
     <div class="phase-number" id="phase-${p.id}-num">${phaseNum}</div>
     <div class="phase-name">${p.name}</div>
-    <div class="phase-agents">${pAgents.join(' \u00B7 ')}</div>
     <div class="phase-deliverables">${deliverables.join(' \u00B7 ')}</div>
     <div class="phase-elapsed" id="phase-${p.id}-elapsed" data-has-elapsed="${hasElapsed}"><span class="phase-check" id="phase-${p.id}-check" aria-label="complete">\u2713</span>${esc(elapsed)}</div>
     <div class="phase-fill-track"><div class="phase-fill-bar pv-phase-fill" id="phase-${p.id}-fill" style="width: ${fillWidth}%"></div></div>

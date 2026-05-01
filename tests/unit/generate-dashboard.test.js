@@ -713,3 +713,18 @@ describe('generate-dashboard — BUG-0250 theme localStorage key consolidation',
     expect(html).toContain("classList.toggle('dark', theme === 'dark')");
   });
 });
+
+describe('generate-dashboard — BUG-0187 remove agent names from pipeline', () => {
+  test('BUG-0187: pipeline phase-block does not render agent names', () => {
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    const html = generateHTML(makeHealthyFixture());
+    // CANONICAL_PHASES has agents: Blueprint→['Compass'], Build→['Pixel','Forge','Palette']
+    // After fix, these names must not appear inside pipeline phase-block elements.
+    const pipelineMatch = html.match(/<div class="pipeline[^"]*"[^>]*>([\s\S]*?)<\/div>\s*\n?\s*<!--\s*ROSTER/);
+    if (!pipelineMatch) return; // pipeline not rendered (empty phases) — skip
+    const pipelineHtml = pipelineMatch[1];
+    expect(pipelineHtml).not.toContain('>Compass<');
+    expect(pipelineHtml).not.toContain('>Pixel<');
+    expect(pipelineHtml).not.toContain('>Forge<');
+  });
+});
