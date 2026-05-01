@@ -544,3 +544,16 @@ _Learned from BUG-0210 — Lessons and Bugs tabs both have epic group headers, b
 
 **Bugs:** BUG-0252
 **Date:** 2026-04-30
+
+---
+
+## L-0052 — Separate visual hierarchy by information priority, not by component type
+
+**Context:** BUG-0185–0189 all stemmed from grouping widgets by component type (roster, pipeline, log) rather than by information priority. Active agents have the highest scan value on a mission-control surface but were visually indistinguishable from idle ones. The event log (real-time stream) was buried lower than the pipeline (cycle-phase summary).
+
+**Fix:** Reorder widgets by information priority: active-agent hero → last-dispatch strip → event log (primary stream) → idle roster → sidebar. Redesign the active card to have dramatically more visual weight (full portrait banner, amber glow, 200px height vs 80px for idle card portraits). Remove information duplication between widgets (pipeline and roster both encoding "who is active" — pipeline now owns cycle progress only).
+
+**Prevention:** When adding a new widget to a dashboard, ask: what is the scan hierarchy? A 2-second glance test — can someone immediately identify what is happening and who is doing it? If not, the visual weight is wrong.
+
+**Bugs:** BUG-0185, BUG-0186, BUG-0187, BUG-0188, BUG-0189
+**Date:** 2026-04-30

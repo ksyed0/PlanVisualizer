@@ -4,7 +4,7 @@ const { esc, jsEsc, usd, normalizeStoryRef } = require('./render-utils');
 // SHELL_CHROME_CSS: all CSS needed by renderChrome(). Exported so generate-dashboard.js
 // can inject it when using the shared chrome on the agentic dashboard.
 const SHELL_CHROME_CSS = `
-.pv-chrome{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:14px;padding:8px 18px;min-height:52px;max-height:52px;border-bottom:1px solid var(--border);background:color-mix(in oklab,var(--bg) 80%,transparent);backdrop-filter:blur(12px) saturate(1.2);-webkit-backdrop-filter:blur(12px) saturate(1.2);}
+.pv-chrome{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:14px;padding:8px 18px;min-height:40px;max-height:40px;border-bottom:1px solid var(--border);background:color-mix(in oklab,var(--bg) 80%,transparent);backdrop-filter:blur(12px) saturate(1.2);-webkit-backdrop-filter:blur(12px) saturate(1.2);}
 .pv-chrome-brand{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-size:17px;letter-spacing:-0.01em;color:var(--text);}
 .pv-chrome-dot{width:9px;height:9px;border-radius:2px;background:linear-gradient(135deg,var(--plan-accent),var(--live-accent));flex-shrink:0;}
 .pv-chrome-spacer{flex:1;}

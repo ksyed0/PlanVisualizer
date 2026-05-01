@@ -1,0 +1,74 @@
+{
+  "project": { "name": "PlanVisualizer", "description": "Test fixture", "repoUrl": "", "startDate": "2026-04-01" },
+  "currentPhase": 3,
+  "cycles": [],
+  "phases": [
+    {
+      "id": 1,
+      "name": "Blueprint",
+      "agents": ["Compass"],
+      "deliverables": [],
+      "status": "complete",
+      "startedAt": "2026-04-30T19:00:00Z",
+      "completedAt": "2026-04-30T19:30:00Z"
+    },
+    {
+      "id": 2,
+      "name": "Architect",
+      "agents": ["Keystone"],
+      "deliverables": [],
+      "status": "complete",
+      "startedAt": "2026-04-30T19:30:00Z",
+      "completedAt": "2026-04-30T20:00:00Z"
+    },
+    {
+      "id": 3,
+      "name": "Build",
+      "agents": ["Pixel", "Forge"],
+      "deliverables": [],
+      "status": "in-progress",
+      "startedAt": "2026-04-30T20:00:00Z"
+    },
+    { "id": 4, "name": "Integration", "agents": ["Pixel"], "deliverables": [], "status": "pending" },
+    { "id": 5, "name": "Test", "agents": ["Sentinel", "Circuit"], "deliverables": [], "status": "pending" },
+    { "id": 6, "name": "Polish", "agents": ["Pixel", "Forge"], "deliverables": [], "status": "pending" }
+  ],
+  "agents": {
+    "Conductor": { "status": "idle", "currentTask": null, "tasksCompleted": 3 },
+    "Compass": { "status": "idle", "currentTask": null, "tasksCompleted": 1 },
+    "Keystone": { "status": "idle", "currentTask": null, "tasksCompleted": 1 },
+    "Lens": { "status": "idle", "currentTask": null, "tasksCompleted": 0 },
+    "Palette": { "status": "idle", "currentTask": null, "tasksCompleted": 0 },
+    "Forge": { "status": "idle", "currentTask": null, "tasksCompleted": 0 },
+    "Pixel": {
+      "status": "active",
+      "currentTask": "US-0171 dashboard visual hierarchy",
+      "branch": "feature/US-0171-dashboard-ux",
+      "startedAt": "20:15 UTC",
+      "tasksCompleted": 2
+    },
+    "Sentinel": { "status": "idle", "currentTask": null, "tasksCompleted": 0 },
+    "Circuit": { "status": "idle", "currentTask": null, "tasksCompleted": 0 }
+  },
+  "log": [
+    {
+      "time": "20:15:02",
+      "agent": "Conductor",
+      "message": "dispatched → Pixel · US-0171 · Build phase",
+      "tag": "dispatch"
+    },
+    { "time": "20:15:03", "agent": "Pixel", "message": "started US-0171 feature/US-0171-dashboard-ux", "tag": "start" }
+  ],
+  "stories": {},
+  "epics": {},
+  "metrics": {
+    "storiesCompleted": 4,
+    "storiesTotal": 12,
+    "tasksCompleted": 0,
+    "tasksTotal": 0,
+    "testsPassed": 2341,
+    "testsFailed": 0,
+    "bugsOpen": 2,
+    "coveragePct": 93
+  }
+}
