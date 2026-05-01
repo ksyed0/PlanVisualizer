@@ -1,6 +1,6 @@
 {
   "name": "plan-visualizer",
-  "version": "1.5.83",
+  "version": "1.5.29",
   "description": "Self-contained project dashboard for Claude Code projects",
   "scripts": {
     "test": "jest",
@@ -8,8 +8,6 @@
     "lint": "eslint .",
     "generate": "node tools/generate-plan.js",
     "generate:watch": "node tools/generate-plan.js --watch",
-    "plan:generate": "node tools/generate-plan.js",
-    "plan:watch": "node tools/generate-plan.js --watch",
     "dashboard": "node tools/generate-dashboard.js",
     "dashboard:watch": "node tools/generate-dashboard.js --watch",
     "init:status": "node tools/init-sdlc-status.js",
@@ -23,17 +21,15 @@
     "migrate-config:dry": "node tools/migrate-config.js --dry-run"
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx,json,md,yml,yaml,html,css}": "prettier --write",
+    "*.{js,json,md,yml,yaml}": "prettier --write",
     "*.js": "eslint --fix"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
-    "@playwright/test": "^1.59.1",
-    "chart.js": "^4.5.1",
-    "eslint": "10.2.0",
+    "eslint": "10.2.1",
     "husky": "^9.1.7",
     "jest": "^30.3.0",
     "lint-staged": "^16.4.0",
-    "prettier": "^3.8.2"
+    "prettier": "^3.8.3"
   }
 }
