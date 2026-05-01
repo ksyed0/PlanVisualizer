@@ -51,3 +51,15 @@ describe('render-chrome — US-0137/US-0138', () => {
     expect(h).not.toMatch(/#[0-9a-fA-F]{3,6}\b/);
   });
 });
+
+test('pv-chrome height is 40px, not 52px (BUG-0189)', () => {
+  const { CHROME_CSS } = require('../../tools/lib/render-chrome');
+  expect(CHROME_CSS).toContain('height:40px');
+  expect(CHROME_CSS).not.toContain('height:52px');
+});
+
+test('SHELL_CHROME_CSS min-height is 40px (BUG-0189)', () => {
+  const { SHELL_CHROME_CSS } = require('../../tools/lib/render-shell');
+  expect(SHELL_CHROME_CSS).toContain('min-height:40px');
+  expect(SHELL_CHROME_CSS).not.toContain('min-height:52px');
+});

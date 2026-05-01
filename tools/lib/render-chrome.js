@@ -4,7 +4,7 @@
 // All CSS uses var(--chrome-*) tokens — zero hex literals (AC-0498).
 
 const CHROME_CSS = `
-.pv-chrome { height:52px; background:var(--chrome-bg); border-bottom:1px solid var(--chrome-border);
+.pv-chrome { height:40px; background:var(--chrome-bg); border-bottom:1px solid var(--chrome-border);
   display:flex; align-items:center; padding:0 14px; gap:8px; font-size:12px;
   position:sticky; top:0; z-index:100; }
 .pv-brand { font-weight:700; font-size:13px; color:var(--chrome-brand);
