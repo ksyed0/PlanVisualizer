@@ -151,6 +151,12 @@ fi
 # docs.lessons, agents.<name>.avatar) that early installs are missing.
 # Preserves user values; only appends missing keys. --auto suppresses output
 # when nothing needs migrating, keeping the installer log clean.
+#
+# v2.0.0 schema additions auto-migrated here:
+#   agents.config.json — new top-level "project" (name, description, repoUrl,
+#     startDate) and "phases" (pipeline phase definitions) sections.
+#     Agent colours migrate from hex strings to oklch values automatically
+#     (e.g. "color": "oklch(52% 0.22 25)"). Safe to re-run.
 if [ -f "${TARGET}/tools/migrate-config.js" ]; then
   echo "[install] Checking config schema ..."
   (cd "$TARGET" && node "${TARGET}/tools/migrate-config.js" --auto) || true

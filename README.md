@@ -2,11 +2,25 @@
 
 A self-contained project dashboard for Claude Code projects. Parses your `RELEASE_PLAN.md`, `TEST_CASES.md`, `BUGS.md`, `AI_COST_LOG.md`, `LESSONS.md`, coverage JSON, and `progress.md` into a static `plan-status.html` with seven tabs:
 
-**Hierarchy · Kanban · Traceability · Charts · Trends · Costs · Bugs · Lessons**
+**Hierarchy · Kanban · Traceability · Status · Charts · Trends · Costs · Bugs · Lessons · Stakeholder**
 
 Press `⌘K` / `Ctrl+K` to open the global search modal and jump to any story, bug, or lesson by ID or keyword.
 
 No runtime dependencies — Node.js and git only.
+
+---
+
+## What's New in v2.0.0
+
+- **Stakeholder Tab** — A business-facing view with an editorial "On track / At risk / Off track" verdict, go/no-go decision widgets, epic progress by plain-language status, and forecast date. Shareable with non-technical stakeholders.
+- **OKLCH Design System** — Both dashboards now use a unified OKLCH colour palette with zero hex literals. Charts, badges, and sparklines share the same semantic tokens (ok/warn/risk/info/accent).
+- **Agentic Dashboard Visual Hierarchy** — Active agent card now shows the full landscape agent portrait (200px banner), a pulsing status dot, and story context. Idle agents appear at 65% opacity in a 4-column grid. Conductor shows its last dispatch persistently.
+- **Status Tab Hero** — Large verdict headline (28px), "Release Health" eyebrow, forecast banner promoted above sparklines, placeholder bars when trend data is sparse.
+- **No CDN Dependencies** — Tailwind CDN, Chart.js CDN, and Google Fonts removed. All CSS uses `var(--*)` custom properties and system font stacks.
+- **Playwright E2E Tests** — `tests/e2e/dashboard-hierarchy.spec.js` validates visual hierarchy invariants on every CI run (chrome height, active card prominence, event log position).
+- **Risk Analytics** — Per-story and per-epic risk scores (priority × severity × status) with level badges (Low / Medium / High / Critical).
+- **Cost Attribution Fix** — Branch costs now split evenly across all artefacts sharing a fix branch, eliminating duplicated totals.
+- **AI Cost Log Recovery** — `git stash show -p` extraction technique documented for recovering trapped cost rows (see L-0051).
 
 ---
 
@@ -153,9 +167,11 @@ rm -rf /tmp/PlanVisualizer
 
 The script is idempotent — it is safe to re-run at any time. If you have existing project data, it will prompt: "Would you like to estimate historical data? (y/n)" — answering yes runs a 30-day backfill to populate trend charts immediately.
 
-**What gets overwritten on update:** `tools/`, `tests/`, `scripts/cleanup-branches.sh`, `jest.config.js`, `plan_visualizer.md`, `.github/workflows/plan-visualizer.yml`, `eslint.config.js` — these are tool files managed by PlanVisualizer.
+**What gets overwritten on update:** `tools/`, `tests/` (including `tests/e2e/`), `scripts/cleanup-branches.sh`, `jest.config.js`, `playwright.config.js`, `plan_visualizer.md`, `.github/workflows/plan-visualizer.yml`, `eslint.config.js` — these are tool files managed by PlanVisualizer.
 
 **Config schema migration runs automatically** on every install/upgrade — `tools/migrate-config.js` adds any required fields introduced in newer versions (e.g. `docs.lessons`, `agents.<name>.avatar`) to your existing `plan-visualizer.config.json` and `agents.config.json` without touching values you've already set. Preview what would change with `npm run plan:migrate-config:dry`; apply manually with `npm run plan:migrate-config`. Safe to re-run.
+
+As of v2.0.0, `agents.config.json` supports two new top-level sections: `project` (name, description, repoUrl, startDate) and `phases` (array of pipeline phase definitions). Agent colours migrate from hex to oklch values automatically (e.g. `"color": "oklch(52% 0.22 25)"`). Run `tools/migrate-config.js` once after upgrading — it is idempotent and safe to re-run.
 
 **Historical data:** When updating, the install script will ask "Would you like to estimate historical data? (y/n)" — answering yes runs a 30-day backfill to populate trend charts immediately with simulated historical data. Answering no lets history build naturally from real generations.
 
