@@ -807,7 +807,13 @@ function _renderFullStatusHero(data) {
 
   const progressBars = (() => {
     if (!trends || !trends.dates || trends.dates.length < 2)
-      return '<span style="font-size:11px;color:var(--text-mute)">No history</span>';
+      return Array(14)
+        .fill(null)
+        .map(
+          () =>
+            `<div style="width:8px;background:var(--border);border-radius:2px;height:4px;align-self:flex-end;flex-shrink:0"></div>`,
+        )
+        .join('');
     const recent = trends.dates.slice(-14);
     const doneCounts = (trends.doneCounts || []).slice(-14);
     const totalCounts = (trends.totalStories || []).slice(-14);
@@ -816,14 +822,20 @@ function _renderFullStatusHero(data) {
       .map((d, i) => {
         const pct = Math.round((doneCounts[i] / maxDone) * 100);
         return `<div title="${d}: ${doneCounts[i]}/${totalCounts[i]} done"
-        style="width:8px;background:color-mix(in oklab,var(--plan-accent) ${Math.max(pct, 8)}%,var(--border));border-radius:2px;height:${Math.max(Math.round((doneCounts[i] / maxDone) * 32), 4)}px;align-self:flex-end;flex-shrink:0"></div>`;
+        style="width:8px;background:color-mix(in oklab,oklch(66% 0.17 145) ${Math.max(pct, 8)}%,var(--border));border-radius:2px;height:${Math.max(Math.round((doneCounts[i] / maxDone) * 48), 4)}px;align-self:flex-end;flex-shrink:0"></div>`;
       })
       .join('');
   })();
 
   const coverageDots = (() => {
     if (!trends || !trends.dates || trends.dates.length < 2)
-      return '<span style="font-size:11px;color:var(--text-mute)">No history</span>';
+      return Array(20)
+        .fill(null)
+        .map(
+          () =>
+            `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--border);margin:1px;opacity:0.3"></span>`,
+        )
+        .join('');
     const recent30 = trends.dates.slice(-30);
     const covVals = (trends.coverage || []).slice(-30);
     return recent30
@@ -839,10 +851,12 @@ function _renderFullStatusHero(data) {
 
   const burnUpSvg = (() => {
     if (!trends || !trends.velocity || trends.velocity.length < 2)
-      return '<span style="font-size:11px;color:var(--text-mute)">No data</span>';
+      return `<svg viewBox="0 0 200 56" style="width:100%;height:56px" aria-hidden="true">
+    <line x1="0" y1="52" x2="200" y2="52" stroke="var(--border)" stroke-width="1"/>
+  </svg>`;
     const vals = trends.velocity.slice(-60);
     const W = 200,
-      H = 44;
+      H = 56;
     const maxV = Math.max(...vals, 1);
     const pts = vals
       .map((v, i) => {
@@ -854,11 +868,11 @@ function _renderFullStatusHero(data) {
     const areaPts = `${pts} ${W},${H} 0,${H}`;
     return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px" preserveAspectRatio="none" aria-hidden="true">
       <defs><linearGradient id="bu-grad" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="var(--plan-accent)" stop-opacity="0.35"/>
-        <stop offset="100%" stop-color="var(--plan-accent)" stop-opacity="0.03"/>
+        <stop offset="0%" stop-color="oklch(66% 0.17 145)" stop-opacity="0.35"/>
+        <stop offset="100%" stop-color="oklch(66% 0.17 145)" stop-opacity="0.03"/>
       </linearGradient></defs>
       <polygon points="${areaPts}" fill="url(#bu-grad)"/>
-      <polyline points="${pts}" fill="none" stroke="var(--plan-accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <polyline points="${pts}" fill="none" stroke="oklch(66% 0.17 145)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>`;
   })();
 
@@ -900,33 +914,46 @@ function _renderFullStatusHero(data) {
     </div>`;
   })();
 
+  const forecastBanner = comp
+    ? `<div style="display:flex;gap:0;background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:14px">
+        <div style="flex:1;padding:8px 12px;border-right:1px solid var(--border)">
+          <div style="font-size:8px;color:var(--text-mute);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px">Forecast</div>
+          <div style="font-size:14px;font-weight:700">${forecastLabel}</div>
+          <div style="font-size:9px;color:var(--text-mute);margin-top:1px">likely date</div>
+        </div>
+        <div style="flex:1;padding:8px 12px;border-right:1px solid var(--border)">
+          <div style="font-size:8px;color:var(--text-mute);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px">Range</div>
+          <div style="font-size:12px;font-weight:700">${rangeLabel}</div>
+          <div style="font-size:9px;color:var(--text-mute);margin-top:1px">80% confidence</div>
+        </div>
+        <div style="flex:1;padding:8px 12px">
+          <div style="font-size:8px;color:var(--text-mute);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px">Velocity</div>
+          <div style="font-size:14px;font-weight:700">${velocityLabel}</div>
+          <div style="font-size:9px;color:var(--text-mute);margin-top:1px">rolling avg</div>
+        </div>
+      </div>`
+    : `<div style="font-size:11px;color:var(--text-mute);font-style:italic;margin-bottom:14px;padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px">Forecast unavailable — insufficient velocity data</div>`;
+
   return `
   <!-- Release Health Hero -->
   <div class="pv-hero card mb-4 p-0 overflow-hidden">
     <div class="pv-hero-head">
       <div class="pv-hero-verdict" style="position:relative">
-        <p class="pv-eyebrow">Release Health</p>
-        <h2 style="margin:4px 0 6px;font-family:var(--font-display);font-size:clamp(28px,4vw,44px);font-weight:600;letter-spacing:-0.02em;line-height:1;color:${verdictColor}">${verdict}</h2>
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-          <span class="chip ${chipCls}"><span class="d"></span>${hasBlocker ? 'BLOCKED' : hasRisk ? 'AT RISK' : 'STABLE'}</span>
-          <p class="pv-hero-narrative">${narrative}</p>
-        </div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-mute);margin-bottom:6px">Release Health</div>
+        <h2 style="margin:0 0 8px;font-family:var(--font-display,system-ui);font-size:28px;font-weight:800;line-height:1;color:${verdictColor}">${verdict}</h2>
+        <p style="font-size:13px;color:var(--text-secondary);margin-bottom:14px">${narrative}</p>
+        ${forecastBanner}
       </div>
       <div class="pv-hero-stats">
-        <div class="pv-stat">
-          <span class="pv-stat-lbl">Forecast</span>
-          <span class="pv-stat-val">${esc(forecastLabel)}</span>
-          <span class="pv-delta" style="color:var(--text-mute);font-size:11px">${esc(rangeLabel)}</span>
-        </div>
-        <div class="pv-stat">
-          <span class="pv-stat-lbl">Velocity</span>
-          <span class="pv-stat-val">${esc(velocityLabel)}</span>
-          <span class="pv-delta" style="color:var(--text-mute);font-size:11px">stories/wk</span>
-        </div>
         <div class="pv-stat">
           <span class="pv-stat-lbl">Budget</span>
           <span class="pv-stat-val" style="color:${budgetPct > 90 ? 'var(--risk)' : budgetPct > 75 ? 'var(--warn)' : 'inherit'}">${budgetPct}%</span>
           <span class="pv-delta" style="color:var(--text-mute);font-size:11px">${usd(totalAI)} / ${usd(totalProjected)}</span>
+        </div>
+        <div class="pv-stat">
+          <span class="pv-stat-lbl">Progress</span>
+          <span class="pv-stat-val">${donePct}%</span>
+          <span class="pv-delta" style="color:var(--text-mute);font-size:11px">${doneStories.length} / ${activeStories.length} stories</span>
         </div>
       </div>
     </div>
@@ -934,7 +961,7 @@ function _renderFullStatusHero(data) {
     <div class="pv-hero-vizrow pv-hero-viz" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
       <div>
         <p class="pv-eyebrow" style="margin-bottom:6px">Progress · Past 14 snapshots</p>
-        <div style="display:flex;align-items:flex-end;gap:3px;height:36px">${progressBars}</div>
+        <div style="display:flex;align-items:flex-end;gap:3px;height:52px">${progressBars}</div>
       </div>
       <div>
         <p class="pv-eyebrow" style="margin-bottom:6px">Coverage · Last 30 snapshots</p>
@@ -2433,7 +2460,8 @@ function renderStatusTab(data) {
   // Pass-rate bars — last 14 coverage snapshots as quality proxy
   const passRateBars = (() => {
     const vals = trends && trends.coverage ? trends.coverage.slice(-14) : [];
-    if (vals.length === 0) return '<span style="font-size:11px;color:var(--text-mute)">No history</span>';
+    if (vals.length === 0)
+      return '<div style="font-size:11px;color:var(--text-mute);font-style:italic">Coverage history unavailable</div>';
     const dates = trends.dates ? trends.dates.slice(-14) : [];
     return `<div style="display:flex;gap:3px">${vals
       .map((v, i) => {

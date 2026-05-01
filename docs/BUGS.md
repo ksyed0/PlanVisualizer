@@ -12,7 +12,9 @@ Steps to Reproduce:
 1. Open docs/plan-status.html → Status tab
    Expected: A single-glance answer to "is the release on track?" with forecast, velocity, and top risks
    Actual: The tab leans on stat tiles and the Charts-style doughnut without an editorial hero summary; users have to visit 3+ tabs to infer health
-   Status: Open
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0183-0184-0223-plan-status-quality
+   Lesson Encoded: Yes
    Notes: Tracked as visual/IA change under EPIC-0020 (CD-Redesign). See US-0135 Status Hero card.
 
 ---
@@ -27,7 +29,9 @@ Steps to Reproduce:
 3. Open Trends → Coverage line (blue)
    Expected: All charts share a single semantic palette (ok/warn/risk/info/accent) so the same color always means the same thing
    Actual: Each tab uses a different legend and fill palette; "Done" is several different greens across tabs
-   Status: Open
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0183-0184-0223-plan-status-quality
+   Lesson Encoded: Yes
    Notes: Fix by routing every chart through a shared palette token map (see AC in US-0140).
 
 ---
@@ -3134,8 +3138,8 @@ Steps to Reproduce:
 2. Observe all epic groups are expanded on load
    Expected: All epic groups collapsed by default; user expands as needed
    Actual: All groups expanded, causing long scroll on first load
-   Status: Open
-   Fix Branch:
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0183-0184-0223-plan-status-quality
    Lesson Encoded: No
    Estimated Cost USD: 0.00
    Notes: Default collapsed state requires server-rendered hidden class on bug-group tbody + collapsed arrow state in markup. Deferred to a future polish story.
