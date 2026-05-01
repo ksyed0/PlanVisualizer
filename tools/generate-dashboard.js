@@ -2442,8 +2442,8 @@ ${storyRows}
   ${renderAgentWorkload(status.agents, status.stories)}
 </div>
 
-<!-- US-0145: Event Log — primary column widget (hidden; sidebar version shown) -->
-<div class="card pv-event-log" id="pv-event-log" style="display:none;">
+<!-- US-0145: Event Log — primary column widget -->
+<div class="card pv-event-log" id="pv-event-log">
   <div class="card-head">
     <h3>Event Log</h3>
     <span class="pv-log-status" id="pv-log-status">LIVE</span>
@@ -2472,7 +2472,7 @@ ${storyRows}
 ${
   log.length > 0
     ? log
-        .slice(-20)
+        .slice(-3)
         .reverse()
         .map((entry) => {
           const agentColor = agentColors[entry.agent] || 'var(--text-muted)';
