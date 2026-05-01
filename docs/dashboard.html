@@ -31,7 +31,7 @@
   --bg: oklch(6%  0.006 95); --surface: oklch(16% 0.012 95); --text: oklch(97% 0.006 95);
   --text-muted: oklch(65% 0.014 95); --border: oklch(28% 0.018 95);
 }
-  .pv-chrome{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:14px;padding:8px 18px;min-height:52px;max-height:52px;border-bottom:1px solid var(--border);background:color-mix(in oklab,var(--bg) 80%,transparent);backdrop-filter:blur(12px) saturate(1.2);-webkit-backdrop-filter:blur(12px) saturate(1.2);}
+  .pv-chrome{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:14px;padding:8px 18px;min-height:40px;max-height:40px;border-bottom:1px solid var(--border);background:color-mix(in oklab,var(--bg) 80%,transparent);backdrop-filter:blur(12px) saturate(1.2);-webkit-backdrop-filter:blur(12px) saturate(1.2);}
 .pv-chrome-brand{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-size:17px;letter-spacing:-0.01em;color:var(--text);}
 .pv-chrome-dot{width:9px;height:9px;border-radius:2px;background:linear-gradient(135deg,var(--plan-accent),var(--live-accent));flex-shrink:0;}
 .pv-chrome-spacer{flex:1;}
@@ -1111,6 +1111,8 @@
   .evt-done .evt-agent { color: var(--ok, oklch(68% 0.15 150)); }
   .evt-block .evt-agent { color: var(--risk, oklch(64% 0.20 25)); }
   .evt-review .evt-agent { color: var(--info, oklch(66% 0.14 240)); }
+  .evt-dispatch .evt-agent { color: oklch(62% 0.19 268); }
+  .evt-dispatch .evt-msg { color: var(--text-secondary); font-style: italic; }
   .pv-log-status { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; padding: 2px 6px; border-radius: 4px; background: var(--live-accent, oklch(72% 0.19 38)); color: oklch(12% 0.02 60); margin-left: auto; }
   .card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
   .card-head h3 { margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; }
@@ -1390,6 +1392,101 @@
   .mc-main { min-width: 0; }
   .mc-sidebar { min-width: 0; }
 
+  /* ── BUG-0185/0186: Active agent hero card ── */
+  .mc-active-card {
+    border: 1px solid oklch(72% 0.19 38 / 35%);
+    border-left: 5px solid oklch(72% 0.19 38);
+    border-radius: 10px;
+    overflow: hidden;
+    background: oklch(10% 0.03 38);
+    box-shadow: 0 0 28px oklch(72% 0.19 38 / 10%);
+    margin-bottom: 10px;
+  }
+  .mc-active-portrait-banner {
+    width: 100%;
+    height: 200px;
+    background: oklch(6% 0.02 38);
+    position: relative;
+    overflow: hidden;
+  }
+  .mc-active-portrait-banner img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center center;
+    display: block;
+  }
+  .mc-active-portrait-banner::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 55%, oklch(10% 0.03 38) 100%);
+    pointer-events: none;
+  }
+  .mc-active-status-dot {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 11px;
+    height: 11px;
+    background: var(--ok);
+    border-radius: 50%;
+    border: 2px solid oklch(6% 0.02 38);
+    box-shadow: 0 0 8px var(--ok);
+    z-index: 2;
+    animation: mc-status-pulse 2s infinite;
+  }
+  @keyframes mc-status-pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .mc-active-info { padding: 10px 14px 12px; }
+  .mc-active-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 6px; }
+  .mc-active-name { font-size: 17px; font-weight: 700; color: oklch(93% 0.10 70); line-height: 1; }
+  .mc-active-role { font-size: 10px; color: oklch(70% 0.15 50); margin-top: 3px; }
+  .mc-active-badge { background: oklch(72% 0.19 38); color: oklch(0% 0 0); font-size: 9px; font-weight: 800; letter-spacing: .1em; padding: 3px 11px; border-radius: 20px; flex-shrink: 0; margin-top: 2px; }
+  .mc-active-story { background: oklch(0% 0 0 / .35); border-radius: 6px; padding: 7px 10px; font-size: 10px; margin-bottom: 6px; }
+  .mc-active-story-id { color: oklch(83% 0.15 70); font-weight: 700; margin-right: 6px; }
+  .mc-active-story-desc { color: oklch(70% 0.15 50); }
+  .mc-active-meta { display: flex; gap: 14px; font-size: 9px; color: var(--text-muted); font-family: var(--font-mono); flex-wrap: wrap; }
+  .mc-active-meta span { color: var(--text-secondary); }
+  /* ── BUG-0186: Conductor last-dispatch strip ── */
+  .mc-conductor-dispatch {
+    background: oklch(12% 0.04 264);
+    border: 1px solid oklch(45% 0.15 264 / 25%);
+    border-left: 4px solid oklch(60% 0.19 264);
+    border-radius: 8px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .mc-conductor-portrait { width: 32px; height: 32px; border-radius: 50%; overflow: hidden; border: 1px solid oklch(45% 0.15 264 / 35%); flex-shrink: 0; }
+  .mc-conductor-portrait img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+  .mc-conductor-label { font-size: 9px; color: oklch(72% 0.19 264); font-weight: 700; letter-spacing: .08em; }
+  .mc-conductor-value { font-size: 11px; color: oklch(80% 0.12 264); }
+  .mc-conductor-time { margin-left: auto; font-size: 9px; color: var(--text-muted); font-family: var(--font-mono); white-space: nowrap; }
+  /* ── BUG-0185: Idle roster 4-col grid ── */
+  .mc-idle-roster { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 10px; }
+  .mc-idle-card {
+    background: var(--mc-surface);
+    border: 1px solid var(--mc-border);
+    border-radius: 7px;
+    overflow: hidden;
+    opacity: 0.65;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 8px;
+    transition: opacity .15s;
+  }
+  .mc-idle-card:hover { opacity: 1; }
+  .mc-idle-portrait { width: 100%; height: 80px; overflow: hidden; }
+  .mc-idle-portrait img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+  .mc-idle-name { font-size: 9px; font-weight: 600; color: var(--text-muted); margin-top: 5px; text-align: center; }
+  .mc-idle-role { font-size: 7.5px; color: var(--mc-dim); margin-top: 1px; text-align: center; padding: 0 4px; }
+  .mc-idle-badge { margin-top: 4px; background: var(--mc-surface); color: var(--mc-dim); font-size: 7px; font-weight: 700; letter-spacing: .06em; padding: 1px 6px; border-radius: 10px; border: 1px solid var(--mc-border); }
+  @media (max-width: 768px) { .mc-idle-roster { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 480px) { .mc-idle-roster { grid-template-columns: repeat(2, 1fr); } }
+
   /* ── Roster section ── */
   .mc-roster { margin-bottom: 14px; }
   .mc-roster-rows { display: flex; flex-direction: column; gap: 4px; }
@@ -1577,7 +1674,7 @@
       <button class="pv-seg pv-seg-active" aria-pressed="true">Pipeline</button>
     </div>
     <div class="pv-chrome-spacer"></div>
-    <span id="gen-time" data-iso="2026-04-28T19:22:30.837Z" style="font-size:11px;color:var(--text-mute);white-space:nowrap"></span>
+    <span id="gen-time" data-iso="2026-05-01T03:28:54.291Z" style="font-size:11px;color:var(--text-mute);white-space:nowrap"></span>
     <span class="mode-badge mode-live" aria-label="Mode: Live" tabindex="0">
     <span class="pip" aria-hidden="true"></span>LIVE
   </span>
@@ -1603,7 +1700,7 @@
     </span>
   </div>
   <div class="mc-topbar-center">
-    
+    <span class="mc-assigned">ASSIGNED <strong>Pixel</strong></span>
     <span class="mc-elapsed-display">ELAPSED <strong id="mc-topbar-elapsed">00:00:00</strong></span>
     <span class="mc-cycle-disp" id="mc-topbar-cycle">CYCLE 001</span>
     <span class="mc-topbar-clock" id="mc-topbar-clock">00:00:00</span>
@@ -1659,19 +1756,19 @@
     <!-- PHASE -->
     <div class="mc-stat-tile">
       <div class="mc-stat-label">PHASE</div>
-      <div class="mc-stat-value info" id="mc-stat-phase">0<span style="font-size:13px;opacity:0.6;">/6</span></div>
-      <div class="mc-stat-sub">STANDBY</div>
+      <div class="mc-stat-value info" id="mc-stat-phase">2<span style="font-size:13px;opacity:0.6;">/6</span></div>
+      <div class="mc-stat-sub">Build</div>
     </div>
     <!-- ACTIVE AGENTS -->
     <div class="mc-stat-tile">
       <div class="mc-stat-label">ACTIVE</div>
-      <div class="mc-stat-value warn" id="mc-stat-active">0</div>
+      <div class="mc-stat-value warn" id="mc-stat-active">1</div>
       <div class="mc-stat-sub">of 9 agents</div>
     </div>
     <!-- QUEUE (stories in progress/planned) -->
     <div class="mc-stat-tile">
       <div class="mc-stat-label">QUEUE</div>
-      <div class="mc-stat-value" id="mc-stat-queue">0</div>
+      <div class="mc-stat-value" id="mc-stat-queue">6</div>
       <div class="mc-stat-sub">stories remaining</div>
     </div>
     <!-- REVIEWS -->
@@ -1688,13 +1785,13 @@
     <!-- TESTS -->
     <div class="mc-stat-tile">
       <div class="mc-stat-label">TESTS</div>
-      <div class="mc-stat-value ok" id="mc-stat-tests">0<span style="font-size:13px;opacity:0.6;">/0</span></div>
+      <div class="mc-stat-value ok" id="mc-stat-tests">2341<span style="font-size:13px;opacity:0.6;">/0</span></div>
       <div class="mc-stat-sub">passing</div>
     </div>
     <!-- COVERAGE -->
     <div class="mc-stat-tile">
       <div class="mc-stat-label">COVERAGE</div>
-      <div class="mc-stat-value red" id="mc-stat-coverage">0%</div>
+      <div class="mc-stat-value green" id="mc-stat-coverage">93.67%</div>
       <div class="mc-stat-sub">statements</div>
     </div>
     <!-- AI SPEND -->
@@ -1713,46 +1810,42 @@
 <!-- PIPELINE section -->
 <div class="mc-section-bar">
   <span class="mc-section-label">PIPELINE</span>
-  <span class="mc-section-meta" id="cycle-counter" aria-live="polite">CYCLE 001 &middot; <span id="cycle-elapsed" data-started-at="">00:00:00</span></span>
+  <span class="mc-section-meta" id="cycle-counter" aria-live="polite">CYCLE 001 &middot; <span id="cycle-elapsed" data-started-at="2026-04-30T20:00:00Z">00:00:00</span></span>
 </div>
 <div class="pipeline mc-legacy-section">
-  <div class="phase-block pending" id="phase-1" data-phase-status="pending">
+  <div class="phase-block complete" id="phase-1" data-phase-status="complete">
     <div class="phase-beacon" aria-hidden="true"></div>
-    <div class="phase-status" id="phase-1-icon" aria-hidden="true">⏳</div>
+    <div class="phase-status" id="phase-1-icon" aria-hidden="true">✅</div>
     <div class="phase-number" id="phase-1-num">01</div>
     <div class="phase-name">Blueprint</div>
-    <div class="phase-agents">Compass</div>
-    <div class="phase-deliverables">refined ACs · priority list</div>
-    <div class="phase-elapsed" id="phase-1-elapsed" data-has-elapsed="0"><span class="phase-check" id="phase-1-check" aria-label="complete">✓</span></div>
-    <div class="phase-fill-track"><div class="phase-fill-bar pv-phase-fill" id="phase-1-fill" style="width: 0%"></div></div>
+    <div class="phase-deliverables"></div>
+    <div class="phase-elapsed" id="phase-1-elapsed" data-has-elapsed="1"><span class="phase-check" id="phase-1-check" aria-label="complete">✓</span>00:30:00</div>
+    <div class="phase-fill-track"><div class="phase-fill-bar pv-phase-fill" id="phase-1-fill" style="width: 100%"></div></div>
   </div>
-  <div class="phase-block pending" id="phase-2" data-phase-status="pending">
+  <div class="phase-block complete" id="phase-2" data-phase-status="complete">
     <div class="phase-beacon" aria-hidden="true"></div>
-    <div class="phase-status" id="phase-2-icon" aria-hidden="true">⏳</div>
+    <div class="phase-status" id="phase-2-icon" aria-hidden="true">✅</div>
     <div class="phase-number" id="phase-2-num">02</div>
     <div class="phase-name">Architect</div>
-    <div class="phase-agents">Keystone</div>
-    <div class="phase-deliverables">scaffold · types · service stubs</div>
-    <div class="phase-elapsed" id="phase-2-elapsed" data-has-elapsed="0"><span class="phase-check" id="phase-2-check" aria-label="complete">✓</span></div>
-    <div class="phase-fill-track"><div class="phase-fill-bar pv-phase-fill" id="phase-2-fill" style="width: 0%"></div></div>
+    <div class="phase-deliverables"></div>
+    <div class="phase-elapsed" id="phase-2-elapsed" data-has-elapsed="1"><span class="phase-check" id="phase-2-check" aria-label="complete">✓</span>00:30:00</div>
+    <div class="phase-fill-track"><div class="phase-fill-bar pv-phase-fill" id="phase-2-fill" style="width: 100%"></div></div>
   </div>
-  <div class="phase-block pending" id="phase-3" data-phase-status="pending">
+  <div class="phase-block in-progress" id="phase-3" data-phase-status="in-progress">
     <div class="phase-beacon" aria-hidden="true"></div>
-    <div class="phase-status" id="phase-3-icon" aria-hidden="true">⏳</div>
+    <div class="phase-status" id="phase-3-icon" aria-hidden="true">🔄</div>
     <div class="phase-number" id="phase-3-num">03</div>
     <div class="phase-name">Build</div>
-    <div class="phase-agents">Pixel · Forge · Palette</div>
-    <div class="phase-deliverables">implementation · unit tests</div>
+    <div class="phase-deliverables"></div>
     <div class="phase-elapsed" id="phase-3-elapsed" data-has-elapsed="0"><span class="phase-check" id="phase-3-check" aria-label="complete">✓</span></div>
-    <div class="phase-fill-track"><div class="phase-fill-bar pv-phase-fill" id="phase-3-fill" style="width: 0%"></div></div>
+    <div class="phase-fill-track"><div class="phase-fill-bar pv-phase-fill" id="phase-3-fill" style="width: 96%"></div></div>
   </div>
   <div class="phase-block pending" id="phase-4" data-phase-status="pending">
     <div class="phase-beacon" aria-hidden="true"></div>
     <div class="phase-status" id="phase-4-icon" aria-hidden="true">⏳</div>
     <div class="phase-number" id="phase-4-num">04</div>
     <div class="phase-name">Integration</div>
-    <div class="phase-agents">Pixel</div>
-    <div class="phase-deliverables">wired services · e2e flows</div>
+    <div class="phase-deliverables"></div>
     <div class="phase-elapsed" id="phase-4-elapsed" data-has-elapsed="0"><span class="phase-check" id="phase-4-check" aria-label="complete">✓</span></div>
     <div class="phase-fill-track"><div class="phase-fill-bar pv-phase-fill" id="phase-4-fill" style="width: 0%"></div></div>
   </div>
@@ -1761,8 +1854,7 @@
     <div class="phase-status" id="phase-5-icon" aria-hidden="true">⏳</div>
     <div class="phase-number" id="phase-5-num">05</div>
     <div class="phase-name">Test</div>
-    <div class="phase-agents">Sentinel · Circuit</div>
-    <div class="phase-deliverables">test report · coverage</div>
+    <div class="phase-deliverables"></div>
     <div class="phase-elapsed" id="phase-5-elapsed" data-has-elapsed="0"><span class="phase-check" id="phase-5-check" aria-label="complete">✓</span></div>
     <div class="phase-fill-track"><div class="phase-fill-bar pv-phase-fill" id="phase-5-fill" style="width: 0%"></div></div>
   </div>
@@ -1771,195 +1863,115 @@
     <div class="phase-status" id="phase-6-icon" aria-hidden="true">⏳</div>
     <div class="phase-number" id="phase-6-num">06</div>
     <div class="phase-name">Polish</div>
-    <div class="phase-agents">Pixel · Forge</div>
-    <div class="phase-deliverables">bug fixes · demo prep</div>
+    <div class="phase-deliverables"></div>
     <div class="phase-elapsed" id="phase-6-elapsed" data-has-elapsed="0"><span class="phase-check" id="phase-6-check" aria-label="complete">✓</span></div>
     <div class="phase-fill-track"><div class="phase-fill-bar pv-phase-fill" id="phase-6-fill" style="width: 0%"></div></div>
   </div>
 </div>
 
 <!-- ROSTER section -->
-<div class="mc-roster mc-legacy-section">
-  <div class="mc-section-bar">
-    <span class="mc-section-label">ROSTER</span>
-    <div class="mc-roster-counts">
-      <span class="mc-count-active"><span class="mc-count-dot"></span>0 ACTIVE</span>
-      <span class="mc-count-idle"><span class="mc-count-dot"></span>9 IDLE</span>
-      <span class="mc-count-blocked"><span class="mc-count-dot"></span>0 BLOCKED</span>
+<div class="mc-active-card agent-card is-active active" id="agent-Pixel" data-agent-name="Pixel" data-agent="Pixel" data-agent-status="active" style="--agent-color:oklch(38% 0.20 270);">
+  <div class="mc-active-portrait-banner">
+    <img src="agents/images/pixel.png" alt="Pixel" onerror="this.src=&#39;agents/images/optimized/pixel-160.png&#39;">
+    <span class="mc-active-status-dot" aria-hidden="true"></span>
+  </div>
+  <div class="mc-active-info">
+    <div class="mc-active-top">
+      <div>
+        <div class="mc-active-name">Pixel</div>
+        <div class="mc-active-role">Frontend Developer</div>
+      </div>
+      <span class="mc-active-badge">ACTIVE</span>
+    </div>
+    <div class="mc-active-story"><span class="mc-active-story-id">US-0171</span><span class="mc-active-story-desc">US-0171 dashboard visual hierarchy</span></div>
+    <div class="mc-active-meta">
+      <div>Branch <span>feature/US-0171-dashboard-ux</span></div>
+      <div>Started <span>20:15 UTC</span></div>
     </div>
   </div>
-  <div class="mc-roster-rows agent-grid" id="mc-roster-rows">
-    <div class="mc-agent-row  agent-card is-idle" id="agent-Conductor" data-agent-name="Conductor" data-agent="Conductor" data-agent-status="idle" style="--agent-color:oklch(52% 0.22 25);--agent-color-ring:oklch(52% 0.22 25)40;">
-      
-      <img class="agent-avatar" src="agents/images/optimized/conductor-64.png" alt="Conductor" style="border-color:oklch(52% 0.22 25);" onerror="this.replaceWith(Object.assign(document.createElement(&#39;div&#39;),{className:&#39;agent-avatar-fallback&#39;,textContent:&#39;C&#39;,style:&#39;border-color:oklch(52% 0.22 25);&#39;}))">
-      <div class="agent-info">
-        <div class="mc-agent-identity">
-          <div class="mc-agent-name-line">
-            <span>Conductor</span>
-            <span class="mc-agent-role-text">&middot; Delivery Manager</span>
-          </div>
-          <div class="mc-agent-task-line" id="agent-Conductor-task"><span style="opacity:0.5;">—</span></div>
-          <div class="conductor-dispatch-count" id="conductor-dispatch-count">0 dispatched</div>
-        </div>
-        <span class="mc-status-badge status-idle">idle</span>
-        <!-- Hidden agent-status for AC-0428 test compat -->
-        <div class="agent-status" id="agent-Conductor-status" style="display:none;background:oklch(55% 0 0 / 15%);color:var(--text-muted)">idle</div>
-      </div>
-      <span class="live-dot ok on-air-dot" aria-label="now on air" title="now on air" style="display:none;"></span>
-    </div>
-    <div class="mc-agent-row  agent-card is-idle" id="agent-Compass" data-agent-name="Compass" data-agent="Compass" data-agent-status="idle" style="--agent-color:oklch(50% 0.20 264);--agent-color-ring:oklch(50% 0.20 264)40;">
-      
-      <img class="agent-avatar" src="agents/images/optimized/compass-64.png" alt="Compass" style="border-color:oklch(50% 0.20 264);" onerror="this.replaceWith(Object.assign(document.createElement(&#39;div&#39;),{className:&#39;agent-avatar-fallback&#39;,textContent:&#39;C&#39;,style:&#39;border-color:oklch(50% 0.20 264);&#39;}))">
-      <div class="agent-info">
-        <div class="mc-agent-identity">
-          <div class="mc-agent-name-line">
-            <span>Compass</span>
-            <span class="mc-agent-role-text">&middot; Product Owner</span>
-          </div>
-          <div class="mc-agent-task-line" id="agent-Compass-task"><span style="opacity:0.5;">—</span></div>
-          
-        </div>
-        <span class="mc-status-badge status-idle">idle</span>
-        <!-- Hidden agent-status for AC-0428 test compat -->
-        <div class="agent-status" id="agent-Compass-status" style="display:none;background:oklch(55% 0 0 / 15%);color:var(--text-muted)">idle</div>
-      </div>
-      <span class="live-dot ok on-air-dot" aria-label="now on air" title="now on air" style="display:none;"></span>
-    </div>
-    <div class="mc-agent-row  agent-card is-idle" id="agent-Keystone" data-agent-name="Keystone" data-agent="Keystone" data-agent-status="idle" style="--agent-color:oklch(44% 0.22 310);--agent-color-ring:oklch(44% 0.22 310)40;">
-      
-      <img class="agent-avatar" src="agents/images/optimized/keystone-64.png" alt="Keystone" style="border-color:oklch(44% 0.22 310);" onerror="this.replaceWith(Object.assign(document.createElement(&#39;div&#39;),{className:&#39;agent-avatar-fallback&#39;,textContent:&#39;K&#39;,style:&#39;border-color:oklch(44% 0.22 310);&#39;}))">
-      <div class="agent-info">
-        <div class="mc-agent-identity">
-          <div class="mc-agent-name-line">
-            <span>Keystone</span>
-            <span class="mc-agent-role-text">&middot; Architect</span>
-          </div>
-          <div class="mc-agent-task-line" id="agent-Keystone-task"><span style="opacity:0.5;">—</span></div>
-          
-        </div>
-        <span class="mc-status-badge status-idle">idle</span>
-        <!-- Hidden agent-status for AC-0428 test compat -->
-        <div class="agent-status" id="agent-Keystone-status" style="display:none;background:oklch(55% 0 0 / 15%);color:var(--text-muted)">idle</div>
-      </div>
-      <span class="live-dot ok on-air-dot" aria-label="now on air" title="now on air" style="display:none;"></span>
-    </div>
-    <div class="mc-agent-row  agent-card is-idle" id="agent-Lens" data-agent-name="Lens" data-agent="Lens" data-agent-status="idle" style="--agent-color:oklch(72% 0.19 46);--agent-color-ring:oklch(72% 0.19 46)40;">
-      
-      <img class="agent-avatar" src="agents/images/optimized/lens-64.png" alt="Lens" style="border-color:oklch(72% 0.19 46);" onerror="this.replaceWith(Object.assign(document.createElement(&#39;div&#39;),{className:&#39;agent-avatar-fallback&#39;,textContent:&#39;L&#39;,style:&#39;border-color:oklch(72% 0.19 46);&#39;}))">
-      <div class="agent-info">
-        <div class="mc-agent-identity">
-          <div class="mc-agent-name-line">
-            <span>Lens</span>
-            <span class="mc-agent-role-text">&middot; Code Reviewer</span>
-          </div>
-          <div class="mc-agent-task-line" id="agent-Lens-task"><span style="opacity:0.5;">—</span></div>
-          
-        </div>
-        <span class="mc-status-badge status-idle">idle</span>
-        <!-- Hidden agent-status for AC-0428 test compat -->
-        <div class="agent-status" id="agent-Lens-status" style="display:none;background:oklch(55% 0 0 / 15%);color:var(--text-muted)">idle</div>
-      </div>
-      <span class="live-dot ok on-air-dot" aria-label="now on air" title="now on air" style="display:none;"></span>
-    </div>
-    <div class="mc-agent-row  agent-card is-idle" id="agent-Palette" data-agent-name="Palette" data-agent="Palette" data-agent-status="idle" style="--agent-color:oklch(60% 0.14 185);--agent-color-ring:oklch(60% 0.14 185)40;">
-      
-      <img class="agent-avatar" src="agents/images/optimized/palette-64.png" alt="Palette" style="border-color:oklch(60% 0.14 185);" onerror="this.replaceWith(Object.assign(document.createElement(&#39;div&#39;),{className:&#39;agent-avatar-fallback&#39;,textContent:&#39;P&#39;,style:&#39;border-color:oklch(60% 0.14 185);&#39;}))">
-      <div class="agent-info">
-        <div class="mc-agent-identity">
-          <div class="mc-agent-name-line">
-            <span>Palette</span>
-            <span class="mc-agent-role-text">&middot; UI Designer</span>
-          </div>
-          <div class="mc-agent-task-line" id="agent-Palette-task"><span style="opacity:0.5;">—</span></div>
-          
-        </div>
-        <span class="mc-status-badge status-idle">idle</span>
-        <!-- Hidden agent-status for AC-0428 test compat -->
-        <div class="agent-status" id="agent-Palette-status" style="display:none;background:oklch(55% 0 0 / 15%);color:var(--text-muted)">idle</div>
-      </div>
-      <span class="live-dot ok on-air-dot" aria-label="now on air" title="now on air" style="display:none;"></span>
-    </div>
-    <div class="mc-agent-row  agent-card is-idle" id="agent-Forge" data-agent-name="Forge" data-agent="Forge" data-agent-status="idle" style="--agent-color:oklch(44% 0.22 25);--agent-color-ring:oklch(44% 0.22 25)40;">
-      
-      <img class="agent-avatar" src="agents/images/optimized/forge-64.png" alt="Forge" style="border-color:oklch(44% 0.22 25);" onerror="this.replaceWith(Object.assign(document.createElement(&#39;div&#39;),{className:&#39;agent-avatar-fallback&#39;,textContent:&#39;F&#39;,style:&#39;border-color:oklch(44% 0.22 25);&#39;}))">
-      <div class="agent-info">
-        <div class="mc-agent-identity">
-          <div class="mc-agent-name-line">
-            <span>Forge</span>
-            <span class="mc-agent-role-text">&middot; Backend Developer</span>
-          </div>
-          <div class="mc-agent-task-line" id="agent-Forge-task"><span style="opacity:0.5;">—</span></div>
-          
-        </div>
-        <span class="mc-status-badge status-idle">idle</span>
-        <!-- Hidden agent-status for AC-0428 test compat -->
-        <div class="agent-status" id="agent-Forge-status" style="display:none;background:oklch(55% 0 0 / 15%);color:var(--text-muted)">idle</div>
-      </div>
-      <span class="live-dot ok on-air-dot" aria-label="now on air" title="now on air" style="display:none;"></span>
-    </div>
-    <div class="mc-agent-row  agent-card is-idle" id="agent-Pixel" data-agent-name="Pixel" data-agent="Pixel" data-agent-status="idle" style="--agent-color:oklch(38% 0.20 270);--agent-color-ring:oklch(38% 0.20 270)40;">
-      
-      <img class="agent-avatar" src="agents/images/optimized/pixel-64.png" alt="Pixel" style="border-color:oklch(38% 0.20 270);" onerror="this.replaceWith(Object.assign(document.createElement(&#39;div&#39;),{className:&#39;agent-avatar-fallback&#39;,textContent:&#39;P&#39;,style:&#39;border-color:oklch(38% 0.20 270);&#39;}))">
-      <div class="agent-info">
-        <div class="mc-agent-identity">
-          <div class="mc-agent-name-line">
-            <span>Pixel</span>
-            <span class="mc-agent-role-text">&middot; Frontend Developer</span>
-          </div>
-          <div class="mc-agent-task-line" id="agent-Pixel-task"><span style="opacity:0.5;">—</span></div>
-          
-        </div>
-        <span class="mc-status-badge status-idle">idle</span>
-        <!-- Hidden agent-status for AC-0428 test compat -->
-        <div class="agent-status" id="agent-Pixel-status" style="display:none;background:oklch(55% 0 0 / 15%);color:var(--text-muted)">idle</div>
-      </div>
-      <span class="live-dot ok on-air-dot" aria-label="now on air" title="now on air" style="display:none;"></span>
-    </div>
-    <div class="mc-agent-row  agent-card is-idle" id="agent-Sentinel" data-agent-name="Sentinel" data-agent="Sentinel" data-agent-status="idle" style="--agent-color:oklch(50% 0.17 145);--agent-color-ring:oklch(50% 0.17 145)40;">
-      
-      <img class="agent-avatar" src="agents/images/optimized/sentinel-64.png" alt="Sentinel" style="border-color:oklch(50% 0.17 145);" onerror="this.replaceWith(Object.assign(document.createElement(&#39;div&#39;),{className:&#39;agent-avatar-fallback&#39;,textContent:&#39;S&#39;,style:&#39;border-color:oklch(50% 0.17 145);&#39;}))">
-      <div class="agent-info">
-        <div class="mc-agent-identity">
-          <div class="mc-agent-name-line">
-            <span>Sentinel</span>
-            <span class="mc-agent-role-text">&middot; Functional Tester</span>
-          </div>
-          <div class="mc-agent-task-line" id="agent-Sentinel-task"><span style="opacity:0.5;">—</span></div>
-          
-        </div>
-        <span class="mc-status-badge status-idle">idle</span>
-        <!-- Hidden agent-status for AC-0428 test compat -->
-        <div class="agent-status" id="agent-Sentinel-status" style="display:none;background:oklch(55% 0 0 / 15%);color:var(--text-muted)">idle</div>
-      </div>
-      <span class="live-dot ok on-air-dot" aria-label="now on air" title="now on air" style="display:none;"></span>
-    </div>
-    <div class="mc-agent-row  agent-card is-idle" id="agent-Circuit" data-agent-name="Circuit" data-agent="Circuit" data-agent-status="idle" style="--agent-color:oklch(40% 0.22 285);--agent-color-ring:oklch(40% 0.22 285)40;">
-      
-      <img class="agent-avatar" src="agents/images/optimized/circuit-64.png" alt="Circuit" style="border-color:oklch(40% 0.22 285);" onerror="this.replaceWith(Object.assign(document.createElement(&#39;div&#39;),{className:&#39;agent-avatar-fallback&#39;,textContent:&#39;C&#39;,style:&#39;border-color:oklch(40% 0.22 285);&#39;}))">
-      <div class="agent-info">
-        <div class="mc-agent-identity">
-          <div class="mc-agent-name-line">
-            <span>Circuit</span>
-            <span class="mc-agent-role-text">&middot; Automation Tester</span>
-          </div>
-          <div class="mc-agent-task-line" id="agent-Circuit-task"><span style="opacity:0.5;">—</span></div>
-          
-        </div>
-        <span class="mc-status-badge status-idle">idle</span>
-        <!-- Hidden agent-status for AC-0428 test compat -->
-        <div class="agent-status" id="agent-Circuit-status" style="display:none;background:oklch(55% 0 0 / 15%);color:var(--text-muted)">idle</div>
-      </div>
-      <span class="live-dot ok on-air-dot" aria-label="now on air" title="now on air" style="display:none;"></span>
-    </div>
-  </div>
+  <div class="agent-status" id="agent-Pixel-status" style="display:none;">active</div>
+  <div id="agent-Pixel-task" style="display:none;">US-0171 dashboard visual hierarchy</div>
 </div>
-
-<!-- Hidden spotlight stub for patchDOM agent-spotlight compatibility -->
+<div class="mc-conductor-dispatch" id="mc-conductor-dispatch" data-agent="Conductor">
+  <div class="mc-conductor-portrait">
+    <img src="agents/images/optimized/conductor-64.png" alt="Conductor" onerror="this.style.display='none'">
+  </div>
+  <div>
+    <div class="mc-conductor-label">Conductor · Last Dispatch</div>
+    <div class="mc-conductor-value">dispatched → Pixel · US-0171 · Build phase</div>
+  </div>
+  <span class="mc-conductor-time">20:15:02</span>
+  <div id="agent-Conductor-task" style="display:none;"></div>
+  <div class="agent-status" id="agent-Conductor-status" style="display:none;">idle</div>
+  <div class="conductor-dispatch-count" id="conductor-dispatch-count" style="display:none;">0 dispatched</div>
+</div>
+<div class="mc-section-bar" style="margin-bottom:6px;">
+  <span class="mc-section-label">ALL AGENTS</span>
+</div>
+<div class="mc-idle-roster" id="mc-idle-roster">
+<div class="mc-idle-card agent-card is-idle" id="agent-Compass" data-agent-name="Compass" data-agent="Compass" data-agent-status="idle" style="--agent-color:oklch(50% 0.20 264);">
+  <div class="mc-idle-portrait"><img src="agents/images/optimized/compass-64.png" alt="Compass" onerror="this.parentElement.innerHTML=&#39;&lt;div style=&quot;width:100%;aspect-ratio:1;background:var(--mc-surface);display:flex;align-items:center;justify-content:center;font-size:22px;&quot;&gt;C&lt;/div&gt;&#39;"></div>
+  <div class="mc-idle-name">Compass</div>
+  <div class="mc-idle-role">Product Owner</div>
+  <div class="mc-idle-badge">IDLE</div>
+  <div class="agent-status" id="agent-Compass-status" style="display:none;">idle</div>
+  <div id="agent-Compass-task" style="display:none;"></div>
+</div>
+<div class="mc-idle-card agent-card is-idle" id="agent-Keystone" data-agent-name="Keystone" data-agent="Keystone" data-agent-status="idle" style="--agent-color:oklch(44% 0.22 310);">
+  <div class="mc-idle-portrait"><img src="agents/images/optimized/keystone-64.png" alt="Keystone" onerror="this.parentElement.innerHTML=&#39;&lt;div style=&quot;width:100%;aspect-ratio:1;background:var(--mc-surface);display:flex;align-items:center;justify-content:center;font-size:22px;&quot;&gt;K&lt;/div&gt;&#39;"></div>
+  <div class="mc-idle-name">Keystone</div>
+  <div class="mc-idle-role">Architect</div>
+  <div class="mc-idle-badge">IDLE</div>
+  <div class="agent-status" id="agent-Keystone-status" style="display:none;">idle</div>
+  <div id="agent-Keystone-task" style="display:none;"></div>
+</div>
+<div class="mc-idle-card agent-card is-idle" id="agent-Lens" data-agent-name="Lens" data-agent="Lens" data-agent-status="idle" style="--agent-color:oklch(72% 0.19 46);">
+  <div class="mc-idle-portrait"><img src="agents/images/optimized/lens-64.png" alt="Lens" onerror="this.parentElement.innerHTML=&#39;&lt;div style=&quot;width:100%;aspect-ratio:1;background:var(--mc-surface);display:flex;align-items:center;justify-content:center;font-size:22px;&quot;&gt;L&lt;/div&gt;&#39;"></div>
+  <div class="mc-idle-name">Lens</div>
+  <div class="mc-idle-role">Code Reviewer</div>
+  <div class="mc-idle-badge">IDLE</div>
+  <div class="agent-status" id="agent-Lens-status" style="display:none;">idle</div>
+  <div id="agent-Lens-task" style="display:none;"></div>
+</div>
+<div class="mc-idle-card agent-card is-idle" id="agent-Palette" data-agent-name="Palette" data-agent="Palette" data-agent-status="idle" style="--agent-color:oklch(60% 0.14 185);">
+  <div class="mc-idle-portrait"><img src="agents/images/optimized/palette-64.png" alt="Palette" onerror="this.parentElement.innerHTML=&#39;&lt;div style=&quot;width:100%;aspect-ratio:1;background:var(--mc-surface);display:flex;align-items:center;justify-content:center;font-size:22px;&quot;&gt;P&lt;/div&gt;&#39;"></div>
+  <div class="mc-idle-name">Palette</div>
+  <div class="mc-idle-role">UI Designer</div>
+  <div class="mc-idle-badge">IDLE</div>
+  <div class="agent-status" id="agent-Palette-status" style="display:none;">idle</div>
+  <div id="agent-Palette-task" style="display:none;"></div>
+</div>
+<div class="mc-idle-card agent-card is-idle" id="agent-Forge" data-agent-name="Forge" data-agent="Forge" data-agent-status="idle" style="--agent-color:oklch(44% 0.22 25);">
+  <div class="mc-idle-portrait"><img src="agents/images/optimized/forge-64.png" alt="Forge" onerror="this.parentElement.innerHTML=&#39;&lt;div style=&quot;width:100%;aspect-ratio:1;background:var(--mc-surface);display:flex;align-items:center;justify-content:center;font-size:22px;&quot;&gt;F&lt;/div&gt;&#39;"></div>
+  <div class="mc-idle-name">Forge</div>
+  <div class="mc-idle-role">Backend Developer</div>
+  <div class="mc-idle-badge">IDLE</div>
+  <div class="agent-status" id="agent-Forge-status" style="display:none;">idle</div>
+  <div id="agent-Forge-task" style="display:none;"></div>
+</div>
+<div class="mc-idle-card agent-card is-idle" id="agent-Sentinel" data-agent-name="Sentinel" data-agent="Sentinel" data-agent-status="idle" style="--agent-color:oklch(50% 0.17 145);">
+  <div class="mc-idle-portrait"><img src="agents/images/optimized/sentinel-64.png" alt="Sentinel" onerror="this.parentElement.innerHTML=&#39;&lt;div style=&quot;width:100%;aspect-ratio:1;background:var(--mc-surface);display:flex;align-items:center;justify-content:center;font-size:22px;&quot;&gt;S&lt;/div&gt;&#39;"></div>
+  <div class="mc-idle-name">Sentinel</div>
+  <div class="mc-idle-role">Functional Tester</div>
+  <div class="mc-idle-badge">IDLE</div>
+  <div class="agent-status" id="agent-Sentinel-status" style="display:none;">idle</div>
+  <div id="agent-Sentinel-task" style="display:none;"></div>
+</div>
+<div class="mc-idle-card agent-card is-idle" id="agent-Circuit" data-agent-name="Circuit" data-agent="Circuit" data-agent-status="idle" style="--agent-color:oklch(40% 0.22 285);">
+  <div class="mc-idle-portrait"><img src="agents/images/optimized/circuit-64.png" alt="Circuit" onerror="this.parentElement.innerHTML=&#39;&lt;div style=&quot;width:100%;aspect-ratio:1;background:var(--mc-surface);display:flex;align-items:center;justify-content:center;font-size:22px;&quot;&gt;C&lt;/div&gt;&#39;"></div>
+  <div class="mc-idle-name">Circuit</div>
+  <div class="mc-idle-role">Automation Tester</div>
+  <div class="mc-idle-badge">IDLE</div>
+  <div class="agent-status" id="agent-Circuit-status" style="display:none;">idle</div>
+  <div id="agent-Circuit-task" style="display:none;"></div>
+</div>
+</div>
+<!-- Hidden spotlight stub for patchDOM compatibility -->
 <div id="agent-spotlight" style="display:none;" data-agent-name="" data-started-at="">
   <div id="agent-spotlight-name"></div>
   <div id="agent-spotlight-role"></div>
   <div id="agent-spotlight-task"></div>
-  <div id="agent-spotlight-elapsed" data-started-at=""></div>
+  <div id="agent-spotlight-elapsed" data-started-at="2026-04-30T20:00:00Z"></div>
 </div>
 
 <!-- US-0130: Epic progress strip — rendered by patchDOM on each tick -->
@@ -1977,39 +1989,39 @@
 
 <!-- TELEMETRY: hidden metric IDs for patchDOM compatibility (US-0111) -->
 <div style="display:none;" aria-hidden="true">
-  <span id="metric-phasesComplete">0 / 6</span>
-  <span id="metric-phasesCompleteNum">0</span>
+  <span id="metric-phasesComplete">2 / 6</span>
+  <span id="metric-phasesCompleteNum">2</span>
   <span id="metric-phasesTotalNum">6</span>
-  <span id="metric-storiesDone">0 / 0</span>
-  <span id="metric-tasksDone">—</span>
-  <span id="metric-testsPassed">0</span>
+  <span id="metric-storiesDone">155 / 161</span>
+  <span id="metric-tasksDone">54 / 54</span>
+  <span id="metric-testsPassed">2341</span>
   <span id="metric-testsFailed">0</span>
-  <span id="metric-testsTotal">0</span>
-  <span id="metric-bugsOpen">0</span>
-  <span id="metric-bugsFixed">0</span>
-  <span id="metric-reviewsApproved">0</span>
-  <span id="metric-reviewsBlocked">0</span>
-  <span id="metric-coveragePercent">0%</span>
-  <b id="stamp-phase-progress">15:22</b>
-  <b id="stamp-quality">15:22</b>
-  <b id="stamp-reviews">15:22</b>
+  <span id="metric-testsTotal">undefined</span>
+  <span id="metric-bugsOpen">12</span>
+  <span id="metric-bugsFixed">181</span>
+  <span id="metric-reviewsApproved">undefined</span>
+  <span id="metric-reviewsBlocked">undefined</span>
+  <span id="metric-coveragePercent">93.67%</span>
+  <b id="stamp-phase-progress">23:28</b>
+  <b id="stamp-quality">23:28</b>
+  <b id="stamp-reviews">23:28</b>
   <!-- Doughnut for patchDOM coverage -->
-  <div id="metric-coverageDoughnut" data-coverage="0" data-tone="red">
-    <circle id="metric-coverageDoughnutFill" class="d-fill red" stroke-dashoffset="100.00"></circle>
+  <div id="metric-coverageDoughnut" data-coverage="93.67" data-tone="green">
+    <circle id="metric-coverageDoughnutFill" class="d-fill green" stroke-dashoffset="6.33"></circle>
   </div>
   <!-- Sparkline for patchDOM -->
   <div id="metric-phasesSparkline">
-    <div class="spark-bar pending" data-phase-id="1" data-phase-status="pending" style="height: 18%"></div>
-    <div class="spark-bar pending" data-phase-id="2" data-phase-status="pending" style="height: 18%"></div>
-    <div class="spark-bar pending" data-phase-id="3" data-phase-status="pending" style="height: 18%"></div>
+    <div class="spark-bar complete" data-phase-id="1" data-phase-status="complete" style="height: 100%"></div>
+    <div class="spark-bar complete" data-phase-id="2" data-phase-status="complete" style="height: 100%"></div>
+    <div class="spark-bar in-progress" data-phase-id="3" data-phase-status="in-progress" style="height: 60%"></div>
     <div class="spark-bar pending" data-phase-id="4" data-phase-status="pending" style="height: 18%"></div>
     <div class="spark-bar pending" data-phase-id="5" data-phase-status="pending" style="height: 18%"></div>
     <div class="spark-bar pending" data-phase-id="6" data-phase-status="pending" style="height: 18%"></div>
   </div>
   <!-- Progress bars -->
-  <div class="progress-bar"><div id="metric-phasesBar" class="progress-fill blue" style="width:0%"></div></div>
-  <div class="progress-bar"><div id="metric-storiesBar" class="progress-fill green" style="width:0%"></div></div>
-  <div class="progress-bar"><div id="metric-tasksBar" class="progress-fill red" style="width:0%"></div></div>
+  <div class="progress-bar"><div id="metric-phasesBar" class="progress-fill blue" style="width:33%"></div></div>
+  <div class="progress-bar"><div id="metric-storiesBar" class="progress-fill green" style="width:96%"></div></div>
+  <div class="progress-bar"><div id="metric-tasksBar" class="progress-fill red" style="width:100%"></div></div>
 </div>
 
 <!-- User Stories (collapsed; patchDOM reads these) -->
@@ -2025,8 +2037,8 @@
   <div class="pv-workload-section"><div class="pv-workload-row"><span class="pv-workload-name">Compass</span><div class="pv-workload-track"><div class="pv-workload-bar" style="width:0%"></div></div><span class="pv-workload-count">0</span><span class="pv-workload-done">(0 done)</span></div><div class="pv-workload-row"><span class="pv-workload-name">Keystone</span><div class="pv-workload-track"><div class="pv-workload-bar" style="width:0%"></div></div><span class="pv-workload-count">0</span><span class="pv-workload-done">(0 done)</span></div><div class="pv-workload-row"><span class="pv-workload-name">Lens</span><div class="pv-workload-track"><div class="pv-workload-bar" style="width:0%"></div></div><span class="pv-workload-count">0</span><span class="pv-workload-done">(0 done)</span></div><div class="pv-workload-row"><span class="pv-workload-name">Palette</span><div class="pv-workload-track"><div class="pv-workload-bar" style="width:0%"></div></div><span class="pv-workload-count">0</span><span class="pv-workload-done">(0 done)</span></div><div class="pv-workload-row"><span class="pv-workload-name">Forge</span><div class="pv-workload-track"><div class="pv-workload-bar" style="width:0%"></div></div><span class="pv-workload-count">0</span><span class="pv-workload-done">(0 done)</span></div><div class="pv-workload-row"><span class="pv-workload-name">Pixel</span><div class="pv-workload-track"><div class="pv-workload-bar" style="width:0%"></div></div><span class="pv-workload-count">0</span><span class="pv-workload-done">(0 done)</span></div><div class="pv-workload-row"><span class="pv-workload-name">Sentinel</span><div class="pv-workload-track"><div class="pv-workload-bar" style="width:0%"></div></div><span class="pv-workload-count">0</span><span class="pv-workload-done">(0 done)</span></div><div class="pv-workload-row"><span class="pv-workload-name">Circuit</span><div class="pv-workload-track"><div class="pv-workload-bar" style="width:0%"></div></div><span class="pv-workload-count">0</span><span class="pv-workload-done">(0 done)</span></div></div>
 </div>
 
-<!-- US-0145: Event Log — primary column widget (hidden; sidebar version shown) -->
-<div class="card pv-event-log" id="pv-event-log" style="display:none;">
+<!-- US-0145: Event Log — primary column widget -->
+<div class="card pv-event-log" id="pv-event-log">
   <div class="card-head">
     <h3>Event Log</h3>
     <span class="pv-log-status" id="pv-log-status">LIVE</span>
@@ -2052,7 +2064,8 @@
     </label>
   </div>
   <div class="log-scroll" id="log-scroll" data-active-filter="all">
-    <div class="log-empty" id="log-empty"><span class="log-cursor" aria-hidden="true"></span><span>Awaiting agent activity&hellip;</span></div>
+    <div class="log-entry" data-log-key="20:15:03|Pixel|started US-0171 feature/US-0171-dashboard-ux" data-category="other" style="border-left-color: oklch(38% 0.20 270)"><span class="log-time" data-log-time="20:15:03">[20:15:03]</span><span class="log-agent" style="color: oklch(38% 0.20 270)">[Pixel]</span><span class="log-msg">started US-0171 feature/US-0171-dashboard-ux</span></div>
+    <div class="log-entry" data-log-key="20:15:02|Conductor|dispatched → Pixel · US-0171 · Build phase" data-category="other" style="border-left-color: oklch(52% 0.22 25)"><span class="log-time" data-log-time="20:15:02">[20:15:02]</span><span class="log-agent" style="color: oklch(52% 0.22 25)">[Conductor]</span><span class="log-msg">dispatched → Pixel · US-0171 · Build phase</span></div>
   </div>
 </div>
 
@@ -2067,7 +2080,7 @@
     <div class="mc-attn-chips">
         <span class="mc-attn-chip">0 blocked</span>
         <span class="mc-attn-chip">0 review</span>
-        <span class="mc-attn-chip">0 bugs</span>
+        <span class="mc-attn-chip warn">12 bugs</span>
       </div><div style="font-size:11px;color:var(--mc-muted);font-style:italic;padding:4px 0;">All clear — no blockers.</div>
   </div>
 
@@ -2075,7 +2088,22 @@
   <div class="mc-sidebar-panel">
     <div class="mc-evtlog-title">LAST 10 EVENTS · AUTO-SCROLL</div>
     <div class="mc-evtlog-scroll" id="mc-evtlog-scroll">
-      <div style="font-size:11px;color:var(--mc-muted);font-style:italic;">No events yet.</div>
+      <div class="mc-evt-card">
+        <div class="mc-evt-card-head">
+          <span class="mc-evt-card-agent"><span class="mc-evt-card-dot" style="background:oklch(38% 0.20 270)" aria-hidden="true"></span>Pixel</span>
+          <span class="mc-evt-time">20:15:03</span>
+        </div>
+        <div class="mc-evt-msg">started US-0171 feature/US-0171-dashboard-ux</div>
+        <span class="mc-evt-tag mc-evt-tag-start">STARTED</span>
+      </div>
+      <div class="mc-evt-card">
+        <div class="mc-evt-card-head">
+          <span class="mc-evt-card-agent"><span class="mc-evt-card-dot" style="background:oklch(52% 0.22 25)" aria-hidden="true"></span>Conductor</span>
+          <span class="mc-evt-time">20:15:02</span>
+        </div>
+        <div class="mc-evt-msg">dispatched → Pixel · US-0171 · Build phase</div>
+        <span class="mc-evt-tag mc-evt-tag-dispatch">DISPATCH</span>
+      </div>
     </div>
   </div>
 
@@ -2085,17 +2113,17 @@
     <div id="card-phase-progress" style="font-size:12px;">
       <div class="metric-sub">Phases Complete</div>
       <div class="metric-hero blue" style="font-size:32px;" id="metric-phaseHero">
-        <span id="metric-phasesCompleteNum2">0</span>/<span class="hero-den">6</span>
+        <span id="metric-phasesCompleteNum2">2</span>/<span class="hero-den">6</span>
       </div>
       <div class="phase-sparkline" id="metric-phasesSparkline2" aria-hidden="true" style="height:20px;margin-bottom:6px;">
-        <div class="spark-bar pending" style="height:18%" title="Blueprint"></div>
-        <div class="spark-bar pending" style="height:18%" title="Architect"></div>
-        <div class="spark-bar pending" style="height:18%" title="Build"></div>
+        <div class="spark-bar complete" style="height:100%" title="Blueprint"></div>
+        <div class="spark-bar complete" style="height:100%" title="Architect"></div>
+        <div class="spark-bar in-progress" style="height:60%" title="Build"></div>
         <div class="spark-bar pending" style="height:18%" title="Integration"></div>
         <div class="spark-bar pending" style="height:18%" title="Test"></div>
         <div class="spark-bar pending" style="height:18%" title="Polish"></div>
       </div>
-      <div class="progress-bar" style="height:5px;"><div class="progress-fill blue" style="width:0%"></div></div>
+      <div class="progress-bar" style="height:5px;"><div class="progress-fill blue" style="width:33%"></div></div>
     </div>
   </div>
 
@@ -2103,11 +2131,11 @@
   <div class="mc-sidebar-panel">
     <div class="mc-sidebar-title">QUALITY</div>
     <div style="display:flex;align-items:center;gap:12px;font-size:12px;">
-      <span style="font-family:var(--font-display),monospace;font-size:28px;color:var(--risk);">0%</span>
+      <span style="font-family:var(--font-display),monospace;font-size:28px;color:var(--ok);">93.67%</span>
       <div>
         <div style="color:var(--mc-muted);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;">Coverage</div>
         <div id="card-quality" style="margin-top:4px;font-size:11px;color:var(--mc-muted);">
-          <span style="color:var(--ok);">0 pass</span> &middot; <span style="color:var(--mc-muted);">0 fail</span> &middot; <span style="color:var(--mc-muted);">0 bugs</span>
+          <span style="color:var(--ok);">2341 pass</span> &middot; <span style="color:var(--mc-muted);">0 fail</span> &middot; <span style="color:var(--risk);">12 bugs</span>
         </div>
       </div>
     </div>
@@ -2236,15 +2264,15 @@
         <div>
           <p class="pv-about-supertitle">This Project</p>
           <div class="pv-about-meta-row"><span class="pv-about-meta-label">Name: </span><span class="pv-about-meta-value">plan-visualizer</span></div>
-          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Version: </span><span class="pv-about-meta-value">v1.5.56</span></div>
-          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Branch: </span><span class="pv-about-meta-value">HEAD</span></div>
-          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Build: </span><span class="pv-about-meta-value">r595 19fc1b2</span></div>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Version: </span><span class="pv-about-meta-value">v1.5.80</span></div>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Branch: </span><span class="pv-about-meta-value">bugfix/BUG-0252-stash-recovery</span></div>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Build: </span><span class="pv-about-meta-value">r659 edff886</span></div>
         </div>
         <div>
           <p class="pv-about-supertitle">Dashboard Tool</p>
           <div class="pv-about-meta-row"><span class="pv-about-meta-label">View: </span><span class="pv-about-meta-value">Agentic SDLC Dashboard</span></div>
-          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Generated by: </span><span class="pv-about-meta-value">plan-visualizer v1.5.56</span></div>
-          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Generated at: </span><span id="about-gen-time" data-iso="Apr 28, 2026, 03:22 PM" class="pv-about-meta-value"></span></div>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Generated by: </span><span class="pv-about-meta-value">plan-visualizer v1.5.80</span></div>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Generated at: </span><span id="about-gen-time" data-iso="Apr 30, 2026, 11:28 PM" class="pv-about-meta-value"></span></div>
         </div>
       </div>
     </div>
@@ -2252,13 +2280,19 @@
 </div>
 
 <div class="footer">
-  Claude Code Agentic AI SDLC | Last refreshed: Apr 28, 2026, 03:22 PM
+  Claude Code Agentic AI SDLC | Last refreshed: Apr 30, 2026, 11:28 PM
 </div>
 
 <script>
 // pvSetTheme / openAbout — aliases expected by renderChrome() (shared chrome from render-shell.js)
+// BUG-0250: write to canonical 'pv-theme' key (shared with plan-status dashboard) so
+// theme preference syncs across both dashboards. Mirror to legacy 'dashboard-theme'
+// for any external consumer still reading the old key. Toggle .dark class on <html>
+// for parity with plan-status' pvSetTheme (BUG-0190 selector compatibility).
 function pvSetTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
+  document.documentElement.classList.toggle('dark', theme === 'dark');
+  localStorage.setItem('pv-theme', theme);
   localStorage.setItem('dashboard-theme', theme);
   ['light', 'dark'].forEach(function(t) {
     var btn = document.getElementById('theme-btn-' + t);
@@ -2274,7 +2308,10 @@ function closeAbout() {
   if (m) m.classList.remove('open');
 }
 (function() {
-  var saved = localStorage.getItem('dashboard-theme') || 'dark';
+  // BUG-0250: read canonical 'pv-theme' first; fall back to legacy 'dashboard-theme'
+  // for users who set theme before the consolidation. Default to 'dark' — agentic
+  // dashboard's design baseline.
+  var saved = localStorage.getItem('pv-theme') || localStorage.getItem('dashboard-theme') || 'dark';
   pvSetTheme(saved);
 })();
 // Shared client-side helpers used by patchDOM() and related rendering code.
@@ -2287,13 +2324,26 @@ function escH(s) {
 // for conductorHoldMs ms after each dispatch, then reverts to is-idle.
 var conductorHoldMs = 3000;
 var _conductorHoldTimer = null;
-var _dispatchCount = 0;
+var _dispatchCount = parseInt(localStorage.getItem('pv-dispatch-count') || '0', 10);
+(function () {
+  var _initDispEl = document.getElementById('conductor-dispatch-count');
+  if (_initDispEl && _dispatchCount > 0) _initDispEl.textContent = _dispatchCount + ' dispatched';
+})();
 
 function appendEventLog(entry) {
   var body = document.getElementById('pv-log-body');
   if (!body) return;
   var tag = entry.tag || 'start';
-  var tone = tag === 'done' ? 'evt-done' : tag === 'block' ? 'evt-block' : tag === 'review' ? 'evt-review' : 'evt-start';
+  var tone =
+    tag === 'done'
+      ? 'evt-done'
+      : tag === 'block'
+        ? 'evt-block'
+        : tag === 'review'
+          ? 'evt-review'
+          : tag === 'dispatch'
+            ? 'evt-dispatch'
+            : 'evt-start';
   var row = document.createElement('div');
   row.className = 'pv-log-row ' + tone;
   row.innerHTML = '<span class="evt-time">' + escH(entry.t || '') + '</span>' +
@@ -2321,6 +2371,7 @@ function appendEventLog(entry) {
 function setConductorActive(dispatchMsg) {
   var card = document.querySelector('[data-agent="Conductor"]');
   _dispatchCount++;
+  localStorage.setItem('pv-dispatch-count', _dispatchCount);
   var dispEl = document.getElementById('conductor-dispatch-count');
   if (dispEl) {
     dispEl.textContent = _dispatchCount + ' dispatched';
@@ -2441,7 +2492,7 @@ function _applyLogFilter(filter) {
 // ── Dashboard Alert System ────────────────────────────────────────────────────
 // Detects state changes across page refreshes using localStorage, then plays
 // a Web Audio tone and fires a browser Notification when attention is needed.
-var DASH_SNAPSHOT = {"currentPhase":0,"bugsOpen":0,"agentStatuses":{"Conductor":"idle","Compass":"idle","Keystone":"idle","Lens":"idle","Palette":"idle","Forge":"idle","Pixel":"idle","Sentinel":"idle","Circuit":"idle"},"phaseStatuses":[{"id":1,"status":"pending"},{"id":2,"status":"pending"},{"id":3,"status":"pending"},{"id":4,"status":"pending"},{"id":5,"status":"pending"},{"id":6,"status":"pending"}],"pipelineComplete":false};
+var DASH_SNAPSHOT = {"currentPhase":3,"bugsOpen":12,"agentStatuses":{"Conductor":"idle","Compass":"idle","Keystone":"idle","Lens":"idle","Palette":"idle","Forge":"idle","Pixel":"active","Sentinel":"idle","Circuit":"idle"},"phaseStatuses":[{"id":1,"status":"complete"},{"id":2,"status":"complete"},{"id":3,"status":"in-progress"},{"id":4,"status":"pending"},{"id":5,"status":"pending"},{"id":6,"status":"pending"}],"pipelineComplete":false};
 
 // US-0111: expose agent colors to the client so patchDOM() can restyle
 // agent-status pills when an agent transitions between idle/active/blocked
@@ -2956,9 +3007,13 @@ function patchDOM(status) {
     }
     var taskEl = document.getElementById('agent-' + name + '-task');
     if (taskEl) {
+      var branch = (a && a.branch) || '';
       var newTask = a.currentTask || '';
-      if (taskEl.textContent !== newTask) taskEl.textContent = newTask;
-      taskEl.style.display = newTask ? '' : 'none';
+      var newHtml = branch
+        ? '<a href="' + escH(branch) + '">' + escH(newTask || branch) + '</a>'
+        : escH(newTask);
+      if (taskEl.innerHTML !== newHtml) taskEl.innerHTML = newHtml;
+      taskEl.style.display = newTask || branch ? '' : 'none';
     }
   });
 
