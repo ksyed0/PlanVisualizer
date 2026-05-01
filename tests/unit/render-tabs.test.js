@@ -485,3 +485,68 @@ describe('renderBugsTab — BUG-0223 regression', () => {
     expect(arrowSnippet).not.toContain('▼');
   });
 });
+
+describe('renderStatusTab — BUG-0184 palette regression', () => {
+  const mkStatusData = () => ({
+    epics: [
+      { id: 'EPIC-0001', title: 'Core', status: 'In Progress' },
+      { id: 'EPIC-0002', title: 'UX', status: 'Planned' },
+    ],
+    stories: [
+      { id: 'US-0001', epicId: 'EPIC-0001', title: 'Parser', status: 'Done', acs: [] },
+      { id: 'US-0002', epicId: 'EPIC-0002', title: 'Nav', status: 'Planned', acs: [] },
+    ],
+    bugs: [
+      {
+        id: 'BUG-0001',
+        title: 'Parser crash',
+        severity: 'High',
+        status: 'Open',
+        relatedStory: 'US-0001',
+        fixBranch: '',
+      },
+    ],
+    costs: { _totals: { costUsd: 0 } },
+    lessons: [],
+    snapshots: [],
+    completion: { likelyDate: '2026-05-28', rangeStart: '2026-05-21', rangeEnd: '2026-06-04', velocityWeeks: 4 },
+    coverage: { overall: 93.0, available: true },
+    trends: {
+      dates: ['2026-04-01', '2026-04-08', '2026-04-15', '2026-04-22', '2026-04-29'],
+      doneCounts: [2, 3, 4, 5, 6],
+      totalStories: [10, 10, 10, 10, 10],
+      coverage: [85, 88, 90, 92, 93],
+      openBugs: [5, 4, 4, 3, 2],
+      aiCosts: [10, 20, 35, 50, 65],
+      velocity: [1, 2, 1, 2, 1],
+      atRisk: [1, 1, 0, 0, 0],
+    },
+    risk: null,
+    recentActivity: [],
+  });
+
+  let html;
+  beforeAll(() => {
+    const { renderStatusTab } = require('../../tools/lib/render-tabs');
+    html = renderStatusTab(mkStatusData());
+  });
+
+  test('BUG-0184: progress sparkline bars do not use var(--plan-accent)', () => {
+    const colorMixes = html.match(/color-mix\(in oklab,[^)]+\)/g) || [];
+    colorMixes.forEach((cm) => {
+      expect(cm).not.toContain('plan-accent');
+    });
+  });
+
+  test('BUG-0184: burn SVG stroke does not use var(--plan-accent)', () => {
+    expect(html).not.toMatch(/stroke="var\(--plan-accent\)"/);
+  });
+
+  test('BUG-0184: burn SVG stop-color does not use var(--plan-accent)', () => {
+    expect(html).not.toMatch(/stop-color="var\(--plan-accent\)"/);
+  });
+
+  test('BUG-0184: progress bars use oklch ok-green', () => {
+    expect(html).toContain('oklch(66% 0.17 145)');
+  });
+});

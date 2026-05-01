@@ -816,7 +816,7 @@ function _renderFullStatusHero(data) {
       .map((d, i) => {
         const pct = Math.round((doneCounts[i] / maxDone) * 100);
         return `<div title="${d}: ${doneCounts[i]}/${totalCounts[i]} done"
-        style="width:8px;background:color-mix(in oklab,var(--plan-accent) ${Math.max(pct, 8)}%,var(--border));border-radius:2px;height:${Math.max(Math.round((doneCounts[i] / maxDone) * 32), 4)}px;align-self:flex-end;flex-shrink:0"></div>`;
+        style="width:8px;background:color-mix(in oklab,oklch(66% 0.17 145) ${Math.max(pct, 8)}%,var(--border));border-radius:2px;height:${Math.max(Math.round((doneCounts[i] / maxDone) * 32), 4)}px;align-self:flex-end;flex-shrink:0"></div>`;
       })
       .join('');
   })();
@@ -854,11 +854,11 @@ function _renderFullStatusHero(data) {
     const areaPts = `${pts} ${W},${H} 0,${H}`;
     return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px" preserveAspectRatio="none" aria-hidden="true">
       <defs><linearGradient id="bu-grad" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="var(--plan-accent)" stop-opacity="0.35"/>
-        <stop offset="100%" stop-color="var(--plan-accent)" stop-opacity="0.03"/>
+        <stop offset="0%" stop-color="oklch(66% 0.17 145)" stop-opacity="0.35"/>
+        <stop offset="100%" stop-color="oklch(66% 0.17 145)" stop-opacity="0.03"/>
       </linearGradient></defs>
       <polygon points="${areaPts}" fill="url(#bu-grad)"/>
-      <polyline points="${pts}" fill="none" stroke="var(--plan-accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <polyline points="${pts}" fill="none" stroke="oklch(66% 0.17 145)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>`;
   })();
 
