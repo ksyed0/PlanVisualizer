@@ -41,7 +41,9 @@ Steps to Reproduce:
 2. Glance at the agent grid
    Expected: A 2-second glance identifies who is currently working
    Actual: All 9 agent cards carry the same visual weight; status pill is small, and the "now on air" dot is subtle; the currently-executing agent is not visually promoted
-   Status: Open
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0252-stash-recovery
+   Lesson Encoded: Yes
    Notes: Fix by adding a left accent rail, tinted background, and outline glow on is-active cards; see US-0142.
 
 ---
@@ -55,7 +57,9 @@ Steps to Reproduce:
 2. Observe the Conductor agent card
    Expected: Conductor's role in each hand-off is visible (it did just dispatch a task)
    Actual: Conductor transitions to active and back to idle faster than the 1s refresh can render, so the card is near-permanently idle and hand-offs appear to happen by magic
-   Status: Open
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0252-stash-recovery
+   Lesson Encoded: Yes
    Notes: Fix by holding a visible "dispatching" state for a minimum of N seconds, and by promoting the most recent dispatch into the event ticker. See US-0143.
 
 ---
@@ -69,7 +73,9 @@ Steps to Reproduce:
 2. Compare the 6-phase Pipeline strip and the Agent Roster
    Expected: Each widget earns its space — pipeline shows macro phase progress, roster shows micro agent state
    Actual: Both widgets double-encode which agent is doing what right now (phase.agents field duplicates the active agent card); the pipeline loses its job as a cycle-progress artifact
-   Status: Open
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0252-stash-recovery
+   Lesson Encoded: Yes
    Notes: Fix by trimming the pipeline to phase name + elapsed + partial fill, and letting the roster own "who is doing what." See US-0144.
 
 ---
@@ -83,7 +89,9 @@ Steps to Reproduce:
 2. Look for a chronological log of what the agents just did
    Expected: Event log is one of the most prominent artefacts on a mission-control surface
    Actual: The "recent activity" pane is a 320px sidebar card with low contrast and no dedicated terminal-style event stream
-   Status: Open
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0252-stash-recovery
+   Lesson Encoded: Yes
    Notes: Fix by promoting the stream to a full-width Event Log card in the main column with terminal monospace styling, while keeping a compressed feed in the rail. See US-0145.
 
 ---
@@ -97,7 +105,9 @@ Steps to Reproduce:
 2. Observe the first ~72px of page chrome
    Expected: Chrome is quiet; content leads
    Actual: Saturated navy gradient overpowers content — especially in light mode — and makes the two dashboards hard to distinguish because the header dominates identity
-   Status: Open
+   Status: Fixed
+   Fix Branch: bugfix/BUG-0252-stash-recovery
+   Lesson Encoded: Yes
    Notes: Fix by replacing with a thin neutral chrome + mode badge (REPORT / LIVE) and per-dashboard accent ornaments. See US-0136.
 
 ---
