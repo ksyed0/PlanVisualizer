@@ -557,3 +557,16 @@ _Learned from BUG-0210 — Lessons and Bugs tabs both have epic group headers, b
 
 **Bugs:** BUG-0185, BUG-0186, BUG-0187, BUG-0188, BUG-0189
 **Date:** 2026-04-30
+
+---
+
+## L-0053 — Shared helper functions benefit from visual consistency audits at call sites
+
+**Context:** `_renderFullStatusHero` is called from both `renderStatusTab` and `renderStakeholderTab`. When it used `var(--plan-accent)` (violet) for progress bars, both tabs showed violet "done" bars while the Charts/Trends tabs correctly used green for the same concept. The drift went unnoticed because the function only had one call site originally and no semantic-colour test.
+
+**Fix:** Replace raw CSS token references in chart-colour positions with the correct semantic OKLCH literal. Audit every spot that uses a colour token for a chart element and ask: does this colour's meaning match the semantic intent?
+
+**Prevention:** When writing a helper that renders charts or colour-coded data, add a test that asserts no `var(--plan-accent)` / `var(--live-accent)` appears in colour-bearing attributes (stroke, fill, background). These raw tokens are layout chrome — not data semantics.
+
+**Bugs:** BUG-0183, BUG-0184
+**Date:** 2026-05-01
