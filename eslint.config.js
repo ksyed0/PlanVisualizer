@@ -28,7 +28,7 @@ const commonRules = {
 
 module.exports = [
   {
-    ignores: ['eslint.config.js', 'jest.config.js', '.claude/**'],
+    ignores: ['eslint.config.js', 'jest.config.js', 'playwright.config.js', '.claude/**'],
   },
   js.configs.recommended,
   {

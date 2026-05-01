@@ -4,6 +4,224 @@ Timestamped log of every user prompt across all sessions. Append-only. Never edi
 
 ---
 
+## Session 36 — 2026-05-01 (continued from Session 35 in same conversation)
+
+| #   | Timestamp            | Prompt                                                                                                                                                                                                                                                                                           |
+| --- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | 2026-05-01T18:00:00Z | whats next [prompted discovery of 3 remaining open bugs: BUG-0183/0184/0223]                                                                                                                                                                                                                     |
+| 2   | 2026-05-01T18:05:00Z | Lets fix all of these bugs using brainstorming mode                                                                                                                                                                                                                                              |
+| 3   | 2026-05-01T18:08:00Z | yes [approved visual companion for brainstorming]                                                                                                                                                                                                                                                |
+| 4   | 2026-05-01T18:15:00Z | all three [BUG-0183 issues A+B+C all apply]                                                                                                                                                                                                                                                      |
+| 5   | 2026-05-01T18:20:00Z | C [keep shared hero, make it more prominent]                                                                                                                                                                                                                                                     |
+| 6   | 2026-05-01T18:22:00Z | C [BUG-0184: full palette audit — all charts + hero sparklines]                                                                                                                                                                                                                                  |
+| 7   | 2026-05-01T18:25:00Z | A [Approach A — three surgical patches, one PR]                                                                                                                                                                                                                                                  |
+| 8   | 2026-05-01T18:28:00Z | yes [approved all three design sections]                                                                                                                                                                                                                                                         |
+| 9   | 2026-05-01T18:30:00Z | continue [approved spec, proceed to writing-plans]                                                                                                                                                                                                                                               |
+| 10  | 2026-05-01T18:32:00Z | 1 [chose subagent-driven development for execution]                                                                                                                                                                                                                                              |
+| 11  | 2026-05-01T19:30:00Z | lets update all documents and create a PR to main, update the release notes and readme, after CI is green merge and delete the branch, then create a new release at v2.0.0 from main. Update the install and update scripts and prompts especially for any changes from previous schema formats. |
+
+---
+
+## Session 35 — 2026-04-30 → 2026-05-01
+
+| #   | Timestamp            | Prompt                                                                                                                                                                                                                                                      |
+| --- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | 2026-04-30T19:30:00Z | Clean up any unused local branches, then read AGENTS.md, MEMORY.md, PROMPT_LOG.md, and the BUGS.md entries for BUG-0252 and BUG-0185–0189 before starting work. [Session goals: BUG-0252 stash recovery + BUG-0185–0189 agentic dashboard visual hierarchy] |
+| 2   | 2026-04-30T19:55:00Z | yes [approved visual companion offer for brainstorming]                                                                                                                                                                                                     |
+| 3   | 2026-04-30T20:10:00Z | b [chose Approach B — expanded active card + promoted event log]                                                                                                                                                                                            |
+| 4   | 2026-04-30T20:15:00Z | Both [chrome fix on both dashboards + add automated Playwright regression tests]                                                                                                                                                                            |
+| 5   | 2026-04-30T20:18:00Z | C [chose test suite type C — Jest structure + Playwright visual hierarchy]                                                                                                                                                                                  |
+| 6   | 2026-04-30T20:22:00Z | I like Layout B, but can we display the full agent card rather than the headshot, like docs/agents/images/conductor.png                                                                                                                                     |
+| 7   | 2026-04-30T20:28:00Z | 1. I'd like to be able to fit the full image… 2. This seems right 3. This looks right [approved portrait design, idle opacity, Conductor strip]                                                                                                             |
+| 8   | 2026-04-30T20:35:00Z | yes [approved all three design sections]                                                                                                                                                                                                                    |
+| 9   | 2026-04-30T20:40:00Z | yes [approved spec doc]                                                                                                                                                                                                                                     |
+| 10  | 2026-04-30T20:42:00Z | 1 [chose subagent-driven development for plan execution]                                                                                                                                                                                                    |
+
+---
+
+## Session 34 — 2026-04-29 → 2026-04-30
+
+> Note: rows 1–2 are continuations of Session 33 (logged there at the time as rows 6–7). Listed here in the canonical session for historical clarity. From row 3 onwards, the conversation drifted decisively into Session 34 territory — Session 33 had officially closed via parallel commit `d42f0f2` before this conversation resumed.
+
+| #   | Timestamp            | Prompt                                                                                                                                    |
+| --- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | 2026-04-29T15:40:00Z | Continue my last Claude Code session for PlanVisualizer. Review recent git history and any in-progress work… [logged as Session 33 row 6] |
+| 2   | 2026-04-29T15:42:00Z | 1 [drove the merges sequentially — gh pr update-branch + auto-merge for PR #499 then #496; logged as Session 33 row 7]                    |
+| 3   | 2026-04-29T15:55:00Z | No, whats next                                                                                                                            |
+| 4   | 2026-04-29T16:05:00Z | did you already log the found issues to @docs/BUGS.md                                                                                     |
+| 5   | 2026-04-29T16:15:00Z | Can you open the plan status dashboard in Chrome and perform automated testing                                                            |
+| 6   | 2026-04-29T16:35:00Z | Can you open the agentic dashboard in Chrome and perform automated testing                                                                |
+| 7   | 2026-04-29T16:55:00Z | yes investigate the stop hook issue                                                                                                       |
+| 8   | 2026-04-29T17:05:00Z | what does it mean to hit the org usage limit?                                                                                             |
+| 9   | 2026-04-29T17:08:00Z | continue                                                                                                                                  |
+| 10  | 2026-04-29T17:30:00Z | can you fix BUG-0251                                                                                                                      |
+| 11  | 2026-04-29T17:55:00Z | check CI for the PR                                                                                                                       |
+| 12  | 2026-04-29T18:00:00Z | whats next                                                                                                                                |
+| 13  | 2026-04-29T18:05:00Z | ok lets address 1 and 2 now                                                                                                               |
+| 14  | 2026-04-30T13:55:00Z | yes [proceed with session-close protocol]                                                                                                 |
+
+---
+
+## Session 33 — 2026-04-29
+
+| #   | Timestamp            | Prompt                                                                                                                                                                                                                                                                    |
+| --- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | 2026-04-29T14:00:00Z | Clean up all unused branches (local and remote), then use the brainstorming skill to read AGENTS.md, MEMORY.md, and PROMPT_LOG.md. [Session goal: Finish EPIC-0023, fix BUG-0242/0244, US-0164 chart colors, US-0166 AC-0600, audit EPIC-0010/EPIC-0012, close EPIC-0023] |
+| 2   | 2026-04-29T14:30:00Z | yes [approved session design — three parallel groups A/B/C]                                                                                                                                                                                                               |
+| 3   | 2026-04-29T14:35:00Z | go for it [approved spec, proceed to implementation]                                                                                                                                                                                                                      |
+| 4   | 2026-04-29T15:30:00Z | Continue from where you left off. [PRs 496/497/499 all merged; close session]                                                                                                                                                                                             |
+| 5   | 2026-04-29T15:35:00Z | this has resumed in another session, can we close this session now                                                                                                                                                                                                        |
+| 6   | 2026-04-29T15:40:00Z | Continue my last Claude Code session for PlanVisualizer. Review recent git history and any in-progress work, summarize what was last being worked on and ask how I'd like to proceed. [resumed in this session]                                                           |
+| 7   | 2026-04-29T15:42:00Z | 1 [drove the merges sequentially — gh pr update-branch + auto-merge for PR #499 then #496; landed summary-section EPIC-0010/0012 drift fix in this PR]                                                                                                                    |
+
+---
+
+## Session 32 — 2026-04-29
+
+| #   | Timestamp            | Prompt                                                                                                                                                                                                                                                   |
+| --- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | 2026-04-29T12:00:00Z | cleanup any unused branches, then use the brainstorming skill to Read AGENTS.md, MEMORY.md, and PROMPT_LOG.md before doing anything else. [Session goal: Fix BUG-0248, three EPIC-0023 high-priority bugs, medium-priority Lens bugs, EPIC-0022 closure] |
+| 2   | 2026-04-29T12:30:00Z | 1 [approved parallel subagent approach for brainstorming design]                                                                                                                                                                                         |
+| 3   | 2026-04-29T12:35:00Z | please proceed [approved design spec, proceed to writing-plans]                                                                                                                                                                                          |
+| 4   | 2026-04-29T12:40:00Z | 1 [chose subagent-driven development]                                                                                                                                                                                                                    |
+| 5   | 2026-04-29T13:00:00Z | can you show what will remain in the release plan after this session plan is completed                                                                                                                                                                   |
+| 6   | 2026-04-29T13:10:00Z | yes [approved merging all three PRs A→B→C]                                                                                                                                                                                                               |
+| 7   | 2026-04-29T13:30:00Z | tell me whats recommended for the next session, update all documentation and prepare to close the session                                                                                                                                                |
+| 8   | 2026-04-29T13:45:00Z | create a prompt to cleanup all leftover branches (local and remote), and start brainstorming session for the recommended scope above for session 33                                                                                                      |
+| 9   | 2026-04-29T13:50:00Z | close this session                                                                                                                                                                                                                                       |
+
+---
+
+## Session 31 — 2026-04-28
+
+| #   | Timestamp            | Prompt                                                                                                                                                                                                                              |
+| --- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | 2026-04-28T14:00:00Z | clean up all unused branches, then use the brainstorming skill and execute the following prompt [session goal: fix 6 bugs + implement US-0159]                                                                                      |
+| 2   | 2026-04-28T14:20:00Z | yes [accepted visual companion offer]                                                                                                                                                                                               |
+| 3   | 2026-04-28T14:25:00Z | B, but for any stories not estimated we should go back and estimate them historically [velocity metric: t-shirt points]                                                                                                             |
+| 4   | 2026-04-28T14:30:00Z | A [velocity data source: snapshot deltas]                                                                                                                                                                                           |
+| 5   | 2026-04-28T14:35:00Z | yes [approved bug fixes design]                                                                                                                                                                                                     |
+| 6   | 2026-04-28T14:40:00Z | yes [approved US-0159 design]                                                                                                                                                                                                       |
+| 7   | 2026-04-28T14:50:00Z | Please continue [spec approved, proceed to writing-plans]                                                                                                                                                                           |
+| 8   | 2026-04-28T15:00:00Z | 1 [chosen subagent-driven development]                                                                                                                                                                                              |
+| 9   | 2026-04-28T19:20:00Z | monitor the PRs, fix any issues, when CI is successful then merge and delete the branches, then update documents and close the session                                                                                              |
+| 10  | 2026-04-28T19:30:00Z | on the plan status, all tabs are now appearing on the one tab and switching tabs doesn't do anything; no graphs are generating [CDN regression]                                                                                     |
+| 11  | 2026-04-28T19:45:00Z | not readable [Column/Card button contrast issue]                                                                                                                                                                                    |
+| 12  | 2026-04-28T19:50:00Z | on the charts tab, from this chart onwards should be in 2 column view not full width                                                                                                                                                |
+| 13  | 2026-04-28T19:52:00Z | same on Trends tab                                                                                                                                                                                                                  |
+| 14  | 2026-04-28T19:55:00Z | the column layout is too compressed on the Costs tab, there is the full window width available but only half is being used                                                                                                          |
+| 15  | 2026-04-28T19:57:00Z | on the Bugs tab the column layout is also too compressed, and the card view no longer displays as individual cards with click through                                                                                               |
+| 16  | 2026-04-28T19:59:00Z | for Lessons view same issues with narrow column layout and card layout losing card functionality                                                                                                                                    |
+| 17  | 2026-04-28T20:01:00Z | other than save to PDF, the Stakeholder view seems to have lost most of its value compared to the Status tab, would it be better to consolidate                                                                                     |
+| 18  | 2026-04-28T20:10:00Z | on the Lessons tab, the Card layout is not working correctly                                                                                                                                                                        |
+| 19  | 2026-04-28T20:15:00Z | other than the Quality and Agent Workload widgets, I would like to see all of these elements present in the Stakeholder tab at the top                                                                                              |
+| 20  | 2026-04-28T20:20:00Z | can you add the Epic start and Done dates                                                                                                                                                                                           |
+| 21  | 2026-04-28T20:25:00Z | Lets keep the Bug ID in the stakeholder screen. I agree with your option 2 for the start/end dates.                                                                                                                                 |
+| 22  | 2026-04-28T20:30:00Z | yes [approved design for stakeholder hero + epic dates]                                                                                                                                                                             |
+| 23  | 2026-04-28T20:35:00Z | please continue [approved spec, proceed to implementation plan]                                                                                                                                                                     |
+| 24  | 2026-04-28T20:40:00Z | after completing the plan, please proceed to implement in subagent mode                                                                                                                                                             |
+| 25  | 2026-04-28T21:00:00Z | after that is done, use Lens to conduct a code review on the agent dashboard and the plan status, capture issues to BUGS.md and enhancements to a future Epic in RELEASE_PLAN.md — proceed without asking for further confirmations |
+
+---
+
+## Session 29 — 2026-04-25
+
+| #   | Timestamp            | Prompt                                                               |
+| --- | -------------------- | -------------------------------------------------------------------- |
+| 1   | 2026-04-25T01:00:00Z | [Context resumed — continued from session 28 mid-session compaction] |
+| 2   | 2026-04-25T01:10:00Z | check ci and resolve issues                                          |
+| 3   | 2026-04-25T01:30:00Z | Continue from where you left off.                                    |
+| 4   | 2026-04-25T01:40:00Z | continue                                                             |
+| 5   | 2026-04-25T02:10:00Z | close this session                                                   |
+| 6   | 2026-04-25T02:15:00Z | 1                                                                    |
+
+---
+
+## Session 28 — 2026-04-24
+
+| #   | Timestamp            | Prompt                                                                                                                                                               |
+| --- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | 2026-04-24T19:00:00Z | [Context resumed — continued from session 27 mid-session compaction]                                                                                                 |
+| 2   | 2026-04-24T19:10:00Z | in hierarchy tab card view, the epics should be all collapsed by default                                                                                             |
+| 3   | 2026-04-24T19:20:00Z | in the costs tab can you make the epic headers for Stories and Bugs to match the formatting for the Budget section                                                   |
+| 4   | 2026-04-24T19:30:00Z | on the Bugs tab the formatting for the epics for the card view should be the same as column view. Same on the Lessons tab.                                           |
+| 5   | 2026-04-24T19:40:00Z | on the agentic dashboard, none of the buttons are responding to click events, even after a hard reload                                                               |
+| 6   | 2026-04-24T19:50:00Z | can you update the epic formatting on the Hierarchy tab to match the same on the traceability tab for both column and card views                                     |
+| 7   | 2026-04-24T20:00:00Z | remove these redundant buttons from the agentic dashboard [screenshot]                                                                                               |
+| 8   | 2026-04-24T20:10:00Z | did you combine the About box to be the same on both pages                                                                                                           |
+| 9   | 2026-04-24T20:20:00Z | The bugs tab card view is still not using the same formatting and vertical spacing as in the column view                                                             |
+| 10  | 2026-04-24T20:30:00Z | change the About box in the agentic dashboard to use the one in the plan status dashboard                                                                            |
+| 11  | 2026-04-24T20:40:00Z | should the new about box use tailwind css, is this the pattern for the app overall?                                                                                  |
+| 12  | 2026-04-24T20:45:00Z | the close button on the reloaded agentic dashboard about box is not working                                                                                          |
+| 13  | 2026-04-24T20:50:00Z | go ahead and create the tailwinds replacement story                                                                                                                  |
+| 14  | 2026-04-24T21:00:00Z | can you show me a mockup of the new about box and we can iterate on the design                                                                                       |
+| 15  | 2026-04-24T21:10:00Z | Move the team image to the top of the box and make it larger. Make the roster a 3x3 array that takes the full width of the window. Remove the View on GitHub button. |
+| 16  | 2026-04-24T21:20:00Z | remove the plan-status line, reduce the crop of the team image to use the extra space and redisplay                                                                  |
+| 17  | 2026-04-24T21:30:00Z | move the line under the PlanVisualizer title to the right of the title on the same line, increase the height of the team image to use the extra space                |
+| 18  | 2026-04-24T21:40:00Z | remove the word Links, move Implemented by line to the right side of the github link, increase the height of the team image to use the extra space                   |
+| 19  | 2026-04-24T21:50:00Z | this looks good, lets capture this design as a new story, then implement this                                                                                        |
+| 20  | 2026-04-24T22:00:00Z | ok update all docs and close this session                                                                                                                            |
+| 21  | 2026-04-24T22:05:00Z | ok update all docs and create a pr to develop, then monitor CI and fix any issues, then when CI is green merge and close the branch and the session                  |
+
+---
+
+## Session 27 — 2026-04-24
+
+| #   | Timestamp            | Prompt                                                                                                                            |
+| --- | -------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | 2026-04-24T16:00:00Z | where is the mockup                                                                                                               |
+| 2   | 2026-04-24T16:15:00Z | For item 2 - The current epic header formatting for column view is preferred (colourful), I prefer that over the plainer redesign |
+| 3   | 2026-04-24T16:30:00Z | Lets use the standard typefaces as defined in the style sheet, across all tabs                                                    |
+| 4   | 2026-04-24T16:45:00Z | For Item 2 we still need to make the Card view epic headers consistent with the column view, on all tabs                          |
+| 5   | 2026-04-24T17:00:00Z | are there any other outstanding changes                                                                                           |
+| 6   | 2026-04-24T17:15:00Z | Lets proceed with the mocked up designs for Items 1 and 3                                                                         |
+
+---
+
+## Session 26 — 2026-04-22
+
+| #   | Timestamp            | Prompt                                                        |
+| --- | -------------------- | ------------------------------------------------------------- |
+| 1   | 2026-04-22T14:00:00Z | [Context resumed] is the plan completed?                      |
+| 2   | 2026-04-22T14:05:00Z | check ci status                                               |
+| 3   | 2026-04-22T14:30:00Z | fix the generate-dashboard.js walk up the git root now please |
+| 4   | 2026-04-22T15:00:00Z | how many lines of code are in the project                     |
+| 5   | 2026-04-22T15:05:00Z | updated documentation and close session                       |
+
+---
+
+## Session 25 — 2026-04-22
+
+| #   | Timestamp            | Prompt                                                                                                                                                                          |
+| --- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | 2026-04-22T00:00:00Z | [Context resumed] this should be the common About box for both dashboards (from the agentic dashboard) [screenshot of agentic dashboard About modal]                            |
+| 2   | 2026-04-22T00:05:00Z | why are you ignoring that the new render mockup design for the agentic dashboard was not implemented at all?                                                                    |
+| 3   | 2026-04-22T00:08:00Z | on the hierarchy tab, the epic bar spacing for column view and card view are not the same, I prefer the column view spacing [screenshot of hierarchy epics]                     |
+| 4   | 2026-04-22T00:10:00Z | where is this data supposed to come from? [screenshot of Agent Workload widget showing "Unassigned 21"]                                                                         |
+| 5   | 2026-04-22T00:12:00Z | the epic bar formatting and spacing for Lessons should be the same as for Bugs [screenshot of Lessons tab epic headers]                                                         |
+| 6   | 2026-04-22T00:14:00Z | on all tabs, the selected view (card, column, compact) should be obvious (blue highlight)                                                                                       |
+| 7   | 2026-04-22T00:30:00Z | Lets update @docs/RELEASE_PLAN.md to add this new redesign as future work                                                                                                       |
+| 8   | 2026-04-22T00:31:00Z | is the agentic dashboard redesign already captured in the @docs/RELEASE_PLAN.md?                                                                                                |
+| 9   | 2026-04-22T00:35:00Z | If the stories are passed back and forth between the named agents during planning and implementation, does it make sense to have an assigned value in the @docs/RELEASE_PLAN.md |
+| 10  | 2026-04-22T00:40:00Z | ok update all documentation and prepare to close the session                                                                                                                    |
+| 11  | 2026-04-22T00:55:00Z | resolve issues with PR 416, merge, and delete the working branch                                                                                                                |
+| 12  | 2026-04-22T01:00:00Z | close session                                                                                                                                                                   |
+
+---
+
+## Session 24 — 2026-04-21
+
+| #   | Timestamp            | Prompt                                                                                                                                                                                                                                                                                                                                                                                     |
+| --- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | 2026-04-21T00:00:00Z | cleanup any orphaned branches on remote and local                                                                                                                                                                                                                                                                                                                                          |
+| 2   | 2026-04-21T00:05:00Z | open the plan status in develop                                                                                                                                                                                                                                                                                                                                                            |
+| 3   | 2026-04-21T00:10:00Z | [Screenshot] open a bug - when switching to dark mode only the headers change / what is the blank white area at the top of the screen? / story title runs long wraps instead of truncating / labels should be at end of line / where is global search button / in card view epic headers are gone / in the header where is estimated cost / columns not lined up / legend text not visible |
+| 4   | 2026-04-21T01:00:00Z | [Interrupt+screenshot] trends tab selected range text not visible / long status text messing with layout, change to Rejected append explanation in comments / Bugs section on cost screen should be collapsed / plan status layout doesn't reflect design preview at all                                                                                                                   |
+| 5   | 2026-04-21T01:10:00Z | [Screenshot of design preview] same with the agentic dashboard, the new layout was not implemented at all                                                                                                                                                                                                                                                                                  |
+| 6   | 2026-04-21T01:15:00Z | can you make the status the default first tab                                                                                                                                                                                                                                                                                                                                              |
+
+---
+
 ## Session 23 — 2026-04-19
 
 | #   | Timestamp            | Prompt                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
@@ -341,3 +559,20 @@ _(Bug sweep session — see progress.md Session 16 entry. Was primarily spent fi
 | #   | Timestamp            | Prompt                                                                                                                                                                   |
 | --- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | 1   | 2026-03-10T15:00:00Z | Implement the following plan: Fix BUG-0003 and BUG-0004 — update TC statuses to Pass (TC-0001–TC-0020) in TEST_CASES.md, and add sticky header wrapper in render-html.js |
+
+## Session 30 — 2026-04-27
+
+| #   | Timestamp            | Prompt                                                                                                 |
+| --- | -------------------- | ------------------------------------------------------------------------------------------------------ |
+| 1   | 2026-04-27T00:00:00Z | (continuation from Session 29) Continue Wave 2 spec reviews, fix issues, merge PRs #447 #446 #449 #448 |
+| 2   | 2026-04-27T00:30:00Z | Launch Wave 3 Tasks 8/9/10 (US-0152 US-0154 US-0157) in parallel with worktree isolation               |
+| 3   | 2026-04-27T02:00:00Z | continue                                                                                               |
+| 4   | 2026-04-27T02:30:00Z | close the session                                                                                      |
+
+## Session 31 — 2026-04-27
+
+| #   | Timestamp            | Prompt                                                                                                 |
+| --- | -------------------- | ------------------------------------------------------------------------------------------------------ |
+| 1   | 2026-04-27T03:00:00Z | whats next                                                                                             |
+| 2   | 2026-04-27T03:05:00Z | create a prompt for me to start a new session to address these bugs and the new velocity chart feature |
+| 3   | 2026-04-27T03:10:00Z | close this session                                                                                     |

@@ -22,6 +22,44 @@ function parseCostLog(markdown) {
   return rows;
 }
 
+const WORKTREE_BRANCH_RE = /^claude\//;
+
+function normalizeBranch(branch, gitLog, sessionDate) {
+  if (branch && !WORKTREE_BRANCH_RE.test(branch)) return branch;
+  if (!gitLog || gitLog.length === 0) return branch;
+  if (!sessionDate) return branch;
+
+  const sessionMs = new Date(sessionDate).getTime();
+  let closest = null;
+  let closestDiff = Infinity;
+
+  for (const entry of gitLog) {
+    const entryMs = new Date(entry.date).getTime();
+    const diff = Math.abs(sessionMs - entryMs);
+    if (diff < closestDiff) {
+      closestDiff = diff;
+      closest = entry;
+    }
+  }
+
+  return closest ? closest.branch : branch;
+}
+
+function backfillUnattributed(rows, gitLog, opts = {}) {
+  let count = 0;
+  const result = rows.map((row) => {
+    const isWorktreeBranch = !row.branch || WORKTREE_BRANCH_RE.test(row.branch);
+    if (!isWorktreeBranch) return row;
+    const normalized = normalizeBranch(row.branch, gitLog, row.date + 'T12:00:00Z');
+    if (normalized === row.branch) return row;
+    count += 1;
+    return { ...row, branch: normalized, backfilled: true };
+  });
+
+  if (opts.returnCount) return { rows: result, count };
+  return result;
+}
+
 function deduplicateSessions(rows) {
   // The Stop hook fires on every turn, appending cumulative rows for the same session.
   // Keep only the last row per session_id (the highest cumulative total).
@@ -54,4 +92,11 @@ function aggregateCostByBranch(rows) {
   return agg;
 }
 
-module.exports = { parseCostLog, deduplicateSessions, aggregateCostByBranch };
+module.exports = {
+  parseCostLog,
+  deduplicateSessions,
+  aggregateCostByBranch,
+  normalizeBranch,
+  backfillUnattributed,
+  WORKTREE_BRANCH_RE,
+};

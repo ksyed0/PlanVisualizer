@@ -21,7 +21,7 @@ const { parseLessons } = require('./lib/parse-lessons');
 const { computeProjectedCost, attributeAICosts, attributeBugCosts } = require('./lib/compute-costs');
 const { detectAtRisk } = require('./lib/detect-at-risk');
 const { computeAllRisk } = require('./lib/compute-risk');
-const { saveSnapshot, loadSnapshots, extractTrends } = require('./lib/snapshot');
+const { saveSnapshot, loadSnapshots, extractTrends, velocityByWeek } = require('./lib/snapshot');
 const { computeBudgetMetrics, generateBudgetCSV } = require('./lib/budget');
 const { renderHtml } = require('./lib/render-html');
 const { backfillHistory, calculateAvgTokensPerEstimate, estimateStoryCost } = require('./lib/historical-sim');
@@ -29,6 +29,15 @@ const { backfillHistory, calculateAvgTokensPerEstimate, estimateStoryCost } = re
 const TOKEN_RATES = { input: 3, output: 15 };
 
 const ROOT = path.join(__dirname, '..');
+
+// Load agents config (agents.config.json) — used by About modal + Agent Workload widget.
+let AGENTS_CONFIG = {};
+try {
+  const agentsCfgPath = path.join(ROOT, 'agents.config.json');
+  if (fs.existsSync(agentsCfgPath)) AGENTS_CONFIG = JSON.parse(fs.readFileSync(agentsCfgPath, 'utf8'));
+} catch (e) {
+  console.warn('[generate-plan] Could not load agents.config.json:', e.message);
+}
 
 const DEFAULTS = {
   project: { name: 'NomadCode', tagline: 'Code from anywhere.' },
@@ -317,6 +326,7 @@ function main() {
     appName: app.name,
     appVersion: app.version,
     githubUrl: config.project.githubUrl ?? '',
+    agents: AGENTS_CONFIG.agents || {},
   };
 
   console.log('[generate-plan] Saving snapshot...');
@@ -351,6 +361,10 @@ function main() {
 
   data.budget = budgetMetrics;
   data.completion = computeCompletion(data.stories, trends);
+  data.trends = trends;
+  if (data.trends) {
+    data.trends.velocityByWeek = velocityByWeek(snapshots);
+  }
 
   const outputDir = path.join(ROOT, config.docs.outputDir);
   if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
@@ -403,5 +417,6 @@ try {
   }
 } catch (e) {
   console.error('[generate-plan] Fatal:', e.message);
+  console.error('[generate-plan] Stack:', e.stack);
   process.exit(1);
 }

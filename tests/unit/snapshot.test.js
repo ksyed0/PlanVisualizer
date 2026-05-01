@@ -6,6 +6,7 @@ const {
   saveSnapshot,
   loadSnapshots,
   extractTrends,
+  velocityByWeek,
   SNAPSHOT_REGEX,
 } = require('../../tools/lib/snapshot');
 
@@ -173,6 +174,43 @@ describe('extractTrends', () => {
     expect(trends.aiCosts).toEqual([10.5, 15.75]);
   });
 
+  // BUG-0221: when costs include the published `_totals` aggregate, do not
+  // double-count it on top of the per-story rows.
+  it('uses published _totals.costUsd when present (no double-count)', () => {
+    const snaps = [
+      {
+        generatedAt: '2026-03-01T10:00:00Z',
+        data: {
+          stories: [],
+          costs: {
+            'US-0001': { costUsd: 4.0, inputTokens: 100, outputTokens: 50 },
+            'US-0002': { costUsd: 2.0, inputTokens: 60, outputTokens: 30 },
+            _totals: { costUsd: 6.0, inputTokens: 160, outputTokens: 80 },
+            _bugs: { _totals: { costUsd: 1.5, inputTokens: 40, outputTokens: 20 } },
+          },
+          coverage: {},
+        },
+      },
+      {
+        generatedAt: '2026-03-02T10:00:00Z',
+        data: {
+          stories: [],
+          costs: {
+            'US-0001': { costUsd: 4.0, inputTokens: 100, outputTokens: 50 },
+            'US-0002': { costUsd: 3.0, inputTokens: 80, outputTokens: 40 },
+            _totals: { costUsd: 7.0, inputTokens: 180, outputTokens: 90 },
+            _bugs: { _totals: { costUsd: 2.0, inputTokens: 50, outputTokens: 25 } },
+          },
+          coverage: {},
+        },
+      },
+    ];
+    const trends = extractTrends(snaps);
+    expect(trends.aiCosts).toEqual([6.0, 7.0]); // not 12 / 14
+    expect(trends.inputTokens).toEqual([160, 180]); // not 360 / 410
+    expect(trends.outputTokens).toEqual([80, 90]); // not 180 / 205
+  });
+
   it('extracts coverage', () => {
     const snaps = [
       {
@@ -273,5 +311,104 @@ describe('extractTrends', () => {
     const trends = extractTrends(snaps);
     expect(trends.inputTokens).toEqual([1000, 3000]);
     expect(trends.outputTokens).toEqual([500, 1300]);
+  });
+});
+
+describe('velocityByWeek', () => {
+  function makeSnap(dateStr, stories) {
+    return { generatedAt: dateStr, data: { stories, costs: {}, coverage: {} } };
+  }
+
+  it('returns empty arrays for 0 snapshots', () => {
+    const result = velocityByWeek([]);
+    expect(result).toEqual({ labels: [], points: [], rollingAvg: [] });
+  });
+
+  it('returns empty arrays for 1 snapshot', () => {
+    const snaps = [makeSnap('2026-04-07T10:00:00Z', [{ id: 'US-0001', status: 'Done', estimate: 'M' }])];
+    const result = velocityByWeek(snaps);
+    expect(result).toEqual({ labels: [], points: [], rollingAvg: [] });
+  });
+
+  it('single week: points[0] equals cumulative points of that week', () => {
+    const snaps = [
+      makeSnap('2026-04-07T08:00:00Z', []),
+      makeSnap('2026-04-09T10:00:00Z', [{ id: 'US-0001', status: 'Done', estimate: 'M' }]),
+    ];
+    const result = velocityByWeek(snaps);
+    expect(result.labels).toHaveLength(1);
+    expect(result.points[0]).toBeCloseTo(3, 1);
+  });
+
+  it('two different weeks: computes per-week delta', () => {
+    const snaps = [
+      makeSnap('2026-04-01T10:00:00Z', [{ id: 'US-0001', status: 'Done', estimate: 'S' }]),
+      makeSnap('2026-04-08T10:00:00Z', [
+        { id: 'US-0001', status: 'Done', estimate: 'S' },
+        { id: 'US-0002', status: 'Done', estimate: 'L' },
+      ]),
+    ];
+    const result = velocityByWeek(snaps);
+    expect(result.labels).toHaveLength(2);
+    expect(result.points[0]).toBeCloseTo(1, 1);
+    expect(result.points[1]).toBeCloseTo(5, 1);
+  });
+
+  it('clamps negative delta to 0', () => {
+    const snaps = [
+      makeSnap('2026-04-01T10:00:00Z', [
+        { id: 'US-0001', status: 'Done', estimate: 'L' },
+        { id: 'US-0002', status: 'Done', estimate: 'M' },
+      ]),
+      makeSnap('2026-04-08T10:00:00Z', [{ id: 'US-0001', status: 'Done', estimate: 'L' }]),
+    ];
+    const result = velocityByWeek(snaps);
+    expect(result.points[1]).toBe(0);
+  });
+
+  it('4-period rolling average uses available data for early periods', () => {
+    const snaps = [
+      makeSnap('2026-03-25T00:00:00Z', [{ id: 'US-0001', status: 'Done', estimate: 'M' }]),
+      makeSnap('2026-04-01T00:00:00Z', [
+        { id: 'US-0001', status: 'Done', estimate: 'M' },
+        { id: 'US-0002', status: 'Done', estimate: 'S' },
+      ]),
+      makeSnap('2026-04-08T00:00:00Z', [
+        { id: 'US-0001', status: 'Done', estimate: 'M' },
+        { id: 'US-0002', status: 'Done', estimate: 'S' },
+        { id: 'US-0003', status: 'Done', estimate: 'L' },
+      ]),
+      makeSnap('2026-04-15T00:00:00Z', [
+        { id: 'US-0001', status: 'Done', estimate: 'M' },
+        { id: 'US-0002', status: 'Done', estimate: 'S' },
+        { id: 'US-0003', status: 'Done', estimate: 'L' },
+        { id: 'US-0004', status: 'Done', estimate: 'XS' },
+      ]),
+    ];
+    const result = velocityByWeek(snaps);
+    // points: [3, 1, 5, 0.5]
+    expect(result.rollingAvg[0]).toBeCloseTo(3.0, 1);
+    expect(result.rollingAvg[1]).toBeCloseTo(2.0, 1);
+    expect(result.rollingAvg[2]).toBeCloseTo(3.0, 1);
+    expect(result.rollingAvg[3]).toBeCloseTo(2.4, 1);
+  });
+
+  it('two snapshots in same ISO week uses snapshot with higher cumulative velocity', () => {
+    const snaps = [
+      makeSnap('2026-04-07T06:00:00Z', [{ id: 'US-0001', status: 'Done', estimate: 'S' }]),
+      makeSnap('2026-04-07T14:00:00Z', [
+        { id: 'US-0001', status: 'Done', estimate: 'S' },
+        { id: 'US-0002', status: 'Done', estimate: 'M' },
+      ]),
+      makeSnap('2026-04-14T10:00:00Z', [
+        { id: 'US-0001', status: 'Done', estimate: 'S' },
+        { id: 'US-0002', status: 'Done', estimate: 'M' },
+        { id: 'US-0003', status: 'Done', estimate: 'L' },
+      ]),
+    ];
+    const result = velocityByWeek(snaps);
+    expect(result.labels).toHaveLength(2);
+    expect(result.points[0]).toBeCloseTo(4, 1);
+    expect(result.points[1]).toBeCloseTo(5, 1);
   });
 });

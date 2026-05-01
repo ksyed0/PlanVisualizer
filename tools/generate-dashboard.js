@@ -20,10 +20,25 @@ const { execSync } = require('child_process');
 // .badge/.badge-* CSS scaffolding to dashboard.html — see US-0125
 // report notes for the rationale.
 // eslint-disable-next-line no-unused-vars
-const { badge, BADGE_TONE } = require('./lib/theme');
+const { badge, BADGE_TONE, generateDashboardCssTokens } = require('./lib/theme');
+const { renderChrome, SHELL_CHROME_CSS } = require('./lib/render-shell');
+const { renderAboutModal } = require('./lib/render-html');
 
 const ROOT = path.resolve(__dirname, '..');
-const STATUS_PATH = path.join(ROOT, 'docs', 'sdlc-status.json');
+
+// sdlc-status.json is gitignored and only exists in the main repo checkout,
+// not in worktrees. Walk up to the git root so worktree invocations find it.
+function findGitRoot(start) {
+  let dir = start;
+  while (true) {
+    if (fs.existsSync(path.join(dir, '.git'))) return dir;
+    const parent = path.dirname(dir);
+    if (parent === dir) return start; // filesystem root — fall back
+    dir = parent;
+  }
+}
+const GIT_ROOT = findGitRoot(ROOT);
+const STATUS_PATH = path.join(GIT_ROOT, 'docs', 'sdlc-status.json');
 const PLAN_STATUS_PATH = path.join(ROOT, 'docs', 'plan-status.json');
 const OUTPUT_PATH = path.join(ROOT, 'docs', 'dashboard.html');
 
@@ -98,7 +113,7 @@ function getDashboardMeta() {
     subtitle: dashCfg.subtitle || 'Agentic AI SDLC',
     footer: dashCfg.footer || `Agentic AI SDLC | ${fallbackName}`,
     repoUrl: dashCfg.repoUrl || '',
-    primaryColor: dashCfg.primaryColor || '#D52B1E',
+    primaryColor: dashCfg.primaryColor || 'oklch(52% 0.22 25)',
     platform: dashCfg.platform || 'Agentic AI',
     agentCount: Object.keys(AGENT_CONFIG.agents || {}).length,
     author: dashCfg.author || '',
@@ -191,6 +206,33 @@ function formatElapsed(startedAt, nowMs) {
   return `${seconds}s`;
 }
 
+// US-0147: Agent Workload — builds per-agent bar chart from sdlcStatus.stories
+function renderAgentWorkload(agents, stories) {
+  const agentNames = Object.keys(agents || {}).filter((n) => !/conductor/i.test(n));
+  if (agentNames.length === 0) {
+    return `<div class="pv-workload-section"><div class="pv-workload-empty">No agents configured.</div></div>`;
+  }
+  const storyList = Object.values(stories || {});
+  const rows = agentNames
+    .map((name) => {
+      const assigned = storyList.filter((s) => s.agent === name);
+      const inFlight = assigned.filter((s) => !/done|complete/i.test(s.status || '')).length;
+      const total = assigned.length;
+      const done = total - inFlight;
+      const pct = total > 0 ? Math.round((inFlight / total) * 100) : 0;
+      return (
+        `<div class="pv-workload-row">` +
+        `<span class="pv-workload-name">${esc(name)}</span>` +
+        `<div class="pv-workload-track"><div class="pv-workload-bar" style="width:${pct}%"></div></div>` +
+        `<span class="pv-workload-count">${inFlight}</span>` +
+        `<span class="pv-workload-done">(${done} done)</span>` +
+        `</div>`
+      );
+    })
+    .join('');
+  return `<div class="pv-workload-section">${rows}</div>`;
+}
+
 function generateHTML(status) {
   const now = new Date().toLocaleString('en-US', {
     month: 'short',
@@ -249,7 +291,7 @@ function generateHTML(status) {
   const agentRoles = {};
   const agentAvatars = {};
   for (const [name, cfg] of Object.entries(AGENT_CONFIG.agents || {})) {
-    agentColors[name] = cfg.color || '#888';
+    agentColors[name] = cfg.color || 'var(--text-muted)';
     agentIcons[name] = cfg.icon || '🤖';
     agentRoles[name] = cfg.role || name;
     agentAvatars[name] = cfg.avatar || name.toLowerCase();
@@ -381,99 +423,90 @@ function generateHTML(status) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${DASH_META.title} — SDLC Live Dashboard</title>
-<!-- US-0110 AC-0361: Departure Mono (display numerics) + Geist (sans), font-display:swap via Google Fonts. -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Departure+Mono&family=Geist:wght@400;500;600;700&display=swap">
-<!-- US-0111 AC-0366: JetBrains Mono for the "Last updated: N ago" live-tick ticker. -->
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap">
 <style>
+  ${generateDashboardCssTokens()}
+  ${SHELL_CHROME_CSS}
   :root {
     --brand-primary: ${DASH_META.primaryColor};
     /* US-0110 AC-0361: scoped font stacks — do NOT reassign existing typography
-       to avoid cascade into unrelated surfaces; only .section-header opts in. */
-    --font-display: 'Departure Mono', 'SF Mono', Menlo, Consolas, monospace;
-    --font-sans: 'Geist', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+       to avoid cascade into unrelated surfaces; only .section-header opts in.
+       BUG-0228: CDN fonts removed; system fonts are primary fallbacks. */
+    --font-display: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     /* US-0110: canvas bg aligned with Plan Visualizer dark canvas (US-0094/US-0095). */
-    --bg-primary: #0b0d12;
-    --bg-card: #16213e;
-    --bg-card-inner: #1a1a3e;
-    --bg-card-border: #2a2a5a;
-    --bg-phase-pending: #2a2a4a;
-    --bg-phase-border: #3a3a5a;
-    --bg-phase-complete: #1a3a2a;
-    --bg-progress: #2a2a4a;
-    --text-primary: #e0e0e0;
-    --text-secondary: #aaa;
-    --text-muted: #999;
-    --text-dim: #777;
-    --divider: #2a2a4a;
-    --story-title: #ccc;
-    --footer-text: #666;
-    --status-planned-bg: #2a2a4a;
-    --status-planned-color: #888;
-    --status-inprogress-bg: #3a2a0a;
-    --status-complete-bg: #1a3a2a;
+    --bg-primary: oklch(11% 0.016 220);
+    --bg-card: oklch(20% 0.025 240);
+    --bg-card-inner: oklch(18% 0.025 255);
+    --bg-card-border: oklch(34% 0.030 255);
+    --bg-phase-pending: oklch(24% 0.025 255);
+    --bg-phase-border: oklch(36% 0.025 255);
+    --bg-phase-complete: oklch(22% 0.025 148);
+    --bg-progress: oklch(22% 0.025 255);
+    --text-primary: oklch(88% 0.006 220);
+    --text-secondary: oklch(70% 0.006 220);
+    --text-muted: oklch(63% 0.006 220);
+    --text-dim: oklch(52% 0.006 220);
+    --divider: oklch(22% 0.025 255);
+    --story-title: oklch(82% 0.006 220);
+    --footer-text: oklch(45% 0.006 220);
+    --status-planned-bg: oklch(22% 0.025 255);
+    --status-planned-color: oklch(58% 0.006 220);
+    --status-inprogress-bg: color-mix(in oklab, var(--live-accent) 12%, oklch(22% 0.025 255));
+    --status-complete-bg: color-mix(in oklab, var(--ok) 12%, oklch(22% 0.025 255));
+    --live-accent:      oklch(72% 0.19 38);
+    --live-accent-soft: oklch(72% 0.19 38 / 0.18);
+    --live-accent-ink:  oklch(55% 0.18 38);
+    --plan-accent:      oklch(62% 0.19 268);
+    --plan-accent-soft: oklch(62% 0.19 268 / 0.14);
+    --plan-accent-ink:  oklch(42% 0.18 268);
+    --ok:               oklch(66% 0.17 145);
+    --warn:             oklch(76% 0.17 80);
+    --risk:             oklch(58% 0.22 25);
+    --info:             oklch(60% 0.14 185);
   }
   [data-theme="light"] {
-    --bg-primary: #f0f2f5;
-    --bg-card: #ffffff;
-    --bg-card-inner: #f5f5f5;
-    --bg-card-border: #e0e0e0;
-    --bg-phase-pending: #f5f5f5;
-    --bg-phase-border: #ddd;
-    --bg-phase-complete: #e8f5e9;
-    --bg-progress: #e0e0e0;
-    --text-primary: #1a1a2e;
-    --text-secondary: #555;
-    --text-muted: #666;
-    --text-dim: #999;
-    --divider: #e8e8e8;
-    --story-title: #333;
-    --footer-text: #999;
-    --status-planned-bg: #e8e8e8;
-    --status-planned-color: #666;
-    --status-inprogress-bg: #fff3e0;
-    --status-complete-bg: #e8f5e9;
+    --bg-primary: oklch(95% 0.006 220);
+    --bg-card: oklch(100% 0 0);
+    --bg-card-inner: oklch(97% 0.004 220);
+    --bg-card-border: oklch(88% 0.008 220);
+    --bg-phase-pending: oklch(97% 0.004 220);
+    --bg-phase-border: oklch(84% 0.008 220);
+    --bg-phase-complete: color-mix(in oklab, var(--ok) 10%, oklch(100% 0 0));
+    --bg-progress: oklch(88% 0.008 220);
+    --text-primary: oklch(14% 0.018 255);
+    --text-secondary: oklch(42% 0.008 220);
+    --text-muted: oklch(48% 0.008 220);
+    --text-dim: oklch(63% 0.006 220);
+    --divider: oklch(90% 0.006 220);
+    --story-title: oklch(26% 0.012 220);
+    --footer-text: oklch(63% 0.006 220);
+    --status-planned-bg: oklch(90% 0.006 220);
+    --status-planned-color: oklch(48% 0.008 220);
+    --status-inprogress-bg: color-mix(in oklab, var(--live-accent) 10%, oklch(100% 0 0));
+    --status-complete-bg: color-mix(in oklab, var(--ok) 10%, oklch(100% 0 0));
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: var(--font-sans);
     background-color: var(--bg-primary);
     /* US-0110 AC-0360: subtle dot-grid — scoped to dark theme only, visible but low-key. */
-    background-image: radial-gradient(circle, rgba(148,163,184,0.06) 1px, transparent 1px);
+    background-image: radial-gradient(circle, oklch(70% 0.010 220 / 6%) 1px, transparent 1px);
     background-size: 24px 24px;
     color: var(--text-primary);
     min-height: 100vh;
     transition: background 0.3s, color 0.3s;
   }
   [data-theme="light"] body { background-image: none; }
+  /* BUG-0228: system font stack — CDN fonts removed */
+  body, .mc-agent-name-line, .mc-agent-role-text, .mc-status-badge {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  }
+  code, .mono, .pv-workload-name, .evt-time {
+    font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+  }
 
-  /* Header gradient — deep blue provides z-separation from dark body. */
-  .header { background: linear-gradient(135deg, #002060 0%, #003087 40%, #0050b3 100%); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 14px 32px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-  .header.header-blocked { border-top: 2px solid #ef4444; }
-  .header-left { display: flex; flex-direction: column; min-width: 0; }
-  .header-left .header-title { font-family: var(--font-sans); font-size: 14px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .header-left .header-subtitle { font-family: var(--font-display), 'Departure Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.6); letter-spacing: 0.04em; margin-top: 2px; }
-  .header-center { display: flex; align-items: center; gap: 8px; font-family: var(--font-display), 'Departure Mono', monospace; font-size: 12px; color: rgba(255,255,255,0.9); letter-spacing: 0.04em; white-space: nowrap; }
-  .header-right { display: flex; align-items: center; gap: 12px; }
-  .header-right .clock { text-align: right; }
-  .header-right .clock .time { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 22px; font-weight: 600; color: #fff; font-variant-numeric: tabular-nums; }
-  .header-right .clock .label { font-size: 11px; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 1px; }
-  [data-theme="light"] .header { background: linear-gradient(135deg, #003087 0%, #0050b3 40%, #1976d2 100%); }
-  /* Light theme header keeps white text — gradient is blue in both modes. */
-  [data-theme="light"] .header-left .header-title { color: #fff; }
-  [data-theme="light"] .header-left .header-subtitle { color: rgba(255,255,255,0.75); }
-  [data-theme="light"] .header-center { color: rgba(255,255,255,0.9); }
-  [data-theme="light"] .header-right .clock .time { color: #fff; }
-  [data-theme="light"] .header-right .clock .label { color: rgba(255,255,255,0.75); }
-  [data-theme="light"] .btn-header { background: rgba(255,255,255,0.2); color: #fff; }
-  [data-theme="light"] .btn-header:hover { background: rgba(255,255,255,0.35); }
-  [data-theme="light"] #theme-toggle { background: rgba(255,255,255,0.2); color: #fff; }
-  [data-theme="light"] #theme-toggle:hover { background: rgba(255,255,255,0.35); }
-  #theme-toggle { background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px 14px; border-radius: 20px; cursor: pointer; font-size: 13px; transition: background 0.2s; }
-  #theme-toggle:hover { background: rgba(255,255,255,0.35); }
+  /* Old .header CSS removed — now uses pv-chrome from render-chrome.js (US-0137) */
 
   .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
 
@@ -503,7 +536,7 @@ function generateHTML(status) {
   }
   .cycle-counter .cycle-label { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
   .cycle-counter .cycle-elapsed {
-    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     color: var(--text-muted);
     font-variant-numeric: tabular-nums;
@@ -563,7 +596,7 @@ function generateHTML(status) {
   .phase-block:last-child::after { background: transparent; }
   .phase-block.complete::before,
   .phase-block.complete::after,
-  .phase-block.in-progress::before { background: #2E7D32; }
+  .phase-block.in-progress::before { background: var(--ok); }
 
   .phase-number {
     font-family: var(--font-display), 'Departure Mono', 'SF Mono', Menlo, Consolas, monospace;
@@ -578,11 +611,11 @@ function generateHTML(status) {
     position: relative;
     z-index: 2;
   }
-  .phase-block.in-progress .phase-number { color: #F57C00; }
-  .phase-block.complete .phase-number { color: #34A853; }
-  [data-theme="light"] .phase-block.in-progress .phase-number { color: #E65100; }
-  [data-theme="light"] .phase-block.complete .phase-number { color: #2E7D32; }
-  .phase-block.blocked .phase-number { color: #ef4444; }
+  .phase-block.in-progress .phase-number { color: var(--live-accent); }
+  .phase-block.complete .phase-number { color: var(--ok); }
+  [data-theme="light"] .phase-block.in-progress .phase-number { color: var(--live-accent); }
+  [data-theme="light"] .phase-block.complete .phase-number { color: var(--ok); }
+  .phase-block.blocked .phase-number { color: var(--risk); }
 
   .phase-name {
     font-family: var(--font-sans);
@@ -626,25 +659,25 @@ function generateHTML(status) {
   .phase-fill-bar {
     height: 100%;
     width: 0%;
-    background: linear-gradient(90deg, #F57C00, #FFB74D);
+    background: linear-gradient(90deg, var(--live-accent), color-mix(in oklab, var(--live-accent) 70%, oklch(100% 0 0)));
     transition: width 0.6s ease;
     border-radius: 2px;
   }
-  .phase-block.complete .phase-fill-bar { background: linear-gradient(90deg, #2E7D32, #66BB6A); width: 100%; }
+  .phase-block.complete .phase-fill-bar { background: linear-gradient(90deg, var(--ok), color-mix(in oklab, var(--ok) 70%, oklch(100% 0 0))); width: 100%; }
 
   /* AC-0386: completed phase checkmark + elapsed footer. Shown only when
      .complete class is present; hidden for pending/in-progress/blocked. */
   .phase-check {
     display: none;
     font-size: 14px;
-    color: #34A853;
+    color: var(--ok);
     margin-right: 4px;
   }
   .phase-block.complete .phase-check { display: inline-block; }
-  [data-theme="light"] .phase-check { color: #2E7D32; }
+  [data-theme="light"] .phase-check { color: var(--ok); }
   .phase-elapsed {
     display: none;
-    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: 10px;
     color: var(--text-muted);
     font-variant-numeric: tabular-nums;
@@ -658,11 +691,11 @@ function generateHTML(status) {
      the rotation and substitutes a static red overlay so the blocked
      state is still perceivable without motion. */
   .phase-block.blocked {
-    background: rgba(239, 68, 68, 0.08);
+    background: oklch(58% 0.22 25 / 8%);
     border-radius: 8px;
   }
   .phase-block.blocked::before,
-  .phase-block.blocked::after { background: #ef4444; }
+  .phase-block.blocked::after { background: var(--risk); }
   .phase-block .phase-beacon {
     display: none;
     position: absolute;
@@ -670,7 +703,7 @@ function generateHTML(status) {
     border-radius: 8px;
     pointer-events: none;
     z-index: 0;
-    background: conic-gradient(from 0deg, transparent 0deg, rgba(239, 68, 68, 0.35) 60deg, transparent 120deg, transparent 360deg);
+    background: conic-gradient(from 0deg, transparent 0deg, oklch(58% 0.22 25 / 35%) 60deg, transparent 120deg, transparent 360deg);
     opacity: 0.85;
     mix-blend-mode: screen;
   }
@@ -683,7 +716,7 @@ function generateHTML(status) {
   @media (prefers-reduced-motion: reduce) {
     .phase-block.blocked .phase-beacon {
       animation: none;
-      background: rgba(239, 68, 68, 0.18);
+      background: oklch(58% 0.22 25 / 18%);
     }
   }
   @keyframes phase-beacon-sweep {
@@ -691,7 +724,7 @@ function generateHTML(status) {
     100% { transform: rotate(360deg); }
   }
 
-  @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(245, 124, 0, 0.4); } 50% { box-shadow: 0 0 20px 4px rgba(245, 124, 0, 0.2); } }
+  @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 oklch(72% 0.19 46 / 40%); } 50% { box-shadow: 0 0 20px 4px oklch(72% 0.19 46 / 20%); } }
   /* ===== US-0115 END ===== */
 
   .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-bottom: 24px; }
@@ -720,19 +753,19 @@ function generateHTML(status) {
   .metric-row:last-child { border-bottom: none; }
   .metric-label { font-size: 13px; color: var(--text-secondary); }
   .metric-value { font-size: 20px; font-weight: 700; }
-  .metric-value.green { color: #34A853; }
+  .metric-value.green { color: var(--ok); }
   .metric-value.red { color: var(--brand-primary); }
-  .metric-value.blue { color: #1565C0; }
-  .metric-value.orange { color: #F57C00; }
-  [data-theme="light"] .metric-value.orange { color: #E65100; }
-  [data-theme="light"] .metric-value.green { color: #2E7D32; }
+  .metric-value.blue { color: var(--report-accent); }
+  .metric-value.orange { color: var(--live-accent); }
+  [data-theme="light"] .metric-value.orange { color: var(--live-accent); }
+  [data-theme="light"] .metric-value.green { color: var(--ok); }
 
   /* Progress bars */
   .progress-bar { height: 8px; background: var(--bg-progress); border-radius: 4px; overflow: hidden; margin-top: 6px; }
   .progress-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
-  .progress-fill.red { background: linear-gradient(90deg, var(--brand-primary), #F44336); }
-  .progress-fill.green { background: linear-gradient(90deg, #2E7D32, #4CAF50); }
-  .progress-fill.blue { background: linear-gradient(90deg, #1565C0, #42A5F5); }
+  .progress-fill.red { background: linear-gradient(90deg, var(--brand-primary), var(--risk)); }
+  .progress-fill.green { background: linear-gradient(90deg, var(--ok), var(--ok)); }
+  .progress-fill.blue { background: linear-gradient(90deg, var(--report-accent), var(--info)); }
 
   /* US-0119 AC-0401: Agent spotlight banner — broadcast "on air" stage.
      240px tall with a 160px portrait thumbnail, Geist Display 28px name,
@@ -750,8 +783,8 @@ function generateHTML(status) {
   .spotlight-name { font-family: var(--font-sans); font-size: 28px; font-weight: 700; letter-spacing: -0.01em; color: var(--text-primary); display: flex; align-items: center; gap: 10px; line-height: 1.1; }
   [data-theme="light"] .spotlight-name { color: var(--text-primary); }
   .spotlight-role { font-family: var(--font-sans); font-size: 11px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-muted); }
-  .spotlight-task { font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace; font-size: 12px; color: var(--text-secondary); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
-  .spotlight-elapsed { font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace; font-size: 11px; color: var(--text-dim); letter-spacing: 0.04em; font-variant-numeric: tabular-nums; margin-top: 2px; }
+  .spotlight-task { font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
+  .spotlight-elapsed { font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); letter-spacing: 0.04em; font-variant-numeric: tabular-nums; margin-top: 2px; }
   .spotlight-elapsed::before { content: 'ELAPSED '; color: var(--text-muted); letter-spacing: 0.14em; }
 
   /* US-0119 AC-0402/0403/0404/0405: Vertical station cards. Portrait on
@@ -761,23 +794,33 @@ function generateHTML(status) {
      "now on air" dot. Idle stations fade to 0.5 opacity. Hover replaces
      the old filter:brightness(1.12) — invisible in light mode (BUG-0161)
      — with a 4px agent-color outline glow. */
-  .agent-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-  .agent-card { position: relative; background: var(--bg-card-inner); border-radius: 10px; padding: 14px 10px; transition: transform 150ms ease, box-shadow 150ms ease, opacity 0.2s; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; border: 1px solid var(--bg-card-border); }
+  .agent-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .agent-card { position: relative; background: var(--bg-card-inner); border-radius: 10px; padding: 12px; transition: transform 150ms ease, box-shadow 150ms ease, opacity 0.2s; display: flex; flex-direction: row; align-items: flex-start; gap: 12px; cursor: pointer; border: 1px solid var(--bg-card-border); }
   .agent-card.idle { opacity: 0.5; }
-  .agent-card:hover { transform: translateY(-1px); box-shadow: 0 0 0 4px var(--agent-color-ring, rgba(136,136,136,0.35)); opacity: 1; }
-  .agent-card.active { box-shadow: 0 0 0 3px var(--agent-color, #888), 0 6px 24px rgba(0,0,0,0.35); }
-  .agent-card.active:hover { box-shadow: 0 0 0 3px var(--agent-color, #888), 0 0 0 7px var(--agent-color-ring, rgba(136,136,136,0.35)); }
+  .agent-card:hover { transform: translateY(-1px); box-shadow: 0 0 0 4px var(--agent-color-ring, oklch(55% 0 0 / 35%)); opacity: 1; }
+  .agent-card.active { box-shadow: 0 0 0 3px var(--agent-color, var(--text-muted)), 0 6px 24px oklch(0% 0 0 / 35%); }
+  .agent-card.active:hover { box-shadow: 0 0 0 3px var(--agent-color, var(--text-muted)), 0 0 0 7px var(--agent-color-ring, oklch(55% 0 0 / 35%)); }
   .agent-card .on-air-dot { position: absolute; top: 8px; right: 10px; display: none; }
   .agent-card.active .on-air-dot { display: inline-block; }
-  #agent-portrait-popup { position: fixed; z-index: 999; width: 200px; border-radius: 14px; overflow: hidden; box-shadow: 0 12px 40px rgba(0,0,0,0.7); pointer-events: none; display: none; transition: opacity 0.15s; border: 2px solid rgba(255,255,255,0.12); }
+  /* US-0142: status-class prominence — is-active tinted bg + accent border */
+  .agent-card.is-active { border-color: var(--live-accent); background: color-mix(in oklab, var(--live-accent) 6%, var(--surface, var(--bg-card))); box-shadow: 0 0 0 1px var(--live-accent), var(--shadow, 0 4px 16px oklch(0% 0 0 / 30%)); }
+  .agent-card.is-blocked { border-color: oklch(58% 0.22 25 / 50%); }
+  .agent-card.is-review { border-color: oklch(60% 0.14 240 / 40%); }
+  /* US-0142: left accent rail — position absolute, requires overflow:hidden on card */
+  .agent-rail { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--live-accent); border-radius: 10px 0 0 10px; }
+  /* US-0142: pulsing live dot for active agents */
+  .agent-live-dot { width: 8px; height: 8px; border-radius: 999px; background: var(--text-muted, var(--text-muted)); }
+  .dot-pulse { background: var(--live-accent) !important; box-shadow: 0 0 0 3px var(--live-accent-soft); animation: pv-pulse 1.4s ease-in-out infinite; }
+  @keyframes pv-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+  #agent-portrait-popup { position: fixed; z-index: 999; width: 200px; border-radius: 14px; overflow: hidden; box-shadow: 0 12px 40px oklch(0% 0 0 / 70%); pointer-events: none; display: none; transition: opacity 0.15s; border: 2px solid oklch(100% 0 0 / 12%); }
   #agent-portrait-popup img { width: 100%; display: block; border-radius: 12px; object-fit: cover; object-position: center top; }
-  .agent-avatar { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; object-position: center top; border: 2px solid var(--agent-color, #888); flex-shrink: 0; }
-  .agent-avatar-fallback { width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--agent-color, #888); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 32px; background: var(--bg-phase-pending); }
-  .agent-info { min-width: 0; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; }
+  .agent-avatar { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; object-position: center top; border: 2px solid var(--agent-color, var(--text-muted)); flex-shrink: 0; }
+  .agent-avatar-fallback { width: 64px; height: 64px; border-radius: 50%; border: 2px solid var(--agent-color, var(--text-muted)); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 26px; background: var(--bg-phase-pending); }
+  .agent-info { min-width: 0; flex: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; }
   .agent-name { font-family: var(--font-sans); font-size: 13px; font-weight: 700; letter-spacing: 0.01em; }
   .agent-role { font-family: var(--font-sans); font-size: 9px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
   .agent-status { font-size: 10px; font-weight: 600; padding: 2px 10px; border-radius: 10px; display: inline-block; text-transform: uppercase; letter-spacing: 0.06em; }
-  .agent-task { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 10px; color: var(--text-secondary); margin-top: 4px; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .agent-task { font-family: var(--font-mono); font-size: 10px; color: var(--text-secondary); margin-top: 4px; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
   /* Story table */
   .story-list { display: flex; flex-direction: column; gap: 10px; }
@@ -796,11 +839,11 @@ function generateHTML(status) {
   /* US-0120 AC-0407: 3px vertical status strip on the left of each story row.
      Colour is swapped via .status-complete / .status-inprogress / .status-planned
      modifiers so patchDOM() could later retune it without re-rendering. */
-  .story-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: var(--bg-card-inner); border-radius: 6px; font-size: 12px; transition: all 0.2s; min-width: 0; border-left: 3px solid #64748b; }
+  .story-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: var(--bg-card-inner); border-radius: 6px; font-size: 12px; transition: all 0.2s; min-width: 0; border-left: 3px solid var(--text-dim); }
   .story-row:hover { filter: brightness(1.1); }
-  .story-row.status-complete { border-left-color: #22c55e; }
-  .story-row.status-inprogress { border-left-color: #f59e0b; }
-  .story-row.status-planned { border-left-color: #64748b; }
+  .story-row.status-complete { border-left-color: var(--ok); }
+  .story-row.status-inprogress { border-left-color: var(--warn); }
+  .story-row.status-planned { border-left-color: var(--text-dim); }
   .story-id { font-weight: 700; color: var(--brand-primary); width: 65px; flex-shrink: 0; }
   /* US-0120 AC-0410: keep .story-title's min-width:0 intact (BUG-0164 fix) so
      long titles still truncate correctly when an agent dot is present. */
@@ -811,26 +854,26 @@ function generateHTML(status) {
   /* US-0120 AC-0408: elapsed-time pill in JetBrains Mono next to the status
      badge. Rendered only for In Progress stories that carry a startedAt stamp. */
   .story-elapsed {
-    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: 10px;
     font-weight: 600;
     padding: 2px 8px;
     border-radius: 10px;
-    background: rgba(245, 158, 11, 0.15);
-    color: #f59e0b;
+    background: oklch(76% 0.17 80 / 15%);
+    color: var(--warn);
     flex-shrink: 0;
     white-space: nowrap;
     font-variant-numeric: tabular-nums;
     letter-spacing: 0.02em;
     margin-right: 6px;
   }
-  [data-theme="light"] .story-elapsed { color: #b45309; }
+  [data-theme="light"] .story-elapsed { color: oklch(52% 0.17 58); }
   .story-status { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600; flex-shrink: 0; white-space: nowrap; }
   .story-status.Planned { background: var(--status-planned-bg); color: var(--status-planned-color); }
-  .story-status.InProgress { background: var(--status-inprogress-bg); color: #F57C00; }
-  [data-theme="light"] .story-status.InProgress { color: #E65100; }
-  .story-status.Complete { background: var(--status-complete-bg); color: #34A853; }
-  [data-theme="light"] .story-status.Complete { color: #2E7D32; }
+  .story-status.InProgress { background: var(--status-inprogress-bg); color: var(--live-accent); }
+  [data-theme="light"] .story-status.InProgress { color: var(--live-accent); }
+  .story-status.Complete { background: var(--status-complete-bg); color: var(--ok); }
+  [data-theme="light"] .story-status.Complete { color: var(--ok); }
 
   /* ===== US-0121 BEGIN: Terminal-aesthetic activity log ===== */
   /* AC-0411..AC-0415: monospace log rows with agent-color left bar, bracketed
@@ -844,7 +887,7 @@ function generateHTML(status) {
     gap: 8px;
     margin-bottom: 10px;
     flex-wrap: wrap;
-    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
   }
   .log-filters { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; min-width: 0; }
   .log-filter-chip {
@@ -862,11 +905,11 @@ function generateHTML(status) {
   }
   .log-filter-chip:hover { color: var(--text-primary); border-color: var(--text-muted); }
   .log-filter-chip.active {
-    background: rgba(66, 165, 245, 0.18);
-    color: #1565C0;
-    border-color: rgba(66, 165, 245, 0.55);
+    background: oklch(60% 0.14 185 / 18%);
+    color: var(--report-accent);
+    border-color: oklch(60% 0.14 185 / 55%);
   }
-  [data-theme="light"] .log-filter-chip.active { color: #0D47A1; background: rgba(21, 101, 192, 0.12); }
+  [data-theme="light"] .log-filter-chip.active { color: var(--report-accent); background: oklch(50% 0.16 256 / 12%); }
   .log-tail-toggle {
     display: inline-flex;
     align-items: center;
@@ -885,13 +928,13 @@ function generateHTML(status) {
     background: var(--text-muted);
     display: inline-block;
   }
-  .log-tail-toggle.on .tail-dot { background: #34A853; box-shadow: 0 0 6px rgba(52, 168, 83, 0.6); }
-  [data-theme="light"] .log-tail-toggle.on .tail-dot { background: #2E7D32; }
+  .log-tail-toggle.on .tail-dot { background: var(--ok); box-shadow: 0 0 6px oklch(66% 0.17 145 / 60%); }
+  [data-theme="light"] .log-tail-toggle.on .tail-dot { background: var(--ok); }
 
   .log-scroll {
     max-height: 240px;
     overflow-y: auto;
-    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     line-height: 1.5;
   }
@@ -899,14 +942,14 @@ function generateHTML(status) {
     display: block;
     padding: 4px 10px;
     margin-bottom: 2px;
-    border-left: 3px solid #888;            /* AC-0411: agent-color left bar */
-    background: rgba(255, 255, 255, 0.02);
+    border-left: 3px solid var(--text-muted);            /* AC-0411: agent-color left bar */
+    background: oklch(100% 0 0 / 2%);
     color: var(--text-primary);             /* AC-0412: message uses primary fg */
     white-space: pre-wrap;
     word-break: break-word;
     font-variant-numeric: tabular-nums;
   }
-  [data-theme="light"] .log-entry { background: rgba(0, 0, 0, 0.02); }
+  [data-theme="light"] .log-entry { background: oklch(0% 0 0 / 2%); }
   .log-entry:last-child { margin-bottom: 0; }
   .log-entry.log-hidden { display: none; }
   .log-time { color: var(--text-muted); margin-right: 6px; }     /* AC-0412 */
@@ -915,7 +958,7 @@ function generateHTML(status) {
 
   /* AC-0415: empty state — blinking terminal cursor + waiting message. */
   .log-empty {
-    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     color: var(--text-muted);
     padding: 8px 10px;
@@ -946,15 +989,15 @@ function generateHTML(status) {
      for a console/telemetry feel, with a .stale variant that turns red when
      refreshState() can't reach sdlc-status.json. */
   .last-updated {
-    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: 11px;
-    color: rgba(255,255,255,0.75);
+    color: oklch(100% 0 0 / 75%);
     letter-spacing: 0.02em;
     font-variant-numeric: tabular-nums;
   }
-  .last-updated.stale { color: #f87171; }
+  .last-updated.stale { color: var(--risk); }
   [data-theme="light"] .last-updated { color: var(--text-muted); }
-  [data-theme="light"] .last-updated.stale { color: #dc2626; }
+  [data-theme="light"] .last-updated.stale { color: var(--risk); }
 
   /* Footer */
   .footer { text-align: center; padding: 16px; color: var(--footer-text); font-size: 11px; }
@@ -963,58 +1006,8 @@ function generateHTML(status) {
   .footer a:hover { text-decoration: underline; }
 
   /* About button */
-  .btn-header { background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px 14px; border-radius: 20px; cursor: pointer; font-size: 13px; transition: background 0.2s; }
-  .btn-header:hover { background: rgba(255,255,255,0.35); }
-
-  /* About modal */
-  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-  .modal-overlay.open { display: flex; }
-  .modal { background: var(--bg-card); border: 1px solid var(--bg-card-border); border-radius: 16px; padding: 28px; max-width: 720px; width: 92%; max-height: 88vh; overflow-y: auto; text-align: left; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
-  .modal h3 { font-size: 18px; font-weight: 700; margin-bottom: 4px; color: var(--brand-primary); }
-  .modal p { font-size: 14px; color: var(--text-secondary); margin-bottom: 6px; }
-  .modal .author { font-size: 15px; font-weight: 600; color: var(--text-primary); margin: 16px 0 8px; }
-  .modal .repo-link { display: inline-block; margin: 10px 0 14px; background: var(--brand-primary); color: white; padding: 7px 16px; border-radius: 8px; text-decoration: none; font-size: 12px; font-weight: 600; transition: background 0.2s; }
-  .modal .repo-link:hover { filter: brightness(0.85); text-decoration: none; }
-
-  /* US-0123: two-column About modal (playbill image | mission + roster + meta) */
-  .modal .about-layout { display: grid; grid-template-columns: 200px 1fr; gap: 20px; align-items: start; }
-  .modal .about-playbill { border: 2px solid var(--divider); border-radius: 8px; padding: 8px; background: #0b0d12; display: flex; align-items: center; justify-content: center; }
-  .modal .about-playbill img { width: 100%; display: block; border-radius: 4px; }
-  .modal .about-right { min-width: 0; }
-  .modal .about-mission { font-size: 13px; color: var(--text-secondary); margin-bottom: 14px; line-height: 1.45; }
-  .modal .about-roster-title,
-  .modal .about-links-title { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted); margin: 0 0 6px; }
-  .modal .about-roster { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; margin-bottom: 14px; list-style: none; padding: 0; }
-  .modal .about-roster li { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-primary); min-width: 0; }
-  .modal .about-roster img,
-  .modal .about-roster .about-roster-fallback { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 1px solid var(--bg-card-border); background: var(--bg-card-inner); }
-  .modal .about-roster .about-roster-fallback { display: flex; align-items: center; justify-content: center; font-size: 14px; }
-  .modal .about-roster-name { font-weight: 600; font-size: 12px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .modal .about-roster-role { font-size: 10px; color: var(--text-muted); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .modal .about-roster-text { min-width: 0; display: flex; flex-direction: column; }
-  .modal .about-links { font-size: 12px; color: var(--text-secondary); margin-bottom: 14px; }
-  .modal .about-links a { color: var(--brand-primary); text-decoration: none; word-break: break-all; }
-  .modal .about-links a:hover { text-decoration: underline; }
-  .modal .about-links-row { margin-bottom: 2px; }
-
-  .modal .meta-divider { border-top: 1px solid var(--bg-card-border); padding-top: 14px; margin-top: 14px; text-align: left; font-size: 12px; color: var(--text-muted); }
-  .modal .meta-section { margin-bottom: 12px; }
-  .modal .meta-section:last-child { margin-bottom: 0; }
-  .modal .meta-supertitle { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted); margin-bottom: 6px; }
-  .modal .meta-row { padding-left: 8px; margin-bottom: 3px; }
-  .modal .meta-label { color: var(--text-muted); }
-  .modal .meta-value { color: var(--text-primary); font-family: 'JetBrains Mono', 'Menlo', monospace; font-size: 11px; }
-  .modal .meta-attribution { margin-top: 14px; font-size: 11px; color: var(--text-muted); text-align: center; }
-  .modal-close { position: absolute; top: 12px; right: 16px; background: none; border: none; color: var(--text-muted); font-size: 22px; cursor: pointer; line-height: 1; padding: 4px 8px; border-radius: 6px; transition: background 0.2s; }
-  .modal-close:hover { background: var(--bg-card-inner); color: var(--text-primary); }
-
-  /* US-0123: responsive fallback — single column below 640px */
-  @media (max-width: 640px) {
-    .modal { padding: 20px; }
-    .modal .about-layout { grid-template-columns: 1fr; gap: 14px; }
-    .modal .about-playbill { max-width: 240px; margin: 0 auto; }
-    .modal .about-roster { grid-template-columns: 1fr; }
-  }
+  .btn-header { background: oklch(100% 0 0 / 20%); border: none; color: white; padding: 6px 14px; border-radius: 20px; cursor: pointer; font-size: 13px; transition: background 0.2s; }
+  .btn-header:hover { background: oklch(100% 0 0 / 35%); }
 
   /* ===== US-0112 BEGIN: .live-dot indicator (keep contiguous for mechanical rebase) ===== */
   /* Reusable presence indicator — base dot + .ok/.warn/.err variants + pulse halo.
@@ -1026,37 +1019,37 @@ function generateHTML(status) {
     border-radius: 50%;
     vertical-align: middle;
     margin-right: 6px;
-    background: #22c55e; /* default to ok-green so unset variant still renders */
-    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.3);
+    background: var(--ok); /* default to ok-green so unset variant still renders */
+    box-shadow: 0 0 0 2px oklch(66% 0.17 145 / 30%);
     flex-shrink: 0;
   }
-  /* OK — green #22c55e — contrast vs dark surface #16213e ≈ 6.3:1, vs light #ffffff ≈ 3.1:1 (AA large / non-text 3:1 pass) */
+  /* OK — green var(--ok) — contrast vs dark surface var(--bg-card) ≈ 6.3:1, vs light oklch(100% 0 0) ≈ 3.1:1 (AA large / non-text 3:1 pass) */
   .live-dot.ok {
-    background: #22c55e;
-    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.3);
+    background: var(--ok);
+    box-shadow: 0 0 0 2px oklch(66% 0.17 145 / 30%);
   }
-  /* WARN — amber #f59e0b — contrast vs dark #16213e ≈ 7.8:1, vs light #ffffff ≈ 2.4:1 bg → uses darker halo in light mode via [data-theme="light"] override below */
+  /* WARN — amber var(--warn) — contrast vs dark var(--bg-card) ≈ 7.8:1, vs light oklch(100% 0 0) ≈ 2.4:1 bg → uses darker halo in light mode via [data-theme="light"] override below */
   .live-dot.warn {
-    background: #f59e0b;
-    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.3);
+    background: var(--warn);
+    box-shadow: 0 0 0 2px oklch(76% 0.17 80 / 30%);
   }
-  /* ERR — red #ef4444 — contrast vs dark #16213e ≈ 5.6:1, vs light #ffffff ≈ 3.8:1 */
+  /* ERR — red var(--risk) — contrast vs dark var(--bg-card) ≈ 5.6:1, vs light oklch(100% 0 0) ≈ 3.8:1 */
   .live-dot.err {
-    background: #ef4444;
-    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.3);
+    background: var(--risk);
+    box-shadow: 0 0 0 2px oklch(58% 0.22 25 / 30%);
   }
   /* Light-theme halo boost for warn (amber has low contrast on white) — swap halo for a slightly darker outline so the dot still reads at ≥3:1 */
   [data-theme="light"] .live-dot.warn {
-    background: #d97706;
-    box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.35);
+    background: var(--warn);
+    box-shadow: 0 0 0 2px oklch(66% 0.17 70 / 35%);
   }
   [data-theme="light"] .live-dot.ok {
-    background: #16a34a;
-    box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.35);
+    background: var(--ok);
+    box-shadow: 0 0 0 2px oklch(66% 0.17 145 / 35%);
   }
   [data-theme="light"] .live-dot.err {
-    background: #dc2626;
-    box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.35);
+    background: var(--risk);
+    box-shadow: 0 0 0 2px oklch(58% 0.22 25 / 35%);
   }
 
   @keyframes live-dot-pulse {
@@ -1082,7 +1075,7 @@ function generateHTML(status) {
     position: fixed;
     inset: 0;
     pointer-events: none;
-    border: 4px solid #ef4444;
+    border: 4px solid var(--risk);
     z-index: 9999;
     opacity: 0;
     transition: opacity 180ms ease;
@@ -1092,8 +1085,8 @@ function generateHTML(status) {
     animation: blocked-border-pulse 1.6s ease-in-out infinite;
   }
   @keyframes blocked-border-pulse {
-    0%, 100% { box-shadow: inset 0 0 0 0 rgba(239, 68, 68, 0.0); }
-    50%      { box-shadow: inset 0 0 24px 0 rgba(239, 68, 68, 0.35); }
+    0%, 100% { box-shadow: inset 0 0 0 0 oklch(58% 0.22 25 / 0%); }
+    50%      { box-shadow: inset 0 0 24px 0 oklch(58% 0.22 25 / 35%); }
   }
   @media (prefers-reduced-motion: reduce) {
     .blocked-border.active { animation: none; }
@@ -1105,12 +1098,12 @@ function generateHTML(status) {
      collapses rather than leaves a blank strip. */
   .incident-ticker {
     font-family: var(--font-display), 'Departure Mono', 'SF Mono', Menlo, monospace;
-    color: #ef4444;
+    color: var(--risk);
     font-size: 12px;
     padding: 6px 16px;
     text-align: center;
-    background: rgba(239, 68, 68, 0.08);
-    border-bottom: 1px solid rgba(239, 68, 68, 0.25);
+    background: oklch(58% 0.22 25 / 8%);
+    border-bottom: 1px solid oklch(58% 0.22 25 / 25%);
     letter-spacing: 0.06em;
     display: none;
   }
@@ -1118,7 +1111,7 @@ function generateHTML(status) {
     display: block;
     animation: incident-shimmer 3s linear infinite;
     background-size: 200% 100%;
-    background-image: linear-gradient(90deg, rgba(239,68,68,0.08) 0%, rgba(239,68,68,0.18) 50%, rgba(239,68,68,0.08) 100%);
+    background-image: linear-gradient(90deg, oklch(58% 0.22 25 / 8%) 0%, oklch(58% 0.22 25 / 18%) 50%, oklch(58% 0.22 25 / 8%) 100%);
   }
   @keyframes incident-shimmer {
     0% { background-position: 0% 0; }
@@ -1147,15 +1140,15 @@ function generateHTML(status) {
   }
   .metric-hero .hero-sep { font-size: 36px; color: var(--text-muted); margin: 0 4px; }
   .metric-hero .hero-den { font-size: 32px; color: var(--text-muted); }
-  .metric-hero.blue { color: #1565C0; }
-  .metric-hero.green { color: #34A853; }
-  .metric-hero.amber { color: #F57C00; }
+  .metric-hero.blue { color: var(--report-accent); }
+  .metric-hero.green { color: var(--ok); }
+  .metric-hero.amber { color: var(--live-accent); }
   .metric-hero.red { color: var(--brand-primary); }
-  [data-theme="light"] .metric-hero.green { color: #2E7D32; }
-  [data-theme="light"] .metric-hero.amber { color: #E65100; }
+  [data-theme="light"] .metric-hero.green { color: var(--ok); }
+  [data-theme="light"] .metric-hero.amber { color: var(--live-accent); }
 
   .metric-sub {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 10px;
     color: var(--text-muted);
     text-transform: uppercase;
@@ -1174,8 +1167,8 @@ function generateHTML(status) {
     transition: height 0.3s ease, background 0.3s ease;
     position: relative;
   }
-  .phase-sparkline .spark-bar.complete { background: linear-gradient(180deg, #42A5F5, #1565C0); }
-  .phase-sparkline .spark-bar.in-progress { background: linear-gradient(180deg, #F57C00, #E65100); }
+  .phase-sparkline .spark-bar.complete { background: linear-gradient(180deg, var(--info), var(--report-accent)); }
+  .phase-sparkline .spark-bar.in-progress { background: linear-gradient(180deg, var(--live-accent), var(--live-accent)); }
   @media (prefers-reduced-motion: no-preference) {
     .phase-sparkline .spark-bar.in-progress { animation: spark-pulse 1.8s ease-in-out infinite; }
   }
@@ -1193,11 +1186,11 @@ function generateHTML(status) {
     stroke-linecap: round;
     transition: stroke-dashoffset 0.6s ease, stroke 0.3s ease;
   }
-  .doughnut .d-fill.green { stroke: #34A853; }
-  .doughnut .d-fill.amber { stroke: #F57C00; }
+  .doughnut .d-fill.green { stroke: var(--ok); }
+  .doughnut .d-fill.amber { stroke: var(--live-accent); }
   .doughnut .d-fill.red { stroke: var(--brand-primary); }
-  [data-theme="light"] .doughnut .d-fill.green { stroke: #2E7D32; }
-  [data-theme="light"] .doughnut .d-fill.amber { stroke: #E65100; }
+  [data-theme="light"] .doughnut .d-fill.green { stroke: var(--ok); }
+  [data-theme="light"] .doughnut .d-fill.amber { stroke: var(--live-accent); }
   .doughnut-center {
     position: absolute; inset: 0;
     display: flex; flex-direction: column;
@@ -1211,13 +1204,13 @@ function generateHTML(status) {
     line-height: 1;
     font-variant-numeric: tabular-nums;
   }
-  .doughnut-center .d-num.green { color: #34A853; }
-  .doughnut-center .d-num.amber { color: #F57C00; }
+  .doughnut-center .d-num.green { color: var(--ok); }
+  .doughnut-center .d-num.amber { color: var(--live-accent); }
   .doughnut-center .d-num.red { color: var(--brand-primary); }
-  [data-theme="light"] .doughnut-center .d-num.green { color: #2E7D32; }
-  [data-theme="light"] .doughnut-center .d-num.amber { color: #E65100; }
+  [data-theme="light"] .doughnut-center .d-num.green { color: var(--ok); }
+  [data-theme="light"] .doughnut-center .d-num.amber { color: var(--live-accent); }
   .doughnut-center .d-label {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 9px;
     color: var(--text-muted);
     text-transform: uppercase;
@@ -1234,7 +1227,7 @@ function generateHTML(status) {
   }
   .quality-stats .qs-cell { padding: 4px 0; }
   .quality-stats .qs-label {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 9px;
     color: var(--text-muted);
     text-transform: uppercase;
@@ -1243,10 +1236,10 @@ function generateHTML(status) {
     margin-bottom: 3px;
   }
   .quality-stats .qs-val { font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
-  .quality-stats .qs-val.green { color: #34A853; }
+  .quality-stats .qs-val.green { color: var(--ok); }
   .quality-stats .qs-val.red { color: var(--brand-primary); }
   .quality-stats .qs-val.muted { color: var(--text-secondary); }
-  [data-theme="light"] .quality-stats .qs-val.green { color: #2E7D32; }
+  [data-theme="light"] .quality-stats .qs-val.green { color: var(--ok); }
 
   /* Reviews list with avatar chips. Summary row on top, scrollable list below. */
   .reviews-summary {
@@ -1258,7 +1251,7 @@ function generateHTML(status) {
   }
   .reviews-summary .rs-cell { padding: 6px 4px; border-radius: 6px; background: var(--bg-card-inner); }
   .reviews-summary .rs-label {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 9px;
     color: var(--text-muted);
     text-transform: uppercase;
@@ -1273,9 +1266,9 @@ function generateHTML(status) {
     line-height: 1;
     font-variant-numeric: tabular-nums;
   }
-  .reviews-summary .rs-approved .rs-val { color: #34A853; }
+  .reviews-summary .rs-approved .rs-val { color: var(--ok); }
   .reviews-summary .rs-blocked .rs-val { color: var(--brand-primary); }
-  [data-theme="light"] .reviews-summary .rs-approved .rs-val { color: #2E7D32; }
+  [data-theme="light"] .reviews-summary .rs-approved .rs-val { color: var(--ok); }
   [data-theme="light"] .reviews-summary .rs-blocked .rs-val.zero { color: var(--text-muted); }
   .reviews-list {
     list-style: none; padding: 0; margin: 0;
@@ -1310,12 +1303,12 @@ function generateHTML(status) {
   .review-agent { font-size: 12px; font-weight: 700; flex-shrink: 0; }
   .review-target {
     font-size: 11px; color: var(--text-secondary);
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   .review-time {
     font-size: 10px; color: var(--text-muted);
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
     margin-top: 1px;
   }
@@ -1323,12 +1316,12 @@ function generateHTML(status) {
     font-size: 9px; font-weight: 700;
     padding: 3px 8px; border-radius: 10px;
     text-transform: uppercase; letter-spacing: 0.06em;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     flex-shrink: 0;
   }
-  .review-verdict.approve { color: #34A853; background: rgba(52, 168, 83, 0.14); }
-  .review-verdict.block { color: var(--brand-primary); background: rgba(213, 43, 30, 0.16); }
-  [data-theme="light"] .review-verdict.approve { color: #2E7D32; background: rgba(46, 125, 50, 0.12); }
+  .review-verdict.approve { color: var(--ok); background: oklch(66% 0.17 145 / 14%); }
+  .review-verdict.block { color: var(--brand-primary); background: oklch(58% 0.22 25 / 16%); }
+  [data-theme="light"] .review-verdict.approve { color: var(--ok); background: oklch(60% 0.16 145 / 12%); }
   .reviews-empty {
     font-size: 12px; color: var(--text-muted); font-style: italic;
     padding: 16px 0; text-align: center;
@@ -1344,7 +1337,7 @@ function generateHTML(status) {
     align-items: center;
   }
   .card-footer .stamp {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 10px;
     color: var(--text-muted);
     letter-spacing: 0.12em;
@@ -1370,7 +1363,7 @@ function generateHTML(status) {
     .container { padding: 16px; }
     .grid { grid-template-columns: 1fr 1fr; gap: 16px; }
     .grid-2 { grid-template-columns: 1fr; gap: 16px; }
-    .agent-grid { grid-template-columns: repeat(3, 1fr); }
+    .agent-grid { grid-template-columns: repeat(2, 1fr); }
     .epic-stories { grid-template-columns: 1fr 1fr; }
   }
 
@@ -1409,9 +1402,9 @@ function generateHTML(status) {
     .spotlight-portrait-wrap { flex-basis: 110px; width: 110px; }
     .spotlight-name { font-size: 20px; }
     .spotlight-role { font-size: 10px; }
-    .agent-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
-    .agent-card { padding: 10px 6px; gap: 6px; }
-    .agent-avatar, .agent-avatar-fallback { width: 56px; height: 56px; font-size: 24px; }
+    .agent-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+    .agent-card { padding: 10px 8px; gap: 8px; }
+    .agent-avatar, .agent-avatar-fallback { width: 48px; height: 48px; font-size: 20px; }
     .agent-name { font-size: 11px; }
     .epic-stories { grid-template-columns: 1fr; }
     .log-scroll { max-height: 150px; }
@@ -1451,9 +1444,9 @@ function generateHTML(status) {
     .spotlight-role { font-size: 10px; }
     .spotlight-task { display: none; }
     .spotlight-elapsed { font-size: 10px; }
-    .agent-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
-    .agent-card { padding: 10px 6px; gap: 6px; }
-    .agent-avatar, .agent-avatar-fallback { width: 52px; height: 52px; font-size: 22px; }
+    .agent-grid { grid-template-columns: repeat(1, 1fr); gap: 6px; }
+    .agent-card { padding: 10px 8px; gap: 8px; }
+    .agent-avatar, .agent-avatar-fallback { width: 48px; height: 48px; font-size: 20px; }
     .agent-name { font-size: 11px; }
     .agent-role { font-size: 9px; }
     .agent-status { font-size: 9px; padding: 1px 6px; }
@@ -1475,8 +1468,8 @@ function generateHTML(status) {
     .agent-spotlight { min-height: 160px; }
     .spotlight-portrait-wrap { flex-basis: 96px; width: 96px; height: 96px; }
     .spotlight-name { font-size: 16px; }
-    .agent-grid { grid-template-columns: repeat(2, 1fr); }
-    .agent-avatar, .agent-avatar-fallback { width: 48px; height: 48px; font-size: 20px; }
+    .agent-grid { grid-template-columns: repeat(1, 1fr); }
+    .agent-avatar, .agent-avatar-fallback { width: 40px; height: 40px; font-size: 18px; }
     .header-right .clock .time { font-size: 16px; }
     #theme-toggle, .btn-header { font-size: 11px; padding: 4px 10px; }
   }
@@ -1487,323 +1480,901 @@ function generateHTML(status) {
   .cycle-telemetry-tile { background: var(--bg-card); border: 1px solid var(--bg-card-border); border-radius: 8px; padding: 8px 14px; text-align: center; font-family: var(--font-sans); min-width: 100px; }
   .cycle-telemetry-tile .tile-value { font-family: var(--font-display), monospace; font-size: 20px; font-weight: 700; color: var(--text-primary); }
   .cycle-telemetry-tile .tile-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); margin-top: 2px; }
+  /* US-0145: Event log primary column widget */
+  .pv-event-log { margin-bottom: 16px; }
+  .pv-log-row { display: grid; grid-template-columns: 72px 90px 1fr; gap: 10px; padding: 4px 14px; border-bottom: 1px dashed oklch(100% 0 0 / 6%); font-size: 12px; }
+  .pv-log-row:last-child { border-bottom: 0; }
+  .evt-time { color: var(--text-muted); font-family: var(--font-mono); }
+  .evt-agent { color: var(--text-secondary); font-weight: 600; }
+  .evt-msg { color: var(--text-secondary); }
+  .evt-start .evt-agent { color: var(--live-accent-ink, oklch(55% 0.18 38)); }
+  .evt-done .evt-agent { color: var(--ok, oklch(68% 0.15 150)); }
+  .evt-block .evt-agent { color: var(--risk, oklch(64% 0.20 25)); }
+  .evt-review .evt-agent { color: var(--info, oklch(66% 0.14 240)); }
+  .evt-dispatch .evt-agent { color: oklch(62% 0.19 268); }
+  .evt-dispatch .evt-msg { color: var(--text-secondary); font-style: italic; }
+  .pv-log-status { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; padding: 2px 6px; border-radius: 4px; background: var(--live-accent, oklch(72% 0.19 38)); color: oklch(12% 0.02 60); margin-left: auto; }
+  .card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .card-head h3 { margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; }
+  /* US-0144: Simplified phase fill bar — number/name/group/fill only */
+  .pv-phase-fill-bg { height: 4px; background: var(--bg-progress, oklch(100% 0 0 / 10%)); border-radius: 3px; overflow: hidden; margin-top: auto; }
+  .pv-phase-fill { height: 100%; border-radius: 3px; background: var(--ok, oklch(68% 0.15 150)); transition: width 0.3s; }
+  /* US-0146: Live bar — 3-column grid: ON AIR | NOW EXECUTING + breadcrumb + last-event | CLOCK */
+  .pv-live-bar { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 0; padding: 10px 18px; background: linear-gradient(90deg, color-mix(in oklab, var(--live-accent, oklch(72% 0.19 38)) 14%, transparent) 0%, transparent 80%); border-bottom: 1px solid var(--bg-card-border, oklch(24% 0.030 255)); min-height: 64px; border-left: 3px solid var(--live-accent, oklch(72% 0.19 38)); margin-bottom: 0; }
+  .pv-on-air { font-family: var(--font-mono); font-size: 11px; font-weight: 700; letter-spacing: 0.12em; padding: 4px 8px; background: var(--live-accent, oklch(72% 0.19 38)); color: oklch(12% 0.02 60); border-radius: 4px; flex-shrink: 0; }
+  .pv-live-col-left { display: flex; align-items: center; padding-right: 18px; border-right: 1px solid var(--divider, oklch(22% 0.025 255)); }
+  .pv-live-col-mid { display: flex; flex-direction: column; gap: 3px; padding: 0 18px; min-width: 0; justify-content: center; }
+  .pv-live-col-right { display: flex; flex-direction: column; gap: 1px; padding-left: 18px; border-left: 1px solid var(--divider, oklch(22% 0.025 255)); align-items: flex-end; justify-content: center; }
+  .pv-live-exec-lbl { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--mc-dim); }
+  .pv-live-cycle { font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary, oklch(75% 0.006 220)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pv-live-last-evt { display: flex; align-items: center; gap: 5px; overflow: hidden; }
+  .pv-live-pulse-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--ok, oklch(68% 0.15 150)); animation: pv-pulse 2s ease-in-out infinite; flex-shrink: 0; display: inline-block; }
+  .pv-live-ticker { font-family: var(--font-mono); font-size: 10px; color: var(--mc-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pv-live-stat-lbl { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mc-dim); }
+  .pv-live-clock { font-family: var(--font-mono); font-size: 14px; font-weight: 700; color: var(--text-primary, oklch(88% 0.006 220)); text-align: right; }
+  @keyframes pv-pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+  @media (prefers-reduced-motion: reduce) { .pv-live-pulse-dot { animation: none; } }
+  /* US-0147: Agent Workload — live assignment bars from stories */
+  .pv-workload-section { margin-bottom: 16px; }
+  .pv-workload-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+  .pv-workload-name { min-width: 80px; font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
+  .pv-workload-track { flex: 1; height: 6px; background: var(--bg-progress, oklch(100% 0 0 / 10%)); border-radius: 3px; overflow: hidden; }
+  .pv-workload-bar { height: 100%; background: var(--live-accent, oklch(72% 0.19 38)); border-radius: 3px; transition: width 0.3s; }
+  .pv-workload-count { font-size: 11px; color: var(--text-muted); min-width: 24px; text-align: right; }
+  .pv-workload-done { font-size: 10px; color: var(--text-muted); min-width: 52px; }
+  .pv-workload-empty { font-size: 12px; color: var(--text-muted); padding: 8px 0; }
+  .conductor-dispatch-count { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .conductor-dispatch-count.pv-dispatch-flash { animation: dispatchFlash 0.4s ease-out; }
+  @keyframes dispatchFlash { 0% { transform: scale(1.15); color: var(--warn); } 100% { transform: scale(1); color: var(--text-muted); } }
+
+  /* ===== MISSION CONTROL REDESIGN (US-0148) ===== */
+
+  /* ── Light-mode-first root overrides ── */
+  :root {
+    --mc-bg: oklch(96% 0.004 220);
+    --mc-surface: oklch(100% 0 0);
+    --mc-border: oklch(88% 0.008 220);
+    --mc-text: oklch(14% 0.018 255);
+    --mc-muted: oklch(48% 0.008 220);
+    --mc-dim: oklch(63% 0.006 220);
+    --mc-header-bg: oklch(14% 0.025 240);
+    --mc-header-text: oklch(88% 0.006 220);
+    --mc-accent: var(--live-accent);
+    --mc-ok: var(--ok);
+    --mc-risk: var(--risk);
+    --mc-info: var(--info);
+  }
+  [data-theme="dark"] {
+    --mc-bg: oklch(11% 0.016 220);
+    --mc-surface: oklch(20% 0.025 240);
+    --mc-border: oklch(34% 0.030 255);
+    --mc-text: oklch(90% 0.006 220);
+    --mc-muted: oklch(65% 0.008 220);
+    --mc-dim: oklch(54% 0.006 220);
+    --mc-header-bg: oklch(15% 0.022 240);
+    --mc-header-text: oklch(90% 0.006 220);
+  }
+
+  /* ── Body override for light-first ── */
+  body {
+    background-color: var(--mc-bg);
+    color: var(--mc-text);
+  }
+  [data-theme="light"] body { background-image: none; }
+
+  /* ── Mission Control top narrow header ── */
+  .mc-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--mc-header-bg);
+    color: var(--mc-header-text);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 18px;
+    height: 42px;
+    border-bottom: 1px solid oklch(100% 0 0 / 8%);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  .mc-topbar-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; overflow: hidden; }
+  .mc-topbar-center { display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
+  .mc-topbar-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .mc-onair-badge {
+    background: var(--live-accent);
+    color: oklch(12% 0.02 60);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    padding: 2px 7px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+  .mc-breadcrumb {
+    color: oklch(70% 0.006 220);
+    font-size: 11px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .mc-breadcrumb .bc-sep { margin: 0 5px; opacity: 0.4; }
+  .mc-breadcrumb .bc-id { color: oklch(82% 0.008 220); font-weight: 600; }
+  .mc-topbar-center .mc-assigned { color: oklch(70% 0.006 220); font-size: 11px; }
+  .mc-topbar-center .mc-assigned strong { color: oklch(82% 0.008 220); }
+  .mc-topbar-center .mc-elapsed-display { color: oklch(60% 0.006 220); font-size: 11px; }
+  .mc-topbar-center .mc-elapsed-display strong { color: oklch(78% 0.006 220); }
+  .mc-topbar-center .mc-cycle-disp { color: oklch(60% 0.006 220); font-size: 11px; }
+  .mc-topbar-center .mc-topbar-clock { color: oklch(85% 0.006 220); font-size: 12px; }
+  .mc-live-badge {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+    color: var(--ok);
+  }
+  .mc-live-badge .mc-live-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--ok);
+    box-shadow: 0 0 0 2px oklch(66% 0.17 145 / 30%);
+    flex-shrink: 0;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .mc-live-badge .mc-live-dot { animation: live-dot-pulse 2.4s ease-in-out infinite; }
+  }
+  .mc-btn-sm {
+    background: oklch(100% 0 0 / 12%);
+    border: 1px solid oklch(100% 0 0 / 18%);
+    color: oklch(80% 0.006 220);
+    padding: 3px 10px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 11px;
+    font-family: inherit;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+  .mc-btn-sm:hover { background: oklch(100% 0 0 / 22%); }
+
+  /* ── Mission Control hero card ── */
+  .mc-hero {
+    background: linear-gradient(135deg, oklch(88% 0.06 270) 0%, oklch(84% 0.09 300) 100%);
+    border: 1px solid var(--mc-border);
+    border-radius: 10px;
+    padding: 16px 20px 12px;
+    margin-bottom: 14px;
+  }
+  [data-theme="dark"] .mc-hero {
+    background: linear-gradient(135deg, oklch(20% 0.05 270) 0%, oklch(18% 0.06 300) 100%);
+  }
+  .mc-hero-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 14px;
+  }
+  .mc-hero-breadcrumb {
+    font-family: var(--font-mono);
+    font-size: 10px; font-weight: 600;
+    color: var(--mc-muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    flex: 1;
+  }
+  .mc-hero-breadcrumb .bc-sep { margin: 0 6px; opacity: 0.4; }
+  .mc-hero-title { display: flex; align-items: center; gap: 10px; }
+  .mc-hero-title h1 {
+    font-family: var(--font-sans);
+    font-size: 20px; font-weight: 700;
+    color: var(--mc-text);
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+  .mc-live-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+    background: oklch(66% 0.17 145 / 12%);
+    color: var(--ok);
+    padding: 2px 8px;
+    border-radius: 10px;
+    border: 1px solid oklch(66% 0.17 145 / 30%);
+  }
+  [data-theme="dark"] .mc-live-chip { background: oklch(66% 0.17 145 / 14%); }
+  .mc-hero-signal {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 10px; color: var(--mc-muted);
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+  }
+  .mc-hero-signal .mc-signal-dot {
+    display: inline-block;
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--ok);
+    margin-right: 4px;
+    vertical-align: middle;
+  }
+
+  /* ── Stat tiles row ── */
+  .mc-stats-row {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 8px;
+  }
+  @media (max-width: 1300px) {
+    .mc-stats-row { grid-template-columns: repeat(4, 1fr); }
+  }
+  @media (max-width: 768px) {
+    .mc-stats-row { grid-template-columns: repeat(2, 1fr); }
+  }
+  .mc-stat-tile {
+    background: var(--mc-bg);
+    border: 1px solid var(--mc-border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: flex; flex-direction: column; gap: 2px;
+    min-width: 0;
+  }
+  [data-theme="dark"] .mc-stat-tile { background: var(--bg-card-inner); }
+  .mc-stat-label {
+    font-family: var(--font-mono);
+    font-size: 9px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    color: var(--mc-muted);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .mc-stat-value {
+    font-family: var(--font-display), 'Departure Mono', monospace;
+    font-size: 20px; font-weight: 700;
+    color: var(--mc-text);
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .mc-stat-value.ok { color: var(--ok); }
+  .mc-stat-value.warn { color: var(--live-accent); }
+  .mc-stat-value.risk { color: var(--risk); }
+  .mc-stat-value.info { color: var(--info); }
+  .mc-stat-sub {
+    font-family: var(--font-mono);
+    font-size: 9px; color: var(--mc-dim);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    margin-top: 1px;
+  }
+
+  /* ── Pipeline section ── */
+  .mc-section-bar {
+    display: flex; align-items: center;
+    margin-bottom: 8px; gap: 12px;
+  }
+  .mc-section-label {
+    font-family: var(--font-display), 'Departure Mono', monospace;
+    font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    color: var(--mc-muted);
+  }
+  .mc-section-meta {
+    font-family: var(--font-mono);
+    font-size: 10px; color: var(--mc-dim);
+    margin-left: auto;
+  }
+
+  /* ── Two-column layout ── */
+  .mc-layout {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 14px;
+    align-items: start;
+  }
+  @media (max-width: 1024px) {
+    .mc-layout { grid-template-columns: 1fr; }
+    .mc-sidebar { display: none; }
+  }
+  .mc-main { min-width: 0; }
+  .mc-sidebar { min-width: 0; }
+
+  /* ── BUG-0185/0186: Active agent hero card ── */
+  .mc-active-card {
+    border: 1px solid oklch(72% 0.19 38 / 35%);
+    border-left: 5px solid oklch(72% 0.19 38);
+    border-radius: 10px;
+    overflow: hidden;
+    background: oklch(10% 0.03 38);
+    box-shadow: 0 0 28px oklch(72% 0.19 38 / 10%);
+    margin-bottom: 10px;
+  }
+  .mc-active-portrait-banner {
+    width: 100%;
+    height: 200px;
+    background: oklch(6% 0.02 38);
+    position: relative;
+    overflow: hidden;
+  }
+  .mc-active-portrait-banner img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center center;
+    display: block;
+  }
+  .mc-active-portrait-banner::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 55%, oklch(10% 0.03 38) 100%);
+    pointer-events: none;
+  }
+  .mc-active-status-dot {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 11px;
+    height: 11px;
+    background: var(--ok);
+    border-radius: 50%;
+    border: 2px solid oklch(6% 0.02 38);
+    box-shadow: 0 0 8px var(--ok);
+    z-index: 2;
+    animation: mc-status-pulse 2s infinite;
+  }
+  @keyframes mc-status-pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .mc-active-info { padding: 10px 14px 12px; }
+  .mc-active-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 6px; }
+  .mc-active-name { font-size: 17px; font-weight: 700; color: oklch(93% 0.10 70); line-height: 1; }
+  .mc-active-role { font-size: 10px; color: oklch(70% 0.15 50); margin-top: 3px; }
+  .mc-active-badge { background: oklch(72% 0.19 38); color: oklch(0% 0 0); font-size: 9px; font-weight: 800; letter-spacing: .1em; padding: 3px 11px; border-radius: 20px; flex-shrink: 0; margin-top: 2px; }
+  .mc-active-story { background: oklch(0% 0 0 / .35); border-radius: 6px; padding: 7px 10px; font-size: 10px; margin-bottom: 6px; }
+  .mc-active-story-id { color: oklch(83% 0.15 70); font-weight: 700; margin-right: 6px; }
+  .mc-active-story-desc { color: oklch(70% 0.15 50); }
+  .mc-active-meta { display: flex; gap: 14px; font-size: 9px; color: var(--text-muted); font-family: var(--font-mono); flex-wrap: wrap; }
+  .mc-active-meta span { color: var(--text-secondary); }
+  /* ── BUG-0186: Conductor last-dispatch strip ── */
+  .mc-conductor-dispatch {
+    background: oklch(12% 0.04 264);
+    border: 1px solid oklch(45% 0.15 264 / 25%);
+    border-left: 4px solid oklch(60% 0.19 264);
+    border-radius: 8px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .mc-conductor-portrait { width: 32px; height: 32px; border-radius: 50%; overflow: hidden; border: 1px solid oklch(45% 0.15 264 / 35%); flex-shrink: 0; }
+  .mc-conductor-portrait img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+  .mc-conductor-label { font-size: 9px; color: oklch(72% 0.19 264); font-weight: 700; letter-spacing: .08em; }
+  .mc-conductor-value { font-size: 11px; color: oklch(80% 0.12 264); }
+  .mc-conductor-time { margin-left: auto; font-size: 9px; color: var(--text-muted); font-family: var(--font-mono); white-space: nowrap; }
+  /* ── BUG-0185: Idle roster 4-col grid ── */
+  .mc-idle-roster { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 10px; }
+  .mc-idle-card {
+    background: var(--mc-surface);
+    border: 1px solid var(--mc-border);
+    border-radius: 7px;
+    overflow: hidden;
+    opacity: 0.65;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 8px;
+    transition: opacity .15s;
+  }
+  .mc-idle-card:hover { opacity: 1; }
+  .mc-idle-portrait { width: 100%; height: 80px; overflow: hidden; }
+  .mc-idle-portrait img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+  .mc-idle-name { font-size: 9px; font-weight: 600; color: var(--text-muted); margin-top: 5px; text-align: center; }
+  .mc-idle-role { font-size: 7.5px; color: var(--mc-dim); margin-top: 1px; text-align: center; padding: 0 4px; }
+  .mc-idle-badge { margin-top: 4px; background: var(--mc-surface); color: var(--mc-dim); font-size: 7px; font-weight: 700; letter-spacing: .06em; padding: 1px 6px; border-radius: 10px; border: 1px solid var(--mc-border); }
+  @media (max-width: 768px) { .mc-idle-roster { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 480px) { .mc-idle-roster { grid-template-columns: repeat(2, 1fr); } }
+
+  /* ── Roster section ── */
+  .mc-roster { margin-bottom: 14px; }
+  .mc-roster-rows { display: flex; flex-direction: column; gap: 4px; }
+  .mc-roster-rows.agent-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .mc-agent-row {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--mc-surface);
+    border: 1px solid var(--mc-border);
+    border-left: 3px solid transparent;
+    border-radius: 8px;
+    padding: 10px 12px;
+    transition: border-color 0.2s;
+    min-width: 0;
+  }
+  .mc-agent-row.mc-agent-active {
+    border-left-color: var(--live-accent);
+    background: oklch(72% 0.19 38 / 4%);
+  }
+  [data-theme="dark"] .mc-agent-row.mc-agent-active {
+    background: color-mix(in oklab, var(--live-accent) 6%, var(--mc-surface));
+  }
+  .mc-agent-row.mc-agent-blocked {
+    border-left-color: var(--risk);
+    background: oklch(58% 0.22 25 / 4%);
+  }
+  [data-theme="dark"] .mc-agent-row.mc-agent-blocked {
+    background: color-mix(in oklab, var(--risk) 6%, var(--mc-surface));
+  }
+  .mc-agent-row.mc-agent-review {
+    border-left-color: var(--info);
+  }
+  .mc-agent-circle {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+    color: oklch(100% 0 0);
+    flex-shrink: 0;
+    font-family: var(--font-sans);
+  }
+  .mc-agent-identity { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 1px; }
+  .mc-agent-name-line {
+    display: flex; align-items: center; gap: 6px;
+    font-family: var(--font-sans); font-size: 13px; font-weight: 700;
+    color: var(--mc-text);
+  }
+  .mc-agent-name-line .mc-agent-role-text {
+    font-weight: 400; color: var(--mc-muted); font-size: 11px;
+  }
+  .mc-agent-task-line {
+    font-family: var(--font-mono);
+    font-size: 10px; color: var(--mc-muted);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .mc-agent-task-line a { color: inherit; text-decoration: none; }
+  .mc-agent-task-line a:hover { text-decoration: underline; }
+  .mc-status-badge {
+    font-family: var(--font-mono);
+    font-size: 9px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 3px 8px; border-radius: 10px;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+  .mc-status-badge.status-active { background: oklch(72% 0.19 38 / 15%); color: var(--live-accent); }
+  .mc-status-badge.status-idle { background: oklch(55% 0 0 / 10%); color: var(--mc-muted); }
+  .mc-status-badge.status-review { background: oklch(60% 0.14 185 / 12%); color: var(--info); }
+  .mc-status-badge.status-blocked { background: oklch(58% 0.22 25 / 15%); color: var(--risk); }
+  .mc-status-badge.status-complete { background: oklch(66% 0.17 145 / 12%); color: var(--ok); }
+  [data-theme="light"] .mc-status-badge.status-active { color: oklch(52% 0.17 38); }
+  [data-theme="light"] .mc-status-badge.status-idle { color: oklch(48% 0.008 220); }
+  [data-theme="light"] .mc-status-badge.status-blocked { color: oklch(45% 0.20 25); }
+
+  /* ── Sidebar panels ── */
+  .mc-sidebar-panel {
+    background: var(--mc-surface);
+    border: 1px solid var(--mc-border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+  .mc-sidebar-title {
+    font-family: var(--font-display), 'Departure Mono', monospace;
+    font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    color: var(--mc-muted);
+    margin-bottom: 8px;
+  }
+  .mc-attn-chips {
+    display: flex; gap: 6px; flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .mc-attn-chip {
+    font-family: var(--font-mono);
+    font-size: 10px; font-weight: 600; letter-spacing: 0.06em;
+    padding: 3px 10px; border-radius: 20px;
+    background: oklch(55% 0 0 / 8%); color: var(--mc-muted);
+    border: 1px solid oklch(55% 0 0 / 20%);
+    white-space: nowrap;
+  }
+  .mc-attn-chip.risk { background: oklch(58% 0.22 25 / 10%); color: var(--risk); border-color: oklch(58% 0.22 25 / 35%); }
+  .mc-attn-chip.warn { background: oklch(76% 0.17 80 / 10%); color: oklch(48% 0.17 58); border-color: oklch(76% 0.17 80 / 35%); }
+  .mc-attn-chip.info { background: oklch(60% 0.14 185 / 10%); color: var(--info); border-color: oklch(60% 0.14 185 / 35%); }
+  [data-theme="light"] .mc-attn-chip.warn { color: oklch(38% 0.15 58); }
+  [data-theme="light"] .mc-attn-chip.info { color: oklch(36% 0.13 185); }
+  .mc-attn-item {
+    background: var(--mc-bg);
+    border: 1px solid var(--mc-border);
+    border-radius: 8px; padding: 10px 12px;
+    margin-bottom: 8px;
+  }
+  [data-theme="dark"] .mc-attn-item { background: var(--bg-card-inner); }
+  .mc-attn-item:last-child { margin-bottom: 0; }
+  .mc-attn-item-line1 { font-size: 12px; margin-bottom: 2px; }
+  .mc-attn-item-name { font-weight: 700; color: var(--mc-text); }
+  .mc-attn-item-desc { color: var(--mc-muted); margin-left: 4px; }
+  .mc-attn-item-line2 { font-size: 10px; color: var(--mc-dim); font-family: var(--font-mono); letter-spacing: 0.06em; margin-bottom: 8px; }
+  .mc-attn-actions { display: flex; align-items: center; gap: 8px; }
+  .mc-attn-jump {
+    flex: 1; font-family: var(--font-mono); font-size: 11px; font-weight: 700;
+    color: oklch(98% 0 0); cursor: pointer; letter-spacing: 0.05em;
+    background: var(--risk); border: none;
+    border-radius: 8px; padding: 7px 14px;
+    transition: opacity 0.15s;
+  }
+  .mc-attn-jump:hover { opacity: 0.85; }
+  .mc-attn-all {
+    font-family: var(--font-mono); font-size: 11px; font-weight: 600;
+    color: var(--mc-muted); padding: 7px 12px;
+    border: 1px solid var(--mc-border); border-radius: 8px;
+    background: none; cursor: pointer; white-space: nowrap;
+  }
+  .mc-attn-all:hover { color: var(--mc-text); }
+
+  /* ── Sidebar event log ── */
+  .mc-evtlog-title {
+    font-family: var(--font-display), 'Departure Mono', monospace;
+    font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    color: var(--mc-muted);
+    margin-bottom: 8px;
+  }
+  .mc-evtlog-scroll {
+    max-height: 280px; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .mc-evt-card { background: var(--mc-surface); border: 1px solid var(--mc-border); border-radius: 8px; padding: 8px 10px; }
+  .mc-evt-card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+  .mc-evt-card-agent { display: inline-flex; align-items: center; gap: 5px; font-weight: 700; font-size: 12px; color: var(--mc-text); }
+  .mc-evt-card-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .mc-evt-time { font-family: var(--font-mono); font-size: 10px; color: var(--mc-dim); white-space: nowrap; }
+  .mc-evt-msg { color: var(--mc-muted); font-size: 11px; line-height: 1.4; word-break: break-word; }
+  .mc-evt-tag { display: inline-block; font-family: var(--font-mono); font-size: 9px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 6px; border-radius: 20px; margin-top: 5px; }
+  .mc-evt-tag-done { background: color-mix(in oklab, var(--ok) 15%, transparent); color: var(--ok); }
+  .mc-evt-tag-block { background: color-mix(in oklab, var(--risk) 15%, transparent); color: var(--risk); }
+  .mc-evt-tag-review { background: color-mix(in oklab, var(--info) 15%, transparent); color: var(--info); }
+  .mc-evt-tag-start { background: color-mix(in oklab, var(--warn) 15%, transparent); color: var(--warn); }
+
+  /* ── Roster counts in section bar ── */
+  .mc-roster-counts { margin-left: auto; display: flex; gap: 10px; align-items: center; font-family: var(--font-mono); font-size: 10px; }
+  .mc-count-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 3px; vertical-align: middle; }
+  .mc-count-active .mc-count-dot { background: var(--live-accent); }
+  .mc-count-idle .mc-count-dot { background: var(--mc-dim); }
+  .mc-count-blocked .mc-count-dot { background: var(--risk); }
+  .mc-count-active { color: var(--live-accent); }
+  .mc-count-idle { color: var(--mc-dim); }
+  .mc-count-blocked { color: var(--risk); }
+
+  /* ── Container override ── */
+  .mc-container { max-width: 1500px; margin: 0 auto; padding: 14px 18px; }
+
+  /* Collapsed sections inside existing HTML we keep inline */
+  .mc-legacy-section { margin-bottom: 14px; }
+  /* ===== END MISSION CONTROL REDESIGN ===== */
 </style>
 </head>
 <body>
-
-<div class="header${anyBlocked ? ' header-blocked' : ''}" id="main-header">
-  <div class="header-left">
-    <div class="header-title">${esc(DASH_META.title)}</div>
-    <div class="header-subtitle">${esc(DASH_META.subtitle)}</div>
-  </div>
-  <div class="header-center" id="header-phase-label">
-    <span class="live-dot ok" aria-label="live" title="live" id="clock-live-dot"></span>
-    <span>${esc(phaseLabel)}</span>
-  </div>
-  <div class="header-right">
-    <div class="clock">
-      <div class="time">${now}</div>
-      <div class="label">Last Updated</div>
-      <!-- US-0111 AC-0366: live ticker in JetBrains Mono; refreshState() updates this every tick. -->
-      <div id="last-updated-ticker" class="last-updated" aria-live="polite">Last updated: just now</div>
-    </div>
-    <a href="plan-status.html" class="btn-header" style="text-decoration:none">&#8592; Plan Dashboard</a>
-    <button class="btn-header" onclick="document.getElementById('about-modal').classList.add('open')">ℹ️ About</button>
-    <button id="notif-btn" class="btn-header" onclick="requestAlerts()">🔔 Alerts</button>
-    <button id="theme-toggle" onclick="toggleTheme()">☀️ Light</button>
-  </div>
-</div>
+${renderChrome({ projectName: (planData && planData.projectName) || (status && status.project && status.project.name) || 'PlanVisualizer', generatedAt: new Date().toISOString() }, 'live')}
 
 <!-- US-0122 AC-0417: incident ticker (hidden by default, .active shown beneath header when any agent/phase is blocked). -->
 <div id="incident-ticker" class="incident-ticker" aria-live="polite" aria-atomic="true"></div>
 
-<div class="container">
-
-${
-  pipelineComplete
-    ? `<!-- Pipeline Complete Banner -->
-<div style="background: linear-gradient(135deg, #1a3a2a 0%, #0d2b1a 100%); border: 1px solid #2d6a4f; border-left: 4px solid #34A853; border-radius: 8px; padding: 14px 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 14px;">
-  <span style="font-size: 28px;">🎉</span>
-  <div>
-    <div style="color: #34A853; font-size: 16px; font-weight: 700; letter-spacing: 0.5px;">PIPELINE COMPLETE — v1.0.0-poc</div>
-    <div style="color: #aaa; font-size: 12px; margin-top: 2px;">All ${phases.length} phases complete · ${metrics.storiesCompleted}/${metrics.storiesTotal} stories · ${metrics.testsPassed} tests passing · ${metrics.coveragePercent}% coverage · ${metrics.bugsFixed} bugs fixed</div>
+<!-- US-0148 MISSION CONTROL: Sticky narrow top header bar -->
+${(() => {
+  const dmAgentName = (AGENT_CONFIG.orchestrator || {}).dmAgent || 'Conductor';
+  const activeAgentEntry =
+    Object.entries(agents).find(([name, a]) => a.status === 'active' && name !== dmAgentName) ||
+    Object.entries(agents).find(([, a]) => a.status === 'active');
+  const activeAgentName = activeAgentEntry ? activeAgentEntry[0] : null;
+  const activeAgentData = activeAgentEntry ? activeAgentEntry[1] : null;
+  const activeEpicId = cycleActiveStory ? (stories[cycleActiveStory.id] || {}).epic || '' : '';
+  const activeStoryId = cycleActiveStory ? cycleActiveStory.id : '';
+  const activeStoryTitle = cycleActiveStory ? storyTitles[cycleActiveStory.id] || cycleActiveStory.title || '' : '';
+  return `<div class="mc-topbar" role="banner">
+  <div class="mc-topbar-left">
+    <span class="mc-onair-badge">ON AIR</span>
+    <span class="mc-breadcrumb">
+      ${activeEpicId ? `<span class="bc-id">${esc(activeEpicId)}</span><span class="bc-sep">›</span>` : ''}${activeStoryId ? `<span class="bc-id">${esc(activeStoryId)}</span>` : ''}<span class="bc-sep">&middot;</span><span>${esc(activeStoryTitle || 'STANDBY')}</span>
+    </span>
   </div>
-</div>`
-    : ''
-}
+  <div class="mc-topbar-center">
+    ${activeAgentName ? `<span class="mc-assigned">ASSIGNED <strong>${esc(activeAgentName)}</strong>${activeAgentData && activeAgentData.eta ? ` &middot; ETA ~${esc(activeAgentData.eta)}` : ''}</span>` : ''}
+    <span class="mc-elapsed-display">ELAPSED <strong id="mc-topbar-elapsed">00:00:00</strong></span>
+    <span class="mc-cycle-disp" id="mc-topbar-cycle">CYCLE ${String(cycleNumber).padStart(3, '0')}</span>
+    <span class="mc-topbar-clock" id="mc-topbar-clock">00:00:00</span>
+  </div>
+  <div class="mc-topbar-right">
+    <span class="mc-live-badge" title="Live — refreshing every 5s"><span class="mc-live-dot" aria-hidden="true"></span>LIVE</span>
+  </div>
+</div>`;
+})()}
 
-<!-- Phase Pipeline — US-0115: 6-phase timeline with cycle counter. -->
-<h2 class="section-header">PIPELINE</h2>
-<!-- AC-0384: cycle counter above the timeline. The #cycle-elapsed node
-     carries data-started-at (ISO8601) and is re-rendered every second by
-     updateCycleElapsed() client-side so the HH:MM:SS ticks smoothly. -->
-<div class="cycle-counter" id="cycle-counter" aria-live="polite">
-  <span class="cycle-label">
-    <span class="live-dot ok" aria-label="live" title="live"></span>
-    <span id="cycle-label-text">${esc(cycleLabel)}</span>
-  </span>
-  <span class="cycle-elapsed" id="cycle-elapsed" data-started-at="${esc(cycleStartedAt)}">00:00:00</span>
+<!-- US-0146: Live bar — 3-column ON AIR strip (kept for patchDOM/test compatibility) -->
+<div class="pv-live-bar" id="pv-live-bar" role="status" aria-live="polite" style="display:none;">
+  <div class="pv-live-col-left">
+    <span class="pv-on-air">ON AIR</span>
+  </div>
+  <div class="pv-live-col-mid">
+    <div class="pv-live-exec-lbl">NOW EXECUTING</div>
+    <div class="pv-live-cycle" id="pv-live-cycle">CYCLE — · —:——</div>
+    <div class="pv-live-last-evt">
+      <span class="pv-live-pulse-dot" aria-hidden="true"></span>
+      <span class="pv-live-ticker" id="pv-live-ticker" aria-hidden="true"></span>
+    </div>
+  </div>
+  <div class="pv-live-col-right">
+    <span class="pv-live-stat-lbl">CLOCK</span>
+    <span class="pv-live-clock" id="pv-live-clock">00:00:00</span>
+  </div>
 </div>
-<div class="pipeline">
-${phases
-  .map((p, i) => {
-    const phaseNum = String(i + 1).padStart(2, '0');
-    const icon =
-      p.status === 'complete' ? '✅' : p.status === 'in-progress' ? '🔄' : p.status === 'blocked' ? '⚠️' : '⏳';
-    const elapsed = p.status === 'complete' ? formatPhaseElapsed(p.startedAt, p.completedAt) : '';
-    const hasElapsed = elapsed ? '1' : '0';
-    // AC-0385: the in-progress phase gets the partial-fill width; all
-    // other phases render the track with either 0 (pending/blocked) or
-    // 100 (complete, via CSS) so patchDOM() only needs to flip the class
-    // to transition states.
-    const fillWidth = p.status === 'in-progress' ? cycleFillPct : p.status === 'complete' ? 100 : 0;
-    const agents = Array.isArray(p.agents) ? p.agents : [];
-    const deliverables = Array.isArray(p.deliverables) ? p.deliverables : [];
-    // US-0111 AC-0364 + US-0115: stable IDs so refreshState() / patchDOM() can
-    // update only the changed phase nodes instead of reloading the page.
-    // New helper ids (-check, -elapsed, -fill, -num) support the timeline
-    // footer/fill elements added here.
-    return `  <div class="phase-block ${p.status}" id="phase-${p.id}" data-phase-status="${p.status}">
+
+<div class="mc-container">
+
+<!-- ── Mission Control Hero Card ── -->
+<div class="mc-hero">
+  <div class="mc-hero-header">
+    <div>
+      <div class="mc-hero-breadcrumb">
+        AGENTIC SDLC
+        <span class="bc-sep">›</span> R${cycleNumber}
+        ${cycleActiveStory ? `<span class="bc-sep">›</span> ${esc((stories[cycleActiveStory.id] || {}).epic || '')} <span class="bc-sep">›</span> ${esc(cycleActiveStory.id)}` : ''}
+        ${cycleActiveStory ? `<span class="bc-sep">&middot;</span> ${esc(storyTitles[cycleActiveStory.id] || cycleActiveStory.title || '')}` : ''}
+      </div>
+      <div class="mc-hero-title">
+        <h1>Mission Control</h1>
+        <span class="mc-live-chip"><span class="mc-live-dot" aria-hidden="true" style="width:5px;height:5px;border-radius:50%;background:var(--ok);display:inline-block;"></span>LIVE</span>
+      </div>
+    </div>
+    <div class="mc-hero-signal">
+      <span class="mc-signal-dot" aria-hidden="true"></span>HEALTHY signal &middot; 5s refresh
+    </div>
+  </div>
+
+  <!-- 8 stat tiles -->
+  <div class="mc-stats-row">
+    <!-- PHASE -->
+    <div class="mc-stat-tile">
+      <div class="mc-stat-label">PHASE</div>
+      <div class="mc-stat-value info" id="mc-stat-phase">${phases.filter((p) => p.status === 'complete').length}<span style="font-size:13px;opacity:0.6;">/${phases.length}</span></div>
+      <div class="mc-stat-sub">${currentPhaseObj ? esc(currentPhaseObj.name || '') : pipelineComplete ? 'COMPLETE' : 'STANDBY'}</div>
+    </div>
+    <!-- ACTIVE AGENTS -->
+    <div class="mc-stat-tile">
+      <div class="mc-stat-label">ACTIVE</div>
+      <div class="mc-stat-value warn" id="mc-stat-active">${Object.values(agents).filter((a) => a && a.status === 'active').length}</div>
+      <div class="mc-stat-sub">of ${Object.keys(agents).length} agents</div>
+    </div>
+    <!-- QUEUE (stories in progress/planned) -->
+    <div class="mc-stat-tile">
+      <div class="mc-stat-label">QUEUE</div>
+      <div class="mc-stat-value" id="mc-stat-queue">${metrics.storiesTotal - metrics.storiesCompleted > 0 ? metrics.storiesTotal - metrics.storiesCompleted : 0}</div>
+      <div class="mc-stat-sub">stories remaining</div>
+    </div>
+    <!-- REVIEWS -->
+    <div class="mc-stat-tile">
+      <div class="mc-stat-label">REVIEWS</div>
+      <div class="mc-stat-value ${(metrics.reviewsBlocked || 0) > 0 ? 'risk' : 'ok'}" id="mc-stat-reviews">${metrics.reviewsBlocked || 0}</div>
+      <div class="mc-stat-sub">awaiting verdict</div>
+    </div>
+    <!-- BLOCKED -->
+    <div class="mc-stat-tile">
+      <div class="mc-stat-label">BLOCKED</div>
+      ${(() => {
+        const blockedAgents = Object.entries(agents).filter(([, a]) => a && a.status === 'blocked');
+        const count = blockedAgents.length;
+        const firstName = blockedAgents.length > 0 ? blockedAgents[0][0] : '';
+        return `<div class="mc-stat-value ${count > 0 ? 'risk' : ''}" id="mc-stat-blocked">${count}</div><div class="mc-stat-sub">${count > 0 ? esc(firstName) : 'all clear'}</div>`;
+      })()}
+    </div>
+    <!-- TESTS -->
+    <div class="mc-stat-tile">
+      <div class="mc-stat-label">TESTS</div>
+      <div class="mc-stat-value ${(metrics.testsFailed || 0) > 0 ? 'risk' : 'ok'}" id="mc-stat-tests">${metrics.testsPassed || 0}<span style="font-size:13px;opacity:0.6;">/${metrics.testsTotal || 0}</span></div>
+      <div class="mc-stat-sub">passing</div>
+    </div>
+    <!-- COVERAGE -->
+    <div class="mc-stat-tile">
+      <div class="mc-stat-label">COVERAGE</div>
+      <div class="mc-stat-value ${coverageTone}" id="mc-stat-coverage">${coveragePct}%</div>
+      <div class="mc-stat-sub">statements</div>
+    </div>
+    <!-- AI SPEND -->
+    <div class="mc-stat-tile">
+      <div class="mc-stat-label">AI SPEND</div>
+      <div class="mc-stat-value" id="mc-stat-spend">—</div>
+      <div class="mc-stat-sub">today</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Two-column layout: main + sidebar ── -->
+<div class="mc-layout">
+<div class="mc-main">
+
+<!-- PIPELINE section -->
+<div class="mc-section-bar">
+  <span class="mc-section-label">PIPELINE</span>
+  <span class="mc-section-meta" id="cycle-counter" aria-live="polite">CYCLE ${String(cycleNumber).padStart(3, '0')} &middot; <span id="cycle-elapsed" data-started-at="${esc(cycleStartedAt)}">00:00:00</span></span>
+</div>
+<div class="pipeline mc-legacy-section">
+${
+  phases.length === 0
+    ? `  <div style="width:100%;padding:20px 16px;font-size:12px;color:var(--text-secondary);font-family:var(--font-display),monospace;letter-spacing:0.06em;text-align:center;opacity:0.6;">STANDBY &middot; No pipeline cycle active</div>`
+    : phases
+        .map((p, i) => {
+          const phaseNum = String(i + 1).padStart(2, '0');
+          const icon =
+            p.status === 'complete' ? '✅' : p.status === 'in-progress' ? '🔄' : p.status === 'blocked' ? '⚠️' : '⏳';
+          const elapsed = p.status === 'complete' ? formatPhaseElapsed(p.startedAt, p.completedAt) : '';
+          const hasElapsed = elapsed ? '1' : '0';
+          const fillWidth = p.status === 'in-progress' ? cycleFillPct : p.status === 'complete' ? 100 : 0;
+          const pAgents = Array.isArray(p.agents) ? p.agents : [];
+          const deliverables = Array.isArray(p.deliverables) ? p.deliverables : [];
+          return `  <div class="phase-block ${p.status}" id="phase-${p.id}" data-phase-status="${p.status}">
     <div class="phase-beacon" aria-hidden="true"></div>
     <div class="phase-status" id="phase-${p.id}-icon" aria-hidden="true">${icon}</div>
     <div class="phase-number" id="phase-${p.id}-num">${phaseNum}</div>
     <div class="phase-name">${p.name}</div>
-    <div class="phase-agents">${agents.join(' \u00B7 ')}</div>
     <div class="phase-deliverables">${deliverables.join(' \u00B7 ')}</div>
     <div class="phase-elapsed" id="phase-${p.id}-elapsed" data-has-elapsed="${hasElapsed}"><span class="phase-check" id="phase-${p.id}-check" aria-label="complete">\u2713</span>${esc(elapsed)}</div>
-    <div class="phase-fill-track"><div class="phase-fill-bar" id="phase-${p.id}-fill" style="width: ${fillWidth}%"></div></div>
+    <div class="phase-fill-track"><div class="phase-fill-bar pv-phase-fill" id="phase-${p.id}-fill" style="width: ${fillWidth}%"></div></div>
   </div>`;
-  })
-  .join('\n')}
+        })
+        .join('\n')
+}
 </div>
 
+<!-- ROSTER section -->
+${(() => {
+  const dmAgentName = (AGENT_CONFIG.orchestrator || {}).dmAgent || 'Conductor';
+  const agentList = Object.entries(agents);
+  const imgBase = 'agents/images';
+
+  const lastDispatch = [...log].reverse().find(
+    (e) =>
+      e.tag === 'dispatch' ||
+      String(e.message || '')
+        .toLowerCase()
+        .startsWith('dispatch'),
+  );
+
+  // Split: active non-Conductor agents | idle/other non-Conductor agents
+  const activeAgents = agentList.filter(([n, a]) => n !== dmAgentName && a && a.status === 'active');
+  const idleAgents = agentList.filter(([n]) => n !== dmAgentName && !activeAgents.find(([an]) => an === n));
+
+  // Active cards (expanded with full portrait)
+  const activeCardsHtml = activeAgents
+    .map(([name, agent]) => {
+      const avatar = agentAvatars[name] || name.toLowerCase();
+      const color = agentColors[name] || 'oklch(55% 0 0)';
+      const role = agentRoles[name] || name;
+      const task = (agent && agent.currentTask) || '';
+      const branch = (agent && agent.branch) || '';
+      const startedAt = (agent && agent.startedAt) || '';
+      const storyId = (task.match(/US-\d{4}/) || [])[0] || '';
+      const onerror = `this.src='${imgBase}/optimized/${esc(avatar)}-160.png'`;
+      return `<div class="mc-active-card agent-card is-active active" id="agent-${esc(name)}" data-agent-name="${esc(name)}" data-agent="${esc(name)}" data-agent-status="active" style="--agent-color:${color};">
+  <div class="mc-active-portrait-banner">
+    <img src="${imgBase}/${esc(avatar)}.png" alt="${esc(name)}" onerror="${esc(onerror)}">
+    <span class="mc-active-status-dot" aria-hidden="true"></span>
+  </div>
+  <div class="mc-active-info">
+    <div class="mc-active-top">
+      <div>
+        <div class="mc-active-name">${esc(name)}</div>
+        <div class="mc-active-role">${esc(role)}</div>
+      </div>
+      <span class="mc-active-badge">ACTIVE</span>
+    </div>
+    ${task ? `<div class="mc-active-story"><span class="mc-active-story-id">${esc(storyId)}</span><span class="mc-active-story-desc">${esc(task)}</span></div>` : ''}
+    <div class="mc-active-meta">
+      ${branch ? `<div>Branch <span>${esc(branch)}</span></div>` : ''}
+      ${startedAt ? `<div>Started <span>${esc(startedAt)}</span></div>` : ''}
+    </div>
+  </div>
+  <div class="agent-status" id="agent-${esc(name)}-status" style="display:none;">active</div>
+  <div id="agent-${esc(name)}-task" style="display:none;">${esc(task)}</div>
+</div>`;
+    })
+    .join('\n');
+
+  // Conductor last-dispatch strip (always visible)
+  const conductorAvatar = agentAvatars[dmAgentName] || dmAgentName.toLowerCase();
+  const dispatchMsg = lastDispatch ? esc(String(lastDispatch.message || '')) : 'No dispatches yet';
+  const dispatchTime = lastDispatch ? esc(String(lastDispatch.time || '')) : '';
+  const conductorAgent = agents[dmAgentName] || {};
+  const conductorTask = (conductorAgent && conductorAgent.currentTask) || '';
+  const conductorDispatchHtml = `<div class="mc-conductor-dispatch" id="mc-conductor-dispatch" data-agent="${esc(dmAgentName)}">
+  <div class="mc-conductor-portrait">
+    <img src="${imgBase}/optimized/${esc(conductorAvatar)}-64.png" alt="${esc(dmAgentName)}" onerror="this.style.display='none'">
+  </div>
+  <div>
+    <div class="mc-conductor-label">${esc(dmAgentName)} · Last Dispatch</div>
+    <div class="mc-conductor-value">${dispatchMsg}</div>
+  </div>
+  <span class="mc-conductor-time">${dispatchTime}</span>
+  <div id="agent-${esc(dmAgentName)}-task" style="display:none;">${esc(conductorTask)}</div>
+  <div class="agent-status" id="agent-${esc(dmAgentName)}-status" style="display:none;">${esc((conductorAgent && conductorAgent.status) || 'idle')}</div>
+  <div class="conductor-dispatch-count" id="conductor-dispatch-count" style="display:none;">0 dispatched</div>
+</div>`;
+
+  // Idle 4-col grid
+  const idleCardsHtml = idleAgents
+    .map(([name, agent]) => {
+      const avatar = agentAvatars[name] || name.toLowerCase();
+      const color = agentColors[name] || 'oklch(55% 0 0)';
+      const role = agentRoles[name] || name;
+      const statusStr = (agent && agent.status) || 'idle';
+      const task = (agent && agent.currentTask) || '';
+      const initial = name.charAt(0).toUpperCase();
+      const onerror = `this.parentElement.innerHTML='<div style="width:100%;aspect-ratio:1;background:var(--mc-surface);display:flex;align-items:center;justify-content:center;font-size:22px;">${initial}</div>'`;
+      return `<div class="mc-idle-card agent-card is-idle" id="agent-${esc(name)}" data-agent-name="${esc(name)}" data-agent="${esc(name)}" data-agent-status="${esc(statusStr)}" style="--agent-color:${color};">
+  <div class="mc-idle-portrait"><img src="${imgBase}/optimized/${esc(avatar)}-64.png" alt="${esc(name)}" onerror="${esc(onerror)}"></div>
+  <div class="mc-idle-name">${esc(name)}</div>
+  <div class="mc-idle-role">${esc(role)}</div>
+  <div class="mc-idle-badge">IDLE</div>
+  <div class="agent-status" id="agent-${esc(name)}-status" style="display:none;">${esc(statusStr)}</div>
+  <div id="agent-${esc(name)}-task" style="display:none;">${esc(task)}</div>
+</div>`;
+    })
+    .join('\n');
+
+  return `${activeCardsHtml}
+${conductorDispatchHtml}
+<div class="mc-section-bar" style="margin-bottom:6px;">
+  <span class="mc-section-label">ALL AGENTS</span>
+</div>
+<div class="mc-idle-roster" id="mc-idle-roster">
+${idleCardsHtml}
+</div>
+<!-- Hidden spotlight stub for patchDOM compatibility -->
+<div id="agent-spotlight" style="display:none;" data-agent-name="" data-started-at="">
+  <div id="agent-spotlight-name"></div>
+  <div id="agent-spotlight-role"></div>
+  <div id="agent-spotlight-task"></div>
+  <div id="agent-spotlight-elapsed" data-started-at="${esc(cycleStartedAt)}"></div>
+</div>`;
+})()}
+
 <!-- US-0130: Epic progress strip — rendered by patchDOM on each tick -->
-<div id="epic-strip" style="display:none; margin-bottom:16px; background:var(--bg-card); border:1px solid var(--bg-card-border); border-radius:10px; padding:10px 16px; font-family:var(--font-sans); font-size:12px;">
-  <div style="font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin-bottom:8px;">Epic Progress</div>
+<div id="epic-strip" style="display:none; margin-bottom:14px; background:var(--mc-surface); border:1px solid var(--mc-border); border-radius:10px; padding:10px 16px; font-family:var(--font-sans); font-size:12px;">
+  <div style="font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:var(--mc-muted); margin-bottom:8px;">Epic Progress</div>
   <div id="epic-strip-rows"></div>
 </div>
 
 <!-- US-0133: Cycle history — lap strip + telemetry -->
-<div id="cycle-history-section" style="display:none; margin-bottom:24px;">
-  <div style="font-family:var(--font-display),monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin-bottom:8px;">Cycle History</div>
+<div id="cycle-history-section" style="display:none; margin-bottom:14px;">
+  <div style="font-family:var(--font-display),monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--mc-dim); margin-bottom:8px;">Cycle History</div>
   <div id="cycle-telemetry" style="display:flex; gap:16px; margin-bottom:10px; flex-wrap:wrap;"></div>
   <div id="cycle-lap-strip" style="display:flex; gap:8px; overflow-x:auto; padding-bottom:4px;"></div>
 </div>
 
-<!-- Metrics Row — US-0118 differentiated cards.
-     AC-0399: semantic color keyed to state: Phase=blue, Quality=green/amber/red
-     by coverage threshold, Reviews=green(approve)/red(block).
-     Metric IDs (id="metric-*") are preserved so patchDOM() from US-0111 can
-     mutate values in-place on live refresh. -->
-<h2 class="section-header">TELEMETRY</h2>
-<div class="grid">
-
-  <!-- AC-0396: Phase Progress card — hero number in Departure Mono 56px +
-       sparkline below (one bar per phase, height keyed to status). -->
-  <div class="card metric-card" id="card-phase-progress">
-    <h2>Phase Progress</h2>
-    <div class="metric-sub">Phases Complete</div>
-    <div class="metric-hero blue" id="metric-phaseHero"><span id="metric-phasesCompleteNum">${phases.filter((p) => p.status === 'complete').length}</span><span class="hero-sep">/</span><span class="hero-den" id="metric-phasesTotalNum">${phases.length}</span></div>
-    <!-- Legacy ids preserved for patchDOM() compatibility. -->
-    <span id="metric-phasesComplete" hidden>${phases.filter((p) => p.status === 'complete').length} / ${phases.length}</span>
-    <div class="phase-sparkline" id="metric-phasesSparkline" aria-hidden="true">
-${phases
-  .map(
-    (p, i) =>
-      `      <div class="spark-bar ${p.status}" data-phase-id="${esc(p.id)}" data-phase-status="${esc(p.status)}" style="height: ${sparkHeights[i]}%" title="${esc(p.name)}: ${esc(p.status)}"></div>`,
-  )
-  .join('\n')}
-    </div>
-    <div class="progress-bar"><div class="progress-fill blue" id="metric-phasesBar" style="width: ${phasePercent}%"></div></div>
-    <div class="metric-sub" style="margin-top: 14px">Stories Done · <span id="metric-storiesDone">${metrics.storiesCompleted} / ${metrics.storiesTotal}</span> · Tasks <span id="metric-tasksDone">${metrics.tasksTotal > 0 ? `${metrics.tasksCompleted} / ${metrics.tasksTotal}` : '—'}</span></div>
-    <div class="progress-bar"><div class="progress-fill green" id="metric-storiesBar" style="width: ${storyPercent}%"></div></div>
-    <div class="progress-bar" style="margin-top: 4px"><div class="progress-fill red" id="metric-tasksBar" style="width: ${metrics.tasksTotal > 0 ? Math.round((metrics.tasksCompleted / metrics.tasksTotal) * 100) : 0}%"></div></div>
-    <div class="card-footer">
-      <span class="stamp">Last updated <b id="stamp-phase-progress">${stampHHMM}</b></span>
-    </div>
+<!-- TELEMETRY: hidden metric IDs for patchDOM compatibility (US-0111) -->
+<div style="display:none;" aria-hidden="true">
+  <span id="metric-phasesComplete">${phases.filter((p) => p.status === 'complete').length} / ${phases.length}</span>
+  <span id="metric-phasesCompleteNum">${phases.filter((p) => p.status === 'complete').length}</span>
+  <span id="metric-phasesTotalNum">${phases.length}</span>
+  <span id="metric-storiesDone">${metrics.storiesCompleted} / ${metrics.storiesTotal}</span>
+  <span id="metric-tasksDone">${metrics.tasksTotal > 0 ? `${metrics.tasksCompleted} / ${metrics.tasksTotal}` : '—'}</span>
+  <span id="metric-testsPassed">${metrics.testsPassed}</span>
+  <span id="metric-testsFailed">${metrics.testsFailed}</span>
+  <span id="metric-testsTotal">${metrics.testsTotal}</span>
+  <span id="metric-bugsOpen">${metrics.bugsOpen}</span>
+  <span id="metric-bugsFixed">${metrics.bugsFixed}</span>
+  <span id="metric-reviewsApproved">${metrics.reviewsApproved}</span>
+  <span id="metric-reviewsBlocked">${metrics.reviewsBlocked}</span>
+  <span id="metric-coveragePercent">${coveragePct}%</span>
+  <b id="stamp-phase-progress">${stampHHMM}</b>
+  <b id="stamp-quality">${stampHHMM}</b>
+  <b id="stamp-reviews">${stampHHMM}</b>
+  <!-- Doughnut for patchDOM coverage -->
+  <div id="metric-coverageDoughnut" data-coverage="${coveragePct}" data-tone="${coverageTone}">
+    <circle id="metric-coverageDoughnutFill" class="d-fill ${coverageTone}" stroke-dashoffset="${doughnutOffset}"></circle>
   </div>
-
-  <!-- AC-0397: Quality card — SVG doughnut (circle + stroke-dasharray) with
-       center coverage number. Tint green ≥80%, amber 60–80%, red <60%. -->
-  <div class="card metric-card" id="card-quality">
-    <h2><span class="live-dot ok" aria-label="live" title="live" id="quality-live-dot"></span>Quality</h2>
-    <div class="doughnut-wrap">
-      <div class="doughnut" id="metric-coverageDoughnut" data-coverage="${coveragePct}" data-tone="${coverageTone}" role="img" aria-label="Code coverage ${coveragePct}%">
-        <svg viewBox="0 0 36 36">
-          <circle class="d-track" cx="18" cy="18" r="15.9155"></circle>
-          <circle class="d-fill ${coverageTone}" id="metric-coverageDoughnutFill" cx="18" cy="18" r="15.9155"
-                  stroke-dasharray="100 100" stroke-dashoffset="${doughnutOffset}"></circle>
-        </svg>
-        <div class="doughnut-center">
-          <div class="d-num ${coverageTone}" id="metric-coveragePercent">${coveragePct}%</div>
-          <div class="d-label">Coverage</div>
-        </div>
-      </div>
-    </div>
-    <div class="quality-stats">
-      <div class="qs-cell">
-        <span class="qs-label">Passed</span>
-        <span class="qs-val green" id="metric-testsPassed">${metrics.testsPassed}</span>
-      </div>
-      <div class="qs-cell">
-        <span class="qs-label">Failed</span>
-        <span class="qs-val ${metrics.testsFailed > 0 ? 'red' : 'muted'}" id="metric-testsFailed">${metrics.testsFailed}</span>
-      </div>
-      <div class="qs-cell">
-        <span class="qs-label">Bugs Open</span>
-        <span class="qs-val ${metrics.bugsOpen > 0 ? 'red' : 'green'}" id="metric-bugsOpen">${metrics.bugsOpen}</span>
-      </div>
-    </div>
-    <span id="metric-testsTotal" hidden>${metrics.testsTotal}</span>
-    <div class="card-footer">
-      <span class="stamp">Last updated <b id="stamp-quality">${stampHHMM}</b></span>
-    </div>
+  <!-- Sparkline for patchDOM -->
+  <div id="metric-phasesSparkline">
+${phases.map((p, i) => `    <div class="spark-bar ${p.status}" data-phase-id="${esc(p.id)}" data-phase-status="${esc(p.status)}" style="height: ${sparkHeights[i]}%"></div>`).join('\n')}
   </div>
-
-  <!-- AC-0398: Reviews card — compact list of recent review verdicts from
-       status.log, each row with an agent avatar chip (small circular image
-       from agents.config.json, path agents/images/optimized/AVATAR-64.png). -->
-  <div class="card metric-card" id="card-reviews">
-    <h2>Reviews</h2>
-    <div class="reviews-summary">
-      <div class="rs-cell rs-approved">
-        <span class="rs-label">Approved</span>
-        <span class="rs-val" id="metric-reviewsApproved">${metrics.reviewsApproved}</span>
-      </div>
-      <div class="rs-cell rs-blocked">
-        <span class="rs-label">Blocked</span>
-        <span class="rs-val ${metrics.reviewsBlocked > 0 ? '' : 'zero'}" id="metric-reviewsBlocked">${metrics.reviewsBlocked}</span>
-      </div>
-    </div>
-    <ul class="reviews-list" id="metric-reviewsList">
-${
-  reviewEntries.length === 0
-    ? `      <li class="reviews-empty">No reviews yet — awaiting first verdict.</li>`
-    : reviewEntries
-        .map((r) => {
-          const color = agentColors[r.agent] || '#888';
-          const icon = agentIcons[r.agent] || '🔍';
-          const avatar = agentAvatars[r.agent] || r.agent.toLowerCase();
-          const imgBase = 'agents/images';
-          const chipImg = `<img class="review-chip" src="${imgBase}/optimized/${esc(avatar)}-64.png" alt="${esc(r.agent)}" style="border-color: ${color}" onerror="this.onerror=function(){this.outerHTML='<div class=\\'review-chip-fallback\\' style=\\'border-color: ${color}\\'>${icon}</div>'};this.src='${imgBase}/headshots/${esc(r.agent.toLowerCase())}.png'">`;
-          return `      <li class="review-item">
-        ${chipImg}
-        <div class="review-body">
-          <div class="review-line">
-            <span class="review-agent" style="color: ${color}">${esc(r.agent)}</span>
-            <span class="review-target">${esc(r.target)}</span>
-          </div>
-          <div class="review-time">${esc(r.time)}</div>
-        </div>
-        <span class="review-verdict ${r.verdict}">${r.verdict === 'approve' ? 'Approve' : 'Block'}</span>
-      </li>`;
-        })
-        .join('\n')
-}
-    </ul>
-    <span id="metric-bugsFixed" hidden>${metrics.bugsFixed}</span>
-    <div class="card-footer">
-      <span class="stamp">Last updated <b id="stamp-reviews">${stampHHMM}</b></span>
-    </div>
-  </div>
+  <!-- Progress bars -->
+  <div class="progress-bar"><div id="metric-phasesBar" class="progress-fill blue" style="width:${phasePercent}%"></div></div>
+  <div class="progress-bar"><div id="metric-storiesBar" class="progress-fill green" style="width:${storyPercent}%"></div></div>
+  <div class="progress-bar"><div id="metric-tasksBar" class="progress-fill red" style="width:${metrics.tasksTotal > 0 ? Math.round((metrics.tasksCompleted / metrics.tasksTotal) * 100) : 0}%"></div></div>
 </div>
 
-<!-- Agents + Stories -->
-<div class="grid-2">
-  <div class="card">
-    <h2 class="section-header">ACTIVE AGENT</h2>
-${(() => {
-  const roles = agentRoles;
-  const imgBase = 'agents/images';
-  // US-0119 AC-0401: Spotlight banner — broadcast stage for the current on-air
-  // agent. Prefer non-Conductor active agent (BUG-0079). Uses the 160px
-  // optimized portrait from US-0113's config, Geist 28px name, small-caps
-  // role, JetBrains Mono task line, and an elapsed-time ticker seeded from
-  // agent.startedAt (ISO 8601) when available — the client-side ticker in
-  // the main <script> block re-renders the elapsed text every second.
-  const dmAgentName = (AGENT_CONFIG.orchestrator || {}).dmAgent || 'Conductor';
-  const activeAgent =
-    Object.entries(agents).find(([name, a]) => a.status === 'active' && name !== dmAgentName) ||
-    Object.entries(agents).find(([, a]) => a.status === 'active');
-  let spotlight;
-  if (activeAgent) {
-    const [aName, aData] = activeAgent;
-    const aColor = agentColors[aName] || '#888';
-    const aAvatar = agentAvatars[aName] || aName.toLowerCase();
-    const startedAt = aData.startedAt || '';
-    const fullPortrait = `${imgBase}/optimized/${aAvatar}-320.png`;
-    spotlight = `    <div class="agent-spotlight" id="agent-spotlight" data-agent-name="${esc(aName)}" data-started-at="${esc(startedAt)}">
-      <div class="spotlight-portrait-wrap" style="border-color: ${aColor}"
-        onmouseenter="showAgentPortrait(this,'${fullPortrait}')" onmouseleave="hideAgentPortrait()">
-        <img class="spotlight-img" src="${imgBase}/optimized/${aAvatar}-160.png" alt="${esc(aName)}" onerror="this.onerror=null; this.src='${imgBase}/headshots/${esc(aName.toLowerCase())}.png'">
-      </div>
-      <div class="spotlight-info">
-        <div class="spotlight-name" id="agent-spotlight-name" style="color: ${aColor}"><span class="live-dot ok" aria-label="live" title="live" id="spotlight-live-dot"></span>${esc(aName)}</div>
-        <div class="spotlight-role" id="agent-spotlight-role">${esc(roles[aName] || aName)}</div>
-        <div class="spotlight-task" id="agent-spotlight-task">${esc(aData.currentTask || 'Awaiting assignment')}</div>
-        <div class="spotlight-elapsed" id="agent-spotlight-elapsed" data-started-at="${esc(startedAt)}">${startedAt ? '—' : 'IDLE'}</div>
-      </div>
-    </div>`;
-  } else {
-    spotlight = `    <div class="agent-spotlight no-active" id="agent-spotlight">
-      <div class="spotlight-waiting">Waiting for ${(AGENT_CONFIG.orchestrator || {}).dmAgent || 'orchestrator'} to activate agents...</div>
-    </div>`;
-  }
-  return spotlight;
-})()}
-    <div class="agent-grid">
-${Object.entries(agents)
-  .map(([name, agent]) => {
-    const color = agentColors[name] || '#888';
-    const icon = agentIcons[name] || '🤖';
-    const imgBase = 'agents/images';
-    const statusBg = agent.status === 'active' ? 'rgba(52,168,83,0.2)' : 'rgba(136,136,136,0.15)';
-    const statusColor = agent.status === 'active' ? '#34A853' : agent.status === 'complete' ? '#1565C0' : '#888';
-    const roles = agentRoles;
-    // US-0119 AC-0402: vertical layout — 80x80 circle portrait with 2px
-    // agent-color ring on top, then name, role micro-copy, status pill.
-    // Active station (AC-0403) gets .active class → 3px agent-color glow
-    // box-shadow + pulsing green "now on air" live-dot. Idle stations
-    // (AC-0404) get .idle class → opacity 0.5. Hover (AC-0405) applies a
-    // 4px agent-color outline glow via --agent-color-ring CSS variable,
-    // replacing the previous filter:brightness(1.12) which was invisible
-    // in light mode (BUG-0161).
-    const avatar = agentAvatars[name] || name.toLowerCase();
-    const avatarImg = `<img class="agent-avatar" src="${imgBase}/optimized/${avatar}-64.png" alt="${esc(name)}" onerror="this.onerror=function(){this.outerHTML='<div class=\\'agent-avatar-fallback\\'>${icon}</div>'};this.src='${imgBase}/headshots/${esc(name.toLowerCase())}.png'">`;
-    const fullPortrait = `${imgBase}/optimized/${avatar}-320.png`;
-    const isActive = agent.status === 'active';
-    const isIdle =
-      !isActive && agent.status !== 'complete' && agent.status !== 'blocked' && agent.status !== 'needs-review';
-    const stationClasses = ['agent-card'];
-    if (isActive) stationClasses.push('active');
-    if (isIdle) stationClasses.push('idle');
-    // --agent-color drives the 3px active glow; --agent-color-ring is the
-    // translucent variant used for the 4px hover outline (AC-0405).
-    const styleVars = `--agent-color: ${color}; --agent-color-ring: ${color}40;`;
-    // US-0111 AC-0364: keep stable IDs on card + inner pills so patchDOM()
-    // can update status/task text without re-rendering the whole grid.
-    return `      <div class="${stationClasses.join(' ')}" id="agent-${esc(name)}" data-agent-name="${esc(name)}" data-agent-status="${esc(agent.status)}" style="${styleVars}"
-        onmouseenter="showAgentPortrait(this,'${fullPortrait}')" onmouseleave="hideAgentPortrait()">
-        <span class="live-dot ok on-air-dot" aria-label="now on air" title="now on air"></span>
-        ${avatarImg}
-        <div class="agent-info">
-          <div class="agent-name" style="color: ${color}">${esc(name)}</div>
-          <div class="agent-role">${esc(roles[name] || name)}</div>
-          <div class="agent-status" id="agent-${esc(name)}-status" style="background: ${statusBg}; color: ${statusColor}">${esc(agent.status)}</div>
-          <div class="agent-task" id="agent-${esc(name)}-task"${agent.currentTask ? '' : ' style="display:none"'}>${esc(agent.currentTask || '')}</div>
-        </div>
-      </div>`;
-  })
-  .join('\n')}
-    </div>
-  </div>
-
-  <div class="card">
-    <h2>User Stories</h2>
-    <div class="story-list">
+<!-- User Stories (collapsed; patchDOM reads these) -->
+<div class="mc-legacy-section" style="display:none;">
+  <div class="story-list">
 ${(() => {
   const epics = status.epics || {};
-  // Group stories by epic
   const groups = {};
   Object.entries(stories).forEach(([id, story]) => {
     const epicId = story.epic || 'OTHER';
@@ -1817,18 +2388,10 @@ ${(() => {
       const storyRows = epicStories
         .map((s) => {
           const statusClass = s.status === 'In Progress' ? 'InProgress' : s.status;
-          // US-0120 AC-0407: map the story status to a status-strip modifier.
-          // Anything that isn't Complete/Done or In Progress falls through to
-          // "planned" so ToDo, Planned, Backlog, and unknown values all share
-          // the muted slate strip.
           const isComplete = s.status === 'Complete' || s.status === 'Done';
-          const isInProgress = s.status === 'In Progress';
+          const isInProgress = s.status === 'In Progress' || s.status === 'InProgress';
           const stripClass = isComplete ? 'status-complete' : isInProgress ? 'status-inprogress' : 'status-planned';
           const title = storyTitles[s.id] || s.title || '';
-          // US-0120 AC-0410: agent color-dot + initial next to the title.
-          // Only render when assignedAgent resolves to a known agent colour so
-          // legacy rows (assignedAgent: null, or a name we don't track) stay
-          // unchanged and patchDOM-friendly.
           const agentName = s.assignedAgent || '';
           const agentColor = agentName ? agentColors[agentName] : null;
           const agentInitial = agentName ? agentName.charAt(0).toUpperCase() : '';
@@ -1836,8 +2399,6 @@ ${(() => {
             agentName && agentColor
               ? `<span class="story-agent" title="${esc(agentName)}"><span class="story-agent-dot" style="background:${agentColor}"></span><span class="story-agent-initial">${esc(agentInitial)}</span></span>`
               : '';
-          // US-0120 AC-0408: elapsed-time pill for In Progress stories that
-          // carry a startedAt timestamp. Skipped silently otherwise.
           const elapsed = isInProgress ? formatElapsed(s.startedAt, nowMs) : null;
           const elapsedPill = elapsed
             ? `<span class="story-elapsed" title="elapsed since startedAt">${esc(elapsed)}</span>`
@@ -1853,12 +2414,12 @@ ${(() => {
       const epicDone = epicStoryStatuses.every((s) => s === 'Complete' || s === 'Done');
       const epicInProgress = !epicDone && epicStoryStatuses.some((s) => s === 'In Progress');
       const epicStatus = epicDone ? 'Complete' : epicInProgress ? 'In Progress' : 'Planned';
-      const epicStatusColor = epicDone ? '#34A853' : epicInProgress ? '#F57C00' : '#888';
+      const epicStatusColor = epicDone ? 'var(--ok)' : epicInProgress ? 'var(--live-accent)' : 'var(--text-muted)';
       const epicStatusBg = epicDone
-        ? 'rgba(52,168,83,0.15)'
+        ? 'oklch(66% 0.17 145 / 15%)'
         : epicInProgress
-          ? 'rgba(245,124,0,0.15)'
-          : 'rgba(136,136,136,0.15)';
+          ? 'oklch(72% 0.19 46 / 15%)'
+          : 'oklch(55% 0 0 / 15%)';
       return `      <div class="epic-group${epicDone ? ' collapsed' : ''}">
         <div class="epic-header" onclick="this.closest('.epic-group').classList.toggle('collapsed')">
           <span class="epic-id">${epicId}</span>${epicName ? ' ' + esc(epicName) : ''}
@@ -1872,16 +2433,27 @@ ${storyRows}
     })
     .join('\n');
 })()}
-    </div>
   </div>
 </div>
 
+<!-- US-0147: Agent Workload -->
+<div class="mc-legacy-section" style="display:none;" id="mc-workload-section">
+  <div class="card-head"><h3>Agent Workload</h3></div>
+  ${renderAgentWorkload(status.agents, status.stories)}
+</div>
+
+<!-- US-0145: Event Log — primary column widget -->
+<div class="card pv-event-log" id="pv-event-log">
+  <div class="card-head">
+    <h3>Event Log</h3>
+    <span class="pv-log-status" id="pv-log-status">LIVE</span>
+  </div>
+  <div class="pv-log-body" id="pv-log-body" style="max-height:360px;overflow:auto;font-family:var(--font-sans);font-size:12px;line-height:1.55;"></div>
+</div>
+
 <!-- Activity Log — US-0121 terminal aesthetic -->
-<div class="card" style="margin-top: 24px">
+<div class="card mc-legacy-section" style="margin-top:14px;">
   <h2><span class="live-dot ok" aria-label="live" title="live" id="activity-live-dot"></span>Activity Log</h2>
-  <!-- US-0121 AC-0413/AC-0414: filter chips + tail-mode toggle. Chip clicks
-       toggle filtering via data-log-filter; tail-mode persists to
-       localStorage('dashboard-tail-mode'). -->
   <div class="log-toolbar" role="toolbar" aria-label="Activity log controls">
     <div class="log-filters" role="group" aria-label="Filter log entries">
       <button class="log-filter-chip active" data-log-filter="all" aria-pressed="true">All</button>
@@ -1900,11 +2472,10 @@ ${storyRows}
 ${
   log.length > 0
     ? log
-        .slice(-20)
+        .slice(-3)
         .reverse()
         .map((entry) => {
-          const agentColor = agentColors[entry.agent] || '#888';
-          // US-0111 AC-0364: data-log-key lets patchDOM() dedupe and prepend only new entries.
+          const agentColor = agentColors[entry.agent] || 'var(--text-muted)';
           const key = `${entry.time || ''}|${entry.agent || ''}|${entry.message || ''}`;
           const category = logCategory(entry.message);
           const agentToken = entry.agent || 'System';
@@ -1923,93 +2494,180 @@ ${
   </div>
 </div>
 
-</div>
+</div><!-- /mc-main -->
 
-<!-- About Modal — US-0123: two-column (playbill image | mission + roster + meta).
-     Parity target: plan-status.html About modal (US-0109). -->
-<div id="about-modal" class="modal-overlay" onclick="if(event.target===this)this.classList.remove('open')">
-  <div class="modal">
-    <button class="modal-close" onclick="document.getElementById('about-modal').classList.remove('open')">&times;</button>
-    <div class="about-layout">
-      <!-- AC-0421: left column — playbill-framed team image -->
-      <div class="about-playbill">
-        <img src="agents/images/team.png" alt="Agent team" onerror="this.style.display='none'">
-      </div>
-      <!-- AC-0422: right column — mission, roster, links, version info -->
-      <div class="about-right">
-        <h3>${esc(DASH_META.title)}</h3>
-        <p>${esc(DASH_META.subtitle)}</p>
-        <p class="about-mission">
-          An agentic SDLC mission-control dashboard. Nine role-specialised AI
-          agents plan, build, review, and ship software across a six-phase
-          pipeline — Blueprint, Architect, Build, Integration, Test, Polish —
-          while this view surfaces live progress, blockers, and telemetry.
-        </p>
-        ${DASH_META.repoUrl ? `<a class="repo-link" href="${esc(DASH_META.repoUrl)}" target="_blank" rel="noopener">View on GitHub</a>` : ''}
-        <div class="about-roster-title">Agent Roster</div>
-        <ul class="about-roster">
-          ${Object.entries(AGENT_CONFIG.agents || {})
-            .map(([name, cfg]) => {
-              const avatar = cfg.avatar || name.toLowerCase();
-              const icon = cfg.icon || '🤖';
-              return `<li>
-            <img src="agents/images/optimized/${esc(avatar)}-64.png" alt="${esc(name)}" onerror="this.outerHTML='&lt;span class=&quot;about-roster-fallback&quot;&gt;${esc(icon)}&lt;/span&gt;'">
-            <span class="about-roster-text">
-              <span class="about-roster-name">${esc(name)}</span>
-              <span class="about-roster-role">${esc(cfg.role || '')}</span>
-            </span>
-          </li>`;
-            })
-            .join('')}
-        </ul>
-        <div class="about-links-title">Links</div>
-        <div class="about-links">
-          ${DASH_META.repoUrl ? `<div class="about-links-row"><span class="meta-label">Repo:</span> <a href="${esc(DASH_META.repoUrl)}" target="_blank" rel="noopener">${esc(DASH_META.repoUrl)}</a></div>` : ''}
-          <div class="about-links-row"><span class="meta-label">Dashboard:</span> <a href="dashboard.html">dashboard.html</a></div>
-          <div class="about-links-row"><span class="meta-label">Plan:</span> <a href="plan-status.html">plan-status.html</a></div>
+<!-- ── RIGHT SIDEBAR ── -->
+<div class="mc-sidebar">
+
+  <!-- NEEDS ATTENTION panel -->
+  <div class="mc-sidebar-panel">
+    <div class="mc-sidebar-title">NEEDS ATTENTION</div>
+    ${(() => {
+      const blockedAgents = Object.entries(agents).filter(([, a]) => a && a.status === 'blocked');
+      const reviewAgents = Object.entries(agents).filter(([, a]) => a && a.status === 'needs-review');
+      const blockedCount = blockedAgents.length;
+      const reviewCount = reviewAgents.length;
+      const bugsCount = metrics.bugsOpen || 0;
+      return (
+        `<div class="mc-attn-chips">
+        <span class="mc-attn-chip${blockedCount > 0 ? ' risk' : ''}">${blockedCount} blocked</span>
+        <span class="mc-attn-chip${reviewCount > 0 ? ' info' : ''}">${reviewCount} review</span>
+        <span class="mc-attn-chip${bugsCount > 0 ? ' warn' : ''}">${bugsCount} bugs</span>
+      </div>` +
+        (blockedAgents.length === 0 && reviewAgents.length === 0
+          ? `<div style="font-size:11px;color:var(--mc-muted);font-style:italic;padding:4px 0;">All clear — no blockers.</div>`
+          : [...blockedAgents, ...reviewAgents]
+              .slice(0, 3)
+              .map(([name, agent]) => {
+                const statusStr = (agent.status || 'blocked').toUpperCase();
+                const task = agent.currentTask || agent.currentStory || 'unknown';
+                const elapsed = agent.blockedAt ? formatElapsed(agent.blockedAt) : null;
+                const timeStr = elapsed ? `${statusStr} \u00B7 ${elapsed}` : statusStr;
+                return `<div class="mc-attn-item">
+              <div class="mc-attn-item-line1"><span class="mc-attn-item-name">${esc(name)}</span><span class="mc-attn-item-desc">${esc(task)}</span></div>
+              <div class="mc-attn-item-line2">${esc(timeStr)}</div>
+              <div class="mc-attn-actions">
+                <button class="mc-attn-jump" onclick="document.getElementById('agent-${esc(name)}') && document.getElementById('agent-${esc(name)}').scrollIntoView({behavior:'smooth',block:'center'})">Jump to ${esc(name)} \u2193</button>
+                <button class="mc-attn-all">All ${blockedCount + reviewCount}</button>
+              </div>
+            </div>`;
+              })
+              .join(''))
+      );
+    })()}
+  </div>
+
+  <!-- EVENT LOG panel -->
+  <div class="mc-sidebar-panel">
+    <div class="mc-evtlog-title">LAST 10 EVENTS · AUTO-SCROLL</div>
+    <div class="mc-evtlog-scroll" id="mc-evtlog-scroll">
+${(() => {
+  if (log.length === 0) {
+    return `      <div style="font-size:11px;color:var(--mc-muted);font-style:italic;">No events yet.</div>`;
+  }
+  return log
+    .slice(-10)
+    .reverse()
+    .map((entry) => {
+      const agentColor = agentColors[entry.agent] || 'var(--mc-muted)';
+      const timeFormatted = formatLogTime(entry.time);
+      const tagKey = entry.tag || '';
+      const tagLabel =
+        tagKey === 'done'
+          ? 'STORY DONE'
+          : tagKey === 'block'
+            ? 'BLOCKED'
+            : tagKey === 'review'
+              ? 'REVIEW'
+              : tagKey === 'start'
+                ? 'STARTED'
+                : tagKey
+                  ? tagKey.toUpperCase()
+                  : '';
+      return `      <div class="mc-evt-card">
+        <div class="mc-evt-card-head">
+          <span class="mc-evt-card-agent"><span class="mc-evt-card-dot" style="background:${agentColor}" aria-hidden="true"></span>${esc(entry.agent || 'System')}</span>
+          <span class="mc-evt-time">${esc(timeFormatted)}</span>
         </div>
-        <div class="meta-divider">
-          <div class="meta-section">
-            <div class="meta-supertitle">This Project</div>
-            <div class="meta-row"><span class="meta-label">Name:</span> <span class="meta-value">${esc(PROJECT_PKG.name)}</span></div>
-            <div class="meta-row"><span class="meta-label">Version:</span> <span class="meta-value">v${esc(PROJECT_PKG.version)}</span></div>
-            <div class="meta-row"><span class="meta-label">Branch:</span> <span class="meta-value">${esc(GIT_BRANCH)}</span></div>
-            <div class="meta-row"><span class="meta-label">Build:</span> <span class="meta-value">#${esc(BUILD_NUMBER)} ${esc(COMMIT_SHA)}</span></div>
-          </div>
-          <div class="meta-section">
-            <div class="meta-supertitle">Dashboard Tool</div>
-            <div class="meta-row"><span class="meta-label">View:</span> <span class="meta-value">Agentic SDLC Dashboard</span></div>
-            <div class="meta-row"><span class="meta-label">Generated by:</span> <span class="meta-value">${esc(TOOL_PKG.name)} v${esc(TOOL_PKG.version)}</span></div>
-            <div class="meta-row"><span class="meta-label">Generated at:</span> <span class="meta-value">${esc(now)}</span></div>
-          </div>
-          ${DASH_META.author ? `<div class="meta-attribution">Implemented by ${esc(DASH_META.author)}${DASH_META.authorTitle ? ', ' + esc(DASH_META.authorTitle) : ''}</div>` : ''}
+        <div class="mc-evt-msg">${esc(entry.message || '')}</div>
+        ${tagLabel ? `<span class="mc-evt-tag mc-evt-tag-${tagKey}">${tagLabel}</span>` : ''}
+      </div>`;
+    })
+    .join('\n');
+})()}
+    </div>
+  </div>
+
+  <!-- Phase Progress (compact) -->
+  <div class="mc-sidebar-panel">
+    <div class="mc-sidebar-title">PHASE PROGRESS</div>
+    <div id="card-phase-progress" style="font-size:12px;">
+      <div class="metric-sub">Phases Complete</div>
+      <div class="metric-hero blue" style="font-size:32px;" id="metric-phaseHero">
+        <span id="metric-phasesCompleteNum2">${phases.filter((p) => p.status === 'complete').length}</span>/<span class="hero-den">${phases.length}</span>
+      </div>
+      <div class="phase-sparkline" id="metric-phasesSparkline2" aria-hidden="true" style="height:20px;margin-bottom:6px;">
+${phases.map((p, i) => `        <div class="spark-bar ${p.status}" style="height:${sparkHeights[i]}%" title="${esc(p.name)}"></div>`).join('\n')}
+      </div>
+      <div class="progress-bar" style="height:5px;"><div class="progress-fill blue" style="width:${phasePercent}%"></div></div>
+    </div>
+  </div>
+
+  <!-- Quality (compact) -->
+  <div class="mc-sidebar-panel">
+    <div class="mc-sidebar-title">QUALITY</div>
+    <div style="display:flex;align-items:center;gap:12px;font-size:12px;">
+      <span style="font-family:var(--font-display),monospace;font-size:28px;color:var(--${coverageTone === 'green' ? 'ok' : coverageTone === 'amber' ? 'warn' : 'risk'});">${coveragePct}%</span>
+      <div>
+        <div style="color:var(--mc-muted);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;">Coverage</div>
+        <div id="card-quality" style="margin-top:4px;font-size:11px;color:var(--mc-muted);">
+          <span style="color:var(--ok);">${metrics.testsPassed || 0} pass</span> &middot; <span style="color:${(metrics.testsFailed || 0) > 0 ? 'var(--risk)' : 'var(--mc-muted)'};">${metrics.testsFailed || 0} fail</span> &middot; <span style="color:${(metrics.bugsOpen || 0) > 0 ? 'var(--risk)' : 'var(--mc-muted)'};">${metrics.bugsOpen || 0} bugs</span>
         </div>
       </div>
     </div>
+    <span id="card-reviews" hidden></span>
   </div>
-</div>
+
+</div><!-- /mc-sidebar -->
+</div><!-- /mc-layout -->
+
+</div><!-- /mc-container -->
+
+${renderAboutModal({
+  title: 'Agentic SDLC Dashboard',
+  tagline: DASH_META.subtitle,
+  githubUrl: DASH_META.repoUrl || '',
+  agents: AGENT_CONFIG.agents || {},
+  missionText:
+    'An agentic SDLC mission-control dashboard. Nine role-specialised AI agents plan, build, review, and ship software across a six-phase pipeline — Blueprint, Architect, Build, Integration, Test, Polish — while this view surfaces live progress, blockers, and telemetry.',
+  projectName: PROJECT_PKG.name,
+  version: PROJECT_PKG.version,
+  branch: GIT_BRANCH,
+  buildNumber: BUILD_NUMBER,
+  commitSha: COMMIT_SHA,
+  appName: TOOL_PKG.name,
+  appVersion: TOOL_PKG.version,
+  generatedAt: now,
+  viewLabel: 'Agentic SDLC Dashboard',
+  dashboardLink: 'dashboard.html',
+  rosterCols: 3,
+  author: DASH_META.author ? DASH_META.author + (DASH_META.authorTitle ? ', ' + DASH_META.authorTitle : '') : '',
+})}
 
 <div class="footer">
   ${DASH_META.footer} | Last refreshed: ${now}
 </div>
 
 <script>
-function toggleTheme() {
-  const html = document.documentElement;
-  const current = html.getAttribute('data-theme');
-  const next = current === 'light' ? 'dark' : 'light';
-  html.setAttribute('data-theme', next);
-  localStorage.setItem('dashboard-theme', next);
-  updateToggleButton(next);
+// pvSetTheme / openAbout — aliases expected by renderChrome() (shared chrome from render-shell.js)
+// BUG-0250: write to canonical 'pv-theme' key (shared with plan-status dashboard) so
+// theme preference syncs across both dashboards. Mirror to legacy 'dashboard-theme'
+// for any external consumer still reading the old key. Toggle .dark class on <html>
+// for parity with plan-status' pvSetTheme (BUG-0190 selector compatibility).
+function pvSetTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  document.documentElement.classList.toggle('dark', theme === 'dark');
+  localStorage.setItem('pv-theme', theme);
+  localStorage.setItem('dashboard-theme', theme);
+  ['light', 'dark'].forEach(function(t) {
+    var btn = document.getElementById('theme-btn-' + t);
+    if (btn) btn.setAttribute('aria-pressed', String(t === theme));
+  });
 }
-function updateToggleButton(theme) {
-  const btn = document.getElementById('theme-toggle');
-  if (btn) btn.textContent = theme === 'light' ? '🌙 Dark' : '☀️ Light';
+function openAbout() {
+  var m = document.getElementById('about-modal');
+  if (m) m.classList.add('open');
+}
+function closeAbout() {
+  var m = document.getElementById('about-modal');
+  if (m) m.classList.remove('open');
 }
 (function() {
-  var saved = localStorage.getItem('dashboard-theme') || 'dark';
-  if (saved === 'light') document.documentElement.setAttribute('data-theme', 'light');
-  updateToggleButton(saved);
+  // BUG-0250: read canonical 'pv-theme' first; fall back to legacy 'dashboard-theme'
+  // for users who set theme before the consolidation. Default to 'dark' — agentic
+  // dashboard's design baseline.
+  var saved = localStorage.getItem('pv-theme') || localStorage.getItem('dashboard-theme') || 'dark';
+  pvSetTheme(saved);
 })();
 // Shared client-side helpers used by patchDOM() and related rendering code.
 // escH: HTML-escape a value before inserting into innerHTML (prevents XSS).
@@ -2017,6 +2675,79 @@ function escH(s) {
   return String(s == null ? '' : s)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
+// US-0143: Conductor dispatch hold — keeps Conductor card in is-active state
+// for conductorHoldMs ms after each dispatch, then reverts to is-idle.
+var conductorHoldMs = 3000;
+var _conductorHoldTimer = null;
+var _dispatchCount = parseInt(localStorage.getItem('pv-dispatch-count') || '0', 10);
+(function () {
+  var _initDispEl = document.getElementById('conductor-dispatch-count');
+  if (_initDispEl && _dispatchCount > 0) _initDispEl.textContent = _dispatchCount + ' dispatched';
+})();
+
+function appendEventLog(entry) {
+  var body = document.getElementById('pv-log-body');
+  if (!body) return;
+  var tag = entry.tag || 'start';
+  var tone =
+    tag === 'done'
+      ? 'evt-done'
+      : tag === 'block'
+        ? 'evt-block'
+        : tag === 'review'
+          ? 'evt-review'
+          : tag === 'dispatch'
+            ? 'evt-dispatch'
+            : 'evt-start';
+  var row = document.createElement('div');
+  row.className = 'pv-log-row ' + tone;
+  row.innerHTML = '<span class="evt-time">' + escH(entry.t || '') + '</span>' +
+    '<span class="evt-agent">' + escH(entry.a || '') + '</span>' +
+    '<span class="evt-msg">' + escH(entry.m || '') + '</span>';
+  body.insertBefore(row, body.firstChild);
+  if (!body.dataset.paused) body.scrollTop = 0;
+}
+
+// US-0145: pause event log scroll on hover so user can read entries
+(function () {
+  // Runs after DOM is ready
+  document.addEventListener('DOMContentLoaded', function () {
+    var lb = document.getElementById('pv-log-body');
+    if (!lb) return;
+    lb.addEventListener('mouseenter', function () {
+      this.dataset.paused = '1';
+    });
+    lb.addEventListener('mouseleave', function () {
+      delete this.dataset.paused;
+    });
+  });
+})();
+
+function setConductorActive(dispatchMsg) {
+  var card = document.querySelector('[data-agent="Conductor"]');
+  _dispatchCount++;
+  localStorage.setItem('pv-dispatch-count', _dispatchCount);
+  var dispEl = document.getElementById('conductor-dispatch-count');
+  if (dispEl) {
+    dispEl.textContent = _dispatchCount + ' dispatched';
+    dispEl.classList.remove('pv-dispatch-flash');
+    void dispEl.offsetWidth; // force reflow so re-adding the class re-triggers the animation
+    dispEl.classList.add('pv-dispatch-flash');
+  }
+  if (card) {
+    card.classList.add('is-active');
+    card.classList.remove('is-idle');
+  }
+  appendEventLog({ t: new Date().toLocaleTimeString(), a: 'Conductor', m: dispatchMsg || 'Dispatched task', tag: 'dispatch' });
+  clearTimeout(_conductorHoldTimer);
+  _conductorHoldTimer = setTimeout(function () {
+    if (card) {
+      card.classList.remove('is-active');
+      card.classList.add('is-idle');
+    }
+  }, conductorHoldMs);
+}
+
 // US-0121 helpers: _formatLogTime formats ISO timestamps as HH:MM:SS;
 // _logCategory classifies log entries for colour coding.
 function _formatLogTime(raw) {
@@ -2181,7 +2912,7 @@ function _updateAlertBtn(enabled) {
   if (!btn) return;
   if (enabled) {
     btn.textContent = '🔔 On';
-    btn.style.background = 'rgba(52,168,83,0.25)';
+    btn.style.background = 'oklch(66% 0.17 145 / 25%)';
   } else {
     btn.textContent = '🔕 Off';
     btn.style.background = '';
@@ -2447,10 +3178,10 @@ function _agentStatusColors(stat) {
   // Mirrors the server-side renderer's pill color logic so patchDOM() can
   // recompute styles client-side when an agent transitions. Keep in sync
   // with the statusBg/statusColor ternaries in generateHTML.
-  if (stat === 'active') return { bg: 'rgba(52,168,83,0.2)', color: '#34A853' };
-  if (stat === 'complete') return { bg: 'rgba(21,101,192,0.15)', color: '#1565C0' };
-  if (stat === 'blocked' || stat === 'needs-review') return { bg: 'rgba(239,68,68,0.18)', color: '#ef4444' };
-  return { bg: 'rgba(136,136,136,0.15)', color: '#888' };
+  if (stat === 'active') return { bg: 'oklch(66% 0.17 145 / 20%)', color: 'var(--ok)' };
+  if (stat === 'complete') return { bg: 'oklch(50% 0.16 256 / 15%)', color: 'var(--report-accent)' };
+  if (stat === 'blocked' || stat === 'needs-review') return { bg: 'oklch(58% 0.22 25 / 18%)', color: 'var(--risk)' };
+  return { bg: 'oklch(55% 0 0 / 15%)', color: 'var(--text-muted)' };
 }
 
 function patchDOM(status) {
@@ -2491,7 +3222,7 @@ function patchDOM(status) {
       epicRowsEl.innerHTML = epicKeys.map(function(id) {
         var ep = epics[id];
         var pct = ep.storiesTotal > 0 ? Math.round((ep.storiesCompleted / ep.storiesTotal) * 100) : 0;
-        var badgeColor = ep.status === 'complete' ? '#34A853' : ep.status === 'in-progress' ? '#F57C00' : '#888';
+        var badgeColor = ep.status === 'complete' ? 'var(--ok)' : ep.status === 'in-progress' ? 'var(--live-accent)' : 'var(--text-muted)';
         return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">'
           + '<span style="font-weight:600;color:var(--text-primary);min-width:90px;">' + escH(id) + '</span>'
           + '<span style="color:var(--text-secondary);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escH(ep.name || '') + '</span>'
@@ -2637,9 +3368,13 @@ function patchDOM(status) {
     }
     var taskEl = document.getElementById('agent-' + name + '-task');
     if (taskEl) {
+      var branch = (a && a.branch) || '';
       var newTask = a.currentTask || '';
-      if (taskEl.textContent !== newTask) taskEl.textContent = newTask;
-      taskEl.style.display = newTask ? '' : 'none';
+      var newHtml = branch
+        ? '<a href="' + escH(branch) + '">' + escH(newTask || branch) + '</a>'
+        : escH(newTask);
+      if (taskEl.innerHTML !== newHtml) taskEl.innerHTML = newHtml;
+      taskEl.style.display = newTask || branch ? '' : 'none';
     }
   });
 
@@ -2760,7 +3495,7 @@ function patchDOM(status) {
       var entry = recent[i] || {};
       var key = (entry.time || '') + '|' + (entry.agent || '') + '|' + (entry.message || '');
       if (existing[key]) continue;
-      var color = (DASH_AGENT_COLORS && DASH_AGENT_COLORS[entry.agent]) || '#888';
+      var color = (DASH_AGENT_COLORS && DASH_AGENT_COLORS[entry.agent]) || 'var(--text-muted)';
       var category = _logCategory(entry.message);
       var timeDisplay = _formatLogTime(entry.time);
       var agentToken = entry.agent || 'System';
@@ -2942,6 +3677,45 @@ function patchCycleCounter(status) {
 // Kick the ticker immediately and every second, mirroring updateSpotlightElapsed.
 updateCycleElapsed();
 setInterval(updateCycleElapsed, 1000);
+
+// US-0146: Live bar HH:MM:SS clock — ticks every second.
+(function startLiveClock() {
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+  function tick() {
+    var n = new Date();
+    var hhmmss = pad2(n.getHours()) + ':' + pad2(n.getMinutes()) + ':' + pad2(n.getSeconds());
+    // Legacy pv-live-clock (hidden)
+    var el = document.getElementById('pv-live-clock');
+    if (el) el.textContent = hhmmss;
+    // Mission Control topbar clock
+    var mcClock = document.getElementById('mc-topbar-clock');
+    if (mcClock) mcClock.textContent = hhmmss;
+  }
+  tick();
+  setInterval(tick, 1000);
+})();
+
+// US-0148: Mission Control topbar elapsed ticker (mirrors cycle-elapsed).
+(function startTopbarElapsed() {
+  function tick() {
+    var src = document.getElementById('cycle-elapsed');
+    var dest = document.getElementById('mc-topbar-elapsed');
+    if (src && dest && dest.textContent !== src.textContent) dest.textContent = src.textContent;
+  }
+  setInterval(tick, 1000);
+})();
+
+// US-0148: Update topbar cycle number from patchCycleCounter.
+// cycle-label-text stub for patchCycleCounter compatibility
+(function ensureCycleLabelText() {
+  // patchCycleCounter writes to #cycle-label-text; ensure it exists.
+  if (!document.getElementById('cycle-label-text')) {
+    var el = document.createElement('span');
+    el.id = 'cycle-label-text';
+    el.style.display = 'none';
+    document.body.appendChild(el);
+  }
+})();
 </script>
 
 <div id="agent-portrait-popup"><img src="" alt="Agent portrait" onerror="this.style.display='none'"></div>

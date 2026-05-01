@@ -4,6 +4,70 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
+## L-0050 — Files written by a Stop hook (or any per-turn local-only writer) drift from the committed tree
+
+**Rule:** A Claude Code Stop hook that appends to a tracked file every turn (e.g. `tools/capture-cost.js` writing to `docs/AI_COST_LOG.md`) creates a "live working copy" that no commit step ever touches. Without an explicit sync, the committed file lags the local one by weeks — silently breaking any downstream tool that reads the committed version (parsers, dashboards, GitHub Pages). The Stop hook itself shouldn't auto-commit (commit-per-turn is spammy and conflicts with normal feature-branch workflow), but the **session close protocol must explicitly include the locally-written file in its commit list**. Document this in `CLAUDE.md` so future sessions don't re-discover the drift. If a "git add -A caution" rule was added to keep the file out of normal commits, balance it with a "commit-at-session-close" rule for the same file.
+_Learned during Session 33 follow-up while diagnosing why the Trends tab "AI Costs" chart showed a flat line for ten days. PR #507 fixed the cost attribution math; this lesson addresses the freshness gap. Bug: BUG-0251._
+**Date:** 2026-04-30
+
+---
+
+## L-0049 — Cost attribution by branch must split, not duplicate, when multiple artefacts share the branch
+
+**Rule:** Any function that maps an aggregate (a branch's session cost in `AI_COST_LOG.md`) to N artefacts (stories with the same `Branch:` field, or bugs with the same `Fix Branch:`) MUST divide the aggregate by N — never credit the full aggregate to each artefact. Naive `result[id] = match.costUsd` produces double-counting that compounds with branch popularity: 36 stories on `Branch: develop` × $26.77 = $964 of phantom inflation; 12 bugs sharing one bugfix branch all read identical $X with bug-cost grand total = 12·$X. The cost log is a single source of truth — every dollar should appear exactly once across the rolled-up totals. Apply the same rule to tokens and session counts. When summing per-snapshot aggregates in trend extractors, prefer a published `_totals.costUsd` field over `Object.values(costs).reduce(...)` — the latter sums the aggregate again on top of the per-row entries.
+_Learned during Session 34: BUG-0217 (epic costs wildly inflated for older epics, $0 for recent ones), BUG-0224 (12 bugs showing identical AI cost), BUG-0221 (chart double-counting `_totals` on top of per-story rows). All three traced to the same "credit the aggregate to every claimant" pattern._
+**Date:** 2026-04-29
+
+---
+
+## L-0048 — Chart.js ignores CSS custom properties in Chart.defaults.color; use getComputedStyle
+
+**Rule:** Assigning `Chart.defaults.color = 'var(--text-mute)'` looks valid but is silently ignored. Chart.js passes the string directly to `canvas.fillStyle` at draw time, and the browser's canvas API cannot resolve CSS custom property references — it treats the value as an unknown color and falls back to black. Always resolve the computed value at init time: `Chart.defaults.color = getComputedStyle(document.documentElement).getPropertyValue('--text-mute').trim()`. The same applies to any canvas-drawn color (gradients, grid lines, tick labels). For theme switching, re-read via `getComputedStyle` and call `chart.update('none')`.
+_Learned during Session 33: AC-0591 fix — the `'var(--text-muted)'` string had been in place since the chart was first introduced but the bug was only caught by Lens review because Chart.js silently uses an invisible fallback rather than throwing._
+**Date:** 2026-04-29
+
+---
+
+## L-0047 — Scope parallel agents to files, not just bugs; enforce with explicit file lists
+
+**Rule:** When dispatching parallel worktree agents, the prompt must explicitly list which files the agent may commit and instruct the agent to `git add` only those paths. Saying "your scope is BUG-X" is insufficient — agents will fix related bugs they encounter and commit the changes, causing rebase conflicts in sibling agents. Use: "Only commit changes to: `tools/lib/render-tabs.js`, `tests/unit/render-tabs.test.js`, `docs/BUGS.md`. Run `git add` with explicit file paths, never `git add -A`."
+_Learned during Session 32: Group A agent fixed BUG-0245/0246/0240 (Group B/C scope) while modifying render-tabs.js, requiring manual rebase conflict resolution on two sibling PRs._
+**Date:** 2026-04-29
+
+---
+
+## L-0046 — When removing a CSS framework, audit every utility class it silently provided
+
+**Rule:** Removing a CSS CDN (Tailwind, Bootstrap, etc.) eliminates not just the classes you knowingly used but also invisible primitives like `.hidden { display: none }`, `.flex { display: flex }`, `.w-full { width: 100% }` that are used pervasively without any visible import. Before removing any CSS framework: (1) grep the entire codebase for class names, (2) map each class to a named replacement or CSS rule, (3) verify the map is complete by loading the page with CDN blocked before merging.
+_Learned during Session 31: Tailwind CDN removal broke tab switching, epic collapse, filter toggles, and all layout across every tab because `.hidden { display: none !important }` and ~55 layout utilities were never replaced._
+**Date:** 2026-04-28
+
+---
+
+## L-0045 — `v.toFixed ? …` does NOT protect against null — use `v !== null && v !== undefined`
+
+**Rule:** The ternary `v.toFixed ? v.toFixed(1) : v` is not a null-safe pattern. Accessing `.toFixed` on `null` throws `TypeError: Cannot read properties of null (reading 'toFixed')` before the ternary branches. The correct guard is `v !== null && v !== undefined ? v.toFixed(1) : fallback`. Equivalently, `v != null` (loose inequality) catches both null and undefined in a single check, but ESLint's `eqeqeq` rule rejects it — use the explicit two-check form to satisfy the linter.
+_Learned during Session 29: CI build crashed at render-tabs.js:2291 with this exact error. The guard looked like it should work but it doesn't._
+**Date:** 2026-04-25
+
+---
+
+## L-0046 — Squash-merge repos: use `gh pr list --state merged` to detect stale branches, not `git merge-base`
+
+**Rule:** `git merge-base --is-ancestor <branch> develop` returns false for every feature branch in a squash-merge repo because squash creates a new SHA with no ancestry back to the source branch. To reliably detect which branches are safe to delete, cross-reference with `gh pr list --state merged --json headRefName` — if a matching PR is merged, the branch content is in develop regardless of ancestry. Never trust `merge-base` alone for cleanup decisions in squash-merge repos.
+_Learned during Session 31: 24 local branches showed NOT-MERGED; all 24 had merged PRs confirmed via gh._
+**Date:** 2026-04-28
+
+---
+
+## L-0044 — Replace `existsSync` + `readFileSync` two-step with try-catch on `readFileSync` for ENOENT
+
+**Rule:** The pattern `if (!fs.existsSync(path)) return; const raw = fs.readFileSync(path)` is a TOCTOU (CWE-367) race: between the check and the read, another process can delete or symlink-swap the file. CodeQL flags it as "Potential file system race condition". Fix: remove `existsSync` and wrap `readFileSync` in `try { raw = fs.readFileSync(path, 'utf8') } catch (err) { if (err.code === 'ENOENT') { /* handle missing */ } throw err; }`. This handles the missing-file case atomically and eliminates the race window.
+_Learned during Session 29: CodeQL SAST flagged two High-severity findings in tools/migrate-config.js at lines 82 and 125._
+**Date:** 2026-04-25
+
+---
+
 ## L-0041 — Chart.js has no built-in data labels; use HTML bar charts when text annotations are required
 
 **Rule:** When a spec requires text labels (score values, badges) alongside chart bars, do not use Chart.js canvas — it requires the `chartjs-plugin-datalabels` external dependency which is not in this project. Use an HTML/CSS bar chart instead: `<div style="width:${pct}%;background:${col}">` rows with adjacent text spans. This is simpler, controllable, and produces exactly the required output without adding a dependency.
@@ -419,3 +483,90 @@ _Learned from BUG-0173 (self-inflicted) — first version of `scripts/cleanup-br
 ### **Every schema-bearing config file needs a paired migrator script, invoked on install/upgrade.**
 
 _Learned during the post-EPIC-0016 cleanup audit (BUG-0175) — US-0113 added `agents.<name>.avatar` and an earlier change required `docs.lessons` in `plan-visualizer.config.json`, but `scripts/install.sh` only created configs from the example when absent; upgrading an existing install quietly skipped both. Target projects on older configs silently lost features. Rule: whenever a field becomes required (code dereferences it without a sane undefined-path), add it to the corresponding example AND to `tools/migrate-config.js` at the same commit. The migrator must be idempotent (re-runnable), preserve user values, and run automatically from install.sh. Expose `plan:migrate-config:dry` so users can preview before applying._
+
+## Session 28 lessons (About modal, shared components, agentic dashboard)
+
+### **`renderChrome()` calls `pvSetTheme()` and `openAbout()` — both must be defined in every dashboard that uses it.**
+
+_Learned from BUG-0226 (agentic dashboard buttons silent no-op) — `render-shell.js:renderChrome()` emits onclick handlers that call `pvSetTheme(theme)` and `openAbout()`. The plan-status dashboard defines both in `render-scripts.js`. The agentic dashboard previously only had `toggleTheme()` — neither alias existed. The fix: add `pvSetTheme()` and `openAbout()` to `generate-dashboard.js` inline script. Corollary: any function called from a shared template must be defined in every consumer, not just the primary one. Also: `closeAbout()` must be paired with `openAbout()` — easy to forget since only the button exercises it._
+
+### **Shared modal functions need matching open/close pairs in every consumer's inline script.**
+
+_Learned from post-consolidation closeAbout() bug — after extracting `renderAboutModal()` into a shared function, the close button called `closeAbout()` which was only defined in plan-status's `render-scripts.js`, not in `generate-dashboard.js`. The modal opened fine (openAbout existed) but close silently failed. Rule: whenever extracting a shared UI component that adds new JS function calls to the DOM, audit every dashboard's inline script block for all function names used by the new component._
+
+### **CSS custom property fallback chains work across dashboard namespaces — use `var(--a, var(--b))` not hardcoded hex.**
+
+_Learned while building `renderAboutModal()` — plan-status uses `--clr-*` variable names; agentic dashboard uses `--brand-*` and `--bg-*`. A shared component can serve both by chaining: `color: var(--clr-accent, var(--brand-primary))`. The plan-status resolves `--clr-accent`; the agentic dashboard falls through to `--brand-primary`. No hex fallback needed. This satisfies AC-0498 (no hex literals in generated HTML) for both dashboards simultaneously._
+
+### **The hex-literal test regex (`/#[0-9a-fA-F]{3,6}\b/`) also catches `#` prefixed build numbers.**
+
+_Learned from AC-0498 failure after adding `renderAboutModal()` — the build meta line used `#${buildNumber}` (e.g. `#573`). The regex matched `#573` as a 3-char hex colour. Fix: use `r${buildNumber}` prefix (revision style) instead of `#`. Rule: never use `#` as a UI prefix for numeric identifiers in HTML output — it collides with the hex colour test._
+
+## Session 25 lessons (UI consistency, agentic pipeline design)
+
+### **Worktree test files are included in the main repo's jest run — they must stay in sync with the implementation.**
+
+_Learned from BUG-0190 re-fix — the worktree lives at `.claude/worktrees/<name>/` inside the main repo directory, which is not excluded by jest's testMatch globs. After updating render-html.js to add `classList.add('dark')`, the worktree's stale test (`.not.toContain(...)`) caused a suite-level failure in the main repo's `npx jest` run. Rule: when you update a source file that also exists in the worktree, check whether the worktree's test file has a conflicting assertion and update it immediately._
+
+### **Static `Assignee:` in RELEASE_PLAN.md does not fit the multi-agent pipeline model.**
+
+_Raised during session 25 Agent Workload discussion — in a traditional board, one person owns a story. In the agentic pipeline, a single story passes through 4–6 agents (Compass → Keystone → Pixel/Forge → Lens → Sentinel/Circuit). A single static `Assignee:` field only captures one phase and goes stale immediately. Rule: for the Agent Workload widget, read live data from `docs/sdlc-status.json` (maintained by `tools/update-sdlc-status.js`) rather than any field in RELEASE_PLAN.md. Captured as US-0147 (EPIC-0020)._
+
+### **All view-toggle JS functions must use `classList.toggle('active-view', …)` — never inline `style.fontWeight/background`.**
+
+_Learned from BUG-0205 re-audit — `setHierarchyView` was already updated to use `classList.toggle('active-view', ...)` in render-scripts.js, but `setCostsView`, `setBugsView`, and `setLessonsView` in render-tabs.js still used `style.fontWeight` / `style.background` inline. The `.active-view` CSS class was defined in render-html.js and should be the single definition point. Inline styles are invisible in devtools CSS cascade and can't be overridden by media queries or themes. Rule: any active/selected button state must use a CSS class, never inline styles, so the CSS lives in one place and the JS remains a toggle operation._
+
+### **Tabs developed independently will drift from each other's header conventions — enforce a shared pattern early.**
+
+_Learned from BUG-0210 — Lessons and Bugs tabs both have epic group headers, but were developed at different times. Bugs established the definitive format (monospaced EPIC-XXXX + badge + title + accent border), but Lessons was never updated. The pattern should have been extracted to a shared helper function `_epicGroupHeader(epicId, epic, accent, countLabel)` from the start. Rule: whenever a second tab adopts a pattern pioneered by the first, immediately extract it into a shared helper and wire both tabs to it — don't leave duplication to drift._
+
+---
+
+## L-0044 — Worktree branches not attributed to stories in AI cost log
+
+**Context:** Claude Code auto-names worktree branches as `claude/<slug>` (e.g. `claude/elastic-greider-52b5b1`). These names don't match any `feature/US-XXXX` branch in the cost log, so all worktree session costs land in the unattributed pool and get diluted across all stories proportionally rather than attributed correctly.
+
+**Fix:** `parse-cost-log.js` now exports `normalizeBranch(branch, gitLog, sessionDate)` which maps `claude/*` patterns to the nearest feature branch by timestamp. `backfillUnattributed(rows, gitLog)` applies this to all rows.
+
+**Prevention:** The Stop hook (`capture-cost.js`) should resolve the current feature branch (via `git rev-parse --abbrev-ref HEAD` on the main repo) and log it instead of the worktree branch name. See `tools/capture-cost.js`.
+**Bugs:** N/A
+**Date:** 2026-04-24
+
+---
+
+## L-0051 — Always commit docs/AI_COST_LOG.md before git stash or branch-switch
+
+**Context:** The Stop hook appends rows to `docs/AI_COST_LOG.md` locally after every turn. If you run `git stash` (or `git stash && git checkout <branch>`) without first committing the file, those rows are trapped in the stash. The next branch checkout reverts to the committed base, the hook appends on top of that older base, and the stashed rows are orphaned. Over 9 sessions (2026-04-20→04-28), 33 stash entries accumulated 169 rows that never reached develop.
+
+**Fix:** Recover via `for s in $(seq 0 N); do git stash show -p stash@{$s} 2>/dev/null | grep "^+|.*<date-prefix>"; done | sort -u | sed 's/^+//' >> docs/AI_COST_LOG.md`. Then commit the recovered rows.
+
+**Prevention:** Before any `git stash` or branch-switch, run `git add docs/AI_COST_LOG.md && git commit -m "chore: sync AI_COST_LOG before branch-switch"`. The Session Close Checklist in CLAUDE.md now enforces this.
+
+**Bugs:** BUG-0252
+**Date:** 2026-04-30
+
+---
+
+## L-0052 — Separate visual hierarchy by information priority, not by component type
+
+**Context:** BUG-0185–0189 all stemmed from grouping widgets by component type (roster, pipeline, log) rather than by information priority. Active agents have the highest scan value on a mission-control surface but were visually indistinguishable from idle ones. The event log (real-time stream) was buried lower than the pipeline (cycle-phase summary).
+
+**Fix:** Reorder widgets by information priority: active-agent hero → last-dispatch strip → event log (primary stream) → idle roster → sidebar. Redesign the active card to have dramatically more visual weight (full portrait banner, amber glow, 200px height vs 80px for idle card portraits). Remove information duplication between widgets (pipeline and roster both encoding "who is active" — pipeline now owns cycle progress only).
+
+**Prevention:** When adding a new widget to a dashboard, ask: what is the scan hierarchy? A 2-second glance test — can someone immediately identify what is happening and who is doing it? If not, the visual weight is wrong.
+
+**Bugs:** BUG-0185, BUG-0186, BUG-0187, BUG-0188, BUG-0189
+**Date:** 2026-04-30
+
+---
+
+## L-0053 — Shared helper functions benefit from visual consistency audits at call sites
+
+**Context:** `_renderFullStatusHero` is called from both `renderStatusTab` and `renderStakeholderTab`. When it used `var(--plan-accent)` (violet) for progress bars, both tabs showed violet "done" bars while the Charts/Trends tabs correctly used green for the same concept. The drift went unnoticed because the function only had one call site originally and no semantic-colour test.
+
+**Fix:** Replace raw CSS token references in chart-colour positions with the correct semantic OKLCH literal. Audit every spot that uses a colour token for a chart element and ask: does this colour's meaning match the semantic intent?
+
+**Prevention:** When writing a helper that renders charts or colour-coded data, add a test that asserts no `var(--plan-accent)` / `var(--live-accent)` appears in colour-bearing attributes (stroke, fill, background). These raw tokens are layout chrome — not data semantics.
+
+**Bugs:** BUG-0183, BUG-0184
+**Date:** 2026-05-01

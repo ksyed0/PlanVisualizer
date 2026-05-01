@@ -20,7 +20,7 @@ Persistent semantic knowledge base. Organised by topic. Updated every session.
 - Node.js 18+, no production runtime dependencies
 - Jest 30 for testing (upgraded from 29 on 2026-03-10 to eliminate `inflight` deprecation warning)
 - ESLint 9 flat config (`eslint.config.js`) — `eslint:recommended` + `no-eval`, `eqeqeq`, `no-implied-eval` as errors
-- Tailwind CSS (CDN) + Chart.js v4 (CDN) in generated HTML
+- Chart.js v4 (inlined) in generated plan-status.html; no Tailwind (removed BUG-0230/Session 31)
 - GitHub Actions for CI (ci.yml + codeql.yml + plan-visualizer.yml)
 - Dependabot for weekly npm + Actions updates
 
@@ -117,21 +117,62 @@ Branch name in `AI_COST_LOG.md` row must exactly match `Branch:` field in story 
 
 ---
 
-## Project Completion Status (as of 2026-04-19 Session 23)
+## Project Completion Status (as of 2026-04-30 Session 34)
 
-20 EPICs (EPIC-0010/0014/0015/0016/0017/0019 Done; EPIC-0020 next), 134 active stories, 182 bugs.
-Open PRs: #401 (EPIC-0019 → develop), #405 (EPIC-0010 + BUG-0098/0099/0157 → develop).
-Next IDs: EPIC-0020, US-0135, TASK-0055, AC-0488, TC-0158, BUG-0183.
+23 EPICs (EPIC-0023 fully closed last session). 165+ active stories. 218 BUGs total — Session 34 closed 8 (BUG-0237/0238/0245/0246/0247 via drift sweep PR #505; BUG-0217/0221/0224 via cost-attribution PR #507; BUG-0249/0250/0251 via PRs #515/#513). Two new bugs **Open**: BUG-0249/BUG-0250 (already fixed in PR #515 actually — both closed) and BUG-0252 (stash-trap, deferred to a future session — see below).
+Develop fully green throughout. Next IDs: always check `docs/ID_REGISTRY.md` — as of end of Session 34: Next BUG = BUG-0253, Next L = L-0051.
 
-Key new module: `tools/lib/compute-risk.js` — pure risk scoring (computeStoryRisk, computeAllRisk).
-`data.risk` and `data.completion` added to generate-plan.js data object and consumed by all render modules.
+Key additions (Session 34):
+
+- **5 chart-init fallback string locations** consolidated to `'oklch(78% 0.012 95)'` (light theme value, since light is default). Locations: `render-scripts.js:263`, `render-tabs.js:529` (Trends `pvChartColors.mute`), `render-tabs.js:663` (`updateTrendsChartTheme`), `render-tabs.js:1313` (Charts `pvChartColors.mute`), `render-tabs.js:1319` (`chartTextColor` for Charts tab). **There are TWO `pvChartColors` declarations** in render-tabs.js — one at ~520 for Trends and one at ~1304 for Charts — when fixing color tokens find both.
+- **Theme localStorage key consolidated.** Agentic `pvSetTheme` now writes BOTH `'pv-theme'` (canonical, shared with plan-status) AND `'dashboard-theme'` (legacy mirror). Init reads `pv-theme` first with `dashboard-theme` as legacy fallback. `.dark` class on `<html>` toggled in agentic too (was missing — caused selector parity issues per BUG-0190).
+- **Cost attribution math** (PR #507, L-0049): `attributeAICosts` and `attributeBugCosts` must DIVIDE branch cost by N (count of artefacts sharing the branch), not credit the full aggregate to each. `extractTrends` should prefer `_totals.costUsd` over `Object.values(costs).reduce(...)` to avoid double-counting `_totals` alongside per-story rows.
+- **Cost log drift root cause** (BUG-0252, deferred to future session): ~33 git stash entries hold trapped `AI_COST_LOG.md` rows from 2026-04-20→04-28. Branch-switching with `git stash` carries the appended rows away; the next checkout reverts to the committed state, the hook appends on top, and the previous stash is orphaned. Recovery: `for s in $(seq 0 32); do git stash show -p "stash@{$s}" -- docs/AI_COST_LOG.md; done | grep "^+| 2026" | sort -u` then merge unique rows.
+- **Session Close Checklist** in `CLAUDE.md` now explicitly includes `docs/AI_COST_LOG.md` as a file to commit at session close (per L-0050).
+- **Anthropic org usage limit hit during Session 34.** Background subagents fail with "You've hit your org's monthly usage limit" once the org cap is reached. Foreground sessions continue but new subagent spawns return that error. Resets at next billing cycle. Plan parallel work accordingly.
+- **Playwright is the right tool for dashboard automated testing.** `mcp__plugin_playwright_playwright__*` runs headless Chromium against a local HTTP server (Playwright blocks `file://`). `browser_evaluate` is the primary verification primitive — read runtime state directly rather than relying on visual screenshots. `getComputedStyle` reads in tests must account for default theme (light for plan-status, dark for agentic).
+
+Key additions (Session 33):
+
+- EPIC-0010 status corrected: `Planned` → `Done`, `DoneDate: 2026-04-19` (shipped Session 23, never updated in RELEASE_PLAN.md).
+- EPIC-0012 DoneDate added: `2026-04-28`.
+- EPIC-0023 closed: `Done`, `DoneDate: 2026-04-29`. All 5 stories Done.
+- US-0169 created: deferred risk sort/filter ACs (AC-0601–0605) from EPIC-0010 US-0064/0065/0067.
+- `Chart.defaults.color` must use `getComputedStyle` (see L-0048) — raw `'var(--text-muted)'` strings are silently ignored by canvas. Fix in `render-scripts.js`.
+- `pvChartColors` singleton guard: `window.pvChartColors = window.pvChartColors || (function(){...})()` in `renderChartsTab` prevents double-declaration overwrite.
+- `updateTrendsChartTheme()` added to Trends script block; called from `pvSetTheme()` — re-reads computed colors and calls `chart.update('none')` for each trend chart so light/dark switch live-updates axis labels.
+- `_dispatchCount` in `generate-dashboard.js` now persisted via `localStorage` — seeded on page load, written on every increment.
+- `snapshot.js` `openBugs` filter switched from allowlist to canonical denylist `!/^(Fixed|Retired|Cancelled|Rejected)/i`.
+- BUG-0242: week label fixed at month boundaries (`Apr 28–May 4` correct, was `Apr 28–4`).
+
+Key additions (Session 31):
+
+- `velocityByWeek(snapshots)` exported from `tools/lib/snapshot.js` — ISO week bucketing, t-shirt point deltas, 4-period rolling average, negative clamping.
+- Weekly Velocity bar+line chart in Trends tab (`renderTrendsTab`). Uses `pvChartColors.info`/`.warn`. Excluded from `setTrendsRange` (ISO week labels are not snapshot timestamps).
+- CDN-free: plan-status.html and dashboard.html no longer load Tailwind, Chart.js CDN, or Google Fonts. All styling via system font stacks and `var(--clr-*)` custom properties.
+- `docs/AGENT_PLAN.md` created — 6-phase pipeline reference (AC-0280).
+- Conductor card: `data-agent` attribute added; `conductor-dispatch-count` element with `pv-dispatch-flash` animation wired to `_dispatchCount` counter.
+- Agent Workload widget: `(N done)` sub-label added via `done = total - inFlight`.
+
+Key additions (Sessions 26–28):
+
+- EPIC-0020 Done (cross-dashboard redesign, OKLCH theme, CSS tokens).
+- EPIC-0022 created (Analytics & Charting): US-0159 Velocity Chart (Planned), US-0160 Remove Tailwind (Planned), US-0161 About modal redesign (Done).
+- `renderAboutModal(aboutData)` in `render-html.js` — shared function for both dashboards. CSS uses `pv-about-*` classes with `var(--clr-*, var(--brand-*))` fallback chains. No Tailwind, no hex literals.
+- About modal layout: full-width 400px hero image → title + tagline inline → 3×3 roster grid → repo link + attribution row → meta section.
+- `openAbout()`/`closeAbout()` in render-scripts.js target `id="about-modal"` with `.open` class (harmonised with agentic pattern).
+- `generate-dashboard.js` must define `pvSetTheme()`, `openAbout()`, and `closeAbout()` — all called from shared `renderChrome()` output.
+- `#${buildNumber}` in modal HTML triggers the AC-0498 hex-literal test — use `r${buildNumber}` instead.
+- EPIC_ACCENT_COLORS in render-tabs.js must always use `% EPIC_ACCENT_COLORS.length` — crashes without modulo when epicIdx ≥ 8.
+
+Architecture decision: `Assignee:` field in RELEASE_PLAN.md stories is not meaningful for the multi-agent pipeline. Agent Workload widget should read from `docs/sdlc-status.json` instead.
 
 ---
 
 ## Coverage Thresholds
 
 Jest coverage gate: 80% statements (global).
-Current coverage (2026-04-19 Session 23): 93.07% statements, 79.69% branches, 94.53% functions. 953 tests, 45 suites.
+Current coverage (2026-04-29 Session 33): ~93.8% statements / 80.6% branches. All tests passing. Gate: 80% statements.
 
 ---
 
@@ -168,6 +209,9 @@ Current coverage (2026-04-19 Session 23): 93.07% statements, 79.69% branches, 94
 
 ## Lessons Learned
 
+- **`v.toFixed ? …` is NOT a null guard — use `v !== null && v !== undefined`.** Accessing any property on `null` throws before the ternary branches. ESLint's `eqeqeq` rule rejects `v != null`, so use the explicit two-condition form. (L-0045, 2026-04-25)
+- **Replace `existsSync` + `readFileSync` two-step with try-catch on `readFileSync` for `ENOENT`.** The two-step is a TOCTOU race (CWE-367): CodeQL flags it as "Potential file system race condition". The try-catch pattern handles the missing-file case atomically. (L-0044, 2026-04-25)
+- **Prettier fixes committed after auto-merge fires will not land on develop.** Auto-merge triggers the moment the PR becomes MERGEABLE — often before a follow-up Prettier-fix push. Always run `npx prettier --write .` and commit before the rebase+force-push that makes the PR mergeable. (2026-04-25)
 - **Always upgrade Jest when transitive deps emit deprecation warnings.** Jest 29 → 30 eliminated the `inflight` and `glob@7` deprecation warnings with zero test changes. (2026-03-10)
 - **CodeQL cannot be scoped with per-job `on:` triggers** — it requires its own workflow file (`codeql.yml`) to control trigger conditions independently from the main CI workflow.
 - **GitHub Pages: always include docs/index.html.** Without it Pages falls back to README.md. Use `<meta http-equiv="refresh">` to redirect to the real entry point.
@@ -177,6 +221,10 @@ Current coverage (2026-04-19 Session 23): 93.07% statements, 79.69% branches, 94
 - **Pure computation modules should duplicate tiny utilities** rather than import from render-layer modules — avoids cross-layer deps and keeps the module independently testable. (L-0043, 2026-04-19)
 - **peaceiris/actions-gh-pages deploys the full filesystem.** Never add a `git add / commit` step for the generated artifact — it's gitignored and the deploy action works directly from disk.
 - **Add workflow_dispatch to any workflow with path filters.** This is the only way to trigger the workflow manually when the changed files don't match the path filter (e.g. when editing the workflow file itself).
+- **Worktree test files are picked up by jest in the main repo.** The worktree lives inside the repo directory and is not excluded by jest globs. When source files change, sync the worktree test assertions too or the main `npx jest` run will fail. (2026-04-22 Session 25)
+- **View-toggle active state must use a CSS class, not inline styles.** `classList.toggle('active-view', bool)` is the correct pattern — `style.fontWeight/background` inline is invisible to devtools cascade and cannot be overridden by themes or media queries. (2026-04-22)
+- **Multi-agent pipeline: `Assignee:` per story is the wrong model.** Stories pass through 4–6 agents; no single one "owns" it. Agent Workload widget should read from `docs/sdlc-status.json` (live) not a static field. Captured as US-0147. (2026-04-22)
+- **Tab-level patterns need a shared helper from the moment they appear in a second tab.** Epic group headers were invented in Bugs; Lessons duplicated them manually and drifted. Extract to a named function immediately. (2026-04-22)
 - **Always update TEST_CASES.md Status fields when a story is marked Done.** The parser is correct; stale Not Run statuses are a data problem. (L-0010, BUG-0003, 2026-03-10)
 - **Sticky header: wrap renderTopBar + renderFilterBar + renderTabs in `<div class="sticky top-0 z-30">` in renderHtml().** Activity panel uses z-index:50, so z-30 keeps header below it. (L-0009, BUG-0004, 2026-03-10)
 - **HTML-escape all user-supplied strings before interpolation into HTML template literals.** Use a single `esc()` helper; apply to every title, summary, AC text, epic description, bug branch. Do NOT escape internally-generated fields (SHA, timestamps). (L-0011, BUG-0005, 2026-03-10)
@@ -185,7 +233,7 @@ Current coverage (2026-04-19 Session 23): 93.07% statements, 79.69% branches, 94
 - **AI cost attribution uses exact branch name matching.** `attributeAICosts()` matches `story.branch` against cost log `Branch` values — case-sensitive exact match. Backfill missing cost rows with `[est]` entries when a branch has no matching rows. (BUG-0023, 2026-03-16)
 - **Generate-plan.js and render-html.js must use identical key names for cost data.** Any field passed through the JSON data object must use the same key in both files. The `aiCostUsd` vs `costUsd` mismatch caused all per-story AI costs to show $0 while the totals row (which reads `costs._totals.costUsd` directly) was unaffected. (L-0014, BUG-0023, 2026-03-16)
 - **Dual y-axes are required when Chart.js datasets differ by 3+ orders of magnitude.** Sharing one y-axis makes the smaller dataset sub-pixel. Use `yAxisID` on each dataset and define two separate `scales` entries (position: left / right). (L-0015, BUG-0024, 2026-03-16)
-- **Mobile layout: use `@media (max-width: 767px)` with `!important` to override Tailwind CDN utilities.** Tailwind CDN emits utility classes at runtime — inline `!important` overrides in a `<style>` block are needed to beat specificity. (L-0016, BUG-0020, 2026-03-16)
+- **Mobile layout: use `@media (max-width: 767px)` with `!important` to override any utility class or inline style.** Tailwind CDN was removed (BUG-0230, Session 31); mobile overrides must now beat inline `style=""` attributes rather than Tailwind classes. (L-0016, BUG-0020, 2026-03-16; updated 2026-04-28)
 - **Activity panel z-order: give the close button a higher z-index than the panel, or place it inside the panel.** The toggle button was at `z-50` but the panel covered it once opened. Fixed by adding a `×` button inside the panel header with `md:hidden`. (L-0017, BUG-0022, 2026-03-16)
 - **Bug status `Fixed (...)` strings must use prefix regex, not equality.** `!/^Fixed/i.test(b.status)` catches extended status strings like "Fixed (false positive — …)". Plain `=== 'Fixed'` would count those bugs as open. (BUG-0011, 2026-03-30)
 - **Default collapsed state: set `hidden` class on content elements + ▶ (&#9654;) on arrows in templates.** `toggleSection()` logic uses `classList.toggle('hidden')` and sets arrow based on resulting hidden state — no JS init code needed. Use `replace_all` on `&#9660;</span>` → `&#9654;</span>` to batch-change all template arrows without touching JS toggle logic. (Session 13, 2026-03-30)
@@ -243,7 +291,7 @@ Current coverage (2026-04-19 Session 23): 93.07% statements, 79.69% branches, 94
 ### EPIC-0016 architecture legacy
 
 - 6 phases canonical: Blueprint, Architect, Build, Integration, Test, Polish (no Deploy — that's EPIC-0019 scope).
-- Departure Mono (display), Geist (sans), JetBrains Mono (monospace tickers/coverage %) are the 3 dashboard typefaces.
+- System font stacks are used since CDN removal (BUG-0228/0230, Session 31): `system-ui, -apple-system, 'Segoe UI', sans-serif` (UI) and `ui-monospace, 'JetBrains Mono', 'Cascadia Code', monospace` (code). Google Fonts (Departure Mono, Geist, JetBrains Mono, Inter Tight) no longer loaded.
 - `tools/lib/theme.js` now owns the BADGE_TONE map + badge() helper; both `render-html.js` and `generate-dashboard.js` import from it. Drift eliminated.
 - `.section-header` utility: Geist, 11px/700, uppercase, 0.14em tracking. Shared across sections.
 - `.live-dot` component: 6×6 circle, ok/warn/err variants, pulse animation with `prefers-reduced-motion` guard. Used in header clock, spotlight, Quality card, Activity log.

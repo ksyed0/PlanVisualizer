@@ -26,7 +26,8 @@ describe('agents.config.json', () => {
     for (const [, agent] of Object.entries(config.agents)) {
       expect(agent.role).toBeTruthy();
       expect(agent.icon).toBeTruthy();
-      expect(agent.color).toMatch(/^#[0-9A-Fa-f]{6}$/);
+      // US-0137 AC-0498: colors must be valid CSS — either oklch() or legacy hex 6-digit
+      expect(agent.color).toMatch(/^oklch\(|^#[0-9A-Fa-f]{6}$/);
       expect(agent.instructionFile).toBeTruthy();
     }
   });

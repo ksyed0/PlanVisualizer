@@ -4,6 +4,581 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 36 — 2026-05-01 (BUG-0183/0184/0223 quality sweep + v2.0.0 release prep)
+
+### What Was Done
+
+**BUG-0183/0184/0223 — Plan-Status quality sweep (PR #523):**
+
+- BUG-0223: Confirmed Bugs tab card-view groups already collapsed; added regression test
+- BUG-0184: Status hero progress bars + burn SVG changed from `var(--plan-accent)` (violet) to `oklch(66% 0.17 145)` (green). Done = green everywhere.
+- BUG-0183: Status/Stakeholder hero: 28px verdict headline + "Release Health" eyebrow, forecast banner above sparklines, bar height 32px → 48px, sparse-data placeholder fallbacks
+- Added L-0053: "Shared helper functions benefit from visual consistency audits at call sites"
+- Playwright e2e tests: all 5 passing (dashboard-hierarchy.spec.js)
+
+**v2.0.0 release prep:**
+
+- Updated README.md for v2.0.0 (new tabs, agentic dashboard, OKLCH palette, Playwright tests)
+- Created CHANGELOG.md
+- Audited install.sh schema migration for agents.config.json `project`/`phases` additions
+- Created develop→main PR, merged, tagged v2.0.0 GitHub release
+
+### Test Results
+
+- Jest: 1430 tests pass, 52 suites, 93.8% coverage
+- Playwright: 5/5 visual hierarchy tests pass
+- No regressions introduced
+
+### Open PRs / CI
+
+- PR #523 — merged (BUG-0183/0184/0223)
+
+### Blockers
+
+None.
+
+---
+
+## Session 35 — 2026-04-30 → 2026-05-01 (BUG-0252 stash recovery + BUG-0185–0189 agentic dashboard visual hierarchy)
+
+### What Was Done
+
+**Branch cleanup:** Deleted stale `session-34-close` and `claude/vibrant-ptolemy-2ffd77` branches (both squash-merged). Updated local develop to match origin/develop (was 16 commits behind).
+
+**BUG-0252 — AI_COST_LOG stash recovery (PR #521):**
+
+- Extracted 169 unique rows from 33 git stash entries covering 2026-04-20→04-29 using `git stash show -p` diff parsing
+- Added 3 current-session rows (2026-04-30) from pre-pull working tree backup
+- Appended all 172 rows to docs/AI_COST_LOG.md — fills the April 20–28 gap in the AI Costs trend chart
+- Added L-0051 to LESSONS.md: "always commit AI_COST_LOG.md before git stash or branch-switch"
+- Added guardrail to CLAUDE.md Session Close Checklist (BUG-0252)
+
+**BUG-0185–0189 — Agentic dashboard visual hierarchy (PR #521):**
+
+- Brainstormed with visual companion (Approach B chosen): expanded active card + promoted event log
+- Chrome (BUG-0189): height 52px → 40px in render-chrome.js + render-shell.js
+- Pipeline (BUG-0187): removed `<div class="phase-agents">` — pipeline now owns cycle progress only
+- Active card (BUG-0185): new `.mc-active-card` with full landscape portrait banner (200px, object-fit:contain), amber glow, pulsing status dot
+- Conductor strip (BUG-0186): `.mc-conductor-dispatch` always visible showing last dispatch from log
+- Idle roster (BUG-0185): 4-col `.mc-idle-roster` grid with 80px-capped portrait thumbnails at 65% opacity
+- Event log (BUG-0188): removed `display:none` from `#pv-event-log` main-column block; sidebar feed trimmed to 3 events
+- Added L-0052 + L-0053 to LESSONS.md
+- Playwright e2e tests: `tests/e2e/dashboard-hierarchy.spec.js` (5/5 pass)
+
+### Test Results
+
+- Jest: 1430 tests pass, 52 suites, ≥80% coverage (statement)
+- Playwright: 5/5 visual hierarchy tests pass
+- No regressions introduced
+
+### Open PRs / CI
+
+- PR #521 — merged. PR #519 — merged. PR #523 — merged.
+
+### Blockers
+
+None.
+
+---
+
+## Session 34 — 2026-04-29 → 2026-04-30 (Session 33 trailing close + Playwright dashboard testing + BUG sweep)
+
+### What Was Done
+
+This session resumed mid-day on 2026-04-29 with Session 33's three parallel groups still open. Drove the merges, ran exhaustive Playwright testing on both dashboards, fixed every bug found, and addressed the stale cost-attribution / Stop-hook drift that had been masking the cost-trends chart.
+
+**Session 33 closure (drove the unfinished merges):**
+
+- [PR #499](https://github.com/ksyed0/PlanVisualizer/pull/499) Group A — US-0164 chart correctness + BUG-0242/0244 — Merged via `gh pr update-branch` + auto-merge.
+- [PR #496](https://github.com/ksyed0/PlanVisualizer/pull/496) Group C — EPIC-0010/0012 closure + US-0169 — Merged via update-branch + auto-merge.
+- [PR #503](https://github.com/ksyed0/PlanVisualizer/pull/503) trailing close — fixed summary-section drift in RELEASE_PLAN.md (EPIC-0010/0012 still listed as Planned at the top of the file even after PR #496 corrected the detail section). Logged Session 34 resume prompts to PROMPT_LOG.md.
+- A parallel session committed `d42f0f2` directly to develop with the EPIC-0023/US-0164/US-0166 detail-section closures, BUGS.md flips for BUG-0242/0243/0244, and L-0048. PR #502 was closed (superseded by `d42f0f2`); PR #503 added only the summary-section drift fix that `d42f0f2` had missed.
+
+**Automated Playwright testing of plan-status dashboard ([PR #508](https://github.com/ksyed0/PlanVisualizer/pull/508) — BUG-0249):**
+
+Verified all Session 32/33 fixes work in the browser via `mcp__plugin_playwright_playwright__*` tools:
+
+- AC-0591 `Chart.defaults.color` resolves to actual OKLCH triple, not raw `var()` string ✅
+- AC-0593 `window.pvChartColors` singleton with 6 keys ✅
+- AC-0594 theme-switch updates chart tick + grid colours via `getComputedStyle` re-read ✅
+- BUG-0240 Burn Up chart is `type: 'line'` with `[Completed, Total Scope]` datasets ✅
+- BUG-0242 "This Week Apr 27–May 3" label crosses month boundary correctly ✅
+- BUG-0244 open-bug count uses denylist filter (`!/^(Fixed|Retired|Cancelled|Rejected)/i`) ✅
+- BUG-0248 Stakeholder full Release Health hero renders with eyebrow + h2 + KPI tiles ✅
+- All 10 tabs navigate and render with no JS errors (only favicon 404) ✅
+
+One new bug logged: **BUG-0249** — chart-init fallback strings hardcoded to `oklch(65%)` (dark theme value) instead of light theme's `oklch(78%)`. Light is the default theme so the fallback should match. PR #508 logged it (docs-only); PR #515 fixed the code.
+
+**Automated Playwright testing of agentic dashboard ([PR #510](https://github.com/ksyed0/PlanVisualizer/pull/510) — BUG-0250):**
+
+Verified Session 31–33 agentic fixes:
+
+- AC-0600 dispatch persistence: `setConductorActive()` increments + writes `localStorage['pv-dispatch-count']` ✅
+- BUG-0231 Conductor `#conductor-dispatch-count` element renders ✅
+- BUG-0232 Workload `(N done)` sub-label renders for 8 of 9 agents (Conductor excluded by design) ✅
+- BUG-0245 patchDOM defined ✅
+- BUG-0246 dispatch tone in event log → row gets `evt-dispatch` class ✅
+- BUG-0247 InProgress normalization ✅
+- About modal opens/closes via `openAbout()` / `closeAbout()` ✅
+- All 9 agents render as cards in the roster ✅
+
+One new bug logged: **BUG-0250** — agentic dashboard wrote `localStorage['dashboard-theme']` while plan-status wrote `localStorage['pv-theme']`. Theme didn't sync across the two dashboards, contradicting EPIC-0020 cross-dashboard chrome design. PR #510 logged it; PR #515 fixed it.
+
+**Cost-attribution agent ([PR #507](https://github.com/ksyed0/PlanVisualizer/pull/507) — BUG-0217/0221/0224):**
+
+Background subagent fixed the cost-attribution math. Single root cause: `attributeAICosts` and `attributeBugCosts` credited the FULL branch cost to every artefact sharing that branch — pre-counting claimants per branch and dividing by N fixed it. `extractTrends` also summed `_totals` alongside per-story rows, doubling chart values. 26 suites / 694 tests all pass; coverage 93.8%. Lesson L-0049 added.
+
+**Drift sweep agent ([PR #505](https://github.com/ksyed0/PlanVisualizer/pull/505) — BUG-0237/0238/0245/0246/0247):**
+
+Background subagent verified each bug's fix is actually present in develop (with file:line evidence), then flipped status `Open → Fixed` for all five. Per-bug verification table in PR body.
+
+**Stop-hook investigation:**
+
+A third background agent investigated why `docs/AI_COST_LOG.md` had a 10-day gap. The agent hit the org's monthly Anthropic API quota mid-investigation, but had committed its diagnosis to `bugfix/BUG-0251-stop-hook-stash-loss` before the cut-off. **Critical finding I'd missed:** ~33 git stash entries hold trapped cost-log rows from 2026-04-20→04-28. Each stash carries the appended rows away during normal branch-switching; the next checkout reverts the file to its committed state, the hook appends a new row on top of that older base, and the previous stash is never popped. Logged as **BUG-0252** with four recovery options.
+
+**BUG-0251 fix ([PR #513](https://github.com/ksyed0/PlanVisualizer/pull/513)):**
+
+Two-part fix for the cost-log staleness symptom:
+
+1. One-time catch-up: copied the live working-copy `AI_COST_LOG.md` from the main repo into develop (caught up the most recent ~16 rows).
+2. Prevention: `CLAUDE.md` Session Close Checklist now explicitly lists `docs/AI_COST_LOG.md` as a file to commit at session close.
+
+Lesson L-0050 added (Stop-hook drift pattern). Note: this fixed the symptom of "rows not committed", but BUG-0252 (stash-trap) is the upstream cause of _why_ they accumulate uncommitted, and that recovery is deferred to a future session.
+
+**BUG-0249 + BUG-0250 fix ([PR #515](https://github.com/ksyed0/PlanVisualizer/pull/515)):**
+
+- BUG-0249: 5 chart-init fallback strings (one more than originally tallied — there are TWO `pvChartColors` declarations in `render-tabs.js`, one for Trends at line 529 and one for Charts at line 1313) consolidated to `'oklch(78% 0.012 95)'` (light theme value).
+- BUG-0250: Hybrid resolution — agentic `pvSetTheme` writes both `'pv-theme'` (canonical) and `'dashboard-theme'` (legacy mirror); init reads `pv-theme` first with `dashboard-theme` as legacy fallback; `.dark` class on `<html>` toggled for parity with plan-status' BUG-0190 selector requirement.
+- Tests: +5 assertions (1 chart-fallback in `render-html.test.js`, 4 theme-key in `generate-dashboard.test.js`).
+
+### Test Results
+
+- Full suite: **699/699 pass** across 26 suites (was 694 at session start; +5 new assertions).
+- Statement coverage: ~93.8% (gate: 80%, well above).
+- All 10 CI gates green on every PR merge: Lint, Test+Coverage, Build, Orchestrator, Prettier, Audit, CodeQL SAST, Secret Scanning, Analyze JavaScript, CodeQL.
+
+### Blockers / Issues
+
+- **Anthropic org monthly usage limit hit during the Stop-hook investigation agent run.** Background agents will not work until the org quota resets (typically 1st of next month or when the org owner adds capacity). Foreground work in this session unaffected. Future parallel-agent work should account for this.
+- **BUG-0252 (stash recovery) deferred.** The 33-stash recovery is a non-trivial multi-stash merge with conflict-resolution risk; it deserves its own focused PR. Tracked in BUGS.md with four recovery options ranked by risk; recommendation is option 3 (recover + document discipline) immediately, with options 2/4 evaluated long-term.
+
+### Lessons added
+
+- **L-0050** (Session 33 close commit, by parallel agent) — Files written by Stop hooks drift from committed tree; session close protocol must explicitly include them.
+
+### PRs (Session 34)
+
+- [#499](https://github.com/ksyed0/PlanVisualizer/pull/499) Group A — chart correctness + BUG-0242/0244 — Merged
+- [#496](https://github.com/ksyed0/PlanVisualizer/pull/496) Group C — EPIC-0010/0012 closure — Merged
+- [#502](https://github.com/ksyed0/PlanVisualizer/pull/502) Session 33 trailing close — Closed (superseded by `d42f0f2`)
+- [#503](https://github.com/ksyed0/PlanVisualizer/pull/503) Summary-section drift + resume prompts — Merged
+- [#505](https://github.com/ksyed0/PlanVisualizer/pull/505) Drift sweep — BUG-0237/0238/0245/0246/0247 — Merged
+- [#507](https://github.com/ksyed0/PlanVisualizer/pull/507) Cost attribution — BUG-0217/0221/0224 — Merged
+- [#508](https://github.com/ksyed0/PlanVisualizer/pull/508) BUG-0249 logged (docs-only) — Merged
+- [#510](https://github.com/ksyed0/PlanVisualizer/pull/510) BUG-0250 logged (docs-only) — Merged
+- [#513](https://github.com/ksyed0/PlanVisualizer/pull/513) BUG-0251 fix — Merged
+- [#515](https://github.com/ksyed0/PlanVisualizer/pull/515) BUG-0249 + BUG-0250 code fix — Merged
+- (Session-close PR — this commit)
+
+---
+
+## Session 33 — 2026-04-29 (EPIC-0023 Done — US-0164 chart colors, US-0166 AC-0600, BUG-0242/0243/0244, EPIC-0010/0012 audit)
+
+### What Was Done
+
+**Branch cleanup:** Force-removed stale locked worktree `agent-aceccfe31f287395d`; deleted 3 stale local branches (`bugfix/BUG-0240-burnup-epic022-closure`, `claude/modest-cohen-959f76`, `worktree-agent-aceccfe31f287395d`). All content verified present in develop before deletion.
+
+**Three parallel worktree agents dispatched** (all PRs CI-green, squash-merged into develop):
+
+**Group A — [PR #499](https://github.com/ksyed0/PlanVisualizer/pull/499): Chart color correctness + BUG-0242/0244**
+
+- AC-0591: `Chart.defaults.color` now resolved via `getComputedStyle` at init time (was raw `'var(--text-muted)'` string canvas cannot resolve) — fix in `render-scripts.js`.
+- AC-0592: Gradient stops changed from CSS Level 4 `rgb(r g b / a)` to canvas-compatible `rgba(r,g,b,a)` in `render-tabs.js`.
+- AC-0593 / BUG-0243: Second `pvChartColors` declaration wrapped in `window.pvChartColors = window.pvChartColors || (...)` singleton guard.
+- AC-0594: `updateTrendsChartTheme()` added; called from `pvSetTheme()` so theme toggle refreshes chart axis/grid colors.
+- BUG-0242: Week label now correctly shows end-month name at month boundaries (`Apr 28–May 4` not `Apr 28–4`).
+- BUG-0244: `openBugs` snapshot filter in `snapshot.js` switched from allowlist to canonical denylist `!/^(Fixed|Retired|Cancelled|Rejected)/i`.
+- Test files updated to match new `getComputedStyle`-based init and `rgba()` syntax assertions.
+
+**Group B — [PR #497](https://github.com/ksyed0/PlanVisualizer/pull/497): \_dispatchCount localStorage persistence**
+
+- AC-0600: `_dispatchCount` seeded from `localStorage.getItem('pv-dispatch-count')` on init; `localStorage.setItem` called on every increment. Conductor dispatch count now survives page reloads.
+
+**Group C — [PR #496](https://github.com/ksyed0/PlanVisualizer/pull/496): EPIC-0010/0012 audit + US-0169**
+
+- EPIC-0010: `Status: Planned` → `Done`, `DoneDate: 2026-04-19` (shipped Session 23, never updated).
+- EPIC-0012: Added missing `DoneDate: 2026-04-28`.
+- US-0169 created: 5 deferred risk sort/filter ACs (AC-0601–AC-0605) from EPIC-0010 stories US-0064/0065/0067.
+- ID_REGISTRY.md advanced: Next US = US-0170, Next AC = AC-0606.
+
+**Session-close docs (this commit):**
+
+- RELEASE_PLAN.md: EPIC-0023 `Status: Done`, `DoneDate: 2026-04-29`; US-0164 Done (all 4 ACs [x]); US-0166 Done (AC-0600 [x]).
+- BUGS.md: BUG-0242, BUG-0243, BUG-0244 marked Fixed.
+
+### Test Results
+
+- Coverage: ~93.8% statements / 80.6% branches (gate: 80% — passing).
+- All tests green across all three PR CI runs.
+
+### Blockers
+
+None.
+
+---
+
+## Session 32 — 2026-04-29 (Dashboard Quality — BUG-0239/0241/0245/0246/0247/0248, BUG-0240, EPIC-0022 Done)
+
+### What Was Done
+
+**Branch cleanup:** Deleted 7 stale local branches (all `[gone]`), closed stale PR #472 (superseded version bump), deleted 4 remote stale branches (`BUG-0215-0222`, `hierarchy-hidden-default`, `version-bump-ad1926d`, `EPIC-0021-closure`).
+
+**Three parallel worktree agents dispatched** (all PRs CI-green, squash-merged into develop):
+
+**Group A — [PR #492](https://github.com/ksyed0/PlanVisualizer/pull/492): Stakeholder Tab fixes**
+
+- BUG-0248: Extracted `_renderFullStatusHero(data)` from `renderStatusTab`; Stakeholder tab now shows full Release Health hero (eyebrow, h2 verdict, 3-column viz row: progress bars · coverage dots · burn-up SVG, KPI tiles).
+- BUG-0239: Fixed `shEpicCompositeStatus` to cross-reference via `epicStoryIds.has(normalizeStoryRef(b.relatedStory))` instead of non-existent `b.epicId`. Epics with open High/Critical bugs now correctly show "Needs Attention".
+- BUG-0241: Added `Rejected` to `_renderStatusHero` open-bug filter (`!/^(Fixed|Retired|Cancelled|Rejected)/i`).
+- Group A agent also included BUG-0245/0246/0240 fixes (out of scope, but correct and CI-verified).
+
+**Group B — [PR #490](https://github.com/ksyed0/PlanVisualizer/pull/490): Agentic Dashboard fixes**
+
+- BUG-0247: `isInProgress` now covers both `'In Progress'` and `'InProgress'` camelCase variant so agent-start story gets amber strip.
+- BUG-0245: `patchDOM` uses `innerHTML` + `escH` to reconstruct branch `<a href>` anchor.
+- BUG-0246: `dispatch` added to `appendEventLog` tone map → `evt-dispatch` CSS class (violet accent).
+
+**Group C — [PR #491](https://github.com/ksyed0/PlanVisualizer/pull/491): Chart fix + Release Plan closure**
+
+- BUG-0240: `chart-trends-velocity` converted from bar to two-line burn-up: Completed (done stories) vs Total Scope.
+- EPIC-0022: Status → Done, DoneDate: 2026-04-29 in RELEASE_PLAN.md.
+- EPIC-0023: Status → In-Progress, StartDate: 2026-04-29 in RELEASE_PLAN.md.
+
+### Test Results
+
+- Full suite: ~2300+ tests passing across 98+ suites, ~93% statement coverage (gate: 80%).
+
+### Blockers / Issues
+
+- Group A agent exceeded its file scope (also fixed BUG-0245/0246/0240 in render-tabs.js and generate-dashboard.js). Required manual rebase coordination for Groups B and C. All conflicts resolved cleanly.
+- EPIC-0010 and EPIC-0012 appear to have status drift (marked Planned but all stories Done). Not corrected this session — needs verification of ACs before closing.
+
+---
+
+## Session 31 (continued) — 2026-04-28 (Tailwind Regressions + US-0162/US-0163 + Lens Review)
+
+### What Was Done
+
+**Tailwind CDN removal regressions fixed (PRs #478–#485):**
+
+- BUG-0233: Added `.hidden { display: none !important }` and inlined Chart.js from node_modules
+- BUG-0234: `.view-toggle-btn` CSS class replaced 9 Tailwind class strings on Column/Card buttons
+- BUG-0235: ~55 CSS utility rules added as shim; `.charts-grid`, `.story-card-grid`, `.cost-detail-grid` named classes replaced Tailwind grid strings in render-tabs.js
+- BUG-0236: Lessons card view grid class (gap-4 variant) replaced with `.story-card-grid`
+
+**Branch cleanup:** Removed 25 stale merged branches + 4 stale locked worktrees at session start.
+
+**US-0162/US-0163 shipped (PR #486):**
+
+- `StartDate`/`DoneDate` optional fields added to RELEASE_PLAN.md epic format; parser updated; pre-populated for EPIC-0004–0021
+- Stakeholder tab epic rows display formatted date ranges: `Mar 11, 2026 → Apr 13, 2026`
+- Stakeholder tab `summaryBar` replaced with `_renderStatusHero(data)` + `_renderDecisionWidgets(data)` — Release Health hero, sparklines, KPI tiles, Overall Progress, Epic Progress, Top Risks, This Week now all appear at top of Stakeholder tab
+
+**Lens code review (Session 31 close):**
+
+- plan-status: 11 bugs found (BUG-0237–BUG-0244 + 3 chart rendering issues)
+- agentic dashboard: 8 bugs found (BUG-0245–BUG-0247 + enhancements)
+- Enhancement epic EPIC-0023 (Dashboard Quality & Reliability) created with US-0164/0165/0166
+
+### Test Results
+
+2301+ tests pass across 98 suites. Statement coverage ~88%. Gate: 80% (passing).
+
+### Blockers
+
+None.
+
+### PRs (Session 31 continuation)
+
+- [#478](https://github.com/ksyed0/PlanVisualizer/pull/478) BUG-0233 — Merged
+- [#480](https://github.com/ksyed0/PlanVisualizer/pull/480) BUG-0234 — Merged
+- [#482](https://github.com/ksyed0/PlanVisualizer/pull/482) BUG-0235 — Merged
+- [#484](https://github.com/ksyed0/PlanVisualizer/pull/484) BUG-0236 — Merged
+- [#486](https://github.com/ksyed0/PlanVisualizer/pull/486) US-0162/US-0163 — Merged
+
+---
+
+## Session 31 — 2026-04-28 (Bug Fixes + US-0159 Velocity Chart)
+
+### What Was Done
+
+**Branch cleanup** — Removed 25 stale merged branches and 4 stale locked worktrees from local repo before starting work.
+
+**BUG-0229 Fixed (PR #468):** Added `plan:generate` and `plan:watch` npm aliases to `package.json` (AC-0304).
+
+**BUG-0231 Fixed (PR #468):** Added `data-agent` attribute to all agent card rows; added `conductor-dispatch-count` element with `0 dispatched` text and `pv-dispatch-flash` CSS animation to the Conductor card; wired `_dispatchCount` module-level counter in `setConductorActive` (AC-0522 — counter + animate).
+
+**BUG-0232 Fixed (PR #468):** Added `(N done)` sub-label to Agent Workload widget rows via `done = total - inFlight` computed in `renderAgentWorkload()` (AC-0537).
+
+**BUG-0227 Fixed (PR #469):** Created `docs/AGENT_PLAN.md` (286 lines) documenting 6-phase pipeline, entry/exit criteria, PR review lifecycle, and BLOCK recovery protocol — all content from `DM_AGENT.md` (AC-0280).
+
+**BUG-0228 Fixed (PR #470):** Removed Google Fonts CDN links from `tools/generate-dashboard.js`; added system font stack (`system-ui`, `ui-monospace`). `docs/dashboard.html` no longer loads external fonts (AC-0290).
+
+**BUG-0230 Fixed + US-0160 Done (PR #470):** Removed Tailwind CDN, Chart.js CDN, Google Fonts from `tools/lib/render-html.js`. Replaced all Tailwind utility classes in budget alert and filter bar with named CSS classes using `var(--clr-*)` OKLCH tokens in `render-shell.js`. Dark mode via `[data-theme=dark]` selectors (AC-0305, AC-0581–0585).
+
+**US-0159 Done (PR #471):** Implemented Weekly Velocity Chart in Trends tab:
+
+- `tools/lib/snapshot.js`: `velocityByWeek(snapshots)` — groups by ISO week, computes per-week t-shirt point deltas (XS=0.5, S=1, M=3, L=5, XL=8), clamps negatives, 4-period rolling average
+- `tools/generate-plan.js`: attaches `data.trends.velocityByWeek`
+- `tools/lib/render-tabs.js`: "Weekly Velocity" bar+line Chart.js card using `pvChartColors.info`/`.warn`; excluded from `setTrendsRange` (ISO week labels ≠ timestamp labels); empty-state placeholder when <2 weeks of data
+- 19 new tests across snapshot.test.js and render-tabs.test.js
+
+### Test Results
+
+2301 tests pass across 98 suites. Statement coverage ~88% (gate: 80%).
+
+### Blockers
+
+None.
+
+### PRs
+
+- [#468](https://github.com/ksyed0/PlanVisualizer/pull/468) BUG-0229/0231/0232 — Merged
+- [#469](https://github.com/ksyed0/PlanVisualizer/pull/469) BUG-0227 — Merged
+- [#470](https://github.com/ksyed0/PlanVisualizer/pull/470) BUG-0228/0230 + US-0160 — Merged
+- [#471](https://github.com/ksyed0/PlanVisualizer/pull/471) US-0159 — Merged
+
+---
+
+## Session 30 — 2026-04-27 (EPIC-0021 Closure)
+
+### What Was Done
+
+**Wave 2 merged** (PRs #447, #446, #449, #448):
+
+- US-0150 EPIC-0009 Budget: TC-0244–TC-0265, TC-0345, TC-0346 (24 TCs)
+- US-0153 EPIC-0014 Follow-Up: TC-0266–TC-0281 (16 TCs)
+- US-0156 EPIC-0019 Cycle History: TC-0288–TC-0334 (47 TCs)
+- US-0158 AI Cost Attribution: TC-0335–TC-0344 (10 TCs) + normalizeBranch/backfillUnattributed added to parse-cost-log.js; handles claude/\* and null branches; L-0044 lesson logged
+
+**Wave 3 merged** (PRs #457, #458, #459):
+
+- US-0152 EPIC-0013 Agentic Dashboard: TC-0347–TC-0377 (31 TCs); 4 Fail — BUG-0227–BUG-0230
+- US-0154 EPIC-0016 Mission Control: TC-0402–TC-0474 (73 TCs); all Pass
+- US-0157 EPIC-0020 Cross-Dashboard: TC-0502–TC-0552 (51 TCs); 2 Fail — BUG-0231–BUG-0232
+
+**EPIC-0021 marked Done** — All 11 stories (US-0149–US-0158) Status: Done with ACs checked.
+
+### Test Results
+
+- 648 tests, 26 suites — all passing (statement coverage ~93%)
+- All CI gates green on develop
+
+### Blockers
+
+None.
+
+---
+
+## Session 29 — 2026-04-25
+
+### What Was Done
+
+1. **CI build crash fixed** (`render-tabs.js:2291`) — The guard `v.toFixed ? v.toFixed(1) : v` in the Status tab coverage bar tooltip was itself throwing `TypeError: Cannot read properties of null (reading 'toFixed')` because accessing any property on `null` throws before the ternary can protect. Fixed to `v !== null && v !== undefined ? v.toFixed(1) : '?'`. Stack trace was obtained by adding `e.stack` logging to the `generate-plan.js` catch block in the previous push.
+
+2. **CodeQL TOCTOU fixes** (`migrate-config.js`) — Two CWE-367 "Potential file system race condition" findings at lines 82 and 125: `fs.existsSync(filePath)` check followed by `fs.writeFileSync(filePath)` write (with an intermediate `readFileSync`), creating a race window where a symlink swap could redirect the write. Removed the `existsSync` guard in both `migratePlanVisualizerConfig()` and `migrateAgentsConfig()`, replaced with `try { raw = fs.readFileSync(...) } catch (err) { if (err.code === 'ENOENT') ... }` — atomically handles the missing-file case. Both PRs merged into develop.
+
+3. **Rebase + merge of `bugfix/hierarchy-hidden-default` (PR #444)** — Rebased across 18 commits against the latest develop. Three rounds of `docs/ID_REGISTRY.md` conflicts resolved by taking the maximum ID per sequence (AC and US from incoming when higher; TC from HEAD which was at TC-0347 due to EPIC-0020 TC audit work). PR #444 squash-merged into develop.
+
+4. **Prettier fix (PR #455)** — `docs/TEST_CASES.md` had trailing Prettier violations that weren't in the squash-merged PR content (auto-merge fired before the Prettier-fix commit). Opened `fix/prettier-test-cases` → develop, merged via PR #455. Develop CI fully green.
+
+### Test Results
+
+- 648 tests, 26 suites — all passing
+- Statement coverage above 80% gate
+- All CI gates green on develop (Build, Lint, Prettier, Test+Coverage, CodeQL SAST, Analyze JS, Secret Scan, Dependency Audit, Orchestrator Validation)
+
+### Blockers
+
+None.
+
+### PRs
+
+- PR #444 `bugfix/hierarchy-hidden-default` → develop — ✅ Merged
+- PR #455 `fix/prettier-test-cases` → develop — ✅ Merged
+
+---
+
+## Session 28 — 2026-04-24
+
+### What Was Done
+
+1. **Epic header formatting unified across all tabs** — Hierarchy (column + card), Kanban, Costs (Stories + Bugs sections), Bugs tab (column + card), Lessons tab (column + card) all now use `EPIC-0001` full monospace format matching Traceability. Costs Stories/Bugs headers have `border-left:4px solid` accent. Bugs/Lessons card views use flush `border-t-2` format matching their column views. Kanban fixed `EPIC_ACCENT_COLORS` modulo guard (`% length`) to prevent `undefined` crash on >8 epics.
+
+2. **Hierarchy card view collapsed by default** — Added `hidden` class and `▶` arrow to card view epic wrappers so all epics start collapsed.
+
+3. **Agentic dashboard buttons fixed** — Light/Dark and About buttons in `renderChrome()` were silently no-ops because `pvSetTheme()` and `openAbout()` were not defined in `generate-dashboard.js`. Added both functions. Also added missing `closeAbout()` (About modal close button was broken post-consolidation).
+
+4. **Removed redundant buttons from agentic topbar** — Duplicate About and Light/Dark `mc-btn-sm` buttons removed from the sidebar header area (already present in the shared chrome header).
+
+5. **Shared `renderAboutModal()` function** — Extracted from `render-html.js`, both dashboards now call the same function. Uses `pv-about-*` CSS classes with CSS custom property fallback chains (`var(--clr-accent, var(--brand-primary))`) — no Tailwind, no hex literals. `openAbout()`/`closeAbout()` in `render-scripts.js` updated to target `id="about-modal"` with `.open` class (harmonised with agentic pattern).
+
+6. **About modal redesign (US-0161, Done)** — Iterative design via browser preview. Final design: full-width 400px hero image at top; title + tagline on same line; 3×3 agent roster grid spanning modal width; repo link + "Implemented by" attribution on same row (right-aligned); no GitHub button; no "Links" label. Shared across both dashboards.
+
+7. **EPIC-0022 + new stories** — Created EPIC-0022 (Analytics & Charting Enhancements). Added US-0159 (Velocity Chart), US-0160 (Remove Tailwind from plan-status), US-0161 (About modal redesign, Done). ID_REGISTRY.md updated to US-0162 / AC-0591.
+
+### Test Results
+
+- 638 tests, 26 suites — all passing
+- Statement coverage above 80% gate
+
+### Blockers
+
+None.
+
+### PR
+
+`bugfix/hierarchy-hidden-default` → develop (PR pending)
+
+---
+
+## Session 27 — 2026-04-24
+
+### What Was Done
+
+1. **Font consistency (all tabs)** — Replaced all hardcoded font stacks (`'Inter Tight', sans-serif`, `'JetBrains Mono', monospace`, etc.) with CSS custom properties (`var(--font-sans)`, `var(--font-mono)`, `var(--font-display)`) across `render-tabs.js`, `render-scripts.js`, and `generate-dashboard.js`. Chart.js resolves vars at init time via `getComputedStyle`.
+
+2. **Epic header card/column alignment (Bugs + Lessons)** — Column and card view epic headers now use the same "EPIC / 0001" two-part coloured format as Hierarchy. `epic-id-label` + `epic-id-num` with `accent.text` colour, guarded for `_ungrouped` section.
+
+3. **ON AIR bar redesign (Item 1)** — 3-column grid: `[ON AIR] | [NOW EXECUTING / cycle / ticker] | [CLOCK label + clock]`. Existing element IDs preserved; CSS fully rewritten. Hidden until pipeline is active (`display:none`).
+
+4. **Event log card redesign (Item 3)** — Each entry is a card with agent dot + name, timestamp, message, and tag pill (STORY DONE / BLOCKED / REVIEW / STARTED). Old row/grid layout removed.
+
+5. **Tests updated** — TC-0152 and AC-0408 updated to assert on CSS variable references rather than stale hardcoded font literals.
+
+### Test Results
+
+- 638 tests, 26 suites — all passing
+- Statement coverage well above 80% gate
+
+### Blockers
+
+None.
+
+### PR
+
+- [PR #435](https://github.com/ksyed0/PlanVisualizer/pull/435) — auto-merge armed, awaiting CI
+
+---
+
+## Session 26 — 2026-04-22
+
+### What Was Done
+
+1. **EPIC-0012 Stakeholder View — fully implemented and merged (PR #420)**
+   - `renderStakeholderTab(data)` added to `tools/lib/render-tabs.js` (~515 lines): 3-tile summary bar (progress, budget, risks), expandable epic milestone rows, story/AC drill-down, plain-language status mapping, OKLCH token colours
+   - Sidebar nav entry added to `renderSidebar()` in `tools/lib/render-shell.js`
+   - `.sh-*` CSS block (44 rules) + `@media print` stakeholder rules added to `tools/lib/render-scripts.js`; `'stakeholder'` added to `VALID_TABS`
+   - `renderStakeholderTab` wired into tab-content block in `tools/lib/render-html.js`
+   - 15 new tests in `tests/unit/render-tabs.test.js` — all passing
+   - Rebase conflict resolved (EPIC-0020 had advanced develop before this branch could merge)
+
+2. **Generation timestamp in plan-status chrome header**
+   - `renderChrome()` now includes `<span id="gen-time" data-iso="...">` between spacer and mode badge
+   - Formatted to local timezone by the existing JS loop in `render-scripts.js` (no new JS needed)
+
+3. **`generate-dashboard.js` git-root walk for `sdlc-status.json`**
+   - Added `findGitRoot()` helper that walks directory ancestors until it finds `.git`
+   - Fixes blank/stale agentic dashboard when script is invoked from a git worktree
+
+4. **Session close — RELEASE_PLAN.md, progress.md, PROMPT_LOG.md, MEMORY.md updated**
+
+### Test Results
+
+- **597 tests pass, 25 suites** — statement coverage ~93% (gate: 80% ✅)
+- All 10 CI checks on PR #420 passed before merge
+
+### Blockers / Notes
+
+- EPIC-0012 plan checkboxes in `docs/superpowers/plans/` remain unchecked (subagents committed code but didn't tick the plan doc — cosmetic only)
+- `sdlc-status.json` worktree fix covers invocation from worktrees; for live agentic dashboard, Conductor should still run from the main repo checkout where the file exists at runtime
+
+---
+
+## Session 25 — 2026-04-22
+
+### What Was Done
+
+1. **UI consistency sweep (PR #416 — `bugfix/BUG-0202-0208-ui-polish`, continued from Session 24):**
+   - **BUG-0209 (Low):** Hierarchy tab card view used `mb-4` between epic groups; column view used `mb-2`. Fixed: changed card view wrapper to `mb-2`.
+   - **BUG-0210 (Low):** Lessons tab epic group headers used an old concatenated label string (`"EPIC-0003: Title"`). Updated both column and card view to match Bugs tab format: monospaced `EPIC-XXXX` + `badge(status)` + title span + count, with `border-left:4px solid ${accent}` accent bar. Card view wrapper changed from `mb-6` to `mb-2`.
+   - **BUG-0205 follow-up:** `.active-view` CSS class was defined but `setCostsView`, `setBugsView`, and `setLessonsView` still used inline `style.fontWeight/background`. Updated all three to `classList.toggle('active-view', …)` to match `setHierarchyView`.
+   - **BUG-0203 follow-up:** Plan-status.html About modal redesigned to match the agentic dashboard's unified About box: `max-w-2xl`, scrollable, two-column layout (team image left | project name + agent roster grid + links + project/tool meta right).
+   - **Agents config plumbing:** `generate-plan.js` now loads `agents.config.json` and passes `data.agents` so the About modal and future widgets can render the agent roster without needing separate config reads in the renderer.
+   - **Tailwind dark class:** Added `classList.add/remove('dark')` to the inline theme-init script alongside `setAttribute('data-theme', …)` — required for `darkMode:'class'` (BUG-0190 root cause fully resolved).
+   - **Worktree test sync:** Updated the worktree's stale `render-html.test.js` assertion from `.not.toContain("classList.add('dark')")` to `.toContain(…)` to match the implementation.
+
+2. **Architecture decision — Agent Workload widget data source:**
+   - Discussed why a static `Assignee:` field in RELEASE_PLAN.md doesn't fit the multi-agent pipeline model (stories flow through 4–6 agents sequentially).
+   - Decided: Agent Workload widget should read from `docs/sdlc-status.json` (live, maintained by `update-sdlc-status.js`) instead.
+   - Captured as **US-0147 (EPIC-0020)** in RELEASE_PLAN.md.
+
+3. **Agentic dashboard redesign status clarified:**
+   - The visual redesign (active agent prominence, pipeline widget, Event Log, Live Bar) is already captured as US-0142–0146 (EPIC-0020, all `Status: Planned`). No duplicate stories added.
+
+### Test Results
+
+- **1164 tests pass, 48 suites** — statement coverage ~93% (gate: 80%)
+- Prettier and ESLint clean (pre-commit hooks passed on all commits)
+
+### Blockers
+
+None. PR #416 is open and green.
+
+### PR Updated
+
+- PR #416: `bugfix/BUG-0202-0208-ui-polish` → `develop` — 3 additional commits: Costs epic header unification, UI consistency sweep, US-0147 story + ID registry
+- PR #416 squash-merged and remote branch deleted. Develop fast-forwarded to `faf4997`. Local branch and orphaned remotes pruned.
+
+---
+
+## Session 24 — 2026-04-21
+
+### What Was Done
+
+1. **Branch cleanup:** Removed orphaned remote branches (stale bugfix/_ and feature/_ that had already merged to develop).
+
+2. **UI regression sweep — BUG-0190 through BUG-0201 (branch `bugfix/BUG-0190-0197-ui-fixes`, PR #414):**
+   - **BUG-0190 (High):** Dark mode applied only to topbar/sidebar — body/content stayed light. Root cause: EPIC-0020 renamed CSS tokens (--clr-_ → OKLCH-based names) but left all consumers referencing old names. Also, Tailwind darkMode:'class' requires `.dark` on `<html>` but setTheme() only set data-theme attribute. Fixed: added --clr-_ backward-compat aliases in theme.js generateCssTokens(), plus classList.toggle('dark') in setTheme() and inline theme-init script.
+   - **BUG-0191 (Medium):** 52px blank white gap at top — stale `body { padding-top: 52px }` left from when .pv-chrome was position:fixed. Changed to 0.
+   - **BUG-0192 / BUG-0196 (Medium):** Story title rows wrapped; status column had no min-width floor. Fixed with flex layout constraints and min-width:5.5rem on status badge.
+   - **BUG-0193 (Medium):** Global search ⌘K button missing from masthead. Added to renderChrome() between mode badge and About button.
+   - **BUG-0194 (High):** Card-view epic headers disappeared on filter — applyFilters scoped to `.mb-8` but card wrappers used `.mb-4`. Changed wrapper to `.mb-8`.
+   - **BUG-0195 (Low):** Estimated budget missing from masthead. Added totalProjected meta tile to renderMasthead().
+   - **BUG-0197 (Medium):** Traceability legend text invisible (white-on-white fallback in light mode). Changed .trace-caption fallback to #64748b.
+   - **BUG-0198 (Medium):** Trends range button text invisible. Resolved as side-effect of BUG-0190 alias fix.
+   - **BUG-0199 (Low):** Costs Bugs section always-expanded. Wrapped in toggleSection() collapsible, defaulting to hidden.
+   - **BUG-0200 (Medium):** Long parenthetical status strings broke Costs tab layout. Split badge call on first space/paren; full text in title attribute.
+   - **BUG-0201 (Critical):** Status tab entirely absent — EPIC-0020 marked Done but renderStatusTab() was never written. Implemented full US-0135/US-0139 scope: verdict hero card, forecast/velocity/budget stats, 14-week progress mini-bars, 30-day coverage dots, decision widgets grid, quality section.
+   - **Status tab is now the default first tab** (per user request — previously Hierarchy).
+   - BADGE_TONE vocabulary extended 17 → 20 (added Rejected, Cancelled, Retired as neutral).
+   - theme.test.js and render-html.test.js updated to match new invariants.
+
+### Test Results
+
+- **1164 tests pass, 48 suites** — statement coverage ~93% (gate: 80%)
+- Prettier and ESLint clean (pre-commit hooks passed)
+
+### Blockers
+
+None.
+
+### PR Opened
+
+- PR #414: `bugfix/BUG-0190-0197-ui-fixes` → `develop` — 12 bugs fixed, 1164 tests green
+
+---
+
 ## Session 23 — 2026-04-19
 
 ### What Was Done
@@ -29,23 +604,11 @@ Running log of session activity, errors, session activity, errors, test results,
 - Statement coverage: 93.07% (gate: 80%)
 - Branch: `bugfix/BUG-0098-stale-open-status`, PR #405 → develop
 
-3. **PR merges (session resumed):**
-   - PR #403 (BUG-0157) — merged, branch deleted
-   - PR #404 (BUG-0099) — merged after two rebases (develop advanced twice with version bumps), branch deleted
-   - PR #405 (EPIC-0010 + BUG-0098) — merged via `--auto` after rebase + PROMPT_LOG conflict resolution, branch deleted
-   - EPIC-0010 status updated to Done in RELEASE_PLAN.md
-
-### Test Results
-
-- 953 tests pass, 45 suites, 0 failures
-- Statement coverage: 93.07% (gate: 80%)
-- All 3 PRs merged to develop ✓
-
 ### Blockers / Notes
 
+- None. PR #405 is ready to merge pending CI.
 - AC-0190, AC-0193, AC-0201–0203 left unchecked in RELEASE_PLAN.md — not in final design spec scope.
 - `_normalizeRef` in compute-risk.js intentionally duplicates `normalizeStoryRef` from render-utils.js to keep compute module free of render-layer deps.
-- Next: EPIC-0012 Stakeholder View (6 stories, Release 1.8).
 
 ---
 

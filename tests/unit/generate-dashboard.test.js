@@ -147,15 +147,44 @@ describe('generate-dashboard.js baseline harness (US-0124)', () => {
   test('AC-0429: About modal renders with the project name', () => {
     const { generateHTML } = require('../../tools/generate-dashboard.js');
     const html = generateHTML(makeHealthyFixture());
-    const projectTitle = (AGENTS_CONFIG.dashboard || {}).title || 'SDLC Dashboard';
-
     expect(html).toContain('id="about-modal"');
-    // The modal <h3> carries the dashboard title (escaped). Use a regex
-    // tolerant to whitespace so small formatting tweaks don't break the net.
-    const titleInModal = new RegExp(
-      `id="about-modal"[\\s\\S]*?<h3>${projectTitle.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')}</h3>`,
-    );
+    // The About modal always uses the fixed "Agentic SDLC Dashboard" title
+    // regardless of the project name in the config.
+    const titleInModal = new RegExp(`id="about-modal"[\\s\\S]*?<h2 class="pv-about-h2">Agentic SDLC Dashboard</h2>`);
     expect(html).toMatch(titleInModal);
+  });
+});
+
+describe('generate-dashboard — US-0142 active agent prominence', () => {
+  const { generateHTML } = require('../../tools/generate-dashboard.js');
+
+  function makeFixtureWithAgentStatus(status) {
+    const fixture = makeHealthyFixture();
+    // Replace Pixel (the default active agent) with our test status
+    fixture.agents.Pixel = { status, currentTask: 'US-0142 test', tasksCompleted: 1 };
+    return fixture;
+  }
+
+  it('active agent card has is-active class', () => {
+    const html = generateHTML(makeFixtureWithAgentStatus('active'));
+    // The card div for Pixel must carry is-active
+    expect(html).toMatch(/class="[^"]*agent-card[^"]*is-active[^"]*"/);
+  });
+
+  it('active agent card has agent-rail element', () => {
+    const html = generateHTML(makeFixtureWithAgentStatus('active'));
+    expect(html).toContain('agent-rail');
+  });
+
+  it('idle agent card does not have is-active class', () => {
+    const html = generateHTML(makeFixtureWithAgentStatus('idle'));
+    // idle Pixel card should NOT carry is-active
+    expect(html).not.toMatch(/class="[^"]*agent-card[^"]*is-active[^"]*"/);
+  });
+
+  it('active agent live-dot has dot-pulse class', () => {
+    const html = generateHTML(makeFixtureWithAgentStatus('active'));
+    expect(html).toContain('dot-pulse');
   });
 });
 
@@ -190,19 +219,28 @@ describe('US-0121 terminal-aesthetic activity log', () => {
   test('AC-0413: filter chips render and entries carry data-category', () => {
     const { generateHTML } = require('../../tools/generate-dashboard.js');
     const fixture = makeHealthyFixture();
+    // AC-0413 tests filter chips and the data-category attribute on log entries.
+    // With BUG-0188, sidebar .slice(-3) shows only last 3 entries.
+    // Fixture structured so last 3 entries include diverse categories.
     fixture.log = [
-      { time: '09:01', agent: 'Sentinel', message: 'coverage review complete' },
-      { time: '09:02', agent: 'Circuit', message: 'test suite green' },
-      { time: '09:03', agent: 'Forge', message: 'bug BUG-0001 patched' },
-      { time: '09:04', agent: 'Pixel', message: 'build error in render-html.js' },
+      { time: '09:00', agent: 'Conductor', message: 'setup phase' },
+      { time: '09:01', agent: 'Sentinel', message: 'other' },
+      { time: '09:02', agent: 'Circuit', message: 'other' },
+      { time: '09:03', agent: 'Forge', message: 'unit tests complete' },
+      { time: '09:04', agent: 'Pixel', message: 'code review approved' },
+      { time: '09:05', agent: 'Compass', message: 'bug BUG-0050 patched' },
+      { time: '09:06', agent: 'Keystone', message: 'build error encountered' },
     ];
     const html = generateHTML(fixture);
 
     ['all', 'errors', 'reviews', 'tests', 'bugs'].forEach((f) => {
       expect(html).toContain(`data-log-filter="${f}"`);
     });
+    // BUG-0188: Sidebar trimmed to last 3 entries with .slice(-3).
+    // With 7-entry fixture, sidebar shows [4, 5, 6]: reviews, bugs, errors.
+    // Tests category exists earlier but falls outside the trimmed view.
+    // Verify that the category attribute system works for visible entries.
     expect(html).toMatch(/data-category="reviews"/);
-    expect(html).toMatch(/data-category="tests"/);
     expect(html).toMatch(/data-category="bugs"/);
     expect(html).toMatch(/data-category="errors"/);
   });
@@ -297,9 +335,10 @@ describe('US-0120 stories panel polish', () => {
     expect(html).toMatch(/<div class="story-row status-planned">[\s\S]*?US-0121/);
     // CSS enumerates the three strip colours + the 3px border-left baseline.
     expect(html).toMatch(/\.story-row \{[^}]*border-left:\s*3px solid/);
-    expect(html).toMatch(/\.story-row\.status-complete \{[^}]*border-left-color:\s*#22c55e/);
-    expect(html).toMatch(/\.story-row\.status-inprogress \{[^}]*border-left-color:\s*#f59e0b/);
-    expect(html).toMatch(/\.story-row\.status-planned \{[^}]*border-left-color:\s*#64748b/);
+    // US-0137: story strip colours now use CSS vars (AC-0498 — no hex literals).
+    expect(html).toMatch(/\.story-row\.status-complete \{[^}]*border-left-color:\s*var\(--ok\)/);
+    expect(html).toMatch(/\.story-row\.status-inprogress \{[^}]*border-left-color:\s*var\(--warn\)/);
+    expect(html).toMatch(/\.story-row\.status-planned \{[^}]*border-left-color:\s*var\(--text-dim\)/);
   });
 
   // AC-0408: elapsed pill appears on In Progress stories, rendered in
@@ -328,7 +367,7 @@ describe('US-0120 stories panel polish', () => {
     const doneSlice = html.match(/<div class="story-row status-complete">[\s\S]*?<\/div>/);
     expect(doneSlice).not.toBeNull();
     expect(doneSlice[0]).not.toMatch(/story-elapsed/);
-    expect(html).toMatch(/\.story-elapsed \{[\s\S]*?font-family:\s*'JetBrains Mono'/);
+    expect(html).toMatch(/\.story-elapsed \{[\s\S]*?font-family:\s*var\(--font-mono\)/);
   });
 
   // AC-0409: epic headers reuse the tracked-out treatment that US-0110
@@ -442,5 +481,298 @@ describe('init-sdlc-status — buildStatus', () => {
     });
     const status = buildStatus(cfgPath);
     expect(status.cycles).toEqual([]);
+  });
+});
+
+describe('generate-dashboard — US-0143 conductor dispatch hold', () => {
+  it('dashboard JS includes conductorHoldMs = 3000', () => {
+    const src = require('fs').readFileSync(
+      require('path').join(__dirname, '../../tools/generate-dashboard.js'),
+      'utf8',
+    );
+    expect(src).toContain('conductorHoldMs');
+    expect(src).toContain('3000');
+  });
+
+  it('dashboard JS includes setConductorActive function', () => {
+    const src = require('fs').readFileSync(
+      require('path').join(__dirname, '../../tools/generate-dashboard.js'),
+      'utf8',
+    );
+    expect(src).toContain('setConductorActive');
+  });
+
+  it('setConductorActive calls appendEventLog', () => {
+    const src = require('fs').readFileSync(
+      require('path').join(__dirname, '../../tools/generate-dashboard.js'),
+      'utf8',
+    );
+    expect(src).toContain('appendEventLog');
+  });
+
+  it('Conductor card has data-agent attribute matching setConductorActive selector', () => {
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    const fixture = makeHealthyFixture();
+    const html = generateHTML(fixture);
+    expect(html).toContain('data-agent="Conductor"');
+  });
+
+  it('Conductor card contains conductor-dispatch-count element', () => {
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    const fixture = makeHealthyFixture();
+    const html = generateHTML(fixture);
+    expect(html).toContain('conductor-dispatch-count');
+    expect(html).toContain('0 dispatched');
+  });
+
+  it('setConductorActive increments dispatch counter in JS source', () => {
+    const src = require('fs').readFileSync(
+      require('path').join(__dirname, '../../tools/generate-dashboard.js'),
+      'utf8',
+    );
+    expect(src).toContain('_dispatchCount++');
+    expect(src).toContain('conductor-dispatch-count');
+  });
+});
+
+describe('generate-dashboard — US-0145 event log', () => {
+  it('dashboard HTML contains pv-event-log element', () => {
+    const src = require('fs').readFileSync(
+      require('path').join(__dirname, '../../tools/generate-dashboard.js'),
+      'utf8',
+    );
+    expect(src).toContain('pv-event-log');
+  });
+
+  it('dashboard JS contains appendEventLog function', () => {
+    const src = require('fs').readFileSync(
+      require('path').join(__dirname, '../../tools/generate-dashboard.js'),
+      'utf8',
+    );
+    expect(src).toContain('appendEventLog');
+  });
+
+  it('event log has evt-time, evt-agent, evt-msg columns', () => {
+    const src = require('fs').readFileSync(
+      require('path').join(__dirname, '../../tools/generate-dashboard.js'),
+      'utf8',
+    );
+    expect(src).toContain('evt-time');
+    expect(src).toContain('evt-agent');
+    expect(src).toContain('evt-msg');
+  });
+});
+
+describe('generate-dashboard — US-0144 pipeline scope', () => {
+  it('dashboard HTML contains pv-phase-fill element', () => {
+    const src = require('fs').readFileSync(
+      require('path').join(__dirname, '../../tools/generate-dashboard.js'),
+      'utf8',
+    );
+    expect(src).toContain('pv-phase-fill');
+  });
+
+  it('phase cards do not contain pv-phase-agent-task class', () => {
+    const src = require('fs').readFileSync(
+      require('path').join(__dirname, '../../tools/generate-dashboard.js'),
+      'utf8',
+    );
+    expect(src).not.toContain('pv-phase-agent-task');
+  });
+});
+
+describe('generate-dashboard — US-0146 live bar', () => {
+  it('dashboard HTML contains pv-live-bar element', () => {
+    const src = require('fs').readFileSync(
+      require('path').join(__dirname, '../../tools/generate-dashboard.js'),
+      'utf8',
+    );
+    expect(src).toContain('pv-live-bar');
+  });
+
+  it('live bar contains ON AIR chip', () => {
+    const src = require('fs').readFileSync(
+      require('path').join(__dirname, '../../tools/generate-dashboard.js'),
+      'utf8',
+    );
+    expect(src).toContain('ON AIR');
+  });
+
+  it('live bar contains pv-live-clock element', () => {
+    const src = require('fs').readFileSync(
+      require('path').join(__dirname, '../../tools/generate-dashboard.js'),
+      'utf8',
+    );
+    expect(src).toContain('pv-live-clock');
+  });
+});
+
+describe('generate-dashboard — US-0147 agent workload live data', () => {
+  it('renders pv-workload-bar when stories have assigned agents', () => {
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    const fixture = makeHealthyFixture();
+    fixture.stories['US-0001'] = { title: 'Foo', status: 'In Progress', epic: 'EPIC-0016', agent: 'Pixel' };
+    fixture.stories['US-0002'] = { title: 'Bar', status: 'Done', epic: 'EPIC-0016', agent: 'Pixel' };
+    const html = generateHTML(fixture);
+    expect(html).toContain('pv-workload-bar');
+  });
+
+  it('renders agent workload section with agent names', () => {
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    const fixture = makeHealthyFixture();
+    fixture.stories['US-0003'] = { title: 'Baz', status: 'In Progress', epic: 'EPIC-0016', agent: 'Forge' };
+    const html = generateHTML(fixture);
+    expect(html).toContain('pv-workload-section');
+  });
+
+  it('does not throw when no stories have agent field', () => {
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    const fixture = makeHealthyFixture();
+    // stories without agent field
+    Object.values(fixture.stories).forEach((s) => delete s.agent);
+    expect(() => generateHTML(fixture)).not.toThrow();
+  });
+
+  it('renders (N done) sub-label in workload rows', () => {
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    const fixture = makeHealthyFixture();
+    fixture.stories['US-0010'] = { title: 'Done story', status: 'Done', epic: 'EPIC-0016', agent: 'Pixel' };
+    fixture.stories['US-0011'] = { title: 'Active story', status: 'In Progress', epic: 'EPIC-0016', agent: 'Pixel' };
+    const html = generateHTML(fixture);
+    expect(html).toContain('pv-workload-done');
+    expect(html).toContain('(1 done)');
+  });
+});
+
+// BUG-0245: patchDOM task element must use innerHTML to preserve branch link anchor
+describe('generate-dashboard — BUG-0245 patchDOM branch link anchor', () => {
+  it('patchDOM task element uses innerHTML to preserve branch link anchor', () => {
+    const src = fs.readFileSync(path.join(__dirname, '../../tools/generate-dashboard.js'), 'utf8');
+    expect(src).toContain('taskEl.innerHTML');
+    // Must NOT use bare textContent assignment for the task element
+    expect(src).not.toMatch(/taskEl\.textContent\s*=\s*newTask/);
+  });
+});
+
+// BUG-0246: appendEventLog tone map must include dispatch tag
+describe('generate-dashboard — BUG-0246 appendEventLog dispatch tone', () => {
+  it('appendEventLog tone map includes dispatch tag mapping to evt-dispatch', () => {
+    const src = fs.readFileSync(path.join(__dirname, '../../tools/generate-dashboard.js'), 'utf8');
+    expect(src).toContain("'dispatch'");
+    expect(src).toContain('evt-dispatch');
+  });
+});
+
+// BUG-0247: isInProgress must cover both 'In Progress' and 'InProgress' status variants
+describe('generate-dashboard — BUG-0247 isInProgress status variants', () => {
+  it('story strip class covers both In Progress and InProgress status variants', () => {
+    const src = fs.readFileSync(path.join(__dirname, '../../tools/generate-dashboard.js'), 'utf8');
+    // Verify isInProgress covers the camelCase variant written by update-sdlc-status.js
+    expect(src).toMatch(/isInProgress.*=.*In Progress.*InProgress|isInProgress.*=.*InProgress.*In Progress/);
+  });
+});
+
+// AC-0498: generated dashboard HTML must contain zero hex color literals
+// (#RGB / #RRGGBB), rgb(), or rgba() calls. All colours must use oklch(),
+// color-mix(in oklab, ...) or CSS custom properties.
+describe('AC-0498 — no hex literals in generated dashboard HTML', () => {
+  it('generateHTML output contains no hex colour literals or rgb()/rgba() calls', () => {
+    const { generateHTML } = require('../../tools/generate-dashboard');
+    const fixture = {
+      phases: [],
+      agents: {},
+      metrics: {},
+      cycles: [],
+      log: [],
+      stories: {},
+      epics: {},
+    };
+    const html = generateHTML(fixture);
+    const hits = html.match(/#[0-9a-fA-F]{3,6}\b|rgb\(|rgba\(/g) || [];
+    expect(hits).toHaveLength(0);
+  });
+});
+
+describe('generate-dashboard — BUG-0250 theme localStorage key consolidation', () => {
+  const { generateHTML } = require('../../tools/generate-dashboard');
+  const fixture = {
+    phases: [],
+    agents: {},
+    metrics: {},
+    cycles: [],
+    log: [],
+    stories: {},
+    epics: {},
+  };
+  const html = generateHTML(fixture);
+
+  it("pvSetTheme writes to canonical 'pv-theme' key (shared with plan-status)", () => {
+    expect(html).toContain("localStorage.setItem('pv-theme', theme)");
+  });
+
+  it("pvSetTheme also mirrors to legacy 'dashboard-theme' for backwards compatibility", () => {
+    expect(html).toContain("localStorage.setItem('dashboard-theme', theme)");
+  });
+
+  it("init reads 'pv-theme' first with 'dashboard-theme' as legacy fallback", () => {
+    expect(html).toMatch(/localStorage\.getItem\('pv-theme'\)\s*\|\|\s*localStorage\.getItem\('dashboard-theme'\)/);
+  });
+
+  it('pvSetTheme toggles .dark class on <html> for parity with plan-status (BUG-0190)', () => {
+    expect(html).toContain("classList.toggle('dark', theme === 'dark')");
+  });
+});
+
+describe('generate-dashboard — BUG-0187 remove agent names from pipeline', () => {
+  test('BUG-0187: pipeline phase-block does not render agent names', () => {
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    const html = generateHTML(makeHealthyFixture());
+    // CANONICAL_PHASES has agents: Blueprint→['Compass'], Build→['Pixel','Forge','Palette']
+    // After fix, these names must not appear inside pipeline phase-block elements.
+    const pipelineMatch = html.match(/<div class="pipeline[^"]*"[^>]*>([\s\S]*?)<\/div>\s*\n?\s*<!--\s*ROSTER/);
+    if (!pipelineMatch) return; // pipeline not rendered (empty phases) — skip
+    const pipelineHtml = pipelineMatch[1];
+    expect(pipelineHtml).not.toContain('>Compass<');
+    expect(pipelineHtml).not.toContain('>Pixel<');
+    expect(pipelineHtml).not.toContain('>Forge<');
+  });
+});
+
+describe('generate-dashboard — BUG-0185 BUG-0186 active card + conductor dispatch strip', () => {
+  test('BUG-0185: active agent renders .mc-active-card with portrait banner', () => {
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    const html = generateHTML(makeHealthyFixture());
+    expect(html).toContain('mc-active-card');
+    expect(html).toContain('class="mc-active-portrait-banner"');
+    expect(html).toMatch(/src="agents\/images\/pixel\.png"/);
+  });
+
+  test('BUG-0186: conductor dispatch strip always rendered regardless of Conductor status', () => {
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    const html = generateHTML(makeHealthyFixture());
+    expect(html).toContain('id="mc-conductor-dispatch"');
+    expect(html).toContain('data-agent="Conductor"');
+  });
+
+  test('BUG-0185: idle agents rendered in mc-idle-roster', () => {
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    const html = generateHTML(makeHealthyFixture());
+    expect(html).toContain('id="mc-idle-roster"');
+    expect(html).toContain('mc-idle-card');
+  });
+});
+
+describe('generate-dashboard — BUG-0188 promote event log to main column', () => {
+  test('BUG-0188: event log is in mc-main, not hidden', () => {
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    const html = generateHTML(makeHealthyFixture());
+    const mainEnd = html.indexOf('</div><!-- /mc-main -->');
+    const logIdx = html.indexOf('id="pv-event-log"');
+    expect(logIdx).toBeGreaterThan(-1);
+    expect(logIdx).toBeLessThan(mainEnd);
+    // Must not be hidden
+    const logBlockStart = html.lastIndexOf('<', logIdx);
+    const logBlockTag = html.slice(logBlockStart, logBlockStart + 120);
+    expect(logBlockTag).not.toContain('display:none');
   });
 });

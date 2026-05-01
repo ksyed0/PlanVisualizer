@@ -1,17 +1,35 @@
 'use strict';
 
+const fs = require('fs');
+const path = require('path');
+
+const CHARTJS_INLINE = fs.readFileSync(
+  path.join(__dirname, '../../node_modules/chart.js/dist/chart.umd.min.js'),
+  'utf8',
+);
+
+const { generateCssTokens } = require('./theme');
 const { esc, sparkline, BADGE_TONE, badge } = require('./render-utils');
-const { renderTopBar, renderFilterBar, renderSidebar, renderCompletionBanner } = require('./render-shell');
+const {
+  renderChrome,
+  renderFilterBar,
+  renderSidebar,
+  renderCompletionBanner,
+  renderMasthead,
+  SHELL_CHROME_CSS,
+} = require('./render-shell');
 const {
   renderHierarchyTab,
   renderKanbanTab,
   renderTraceabilityTab,
+  renderStatusTab,
   renderChartsTab,
   renderTrendsTab,
   renderCostsTab,
   renderBugsTab,
   renderLessonsTab,
   renderRecentActivity,
+  renderStakeholderTab,
 } = require('./render-tabs');
 const { renderScripts, renderPrintCSS } = require('./render-scripts');
 
@@ -22,24 +40,93 @@ function renderHtml(data, options = {}) {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${esc(data.projectName)} — Plan Status</title>
-  <script>(function(){var t=localStorage.getItem('theme');if(t==='dark'||(t==null&&window.matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');}})()</script>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>tailwind.config={darkMode:'class'}</script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <script>(function(){
+  var old=localStorage.getItem('theme');
+  if(old&&!localStorage.getItem('pv-theme')){localStorage.setItem('pv-theme',old);localStorage.removeItem('theme');}
+  var t=localStorage.getItem('pv-theme');
+  var dark=t==='dark'||(t==null&&window.matchMedia('(prefers-color-scheme:dark)').matches);
+  document.documentElement.setAttribute('data-theme',dark?'dark':'light');
+  if(dark){document.documentElement.classList.add('dark');}else{document.documentElement.classList.remove('dark');}
+})()</script>
   <style>
+    /* === Tailwind compatibility shim — replaces CDN utilities used in render-tabs.js === */
+    /* Layout */
+    .flex{display:flex}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}
+    .flex-1{flex:1 1 0%}.flex-shrink-0{flex-shrink:0}
+    .items-center{align-items:center}.items-end{align-items:flex-end}.items-start{align-items:flex-start}
+    .justify-between{justify-content:space-between}.justify-center{justify-content:center}.justify-end{justify-content:flex-end}
+    .w-full{width:100%}.w-2{width:8px}.w-3{width:12px}.h-2{height:8px}.h-16{height:64px}.h-screen{height:100vh}
+    .overflow-hidden{overflow:hidden}.overflow-y-auto{overflow-y:auto}
+    .absolute{position:absolute}.inset-0{inset:0}
+    .pointer-events-none{pointer-events:none}.select-none{user-select:none}.cursor-pointer{cursor:pointer}
+    .mt-auto{margin-top:auto}
+    /* Grid */
+    .charts-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px}
+    .col-span-full,.trends-filter-bar{grid-column:1/-1}
+    .col-span-2{grid-column:span 2}
+    .story-card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+    .cost-detail-grid{display:grid;grid-template-columns:repeat(2,1fr);column-gap:16px;row-gap:4px}
+    /* Gap */
+    .gap-1{gap:4px}.gap-2{gap:8px}.gap-3{gap:12px}.gap-4{gap:16px}.gap-6{gap:24px}.gap-8{gap:32px}
+    .gap-x-4{column-gap:16px}.gap-y-1{row-gap:4px}
+    /* Spacing */
+    .p-0{padding:0}.p-2{padding:8px}.p-3{padding:12px}.p-4{padding:16px}.p-6{padding:24px}
+    .px-1{padding-left:4px;padding-right:4px}
+    .px-2{padding-left:8px;padding-right:8px}.px-3{padding-left:12px;padding-right:12px}.px-4{padding-left:16px;padding-right:16px}
+    .py-1{padding-top:4px;padding-bottom:4px}
+    .py-2{padding-top:8px;padding-bottom:8px}.py-3{padding-top:12px;padding-bottom:12px}
+    .py-16{padding-top:64px;padding-bottom:64px}
+    .mb-0{margin-bottom:0}.mb-1{margin-bottom:4px}.mb-2{margin-bottom:8px}.mb-3{margin-bottom:12px}.mb-4{margin-bottom:16px}
+    .mt-1{margin-top:4px}.mt-2{margin-top:8px}.mt-4{margin-top:16px}.mt-6{margin-top:24px}
+    .ml-1{margin-left:4px}.ml-2{margin-left:8px}.mr-2{margin-right:8px}
+    /* Typography */
+    .text-xs{font-size:11px;line-height:1.5}.text-sm{font-size:13px;line-height:1.5}.text-base{font-size:14px}.text-lg{font-size:16px}
+    .text-left{text-align:left}.text-right{text-align:right}.text-center{text-align:center}
+    .uppercase{text-transform:uppercase}.underline{text-decoration:underline}
+    .font-bold{font-weight:700}.font-semibold{font-weight:600}.font-medium{font-weight:500}
+    .font-mono{font-family:ui-monospace,'JetBrains Mono','Cascadia Code',monospace}
+    .font-sans{font-family:system-ui,-apple-system,'Segoe UI',sans-serif}
+    .font-display{font-family:system-ui,-apple-system,'Segoe UI',sans-serif}
+    /* Borders */
+    .border-collapse{border-collapse:collapse}
+    .border-t{border-top:1px solid var(--clr-border)}.border-b{border-bottom:1px solid var(--clr-border)}
+    .border-l{border-left:1px solid var(--clr-border)}.border-t-0{border-top:0}.border-t-2{border-top:2px solid var(--clr-border)}
+    .border-slate-100{border-color:oklch(96% 0.005 250)}.border-slate-200{border-color:oklch(92% 0.008 250)}
+    .border-slate-300{border-color:oklch(87% 0.010 250)}.border-slate-600{border-color:oklch(45% 0.015 250)}
+    .border-slate-700{border-color:oklch(35% 0.015 250)}
+    /* Rounded */
+    .rounded-lg{border-radius:8px}.rounded-b-lg{border-radius:0 0 8px 8px}.rounded-t-lg{border-radius:8px 8px 0 0}.rounded-full{border-radius:9999px}
+    /* Text colors — mapped to CSS vars */
+    .text-slate-300,.text-slate-400{color:var(--clr-text-muted)}
+    .text-slate-500,.text-slate-600{color:var(--clr-text-secondary)}
+    .text-slate-700,.text-slate-800{color:var(--clr-text-primary)}
+    .text-teal-400,.text-teal-700{color:oklch(55% 0.12 185)}
+    .text-amber-700{color:oklch(60% 0.15 75)}.text-red-700{color:oklch(50% 0.20 25)}
+    .text-blue-600{color:oklch(55% 0.18 260)}.text-orange-500{color:oklch(67% 0.18 55)}
+    .text-white{color:oklch(100% 0 0)}
+    /* Backgrounds */
+    .bg-slate-50{background:var(--clr-row-alt,oklch(98% 0.003 250))}.bg-slate-700{background:oklch(28% 0.015 250)}
+    /* Misc */
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
     /* === Base === */
-    body { font-family: 'Inter', sans-serif; padding-top: 72px; background-color: var(--clr-body-bg); color: var(--clr-text-primary); }
-    body.has-alert { padding-top: 100px; }
+    .hidden { display: none !important; }
+    body { min-height: 100vh; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; padding-top: 52px; background-color: var(--clr-body-bg); color: var(--clr-text-primary); }
+    body.has-alert { padding-top: 80px; }
     #topbar-fixed.has-alert { top: 28px; }
-    #sidebar.has-alert { top: 100px; height: calc(100vh - 100px); }
-    code, .font-mono { font-family: 'JetBrains Mono', monospace; }
+    #sidebar.has-alert { top: 80px; height: calc(100vh - 80px); }
+    code, .font-mono { font-family: ui-monospace, 'JetBrains Mono', 'Cascadia Code', monospace; }
+    /* BUG-0228/BUG-0230: budget alert — replaces Tailwind utility classes */
+    .budget-alert { position: fixed; top: 0; left: 0; right: 0; z-index: 50; padding: 8px 16px; display: flex; align-items: center; justify-content: space-between; color: oklch(100% 0 0); }
+    .budget-alert-critical { background: oklch(45% 0.22 25); }
+    .budget-alert-warn     { background: oklch(58% 0.18 55); }
+    .budget-alert-caution  { background: oklch(65% 0.17 80); }
+    .budget-alert-text     { font-weight: 500; }
+    .budget-alert-dismiss  { color: inherit; font-size: 13px; font-weight: 700; background: none; border: none; cursor: pointer; padding: 2px 8px; opacity: 0.85; }
+    .budget-alert-dismiss:hover { opacity: 1; }
 
     /* === Typography utilities (US-0094) === */
-    .font-display { font-family: 'Instrument Serif', 'Iowan Old Style', Georgia, serif; font-weight: 400; letter-spacing: -0.005em; }
-    .display-title { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--clr-text-muted); }
+    .font-display { font-family: var(--font-display, 'Inter Tight', sans-serif); font-weight: 400; letter-spacing: -0.005em; }
+    .display-title { font-family: var(--font-sans, 'Inter Tight', sans-serif); font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--clr-text-muted); }
     .tabular-nums, .usd, .num { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1, "ss01" 1; }
     /* Apply tabular-nums to currency/number-heavy elements automatically */
     td.num, td.cost, .topbar-tile .tile-value, .hero-num,
@@ -50,19 +137,14 @@ function renderHtml(data, options = {}) {
     .card-elev { background-color: var(--clr-panel-bg); box-shadow: var(--shadow-card); transition: box-shadow 180ms ease; padding: 1rem; }
     .card-elev:hover { box-shadow: var(--shadow-card-hover); }
 
-    /* === Topbar (fixed, gradient) === */
-    #topbar-fixed {
-      position: fixed; top: 0; left: 0; right: 0; height: 72px; z-index: 40;
-      background: linear-gradient(135deg, #003087 0%, #0050b3 50%, #0066cc 100%);
-      border-bottom: 1px solid rgba(0,80,179,0.4);
-      box-shadow: 0 2px 8px rgba(0,0,80,0.25); display: flex; align-items: center; padding: 0 16px;
-    }
+    /* === Chrome (sticky, frosted-glass neutral) — US-0136/US-0137 === */
+    /* Shared between plan-status and agentic dashboards. CSS lives in SHELL_CHROME_CSS. */
+    ${SHELL_CHROME_CSS}
+    /* Legacy topbar classes kept for backward-compat with any external CSS references */
     .topbar-inner { display: flex; align-items: center; gap: 12px; width: 100%; min-width: 0; }
     .topbar-project { flex: 1; min-width: 0; }
-    .topbar-title { font-family: 'Instrument Serif', 'Iowan Old Style', Georgia, serif; font-size: 1.4rem; font-weight: 400; letter-spacing: -0.005em; color: #ffffff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1; }
-    .topbar-tagline { font-size: 11px; color: rgba(255,255,255,0.72); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 1px; }
-    .topbar-btn { background: rgba(255,255,255,0.18); border: none; color: #ffffff; border-radius: 20px; padding: 5px 14px; font-size: 13px; cursor: pointer; transition: background 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
-    .topbar-btn:hover { background: rgba(255,255,255,0.30); color: #ffffff; }
+    .topbar-btn { background: oklch(100% 0 0 / 0.18); border: none; color: oklch(100% 0 0); border-radius: 20px; padding: 5px 14px; font-size: 13px; cursor: pointer; transition: background 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+    .topbar-btn:hover { background: oklch(100% 0 0 / 0.30); color: oklch(100% 0 0); }
     .topbar-btn-group { margin-left: auto; display: inline-flex; gap: 6px; flex-shrink: 0; }
     /* Search pill — hide shortcut hint on mobile */
     @media (max-width: 640px) { #search-pill-shortcut { display: none; } }
@@ -71,7 +153,7 @@ function renderHtml(data, options = {}) {
     .search-section-header { padding:6px 16px 4px; font-size:10px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--clr-text-muted); background:var(--clr-surface-raised); border-bottom:1px solid var(--clr-border); }
     .search-result { display:flex; align-items:center; gap:10px; padding:9px 16px; cursor:pointer; border-bottom:1px solid var(--clr-border); }
     .search-result:last-child { border-bottom:none; }
-    .search-result:hover, .search-result.search-cursor { background:rgba(139,92,246,0.08); }
+    .search-result:hover, .search-result.search-cursor { background:color-mix(in oklab, var(--clr-accent) 8%, transparent); }
     .search-result-icon { flex-shrink:0; font-size:13px; }
     .search-result-title { flex:1; font-size:13px; color:var(--clr-text-primary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .search-result-title strong { color:var(--clr-accent); font-weight:600; }
@@ -80,22 +162,22 @@ function renderHtml(data, options = {}) {
     .search-recent-header { display:flex; align-items:center; justify-content:space-between; padding:8px 16px 4px; }
     .search-recent-pills { display:flex; flex-wrap:wrap; gap:6px; padding:4px 16px 12px; }
     .search-recent-pill { background:var(--clr-surface-raised); border:1px solid var(--clr-border); border-radius:12px; padding:3px 10px; font-size:12px; color:var(--clr-text-secondary); cursor:pointer; }
-    .search-recent-pill:hover { background:rgba(139,92,246,0.08); }
-    @keyframes search-fade { from { outline:2px solid rgba(96,165,250,.7); } to { outline:2px solid rgba(96,165,250,0); } }
+    .search-recent-pill:hover { background:color-mix(in oklab, var(--clr-accent) 8%, transparent); }
+    @keyframes search-fade { from { outline:2px solid color-mix(in oklab, var(--info) 70%, transparent); } to { outline:2px solid transparent; } }
     .search-highlight { animation:search-fade 1.5s ease-out forwards; border-radius:4px; }
 
     /* Glassmorphic stat tiles */
     .topbar-tiles { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-    .topbar-tile { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px 12px; border-radius: 8px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); min-width: 58px; }
-    .tile-value { font-size: 15px; font-weight: 700; color: #ffffff; line-height: 1.25; white-space: nowrap; }
-    .tile-label { font-size: 10px; font-weight: 500; color: rgba(255,255,255,0.68); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; white-space: nowrap; }
-    .tile-danger { color: #fca5a5 !important; }
-    .tile-warn { color: #fde68a !important; }
+    .topbar-tile { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px 12px; border-radius: 8px; background: oklch(100% 0 0 / 0.12); border: 1px solid oklch(100% 0 0 / 0.20); min-width: 58px; }
+    .tile-value { font-size: 15px; font-weight: 700; color: oklch(100% 0 0); line-height: 1.25; white-space: nowrap; }
+    .tile-label { font-size: 10px; font-weight: 500; color: oklch(100% 0 0 / 0.68); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; white-space: nowrap; }
+    .tile-danger { color: var(--risk) !important; }
+    .tile-warn { color: var(--warn) !important; }
 
     /* === Hero numbers (US-0099) === */
     /* Default hero-num: large display treatment for prominent KPIs (budget totals, coverage %, bug counts). */
     .hero-num {
-      font-family: 'Instrument Serif', 'Iowan Old Style', Georgia, serif;
+      font-family: var(--font-display, 'Inter Tight', sans-serif);
       font-size: clamp(28px, 4vw, 44px);
       font-weight: 500;
       letter-spacing: -0.02em;
@@ -109,27 +191,41 @@ function renderHtml(data, options = {}) {
     }
 
     /* === Status tab editorial (US-0103) === */
-    .chart-supertitle { grid-column: 1 / -1; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--clr-text-muted, rgba(255,255,255,0.4)); padding: 16px 0 6px; border-bottom: 1px solid var(--clr-border); margin-bottom: 4px; }
+    .chart-supertitle { grid-column: 1 / -1; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--clr-text-muted); padding: 16px 0 6px; border-bottom: 1px solid var(--clr-border); margin-bottom: 4px; }
     .chart-header-rule { border-top: 1px solid var(--clr-border); padding-top: 10px; margin-bottom: 8px; }
-    .chart-subtitle { display: block; font-size: 11px; color: var(--clr-text-muted, rgba(255,255,255,0.5)); margin-top: 2px; font-weight: 400; }
+    .chart-subtitle { display: block; font-size: 11px; color: var(--clr-text-muted); margin-top: 2px; font-weight: 400; }
     .chart-center-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none; }
 
     /* === App shell === */
-    #app-shell { display: flex; min-height: calc(100vh - 72px); }
+    #app-shell { display: flex; min-height: calc(100vh - 52px); }
 
     /* === Sidebar === */
-    #sidebar { width: 200px; flex-shrink: 0; position: sticky; top: 72px; height: calc(100vh - 72px); overflow-y: auto; background: var(--clr-sidebar-bg); border-right: 2px solid var(--clr-border); }
+    #sidebar { width: 200px; flex-shrink: 0; position: sticky; top: 52px; height: calc(100vh - 52px); overflow-y: auto; background: var(--clr-sidebar-bg); border-right: 2px solid var(--clr-border); }
     #sidebar-nav { display: flex; flex-direction: column; padding: 8px 0; }
     .nav-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; text-align: left; font-size: 13px; font-weight: 500; color: var(--clr-text-secondary); border: none; border-left: 3px solid transparent; border-bottom: 1px solid var(--clr-border); background: none; cursor: pointer; transition: color 150ms, background 150ms; }
     .nav-item:last-child { border-bottom: none; }
-    .nav-item:hover { color: var(--clr-text-primary); background: rgba(139,92,246,0.08); }
-    .nav-item.nav-active { color: var(--clr-accent); background: rgba(139,92,246,0.12); border-left-color: var(--clr-accent); font-weight: 600; }
+    .nav-item:hover { color: var(--clr-text-primary); background: color-mix(in oklab, var(--clr-accent) 8%, transparent); }
+    .nav-item.nav-active { color: var(--clr-accent); background: color-mix(in oklab, var(--clr-accent) 12%, transparent); border-left-color: var(--clr-accent); font-weight: 600; }
+    /* View-toggle buttons (column / card / compact) — all tabs */
+    .view-toggle-btn { padding: 2px 10px; font-size: 12px; border-radius: 4px; border: 1px solid var(--clr-border); color: var(--clr-text-secondary); background: var(--clr-panel-bg); cursor: pointer; transition: background 0.15s; }
+    .view-toggle-btn:hover { background: color-mix(in oklab, var(--clr-accent) 8%, var(--clr-panel-bg)); color: var(--clr-text-primary); }
+    button.active-view { background: var(--clr-accent) !important; color: oklch(100% 0 0) !important; border-color: var(--clr-accent) !important; font-weight: 600 !important; }
     .nav-item svg { flex-shrink: 0; }
     .nav-label { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     /* === Main content === */
     #main-content { flex: 1; min-width: 0; }
-    #filter-sticky { position: sticky; top: 72px; z-index: 20; }
+    #filter-sticky { position: sticky; top: 52px; z-index: 20; }
+    /* BUG-0230: filter bar — replaces Tailwind utility classes */
+    .filter-bar { background: var(--clr-panel-bg); border-bottom: 1px solid var(--clr-border); padding: 8px 24px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .filter-bar.hidden { display: none; }
+    .fgrp { display: flex; flex-wrap: wrap; gap: 8px; }
+    .fgrp.hidden { display: none; }
+    .filter-select { border: 1px solid var(--clr-input-border); border-radius: 4px; padding: 2px 8px; font-size: 13px; background: var(--clr-input-bg); color: var(--clr-input-text); }
+    .filter-select:focus { outline: 2px solid var(--clr-accent); outline-offset: -1px; }
+    .filter-search { width: 100%; max-width: 192px; }
+    .filter-clear { font-size: 13px; color: var(--clr-text-secondary); text-decoration: underline; background: none; border: none; cursor: pointer; padding: 2px 4px; }
+    .filter-clear:hover { color: var(--clr-text-primary); }
 
     /* ── Responsive tiers ───────────────────────────── */
     /* Activity panel offset: ≥768px */
@@ -159,7 +255,7 @@ function renderHtml(data, options = {}) {
 
     /* Phone portrait (<480px) — topbar in flow, tiles trimmed */
     @media (max-width: 479px) {
-      #topbar-fixed { position: relative; height: auto; min-height: 56px; padding: 8px 12px 6px; flex-wrap: wrap; align-items: flex-start; box-shadow: none; border-bottom: 1px solid rgba(0,80,179,0.4); }
+      #topbar-fixed { position: relative; height: auto; min-height: 56px; padding: 8px 12px 6px; flex-wrap: wrap; align-items: flex-start; box-shadow: none; border-bottom: 1px solid var(--chrome-border, oklch(56% 0.22 264 / 0.4)); }
       body { padding-top: 0; }
       #app-shell { min-height: 100vh; }
       #sidebar { top: 0; height: 100vh; }
@@ -184,32 +280,198 @@ function renderHtml(data, options = {}) {
       #sidebar { width: 200px; }
       .nav-label { display: flex !important; }
     }
+
+    /* US-0138: Mode badge — CSS now lives in SHELL_CHROME_CSS (render-shell.js) */
+    /* US-0135: Status hero */
+    .pv-hero { padding: 0; overflow: hidden; }
+    .pv-hero-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 16px 10px;
+      flex-wrap: wrap;
+    }
+    .pv-hero-verdict { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+    .pv-hero-narrative { margin: 0; font-size: 13px; color: var(--text-dim); line-height: 1.4; }
+    /* US-0135: Density toggle */
+    .pv-hero-toggle { position: absolute; top: 8px; right: 10px; display: flex; gap: 2px; }
+    .pv-hero-density-btn { padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600;
+      border: 1px solid var(--border); background: none; color: inherit; cursor: pointer; opacity: .6; }
+    .pv-hero-density-btn.pv-hero-active { opacity: 1; background: var(--surface-2); }
+    .pv-hero-stats { display: flex; gap: 24px; flex-shrink: 0; }
+    .pv-stat { display: flex; flex-direction: column; gap: 3px; align-items: flex-end; }
+    .pv-stat-lbl { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-mute); font-family: var(--font-mono); }
+    .pv-stat-val { font-family: var(--font-display); font-size: 20px; font-weight: 500; letter-spacing: -0.01em; color: var(--text); }
+    .pv-delta { font-size: 11px; font-weight: 500; }
+    .pv-delta.up { color: var(--ok); }
+    .pv-delta.dn { color: var(--risk); }
+    .pv-hero-vizrow { padding: 0 16px 14px; }
+    .pv-heat { display: grid; grid-template-columns: repeat(30, 1fr); gap: 2px; }
+    .pv-heat-cell { aspect-ratio: 1; border-radius: 2px; background: var(--surface-2); }
+    /* chip component */
+    .chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: var(--font-mono); font-size: 10.5px;
+      padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border);
+      font-weight: 500; letter-spacing: 0.04em;
+    }
+    .chip .d { width: 5px; height: 5px; border-radius: 999px; background: currentColor; }
+    .chip.ok { color: var(--ok); border-color: color-mix(in oklab, var(--ok) 40%, var(--border)); background: color-mix(in oklab, var(--ok) 8%, transparent); }
+    .chip.warn { color: var(--warn); border-color: color-mix(in oklab, var(--warn) 40%, var(--border)); background: color-mix(in oklab, var(--warn) 8%, transparent); }
+    .chip.risk { color: var(--risk); border-color: color-mix(in oklab, var(--risk) 40%, var(--border)); background: color-mix(in oklab, var(--risk) 10%, transparent); }
+    .chip.info { color: var(--info); border-color: color-mix(in oklab, var(--info) 40%, var(--border)); background: color-mix(in oklab, var(--info) 8%, transparent); }
+    .chip.mute { color: var(--text-mute); border-color: var(--border); background: color-mix(in oklab, var(--text-mute) 8%, transparent); }
+    /* card shared primitive */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); }
+    /* US-0139: Decision widgets */
+    .card-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border-soft);
+    }
+    .card-head h3 {
+      margin: 0;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+    .card-body { padding: 14px; }
+    .pv-widgets {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+    @media (max-width: 1100px) {
+      .pv-widgets { grid-template-columns: minmax(0, 1fr); }
+    }
+    .pv-risk-list { display: flex; flex-direction: column; gap: 8px; }
+    .pv-risk-item { display: flex; align-items: center; gap: 8px; font-size: 12.5px; }
+    .pv-risk-label { color: var(--text-dim); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pv-widget-empty { margin: 0; font-size: 12.5px; color: var(--text-mute); }
+    .pv-kv { display: flex; justify-content: space-between; align-items: baseline; padding: 5px 0; border-bottom: 1px solid var(--border-soft); font-size: 12.5px; }
+    .pv-kv:last-child { border-bottom: 0; }
+    .pv-kv-k { color: var(--text-dim); }
+    .pv-kv-v { font-family: var(--font-mono); font-weight: 600; color: var(--text); }
+    .pv-wl-row { display: grid; grid-template-columns: 90px 1fr 28px; gap: 8px; align-items: center; margin-bottom: 8px; font-size: 12px; }
+    .pv-wl-row:last-child { margin-bottom: 0; }
+    .pv-wl-name { color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pv-wl-bar-bg { background: var(--surface-2); border-radius: 3px; height: 6px; overflow: hidden; }
+    .pv-wl-bar { height: 100%; border-radius: 3px; background: var(--plan-accent); opacity: 0.85; }
+    .pv-wl-count { font-family: var(--font-mono); font-size: 11px; color: var(--text-mute); text-align: right; }
+    /* US-0136: Masthead */
+    .pv-masthead {
+      display: grid;
+      grid-template-columns: minmax(0, auto) 1fr;
+      align-items: center;
+      column-gap: 20px;
+      padding: 12px 18px;
+      margin: 0 0 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: linear-gradient(135deg, color-mix(in oklab, var(--plan-accent) 10%, var(--surface)) 0%, var(--surface) 60%);
+      box-shadow: var(--shadow);
+    }
+    .pv-eyebrow {
+      font-size: 10.5px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-mute);
+      font-weight: 600;
+      font-family: var(--font-sans);
+    }
+    .pv-masthead-title {
+      margin: 2px 0 0;
+      font-family: var(--font-display);
+      font-size: 24px;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      font-weight: 600;
+    }
+    .pv-masthead-title em {
+      font-style: normal;
+      color: var(--plan-accent-ink);
+      font-weight: 500;
+      font-size: 0.62em;
+      vertical-align: middle;
+      padding: 2px 7px;
+      margin-left: 8px;
+      border: 1px solid var(--plan-accent);
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    .pv-masthead-meta {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 4px 18px;
+      justify-content: flex-end;
+      align-items: center;
+    }
+    .pv-meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      align-items: flex-end;
+    }
+    .pv-meta-lbl {
+      font-size: 9.5px;
+      letter-spacing: 0.1em;
+      color: var(--text-mute);
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+    }
+    .pv-meta-val {
+      font-size: 12px;
+      color: var(--text);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .tnum {
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: 'tnum' 1;
+    }
+    @media (max-width: 820px) {
+      .pv-meta-item--hide-sm { display: none; }
+    }
+    @media (max-width: 680px) {
+      .pv-masthead { grid-template-columns: 1fr; }
+      .pv-masthead-meta { justify-content: flex-start; flex-wrap: wrap; }
+    }
   </style>
   ${renderPrintCSS()}
+  <script>${CHARTJS_INLINE}</script>
 </head>
-<body class="min-h-screen ${data.budget && data.budget.crossedThresholds && data.budget.crossedThresholds.length > 0 ? 'has-alert' : ''}">
+<body class="${data.budget && data.budget.crossedThresholds && data.budget.crossedThresholds.length > 0 ? 'has-alert' : ''}">
   ${
     data.budget && data.budget.crossedThresholds && data.budget.crossedThresholds.length > 0
       ? `
-  <div id="budget-alert" class="fixed top-0 left-0 right-0 z-50 px-4 py-2 flex items-center justify-between ${data.budget.percentUsed >= 90 ? 'bg-red-600' : data.budget.percentUsed >= 75 ? 'bg-orange-500' : 'bg-amber-500'} text-white">
-    <span class="font-medium">
+  <div id="budget-alert" class="budget-alert ${data.budget.percentUsed >= 90 ? 'budget-alert-critical' : data.budget.percentUsed >= 75 ? 'budget-alert-warn' : 'budget-alert-caution'}">
+    <span class="budget-alert-text">
       ${data.budget.percentUsed >= 90 ? '⛔' : '⚠️'} Budget Alert: ${data.budget.percentUsed}% of budget consumed
     </span>
-    <button onclick="dismissBudgetAlert()" class="text-white hover:text-gray-200 text-sm font-bold px-2">✕</button>
+    <button onclick="dismissBudgetAlert()" class="budget-alert-dismiss">✕</button>
   </div>
   <script>function dismissBudgetAlert(){document.getElementById('budget-alert').style.display='none';document.body.classList.remove('has-alert');localStorage.setItem('budgetAlertDismissed','${data.generatedAt}');}</script>
   `
       : ''
   }
-  ${renderTopBar(data)}
+  ${renderChrome(data)}
   ${renderCompletionBanner(data)}
   <div id="app-shell">
     ${renderSidebar()}
     <main id="main-content" role="main">
+      ${renderMasthead(data)}
       <div id="filter-sticky">
         ${renderFilterBar(data)}
       </div>
       <div id="tab-content">
+        ${renderStatusTab(data)}
         ${renderHierarchyTab(data)}
         ${renderKanbanTab(data)}
         ${renderTraceabilityTab(data)}
@@ -218,12 +480,13 @@ function renderHtml(data, options = {}) {
         ${renderCostsTab(data, options)}
         ${renderBugsTab(data)}
         ${renderLessonsTab(data)}
+        ${renderStakeholderTab(data)}
       </div>
     </main>
   </div>
   ${renderRecentActivity(data)}
-  <div id="search-backdrop" onclick="closeSearch()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(2px);z-index:200"></div>
-  <div id="search-modal" role="dialog" aria-label="Search" aria-modal="true" style="display:none;position:fixed;top:20vh;left:50%;transform:translateX(-50%);width:min(560px,92vw);z-index:201;border-radius:12px;overflow:hidden;box-shadow:0 16px 48px rgba(0,0,0,.4);background:var(--clr-panel-bg);border:1px solid var(--clr-border);">
+  <div id="search-backdrop" onclick="closeSearch()" style="display:none;position:fixed;inset:0;background:oklch(0% 0 0 / 0.6);backdrop-filter:blur(2px);z-index:200"></div>
+  <div id="search-modal" role="dialog" aria-label="Search" aria-modal="true" style="display:none;position:fixed;top:20vh;left:50%;transform:translateX(-50%);width:min(560px,92vw);z-index:201;border-radius:12px;overflow:hidden;box-shadow:var(--shadow-modal,0 16px 48px oklch(0% 0 0 / 0.4));background:var(--clr-panel-bg);border:1px solid var(--clr-border);">
     <div style="position:relative">
       <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);opacity:.45;font-size:16px;pointer-events:none">🔍</span>
       <input id="search-input" type="search" placeholder="Search stories, bugs, lessons…" autocomplete="off" spellcheck="false"
@@ -232,44 +495,157 @@ function renderHtml(data, options = {}) {
     <div id="search-body" style="max-height:360px;overflow-y:auto"></div>
     <div style="padding:7px 16px;font-size:11px;color:var(--clr-text-muted);text-align:center;border-top:1px solid var(--clr-border);background:var(--clr-surface-raised)">↑↓ navigate &nbsp;·&nbsp; ↵ jump &nbsp;·&nbsp; ESC close</div>
   </div>
-  <div id="aboutModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
-    <div onclick="closeAbout()" class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
-    <div class="relative z-10 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl shadow-2xl w-full max-w-sm p-6 text-center">
-      <button onclick="closeAbout()" class="absolute top-3 right-4 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white text-xl leading-none" aria-label="Close">&#x2715;</button>
-      <h2 class="text-2xl font-bold mb-1" style="color:var(--clr-accent)">${esc(data.projectName)}</h2>
-      <p class="text-slate-500 dark:text-slate-400 text-sm mb-4">${esc(data.tagline)}</p>
-      <a href="${/^https?:\/\//.test(data.githubUrl || '') ? esc(data.githubUrl) : ''}" target="_blank" rel="noopener noreferrer"
-         class="inline-flex items-center gap-1.5 text-sm underline underline-offset-2 mb-5" style="color:var(--clr-accent)">
-        GitHub Repository
-      </a>
-      <div class="border-t border-slate-200 dark:border-slate-700 pt-4 text-slate-500 text-xs space-y-3 text-left">
-        <div>
-          <p class="text-[10px] uppercase tracking-wider text-slate-400 dark:text-slate-500 font-semibold mb-1">This Project</p>
-          <div class="space-y-1 pl-2">
-            <p><span class="text-slate-500">Name:</span> <span class="text-slate-700 dark:text-slate-300 font-mono">${esc(data.projectName)}</span></p>
-            <p><span class="text-slate-500">Version:</span> <span class="text-slate-700 dark:text-slate-300 font-mono">v${esc(data.version)}</span></p>
-            ${data.branch ? `<p><span class="text-slate-500">Branch:</span> <span class="text-slate-700 dark:text-slate-300 font-mono">${esc(data.branch)}</span></p>` : ''}
-            <p><span class="text-slate-500">Build:</span> <span class="text-slate-700 dark:text-slate-300 font-mono">#${esc(data.buildNumber)}</span>&nbsp;<code class="text-slate-500 dark:text-slate-600">${esc(data.commitSha)}</code></p>
-          </div>
-        </div>
-        ${
-          data.appName
-            ? `<div>
-          <p class="text-[10px] uppercase tracking-wider text-slate-400 dark:text-slate-500 font-semibold mb-1">Dashboard Tool</p>
-          <div class="space-y-1 pl-2">
-            <p><span class="text-slate-500">Generated by:</span> <span class="text-slate-700 dark:text-slate-300 font-mono">${esc(data.appName)} v${esc(data.appVersion)}</span></p>
-            <p><span class="text-slate-500">Generated at:</span> <span id="about-gen-time" data-iso="${data.generatedAt}" class="text-slate-700 dark:text-slate-300"></span></p>
-          </div>
-        </div>`
-            : `<p><span class="text-slate-500">Generated at:</span> <span id="about-gen-time" data-iso="${data.generatedAt}" class="text-slate-700 dark:text-slate-300"></span></p>`
-        }
-      </div>
-      <p class="mt-5 text-slate-500 text-xs">Implemented by Kamal Syed, 2026</p>
-    </div>
-  </div>
+  ${renderAboutModal({
+    title: data.projectName,
+    tagline: data.tagline,
+    githubUrl: data.githubUrl || '',
+    agents: data.agents || {},
+    projectName: data.projectName,
+    version: data.version,
+    branch: data.branch,
+    buildNumber: data.buildNumber,
+    commitSha: data.commitSha,
+    appName: data.appName,
+    appVersion: data.appVersion,
+    generatedAt: data.generatedAt,
+    viewLabel: 'Plan Status',
+    dashboardLink: 'plan-status.html',
+    rosterCols: 2,
+    author: 'Kamal Syed',
+  })}
   ${renderScripts(data, options)}
 </body>
 </html>`;
 }
 
-module.exports = { renderHtml, badge, BADGE_TONE, sparkline };
+/**
+ * Renders the shared About modal used by both plan-status and agentic dashboards.
+ * Returns a self-contained string: a <style> block + the modal HTML.
+ * CSS uses pv-about-* class names; custom properties fall back across both
+ * dashboard variable namespaces (--clr-* plan-status, --brand-* agentic).
+ *
+ * @param {object} aboutData
+ * @param {string} aboutData.title          - Modal heading (h2)
+ * @param {string} [aboutData.tagline]      - Subtitle line
+ * @param {string} [aboutData.githubUrl]    - GitHub URL for button/link
+ * @param {object} [aboutData.agents]       - Agent map: name → {avatar, icon, role}
+ * @param {string} [aboutData.missionText]  - Optional mission paragraph
+ * @param {string} [aboutData.projectName]  - Meta: project name
+ * @param {string} [aboutData.version]      - Meta: version string
+ * @param {string} [aboutData.branch]       - Meta: branch name
+ * @param {string} [aboutData.buildNumber]  - Meta: build number
+ * @param {string} [aboutData.commitSha]    - Meta: commit SHA
+ * @param {string} [aboutData.appName]      - Meta: generator app name
+ * @param {string} [aboutData.appVersion]   - Meta: generator app version
+ * @param {string} [aboutData.generatedAt]  - Meta: ISO timestamp (formatted by JS in browser)
+ * @param {string} [aboutData.viewLabel]    - Meta: "Plan Status" or "Agentic SDLC Dashboard"
+ * @param {string} [aboutData.dashboardLink]- Meta: link href for this dashboard
+ * @param {number} [aboutData.rosterCols]   - Columns in agent roster grid (default 3)
+ * @param {string} [aboutData.author]       - Attribution line
+ */
+function renderAboutModal(aboutData) {
+  const {
+    title = '',
+    tagline = '',
+    githubUrl = '',
+    agents = {},
+    missionText = '',
+    projectName = '',
+    version = '',
+    branch = '',
+    buildNumber = '',
+    commitSha = '',
+    appName = '',
+    appVersion = '',
+    generatedAt = '',
+    viewLabel = 'Plan Status',
+    dashboardLink = 'plan-status.html',
+    rosterCols = 3,
+    author = '',
+  } = aboutData;
+
+  const rosterHtml = Object.entries(agents)
+    .map(([name, cfg]) => {
+      const avatar = cfg.avatar || name.toLowerCase();
+      const icon = esc(cfg.icon || '🤖');
+      return `<li style="display:flex;align-items:center;gap:8px;min-width:0">
+        <img src="agents/images/optimized/${esc(avatar)}-64.png" alt="${esc(name)}"
+          style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid var(--clr-border,var(--bg-card-border));background:var(--clr-surface-raised,var(--bg-card-inner))"
+          onerror="this.outerHTML='&lt;span style=&quot;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;border:1px solid var(--clr-border)&quot;&gt;${icon}&lt;/span&gt;'">
+        <span style="min-width:0;display:flex;flex-direction:column">
+          <span style="font-weight:600;font-size:12px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--clr-text-primary,var(--text-primary))">${esc(name)}</span>
+          <span style="font-size:10px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--clr-text-muted,var(--text-muted))">${esc(cfg.role || '')}</span>
+        </span>
+      </li>`;
+    })
+    .join('');
+
+  const css = `<style id="pv-about-css">
+.pv-about-overlay{display:none;position:fixed;inset:0;background:oklch(0% 0 0 / 60%);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.pv-about-overlay.open{display:flex}
+.pv-about-modal{background:var(--clr-panel-bg,var(--bg-card));border:1px solid var(--clr-border,var(--bg-card-border));border-radius:16px;overflow:hidden;max-width:680px;width:92%;max-height:88vh;overflow-y:auto;text-align:left;position:relative;box-shadow:0 20px 60px oklch(0% 0 0 / 30%)}
+.pv-about-hero{width:100%;height:400px;object-fit:cover;object-position:center top;display:block}
+.pv-about-body{padding:24px 28px 28px}
+.pv-about-close{position:absolute;top:12px;right:14px;background:oklch(0% 0 0 / 40%);border:none;color:oklch(100% 0 0);font-size:20px;cursor:pointer;line-height:1;padding:4px 9px;border-radius:6px;transition:background .2s;backdrop-filter:blur(4px)}
+.pv-about-close:hover{background:oklch(0% 0 0 / 60%)}
+.pv-about-header{display:flex;align-items:baseline;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.pv-about-h2{font-size:22px;font-weight:700;margin:0;color:var(--clr-accent,var(--brand-primary));white-space:nowrap}
+.pv-about-tagline{font-size:13px;color:var(--clr-text-muted,var(--text-muted));margin:0}
+.pv-about-mission{font-size:13px;color:var(--clr-text-muted,var(--text-muted));margin-bottom:16px;line-height:1.5}
+.pv-about-supertitle{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--clr-text-muted,var(--text-muted));margin:0 0 8px}
+.pv-about-roster{display:grid;grid-template-columns:repeat(3,1fr);gap:8px 12px;margin-bottom:16px;list-style:none;padding:0;font-size:12px}
+.pv-about-links{font-size:12px;color:var(--clr-text-muted,var(--text-muted));margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.pv-about-links a{color:var(--clr-accent,var(--brand-primary));text-decoration:none;word-break:break-all}
+.pv-about-links a:hover{text-decoration:underline}
+.pv-about-links-row{margin-bottom:0}
+.pv-about-divider{border-top:1px solid var(--clr-border,var(--bg-card-border));padding-top:14px;margin-top:6px;display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:12px}
+.pv-about-meta-row{padding-left:8px;margin-bottom:3px;color:var(--clr-text-muted,var(--text-muted))}
+.pv-about-meta-label{color:var(--clr-text-muted,var(--text-muted))}
+.pv-about-meta-value{color:var(--clr-text-primary,var(--text-primary));font-family:monospace;font-size:11px}
+.pv-about-attribution{margin-top:14px;font-size:11px;color:var(--clr-text-muted,var(--text-muted));text-align:center}
+@media(max-width:600px){.pv-about-hero{height:160px}.pv-about-body{padding:18px 20px 24px}.pv-about-roster{grid-template-columns:1fr 1fr}.pv-about-divider{grid-template-columns:1fr}}
+</style>`;
+
+  const html = `<div id="about-modal" class="pv-about-overlay" onclick="if(event.target===this)closeAbout()">
+  <div class="pv-about-modal">
+    <button class="pv-about-close" onclick="closeAbout()" aria-label="Close">&#xD7;</button>
+    <img class="pv-about-hero" src="agents/images/team.png" alt="Agent team" onerror="this.style.display='none'">
+    <div class="pv-about-body">
+      <div class="pv-about-header">
+        <h2 class="pv-about-h2">${esc(title)}</h2>
+        ${tagline ? `<span class="pv-about-tagline">${esc(tagline)}</span>` : ''}
+      </div>
+      ${missionText ? `<p class="pv-about-mission">${esc(missionText)}</p>` : ''}
+      ${
+        Object.keys(agents).length > 0
+          ? `<p class="pv-about-supertitle">Agent Roster</p>
+      <ul class="pv-about-roster">${rosterHtml}</ul>`
+          : ''
+      }
+      <div class="pv-about-links">
+        ${/^https?:\/\//.test(githubUrl) ? `<div class="pv-about-links-row"><span class="pv-about-meta-label">Repo: </span><a href="${esc(githubUrl)}" target="_blank" rel="noopener">${esc(githubUrl)}</a></div>` : ''}
+        ${author ? `<p class="pv-about-attribution" style="margin:0">Implemented by ${esc(author)}</p>` : ''}
+      </div>
+      <div class="pv-about-divider">
+        <div>
+          <p class="pv-about-supertitle">This Project</p>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Name: </span><span class="pv-about-meta-value">${esc(projectName)}</span></div>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Version: </span><span class="pv-about-meta-value">v${esc(version)}</span></div>
+          ${branch ? `<div class="pv-about-meta-row"><span class="pv-about-meta-label">Branch: </span><span class="pv-about-meta-value">${esc(branch)}</span></div>` : ''}
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Build: </span><span class="pv-about-meta-value">r${esc(buildNumber)} ${esc(commitSha)}</span></div>
+        </div>
+        <div>
+          <p class="pv-about-supertitle">Dashboard Tool</p>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">View: </span><span class="pv-about-meta-value">${esc(viewLabel)}</span></div>
+          ${appName ? `<div class="pv-about-meta-row"><span class="pv-about-meta-label">Generated by: </span><span class="pv-about-meta-value">${esc(appName)} v${esc(appVersion)}</span></div>` : ''}
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Generated at: </span><span id="about-gen-time" data-iso="${esc(generatedAt)}" class="pv-about-meta-value"></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>`;
+
+  return `${css}\n${html}`;
+}
+
+module.exports = { renderHtml, renderAboutModal, badge, BADGE_TONE, sparkline };

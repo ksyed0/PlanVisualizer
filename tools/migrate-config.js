@@ -56,12 +56,16 @@ function ensureKey(obj, key, defaultValue) {
  *   - docs.lessons — parsed by generate-plan.js:156
  */
 function migratePlanVisualizerConfig(filePath) {
-  if (!fs.existsSync(filePath)) {
-    log(`  [skip] ${path.basename(filePath)} not present`);
-    return { changed: false, additions: [] };
+  let raw;
+  try {
+    raw = fs.readFileSync(filePath, 'utf8');
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      log(`  [skip] ${path.basename(filePath)} not present`);
+      return { changed: false, additions: [] };
+    }
+    throw err;
   }
-
-  const raw = fs.readFileSync(filePath, 'utf8');
   let cfg;
   try {
     cfg = JSON.parse(raw);
@@ -94,12 +98,16 @@ function migratePlanVisualizerConfig(filePath) {
  *     Renderer gracefully falls back to headshot→emoji if the PNG is absent.
  */
 function migrateAgentsConfig(filePath) {
-  if (!fs.existsSync(filePath)) {
-    log(`  [skip] ${path.basename(filePath)} not present`);
-    return { changed: false, additions: [] };
+  let raw;
+  try {
+    raw = fs.readFileSync(filePath, 'utf8');
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      log(`  [skip] ${path.basename(filePath)} not present`);
+      return { changed: false, additions: [] };
+    }
+    throw err;
   }
-
-  const raw = fs.readFileSync(filePath, 'utf8');
   let cfg;
   try {
     cfg = JSON.parse(raw);

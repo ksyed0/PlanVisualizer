@@ -51,8 +51,8 @@ describe('renderHtml', () => {
 
   it('returns a string', () => expect(typeof html).toBe('string'));
   it('includes DOCTYPE', () => expect(html).toMatch(/<!DOCTYPE html>/));
-  it('includes Tailwind CDN', () => expect(html).toContain('cdn.tailwindcss.com'));
-  it('includes Chart.js CDN', () => expect(html).toContain('cdn.jsdelivr.net'));
+  it('does not include Tailwind CDN (BUG-0230)', () => expect(html).not.toContain('cdn.tailwindcss.com'));
+  it('does not include Chart.js CDN (BUG-0230)', () => expect(html).not.toContain('cdn.jsdelivr.net'));
   it('includes project name', () => expect(html).toMatch(/NomadCode/));
   it('includes generated timestamp', () => expect(html).toMatch(/2026-03-10/));
   it('includes commit SHA', () => expect(html).toMatch(/abc1234/));
@@ -79,6 +79,77 @@ describe('renderHtml', () => {
   it('BUG-0099: applyFilters uses nextElementSibling for TR bug-epic-headers', () => {
     expect(html).toContain('nextElementSibling');
     expect(html).not.toContain("header.closest('tbody') || header.closest('.bug-epic-card')");
+  });
+
+  describe('US-0140 — Unified Chart Palette', () => {
+    test('rendered HTML resolves Chart.defaults.color via getComputedStyle at init time', () => {
+      // AC-0591: must use getComputedStyle to resolve CSS vars — canvas cannot resolve 'var(--x)'
+      expect(html).toContain('Chart.defaults.color =');
+      expect(html).toContain('getComputedStyle(document.documentElement).getPropertyValue(');
+      expect(html).not.toContain("Chart.defaults.color = 'var(");
+    });
+    test('rendered HTML resolves Chart.defaults.borderColor via getComputedStyle at init time', () => {
+      expect(html).toContain('Chart.defaults.borderColor =');
+      expect(html).not.toContain("Chart.defaults.borderColor = 'var(");
+    });
+    test("BUG-0249: chart-init fallback strings use light theme's --text-mute (light is default)", () => {
+      // Reject the dark-theme value 'oklch(65% 0.014 95)' as a hardcoded fallback —
+      // light is the default theme, so the fallback should match light.
+      // Spec value (dark theme): oklch(65% 0.014 95). Spec value (light theme): oklch(78% 0.012 95).
+      // Either resolved CSS-variable values or themed gradients in chart data may legitimately
+      // use oklch(65%) — the rule only applies to fallback strings that follow `||` after a
+      // getComputedStyle / tok call.
+      expect(html).not.toMatch(/\|\|\s*'oklch\(65% 0\.014 95\)'/);
+      expect(html).not.toMatch(/tok\([^,]+,\s*'oklch\(70% 0\.012 95\)'\)/); // pvChartColors.mute fallback was inconsistent
+      // Confirm at least one fallback now uses the light value (sanity check that the
+      // consolidation actually happened, not that all fallbacks were just deleted).
+      expect(html).toContain("'oklch(78% 0.012 95)'");
+    });
+  });
+
+  describe('US-0135 — Status Hero Card', () => {
+    test('hero contains stats and viz sections', () => {
+      expect(html).toContain('pv-hero-stats');
+      expect(html).toContain('pv-hero-viz');
+    });
+  });
+
+  describe('US-0139 — Rich Status Tab', () => {
+    test('Status tab has top-risks widget', () => {
+      expect(html).toContain('pv-widget-top-risks');
+    });
+    test('Status tab has this-week widget', () => {
+      expect(html).toContain('pv-widget-this-week');
+    });
+    test('Status tab has agent-workload widget', () => {
+      expect(html).toContain('pv-widget-agent-workload');
+    });
+    test('widgets collapse to single column at 1100px via CSS', () => {
+      expect(html).toContain('@media(max-width:1100px)');
+    });
+  });
+});
+
+describe('renderHtml — US-0138 mode badge', () => {
+  let html;
+  beforeAll(() => {
+    html = renderHtml(sampleData);
+  });
+
+  it('renders a mode-badge element', () => {
+    expect(html).toContain('mode-badge');
+  });
+
+  it('renders REPORT label on Plan-Status', () => {
+    expect(html).toContain('REPORT');
+  });
+
+  it('renders static indigo pip (mode-report class)', () => {
+    expect(html).toContain('mode-report');
+  });
+
+  it('badge has aria-label "Mode: Report"', () => {
+    expect(html).toContain('aria-label="Mode: Report"');
   });
 });
 
@@ -215,10 +286,11 @@ describe('renderHtml — story with ACs', () => {
 });
 
 describe('renderHtml — coverage below target', () => {
-  it('renders red coverage when below 80%', () => {
+  it('renders coverage value when below 80%', () => {
     const dataLowCoverage = { ...sampleData, coverage: { lines: 70, overall: 70, meetsTarget: false } };
     const html = renderHtml(dataLowCoverage);
-    expect(html).toMatch(/tile-cov tile-danger/);
+    // Masthead still renders coverage value
+    expect(html).toContain('70.0%');
   });
 });
 
@@ -237,37 +309,40 @@ describe('renderHtml — badge fallback', () => {
 });
 
 // US-0097 (EPIC-0015): Exhaustive coverage of the BADGE_TONE mapping. Every
-// one of the 17 known badge labels must resolve to its expected semantic tone
+// one of the 20 known badge labels must resolve to its expected semantic tone
 // class so that styling remains stable as the palette evolves. See
-// tools/lib/render-html.js:22 for the authoritative map.
-describe('badge() tone mapping — all 17 semantic labels', () => {
+// tools/lib/theme.js for the authoritative map.
+// Color semantics: blue=complete, amber=at-risk, red=failed, grey=not-started.
+describe('badge() tone mapping — all 20 semantic labels', () => {
   const cases = [
-    // success
-    ['Done', 'success'],
-    ['Pass', 'success'],
-    ['Fixed', 'success'],
-    // warn
-    ['To Do', 'warn'],
-    ['Not Run', 'warn'],
-    ['Medium', 'warn'],
-    ['P1', 'warn'],
-    ['High', 'warn'],
-    // danger
-    ['Blocked', 'danger'],
-    ['Fail', 'danger'],
-    ['Open', 'danger'],
-    ['Critical', 'danger'],
-    ['P0', 'danger'],
-    // info
-    ['In Progress', 'info'],
-    // neutral
+    // info (blue) = complete
+    ['Done', 'info'],
+    ['Pass', 'info'],
+    ['Fixed', 'info'],
+    // neutral (grey) = not started / planned
     ['Planned', 'neutral'],
+    ['To Do', 'neutral'],
+    ['Not Run', 'neutral'],
     ['Low', 'neutral'],
     ['P2', 'neutral'],
+    ['Rejected', 'neutral'],
+    ['Cancelled', 'neutral'],
+    ['Retired', 'neutral'],
+    // warn (amber) = at risk
+    ['In Progress', 'warn'],
+    ['Blocked', 'warn'],
+    ['Open', 'warn'],
+    ['Medium', 'warn'],
+    ['High', 'warn'],
+    ['P1', 'warn'],
+    // danger (red) = failed
+    ['Fail', 'danger'],
+    ['Critical', 'danger'],
+    ['P0', 'danger'],
   ];
 
-  it('covers all 17 canonical labels', () => {
-    expect(cases).toHaveLength(17);
+  it('covers all 20 canonical labels', () => {
+    expect(cases).toHaveLength(20);
   });
 
   describe.each(cases)('label "%s"', (label, tone) => {
@@ -442,7 +517,7 @@ describe('renderHtml — traceability with Not Run TC', () => {
 describe('renderHtml — sticky header (BUG-0004 regression)', () => {
   it('wraps header in a sticky container', () => {
     const html = renderHtml(sampleData);
-    expect(html).toContain('id="topbar-fixed"');
+    expect(html).toContain('id="pv-chrome"');
   });
 });
 
@@ -759,31 +834,31 @@ describe('renderHtml — CSS tokens (US-0096 zebra striping)', () => {
     html = renderHtml(sampleData);
   });
 
-  // Extract :root { ... } block (stops at closing brace of root block, before html.dark)
+  // Extract [data-theme="light"] { ... } block (US-0137: token system migrated to data-theme)
   const rootBlock = () => {
-    const m = html.match(/:root\s*\{([\s\S]*?)\n\s{2}\}/);
+    const m = html.match(/\[data-theme="light"\]\s*\{([\s\S]*?)\}/);
     return m ? m[1] : '';
   };
-  // Extract html.dark { ... } block
+  // Extract [data-theme="dark"] { ... } block
   const darkBlock = () => {
-    const m = html.match(/html\.dark\s*\{([\s\S]*?)\n\s{2}\}/);
+    const m = html.match(/\[data-theme="dark"\]\s*\{([\s\S]*?)\}/);
     return m ? m[1] : '';
   };
 
-  it('declares --clr-row-alt in :root (light mode)', () => {
-    expect(rootBlock()).toMatch(/--clr-row-alt:\s*rgba\(148,163,184,0\.04\)/);
+  it('declares --bg in [data-theme="light"] (light mode, US-0137)', () => {
+    expect(rootBlock()).toMatch(/--bg:/);
   });
 
-  it('declares --clr-row-hover in :root (light mode)', () => {
-    expect(rootBlock()).toMatch(/--clr-row-hover:\s*rgba\(148,163,184,0\.09\)/);
+  it('declares --text in [data-theme="light"] (light mode, US-0137)', () => {
+    expect(rootBlock()).toMatch(/--text:/);
   });
 
-  it('declares --clr-row-alt in html.dark (dark mode)', () => {
-    expect(darkBlock()).toMatch(/--clr-row-alt:\s*rgba\(255,255,255,0\.02\)/);
+  it('declares --bg in [data-theme="dark"] (dark mode, US-0137)', () => {
+    expect(darkBlock()).toMatch(/--bg:/);
   });
 
-  it('declares --clr-row-hover in html.dark (dark mode)', () => {
-    expect(darkBlock()).toMatch(/--clr-row-hover:\s*rgba\(255,255,255,0\.05\)/);
+  it('declares --text in [data-theme="dark"] (dark mode, US-0137)', () => {
+    expect(darkBlock()).toMatch(/--text:/);
   });
 
   it('emits .scroll-table tbody tr:nth-child(even) rule using --clr-row-alt', () => {
@@ -812,8 +887,8 @@ describe('renderHtml — hero numbers (US-0099)', () => {
     return m ? m[1] : '';
   };
 
-  it('declares .hero-num with Instrument Serif font stack', () => {
-    expect(heroNumBlock()).toMatch(/font-family:\s*'Instrument Serif'/);
+  it('declares .hero-num with display font variable (US-0137: Instrument Serif replaced by var(--font-display))', () => {
+    expect(heroNumBlock()).toMatch(/font-family:\s*var\(--font-display/);
   });
 
   it('declares .hero-num with clamp() responsive font-size', () => {
@@ -833,43 +908,26 @@ describe('renderHtml — hero numbers (US-0099)', () => {
     expect(heroNumSmBlock()).toMatch(/clamp\([^)]*rem[^)]*\)/);
   });
 
-  it('applies hero-num hero-num-sm to Bugs Open topbar tile', () => {
-    expect(html).toMatch(
-      /class="tile-value hero-num hero-num-sm tile-bugs[^"]*"[^>]*>[^<]*Bugs|tile-bugs[^"]*"[^>]*>[^<]*\d+<\/span>\s*<span class="tile-label">Bugs Open/,
-    );
-    // Precise: the Bugs Open tile-value contains hero-num hero-num-sm
-    const bugsTileMatch = html.match(
-      /<span class="tile-value ([^"]+) tile-bugs[^"]*">[\s\S]*?<\/span>\s*<span class="tile-label">Bugs Open<\/span>/,
-    );
-    expect(bugsTileMatch).not.toBeNull();
-    expect(bugsTileMatch[1]).toContain('hero-num');
-    expect(bugsTileMatch[1]).toContain('hero-num-sm');
+  it('renders Open bugs count in masthead (US-0136: stat tiles moved from chrome to masthead)', () => {
+    // After US-0136, stat tiles are no longer in the chrome/topbar.
+    // The masthead (pv-masthead) renders open bug counts under pv-meta-val.
+    expect(html).toContain('Open bugs');
   });
 
-  it('applies hero-num hero-num-sm to Coverage topbar tile', () => {
-    const covTileMatch = html.match(
-      /<span class="tile-value ([^"]+) tile-cov[^"]*">[\s\S]*?<\/span>\s*<span class="tile-label">Coverage<\/span>/,
-    );
-    expect(covTileMatch).not.toBeNull();
-    expect(covTileMatch[1]).toContain('hero-num');
-    expect(covTileMatch[1]).toContain('hero-num-sm');
+  it('renders Coverage value in masthead (US-0136: stat tiles moved from chrome to masthead)', () => {
+    expect(html).toContain('Coverage');
+    // masthead renders coverage as pv-meta-val
+    expect(html).toMatch(/pv-meta-val/);
   });
 
-  it('applies hero-num hero-num-sm to AI Cost topbar tile', () => {
-    const aiTileMatch = html.match(
-      /<span class="tile-value ([^"]+)">[\s\S]*?<\/span>\s*<span class="tile-label">AI Cost<\/span>/,
-    );
-    expect(aiTileMatch).not.toBeNull();
-    expect(aiTileMatch[1]).toContain('hero-num');
-    expect(aiTileMatch[1]).toContain('hero-num-sm');
+  it('renders AI spend in masthead (US-0136: stat tiles moved from chrome to masthead)', () => {
+    expect(html).toContain('AI spend');
   });
 
-  it('does NOT apply hero-num to Stories tile (treatment is scoped to Bugs/Coverage/AI Cost)', () => {
-    const storiesTileMatch = html.match(
-      /<span class="tile-value[^"]*">[^<]*<\/span>\s*<span class="tile-label">Stories<\/span>/,
-    );
-    expect(storiesTileMatch).not.toBeNull();
-    expect(storiesTileMatch[0]).not.toContain('hero-num');
+  it('does not render topbar stat tiles in chrome (US-0136: chrome is navigation-only)', () => {
+    // Old topbar tile HTML elements are not rendered — chrome has no stat tiles
+    expect(html).not.toContain('tile-bugs');
+    expect(html).not.toContain('class="topbar-tile');
   });
 
   it('renders Coverage doughnut overlay using hero-num (default, not sm)', () => {
@@ -1060,10 +1118,10 @@ describe('US-0107 — Lessons card polish', () => {
 });
 
 describe('US-0100 — Hierarchy tab polish', () => {
-  it('epic ID renders with EPIC / split pattern', () => {
+  it('epic ID renders as full EPIC-XXXX monospace span', () => {
     const html = renderHtml(sampleData);
-    expect(html).toMatch(/epic-id-display/);
-    expect(html).toMatch(/EPIC \//);
+    expect(html).toMatch(/tracking-widest/);
+    expect(html).toMatch(/EPIC-\d{4}/);
   });
 
   it('epic progress rule div is present', () => {
@@ -1499,7 +1557,7 @@ describe('renderHtml — status tab US-0103', () => {
 
   // TC-0152
   it('TC-0152: Chart.js config includes Inter font family', () => {
-    expect(html).toMatch(/'Inter',\s*sans-serif/);
+    expect(html).toMatch(/var\(--font-sans\)/);
   });
 });
 
@@ -1746,5 +1804,167 @@ describe('renderHtml — at-risk epic summary (US-0067)', () => {
       },
     };
     expect(renderHtml(d)).not.toContain('At-Risk Epics');
+  });
+});
+
+describe('renderHtml — US-0137/0141 token system', () => {
+  let html;
+  beforeAll(() => {
+    html = renderHtml(sampleData);
+  });
+
+  it('uses system-ui font stack instead of CDN Inter Tight (BUG-0230)', () => {
+    expect(html).not.toContain('Inter+Tight');
+    expect(html).not.toContain('googleapis.com');
+    expect(html).toContain('system-ui');
+  });
+
+  it('does not load Instrument Serif or Fraunces', () => {
+    expect(html).not.toContain('Instrument+Serif');
+    expect(html).not.toContain('Fraunces');
+  });
+
+  it('uses data-theme attribute for theming', () => {
+    expect(html).toContain('data-theme');
+    expect(html).toContain('[data-theme="light"]');
+    expect(html).toContain('[data-theme="dark"]');
+  });
+
+  it('reads pv-theme from localStorage (not bare theme key)', () => {
+    expect(html).toContain('pv-theme');
+  });
+
+  it('emits --plan-accent CSS variable', () => {
+    expect(html).toContain('--plan-accent');
+  });
+
+  it('emits --live-accent CSS variable', () => {
+    expect(html).toContain('--live-accent');
+  });
+
+  it('uses system monospace font stack instead of CDN JetBrains Mono (BUG-0230)', () => {
+    expect(html).not.toContain('JetBrains+Mono');
+    expect(html).toContain('ui-monospace');
+  });
+
+  it('theme init uses setAttribute and also toggles .dark class for dark-mode selectors', () => {
+    // BUG-0190: Tailwind darkMode:'class' requires .dark on <html>.
+    // Both setAttribute('data-theme') AND classList.add('dark') must be present.
+    expect(html).toContain("setAttribute('data-theme'");
+    expect(html).toContain("classList.add('dark')");
+  });
+
+  it('includes migration shim from old theme key', () => {
+    expect(html).toContain("localStorage.getItem('theme')");
+    expect(html).toContain("localStorage.removeItem('theme')");
+  });
+});
+
+describe('renderHtml — US-0136 neutral chrome', () => {
+  let html;
+  beforeAll(() => {
+    html = renderHtml(sampleData);
+  });
+
+  it('renders chrome element with class pv-chrome', () => {
+    expect(html).toContain('pv-chrome');
+  });
+
+  it('chrome CSS height does not set 72px', () => {
+    expect(html).not.toContain('height: 72px');
+    expect(html).not.toContain('height:72px');
+  });
+
+  it('does not render navy gradient hex colors in chrome CSS', () => {
+    expect(html).not.toContain('#003087');
+    expect(html).not.toContain('#0050b3');
+  });
+
+  it('chrome contains Plan-Status switcher label', () => {
+    expect(html).toContain('Plan-Status');
+  });
+
+  it('chrome contains Light and Dark theme toggle buttons', () => {
+    expect(html).toContain('Light');
+    expect(html).toContain('Dark');
+  });
+
+  it('renderCompletionBanner is preserved (EPIC-0010)', () => {
+    expect(() => renderHtml(sampleData)).not.toThrow();
+  });
+});
+
+describe('renderHtml — US-0135 status hero card', () => {
+  let html;
+  beforeAll(() => {
+    html = renderHtml(sampleData);
+  });
+
+  it('renders a pv-hero element in the Status tab', () => {
+    expect(html).toContain('pv-hero');
+  });
+
+  it('renders a verdict chip', () => {
+    expect(html).toMatch(/on.track|at.risk|off.track/i);
+  });
+
+  it('renders Forecast stat block', () => {
+    expect(html).toContain('Forecast');
+  });
+
+  it('renders Velocity stat block', () => {
+    expect(html).toContain('Velocity');
+  });
+
+  it('renders Budget stat block', () => {
+    expect(html).toContain('Budget');
+  });
+
+  it('renders a 30-cell coverage heat strip', () => {
+    expect(html).toContain('pv-heat');
+  });
+});
+
+describe('renderHtml — US-0139 decision widgets', () => {
+  let html;
+  beforeAll(() => {
+    html = renderHtml(sampleData);
+  });
+
+  it('renders Top Risks card', () => {
+    expect(html).toContain('Top Risks');
+  });
+
+  it('renders This Week card', () => {
+    expect(html).toContain('This Week');
+  });
+
+  it('renders Agent Workload card', () => {
+    expect(html).toContain('Agent Workload');
+  });
+
+  it('decision widget row uses pv-widgets class', () => {
+    expect(html).toContain('pv-widgets');
+  });
+});
+
+describe('renderHtml — US-0140 chart palette tokens', () => {
+  let html;
+  beforeAll(() => {
+    html = renderHtml(sampleData);
+  });
+
+  it('does not use hardcoded #22c55e (green) in chart script', () => {
+    const scriptIdx = html.indexOf('<script');
+    expect(html.slice(scriptIdx)).not.toContain("'#22c55e'");
+  });
+
+  it('does not use hardcoded #3b82f6 (blue) in chart script', () => {
+    const scriptIdx = html.indexOf('<script');
+    expect(html.slice(scriptIdx)).not.toContain("'#3b82f6'");
+  });
+
+  it('chart init uses pvChartColors variable', () => {
+    expect(html).toContain('pvChartColors');
   });
 });

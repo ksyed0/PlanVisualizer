@@ -43,90 +43,120 @@ EPIC-0004: CI/CD Pipeline
 Description: Consolidated GitHub Actions pipeline with ESLint, Jest coverage gate, npm audit, CodeQL analysis, GitHub Pages deployment, and Dependabot.
 Release Target: Release 1.1
 Status: Done
+StartDate: 2026-03-11
+DoneDate: 2026-04-13
 Dependencies: EPIC-0001
 
 EPIC-0005: Project Self-Documentation
 Description: Full AGENTS.md-compliant documentation including design doc, architecture, release plan, test cases, ID registry, and all supporting project files.
 Release Target: Release 1.1
 Status: Done
+StartDate: 2026-03-11
+DoneDate: 2026-03-11
 Dependencies: None
 
 EPIC-0006: Dashboard UX & Quality Improvements
 Description: Mobile-responsive layout fixes, display accuracy improvements, navigation state persistence, and developer-experience enhancements for the generated dashboard.
 Release Target: Release 1.2
 Status: Done
+StartDate: 2026-03-16
+DoneDate: 2026-03-16
 Dependencies: EPIC-0002
 
 EPIC-0007: Dashboard Visual Design Overhaul
 Description: Replace the generic Tailwind slate palette and default blue accent with a distinctive dark design system. Improvements span the colour palette, badge styling, tab indicator, typography, hover interactions, and background texture to produce a visually unique dashboard.
 Release Target: Release 1.3
 Status: Done
+StartDate: 2026-03-16
+DoneDate: 2026-04-13
 Dependencies: EPIC-0006
 
 EPIC-0008: Trend Analysis & Historical Tracking
 Description: Capture and visualise project metrics over time. Store snapshots of dashboard data on each generation and display trend charts showing progress, costs, coverage, and velocity.
 Release Target: Release 1.4
 Status: Done
+StartDate: 2026-03-30
+DoneDate: 2026-04-13
 Dependencies: EPIC-0007
 
 EPIC-0009: Budget Forecasting
 Description: Track burn rate and predict when budget exhausts. Alert when projected costs exceed thresholds. Help teams stay on budget by visualising spend velocity and forecasting future costs.
 Release Target: Release 1.5
 Status: Done
+StartDate: 2026-04-08
+DoneDate: 2026-04-27
 Dependencies: EPIC-0008
 
 EPIC-0010: Risk Analytics
 Description: Composite risk scoring per story, risk trend charts, velocity-based completion prediction, at-risk epic summary, and Monte Carlo delivery simulation.
 Release Target: Release 1.6
 Status: Done
+StartDate: 2026-04-19
+DoneDate: 2026-04-19
 Dependencies: EPIC-0009
 
 EPIC-0011: Search
 Description: Global search across all stories, bugs, and lessons. Quick jump to any item by ID.
 Release Target: Release 1.7
 Status: Done
+StartDate: 2026-04-08
+DoneDate: 2026-04-08
 Dependencies: EPIC-0010
 
 EPIC-0012: Stakeholder View
 Description: Non-technical stakeholder dashboard with milestone progress, budget traffic lights, PDF export, email digests, and password protection.
 Release Target: Release 1.8
-Status: Planned
+Status: Done
+StartDate: 2026-04-22
+DoneDate: 2026-04-28
 Dependencies: EPIC-0011
 
 EPIC-0013: Agentic SDLC Dashboard
 Description: Secondary dashboard visualising the multi-agent orchestration layer — agent roles, delegation flow, session timeline, and SDLC metrics.
 Release Target: Release 1.5
 Status: Done
+StartDate: 2026-04-13
+DoneDate: 2026-04-27
 Dependencies: EPIC-0002
 
 EPIC-0014: Follow-Up Changes
 Description: Planned and in-progress work that was added after its original epic was marked Done. Collects follow-up stories to preserve the integrity of completed epics.
 Release Target: Backlog
 Status: Done
+StartDate: 2026-04-13
+DoneDate: 2026-04-27
 Dependencies: None
 
 EPIC-0015: UI Review and Redesign
 Description: Editorial Operations Dashboard aesthetic pass. Promotes PlanVisualizer from "generic utility dashboard" to a refined, information-dense interface with display typography, semantic badge tokens, shadow-based cards, zebra-striped tables, and per-tab polish across Hierarchy, Kanban, Traceability, Status, Trends, Costs, Bugs, and Lessons.
 Release Target: Release 1.9
 Status: Done
+StartDate: 2026-04-13
+DoneDate: 2026-04-18
 Dependencies: EPIC-0007
 
 EPIC-0016: Agentic Dashboard Mission Control Redesign
 Description: Mission Control / Broadcast Studio aesthetic pass on the Agentic SDLC Dashboard (docs/dashboard.html). Replaces the 30s location.reload() with live fetch-and-patch, wires up size-appropriate agent portraits, redesigns the phase pipeline (6-phase timeline with partial progress fill), differentiates the metric cards, gives the activity log a terminal aesthetic, tightens header/footer/alert treatments, and adds a baseline test harness + shared theme module for durable cross-dashboard token reuse. Cycle-history visualization is deferred to EPIC-0019. Sibling to EPIC-0015 (shared semantic badge tokens from US-0097, distinct voice — report vs. live channel).
 Release Target: Release 1.10
 Status: Done
+StartDate: 2026-04-13
+DoneDate: 2026-04-27
 Dependencies: EPIC-0013, EPIC-0015
 
 EPIC-0017: Agentic Dashboard Effectiveness Review
 Description: Discovery / retrospective epic. Review the Agentic SDLC Dashboard (originally built for a hackathon demo, now extracted as a reusable component) and define what it takes to make it genuinely effective as a general-purpose agentic pipeline visualization. Output: a gap analysis and a set of implementation stories in a follow-on epic. Complements EPIC-0016 (Mission Control aesthetic redesign) by focusing on schema, data model, workflow coverage, and integration patterns — not just visual polish.
 Release Target: Release 2.0
 Status: Done
+StartDate: 2026-04-13
+DoneDate: 2026-04-18
 Dependencies: EPIC-0013, EPIC-0016
 
 EPIC-0019: Dashboard Cycle History
 Description: Comprehensive effectiveness improvement for the Agentic SDLC Dashboard. Covers three tracks: (A) schema generalization — replacing hackathon framing with a project config block, externalizing phase definitions, and removing hardcoded project identity from the HTML; (B) CLI completeness — epic lifecycle commands, session reset, coverage/bug/phase wiring in DM_AGENT.md; (C) new features — cycle history lap strip, aggregate telemetry, and a dashboard extraction guide for adopting projects. Supersedes the original narrow cycle-history scope.
 Release Target: Release 1.11
 Status: Done
+StartDate: 2026-04-15
+DoneDate: 2026-04-27
 Dependencies: EPIC-0016
 ```
 
@@ -941,6 +971,8 @@ EPIC-0007: Dashboard Visual Design Overhaul
 Description: Replace the generic Tailwind slate palette and default blue accent with a distinctive dark design system. Improvements span the colour palette, badge styling, tab indicator, typography, hover interactions, and background texture to produce a visually unique dashboard.
 Release Target: Release 1.3
 Status: Done
+StartDate: 2026-03-16
+DoneDate: 2026-04-13
 Dependencies: EPIC-0006
 ```
 
@@ -1125,6 +1157,8 @@ EPIC-0008: Trend Analysis & Historical Tracking
 Description: Capture and visualise project metrics over time. Store snapshots of dashboard data on each generation and display trend charts showing progress, costs, coverage, and velocity.
 Release Target: Release 1.4
 Status: Done
+StartDate: 2026-03-30
+DoneDate: 2026-04-13
 Dependencies: EPIC-0007
 ```
 
@@ -1239,6 +1273,8 @@ EPIC-0009: Budget Forecasting
 Description: Track burn rate and predict when budget exhausts. Alert when projected costs exceed thresholds. Help teams stay on budget by visualising spend velocity and forecasting future costs.
 Release Target: Release 1.5
 Status: Done
+StartDate: 2026-04-08
+DoneDate: 2026-04-27
 Dependencies: EPIC-0008
 ```
 
@@ -1327,6 +1363,8 @@ EPIC-0010: Risk Analytics
 Description: More sophisticated risk scoring weighted by priority and severity. Risk trend chart over time. Predict project completion date based on velocity.
 Release Target: Release 1.6
 Status: Done
+StartDate: 2026-04-19
+DoneDate: 2026-04-19
 Dependencies: EPIC-0009
 ```
 
@@ -1395,6 +1433,19 @@ Acceptance Criteria:
   - [ ] AC-0206: Show as a date range in the top bar: "Completion: Mar 15 — Apr 20 (likely Apr 1)"
   - [ ] AC-0207: If velocity data is insufficient (< 4 weeks), fall back to the simple projection from US-0066
 Dependencies: US-0066
+
+US-0169 (EPIC-0010): As a project manager, I want sort, filter, and threshold UI enhancements for risk analytics, so that I can quickly surface the highest-risk stories and epics in the Hierarchy tab.
+Priority: Low (P2)
+Estimate: M
+Status: Planned
+Branch:
+Acceptance Criteria:
+  - [ ] AC-0601: Stories can be sorted by risk score descending in the Hierarchy tab (deferred from AC-0190)
+  - [ ] AC-0602: Risk trend chart shows a horizontal reference line at 2.0 (High threshold) (deferred from AC-0193)
+  - [ ] AC-0603: Hierarchy tab epic headers display a risk indicator badge matching the epic's aggregate risk score (deferred from AC-0201)
+  - [ ] AC-0604: Epics are sorted by risk score descending by default within tabs that show epics (deferred from AC-0202)
+  - [ ] AC-0605: A filter in the Hierarchy tab allows showing only High/Critical risk epics (deferred from AC-0203)
+Dependencies: US-0064, US-0065, US-0067
 ```
 
 ---
@@ -1406,6 +1457,8 @@ EPIC-0011: Search
 Description: Global search across all stories, bugs, and lessons. Quick jump to any item by ID.
 Release Target: Release 1.7
 Status: Done
+StartDate: 2026-04-08
+DoneDate: 2026-04-08
 Dependencies: EPIC-0010
 ```
 
@@ -1471,7 +1524,9 @@ Dependencies: US-0069
 EPIC-0012: Stakeholder View
 Description: Simplified read-only view for non-technical stakeholders. Exportable summary report.
 Release Target: Release 1.8
-Status: Planned
+Status: Done
+StartDate: 2026-04-22
+DoneDate: 2026-04-28
 Dependencies: EPIC-0011
 ```
 
@@ -1483,48 +1538,48 @@ Dependencies: EPIC-0011
 US-0073 (EPIC-0012): As a project manager, I want a stakeholder-friendly view that hides technical details, so that non-technical team members can understand project status without confusion.
 Priority: High (P0)
 Estimate: M
-Status: Planned
-Branch:
+Status: Done
+Branch: claude/gifted-johnson-5e162a
 Acceptance Criteria:
-  - [ ] AC-0224: A "Stakeholder View" toggle appears in the sidebar (or top bar) next to the theme toggle
-  - [ ] AC-0225: When enabled, the dashboard switches to a simplified layout: only shows Progress, Milestones (epics), Risks, and Budget sections
-  - [ ] AC-0226: Technical elements are hidden: branch names, token counts, test case details, lesson IDs, bug fix branches
-  - [ ] AC-0227: Status labels use plain language: "In Progress" → "Being Worked On", "To Do" → "Planned", "At Risk" → "Needs Attention"
+  - [x] AC-0224: A "Stakeholder" tab appears in the sidebar nav
+  - [x] AC-0225: The tab shows a simplified layout: Progress tile, Milestones (epics), Risks, and Budget sections
+  - [x] AC-0226: Technical elements are hidden: branch names, token counts, lesson IDs, bug fix branches, raw per-epic cost breakdowns
+  - [x] AC-0227: Status labels use plain language: "In Progress" → "Being Worked On", "At Risk"/"Blocked" → "Needs Attention"
 Dependencies: None
 
 US-0074 (EPIC-0012): As a stakeholder, I want to see a high-level milestone progress view, so that I can understand which epics are on track.
 Priority: High (P0)
 Estimate: S
-Status: Planned
-Branch:
+Status: Done
+Branch: claude/gifted-johnson-5e162a
 Acceptance Criteria:
-  - [ ] AC-0228: The Stakeholder View displays each epic as a milestone card with: Epic ID, Title, Status, Progress bar (% Done), and Key Risks
-  - [ ] AC-0229: Progress is calculated as Done stories / Total stories for that epic
-  - [ ] AC-0230: Each card shows a simplified status: "On Track" (Done + In Progress > 50%), "At Risk" (Blocked or In Progress < 50%), "Complete" (all Done)
-  - [ ] AC-0231: Clicking a milestone card expands to show top-level story summaries (no AC details)
+  - [x] AC-0228: Each epic appears as a milestone row with: Epic ID (mono), Title, Status chip, Progress bar (% Done)
+  - [x] AC-0229: Progress = Done stories / non-Retired stories for that epic
+  - [x] AC-0230: Composite status: Complete (all done), On Track (any active), Needs Attention (blocked/open critical bug), Planned (all planned)
+  - [x] AC-0231: Clicking an epic row expands to show story summaries with icons; clicking a story expands to show AC list
 Dependencies: US-0073
 
 US-0075 (EPIC-0012): As a stakeholder, I want to see a budget summary with simple traffic-light indicators, so that I can understand financial health at a glance.
 Priority: Medium (P1)
 Estimate: S
-Status: Planned
-Branch:
+Status: Done
+Branch: claude/gifted-johnson-5e162a
 Acceptance Criteria:
-  - [ ] AC-0232: Budget section shows: Total Budget, Spent, Remaining, and a traffic light (🟢 <50%, 🟡 50-80%, 🔴 >80%)
-  - [ ] AC-0233: Burn rate and projected exhaustion date are shown in plain language: "At current pace, budget lasts X more weeks"
-  - [ ] AC-0234: All technical details (exact token counts, per-epic breakdowns) are hidden
+  - [x] AC-0232: Summary bar Budget tile shows: traffic-light dot (green <50%, amber 50–80%, red >80%), Est. USD, AI spend USD
+  - [x] AC-0233: Burn rate narrative: "At current pace, budget lasts N more weeks" rendered when budget configured
+  - [x] AC-0234: Token counts, per-epic breakdowns, and raw cost fields hidden
 Dependencies: US-0073, US-0060
 
 US-0076 (EPIC-0012): As a project manager, I want to export a PDF summary report for stakeholders, so that I can share status via email without granting dashboard access.
 Priority: High (P0)
 Estimate: M
-Status: Planned
-Branch:
+Status: Done
+Branch: claude/gifted-johnson-5e162a
 Acceptance Criteria:
-  - [ ] AC-0235: An "Export PDF" button appears in the Stakeholder View header
-  - [ ] AC-0236: Clicking generates a PDF with: project name, date, overall progress, milestone cards, budget summary, and top 3 risks
-  - [ ] AC-0237: The PDF uses a clean, branded layout suitable for executive presentation
-  - [ ] AC-0238: PDF generation happens client-side using the browser's print-to-PDF or a library (e.g., html2pdf.js)
+  - [x] AC-0235: A sticky "Export PDF" bar appears at the bottom of the Stakeholder tab with a button and hint text
+  - [x] AC-0236: Clicking calls window.print(); @media print shows only the stakeholder tab content
+  - [x] AC-0237: Print CSS hides interactive chrome (sidebar, export bar, other tabs) for a clean output
+  - [x] AC-0238: No library dependency — uses browser native print-to-PDF; html2pdf.js tracked as future roadmap
 Dependencies: US-0073, US-0074, US-0075
 
 US-0077 (EPIC-0012): As a stakeholder, I want to subscribe to weekly email digests, so that I receive updates without accessing the dashboard.
@@ -1695,6 +1750,8 @@ EPIC-0013: Agentic SDLC Pipeline & Live Dashboard
 Description: The orchestration framework, agent roster, multi-platform spawn helper, concurrency safety utilities, live HTML dashboard, sdlc-status schema, and plan visualizer that powered the agentic build of the CTC-Mobile-Wishlist POC and now ship as features of PlanVisualizer.
 Release Target: Tooling (internal)
 Status: Done
+StartDate: 2026-04-13
+DoneDate: 2026-04-27
 Dependencies: None
 ```
 
@@ -1913,6 +1970,8 @@ EPIC-0014: Follow-Up Changes
 Description: Planned and in-progress work that was added after its original epic was marked Done. Collects follow-up stories to preserve the integrity of completed epics.
 Release Target: Backlog
 Status: Done
+StartDate: 2026-04-13
+DoneDate: 2026-04-27
 Dependencies: None
 ```
 
@@ -1981,6 +2040,8 @@ EPIC-0015: UI Review and Redesign
 Description: Editorial Operations Dashboard aesthetic pass. Promotes PlanVisualizer from "generic utility dashboard" to a refined, information-dense interface with display typography, semantic badge tokens, shadow-based cards, zebra-striped tables, and per-tab polish across Hierarchy, Kanban, Traceability, Status, Trends, Costs, Bugs, and Lessons.
 Release Target: Release 1.9
 Status: Done
+StartDate: 2026-04-13
+DoneDate: 2026-04-18
 Dependencies: EPIC-0007
 ```
 
@@ -2190,6 +2251,8 @@ EPIC-0016: Agentic Dashboard Mission Control Redesign
 Description: Mission Control / Broadcast Studio aesthetic pass on the Agentic SDLC Dashboard (docs/dashboard.html). Replaces the 30s location.reload() with live fetch-and-patch, wires up agent portraits, rebuilds the phase pipeline as an iterative three-tier display (current lap + lap history + telemetry), differentiates the metric cards, gives the activity log a terminal aesthetic, and tightens header/footer/alert treatments. Sibling to EPIC-0015 (shared semantic badge tokens from US-0097, distinct voice — report vs. live channel).
 Release Target: Release 1.10
 Status: Done
+StartDate: 2026-04-13
+DoneDate: 2026-04-27
 Dependencies: EPIC-0013, EPIC-0015
 ```
 
@@ -2402,6 +2465,20 @@ Acceptance Criteria:
   - [x] AC-0432: tools/generate-dashboard.js imports the same module and uses the shared helpers wherever badges render (status pills, severity chips, review state)
   - [x] AC-0433: A new tests/unit/theme.test.js asserts the export surface (BADGE_TONE keys, badge() output for 3 representative labels) so drift is detected at test time
 Dependencies: None
+
+US-0148 (EPIC-0016): As a user, I want the Agentic Dashboard to display a Mission Control layout with a roster row per agent, stat tile strip, pipeline phase cards, and a right-side attention + event-log panel, so that the dashboard matches the original Mission Control design intent for EPIC-0016.
+Priority: High (P0)
+Estimate: L
+Status: Done
+Branch: feature/US-0148-mission-control-redesign
+Acceptance Criteria:
+  - [x] AC-0539: A sticky 42px topbar shows ON AIR badge, current epic/story breadcrumb, assigned agent name, elapsed HH:MM:SS, cycle number, clock, LIVE badge, and Light/Dark toggle
+  - [x] AC-0540: A Mission Control hero section shows 8 stat tiles (Phase, Active, Queue, Reviews, Blocked, Tests, Coverage, AI Spend) in a responsive row
+  - [x] AC-0541: The Pipeline section renders each phase as a horizontal card with phase name and active agent names; the active phase is visually highlighted
+  - [x] AC-0542: The Roster section renders each agent as a full-width row (colored initial circle, name + role, task/branch text, status badge) replacing the agent circle grid
+  - [x] AC-0543: A right sidebar panel contains a Needs Attention section (blocked/review/bug chips and alert items) and an Event Log (last 10 timestamped entries)
+  - [x] AC-0544: All existing dashboard tests continue to pass (1867 tests green)
+Dependencies: EPIC-0016
 ```
 
 ---
@@ -2413,6 +2490,8 @@ EPIC-0017: Agentic Dashboard Effectiveness Review
 Description: Discovery / retrospective epic. Review the Agentic SDLC Dashboard (originally built for a hackathon demo, now extracted as a reusable component) and define what it takes to make it genuinely effective as a general-purpose agentic pipeline visualization. Output: a gap analysis and a set of implementation stories in a follow-on epic. Complements EPIC-0016 (Mission Control aesthetic redesign) by focusing on schema, data model, workflow coverage, and integration patterns — not just visual polish.
 Release Target: Release 2.0
 Status: Done
+StartDate: 2026-04-13
+DoneDate: 2026-04-18
 Dependencies: EPIC-0013, EPIC-0016
 ```
 
@@ -2445,6 +2524,8 @@ EPIC-0019: Dashboard Cycle History
 Description: Comprehensive effectiveness improvement for the Agentic SDLC Dashboard. Covers three tracks: (A) schema generalization — replacing hackathon framing with a project config block, externalizing phase definitions, and removing hardcoded project identity from the HTML; (B) CLI completeness — epic lifecycle commands, session reset, coverage/bug/phase wiring in DM_AGENT.md; (C) new features — cycle history lap strip, aggregate telemetry, and a dashboard extraction guide for adopting projects. Supersedes the original narrow cycle-history scope.
 Release Target: Release 1.11
 Status: Done
+StartDate: 2026-04-15
+DoneDate: 2026-04-27
 Dependencies: EPIC-0016
 ```
 
@@ -2605,4 +2686,497 @@ Acceptance Criteria:
   - [x] AC-0486: install.sh §7 is skipped (with note) if docs/dashboard.html already exists in target
   - [x] AC-0487: docs/dashboard-extraction.md is linked from README.md under a Dashboard section
 Dependencies: US-0128, US-0129
+```
+
+```
+
+---
+
+## Epic — EPIC-0020: Cross-Dashboard Redesign (CD-Redesign)
+
+```
+
+EPIC-0020: Cross-Dashboard Redesign
+Description: Unify Plan-Status and Agentic dashboards under a single Editorial × Mission Control design language. Share a token set (neutrals, semantic colors, typography, card/chip/bar primitives) while differentiating each dashboard with its own accent hue, mode badge (REPORT vs LIVE), and voice (calm report vs live broadcast). First-class light and dark themes. Replaces the saturated navy gradient header, consolidates the chart palette, lifts the Status tab out of sparseness, promotes active agents and event activity on the Agentic surface, and removes pipeline/agent-roster redundancy.
+Release Target: Release 1.11
+Status: Done
+StartDate: 2026-04-21
+DoneDate: 2026-04-27
+Dependencies: EPIC-0015, EPIC-0016
+
+```
+
+---
+
+## User Stories — EPIC-0020: Cross-Dashboard Redesign
+
+```
+
+US-0135 (EPIC-0020): As a Plan-Status viewer, I want a Status hero that answers "is the release on track?" in one glance, so that I do not need to visit three tabs to triangulate release health.
+Priority: High (P0)
+Estimate: M
+Status: Done
+Branch: feature/EPIC-0020-cross-dashboard-redesign
+Acceptance Criteria:
+
+- [x] AC-0488: Status tab renders a hero card with release name, a one-word verdict (On track / At risk / Off track), a stable/warn/risk chip, and a one-sentence narrative summary
+- [x] AC-0489: Hero includes three stat blocks — Forecast (P50 ship date ± buffer), Velocity (stories/wk with week-over-week delta), Budget (% of cap with absolute $)
+- [x] AC-0490: Hero includes three at-a-glance mini-viz: 14-week progress bars, 30-day coverage heat strip, cumulative AI spend burn line
+- [x] AC-0491: All numeric fields use tabular-nums and the display serif; mini-viz share the shared palette token set from US-0140
+      Dependencies: US-0140
+
+```
+
+```
+
+US-0136 (EPIC-0020): As any viewer, I want the corporate navy gradient header replaced with a neutral chrome plus a mode badge, so that the two dashboards are instantly distinguishable without a loud header dominating the page.
+Priority: High (P0)
+Estimate: S
+Status: Done
+Branch: feature/EPIC-0020-cross-dashboard-redesign
+Acceptance Criteria:
+
+- [x] AC-0492: The fixed topbar uses a blurred neutral surface (surface/opacity token) with a 1px bottom border, no saturated gradient
+- [x] AC-0493: A mode badge renders in the chrome — "REPORT" (solid plan accent pip) on Plan-Status, "LIVE" (pulsing live accent pip) on Agentic
+- [x] AC-0494: Both dashboards expose a two-segment brand/dashboard switcher and a light/dark theme toggle in the chrome
+- [x] AC-0495: Chrome height ≤ 52px; does not repeat the page title (mastheads own title)
+      Dependencies: US-0138
+
+```
+
+```
+
+US-0137 (EPIC-0020): As a developer, I want a shared theme.js (tokens.js) module exporting every color, font, radius, shadow, and spacing primitive used across both dashboards, so that adjusting the design system in one place updates every surface.
+Priority: High (P0)
+Estimate: M
+Status: Done
+Branch: feature/EPIC-0020-cross-dashboard-redesign
+Acceptance Criteria:
+
+- [x] AC-0496: tools/lib/theme.js exports `palette`, `type`, `radius`, `shadow`, `spacing`, `charts` objects consumed by both render-html.js and dashboard.html generators
+- [x] AC-0497: tokens are exposed as CSS custom properties under :root / [data-theme="dark"] blocks generated from the same source
+- [x] AC-0498: No color literal (`#xxxxxx` or `rgb(…)`) remains inline in either dashboard's HTML or inline style; audited by a lint rule in tests/unit/theme.test.js
+- [x] AC-0499: Existing badge/BADGE_TONE helpers in theme.js are preserved and extended (non-breaking)
+      Dependencies: None
+
+```
+
+```
+
+US-0138 (EPIC-0020): As a viewer, I want the page chrome to carry a REPORT / LIVE mode badge whose color matches the dashboard accent, so that I can tell which dashboard I am looking at in peripheral vision.
+Priority: Medium (P1)
+Estimate: XS
+Status: Done
+Branch: feature/EPIC-0020-cross-dashboard-redesign
+Acceptance Criteria:
+
+- [x] AC-0500: Badge renders as a pill with a colored pip + uppercase mono text ("REPORT" / "LIVE")
+- [x] AC-0501: LIVE pip pulses at 1.6s; REPORT pip is static
+- [x] AC-0502: Badge color uses the dashboard's accent token (plan-accent on Plan-Status, live-accent on Agentic)
+- [x] AC-0503: Badge is keyboard-focusable and carries aria-label "Mode: Report" / "Mode: Live"
+      Dependencies: US-0137
+
+```
+
+```
+
+US-0139 (EPIC-0020): As a Plan-Status viewer, I want the Status tab to surface additional decision-grade widgets — top risks, this-week summary, agent workload — so that the tab is a true release report and not a chart gallery.
+Priority: High (P0)
+Estimate: M
+Status: Done
+Branch: feature/EPIC-0020-cross-dashboard-redesign
+Acceptance Criteria:
+
+- [x] AC-0504: Status tab includes a Top Risks card with severity-chipped items drawn from open bugs + blocked stories + overdue epics
+- [x] AC-0505: Status tab includes a This Week card with stories shipped, PRs merged, bugs opened/fixed, AI spend
+- [x] AC-0506: Status tab includes an Agent Workload card with a bar per agent, ranked by current assignment count
+- [x] AC-0507: All three cards remain legible at 1280px and collapse to single-column at ≤1100px
+      Dependencies: US-0135, US-0137
+
+```
+
+```
+
+US-0140 (EPIC-0020): As a viewer, I want every chart across Status, Charts, Trends, Bugs and the Agentic dashboard to draw from one semantic palette, so that "Done", "Blocked", and "At risk" always read the same color.
+Priority: High (P0)
+Estimate: M
+Status: Done
+Branch: feature/EPIC-0020-cross-dashboard-redesign
+Acceptance Criteria:
+
+- [x] AC-0508: A single chartColors map in theme.js defines ok/warn/risk/info/accent/mute keys
+- [x] AC-0509: Chart.js global defaults (colors, grid, tooltip) are initialised from chartColors on page load
+- [x] AC-0510: Doughnut center label, bar fill, line stroke, and legend swatches all read from the same tokens
+- [x] AC-0511: Visual regression test captures Status, Charts, Trends in both themes and diffs under a 1% tolerance
+      Dependencies: US-0137
+
+```
+
+```
+
+US-0141 (EPIC-0020): As a viewer, I want first-class dark and light themes on both dashboards, so that either theme feels designed rather than ported.
+Priority: High (P0)
+Estimate: M
+Status: Done
+Branch: feature/EPIC-0020-cross-dashboard-redesign
+Acceptance Criteria:
+
+- [x] AC-0512: [data-theme="dark"] and [data-theme="light"] declarations cover every surface, border, shadow, and chip in both dashboards
+- [x] AC-0513: Theme choice persists in localStorage under key `pv-theme` and falls back to prefers-color-scheme on first visit
+- [x] AC-0514: Dark theme uses a low-chroma warm neutral base (not pure black); light theme uses a near-white surface with a subtly tinted canvas (not #FFF)
+- [x] AC-0515: Neither theme relies on box-shadow alone to separate cards — a 1px border is also present so cards render in any printout
+      Dependencies: US-0137
+
+```
+
+```
+
+US-0142 (EPIC-0020): As an Agentic viewer, I want currently-active agents to pop visually against idle/blocked peers, so that "who is working right now" is a 1-second glance.
+Priority: High (P0)
+Estimate: S
+Status: Done
+Branch: feature/EPIC-0020-cross-dashboard-redesign
+Acceptance Criteria:
+
+- [x] AC-0516: Active agent cards render with a 3px left accent rail in live-accent, a tinted background (~9% accent mix), and an outlined border in live-accent
+- [x] AC-0517: The live-dot on active cards pulses at 1.4s; idle/blocked dots are static
+- [x] AC-0518: The status chip on active cards is filled with live-accent; idle/blocked use neutral / risk tokens
+- [x] AC-0519: Accessible focus ring does not conflict with the left accent rail
+      Dependencies: US-0137
+
+```
+
+```
+
+US-0143 (EPIC-0020): As an Agentic viewer, I want Conductor hand-offs to be visible even when each dispatch lasts a few hundred milliseconds, so that I can see orchestration happening.
+Priority: Medium (P1)
+Estimate: S
+Status: Done
+Branch: feature/EPIC-0020-cross-dashboard-redesign
+Acceptance Criteria:
+
+- [x] AC-0520: When Conductor transitions active → idle, the UI holds the active state for a minimum of 3s before fading back
+- [x] AC-0521: Each dispatch fires a "Dispatched US-XXXX → AgentName" entry at the top of the Event Log and the live ticker in the Live Bar
+- [x] AC-0522: A dispatch counter increments on the Conductor card ("37 tasks") and animates on change
+      Dependencies: US-0142, US-0145
+
+```
+
+```
+
+US-0144 (EPIC-0020): As an Agentic viewer, I want the 6-phase Pipeline to stop duplicating the agent roster, so that each widget does a distinct job.
+Priority: Medium (P1)
+Estimate: S
+Status: Done
+Branch: feature/EPIC-0020-cross-dashboard-redesign
+Acceptance Criteria:
+
+- [x] AC-0523: Pipeline phase cards show phase number, name, agent-group label, and a partial-progress fill bar
+- [x] AC-0524: Pipeline phase cards do NOT list per-agent status or current task (that is roster's job)
+- [x] AC-0525: Active phase gets a solid accent underline + pulsing corner beacon; completed phases use the ok token; blocked phases use risk
+- [x] AC-0526: Pipeline occupies one row at ≥1200px and wraps to 3×2 at ≤1024px
+      Dependencies: US-0137
+
+```
+
+```
+
+US-0145 (EPIC-0020): As an Agentic viewer, I want a prominent terminal-style Event Log as a primary widget, so that the chronology of what the agents just did is visible without hunting in a side rail.
+Priority: High (P0)
+Estimate: M
+Status: Done
+Branch: feature/EPIC-0020-cross-dashboard-redesign
+Acceptance Criteria:
+
+- [x] AC-0527: Event Log renders as a main-column card (not sidebar) with monospace rows: timestamp · agent · message
+- [x] AC-0528: Event rows are semantically colored by tag (start / done / review / block / dispatch)
+- [x] AC-0529: Log auto-scrolls on new events; pauses on hover; resumes on pointer-leave
+- [x] AC-0530: A compressed "Activity Stream" card remains in the right rail for peripheral glance, with newest-item accent rail
+      Dependencies: US-0137
+
+```
+
+```
+
+US-0146 (EPIC-0020): As an Agentic viewer, I want a persistent Live Bar carrying ON AIR, cycle, ticker, and wall clock, so that broadcast context is always present without stealing header real estate.
+Priority: Medium (P1)
+Estimate: S
+Status: Done
+Branch: feature/EPIC-0020-cross-dashboard-redesign
+Acceptance Criteria:
+
+- [x] AC-0531: Live Bar sits between chrome and masthead, ~48px tall, with a horizontal live-accent gradient wash
+- [x] AC-0532: Shows ON AIR chip, CYCLE NNN · elapsed, rotating ticker of last 3 events, and a tabular HH:MM:SS clock
+- [x] AC-0533: Hidden entirely on Plan-Status (REPORT mode)
+- [x] AC-0534: Respects prefers-reduced-motion — ticker becomes static most-recent event only
+      Dependencies: US-0138
+
+```
+
+```
+
+US-0147 (EPIC-0020): As an Agentic viewer, I want the Agent Workload widget to reflect live pipeline assignments from sdlc-status.json rather than static Assignee fields in RELEASE_PLAN.md, so that the workload display stays accurate as stories pass through multiple agents.
+Priority: Medium (P1)
+Estimate: S
+Status: Done
+Branch: feature/EPIC-0020-cross-dashboard-redesign
+Acceptance Criteria:
+
+- [x] AC-0535: Agent Workload widget reads from data.sdlcStatus (derived from docs/sdlc-status.json) — not story.assignee — and shows in-flight story count per named agent
+- [x] AC-0536: Agent rows use colour and icon from agents.config.json so each agent is visually distinct
+- [x] AC-0537: Stories counted as "active" for an agent while that agent's phase is in progress; completed stories are excluded from the bar length but shown as a "(N done)" sub-label
+- [x] AC-0538: When sdlc-status.json is absent or unparseable the widget falls back gracefully to a "No live data" empty state rather than the old Assignee-derived "Unassigned N" row
+      Dependencies: US-0142, US-0145
+
+```
+EPIC-0021
+Title: Test Case Audit
+Status: Done
+StartDate: 2026-04-27
+DoneDate: 2026-04-27
+Completed: 2026-04-27
+ReleaseTarget: v1.x
+Description: Retroactive test case coverage for epics shipped without formal TCs. One story per epic; each story produces written TCs, executed results, and any defects logged.
+```
+
+```
+US-0149 (EPIC-0021): As a QA lead, I want formal test cases written and executed for EPIC-0008 Trend Analysis & Historical Tracking, so that the trend snapshot and extraction logic is verified against its acceptance criteria.
+Priority: High (P0)
+Estimate: M
+Status: Done
+Branch: feature/US-0149-tc-audit-epic-0008
+Acceptance Criteria:
+
+- [x] AC-0545: Test cases written covering all ACs from US-0047 (snapshot), US-0048 (extraction), US-0049 (trend charts), US-0050 (multi-snapshot dedup)
+- [x] AC-0546: All written test cases executed and Pass/Fail status recorded in RELEASE_PLAN.md under each TC entry
+- [x] AC-0547: Any failures result in a logged BUG entry in docs/BUGS.md with severity and reproduction steps
+```
+
+```
+US-0150 (EPIC-0021): As a QA lead, I want formal test cases written and executed for EPIC-0009 Budget Forecasting, so that cost parsing, projection, and display logic is verified.
+Priority: High (P0)
+Estimate: M
+Status: Done
+Branch: feature/US-0150-tc-audit-epic-0009
+Acceptance Criteria:
+
+- [x] AC-0548: Test cases written covering all ACs from EPIC-0009 stories (cost parsing, t-shirt projection, per-epic budget display)
+- [x] AC-0549: All written test cases executed and Pass/Fail status recorded
+- [x] AC-0550: Any failures result in a logged BUG entry in docs/BUGS.md
+```
+
+```
+US-0151 (EPIC-0021): As a QA lead, I want formal test cases written and executed for EPIC-0011 Search, so that the client-side search index and filtering logic is verified.
+Priority: Medium (P1)
+Estimate: S
+Status: Done
+Branch: feature/US-0151-tc-audit-epic-0011
+Acceptance Criteria:
+
+- [x] AC-0551: Test cases written covering all ACs from EPIC-0011 stories (search index build, filter bar, result highlighting)
+- [x] AC-0552: All written test cases executed and Pass/Fail status recorded
+- [x] AC-0553: Any failures result in a logged BUG entry in docs/BUGS.md
+```
+
+```
+US-0152 (EPIC-0021): As a QA lead, I want formal test cases written and executed for EPIC-0013 Agentic SDLC Dashboard, so that the dashboard scaffold, sdlc-status parsing, and agent rendering are verified.
+Priority: High (P0)
+Estimate: L
+Status: Done
+Branch: feature/US-0152-tc-audit-epic-0013
+Acceptance Criteria:
+
+- [x] AC-0554: Test cases written covering all ACs from EPIC-0013 stories (generate-dashboard, sdlc-status parsing, agent roster, pipeline phase cards)
+- [x] AC-0555: All written test cases executed and Pass/Fail status recorded
+- [x] AC-0556: Any failures result in a logged BUG entry in docs/BUGS.md
+```
+
+```
+US-0153 (EPIC-0021): As a QA lead, I want formal test cases written and executed for EPIC-0014 Follow-Up Changes, so that miscellaneous post-epic improvements are regression-tested.
+Priority: Medium (P1)
+Estimate: M
+Status: Done
+Branch: feature/US-0153-tc-audit-epic-0014
+Acceptance Criteria:
+
+- [x] AC-0557: Test cases written covering all ACs from EPIC-0014 stories (CLI sdlc-status tool, About modal, Agentic dashboard parity)
+- [x] AC-0558: All written test cases executed and Pass/Fail status recorded
+- [x] AC-0559: Any failures result in a logged BUG entry in docs/BUGS.md
+```
+
+```
+US-0154 (EPIC-0021): As a QA lead, I want formal test cases written and executed for EPIC-0016 Agentic Dashboard Mission Control Redesign, so that the MC layout, roster, pipeline, and live bar widgets are verified.
+Priority: High (P0)
+Estimate: L
+Status: Done
+Branch: feature/US-0154-tc-audit-epic-0016
+Acceptance Criteria:
+
+- [x] AC-0560: Test cases written covering all ACs from EPIC-0016 stories (MC header/roster/pipeline/live-bar redesign, US-0148 layout closure)
+- [x] AC-0561: All written test cases executed and Pass/Fail status recorded
+- [x] AC-0562: Any failures result in a logged BUG entry in docs/BUGS.md
+```
+
+```
+US-0155 (EPIC-0021): As a QA lead, I want formal test cases written and executed for EPIC-0017 Agentic Dashboard Effectiveness Review, so that the skills-integration doc and effectiveness audit outputs are verified.
+Priority: Medium (P1)
+Estimate: S
+Status: Done
+Branch: feature/US-0155-tc-audit-epic-0017
+Acceptance Criteria:
+
+- [x] AC-0563: Test cases written covering all ACs from EPIC-0017 stories (skills integration table, superpowers adoption metrics, US-0126)
+- [x] AC-0564: All written test cases executed and Pass/Fail status recorded
+- [x] AC-0565: Any failures result in a logged BUG entry in docs/BUGS.md
+```
+
+```
+US-0156 (EPIC-0021): As a QA lead, I want formal test cases written and executed for EPIC-0019 Dashboard Cycle History, so that the cycle schema, CLI commands, and extraction guide are verified.
+Priority: Medium (P1)
+Estimate: M
+Status: Done
+Branch: feature/US-0156-tc-audit-epic-0019
+Acceptance Criteria:
+
+- [x] AC-0566: Test cases written covering all ACs from EPIC-0019 stories (cycle-complete command, cycle history schema, sdlc-status cycle array, extraction guide)
+- [x] AC-0567: All written test cases executed and Pass/Fail status recorded
+- [x] AC-0568: Any failures result in a logged BUG entry in docs/BUGS.md
+```
+
+```
+US-0157 (EPIC-0021): As a QA lead, I want formal test cases written and executed for EPIC-0020 Cross-Dashboard Redesign, so that the shared theme tokens, neutral chrome, status hero, and agent workload widget are verified.
+Priority: High (P0)
+Estimate: L
+Status: Done
+Branch: feature/US-0157-tc-audit-epic-0020
+Acceptance Criteria:
+
+- [x] AC-0569: Test cases written covering all ACs from EPIC-0020 stories (theme.js tokens, render-chrome.js, CSS custom properties, no hex literals, status hero density, agent workload from sdlc-status)
+- [x] AC-0570: All written test cases executed and Pass/Fail status recorded
+- [x] AC-0571: Any failures result in a logged BUG entry in docs/BUGS.md
+```
+
+```
+US-0158 (EPIC-0021): As a project lead, I want AI cost data correctly attributed to all stories and bugs (including those worked in worktree branches), so that the Cost Breakdown by Epic chart reflects true spend and zero-cost entries are eliminated.
+Priority: High (P0)
+Estimate: M
+Status: Done
+Branch: feature/US-0158-ai-cost-attribution-fix
+Acceptance Criteria:
+
+- [x] AC-0572: Parse-cost-log.js branch-prefix matching is extended to recognise worktree branch patterns (claude/*, and any non-feature/* branch prefixes used by Claude Code) so sessions worked in worktrees are attributed to the correct story/epic
+- [x] AC-0573: A one-time backfill script reads AI_COST_LOG.md entries with branch=null or unmatched branches, uses git log to identify which story was active during each session's timestamp, and writes estimated cost rows to close the data gap
+- [x] AC-0574: After backfill, no Done story or Fixed bug dated before 2026-04-24 shows $0 AI cost (excluding stories that genuinely had no Claude usage)
+- [x] AC-0575: Cost Breakdown by Epic chart shows non-zero spend for EPIC-0010, EPIC-0012, EPIC-0016, EPIC-0017, EPIC-0019, EPIC-0020, and other epics that were primarily worked in worktrees
+- [x] AC-0576: LESSONS.md updated with the worktree branch-naming gap and the fix so future sessions prevent recurrence
+```
+
+```
+EPIC-0022
+Title: Analytics & Charting Enhancements
+Status: Done
+DoneDate: 2026-04-29
+StartDate: 2026-04-24
+ReleaseTarget: v2.x
+Description: New data visualisations that deepen delivery insight — velocity, throughput, and flow metrics — giving teams a clearer picture of team pace and predictability over time.
+```
+
+## User Stories — EPIC-0022: Analytics & Charting Enhancements
+
+```
+US-0159 (EPIC-0022): As a project lead, I want a Velocity chart in the Trends tab showing story points (or story count) completed per sprint/week over time, so that I can see team throughput trends and forecast delivery pace.
+Priority: Medium (P1)
+Estimate: L
+Status: Done
+Branch: feature/US-0159-velocity-chart
+Acceptance Criteria:
+
+- [x] AC-0577: Velocity chart renders as a bar chart in the Trends tab, with one bar per completed sprint or rolling week, height representing story count (or t-shirt-size points) completed in that period
+- [x] AC-0578: Chart draws data from existing parse-progress.js session logs and RELEASE_PLAN.md story completion dates; no new data-source files are required
+- [x] AC-0579: A 4-period rolling average trend line is overlaid on the bars so viewers can distinguish noise from trend
+- [x] AC-0580: Chart respects the shared semantic palette from theme.js (no hardcoded hex literals); renders correctly in both light and dark mode
+```
+
+```
+US-0160 (EPIC-0022): As a developer, I want the remaining Tailwind CSS utility classes in plan-status removed and replaced with the OKLCH CSS custom property system already used throughout the codebase, so that the CDN dependency is eliminated and the styling system is unified across both dashboards.
+Priority: Low (P2)
+Estimate: S
+Status: Done
+Branch: bugfix/BUG-0228-0230-remove-cdn-deps
+Acceptance Criteria:
+
+- [x] AC-0581: The Tailwind CDN <script> tag is removed from the plan-status HTML output; no Tailwind class strings remain in render-html.js, render-shell.js, or render-scripts.js
+- [x] AC-0582: All replaced Tailwind utility classes (budget alert banner, filter bar, search input) are implemented as named CSS classes using var(--clr-*) custom properties consistent with the OKLCH theme system in theme.js
+- [x] AC-0583: Dark mode for converted elements works via [data-theme=dark] attribute selectors, not Tailwind dark: variants
+- [x] AC-0584: Visual regression — the budget alert banner, filter bar, and search input render identically in both light and dark mode after conversion
+- [x] AC-0585: All existing tests pass; no new hex literals are introduced (AC-0498 equivalent enforced for plan-status output)
+```
+
+```
+US-0161 (EPIC-0022): As a user, I want the About modal on both dashboards to use a redesigned layout with a large full-width hero image at the top and a 3×3 agent roster grid, so that the modal is visually distinctive and the team is showcased prominently.
+Priority: Low (P2)
+Estimate: S
+Status: Done
+Branch: bugfix/hierarchy-hidden-default
+Acceptance Criteria:
+
+- [x] AC-0586: The About modal renders a full-width hero image (team.png) cropped to 400px height at the top of the modal, with object-fit:cover so it fills the space without distortion
+- [x] AC-0587: The project title and tagline appear on the same line below the hero image, with the title in the accent colour and the tagline in muted text to its right
+- [x] AC-0588: The agent roster renders as a 3×3 grid spanning the full modal width; each cell shows avatar, agent name, and role
+- [x] AC-0589: The "View on GitHub" button is removed; the GitHub repo URL appears as an inline text link in the links row, with the "Implemented by" attribution right-aligned on the same row
+- [x] AC-0590: The "Links" section label is removed; the modal contains no redundant section headings above the repo/attribution row
+```
+
+## EPIC-0023: Dashboard Quality & Reliability
+
+```
+EPIC-0023: Dashboard Quality & Reliability
+Description: Fix bugs identified by Session 31 Lens code review across both the plan-status and agentic dashboards. Covers chart rendering correctness, CSS token consistency, Stakeholder tab bug-risk accuracy, and agentic dashboard live-update reliability.
+Release Target: v2.x
+Status: Done
+StartDate: 2026-04-29
+DoneDate: 2026-04-29
+Dependencies: EPIC-0022
+```
+
+## User Stories — EPIC-0023: Dashboard Quality & Reliability
+
+```
+US-0164 (EPIC-0023): As a developer, I want chart axis labels, grid lines, and legend text to use the correct theme colours in both light and dark mode, so that charts are readable without hardcoded greys.
+Priority: High (P1)
+Estimate: S
+Status: Done
+Branch: feature/US-0164-BUG-0242-0244-chart-fixes
+Acceptance Criteria:
+
+- [x] AC-0591: Chart.defaults.color and Chart.defaults.borderColor resolve to actual colour values at init time using getComputedStyle, not raw CSS custom-property strings
+- [x] AC-0592: Canvas gradient color stops use rgba(r, g, b, a) comma-separated syntax, not space-separated rgb(), ensuring compatibility across all browsers
+- [x] AC-0593: pvChartColors is defined once in a shared script block (or with window.pvChartColors = window.pvChartColors || ...) — not twice as separate var declarations
+- [x] AC-0594: Switching between light and dark mode after visiting the Trends tab updates trend chart label and grid colours (updateTrendsChartTheme added, called from pvSetTheme)
+```
+
+```
+US-0165 (EPIC-0023): As a project lead, I want the Stakeholder tab to correctly flag epics that have open Critical/High bugs as Needs Attention, so that risk is accurately communicated to stakeholders.
+Priority: High (P1)
+Estimate: XS
+Status: Done
+Branch: bugfix/BUG-0239-0241-0248-stakeholder-fixes
+Acceptance Criteria:
+
+- [x] AC-0595: shEpicCompositeStatus cross-references bugs via story→epic map (using normalizeStoryRef) instead of b.epicId (which is never set)
+- [x] AC-0596: Open bug count filter in _renderStatusHero uses the same canonical denylist pattern as renderStatusTab: !/^(Fixed|Retired|Cancelled|Rejected)/i
+```
+
+```
+US-0166 (EPIC-0023): As a user, I want patchDOM to preserve branch link anchors in agent task cells and correctly style InProgress stories, so that live updates do not degrade the agentic dashboard display.
+Priority: Medium (P1)
+Estimate: S
+Status: Done
+Branch: bugfix/BUG-0245-0246-0247-dashboard-fixes
+Acceptance Criteria:
+
+- [x] AC-0597: patchDOM updates agent task cell with an <a href="..."> anchor when branch is set, not raw textContent that destroys the link
+- [x] AC-0598: isInProgress check in generate-dashboard.js story renderer uses /^In[ -]?Progress$/i regex, matching both 'In Progress' (space) and 'InProgress' (camelCase from update-sdlc-status.js)
+- [x] AC-0599: dispatch tag added to appendEventLog tone-map with a distinct evt-dispatch CSS class, making conductor dispatch events visually distinct from story-start events
+- [x] AC-0600: _dispatchCount persists across page loads (initialized from localStorage or computed from status.log)
 ```

@@ -53,6 +53,8 @@ function parseEpicBlock(text) {
     description: get('Description'),
     releaseTarget: get('Release Target'),
     status: get('Status'),
+    startDate: get('StartDate') || null,
+    doneDate: get('DoneDate') || null,
     dependencies: parseDeps(get('Dependencies')),
   };
 }

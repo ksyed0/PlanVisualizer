@@ -98,9 +98,22 @@ function extractTrends(snapshots) {
 
   const totalStories = snapshots.map((s) => (s.data.stories || []).length);
 
+  // BUG-0221 follow-up: prefer the explicit aggregate when present.
+  // `Object.values(costs)` includes the `_totals` and `_bugs` aggregate entries,
+  // which double-count the per-story totals (e.g. `_totals.costUsd` equals the sum
+  // of all per-story `costUsd` values). Use the published aggregate when it exists
+  // and only fall back to per-story summing for older snapshots that lack it.
+  const _sumStoryCosts = (costs, field) =>
+    Object.entries(costs).reduce((sum, [k, c]) => {
+      if (k === '_totals' || k === '_bugs') return sum;
+      return sum + (c[field] || 0);
+    }, 0);
   const rawAiCosts = snapshots.map((s) => {
     const costs = s.data.costs || {};
-    return Object.values(costs).reduce((sum, c) => sum + (c.costUsd || 0), 0);
+    if (costs._totals && typeof costs._totals.costUsd === 'number') {
+      return costs._totals.costUsd;
+    }
+    return _sumStoryCosts(costs, 'costUsd');
   });
   // Cumulative costs must never decrease — enforce monotonicity
   const aiCosts = [];
@@ -133,7 +146,7 @@ function extractTrends(snapshots) {
 
   const openBugs = snapshots.map((s) => {
     const bugs = s.data.bugs || [];
-    return bugs.filter((b) => b.status === 'Open' || b.status === 'In Progress').length;
+    return bugs.filter((b) => !/^(Fixed|Retired|Cancelled|Rejected)/i.test(b.status)).length;
   });
 
   const atRisk = snapshots.map((s) => {
@@ -143,12 +156,18 @@ function extractTrends(snapshots) {
 
   const inputTokens = snapshots.map((s) => {
     const costs = s.data.costs || {};
-    return Object.values(costs).reduce((sum, c) => sum + (c.inputTokens || 0), 0);
+    if (costs._totals && typeof costs._totals.inputTokens === 'number') {
+      return costs._totals.inputTokens;
+    }
+    return _sumStoryCosts(costs, 'inputTokens');
   });
 
   const outputTokens = snapshots.map((s) => {
     const costs = s.data.costs || {};
-    return Object.values(costs).reduce((sum, c) => sum + (c.outputTokens || 0), 0);
+    if (costs._totals && typeof costs._totals.outputTokens === 'number') {
+      return costs._totals.outputTokens;
+    }
+    return _sumStoryCosts(costs, 'outputTokens');
   });
 
   const avgRisk = snapshots.map((s) => {
@@ -176,10 +195,65 @@ function extractTrends(snapshots) {
   };
 }
 
+function isoWeek(date) {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const week = Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+  return `${d.getUTCFullYear()}-W${String(week).padStart(2, '0')}`;
+}
+
+const TSHIRT_POINTS = { XS: 0.5, S: 1, M: 3, L: 5, XL: 8 };
+
+function snapshotCumulativeVelocity(snap) {
+  const stories = (snap.data && snap.data.stories) || [];
+  return stories
+    .filter((st) => st.status === 'Done')
+    .reduce((sum, st) => {
+      const est = (st.estimate || '').toUpperCase();
+      return sum + (TSHIRT_POINTS[est] || 0);
+    }, 0);
+}
+
+function velocityByWeek(snapshots) {
+  if (!snapshots || snapshots.length < 2) {
+    return { labels: [], points: [], rollingAvg: [] };
+  }
+
+  // Group snapshots by ISO week; keep snapshot with highest cumulative velocity per week
+  const weekMap = new Map();
+  for (const snap of snapshots) {
+    if (!snap.generatedAt) continue;
+    const week = isoWeek(new Date(snap.generatedAt));
+    const cumul = snapshotCumulativeVelocity(snap);
+    if (!weekMap.has(week) || cumul > weekMap.get(week).cumul) {
+      weekMap.set(week, { week, cumul });
+    }
+  }
+
+  // Sort weeks chronologically
+  const weeks = Array.from(weekMap.values()).sort((a, b) => a.week.localeCompare(b.week));
+
+  const labels = weeks.map((w) => w.week);
+  const points = weeks.map((w, i) => {
+    const prev = i === 0 ? 0 : weeks[i - 1].cumul;
+    return Math.max(0, Math.round((w.cumul - prev) * 10) / 10);
+  });
+
+  const rollingAvg = points.map((_, i) => {
+    const window = points.slice(Math.max(0, i - 3), i + 1);
+    const avg = window.reduce((s, v) => s + v, 0) / window.length;
+    return Math.round(avg * 10) / 10;
+  });
+
+  return { labels, points, rollingAvg };
+}
+
 module.exports = {
   getSnapshotFilename,
   saveSnapshot,
   loadSnapshots,
   extractTrends,
+  velocityByWeek,
   SNAPSHOT_REGEX,
 };
