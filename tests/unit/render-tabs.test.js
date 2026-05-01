@@ -1,5 +1,5 @@
 'use strict';
-const { renderStakeholderTab, renderTrendsTab } = require('../../tools/lib/render-tabs');
+const { renderStakeholderTab, renderTrendsTab, renderStatusTab } = require('../../tools/lib/render-tabs');
 
 // Minimal but complete data fixture for stakeholder tab tests
 const mkData = (overrides = {}) => ({
@@ -486,48 +486,47 @@ describe('renderBugsTab — BUG-0223 regression', () => {
   });
 });
 
-describe('renderStatusTab — BUG-0184 palette regression', () => {
-  const mkStatusData = () => ({
-    epics: [
-      { id: 'EPIC-0001', title: 'Core', status: 'In Progress' },
-      { id: 'EPIC-0002', title: 'UX', status: 'Planned' },
-    ],
-    stories: [
-      { id: 'US-0001', epicId: 'EPIC-0001', title: 'Parser', status: 'Done', acs: [] },
-      { id: 'US-0002', epicId: 'EPIC-0002', title: 'Nav', status: 'Planned', acs: [] },
-    ],
-    bugs: [
-      {
-        id: 'BUG-0001',
-        title: 'Parser crash',
-        severity: 'High',
-        status: 'Open',
-        relatedStory: 'US-0001',
-        fixBranch: '',
-      },
-    ],
-    costs: { _totals: { costUsd: 0 } },
-    lessons: [],
-    snapshots: [],
-    completion: { likelyDate: '2026-05-28', rangeStart: '2026-05-21', rangeEnd: '2026-06-04', velocityWeeks: 4 },
-    coverage: { overall: 93.0, available: true },
-    trends: {
-      dates: ['2026-04-01', '2026-04-08', '2026-04-15', '2026-04-22', '2026-04-29'],
-      doneCounts: [2, 3, 4, 5, 6],
-      totalStories: [10, 10, 10, 10, 10],
-      coverage: [85, 88, 90, 92, 93],
-      openBugs: [5, 4, 4, 3, 2],
-      aiCosts: [10, 20, 35, 50, 65],
-      velocity: [1, 2, 1, 2, 1],
-      atRisk: [1, 1, 0, 0, 0],
+const mkStatusData = () => ({
+  epics: [
+    { id: 'EPIC-0001', title: 'Core', status: 'In Progress' },
+    { id: 'EPIC-0002', title: 'UX', status: 'Planned' },
+  ],
+  stories: [
+    { id: 'US-0001', epicId: 'EPIC-0001', title: 'Parser', status: 'Done', acs: [] },
+    { id: 'US-0002', epicId: 'EPIC-0002', title: 'Nav', status: 'Planned', acs: [] },
+  ],
+  bugs: [
+    {
+      id: 'BUG-0001',
+      title: 'Parser crash',
+      severity: 'High',
+      status: 'Open',
+      relatedStory: 'US-0001',
+      fixBranch: '',
     },
-    risk: null,
-    recentActivity: [],
-  });
+  ],
+  costs: { _totals: { costUsd: 0 } },
+  lessons: [],
+  snapshots: [],
+  completion: { likelyDate: '2026-05-28', rangeStart: '2026-05-21', rangeEnd: '2026-06-04', velocityWeeks: 4 },
+  coverage: { overall: 93.0, available: true },
+  trends: {
+    dates: ['2026-04-01', '2026-04-08', '2026-04-15', '2026-04-22', '2026-04-29'],
+    doneCounts: [2, 3, 4, 5, 6],
+    totalStories: [10, 10, 10, 10, 10],
+    coverage: [85, 88, 90, 92, 93],
+    openBugs: [5, 4, 4, 3, 2],
+    aiCosts: [10, 20, 35, 50, 65],
+    velocity: [1, 2, 1, 2, 1],
+    atRisk: [1, 1, 0, 0, 0],
+  },
+  risk: null,
+  recentActivity: [],
+});
 
+describe('renderStatusTab — BUG-0184 palette regression', () => {
   let html;
   beforeAll(() => {
-    const { renderStatusTab } = require('../../tools/lib/render-tabs');
     html = renderStatusTab(mkStatusData());
   });
 
@@ -548,5 +547,46 @@ describe('renderStatusTab — BUG-0184 palette regression', () => {
 
   test('BUG-0184: progress bars use oklch ok-green', () => {
     expect(html).toContain('oklch(66% 0.17 145)');
+  });
+});
+
+describe('renderStatusTab — BUG-0183 hero prominence', () => {
+  let html, htmlNoTrends;
+  beforeAll(() => {
+    html = renderStatusTab(mkStatusData());
+    // sparse data: no trends, no completion forecast
+    htmlNoTrends = renderStatusTab({ ...mkStatusData(), trends: null, completion: null });
+  });
+
+  test('BUG-0183: verdict uses 28px font-size', () => {
+    expect(html).toContain('font-size:28px');
+  });
+
+  test('BUG-0183: "Release Health" eyebrow is present', () => {
+    expect(html).toContain('Release Health');
+  });
+
+  test('BUG-0183: forecast banner appears before sparkline section', () => {
+    const forecastIdx = html.indexOf('likely date');
+    const sparklineIdx = html.indexOf('14 snapshots');
+    expect(forecastIdx).toBeGreaterThan(-1);
+    expect(sparklineIdx).toBeGreaterThan(-1);
+    expect(forecastIdx).toBeLessThan(sparklineIdx);
+  });
+
+  test('BUG-0183: sparkline bar height uses 48 not 32', () => {
+    // Bars are server-rendered — check computed pixel value, not formula string.
+    // With doneCounts=[2,3,4,5,6] maxDone=6, tallest bar = Math.round(6/6*48)=48px.
+    // Note: height:32px is also valid (Math.round(4/6*48)=32), so don't assert its absence.
+    expect(html).toContain('height:48px');
+  });
+
+  test('BUG-0183: sparse-data fallback does not show "No history"', () => {
+    expect(htmlNoTrends).not.toContain('No history');
+    expect(htmlNoTrends).not.toContain('No data');
+  });
+
+  test('BUG-0183: forecast unavailable message shown when comp is null', () => {
+    expect(htmlNoTrends).toContain('Forecast unavailable');
   });
 });
