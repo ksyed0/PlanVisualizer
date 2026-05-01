@@ -4,6 +4,41 @@ Timestamped log of every user prompt across all sessions. Append-only. Never edi
 
 ---
 
+## Session 36 — 2026-05-01 (continued from Session 35 in same conversation)
+
+| #   | Timestamp            | Prompt                                                                                                                                                                                                                                                                                           |
+| --- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | 2026-05-01T18:00:00Z | whats next [prompted discovery of 3 remaining open bugs: BUG-0183/0184/0223]                                                                                                                                                                                                                     |
+| 2   | 2026-05-01T18:05:00Z | Lets fix all of these bugs using brainstorming mode                                                                                                                                                                                                                                              |
+| 3   | 2026-05-01T18:08:00Z | yes [approved visual companion for brainstorming]                                                                                                                                                                                                                                                |
+| 4   | 2026-05-01T18:15:00Z | all three [BUG-0183 issues A+B+C all apply]                                                                                                                                                                                                                                                      |
+| 5   | 2026-05-01T18:20:00Z | C [keep shared hero, make it more prominent]                                                                                                                                                                                                                                                     |
+| 6   | 2026-05-01T18:22:00Z | C [BUG-0184: full palette audit — all charts + hero sparklines]                                                                                                                                                                                                                                  |
+| 7   | 2026-05-01T18:25:00Z | A [Approach A — three surgical patches, one PR]                                                                                                                                                                                                                                                  |
+| 8   | 2026-05-01T18:28:00Z | yes [approved all three design sections]                                                                                                                                                                                                                                                         |
+| 9   | 2026-05-01T18:30:00Z | continue [approved spec, proceed to writing-plans]                                                                                                                                                                                                                                               |
+| 10  | 2026-05-01T18:32:00Z | 1 [chose subagent-driven development for execution]                                                                                                                                                                                                                                              |
+| 11  | 2026-05-01T19:30:00Z | lets update all documents and create a PR to main, update the release notes and readme, after CI is green merge and delete the branch, then create a new release at v2.0.0 from main. Update the install and update scripts and prompts especially for any changes from previous schema formats. |
+
+---
+
+## Session 35 — 2026-04-30 → 2026-05-01
+
+| #   | Timestamp            | Prompt                                                                                                                                                                                                                                                      |
+| --- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | 2026-04-30T19:30:00Z | Clean up any unused local branches, then read AGENTS.md, MEMORY.md, PROMPT_LOG.md, and the BUGS.md entries for BUG-0252 and BUG-0185–0189 before starting work. [Session goals: BUG-0252 stash recovery + BUG-0185–0189 agentic dashboard visual hierarchy] |
+| 2   | 2026-04-30T19:55:00Z | yes [approved visual companion offer for brainstorming]                                                                                                                                                                                                     |
+| 3   | 2026-04-30T20:10:00Z | b [chose Approach B — expanded active card + promoted event log]                                                                                                                                                                                            |
+| 4   | 2026-04-30T20:15:00Z | Both [chrome fix on both dashboards + add automated Playwright regression tests]                                                                                                                                                                            |
+| 5   | 2026-04-30T20:18:00Z | C [chose test suite type C — Jest structure + Playwright visual hierarchy]                                                                                                                                                                                  |
+| 6   | 2026-04-30T20:22:00Z | I like Layout B, but can we display the full agent card rather than the headshot, like docs/agents/images/conductor.png                                                                                                                                     |
+| 7   | 2026-04-30T20:28:00Z | 1. I'd like to be able to fit the full image… 2. This seems right 3. This looks right [approved portrait design, idle opacity, Conductor strip]                                                                                                             |
+| 8   | 2026-04-30T20:35:00Z | yes [approved all three design sections]                                                                                                                                                                                                                    |
+| 9   | 2026-04-30T20:40:00Z | yes [approved spec doc]                                                                                                                                                                                                                                     |
+| 10  | 2026-04-30T20:42:00Z | 1 [chose subagent-driven development for plan execution]                                                                                                                                                                                                    |
+
+---
+
 ## Session 34 — 2026-04-29 → 2026-04-30
 
 > Note: rows 1–2 are continuations of Session 33 (logged there at the time as rows 6–7). Listed here in the canonical session for historical clarity. From row 3 onwards, the conversation drifted decisively into Session 34 territory — Session 33 had officially closed via parallel commit `d42f0f2` before this conversation resumed.

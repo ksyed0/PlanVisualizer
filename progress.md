@@ -4,6 +4,83 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 36 — 2026-05-01 (BUG-0183/0184/0223 quality sweep + v2.0.0 release prep)
+
+### What Was Done
+
+**BUG-0183/0184/0223 — Plan-Status quality sweep (PR #523):**
+
+- BUG-0223: Confirmed Bugs tab card-view groups already collapsed; added regression test
+- BUG-0184: Status hero progress bars + burn SVG changed from `var(--plan-accent)` (violet) to `oklch(66% 0.17 145)` (green). Done = green everywhere.
+- BUG-0183: Status/Stakeholder hero: 28px verdict headline + "Release Health" eyebrow, forecast banner above sparklines, bar height 32px → 48px, sparse-data placeholder fallbacks
+- Added L-0053: "Shared helper functions benefit from visual consistency audits at call sites"
+- Playwright e2e tests: all 5 passing (dashboard-hierarchy.spec.js)
+
+**v2.0.0 release prep:**
+
+- Updated README.md for v2.0.0 (new tabs, agentic dashboard, OKLCH palette, Playwright tests)
+- Created CHANGELOG.md
+- Audited install.sh schema migration for agents.config.json `project`/`phases` additions
+- Created develop→main PR, merged, tagged v2.0.0 GitHub release
+
+### Test Results
+
+- Jest: 1430 tests pass, 52 suites, 93.8% coverage
+- Playwright: 5/5 visual hierarchy tests pass
+- No regressions introduced
+
+### Open PRs / CI
+
+- PR #523 — merged (BUG-0183/0184/0223)
+
+### Blockers
+
+None.
+
+---
+
+## Session 35 — 2026-04-30 → 2026-05-01 (BUG-0252 stash recovery + BUG-0185–0189 agentic dashboard visual hierarchy)
+
+### What Was Done
+
+**Branch cleanup:** Deleted stale `session-34-close` and `claude/vibrant-ptolemy-2ffd77` branches (both squash-merged). Updated local develop to match origin/develop (was 16 commits behind).
+
+**BUG-0252 — AI_COST_LOG stash recovery (PR #521):**
+
+- Extracted 169 unique rows from 33 git stash entries covering 2026-04-20→04-29 using `git stash show -p` diff parsing
+- Added 3 current-session rows (2026-04-30) from pre-pull working tree backup
+- Appended all 172 rows to docs/AI_COST_LOG.md — fills the April 20–28 gap in the AI Costs trend chart
+- Added L-0051 to LESSONS.md: "always commit AI_COST_LOG.md before git stash or branch-switch"
+- Added guardrail to CLAUDE.md Session Close Checklist (BUG-0252)
+
+**BUG-0185–0189 — Agentic dashboard visual hierarchy (PR #521):**
+
+- Brainstormed with visual companion (Approach B chosen): expanded active card + promoted event log
+- Chrome (BUG-0189): height 52px → 40px in render-chrome.js + render-shell.js
+- Pipeline (BUG-0187): removed `<div class="phase-agents">` — pipeline now owns cycle progress only
+- Active card (BUG-0185): new `.mc-active-card` with full landscape portrait banner (200px, object-fit:contain), amber glow, pulsing status dot
+- Conductor strip (BUG-0186): `.mc-conductor-dispatch` always visible showing last dispatch from log
+- Idle roster (BUG-0185): 4-col `.mc-idle-roster` grid with 80px-capped portrait thumbnails at 65% opacity
+- Event log (BUG-0188): removed `display:none` from `#pv-event-log` main-column block; sidebar feed trimmed to 3 events
+- Added L-0052 + L-0053 to LESSONS.md
+- Playwright e2e tests: `tests/e2e/dashboard-hierarchy.spec.js` (5/5 pass)
+
+### Test Results
+
+- Jest: 1430 tests pass, 52 suites, ≥80% coverage (statement)
+- Playwright: 5/5 visual hierarchy tests pass
+- No regressions introduced
+
+### Open PRs / CI
+
+- PR #521 — merged. PR #519 — merged. PR #523 — merged.
+
+### Blockers
+
+None.
+
+---
+
 ## Session 34 — 2026-04-29 → 2026-04-30 (Session 33 trailing close + Playwright dashboard testing + BUG sweep)
 
 ### What Was Done
