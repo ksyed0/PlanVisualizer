@@ -1642,15 +1642,15 @@ Acceptance Criteria:
 US-0056 (EPIC-0024): As a user, I want to filter trend charts by date range, so that I can focus on specific time periods.
 Priority: Medium (P1)
 Estimate: S
-Status: Planned
-Branch:
+Status: Done
+Branch: feature/US-0056-trends-date-range
 Acceptance Criteria:
 
-- [ ] AC-0606: A From and To date input appear in the Trends filter bar beside the preset buttons
-- [ ] AC-0607: Selecting a date range filters all trend charts to snapshots within that window
-- [ ] AC-0608: Clicking a preset button (All/90d/30d/7d) clears the date inputs and restores count-based slicing
-- [ ] AC-0609: Date range selection persists in localStorage and is restored on next page load
-- [ ] AC-0610: The chart-velocity-weekly chart is excluded from date-range filtering
+- [x] AC-0606: A From and To date input appear in the Trends filter bar beside the preset buttons
+- [x] AC-0607: Selecting a date range filters all trend charts to snapshots within that window
+- [x] AC-0608: Clicking a preset button (All/90d/30d/7d) clears the date inputs and restores count-based slicing
+- [x] AC-0609: Date range selection persists in localStorage and is restored on next page load
+- [x] AC-0610: The chart-velocity-weekly chart is excluded from date-range filtering
       Dependencies: US-0055
 
 ```
