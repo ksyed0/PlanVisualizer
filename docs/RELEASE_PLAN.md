@@ -1437,14 +1437,14 @@ Dependencies: US-0066
 US-0169 (EPIC-0010): As a project manager, I want sort, filter, and threshold UI enhancements for risk analytics, so that I can quickly surface the highest-risk stories and epics in the Hierarchy tab.
 Priority: Low (P2)
 Estimate: M
-Status: Planned
-Branch:
+Status: Done
+Branch: feature/US-0169-hierarchy-risk-ui
 Acceptance Criteria:
-  - [ ] AC-0601: Stories can be sorted by risk score descending in the Hierarchy tab (deferred from AC-0190)
-  - [ ] AC-0602: Risk trend chart shows a horizontal reference line at 2.0 (High threshold) (deferred from AC-0193)
-  - [ ] AC-0603: Hierarchy tab epic headers display a risk indicator badge matching the epic's aggregate risk score (deferred from AC-0201)
-  - [ ] AC-0604: Epics are sorted by risk score descending by default within tabs that show epics (deferred from AC-0202)
-  - [ ] AC-0605: A filter in the Hierarchy tab allows showing only High/Critical risk epics (deferred from AC-0203)
+  - [x] AC-0601: Stories can be sorted by risk score descending in the Hierarchy tab (deferred from AC-0190)
+  - [x] AC-0602: Risk trend chart shows a horizontal reference line at 2.0 (High threshold) (deferred from AC-0193)
+  - [x] AC-0603: Hierarchy tab epic headers display a risk indicator badge matching the epic's aggregate risk score (deferred from AC-0201)
+  - [x] AC-0604: Epics are sorted by risk score descending by default within tabs that show epics (deferred from AC-0202)
+  - [x] AC-0605: A filter in the Hierarchy tab allows showing only High/Critical risk epics (deferred from AC-0203)
 Dependencies: US-0064, US-0065, US-0067
 ```
 
@@ -1706,6 +1706,99 @@ Dependencies: EPIC-0008, EPIC-0010, EPIC-0019
 ---
 
 ## User Stories — EPIC-0024: Backlog Closure
+
+```
+
+US-0170 (EPIC-0024): As a developer, I want artefact ID sequences to support more than 9,999 entries, so that the project tracking system does not hit an artificial ceiling as the codebase grows.
+Priority: Low (P2)
+Estimate: XS
+Status: Planned
+Branch:
+Acceptance Criteria:
+
+- [ ] AC-0611: All parser regexes updated from \d{4} to \d+ (parse-bugs.js, parse-release-plan.js, parse-test-cases.js, parse-lessons.js, render-utils.js normalizeStoryRef, compute-risk.js \_normalizeRef)
+- [ ] AC-0612: ID_REGISTRY.md format note updated — zero-padding is cosmetic/optional beyond 4 digits
+- [ ] AC-0613: Existing 4-digit IDs are unchanged and remain valid
+- [ ] AC-0614: A new ID assigned beyond 9999 renders correctly in the dashboard (e.g. AC-10000 displays without truncation)
+      Dependencies: None
+
+```
+
+---
+
+## Epic — EPIC-0025: GitHub Issues Sync
+
+```
+
+EPIC-0025: GitHub Issues Sync
+Description: Optional bidirectional sync between BUGS.md/RELEASE_PLAN.md and a GitHub repository's Issues. Enabled via plan-visualizer.config.json and configured through a Settings tab in plan-status.html.
+Release Target: Release 2.2
+Status: Planned
+StartDate:
+DoneDate:
+Dependencies: EPIC-0024
+
+```
+
+---
+
+## User Stories — EPIC-0025: GitHub Issues Sync
+
+```
+
+US-0171 (EPIC-0025): As a developer, I want BUGS.md to sync bidirectionally with GitHub Issues, so that bug tracking stays consistent across both systems.
+Priority: High (P0)
+Estimate: L
+Status: Planned
+Branch:
+Acceptance Criteria:
+
+- [ ] AC-0615: sync-github.js CLI runs without error when GITHUB_TOKEN is set and config.github.enabled is true
+- [ ] AC-0616: --dry-run flag prints planned changes without modifying any files or calling the GitHub API
+- [ ] AC-0617: A new BUG entry with no GH Issue field creates a GitHub Issue with correct title, labels, and body
+- [ ] AC-0618: A BUG marked Fixed closes the linked GitHub Issue
+- [ ] AC-0619: A GitHub Issue closed externally updates the matching BUG status to Fixed in BUGS.md
+- [ ] AC-0620: A GitHub Issue with a defaultLabels label and no matching BUG entry creates a new BUG entry in BUGS.md with an allocated BUG ID
+- [ ] AC-0621: docs/github-sync-state.json is written after every sync run with correct summary counts
+- [ ] AC-0622: If GITHUB_TOKEN is absent, sync is skipped with a warning and generate-plan.js exits 0
+      Dependencies: US-0170
+
+```
+
+```
+
+US-0172 (EPIC-0025): As a developer, I want a Settings tab in plan-status.html to configure and monitor GitHub sync, so that I can manage the feature without editing config files manually.
+Priority: Medium (P1)
+Estimate: M
+Status: Planned
+Branch:
+Acceptance Criteria:
+
+- [ ] AC-0623: A Settings tab appears in the plan-status.html sidebar
+- [ ] AC-0624: Settings tab renders current config.github values embedded at generation time
+- [ ] AC-0625: Copy config JSON button copies the JSON block to the clipboard
+- [ ] AC-0626: Last sync summary (date, created, closed counts) is displayed when github-sync-state.json exists
+- [ ] AC-0627: A warning badge appears on the Settings tab icon when lastError is non-null
+- [ ] AC-0628: Token status shows Set or Not set based on the generation-time flag; the token value is never rendered
+      Dependencies: US-0171
+
+```
+
+```
+
+US-0173 (EPIC-0025): As a developer, I want RELEASE_PLAN.md stories to optionally sync with GitHub Issues, so that story progress is visible in the GitHub Issues board.
+Priority: Low (P2)
+Estimate: S
+Status: Planned
+Branch:
+Acceptance Criteria:
+
+- [ ] AC-0629: When syncStories is true, new US entries without GH Issue create GitHub Issues
+- [ ] AC-0630: When a US reaches Status Done, the linked GitHub Issue is closed
+- [ ] AC-0631: syncStories defaults to false — story sync is entirely opt-in
+      Dependencies: US-0171
+
+```
 
 ---
 

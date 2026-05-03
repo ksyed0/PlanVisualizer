@@ -117,6 +117,21 @@ Branch name in `AI_COST_LOG.md` row must exactly match `Branch:` field in story 
 
 ---
 
+## Project Completion Status (as of 2026-05-03 Session 37)
+
+EPIC-0024 in flight: 4 PRs (#526–#529) open with auto-merge. Next: EPIC-0025 (GitHub Issues Sync) planned, implementation deferred until EPIC-0024 merges.
+Next IDs: always check `docs/ID_REGISTRY.md` — as of end of Session 37: Next EPIC = EPIC-0026, Next US = US-0174, Next AC = AC-0632, Next BUG = BUG-0253.
+
+Key additions (Session 37):
+
+- **`applyTrendsFilter({mode, n|from, to})`** in `render-tabs.js` — replaces `setTrendsRange` body. Count mode: `n = 'all'` or last-N snapshots. Date mode: index-based scan of `_trendsAllLabels` (ISO strings). State persisted via `pv-trends-date-from`/`pv-trends-date-to` in localStorage. Empty-window guard persists state before returning. `setTrendsRange` delegates to `applyTrendsFilter({mode:'count'})`. `_isRefLine: true` flag on constant-value datasets regenerates array after slice instead of slicing `_allData`.
+- **US-0169 Hierarchy risk UI**: `sortedEpics` pre-sorts by `byEpic.avgScore` descending before `epicBlocks.map()`. `sortHierarchyByRisk` button sorts `.story-row` elements within each `[id^="epic-stories-"]` container by `data-risk-score` (not epic blocks). `data-epic-risk-level` + `data-epic-avg-score` on `.epic-block` divs. `applyHierRiskFilter` select in filter bar. Chart.js `_isRefLine` flag: Chart.js 4.x preserves custom dataset properties; `applyTrendsFilter` regenerates constant `2.0` array when `ds._isRefLine` is set.
+- **US-0116 Lap history strip**: `cycle-complete` snapshot gains `outcome` ('success'/'failed') and `incidents` fields. `openCycleDetail` re-registered every tick (NOT guarded by `_cycleDetailRegistered`) — avoids stale `cycles` closure bug. Lap strip uses `.pv-lap-bar` flex with proportional phase segments. Success rate uses `c.outcome === 'success'` with `c.outcome === undefined` backward-compat fallback.
+- **US-0117 Completion animation**: `#mc-conductor-dispatch` is the correct conductor header element (not `#conductor-header`). `position:relative` added statically to `.mc-conductor-dispatch` CSS rule (not runtime mutation). `pvPhaseFlash`/`pvSweep`/`pvFlip` keyframes in CSS. `playBeep` cycle-completion calls removed (AC-0395 deferred — needs alert-mute preference story first).
+- **Dependency audit clean**: Only `node_modules` path reference is `render-html.js:7` → `chart.js/dist/chart.umd.min.js`. `chart.js` declared as devDep (fixed commit `a5b0f3b`).
+- **EPIC-0025 (GitHub Issues Sync) designed**: bidirectional via `tools/sync-github.js`, triggered end-of `generate-plan.js::main()`, `config.github.enabled` guard, `GITHUB_TOKEN` env var only. State: `docs/github-sync-state.json`. Settings UI: new ⚙ Settings sidebar tab with `copyGithubConfig()` and `resetGithubConfig()`. See spec+plan in `docs/superpowers/specs/` and `docs/superpowers/plans/`.
+- **US-0170 logged**: remove `\d{4}` cap from 6 parser/render files → `\d+`. XS story, ~30 min.
+
 ## Project Completion Status (as of 2026-04-30 Session 34)
 
 23 EPICs (EPIC-0023 fully closed last session). 165+ active stories. 218 BUGs total — Session 34 closed 8 (BUG-0237/0238/0245/0246/0247 via drift sweep PR #505; BUG-0217/0221/0224 via cost-attribution PR #507; BUG-0249/0250/0251 via PRs #515/#513). Two new bugs **Open**: BUG-0249/BUG-0250 (already fixed in PR #515 actually — both closed) and BUG-0252 (stash-trap, deferred to a future session — see below).
