@@ -1437,14 +1437,14 @@ Dependencies: US-0066
 US-0169 (EPIC-0010): As a project manager, I want sort, filter, and threshold UI enhancements for risk analytics, so that I can quickly surface the highest-risk stories and epics in the Hierarchy tab.
 Priority: Low (P2)
 Estimate: M
-Status: Planned
-Branch:
+Status: Done
+Branch: feature/US-0169-hierarchy-risk-ui
 Acceptance Criteria:
-  - [ ] AC-0601: Stories can be sorted by risk score descending in the Hierarchy tab (deferred from AC-0190)
-  - [ ] AC-0602: Risk trend chart shows a horizontal reference line at 2.0 (High threshold) (deferred from AC-0193)
-  - [ ] AC-0603: Hierarchy tab epic headers display a risk indicator badge matching the epic's aggregate risk score (deferred from AC-0201)
-  - [ ] AC-0604: Epics are sorted by risk score descending by default within tabs that show epics (deferred from AC-0202)
-  - [ ] AC-0605: A filter in the Hierarchy tab allows showing only High/Critical risk epics (deferred from AC-0203)
+  - [x] AC-0601: Stories can be sorted by risk score descending in the Hierarchy tab (deferred from AC-0190)
+  - [x] AC-0602: Risk trend chart shows a horizontal reference line at 2.0 (High threshold) (deferred from AC-0193)
+  - [x] AC-0603: Hierarchy tab epic headers display a risk indicator badge matching the epic's aggregate risk score (deferred from AC-0201)
+  - [x] AC-0604: Epics are sorted by risk score descending by default within tabs that show epics (deferred from AC-0202)
+  - [x] AC-0605: A filter in the Hierarchy tab allows showing only High/Critical risk epics (deferred from AC-0203)
 Dependencies: US-0064, US-0065, US-0067
 ```
 
