@@ -2338,6 +2338,14 @@ ${idleCardsHtml}
   <div id="cycle-lap-strip" style="display:flex; gap:8px; overflow-x:auto; padding-bottom:4px;"></div>
 </div>
 
+<dialog id="pv-cycle-detail" style="border:1px solid var(--bg-card-border);border-radius:8px;padding:16px;min-width:280px;font-family:var(--font-sans);background:var(--bg-card)">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+    <span style="font-weight:600;font-size:13px">Cycle Detail</span>
+    <button onclick="document.getElementById('pv-cycle-detail').close()" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--text-dim)">&#x2715;</button>
+  </div>
+  <div id="pv-cycle-detail-body"></div>
+</dialog>
+
 <!-- TELEMETRY: hidden metric IDs for patchDOM compatibility (US-0111) -->
 <div style="display:none;" aria-hidden="true">
   <span id="metric-phasesComplete">${phases.filter((p) => p.status === 'complete').length} / ${phases.length}</span>
@@ -3253,23 +3261,53 @@ function patchDOM(status) {
       var avgMin = Math.round(avgTotalSec / 60);
       var today = new Date().toDateString();
       var cyclesToday = cycles.filter(function(c) { return c.completedAt && new Date(c.completedAt).toDateString() === today; }).length;
-      var successRate = cycles.length > 0 ? Math.round((cycles.filter(function(c) { return (c.testsFailed || 0) === 0; }).length / cycles.length) * 100) : 0;
+      var successRate = cycles.length > 0 ? Math.round((cycles.filter(function(c) { return c.outcome === 'success' || (c.outcome === undefined && (c.testsFailed || 0) === 0); }).length / cycles.length) * 100) : 0;
+      var totalIncidents = cycles.reduce(function(sum, c){ return sum + (c.incidents || 0); }, 0);
+      var avgHrs = Math.floor(avgTotalSec / 3600);
+      var avgMins = Math.floor((avgTotalSec % 3600) / 60);
+      var avgCycleLabel = avgHrs > 0 ? avgHrs + 'h ' + avgMins + 'm' : (avgMins || '–') + 'm';
       telemetryRow.innerHTML = [
-        { label: 'Cycles Total', value: cycles.length },
-        { label: 'Today', value: cyclesToday },
-        { label: 'Avg Cycle (min)', value: avgMin || '–' },
-        { label: 'Success Rate', value: successRate + '%' },
+        { label: 'AVG CYCLE TIME', value: avgCycleLabel },
+        { label: 'CYCLES TODAY', value: cyclesToday },
+        { label: 'INCIDENTS', value: totalIncidents },
+        { label: 'SUCCESS RATE', value: successRate + '%' },
       ].map(function(t) {
         return '<div class="cycle-telemetry-tile"><div class="tile-value">' + escH(String(t.value)) + '</div><div class="tile-label">' + escH(t.label) + '</div></div>';
       }).join('');
       var recent = cycles.slice(-10).reverse();
       var prevLen = parseInt(lapStrip.getAttribute('data-cycle-count') || '0', 10);
+      var PHASE_COLORS = [
+        'var(--clr-accent)',
+        'oklch(72% 0.19 200)',
+        'var(--ok)',
+        'var(--clr-warn)',
+        'oklch(64% 0.20 25)',
+        'oklch(78% 0.012 95)'
+      ];
+      var PHASE_NAMES = Object.keys((recent[0] && recent[0].phaseDurations) || {});
+      if (!PHASE_NAMES.length) PHASE_NAMES = ['Blueprint','Link','Architect','Stylize','Trigger','Review'];
       lapStrip.innerHTML = recent.map(function(c) {
-        return '<div class="cycle-card">'
-          + '<div class="cycle-card-id">#' + escH(String(c.id)) + '</div>'
-          + '<div class="cycle-card-stat">' + escH(String(c.storiesCompleted)) + ' stories</div>'
-          + '<div class="cycle-card-stat">' + escH((c.coveragePercent || 0).toFixed(1)) + '% cov</div>'
-          + '</div>';
+        var durations = c.phaseDurations || {};
+        var totalSec = Object.values(durations).reduce(function(a, b){ return a + b; }, 0) || 1;
+        var elapsed = totalSec >= 3600
+          ? Math.floor(totalSec/3600) + 'h ' + Math.floor((totalSec%3600)/60) + 'm'
+          : Math.floor(totalSec/60) + 'm';
+        var daysAgo = c.completedAt
+          ? Math.floor((Date.now() - new Date(c.completedAt).getTime()) / 86400000)
+          : '?';
+        var tooltip = 'Cycle #' + c.id + ' · ' + elapsed + ' · ' + daysAgo + 'd ago';
+        var segments = PHASE_NAMES.map(function(name, idx) {
+          var sec = durations[name] || 0;
+          var pct = totalSec > 0 ? Math.max(2, Math.round(sec / totalSec * 100)) : Math.round(100 / Math.max(PHASE_NAMES.length, 1));
+          var color = ((c.outcome === 'failed') || (c.outcome === undefined && (c.testsFailed || 0) > 0)) && sec > 0
+            ? 'oklch(64% 0.20 25)'
+            : PHASE_COLORS[idx % PHASE_COLORS.length];
+          return '<div style="flex:' + pct + ';background:' + color + ';height:32px;min-width:4px" title="' + escH(name) + ': ' + Math.floor(sec/60) + 'm"></div>';
+        }).join('');
+        return '<div class="pv-lap-bar" title="' + escH(tooltip) + '" data-cycle-id="' + escH(String(c.id)) + '" '
+          + 'onclick="openCycleDetail(' + c.id + ')" '
+          + 'style="display:flex;border-radius:4px;overflow:hidden;cursor:pointer;min-width:64px;max-width:120px;flex-shrink:0">'
+          + segments + '</div>';
       }).join('');
       if (cycles.length > prevLen && prevLen > 0 && typeof playBeep === 'function') {
         playBeep(523, 0.15);
@@ -3277,6 +3315,24 @@ function patchDOM(status) {
         setTimeout(function() { playBeep(784, 0.2); }, 300);
       }
       lapStrip.setAttribute('data-cycle-count', String(cycles.length));
+      window.openCycleDetail = function(id) {
+          var c = cycles.find(function(x){ return x.id === id; });
+          if (!c) return;
+          var dlg = document.getElementById('pv-cycle-detail');
+          if (!dlg) return;
+          var rows = Object.entries(c.phaseDurations || {}).map(function(e) {
+            return '<tr><td style="padding:4px 8px">' + escH(e[0]) + '</td>'
+              + '<td style="padding:4px 8px;text-align:right">' + Math.floor(e[1]/60) + 'm</td></tr>';
+          }).join('');
+          document.getElementById('pv-cycle-detail-body').innerHTML =
+            '<p style="margin:0 0 8px"><strong>Cycle #' + escH(String(c.id)) + '</strong>'
+            + ' · ' + escH(c.outcome || 'unknown') + ' · ' + escH(String(c.incidents || 0)) + ' incidents</p>'
+            + '<table style="width:100%;border-collapse:collapse;font-size:12px">'
+            + '<thead><tr><th style="text-align:left;padding:4px 8px;border-bottom:1px solid var(--bg-card-border)">Phase</th>'
+            + '<th style="text-align:right;padding:4px 8px;border-bottom:1px solid var(--bg-card-border)">Duration</th></tr></thead>'
+            + '<tbody>' + rows + '</tbody></table>';
+          dlg.showModal();
+        };
     }
   }
 
