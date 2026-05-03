@@ -152,6 +152,9 @@ fi
 # Preserves user values; only appends missing keys. --auto suppresses output
 # when nothing needs migrating, keeping the installer log clean.
 #
+# v2.1.0 schema additions auto-migrated here:
+#   plan-visualizer.config.json — github sync block (enabled: false by default),
+#     costs.tshirtHours.XS (default: 2).
 # v2.0.0 schema additions auto-migrated here:
 #   agents.config.json — new top-level "project" (name, description, repoUrl,
 #     startDate) and "phases" (pipeline phase definitions) sections.

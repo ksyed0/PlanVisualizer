@@ -53,7 +53,9 @@ function ensureKey(obj, key, defaultValue) {
 /**
  * Migrate plan-visualizer.config.json.
  * Required fields the current code expects but early installs are missing:
- *   - docs.lessons — parsed by generate-plan.js:156
+ *   - docs.lessons          — parsed by generate-plan.js (added in v1.x)
+ *   - costs.tshirtHours.XS  — default 2 hours for XS estimates (v2.1.0)
+ *   - github                — optional sync block; enabled: false by default (v2.1.0)
  */
 function migratePlanVisualizerConfig(filePath) {
   let raw;
@@ -76,9 +78,31 @@ function migratePlanVisualizerConfig(filePath) {
 
   const additions = [];
 
+  // v1.x → v2.x: docs.lessons
   cfg.docs = cfg.docs || {};
   if (ensureKey(cfg.docs, 'lessons', 'docs/LESSONS.md')) {
     additions.push('docs.lessons');
+  }
+
+  // v2.1.0: costs.tshirtHours.XS — default 2 hours
+  cfg.costs = cfg.costs || {};
+  cfg.costs.tshirtHours = cfg.costs.tshirtHours || {};
+  if (ensureKey(cfg.costs.tshirtHours, 'XS', 2)) {
+    additions.push('costs.tshirtHours.XS');
+  }
+
+  // v2.1.0: github sync block — all sub-keys added individually so partial
+  // configs aren't overwritten. Only adds keys that are absent.
+  cfg.github = cfg.github || {};
+  if (ensureKey(cfg.github, 'enabled', false)) additions.push('github.enabled');
+  if (ensureKey(cfg.github, 'repo', 'owner/repo')) additions.push('github.repo');
+  if (ensureKey(cfg.github, 'syncBugs', true)) additions.push('github.syncBugs');
+  if (ensureKey(cfg.github, 'syncStories', false)) additions.push('github.syncStories');
+  if (ensureKey(cfg.github, 'labelMap', { Critical: 'critical', High: 'high', Medium: 'medium', Low: 'low' })) {
+    additions.push('github.labelMap');
+  }
+  if (ensureKey(cfg.github, 'defaultLabels', ['planvisualizer'])) {
+    additions.push('github.defaultLabels');
   }
 
   const changed = additions.length > 0;
