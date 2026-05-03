@@ -776,3 +776,72 @@ describe('generate-dashboard — BUG-0188 promote event log to main column', () 
     expect(logBlockTag).not.toContain('display:none');
   });
 });
+
+describe('generate-dashboard — US-0116 lap history strip', () => {
+  const { generateHTML } = require('../../tools/generate-dashboard.js');
+
+  function baseStatus(overrides = {}) {
+    return Object.assign(
+      {
+        project: { name: 'Test', description: '', repoUrl: '', startDate: '2026-01-01' },
+        phases: [],
+        agents: {},
+        stories: {},
+        cycles: [],
+        metrics: {
+          storiesCompleted: 0,
+          storiesTotal: 0,
+          testsPassed: 0,
+          testsFailed: 0,
+          testsTotal: 0,
+          bugsOpen: 0,
+          bugsFixed: 0,
+          coveragePercent: 0,
+          reviewsApproved: 0,
+          reviewsBlocked: 0,
+          tasksCompleted: 0,
+          tasksTotal: 0,
+        },
+        log: [],
+        epics: {},
+      },
+      overrides,
+    );
+  }
+
+  it('cycle-history-section element is in generated HTML', () => {
+    const html = generateHTML(baseStatus());
+    expect(html).toContain('id="cycle-history-section"');
+  });
+
+  it('cycle-lap-strip element is in generated HTML', () => {
+    const html = generateHTML(baseStatus());
+    expect(html).toContain('id="cycle-lap-strip"');
+  });
+
+  it('cycle-telemetry element is in generated HTML', () => {
+    const html = generateHTML(baseStatus());
+    expect(html).toContain('id="cycle-telemetry"');
+  });
+
+  it('refreshState JS uses c.outcome for success rate', () => {
+    const html = generateHTML(baseStatus());
+    expect(html).toContain("c.outcome === 'success'");
+  });
+
+  it('refreshState JS renders pv-lap-bar class', () => {
+    const html = generateHTML(baseStatus());
+    expect(html).toContain('pv-lap-bar');
+  });
+
+  it('pv-cycle-detail dialog is in generated HTML', () => {
+    const html = generateHTML(baseStatus());
+    expect(html).toContain('id="pv-cycle-detail"');
+  });
+
+  it('telemetry labels include AVG CYCLE TIME and INCIDENTS', () => {
+    const html = generateHTML(baseStatus());
+    expect(html).toContain('AVG CYCLE TIME');
+    expect(html).toContain('INCIDENTS');
+  });
+});

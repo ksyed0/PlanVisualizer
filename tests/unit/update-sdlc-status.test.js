@@ -225,6 +225,31 @@ describe('update-sdlc-status — cycle-complete', () => {
     expect(data.cycles).toHaveLength(2);
     expect(data.cycles[1].id).toBe(2);
   });
+
+  it('snapshot includes outcome: success when testsFailed is 0', () => {
+    const data = stateWithActiveSession();
+    HANDLERS['cycle-complete'](data, {});
+    expect(data.cycles[0].outcome).toBe('success');
+  });
+
+  it('snapshot includes outcome: failed when testsFailed > 0', () => {
+    const data = stateWithActiveSession();
+    data.metrics.testsFailed = 2;
+    HANDLERS['cycle-complete'](data, {});
+    expect(data.cycles[0].outcome).toBe('failed');
+  });
+
+  it('snapshot includes incidents defaulting to 0', () => {
+    const data = stateWithActiveSession();
+    HANDLERS['cycle-complete'](data, {});
+    expect(data.cycles[0].incidents).toBe(0);
+  });
+
+  it('snapshot picks up incidents from opts.incidents when provided', () => {
+    const data = stateWithActiveSession();
+    HANDLERS['cycle-complete'](data, { incidents: '3' });
+    expect(data.cycles[0].incidents).toBe(3);
+  });
 });
 
 describe('update-sdlc-status — phase', () => {

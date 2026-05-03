@@ -309,6 +309,8 @@ const HANDLERS = {
       testsFailed: (data.metrics && data.metrics.testsFailed) || 0,
       coveragePercent: (data.metrics && data.metrics.coveragePercent) || 0,
       bugsFixed: (data.metrics && data.metrics.bugsFixed) || 0,
+      outcome: ((data.metrics && data.metrics.testsFailed) || 0) === 0 ? 'success' : 'failed',
+      incidents: parseInt(opts.incidents || '0', 10) || 0,
       phaseDurations,
     };
     data.cycles.push(snapshot);
