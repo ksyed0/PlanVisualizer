@@ -15,7 +15,17 @@ const {
 const { LEVEL_COLORS: RISK_LEVEL_COLORS } = require('./compute-risk');
 
 function renderHierarchyTab(data) {
-  const epicBlocks = data.epics.map((epic, epicIdx) => {
+  const sortedEpics =
+    data.risk && data.risk.byEpic
+      ? [...data.epics].sort((a, b) => {
+          if (a.id === '_ungrouped') return 1;
+          if (b.id === '_ungrouped') return -1;
+          const sa = data.risk.byEpic.has(a.id) ? data.risk.byEpic.get(a.id).avgScore : -1;
+          const sb = data.risk.byEpic.has(b.id) ? data.risk.byEpic.get(b.id).avgScore : -1;
+          return sb - sa;
+        })
+      : data.epics;
+  const epicBlocks = sortedEpics.map((epic, epicIdx) => {
     const accent = EPIC_ACCENT_COLORS[epicIdx % EPIC_ACCENT_COLORS.length];
     const stories = data.stories.filter((s) => s.epicId === epic.id);
     const epicProjected = stories.reduce(
@@ -24,6 +34,11 @@ function renderHierarchyTab(data) {
     );
     const totalCnt = stories.length;
     const doneCnt = stories.filter((s) => /^done$/i.test(s.status)).length;
+    const epicRisk = data.risk && data.risk.byEpic ? data.risk.byEpic.get(epic.id) : null;
+    const epicRiskBadge =
+      epicRisk && epic.status !== 'Done' && epic.status !== 'Retired'
+        ? `<span class="risk-score-badge text-xs font-semibold" style="color:${RISK_LEVEL_COLORS[epicRisk.level]}">${esc(epicRisk.level)} ${epicRisk.avgScore.toFixed(1)}</span>`
+        : '';
 
     // ── column view: expandable story rows ──────────────────────────────────
     const storyRows = stories
@@ -57,7 +72,8 @@ function renderHierarchyTab(data) {
           .join('');
         return `
       <div id="story-${esc(story.id)}" class="story-row border-t border-slate-100 dark:border-slate-700 px-3 py-2"
-           data-epic="${esc(story.epicId)}" data-status="${esc(story.status)}" data-priority="${esc(story.priority)}">
+           data-epic="${esc(story.epicId)}" data-status="${esc(story.status)}" data-priority="${esc(story.priority)}"
+           data-risk-score="${storyRisk ? String(storyRisk.score) : '0'}" data-risk-level="${storyRisk ? esc(storyRisk.level) : 'Low'}">
         <div class="flex flex-wrap items-center gap-2 cursor-pointer" onclick="toggleACs('${jsEsc(story.id)}')">
           <span class="font-mono text-xs text-slate-500 whitespace-nowrap">${story.id}</span>
           ${badge(story.status)} ${badge(story.priority)}
@@ -98,7 +114,8 @@ function renderHierarchyTab(data) {
           .join('');
         return `
       <div class="story-row story-card-hover card-elev rounded-lg p-3 flex flex-col gap-1"
-           data-epic="${esc(story.epicId)}" data-status="${esc(story.status)}" data-priority="${esc(story.priority)}">
+           data-epic="${esc(story.epicId)}" data-status="${esc(story.status)}" data-priority="${esc(story.priority)}"
+           data-risk-score="${storyRisk ? String(storyRisk.score) : '0'}" data-risk-level="${storyRisk ? esc(storyRisk.level) : 'Low'}">
         <div class="flex flex-wrap items-center gap-1 cursor-pointer" onclick="toggleCardACs('${jsEsc(story.id)}')">
           ${badge(story.status)} ${badge(story.priority)}
           <span class="font-mono text-xs text-slate-500 ml-1">${story.id}</span>
@@ -121,23 +138,40 @@ function renderHierarchyTab(data) {
         <span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${epic.id}</span>
         ${badge(epic.status)}
         <span class="font-semibold dark:text-slate-100">${esc(epic.title)}</span>
+        ${epicRiskBadge}
         <span class="text-xs text-slate-500">${esc(epic.releaseTarget)}</span>
         <span class="ml-auto text-sm text-slate-500">${usd(epicProjected)} projected</span>
       </div>`;
 
-    return { epic, accent, epicProjected, storyRows, storyCards, epicHeader, doneCnt, totalCnt };
+    return {
+      epic,
+      accent,
+      epicProjected,
+      storyRows,
+      storyCards,
+      epicHeader,
+      doneCnt,
+      totalCnt,
+      epicRisk,
+      epicRiskBadge,
+    };
   });
 
   const columnView = epicBlocks
     .map(
-      ({ epic, accent, epicProjected, storyRows, doneCnt, totalCnt }, epicIdx) => `
-    <div class="epic-block mb-2 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden anim-stagger" data-epic-status="${esc(epic.status)}" style="--i:${Math.min(epicIdx, 19)};border-left:4px solid ${accent.border}">
+      ({ epic, accent, epicProjected, storyRows, doneCnt, totalCnt, epicRisk: er, epicRiskBadge: erb }, epicIdx) => `
+    <div class="epic-block mb-2 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden anim-stagger"
+         data-epic-status="${esc(epic.status)}"
+         data-epic-risk-level="${er ? esc(er.level) : 'Low'}"
+         data-epic-avg-score="${er ? String(er.avgScore.toFixed(2)) : '0'}"
+         style="--i:${Math.min(epicIdx, 19)};border-left:4px solid ${accent.border}">
       <div class="px-3 py-2 cursor-pointer select-none" style="background:${accent.bg}" onclick="toggleSection('epic-stories-${jsEsc(epic.id)}','epic-arrow-${jsEsc(epic.id)}')">
         <div class="flex flex-wrap items-center gap-3">
           <span id="epic-arrow-${esc(epic.id)}" class="text-slate-400 text-xs w-3 flex-shrink-0">▼</span>
           <span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${esc(epic.id)}</span>
           ${badge(epic.status)}
           <span class="font-semibold dark:text-slate-100">${esc(epic.title)}</span>
+          ${erb}
           <span class="text-xs text-slate-500">${esc(epic.releaseTarget)}</span>
           <span class="ml-auto text-sm text-slate-500">${usd(epicProjected)} projected</span>
         </div>
@@ -150,14 +184,15 @@ function renderHierarchyTab(data) {
 
   const cardView = epicBlocks
     .map(
-      ({ epic, accent, epicProjected, storyCards, doneCnt, totalCnt }, epicIdx) => `
-    <div class="mb-2 anim-stagger" style="--i:${Math.min(epicIdx, 19)}">
+      ({ epic, accent, epicProjected, storyCards, doneCnt, totalCnt, epicRisk: er, epicRiskBadge: erb }, epicIdx) => `
+    <div class="mb-2 anim-stagger" data-epic-risk-level="${er ? esc(er.level) : 'Low'}" data-epic-avg-score="${er ? String(er.avgScore.toFixed(2)) : '0'}" style="--i:${Math.min(epicIdx, 19)}">
       <div class="epic-block border border-slate-200 dark:border-slate-700 rounded-t-lg px-3 py-2 mb-0 cursor-pointer select-none" style="border-left:4px solid ${accent.border};background:${accent.bg}" onclick="toggleSection('epic-cards-${jsEsc(epic.id)}','epic-card-arrow-${jsEsc(epic.id)}')">
         <div class="flex flex-wrap items-center gap-3">
           <span id="epic-card-arrow-${esc(epic.id)}" class="text-slate-400 text-xs w-3 flex-shrink-0">▶</span>
           <span class="font-mono text-xs font-bold uppercase tracking-widest" style="color:${accent.border}">${esc(epic.id)}</span>
           ${badge(epic.status)}
           <span class="font-semibold dark:text-slate-100">${esc(epic.title)}</span>
+          ${erb}
           <span class="text-xs text-slate-500">${esc(epic.releaseTarget)}</span>
           <span class="ml-auto text-sm text-slate-500">${usd(epicProjected)} projected</span>
         </div>
@@ -176,20 +211,67 @@ function renderHierarchyTab(data) {
 
   return `
   <div id="tab-hierarchy" class="p-6 hidden" role="tabpanel" aria-labelledby="tab-btn-hierarchy">
-    <div class="flex items-center justify-end mb-4 flex-shrink-0">
+    <div class="flex items-center justify-between mb-4 flex-shrink-0 flex-wrap gap-2">
+      <div class="flex items-center gap-2">
+        <select id="hier-risk-filter" style="font-size:11px;padding:3px 6px;border:1px solid var(--clr-border);border-radius:4px;background:var(--clr-input-bg);color:var(--clr-input-text)"
+          onchange="applyHierRiskFilter(this.value)">
+          <option value="all">All Risk Levels</option>
+          <option value="high">High+</option>
+          <option value="critical">Critical only</option>
+        </select>
+        <button id="hier-risk-sort-btn" onclick="sortHierarchyByRisk(this)"
+          style="font-size:11px;padding:3px 8px;border:1px solid var(--clr-border);border-radius:4px;background:var(--clr-input-bg);color:var(--clr-input-text);cursor:pointer">
+          Sort by Risk ↓
+        </button>
+      </div>
       <div class="flex gap-1">
-        <button id="hier-col-btn" onclick="setHierarchyView('column')"
-          class="view-toggle-btn">
-          ≡ Column
-        </button>
-        <button id="hier-card-btn" onclick="setHierarchyView('card')"
-          class="view-toggle-btn">
-          ⊞ Card
-        </button>
+        <button id="hier-col-btn" onclick="setHierarchyView('column')" class="view-toggle-btn">≡ Column</button>
+        <button id="hier-card-btn" onclick="setHierarchyView('card')" class="view-toggle-btn">⊞ Card</button>
       </div>
     </div>
     <div id="hier-column-view">${columnView}</div>
     <div id="hier-card-view" class="hidden">${cardView}</div>
+    <script>
+    (function(){
+      var _hierRiskSorted = false;
+      var _storyOriginalOrder = new Map(); // epic-block id → original story row array
+
+      function sortHierarchyByRisk(btn) {
+        _hierRiskSorted = !_hierRiskSorted;
+        btn.textContent = _hierRiskSorted ? 'Restore Order' : 'Sort by Risk ↓';
+        document.querySelectorAll('#hier-column-view .epic-block').forEach(function(block) {
+          var container = block.querySelector('[id^="epic-stories-"]');
+          if (!container) return;
+          var rows = Array.from(container.querySelectorAll('.story-row'));
+          if (rows.length < 2) return;
+          if (_hierRiskSorted) {
+            if (!_storyOriginalOrder.has(container.id)) {
+              _storyOriginalOrder.set(container.id, rows.slice());
+            }
+            rows.sort(function(a, b) {
+              return parseFloat(b.getAttribute('data-risk-score') || '0')
+                   - parseFloat(a.getAttribute('data-risk-score') || '0');
+            });
+            rows.forEach(function(r) { container.appendChild(r); });
+          } else {
+            var orig = _storyOriginalOrder.get(container.id);
+            if (orig) orig.forEach(function(r) { container.appendChild(r); });
+          }
+        });
+      }
+      function applyHierRiskFilter(value) {
+        document.querySelectorAll('#hier-column-view .epic-block, #hier-card-view > div').forEach(function(block) {
+          var level = block.getAttribute('data-epic-risk-level') || 'Low';
+          var show = value === 'all'
+            || (value === 'high' && (level === 'High' || level === 'Critical'))
+            || (value === 'critical' && level === 'Critical');
+          block.style.display = show ? '' : 'none';
+        });
+      }
+      window.sortHierarchyByRisk = sortHierarchyByRisk;
+      window.applyHierRiskFilter = applyHierRiskFilter;
+    })();
+    </script>
   </div>`;
 }
 
@@ -603,7 +685,11 @@ function initTrendsCharts() {
     {label:'At-Risk', data:_trendsAllData.risk, borderColor:pvChartColors.warn, _gc:pvChartColors.warn, fill:true, tension:0.3}
   ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:leg}, scales:{x:xA,y:yA({suggestedMax:5})}}});
   _mkTrend('chart-trends-avg-risk', {type:'line', data:{labels:labels, datasets:[
-    {label:'Avg Risk Score', data:_trendsAllData.avgRisk, borderColor:pvChartColors.warn, _gc:pvChartColors.warn, fill:true, tension:0.3}
+    {label:'Avg Risk Score', data:_trendsAllData.avgRisk, borderColor:pvChartColors.warn, _gc:pvChartColors.warn, fill:true, tension:0.3},
+    {label:'High threshold', data:_trendsAllData.avgRisk.map(function(){ return 2.0; }),
+     _isRefLine:true, // Chart.js 4.x preserves custom dataset properties — applyTrendsFilter uses this flag to regenerate the flat array after slicing
+     borderColor:pvChartColors.risk, borderDash:[6,3], borderWidth:1,
+     backgroundColor:'transparent', pointRadius:0, fill:false}
   ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:leg}, scales:{x:xA,y:yA({min:0,suggestedMax:4})}}});
   ${
     hasVbw

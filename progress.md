@@ -4,6 +4,54 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 37 — 2026-05-03 (EPIC-0024 backlog closure + EPIC-0025 design)
+
+### What Was Done
+
+**Branch/worktree cleanup:**
+
+- Deleted stale local branches: `bugfix/BUG-0252-stash-recovery`, `claude/awesome-moore-6815ed`
+- Deleted remote `origin/bugfix/BUG-0252-stash-recovery`
+
+**EPIC-0024 — Backlog Closure (4 PRs open, auto-merge enabled):**
+
+- **US-0056** (PR #526): Trends date-range picker — `applyTrendsFilter({mode:'date'|'count'})` alongside existing All/90d/30d/7d preset buttons; localStorage persistence; `chart-velocity-weekly` guard; 7 new tests
+- **US-0169** (PR #527): Hierarchy risk UI — epic sort by avgScore descending (server-side); story rows `data-risk-score`/`data-risk-level` attrs; `sortHierarchyByRisk` sorts `.story-row` elements within each epic block; `applyHierRiskFilter` select (All/High+/Critical); epic header aggregate risk badge; `chart-trends-avg-risk` dashed reference line at y=2.0 with `_isRefLine` flag; 11 new tests
+- **US-0116** (PR #528): Lap history strip — cycle snapshot gains `outcome`/`incidents` fields; lap strip upgraded from mini-cards to segmented 32px phase bars proportional to `phaseDurations`; `openCycleDetail` dialog (closes over live `cycles` array, re-registered every tick to avoid stale closure); telemetry: AVG CYCLE TIME/CYCLES TODAY/INCIDENTS/SUCCESS RATE; 11 new tests
+- **US-0117** (PR #529): Completion animation — `@keyframes pvPhaseFlash`/`pvSweep`/`pvFlip`; `patchDOM` handles `type === 'cycle-complete'`; targets `#mc-conductor-dispatch` (not `#conductor-header`); `position:relative` added to `.mc-conductor-dispatch` CSS rule; `playBeep` cycle-completion chime removed (AC-0395 deferred); 8 new tests
+
+**Dependency audit (Goal C):**
+
+- Only `node_modules` path reference: `render-html.js:7` reads `chart.js/dist/chart.umd.min.js`
+- `chart.js` already declared in `package.json` (fixed in commit `a5b0f3b` during v2.0.0 prep) — audit clean
+
+**EPIC-0025 — GitHub Issues Sync (design + plan, not yet implemented):**
+
+- Brainstormed bidirectional sync: PV→GH (create/close/reopen Issues) + GH→PV (pull external closes, pull new Issues as BUG entries)
+- Trigger: `generate-plan.js` end-of-pipeline, guarded by `config.github.enabled`
+- Settings panel: new ⚙ Settings sidebar tab with Copy config JSON button, token status, last sync summary
+- State tracking: `docs/github-sync-state.json` (idempotency + conflict timestamps)
+- Spec: `docs/superpowers/specs/2026-05-03-epic-0025-github-issues-sync-design.md`
+- Plan: `docs/superpowers/plans/2026-05-03-epic-0025-github-issues-sync.md`
+- 4 work streams: US-0170 (ID regex fix) → US-0171 (engine) → {US-0172 (UI) ∥ US-0173 (stories)}
+
+**US-0170 logged** (ID sequences: remove 4-digit cap → `\d+`; XS story, ~30min PR)
+
+### Test Results
+
+- 1455+ tests, 93.81% statement coverage — all gates passing at session close
+
+### Blockers
+
+- None
+
+### Next Session
+
+- Confirm EPIC-0024 PRs #526–#529 all merged green
+- Implement EPIC-0025 starting with US-0170 (ID regex) then US-0171 (sync engine)
+
+---
+
 ## Session 36 — 2026-05-01 (BUG-0183/0184/0223 quality sweep + v2.0.0 release prep)
 
 ### What Was Done
