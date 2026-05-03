@@ -1639,16 +1639,18 @@ Acceptance Criteria:
 
 ```
 
-US-0056 (EPIC-0008): As a user, I want to filter trend charts by date range, so that I can focus on specific time periods.
+US-0056 (EPIC-0024): As a user, I want to filter trend charts by date range, so that I can focus on specific time periods.
 Priority: Medium (P1)
 Estimate: S
 Status: Planned
 Branch:
 Acceptance Criteria:
 
-- [ ] AC-0165: Date range picker allows selecting start and end dates
-- [ ] AC-0166: All trend charts update to show only data within the selected range
-- [ ] AC-0167: Quick filters for "Last 7 days", "Last 30 days", "All time"
+- [ ] AC-0606: A From and To date input appear in the Trends filter bar beside the preset buttons
+- [ ] AC-0607: Selecting a date range filters all trend charts to snapshots within that window
+- [ ] AC-0608: Clicking a preset button (All/90d/30d/7d) clears the date inputs and restores count-based slicing
+- [ ] AC-0609: Date range selection persists in localStorage and is restored on next page load
+- [ ] AC-0610: The chart-velocity-weekly chart is excluded from date-range filtering
       Dependencies: US-0055
 
 ```
@@ -1684,6 +1686,26 @@ Acceptance Criteria:
       Dependencies: US-0054
 
 ```
+
+---
+
+## Epic — EPIC-0024: Backlog Closure
+
+```
+
+EPIC-0024: Backlog Closure
+Description: Ships deferred stories US-0056 (Trends date-range), US-0169 (Hierarchy risk UI), US-0116 (lap history), US-0117 (telemetry + animation) before EPIC-0025 begins.
+Release Target: Release 2.1
+Status: In Progress
+StartDate: 2026-05-03
+DoneDate:
+Dependencies: EPIC-0008, EPIC-0010, EPIC-0019
+
+```
+
+---
+
+## User Stories — EPIC-0024: Backlog Closure
 
 ---
 
