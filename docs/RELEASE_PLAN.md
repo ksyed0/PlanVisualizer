@@ -2559,13 +2559,13 @@ Dependencies: EPIC-0016
 US-0116 (EPIC-0019): As a user, I want a lap-history strip beneath the current cycle showing the last 10 completed cycles, so that I can see operational tempo and open any past cycle for phase-timing details.
 Priority: Medium (P1)
 Estimate: M
-Status: Planned
+Status: Done
 Branch: feature/US-0116-lap-history-strip
 Acceptance Criteria:
-  - [ ] AC-0388: docs/sdlc-status.json schema gains a cycles[] array: {id, implementationTarget, startedAt, endedAt, phaseTimings, outcome, incidents}; retention keeps the last 50
-  - [ ] AC-0389: Tier B renders a 32px-tall horizontal strip of the last 10 cycles as mini segmented bars (one segment per phase, matching the 6-phase canonical pipeline from US-0115)
-  - [ ] AC-0390: Hovering a bar shows a tooltip ("Cycle N · US-XXXX · HH:MM · Xd ago"); failed phases render red segments
-  - [ ] AC-0391: Clicking a bar opens a cycle-detail popover with per-phase timings and outcome
+  - [x] AC-0388: docs/sdlc-status.json schema gains a cycles[] array: {id, implementationTarget, startedAt, endedAt, phaseTimings, outcome, incidents}; retention keeps the last 50
+  - [x] AC-0389: Tier B renders a 32px-tall horizontal strip of the last 10 cycles as mini segmented bars (one segment per phase, matching the 6-phase canonical pipeline from US-0115)
+  - [x] AC-0390: Hovering a bar shows a tooltip ("Cycle N · US-XXXX · HH:MM · Xd ago"); failed phases render red segments
+  - [x] AC-0391: Clicking a bar opens a cycle-detail popover with per-phase timings and outcome
 Dependencies: US-0115
 ```
 
