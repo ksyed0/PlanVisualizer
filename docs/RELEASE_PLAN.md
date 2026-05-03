@@ -2666,13 +2666,13 @@ Dependencies: US-0115
 US-0117 (EPIC-0019): As a user, I want a telemetry row summarizing aggregate cycle performance plus a satisfying animation when a cycle completes, so that the dashboard reinforces the "machine that keeps running" feel.
 Priority: Medium (P2)
 Estimate: S
-Status: Planned
-Branch: feature/US-0117-telemetry-and-completion
+Status: Done
+Branch: feature/US-0117-telemetry-completion
 Acceptance Criteria:
-  - [ ] AC-0392: Tier C row shows "AVG CYCLE TIME · CYCLES TODAY · INCIDENTS · SUCCESS RATE" in Departure Mono tracked-out muted text
-  - [ ] AC-0393: Values are derived from cycles[] aggregation in sdlc-status.json
-  - [ ] AC-0394: On cycle completion the dashboard plays a phase-6 flash, green sweep left-to-right, cycle-counter flip, and a new lap-bar push into Tier B
-  - [ ] AC-0395: A 200ms ascending audio chime plays on cycle completion (respects user's alert-mute preference)
+  - [x] AC-0392: Tier C row shows "AVG CYCLE TIME · CYCLES TODAY · INCIDENTS · SUCCESS RATE" in Departure Mono tracked-out muted text
+  - [x] AC-0393: Values are derived from cycles[] aggregation in sdlc-status.json
+  - [x] AC-0394: On cycle completion the dashboard plays a phase-6 flash, green sweep left-to-right, cycle-counter flip, and a new lap-bar push into Tier B
+  - [ ] AC-0395: A 200ms ascending audio chime plays on cycle completion (respects user's alert-mute preference) — deferred: requires alert-mute preference story
 Dependencies: US-0115, US-0116
 ```
 
