@@ -590,3 +590,80 @@ describe('renderStatusTab — BUG-0183 hero prominence', () => {
     expect(htmlNoTrends).toContain('Forecast unavailable');
   });
 });
+
+describe('renderTrendsTab — US-0056 date-range filter', () => {
+  const dates = [
+    '2026-04-01T10:00:00Z',
+    '2026-04-05T10:00:00Z',
+    '2026-04-10T10:00:00Z',
+    '2026-04-15T10:00:00Z',
+    '2026-04-20T10:00:00Z',
+  ];
+
+  it('renders trends-date-from and trends-date-to inputs in filter bar', () => {
+    const html = renderTrendsTab(makeData({ dates }));
+    expect(html).toContain('id="trends-date-from"');
+    expect(html).toContain('id="trends-date-to"');
+  });
+
+  it('date inputs are type="date"', () => {
+    const html = renderTrendsTab(makeData({ dates }));
+    const matches = html.match(/type="date"/g);
+    expect(matches).toBeTruthy();
+    expect(matches.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('filter bar contains both preset buttons and date inputs', () => {
+    const html = renderTrendsTab(makeData({ dates }));
+    expect(html).toContain('trends-range-btn');
+    expect(html).toContain('trends-date-from');
+  });
+
+  it('applyTrendsFilter JS function is emitted in the script block', () => {
+    const html = renderTrendsTab(makeData({ dates }));
+    expect(html).toContain('function applyTrendsFilter(');
+  });
+
+  it('setTrendsRange calls applyTrendsFilter in count mode', () => {
+    const html = renderTrendsTab(makeData({ dates }));
+    expect(html).toContain('applyTrendsFilter({');
+    expect(html).toContain("mode:'count'");
+  });
+
+  it('date input oninput calls applyTrendsFilter in date mode', () => {
+    const html = renderTrendsTab(makeData({ dates }));
+    expect(html).toContain("mode:'date'");
+  });
+
+  it('chart-velocity-weekly is skipped in applyTrendsFilter', () => {
+    const html = renderTrendsTab(makeData({ dates }));
+    const fnStart = html.indexOf('function applyTrendsFilter(');
+    const fnEnd = html.indexOf('\nfunction ', fnStart + 1);
+    const fnBody = fnEnd > 0 ? html.slice(fnStart, fnEnd) : html.slice(fnStart);
+    expect(fnBody).toContain('chart-velocity-weekly');
+  });
+
+  function makeData({ dates }) {
+    const n = dates.length;
+    return {
+      trends: {
+        dates,
+        doneCounts: Array(n).fill(0),
+        totalStories: Array(n).fill(0),
+        aiCosts: Array(n).fill(0),
+        coverage: Array(n).fill(0),
+        velocity: Array(n).fill(0),
+        openBugs: Array(n).fill(0),
+        atRisk: Array(n).fill(0),
+        inputTokens: Array(n).fill(0),
+        outputTokens: Array(n).fill(0),
+        avgRisk: Array(n).fill(0),
+        velocityByWeek: {
+          labels: ['2026-W14', '2026-W15'],
+          points: [2, 3],
+          rollingAvg: [2, 2.5],
+        },
+      },
+    };
+  }
+});

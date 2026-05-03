@@ -430,6 +430,11 @@ function renderTrendsTab(data, options = {}) {
       <button class="trends-range-btn" data-range="90" onclick="setTrendsRange(this,90)">90d</button>
       <button class="trends-range-btn" data-range="30" onclick="setTrendsRange(this,30)">30d</button>
       <button class="trends-range-btn" data-range="7" onclick="setTrendsRange(this,7)">7d</button>
+      <span class="trends-date-sep" style="color:var(--clr-text-muted);font-size:11px;margin:0 4px">|</span>
+      <label for="trends-date-from" style="font-size:11px;color:var(--clr-text-muted)">From</label>
+      <input type="date" id="trends-date-from" style="font-size:11px;padding:2px 4px;border:1px solid var(--clr-border);border-radius:4px;background:var(--clr-input-bg);color:var(--clr-input-text)" oninput="applyTrendsFilter({mode:'date',from:this.value,to:document.getElementById('trends-date-to').value})">
+      <label for="trends-date-to" style="font-size:11px;color:var(--clr-text-muted)">To</label>
+      <input type="date" id="trends-date-to" style="font-size:11px;padding:2px 4px;border:1px solid var(--clr-border);border-radius:4px;background:var(--clr-input-bg);color:var(--clr-input-text)" oninput="applyTrendsFilter({mode:'date',from:document.getElementById('trends-date-from').value,to:this.value})">
     </div>
 
     <div class="chart-supertitle">Progress</div>
@@ -639,24 +644,64 @@ function initTrendsCharts() {
   }`
       : ''
   }
-  var saved = localStorage.getItem('pv-trends-range');
-  if (saved && saved !== 'all') {
-    var btn = document.querySelector('.trends-range-btn[data-range="'+saved+'"]');
-    if (btn) setTrendsRange(btn, saved === 'all' ? 'all' : Number(saved));
+  // Restore last-used filter: date range takes priority over count range
+  var savedFrom = localStorage.getItem('pv-trends-date-from');
+  var savedTo   = localStorage.getItem('pv-trends-date-to');
+  var savedRange = localStorage.getItem('pv-trends-range');
+  if (savedFrom || savedTo) {
+    var fi = document.getElementById('trends-date-from');
+    var ti = document.getElementById('trends-date-to');
+    if (fi) fi.value = savedFrom || '';
+    if (ti) ti.value = savedTo || '';
+    applyTrendsFilter({mode:'date', from:savedFrom || '', to:savedTo || ''});
+  } else if (savedRange && savedRange !== 'all') {
+    var btn = document.querySelector('.trends-range-btn[data-range="'+savedRange+'"]');
+    if (btn) setTrendsRange(btn, Number(savedRange));
   }
+}
+function applyTrendsFilter(opts) {
+  var start = 0, end = _trendsAllLabels.length;
+  if (opts.mode === 'count') {
+    var n = opts.n === 'all' ? _trendsAllLabels.length : Math.min(Number(opts.n), _trendsAllLabels.length);
+    start = _trendsAllLabels.length - n;
+  } else if (opts.mode === 'date') {
+    var from = opts.from ? opts.from + 'T00:00:00Z' : null;
+    var to   = opts.to   ? opts.to   + 'T23:59:59Z' : null;
+    if (from) {
+      while (start < _trendsAllLabels.length && _trendsAllLabels[start] < from) start++;
+    }
+    if (to) {
+      end = _trendsAllLabels.length;
+      while (end > start && _trendsAllLabels[end - 1] > to) end--;
+    }
+    localStorage.setItem('pv-trends-date-from', opts.from || '');
+    localStorage.setItem('pv-trends-date-to',   opts.to   || '');
+    localStorage.removeItem('pv-trends-range');
+    document.querySelectorAll('.trends-range-btn').forEach(function(b){ b.classList.remove('active'); });
+    if (start >= end) return;
+  }
+  Object.keys(_trendsChartRefs).forEach(function(id) {
+    ${hasVbw ? "if (id === 'chart-velocity-weekly') return;" : ''}
+    var ch = _trendsChartRefs[id]; if (!ch._allData) return;
+    ch.data.labels = _trendsAllLabels.slice(start, end);
+    ch.data.datasets.forEach(function(ds, i){
+      if (ds._isRefLine) { ds.data = new Array(end - start).fill(2.0); return; }
+      ds.data = ch._allData[i].slice(start, end);
+    });
+    ch.update('none');
+  });
 }
 function setTrendsRange(btn, range) {
   document.querySelectorAll('.trends-range-btn').forEach(function(b){ b.classList.remove('active'); });
   btn.classList.add('active');
-  localStorage.setItem('pv-trends-range', range);
-  var n = range === 'all' ? _trendsAllLabels.length : Math.min(Number(range), _trendsAllLabels.length);
-  Object.keys(_trendsChartRefs).forEach(function(id) {
-    ${hasVbw ? "if (id === 'chart-velocity-weekly') return;" : ''}
-    var ch = _trendsChartRefs[id]; if (!ch._allData) return;
-    ch.data.labels = _trendsAllLabels.slice(-n);
-    ch.data.datasets.forEach(function(ds, i){ ds.data = ch._allData[i].slice(-n); });
-    ch.update('none');
-  });
+  localStorage.setItem('pv-trends-range', range === 'all' ? 'all' : String(range));
+  localStorage.removeItem('pv-trends-date-from');
+  localStorage.removeItem('pv-trends-date-to');
+  var fi = document.getElementById('trends-date-from');
+  var ti = document.getElementById('trends-date-to');
+  if (fi) fi.value = '';
+  if (ti) ti.value = '';
+  applyTrendsFilter({mode:'count', n:range});
 }
 // AC-0594: update trend chart axis colours on theme switch
 // BUG-0249: tc/gc fallbacks match light theme's --text-mute / --border, since

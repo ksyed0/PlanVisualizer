@@ -491,3 +491,5 @@ Input Tokens column = direct input + cache-write tokens; cost computed with dist
 | 2026-04-30 | 47924ede-2d1d-4ab1-957d-ed58a83b0f65 | session-34-close                                   | 4314380      | 356276        | 91767151          | 49.0527  |
 | 2026-04-30 | 47924ede-2d1d-4ab1-957d-ed58a83b0f65 | session-34-close                                   | 4316122      | 362672        | 92587509          | 49.4013  |
 | 2026-04-30 | 47924ede-2d1d-4ab1-957d-ed58a83b0f65 | session-34-close                                   | 4319333      | 362732        | 92998553          | 49.5375  |
+| 2026-05-01 | bce3a31d-dfe1-405c-8136-9c2089653002 | bugfix/BUG-0252-stash-recovery                     | 4672351      | 435827        | 172960069         | 75.9461  |
+| 2026-05-02 | bce3a31d-dfe1-405c-8136-9c2089653002 | bugfix/BUG-0252-stash-recovery                     | 5618429      | 447585        | 179442327         | 81.6144  |
