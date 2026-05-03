@@ -51,15 +51,75 @@ describe('migrate-config: plan-visualizer.config.json', () => {
     expect(migrated.docs.releasePlan).toBe('docs/RELEASE_PLAN.md');
   });
 
-  test('idempotent: second run reports no changes', () => {
+  test('idempotent: second run reports no changes when all fields present', () => {
     const dir = tmpDir();
     const file = path.join(dir, 'plan-visualizer.config.json');
-    fs.writeFileSync(file, JSON.stringify({ docs: { lessons: 'my/custom/LESSONS.md' } }));
+    // Fully-migrated config — all v2.1.0 fields already present
+    fs.writeFileSync(
+      file,
+      JSON.stringify({
+        docs: { lessons: 'my/custom/LESSONS.md' },
+        costs: { tshirtHours: { XS: 2, S: 4, M: 8, L: 16, XL: 32 } },
+        github: {
+          enabled: false,
+          repo: 'owner/repo',
+          syncBugs: true,
+          syncStories: false,
+          labelMap: { Critical: 'critical', High: 'high', Medium: 'medium', Low: 'low' },
+          defaultLabels: ['planvisualizer'],
+        },
+      }),
+    );
 
     const result = migratePlanVisualizerConfig(file);
     expect(result.changed).toBe(false);
     // User's custom path preserved:
     expect(JSON.parse(fs.readFileSync(file, 'utf8')).docs.lessons).toBe('my/custom/LESSONS.md');
+  });
+
+  test('adds github block and XS tshirt hour to sparse config', () => {
+    const dir = tmpDir();
+    const file = path.join(dir, 'plan-visualizer.config.json');
+    fs.writeFileSync(file, JSON.stringify({ docs: { lessons: 'docs/LESSONS.md' } }));
+
+    const result = migratePlanVisualizerConfig(file);
+    expect(result.changed).toBe(true);
+    expect(result.additions).toContain('github.enabled');
+    expect(result.additions).toContain('costs.tshirtHours.XS');
+    const migrated = JSON.parse(fs.readFileSync(file, 'utf8'));
+    expect(migrated.github.enabled).toBe(false);
+    expect(migrated.github.syncBugs).toBe(true);
+    expect(migrated.github.syncStories).toBe(false);
+    expect(migrated.costs.tshirtHours.XS).toBe(2);
+  });
+
+  test('preserves custom github config values', () => {
+    const dir = tmpDir();
+    const file = path.join(dir, 'plan-visualizer.config.json');
+    fs.writeFileSync(
+      file,
+      JSON.stringify({
+        docs: { lessons: 'docs/LESSONS.md' },
+        costs: { tshirtHours: { XS: 2, S: 4, M: 8, L: 16, XL: 32 } },
+        github: {
+          enabled: true,
+          repo: 'myorg/myrepo',
+          syncBugs: true,
+          syncStories: true,
+          labelMap: { Critical: 'p0', High: 'p1', Medium: 'p2', Low: 'p3' },
+          defaultLabels: ['pv', 'auto'],
+        },
+      }),
+    );
+
+    const result = migratePlanVisualizerConfig(file);
+    expect(result.changed).toBe(false);
+    const migrated = JSON.parse(fs.readFileSync(file, 'utf8'));
+    // User values preserved — not overwritten by migration defaults
+    expect(migrated.github.enabled).toBe(true);
+    expect(migrated.github.repo).toBe('myorg/myrepo');
+    expect(migrated.github.syncStories).toBe(true);
+    expect(migrated.github.labelMap.Critical).toBe('p0');
   });
 
   test('skips gracefully when file absent', () => {

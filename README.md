@@ -1,12 +1,23 @@
 # PlanVisualizer
 
-A self-contained project dashboard for Claude Code projects. Parses your `RELEASE_PLAN.md`, `TEST_CASES.md`, `BUGS.md`, `AI_COST_LOG.md`, `LESSONS.md`, coverage JSON, and `progress.md` into a static `plan-status.html` with seven tabs:
+A self-contained project dashboard for Claude Code projects. Parses your `RELEASE_PLAN.md`, `TEST_CASES.md`, `BUGS.md`, `AI_COST_LOG.md`, `LESSONS.md`, coverage JSON, and `progress.md` into a static `plan-status.html` with ten tabs:
 
-**Hierarchy · Kanban · Traceability · Status · Charts · Trends · Costs · Bugs · Lessons · Stakeholder**
+**Hierarchy · Kanban · Traceability · Status · Charts · Trends · Costs · Bugs · Lessons · Stakeholder · Settings**
 
 Press `⌘K` / `Ctrl+K` to open the global search modal and jump to any story, bug, or lesson by ID or keyword.
 
 No runtime dependencies — Node.js and git only.
+
+---
+
+## What's New in v2.1.0
+
+- **Trends Date-Range Picker** — `From` / `To` date inputs sit beside the existing All / 90d / 30d / 7d preset buttons. Selecting a date range filters all trend charts to snapshots within that window. Both modes persist to `localStorage` and restore on page load. The weekly velocity chart is excluded (ISO week axis).
+- **Hierarchy Risk UI** — Epics are pre-sorted by aggregate risk score descending. Story rows carry `data-risk-score` and `data-risk-level` attributes. A **Sort by Risk ↓** button sorts story rows within each epic by score. A **Risk Level** select (All / High+ / Critical) hides/shows epic blocks. Epic headers show an aggregate risk badge for non-Done epics. The Avg Risk Score trend chart gains a dashed **High threshold** reference line at y = 2.0.
+- **Agentic Dashboard Lap Strip** — Completed cycles render as 32 px segmented phase bars proportional to per-phase durations. Hover shows `Cycle #N · elapsed · Xd ago`. Click opens a per-phase timing dialog. Failed cycles highlight in risk colour.
+- **Cycle Completion Animation** — On `cycle-complete`: phase blocks flash green (300 ms), a green sweep overlay crosses the conductor header (600 ms), and the dispatch counter flips (150 ms).
+- **Telemetry Row** — Conductor section now shows AVG CYCLE TIME · CYCLES TODAY · INCIDENTS · SUCCESS RATE derived from the `cycles[]` array.
+- **Settings Tab** — A new ⚙ Settings sidebar tab lets you configure and enable/disable GitHub Issues Sync (EPIC-0025, coming in v2.2) without editing the config file manually. Shows current config values, last sync summary, token status, and a **Copy config JSON** button.
 
 ---
 
@@ -67,21 +78,29 @@ and prompt for historical data backfill (if project data exists).
 
 After installation, edit `plan-visualizer.config.json` in your project root:
 
-| Key                    | Default                                 | Description                                     |
-| ---------------------- | --------------------------------------- | ----------------------------------------------- |
-| `project.name`         | `"My Project"`                          | Display name shown in the dashboard title       |
-| `project.tagline`      | `"A short description."`                | Subtitle shown in the dashboard header          |
-| `project.githubUrl`    | `""`                                    | GitHub repository URL shown in the About dialog |
-| `docs.releasePlan`     | `"docs/RELEASE_PLAN.md"`                | Path to release plan (EPICs, stories, tasks)    |
-| `docs.testCases`       | `"docs/TEST_CASES.md"`                  | Path to test cases                              |
-| `docs.bugs`            | `"docs/BUGS.md"`                        | Path to bug log                                 |
-| `docs.costLog`         | `"docs/AI_COST_LOG.md"`                 | Path to AI cost ledger                          |
-| `docs.lessons`         | `"docs/LESSONS.md"`                     | Path to lessons log (surfaced in Lessons tab)   |
-| `docs.outputDir`       | `"docs"`                                | Directory where `plan-status.html` is written   |
-| `coverage.summaryPath` | `"docs/coverage/coverage-summary.json"` | Path to Jest `coverage-summary.json`            |
-| `progress.path`        | `"progress.md"`                         | Path to session progress log                    |
-| `costs.hourlyRate`     | `100`                                   | Hourly rate (USD) for projected cost estimates  |
-| `costs.tshirtHours`    | `{XS:2, S:4, M:8, L:16, XL:32}`         | Hours per t-shirt size estimate                 |
+| Key                    | Default                                 | Description                                                             |
+| ---------------------- | --------------------------------------- | ----------------------------------------------------------------------- |
+| `project.name`         | `"My Project"`                          | Display name shown in the dashboard title                               |
+| `project.tagline`      | `"A short description."`                | Subtitle shown in the dashboard header                                  |
+| `project.githubUrl`    | `""`                                    | GitHub repository URL shown in the About dialog                         |
+| `docs.releasePlan`     | `"docs/RELEASE_PLAN.md"`                | Path to release plan (EPICs, stories, tasks)                            |
+| `docs.testCases`       | `"docs/TEST_CASES.md"`                  | Path to test cases                                                      |
+| `docs.bugs`            | `"docs/BUGS.md"`                        | Path to bug log                                                         |
+| `docs.costLog`         | `"docs/AI_COST_LOG.md"`                 | Path to AI cost ledger                                                  |
+| `docs.lessons`         | `"docs/LESSONS.md"`                     | Path to lessons log (surfaced in Lessons tab)                           |
+| `docs.outputDir`       | `"docs"`                                | Directory where `plan-status.html` is written                           |
+| `coverage.summaryPath` | `"docs/coverage/coverage-summary.json"` | Path to Jest `coverage-summary.json`                                    |
+| `progress.path`        | `"progress.md"`                         | Path to session progress log                                            |
+| `costs.hourlyRate`     | `100`                                   | Hourly rate (USD) for projected cost estimates                          |
+| `costs.tshirtHours`    | `{XS:2, S:4, M:8, L:16, XL:32}`         | Hours per t-shirt size estimate                                         |
+| `github.enabled`       | `false`                                 | Enable GitHub Issues sync (requires `GITHUB_TOKEN` env var)             |
+| `github.repo`          | `"owner/repo"`                          | GitHub repository to sync with (e.g. `"ksyed0/PlanVisualizer"`)         |
+| `github.syncBugs`      | `true`                                  | Sync BUGS.md entries ↔ GitHub Issues                                    |
+| `github.syncStories`   | `false`                                 | Sync RELEASE_PLAN.md stories ↔ GitHub Issues (opt-in)                   |
+| `github.labelMap`      | `{Critical,High,Medium,Low}`            | Maps PlanVisualizer severity → GitHub label name                        |
+| `github.defaultLabels` | `["planvisualizer"]`                    | Labels added to every created Issue; also used to filter inbound Issues |
+
+> **GitHub sync token:** Set `GITHUB_TOKEN` as an environment variable — never put it in the config file. The Settings tab in `plan-status.html` shows `✓ Set` / `✗ Not set` at generation time and provides a **Copy config JSON** button to export your current settings.
 
 All paths are relative to the project root. If no config file is present, built-in defaults are used.
 
@@ -171,7 +190,16 @@ The script is idempotent — it is safe to re-run at any time. If you have exist
 
 **Config schema migration runs automatically** on every install/upgrade — `tools/migrate-config.js` adds any required fields introduced in newer versions (e.g. `docs.lessons`, `agents.<name>.avatar`) to your existing `plan-visualizer.config.json` and `agents.config.json` without touching values you've already set. Preview what would change with `npm run plan:migrate-config:dry`; apply manually with `npm run plan:migrate-config`. Safe to re-run.
 
-As of v2.0.0, `agents.config.json` supports two new top-level sections: `project` (name, description, repoUrl, startDate) and `phases` (array of pipeline phase definitions). Agent colours migrate from hex to oklch values automatically (e.g. `"color": "oklch(52% 0.22 25)"`). Run `tools/migrate-config.js` once after upgrading — it is idempotent and safe to re-run.
+**v2.1.0 migrations (applied automatically):**
+
+- `plan-visualizer.config.json` gains a `github` block (`enabled: false` by default) — opt-in GitHub Issues sync config.
+- `costs.tshirtHours.XS` defaults to `2` if absent.
+
+**v2.0.0 migrations (applied automatically):**
+
+- `agents.config.json` gains `project` (name, description, repoUrl, startDate) and `phases` sections. Agent colours migrate from hex to oklch values automatically (e.g. `"color": "oklch(52% 0.22 25)"`).
+
+Run `npm run plan:migrate-config` once after upgrading — it is idempotent and safe to re-run.
 
 **Historical data:** When updating, the install script will ask "Would you like to estimate historical data? (y/n)" — answering yes runs a 30-day backfill to populate trend charts immediately with simulated historical data. Answering no lets history build naturally from real generations.
 

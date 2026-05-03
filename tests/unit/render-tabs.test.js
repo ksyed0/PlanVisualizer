@@ -1,5 +1,10 @@
 'use strict';
-const { renderStakeholderTab, renderTrendsTab, renderStatusTab } = require('../../tools/lib/render-tabs');
+const {
+  renderStakeholderTab,
+  renderTrendsTab,
+  renderStatusTab,
+  renderHierarchyTab,
+} = require('../../tools/lib/render-tabs');
 
 // Minimal but complete data fixture for stakeholder tab tests
 const mkData = (overrides = {}) => ({
@@ -588,5 +593,230 @@ describe('renderStatusTab — BUG-0183 hero prominence', () => {
 
   test('BUG-0183: forecast unavailable message shown when comp is null', () => {
     expect(htmlNoTrends).toContain('Forecast unavailable');
+  });
+});
+
+describe('renderTrendsTab — US-0056 date-range filter', () => {
+  const dates = [
+    '2026-04-01T10:00:00Z',
+    '2026-04-05T10:00:00Z',
+    '2026-04-10T10:00:00Z',
+    '2026-04-15T10:00:00Z',
+    '2026-04-20T10:00:00Z',
+  ];
+
+  it('renders trends-date-from and trends-date-to inputs in filter bar', () => {
+    const html = renderTrendsTab(makeData({ dates }));
+    expect(html).toContain('id="trends-date-from"');
+    expect(html).toContain('id="trends-date-to"');
+  });
+
+  it('date inputs are type="date"', () => {
+    const html = renderTrendsTab(makeData({ dates }));
+    const matches = html.match(/type="date"/g);
+    expect(matches).toBeTruthy();
+    expect(matches.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('filter bar contains both preset buttons and date inputs', () => {
+    const html = renderTrendsTab(makeData({ dates }));
+    expect(html).toContain('trends-range-btn');
+    expect(html).toContain('trends-date-from');
+  });
+
+  it('applyTrendsFilter JS function is emitted in the script block', () => {
+    const html = renderTrendsTab(makeData({ dates }));
+    expect(html).toContain('function applyTrendsFilter(');
+  });
+
+  it('setTrendsRange calls applyTrendsFilter in count mode', () => {
+    const html = renderTrendsTab(makeData({ dates }));
+    expect(html).toContain('applyTrendsFilter({');
+    expect(html).toContain("mode:'count'");
+  });
+
+  it('date input oninput calls applyTrendsFilter in date mode', () => {
+    const html = renderTrendsTab(makeData({ dates }));
+    expect(html).toContain("mode:'date'");
+  });
+
+  it('chart-velocity-weekly is skipped in applyTrendsFilter', () => {
+    const html = renderTrendsTab(makeData({ dates }));
+    const fnStart = html.indexOf('function applyTrendsFilter(');
+    const fnEnd = html.indexOf('\nfunction ', fnStart + 1);
+    const fnBody = fnEnd > 0 ? html.slice(fnStart, fnEnd) : html.slice(fnStart);
+    expect(fnBody).toContain('chart-velocity-weekly');
+  });
+
+  function makeData({ dates }) {
+    const n = dates.length;
+    return {
+      trends: {
+        dates,
+        doneCounts: Array(n).fill(0),
+        totalStories: Array(n).fill(0),
+        aiCosts: Array(n).fill(0),
+        coverage: Array(n).fill(0),
+        velocity: Array(n).fill(0),
+        openBugs: Array(n).fill(0),
+        atRisk: Array(n).fill(0),
+        inputTokens: Array(n).fill(0),
+        outputTokens: Array(n).fill(0),
+        avgRisk: Array(n).fill(0),
+        velocityByWeek: {
+          labels: ['2026-W14', '2026-W15'],
+          points: [2, 3],
+          rollingAvg: [2, 2.5],
+        },
+      },
+    };
+  }
+});
+
+describe('renderHierarchyTab — US-0169 risk UI', () => {
+  function makeRiskData() {
+    const byStory = new Map([
+      ['US-0001', { score: 3.2, level: 'Critical' }],
+      ['US-0002', { score: 1.5, level: 'Medium' }],
+      ['US-0003', { score: 2.5, level: 'High' }],
+    ]);
+    const byEpic = new Map([
+      ['EPIC-0001', { avgScore: 2.4, maxScore: 3.2, level: 'High', counts: {} }],
+      ['EPIC-0002', { avgScore: 0.3, maxScore: 0.5, level: 'Low', counts: {} }],
+    ]);
+    return { byStory, byEpic };
+  }
+
+  function makeData() {
+    return {
+      epics: [
+        { id: 'EPIC-0001', title: 'Alpha', status: 'In Progress', releaseTarget: 'R1', startDate: '', doneDate: '' },
+        { id: 'EPIC-0002', title: 'Beta', status: 'In Progress', releaseTarget: 'R1', startDate: '', doneDate: '' },
+      ],
+      stories: [
+        {
+          id: 'US-0001',
+          epicId: 'EPIC-0001',
+          title: 'S1',
+          status: 'In Progress',
+          priority: 'P0',
+          estimate: 'M',
+          acs: [],
+          description: '',
+        },
+        {
+          id: 'US-0002',
+          epicId: 'EPIC-0001',
+          title: 'S2',
+          status: 'Planned',
+          priority: 'P1',
+          estimate: 'S',
+          acs: [],
+          description: '',
+        },
+        {
+          id: 'US-0003',
+          epicId: 'EPIC-0002',
+          title: 'S3',
+          status: 'In Progress',
+          priority: 'P0',
+          estimate: 'L',
+          acs: [],
+          description: '',
+        },
+      ],
+      testCases: [],
+      atRisk: {},
+      costs: {},
+      risk: makeRiskData(),
+      completion: null,
+    };
+  }
+
+  it('AC-0601: story rows have data-risk-score attribute', () => {
+    const html = renderHierarchyTab(makeData());
+    expect(html).toContain('data-risk-score="3.2"');
+    expect(html).toContain('data-risk-score="1.5"');
+  });
+
+  it('AC-0601: story rows have data-risk-level attribute', () => {
+    const html = renderHierarchyTab(makeData());
+    expect(html).toContain('data-risk-level="Critical"');
+    expect(html).toContain('data-risk-level="Medium"');
+  });
+
+  it('AC-0601: Sort by Risk button present in Hierarchy tab', () => {
+    const html = renderHierarchyTab(makeData());
+    expect(html).toContain('sortHierarchyByRisk');
+  });
+
+  it('AC-0603: epic block for EPIC-0001 shows risk badge with level and avgScore', () => {
+    const html = renderHierarchyTab(makeData());
+    expect(html).toContain('High');
+    expect(html).toContain('2.4');
+  });
+
+  it('AC-0604: EPIC-0001 (avgScore 2.4) appears before EPIC-0002 (avgScore 0.3)', () => {
+    const html = renderHierarchyTab(makeData());
+    const pos1 = html.indexOf('EPIC-0001');
+    const pos2 = html.indexOf('EPIC-0002');
+    expect(pos1).toBeGreaterThan(-1);
+    expect(pos2).toBeGreaterThan(-1);
+    expect(pos1).toBeLessThan(pos2);
+  });
+
+  it('AC-0605: hier-risk-filter select is present', () => {
+    const html = renderHierarchyTab(makeData());
+    expect(html).toContain('id="hier-risk-filter"');
+  });
+
+  it('AC-0605: epic blocks have data-epic-risk-level attribute', () => {
+    const html = renderHierarchyTab(makeData());
+    expect(html).toContain('data-epic-risk-level="High"');
+    expect(html).toContain('data-epic-risk-level="Low"');
+  });
+
+  it('AC-0603: no risk badge for Done epics', () => {
+    const data = makeData();
+    data.epics[0].status = 'Done';
+    const html = renderHierarchyTab(data);
+    const ep1Start = html.indexOf('EPIC-0001');
+    const ep2Start = html.indexOf('EPIC-0002');
+    const ep1Section = html.slice(ep1Start, ep2Start > ep1Start ? ep2Start : html.length);
+    expect(ep1Section).not.toContain('2.4');
+  });
+
+  it('AC-0601: story rows in column view have data-risk-score for client-side sort', () => {
+    const html = renderHierarchyTab(makeData());
+    // Each story row container should be targetable for sort — story rows need the attribute
+    const matches = html.match(/data-risk-score="[^"]+"/g);
+    expect(matches).toBeTruthy();
+    expect(matches.length).toBeGreaterThanOrEqual(3); // 3 stories in makeData
+  });
+
+  it('AC-0601: sortHierarchyByRisk targets story rows within epic-stories containers', () => {
+    const html = renderHierarchyTab(makeData());
+    // JS function should reference epic-stories containers and .story-row
+    expect(html).toContain('epic-stories-');
+    expect(html).toContain('.story-row');
+  });
+
+  it('AC-0602: chart-trends-avg-risk has High threshold dataset with _isRefLine', () => {
+    const trendsData = {
+      dates: ['2026-04-01T00:00:00Z', '2026-04-02T00:00:00Z'],
+      done: [0, 1],
+      total: [2, 2],
+      cost: [0, 0],
+      coverage: [80, 85],
+      velocity: [0, 1],
+      bugs: [1, 0],
+      atRisk: [0, 0],
+      inputTokens: [0, 0],
+      outputTokens: [0, 0],
+      avgRisk: [1.5, 1.8],
+    };
+    const html = renderTrendsTab(trendsData);
+    expect(html).toContain('High threshold');
+    expect(html).toContain('_isRefLine:true');
   });
 });

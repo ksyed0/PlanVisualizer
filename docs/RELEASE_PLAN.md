@@ -1437,14 +1437,14 @@ Dependencies: US-0066
 US-0169 (EPIC-0010): As a project manager, I want sort, filter, and threshold UI enhancements for risk analytics, so that I can quickly surface the highest-risk stories and epics in the Hierarchy tab.
 Priority: Low (P2)
 Estimate: M
-Status: Planned
-Branch:
+Status: Done
+Branch: feature/US-0169-hierarchy-risk-ui
 Acceptance Criteria:
-  - [ ] AC-0601: Stories can be sorted by risk score descending in the Hierarchy tab (deferred from AC-0190)
-  - [ ] AC-0602: Risk trend chart shows a horizontal reference line at 2.0 (High threshold) (deferred from AC-0193)
-  - [ ] AC-0603: Hierarchy tab epic headers display a risk indicator badge matching the epic's aggregate risk score (deferred from AC-0201)
-  - [ ] AC-0604: Epics are sorted by risk score descending by default within tabs that show epics (deferred from AC-0202)
-  - [ ] AC-0605: A filter in the Hierarchy tab allows showing only High/Critical risk epics (deferred from AC-0203)
+  - [x] AC-0601: Stories can be sorted by risk score descending in the Hierarchy tab (deferred from AC-0190)
+  - [x] AC-0602: Risk trend chart shows a horizontal reference line at 2.0 (High threshold) (deferred from AC-0193)
+  - [x] AC-0603: Hierarchy tab epic headers display a risk indicator badge matching the epic's aggregate risk score (deferred from AC-0201)
+  - [x] AC-0604: Epics are sorted by risk score descending by default within tabs that show epics (deferred from AC-0202)
+  - [x] AC-0605: A filter in the Hierarchy tab allows showing only High/Critical risk epics (deferred from AC-0203)
 Dependencies: US-0064, US-0065, US-0067
 ```
 
@@ -1642,15 +1642,15 @@ Acceptance Criteria:
 US-0056 (EPIC-0024): As a user, I want to filter trend charts by date range, so that I can focus on specific time periods.
 Priority: Medium (P1)
 Estimate: S
-Status: Planned
-Branch:
+Status: Done
+Branch: feature/US-0056-trends-date-range
 Acceptance Criteria:
 
-- [ ] AC-0606: A From and To date input appear in the Trends filter bar beside the preset buttons
-- [ ] AC-0607: Selecting a date range filters all trend charts to snapshots within that window
-- [ ] AC-0608: Clicking a preset button (All/90d/30d/7d) clears the date inputs and restores count-based slicing
-- [ ] AC-0609: Date range selection persists in localStorage and is restored on next page load
-- [ ] AC-0610: The chart-velocity-weekly chart is excluded from date-range filtering
+- [x] AC-0606: A From and To date input appear in the Trends filter bar beside the preset buttons
+- [x] AC-0607: Selecting a date range filters all trend charts to snapshots within that window
+- [x] AC-0608: Clicking a preset button (All/90d/30d/7d) clears the date inputs and restores count-based slicing
+- [x] AC-0609: Date range selection persists in localStorage and is restored on next page load
+- [x] AC-0610: The chart-velocity-weekly chart is excluded from date-range filtering
       Dependencies: US-0055
 
 ```
@@ -2652,13 +2652,13 @@ Dependencies: EPIC-0016
 US-0116 (EPIC-0019): As a user, I want a lap-history strip beneath the current cycle showing the last 10 completed cycles, so that I can see operational tempo and open any past cycle for phase-timing details.
 Priority: Medium (P1)
 Estimate: M
-Status: Planned
+Status: Done
 Branch: feature/US-0116-lap-history-strip
 Acceptance Criteria:
-  - [ ] AC-0388: docs/sdlc-status.json schema gains a cycles[] array: {id, implementationTarget, startedAt, endedAt, phaseTimings, outcome, incidents}; retention keeps the last 50
-  - [ ] AC-0389: Tier B renders a 32px-tall horizontal strip of the last 10 cycles as mini segmented bars (one segment per phase, matching the 6-phase canonical pipeline from US-0115)
-  - [ ] AC-0390: Hovering a bar shows a tooltip ("Cycle N · US-XXXX · HH:MM · Xd ago"); failed phases render red segments
-  - [ ] AC-0391: Clicking a bar opens a cycle-detail popover with per-phase timings and outcome
+  - [x] AC-0388: docs/sdlc-status.json schema gains a cycles[] array: {id, implementationTarget, startedAt, endedAt, phaseTimings, outcome, incidents}; retention keeps the last 50
+  - [x] AC-0389: Tier B renders a 32px-tall horizontal strip of the last 10 cycles as mini segmented bars (one segment per phase, matching the 6-phase canonical pipeline from US-0115)
+  - [x] AC-0390: Hovering a bar shows a tooltip ("Cycle N · US-XXXX · HH:MM · Xd ago"); failed phases render red segments
+  - [x] AC-0391: Clicking a bar opens a cycle-detail popover with per-phase timings and outcome
 Dependencies: US-0115
 ```
 
@@ -2666,13 +2666,13 @@ Dependencies: US-0115
 US-0117 (EPIC-0019): As a user, I want a telemetry row summarizing aggregate cycle performance plus a satisfying animation when a cycle completes, so that the dashboard reinforces the "machine that keeps running" feel.
 Priority: Medium (P2)
 Estimate: S
-Status: Planned
-Branch: feature/US-0117-telemetry-and-completion
+Status: Done
+Branch: feature/US-0117-telemetry-completion
 Acceptance Criteria:
-  - [ ] AC-0392: Tier C row shows "AVG CYCLE TIME · CYCLES TODAY · INCIDENTS · SUCCESS RATE" in Departure Mono tracked-out muted text
-  - [ ] AC-0393: Values are derived from cycles[] aggregation in sdlc-status.json
-  - [ ] AC-0394: On cycle completion the dashboard plays a phase-6 flash, green sweep left-to-right, cycle-counter flip, and a new lap-bar push into Tier B
-  - [ ] AC-0395: A 200ms ascending audio chime plays on cycle completion (respects user's alert-mute preference)
+  - [x] AC-0392: Tier C row shows "AVG CYCLE TIME · CYCLES TODAY · INCIDENTS · SUCCESS RATE" in Departure Mono tracked-out muted text
+  - [x] AC-0393: Values are derived from cycles[] aggregation in sdlc-status.json
+  - [x] AC-0394: On cycle completion the dashboard plays a phase-6 flash, green sweep left-to-right, cycle-counter flip, and a new lap-bar push into Tier B
+  - [ ] AC-0395: A 200ms ascending audio chime plays on cycle completion (respects user's alert-mute preference) — deferred: requires alert-mute preference story
 Dependencies: US-0115, US-0116
 ```
 
