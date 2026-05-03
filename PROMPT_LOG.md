@@ -4,6 +4,14 @@ Timestamped log of every user prompt across all sessions. Append-only. Never edi
 
 ---
 
+## Session 37 — 2026-05-03
+
+| #   | Timestamp            | Prompt                                                                                                                                                                                                                                                                                                                                    |
+| --- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | 2026-05-03T00:00:00Z | Clean up stale local branches and worktrees, then read AGENTS.md, MEMORY.md, PROMPT_LOG.md. Goals: A — EPIC-0024 backlog closure (US-0056 Trends date-range, US-0169 Hierarchy risk UI, US-0116/0117 lap-history if time permits); B — Brainstorm EPIC-0025; C — Dependency audit (chart.js undeclared dep discovered at v2.0.0 release). |
+
+---
+
 ## Session 36 — 2026-05-01 (continued from Session 35 in same conversation)
 
 | #   | Timestamp            | Prompt                                                                                                                                                                                                                                                                                           |
