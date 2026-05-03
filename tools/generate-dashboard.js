@@ -545,6 +545,32 @@ function generateHTML(status) {
   }
   .cycle-counter .cycle-elapsed::before { content: 'ELAPSED '; color: var(--text-dim); margin-right: 6px; }
 
+  @keyframes pvPhaseFlash {
+    0%   { background: var(--ok, oklch(65% 0.18 142)); opacity: 1; }
+    100% { opacity: 1; }
+  }
+  @keyframes pvSweep {
+    0%   { transform: scaleX(0); transform-origin: left; opacity: 0.45; }
+    60%  { transform: scaleX(1); transform-origin: left; opacity: 0.35; }
+    100% { transform: scaleX(1); transform-origin: left; opacity: 0; }
+  }
+  @keyframes pvFlip {
+    0%   { transform: translateY(0); opacity: 1; }
+    45%  { transform: translateY(-100%); opacity: 0; }
+    55%  { transform: translateY(100%); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+  .pv-phase-flash { animation: pvPhaseFlash 0.3s ease-out; }
+  .pv-sweep-overlay {
+    position: absolute;
+    inset: 0;
+    background: var(--ok, oklch(65% 0.18 142));
+    animation: pvSweep 0.6s ease-out forwards;
+    pointer-events: none;
+    border-radius: inherit;
+  }
+  .pv-flip { animation: pvFlip 0.15s ease-in-out; }
+
   .pipeline {
     display: flex;
     align-items: stretch;
@@ -1838,6 +1864,7 @@ function generateHTML(status) {
     align-items: center;
     gap: 10px;
     margin-bottom: 10px;
+    position: relative;
   }
   .mc-conductor-portrait { width: 32px; height: 32px; border-radius: 50%; overflow: hidden; border: 1px solid oklch(45% 0.15 264 / 35%); flex-shrink: 0; }
   .mc-conductor-portrait img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
@@ -3195,6 +3222,35 @@ function _agentStatusColors(stat) {
 function patchDOM(status) {
   if (!status || typeof status !== 'object') return;
 
+  // --- US-0117: cycle-complete animation ------------------------------------
+  var msg = status;
+  if (msg.type === 'cycle-complete') {
+    // 1. Flash all phase blocks green for 300ms
+    document.querySelectorAll('.phase-block').forEach(function(el) {
+      el.classList.remove('pv-phase-flash');
+      void el.offsetWidth; // force reflow to restart animation
+      el.classList.add('pv-phase-flash');
+    });
+    // 2. Green sweep overlay on conductor header
+    var hdr = document.getElementById('mc-conductor-dispatch');
+    if (hdr) {
+      var overlay = document.createElement('div');
+      overlay.className = 'pv-sweep-overlay';
+      hdr.appendChild(overlay);
+      setTimeout(function() {
+        if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+      }, 700);
+    }
+    // 3. Flip animation on cycle dispatch counter
+    var ctr = document.getElementById('conductor-dispatch-count');
+    if (ctr) {
+      ctr.classList.remove('pv-flip');
+      void ctr.offsetWidth;
+      ctr.classList.add('pv-flip');
+    }
+    return;
+  }
+
   // --- Project identity (US-0128) ------------------------------------------
   var proj = status.project;
   if (proj) {
@@ -3258,7 +3314,6 @@ function patchDOM(status) {
         var total = Object.values(c.phaseDurations || {}).reduce(function(a, b) { return a + b; }, 0);
         return sum + total;
       }, 0) / cycles.length;
-      var avgMin = Math.round(avgTotalSec / 60);
       var today = new Date().toDateString();
       var cyclesToday = cycles.filter(function(c) { return c.completedAt && new Date(c.completedAt).toDateString() === today; }).length;
       var successRate = cycles.length > 0 ? Math.round((cycles.filter(function(c) { return c.outcome === 'success' || (c.outcome === undefined && (c.testsFailed || 0) === 0); }).length / cycles.length) * 100) : 0;
@@ -3309,11 +3364,6 @@ function patchDOM(status) {
           + 'style="display:flex;border-radius:4px;overflow:hidden;cursor:pointer;min-width:64px;max-width:120px;flex-shrink:0">'
           + segments + '</div>';
       }).join('');
-      if (cycles.length > prevLen && prevLen > 0 && typeof playBeep === 'function') {
-        playBeep(523, 0.15);
-        setTimeout(function() { playBeep(659, 0.15); }, 150);
-        setTimeout(function() { playBeep(784, 0.2); }, 300);
-      }
       lapStrip.setAttribute('data-cycle-count', String(cycles.length));
       window.openCycleDetail = function(id) {
           var c = cycles.find(function(x){ return x.id === id; });
