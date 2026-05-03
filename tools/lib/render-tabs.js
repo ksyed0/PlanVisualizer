@@ -431,9 +431,9 @@ function renderTrendsTab(data, options = {}) {
       <button class="trends-range-btn" data-range="30" onclick="setTrendsRange(this,30)">30d</button>
       <button class="trends-range-btn" data-range="7" onclick="setTrendsRange(this,7)">7d</button>
       <span class="trends-date-sep" style="color:var(--clr-text-muted);font-size:11px;margin:0 4px">|</span>
-      <label style="font-size:11px;color:var(--clr-text-muted)">From</label>
+      <label for="trends-date-from" style="font-size:11px;color:var(--clr-text-muted)">From</label>
       <input type="date" id="trends-date-from" style="font-size:11px;padding:2px 4px;border:1px solid var(--clr-border);border-radius:4px;background:var(--clr-input-bg);color:var(--clr-input-text)" oninput="applyTrendsFilter({mode:'date',from:this.value,to:document.getElementById('trends-date-to').value})">
-      <label style="font-size:11px;color:var(--clr-text-muted)">To</label>
+      <label for="trends-date-to" style="font-size:11px;color:var(--clr-text-muted)">To</label>
       <input type="date" id="trends-date-to" style="font-size:11px;padding:2px 4px;border:1px solid var(--clr-border);border-radius:4px;background:var(--clr-input-bg);color:var(--clr-input-text)" oninput="applyTrendsFilter({mode:'date',from:document.getElementById('trends-date-from').value,to:this.value})">
     </div>
 
@@ -653,7 +653,7 @@ function initTrendsCharts() {
     var ti = document.getElementById('trends-date-to');
     if (fi) fi.value = savedFrom || '';
     if (ti) ti.value = savedTo || '';
-    if (savedFrom && savedTo) applyTrendsFilter({mode:'date', from:savedFrom, to:savedTo});
+    applyTrendsFilter({mode:'date', from:savedFrom || '', to:savedTo || ''});
   } else if (savedRange && savedRange !== 'all') {
     var btn = document.querySelector('.trends-range-btn[data-range="'+savedRange+'"]');
     if (btn) setTrendsRange(btn, Number(savedRange));
@@ -674,11 +674,11 @@ function applyTrendsFilter(opts) {
       end = _trendsAllLabels.length;
       while (end > start && _trendsAllLabels[end - 1] > to) end--;
     }
-    if (start >= end) return;
     localStorage.setItem('pv-trends-date-from', opts.from || '');
     localStorage.setItem('pv-trends-date-to',   opts.to   || '');
     localStorage.removeItem('pv-trends-range');
     document.querySelectorAll('.trends-range-btn').forEach(function(b){ b.classList.remove('active'); });
+    if (start >= end) return;
   }
   Object.keys(_trendsChartRefs).forEach(function(id) {
     ${hasVbw ? "if (id === 'chart-velocity-weekly') return;" : ''}
