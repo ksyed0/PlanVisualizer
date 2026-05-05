@@ -505,3 +505,4 @@ Input Tokens column = direct input + cache-write tokens; cost computed with dist
 | 2026-05-04 | 6178dad9-68de-4011-ae02-a2f52f6bcedd | feature/US-0169-hierarchy-risk-ui | 7805769 | 445569 | 158903408 | 83.6254 |
 
 > > > > > > > Stashed changes
+> > > > > > > | 2026-05-05 | 5f8d6cb4-0079-48dc-9dc3-e16774a12746 | claude/eager-clarke-c29d17 | 2836081 | 352460 | 120071231 | 51.9421 |

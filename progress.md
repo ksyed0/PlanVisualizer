@@ -4,6 +4,27 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 40 — 2026-05-05 (v2.2.0 release + BUG-0253 + branch cleanup)
+
+### What Was Done
+
+- **BUG-0253** — investigated About modal auto-close every 5 seconds; confirmed duplicate of already-fixed BUG-0104 (meta-refresh removed in prior session). Marked Fixed. PR #986 merged.
+- **Branch cleanup** — deleted all merged local and remote feature/bugfix branches from Session 39.
+- **v2.2.0 release** — cut `release/2.2.0` branch from develop, bumped to 2.2.0, PR #988 merged into main, GitHub release tagged and published.
+- **main → develop sync** — merged main back into develop to keep branches aligned.
+
+### Test Results
+
+1539 tests, 55 suites, all passing. Coverage ≥ 80%.
+
+### State at Close
+
+- 0 open bugs
+- develop == main (post v2.2.0 merge-back)
+- Next: EPIC-0026 or user-driven work
+
+---
+
 ## Session 39 — 2026-05-04/05 (EPIC-0025 GitHub Issues Sync + BUGS.md sync + install scripts)
 
 ### What Was Done
