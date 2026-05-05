@@ -190,10 +190,17 @@ if [ -f "${TARGET}/docs/dashboard.html" ]; then
   for f in tools/update-sdlc-status.js tools/init-sdlc-status.js; do
     [ -f "${REPO_ROOT}/${f}" ] && cp "${REPO_ROOT}/${f}" "${TARGET}/${f}"
   done
-  # Ensure agents.config.json exists (do not overwrite existing)
-  if [ ! -f "${TARGET}/agents.config.json" ] && [ -f "${REPO_ROOT}/agents.config.example.json" ]; then
-    cp "${REPO_ROOT}/agents.config.example.json" "${TARGET}/agents.config.json"
-    echo "[update] Created agents.config.json from example."
+  # agents.config.json — copy canonical roster if absent
+  if [ ! -f "${TARGET}/agents.config.json" ]; then
+    SRC="${REPO_ROOT}/agents.config.json"
+    [ ! -f "$SRC" ] && SRC="${REPO_ROOT}/agents.config.example.json"
+    [ -f "$SRC" ] && cp "$SRC" "${TARGET}/agents.config.json" && echo "[update] Copied agents.config.json."
+  fi
+  # docs/agents/ — always refresh instruction files + portraits (standardised assets)
+  if [ -d "${REPO_ROOT}/docs/agents" ]; then
+    mkdir -p "${TARGET}/docs/agents"
+    cp -r "${REPO_ROOT}/docs/agents/." "${TARGET}/docs/agents/"
+    echo "[update] Updated docs/agents/ (instruction files + portraits)."
   fi
   echo "[update] Agentic Dashboard files updated."
 else

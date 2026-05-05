@@ -320,37 +320,27 @@ if [ "$SETUP_AGENTS" = true ] || [ -f "${TARGET}/docs/dashboard.html" ]; then
     [ -f "${REPO_ROOT}/${f}" ] && cp "${REPO_ROOT}/${f}" "${TARGET}/${f}" && echo "[install] Copied ${f}"
   done
 
-  # agents.config.json — create from template if absent
+  # agents.config.json — copy canonical roster (agent names and portraits are
+  # standardised across all PlanVisualizer projects, not project-specific)
   AGENTS_CFG="${TARGET}/agents.config.json"
   if [ ! -f "$AGENTS_CFG" ]; then
-    if [ -f "${REPO_ROOT}/agents.config.example.json" ]; then
+    if [ -f "${REPO_ROOT}/agents.config.json" ]; then
+      cp "${REPO_ROOT}/agents.config.json" "$AGENTS_CFG"
+      echo "[install] Copied agents.config.json (canonical agent roster + phases)."
+    elif [ -f "${REPO_ROOT}/agents.config.example.json" ]; then
       cp "${REPO_ROOT}/agents.config.example.json" "$AGENTS_CFG"
-      echo "[install] Created agents.config.json from example — edit to define your agent roster."
-    else
-      # Minimal bootstrap config so init-sdlc-status.js succeeds
-      cat > "$AGENTS_CFG" <<'JSON'
-{
-  "project": {
-    "name": "My Project",
-    "description": "A short description.",
-    "repoUrl": "",
-    "startDate": ""
-  },
-  "phases": [
-    { "id": "blueprint", "label": "Blueprint", "order": 1 },
-    { "id": "architect",  "label": "Architect",  "order": 2 },
-    { "id": "build",      "label": "Build",       "order": 3 },
-    { "id": "integration","label": "Integration", "order": 4 },
-    { "id": "test",       "label": "Test",        "order": 5 },
-    { "id": "polish",     "label": "Polish",      "order": 6 }
-  ],
-  "agents": []
-}
-JSON
-      echo "[install] Created minimal agents.config.json — add agents and phases before running init."
+      echo "[install] Copied agents.config.example.json as agents.config.json."
     fi
   else
-    echo "[install] agents.config.json already exists — skipping."
+    echo "[install] agents.config.json already exists — skipping (run update.sh to refresh)."
+  fi
+
+  # docs/agents/ — instruction markdown files + portrait images
+  # These are standardised assets shared across all PlanVisualizer projects
+  if [ -d "${REPO_ROOT}/docs/agents" ]; then
+    mkdir -p "${TARGET}/docs/agents"
+    cp -r "${REPO_ROOT}/docs/agents/." "${TARGET}/docs/agents/"
+    echo "[install] Copied docs/agents/ (agent instruction files + portraits)."
   fi
 
   # Initialise sdlc-status.json if it doesn't exist
