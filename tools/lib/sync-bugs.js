@@ -13,12 +13,20 @@ function classifyBugChanges(bugs, stateEntries, ghIssues, config) {
     const state = stateMap.get(bug.id);
     const pvClosed = /^(Fixed|Retired|Cancelled)/i.test(bug.status);
 
-    if (!bug.ghIssueNumber) {
+    // Use ghIssueNumber from parsed BUGS.md, fall back to state map for bugs
+    // where writeBugIssueNumber may have written the field but parseBugs
+    // hadn't been updated yet to read it back.
+    const effectiveIssueNumber = bug.ghIssueNumber || state?.ghIssueNumber || null;
+
+    if (!effectiveIssueNumber) {
       changes.push({ action: 'create', bug });
       continue;
     }
 
-    const ghIssue = ghMap.get(bug.ghIssueNumber);
+    // Attach resolved number so downstream code can use it
+    if (!bug.ghIssueNumber) bug.ghIssueNumber = effectiveIssueNumber;
+
+    const ghIssue = ghMap.get(effectiveIssueNumber);
     if (!ghIssue) {
       changes.push({ action: 'skip', bug, reason: 'GH issue not found' });
       continue;
@@ -57,19 +65,34 @@ function classifyBugChanges(bugs, stateEntries, ghIssues, config) {
 function writeBugIssueNumber(bugId, issueNumber) {
   const bugsPath = path.join(ROOT, 'docs/BUGS.md');
   let content = fs.readFileSync(bugsPath, 'utf8');
-  const alreadyLinked = new RegExp(`${bugId}[\\s\\S]*?GH Issue:`).test(content);
-  if (alreadyLinked) return;
-  content = content.replace(
-    new RegExp(`(${bugId}:[^\\n]+\\n[\\s\\S]*?Status:[^\\n]+\\n)`),
-    `$1GH Issue: #${issueNumber}\n`,
+
+  // Extract only this bug's block (stop at next BUG- header) to avoid
+  // cross-block false-positive when checking for existing GH Issue field.
+  const blockRe = new RegExp(`(^${bugId}:.+?)(?=\\nBUG-\\d+:|\\Z)`, 'ms');
+  const blockMatch = content.match(blockRe);
+  if (!blockMatch) return;
+
+  const block = blockMatch[1];
+  if (/GH Issue:/.test(block)) return; // already linked in this block
+
+  // Find Status line and inject GH Issue after it
+  const statusRe = /^([ \t]*)(Status:[^\n]+\n)/m;
+  if (!statusRe.test(block)) return;
+  const newBlock = block.replace(
+    statusRe,
+    (_, indent, statusLine) => `${indent}${statusLine}${indent}GH Issue: #${issueNumber}\n`,
   );
+  content = content.slice(0, blockMatch.index) + newBlock + content.slice(blockMatch.index + block.length);
   fs.writeFileSync(bugsPath, content, 'utf8');
 }
 
 function updateBugStatus(bugId, newStatus) {
   const bugsPath = path.join(ROOT, 'docs/BUGS.md');
   let content = fs.readFileSync(bugsPath, 'utf8');
-  content = content.replace(new RegExp(`(${bugId}:[\\s\\S]*?)(Status:\\s*\\S+)`), `$1Status: ${newStatus}`);
+  content = content.replace(
+    new RegExp(`(^${bugId}:[^\\n]+\\n[\\s\\S]*?)(Status:\\s*\\S+)`, 'm'),
+    `$1Status: ${newStatus}`,
+  );
   fs.writeFileSync(bugsPath, content, 'utf8');
 }
 
