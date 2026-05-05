@@ -1712,14 +1712,14 @@ Dependencies: EPIC-0008, EPIC-0010, EPIC-0019
 US-0170 (EPIC-0024): As a developer, I want artefact ID sequences to support more than 9,999 entries, so that the project tracking system does not hit an artificial ceiling as the codebase grows.
 Priority: Low (P2)
 Estimate: XS
-Status: Planned
-Branch:
+Status: Done
+Branch: feature/US-0170-id-regex-variable-length
 Acceptance Criteria:
 
-- [ ] AC-0611: All parser regexes updated from \d{4} to \d+ (parse-bugs.js, parse-release-plan.js, parse-test-cases.js, parse-lessons.js, render-utils.js normalizeStoryRef, compute-risk.js \_normalizeRef)
-- [ ] AC-0612: ID_REGISTRY.md format note updated — zero-padding is cosmetic/optional beyond 4 digits
-- [ ] AC-0613: Existing 4-digit IDs are unchanged and remain valid
-- [ ] AC-0614: A new ID assigned beyond 9999 renders correctly in the dashboard (e.g. AC-10000 displays without truncation)
+- [x] AC-0611: All parser regexes updated from \d{4} to \d+ (parse-bugs.js, parse-release-plan.js, parse-test-cases.js, parse-lessons.js, render-utils.js normalizeStoryRef, compute-risk.js \_normalizeRef)
+- [x] AC-0612: ID_REGISTRY.md format note updated — zero-padding is cosmetic/optional beyond 4 digits
+- [x] AC-0613: Existing 4-digit IDs are unchanged and remain valid
+- [x] AC-0614: A new ID assigned beyond 9999 renders correctly in the dashboard (e.g. AC-10000 displays without truncation)
       Dependencies: None
 
 ```

@@ -3,13 +3,13 @@
 function parseLessons(markdown) {
   const results = [];
   // Match both "## L-0001 — title" and "## L-0001: title" formats
-  const re = /^## (L-\d{4})\s*[—:]\s*(.+)$/gm;
+  const re = /^## (L-\d+)\s*[—:]\s*(.+)$/gm;
   let match;
   while ((match = re.exec(markdown)) !== null) {
     const id = match[1];
     const title = match[2].trim();
     const startIdx = match.index;
-    const nextRe = /^## L-\d{4}/gm;
+    const nextRe = /^## L-\d+/gm;
     nextRe.lastIndex = startIdx + 1;
     const next = nextRe.exec(markdown);
     const block = markdown.slice(startIdx, next ? next.index : undefined);
@@ -19,7 +19,7 @@ function parseLessons(markdown) {
     const context = ctxMatches.map((m) => m[1].trim()).join(' ');
     const dateM = block.match(/\*\*Date:\*\*\s*(\S+)/);
     const bugsM = block.match(/\*\*Bugs:\*\*\s*(.+)/);
-    const bugIds = bugsM ? bugsM[1].match(/BUG-\d{4}/g) || [] : [];
+    const bugIds = bugsM ? bugsM[1].match(/BUG-\d+/g) || [] : [];
     results.push({
       id,
       title,
