@@ -39,6 +39,13 @@ else
   echo "[install] superpowers plugin detected (v${SP_VER}) ✓"
 fi
 
+# ── 0.5. Create required directory structure ────────────────────────────────
+echo "[install] Creating directory structure ..."
+mkdir -p "${TARGET}/docs/coverage"
+mkdir -p "${TARGET}/.claude"
+mkdir -p "${TARGET}/scripts"
+mkdir -p "${TARGET}/orchestrator"
+
 # ── 1. Copy tool files ──────────────────────────────────────────────────────
 echo "[install] Copying tools/ ..."
 cp -r "${REPO_ROOT}/tools" "${TARGET}/"
@@ -46,11 +53,43 @@ cp -r "${REPO_ROOT}/tools" "${TARGET}/"
 echo "[install] Copying tests/ ..."
 cp -r "${REPO_ROOT}/tests" "${TARGET}/"
 
+echo "[install] Copying orchestrator/ ..."
+cp -r "${REPO_ROOT}/orchestrator" "${TARGET}/"
+
 echo "[install] Copying jest.config.js ..."
 cp "${REPO_ROOT}/jest.config.js" "${TARGET}/jest.config.js"
 
 echo "[install] Copying eslint.config.js ..."
 cp "${REPO_ROOT}/eslint.config.js" "${TARGET}/eslint.config.js"
+
+# ── 1.2. Create or update CLAUDE.md ─────────────────────────────────────────
+CLAUDE_DEST="${TARGET}/CLAUDE.md"
+if [ ! -f "$CLAUDE_DEST" ]; then
+  echo "[install] Creating CLAUDE.md from template ..."
+  cp "${REPO_ROOT}/CLAUDE.md.template" "$CLAUDE_DEST"
+  echo "[install] CLAUDE.md created — edit it to match your project conventions."
+else
+  # Idempotency: add PlanVisualizer section if missing
+  if ! grep -q "PlanVisualizer Dashboard" "$CLAUDE_DEST"; then
+    echo "[install] Appending PlanVisualizer section to existing CLAUDE.md ..."
+    cat >> "$CLAUDE_DEST" <<'MD'
+
+---
+
+## PlanVisualizer Dashboard
+
+- **Entry point:** `node tools/generate-plan.js`
+- **Output:** `docs/plan-status.html`
+- **Config:** `plan-visualizer.config.json`
+- **Format guide:** `plan_visualizer.md`
+
+Run `npm run plan:generate` to regenerate the dashboard after changes to tracked docs.
+MD
+    echo "[install] Appended PlanVisualizer section to CLAUDE.md."
+  else
+    echo "[install] CLAUDE.md already has PlanVisualizer section — skipping."
+  fi
+fi
 
 # ── 1.5. Copy branch hygiene tooling ────────────────────────────────────────
 # scripts/cleanup-branches.sh sweeps stale worktrees + merged branches left
@@ -165,7 +204,10 @@ if [ -f "${TARGET}/tools/migrate-config.js" ]; then
   (cd "$TARGET" && node "${TARGET}/tools/migrate-config.js" --auto) || true
 fi
 
-# ── 5. Merge Claude Code stop hook into .claude/settings.json ───────────────
+# ── 5. Merge Claude Code hooks into .claude/settings.json ───────────────────
+# Adds:
+#   - Stop hook: node tools/capture-cost.js  (AI cost tracking every turn)
+#   - Bash allowlist: plan:* npm scripts + node tools/* commands (fewer prompts)
 SETTINGS_DIR="${TARGET}/.claude"
 SETTINGS_FILE="${SETTINGS_DIR}/settings.json"
 mkdir -p "$SETTINGS_DIR"
@@ -183,24 +225,47 @@ if (fs.existsSync(filePath)) {
 }
 
 settings.hooks = settings.hooks || {};
-settings.hooks.Stop = settings.hooks.Stop || [];
 
+// Stop hook: cost tracking
+settings.hooks.Stop = settings.hooks.Stop || [];
 const hookCmd = 'node tools/capture-cost.js';
-const alreadyPresent = settings.hooks.Stop.some(
+const stopPresent = settings.hooks.Stop.some(
   entry => (entry.hooks || []).some(h => h.type === 'command' && h.command === hookCmd)
 );
-
-if (alreadyPresent) {
-  console.log('[install] Stop hook already present in ' + path.basename(filePath) + ' — skipping.');
-  process.exit(0);
+if (!stopPresent) {
+  settings.hooks.Stop.push({ hooks: [{ type: 'command', command: hookCmd }] });
+  console.log('[install] Added Stop hook (capture-cost.js) to ' + path.basename(filePath));
+} else {
+  console.log('[install] Stop hook already present — skipping.');
 }
 
-settings.hooks.Stop.push({
-  hooks: [{ type: 'command', command: hookCmd }]
-});
+// Bash allowlist: pre-approve read-only and plan:* tool calls
+settings.permissions = settings.permissions || {};
+settings.permissions.allow = settings.permissions.allow || [];
+const bashAllowlist = [
+  'Bash(npm run plan:*)',
+  'Bash(node tools/generate-plan.js*)',
+  'Bash(node tools/generate-dashboard.js*)',
+  'Bash(node tools/update-sdlc-status.js*)',
+  'Bash(node tools/migrate-config.js*)',
+  'Bash(npx jest*)',
+  'Bash(git status)',
+  'Bash(git log*)',
+  'Bash(git diff*)',
+  'Bash(git branch*)',
+  'Bash(git fetch*)',
+];
+let added = 0;
+for (const entry of bashAllowlist) {
+  if (!settings.permissions.allow.includes(entry)) {
+    settings.permissions.allow.push(entry);
+    added++;
+  }
+}
+if (added > 0) console.log('[install] Added ' + added + ' Bash allowlist entries to ' + path.basename(filePath));
+else console.log('[install] Bash allowlist already up to date — skipping.');
 
 fs.writeFileSync(filePath, JSON.stringify(settings, null, 2) + '\n', 'utf8');
-console.log('[install] Merged Stop hook into ' + filePath);
 JS
 
 # ── 6. Prompt for historical data backfill ─────────────────────────────────────
@@ -220,31 +285,93 @@ if [ -f "${TARGET}/docs/plan-status.json" ]; then
   fi
 fi
 
-# ── 7. Dashboard setup ────────────────────────────────────────────────────────
+# ── 7. Agentic Dashboard setup ────────────────────────────────────────────────
+# Sets up dashboard.html, orchestrator/, agents.config.json template, and
+# initialises docs/sdlc-status.json so the dashboard loads without errors.
+echo ""
+echo "[install] Agentic SDLC Dashboard setup"
 if [ -f "${TARGET}/docs/dashboard.html" ]; then
-  echo "[install] §7 Dashboard setup: docs/dashboard.html already exists in target — skipping."
+  echo "[install] docs/dashboard.html already exists — updating orchestrator files only."
+  SETUP_AGENTS=false
 else
-  echo ""
-  echo "[install] Agentic SDLC Dashboard setup"
-  read -p "[install] Copy dashboard files to ${TARGET}/docs? (y/n) " -n 1 -r REPLY; echo
+  read -p "[install] Install the Agentic SDLC Dashboard? (y/n) " -n 1 -r REPLY; echo
   if [[ $REPLY =~ ^[Yy]$ ]]; then
-    mkdir -p "${TARGET}/docs" "${TARGET}/tools" "${TARGET}/orchestrator"
-    cp "${REPO_ROOT}/docs/dashboard.html" "${TARGET}/docs/dashboard.html"
-    echo "[install] Copied docs/dashboard.html"
-    for f in tools/update-sdlc-status.js tools/init-sdlc-status.js; do
-      [ -f "${REPO_ROOT}/${f}" ] && cp "${REPO_ROOT}/${f}" "${TARGET}/${f}" && echo "[install] Copied ${f}"
-    done
-    [ -f "${REPO_ROOT}/orchestrator/atomic-write.js" ] && \
-      cp "${REPO_ROOT}/orchestrator/atomic-write.js" "${TARGET}/orchestrator/atomic-write.js" && \
-      echo "[install] Copied orchestrator/atomic-write.js"
-    echo "[install] Run: node tools/init-sdlc-status.js   (after adding project/phases to agents.config.json)"
-    echo "[install] See: docs/dashboard-extraction.md for the full adoption guide"
+    SETUP_AGENTS=true
+  else
+    SETUP_AGENTS=false
+    echo "[install] Skipping Agentic Dashboard. Re-run install.sh at any time to add it."
   fi
+fi
+
+if [ "$SETUP_AGENTS" = true ] || [ -f "${TARGET}/docs/dashboard.html" ]; then
+  # Core dashboard file
+  mkdir -p "${TARGET}/docs/agents/images"
+  [ -f "${REPO_ROOT}/docs/dashboard.html" ] && \
+    cp "${REPO_ROOT}/docs/dashboard.html" "${TARGET}/docs/dashboard.html" && \
+    echo "[install] Copied docs/dashboard.html"
+
+  # Orchestrator — full directory (atomic-write, file-lock, spawn, etc.)
+  mkdir -p "${TARGET}/orchestrator"
+  cp -r "${REPO_ROOT}/orchestrator/." "${TARGET}/orchestrator/"
+  echo "[install] Copied orchestrator/ (atomic-write, file-lock, spawn)"
+
+  # SDLC status tools
+  for f in tools/update-sdlc-status.js tools/init-sdlc-status.js; do
+    [ -f "${REPO_ROOT}/${f}" ] && cp "${REPO_ROOT}/${f}" "${TARGET}/${f}" && echo "[install] Copied ${f}"
+  done
+
+  # agents.config.json — create from template if absent
+  AGENTS_CFG="${TARGET}/agents.config.json"
+  if [ ! -f "$AGENTS_CFG" ]; then
+    if [ -f "${REPO_ROOT}/agents.config.example.json" ]; then
+      cp "${REPO_ROOT}/agents.config.example.json" "$AGENTS_CFG"
+      echo "[install] Created agents.config.json from example — edit to define your agent roster."
+    else
+      # Minimal bootstrap config so init-sdlc-status.js succeeds
+      cat > "$AGENTS_CFG" <<'JSON'
+{
+  "project": {
+    "name": "My Project",
+    "description": "A short description.",
+    "repoUrl": "",
+    "startDate": ""
+  },
+  "phases": [
+    { "id": "blueprint", "label": "Blueprint", "order": 1 },
+    { "id": "architect",  "label": "Architect",  "order": 2 },
+    { "id": "build",      "label": "Build",       "order": 3 },
+    { "id": "integration","label": "Integration", "order": 4 },
+    { "id": "test",       "label": "Test",        "order": 5 },
+    { "id": "polish",     "label": "Polish",      "order": 6 }
+  ],
+  "agents": []
+}
+JSON
+      echo "[install] Created minimal agents.config.json — add agents and phases before running init."
+    fi
+  else
+    echo "[install] agents.config.json already exists — skipping."
+  fi
+
+  # Initialise sdlc-status.json if it doesn't exist
+  SDLC_STATUS="${TARGET}/docs/sdlc-status.json"
+  if [ ! -f "$SDLC_STATUS" ]; then
+    echo "[install] Initialising docs/sdlc-status.json ..."
+    (cd "$TARGET" && node tools/init-sdlc-status.js) && \
+      echo "[install] docs/sdlc-status.json created." || \
+      echo "[install] Warning: init-sdlc-status.js failed — edit agents.config.json first, then run: node tools/init-sdlc-status.js"
+  else
+    echo "[install] docs/sdlc-status.json already exists — skipping init."
+  fi
+
+  echo "[install] Agentic Dashboard ready. Edit agents.config.json to define your agent roster,"
+  echo "[install] then re-run: node tools/init-sdlc-status.js"
 fi
 
 echo ""
 echo "[install] Done. Next steps:"
 echo "  1. Edit plan-visualizer.config.json with your project name and file paths."
-echo "  2. Run: npm install   (to install jest dev dependency)"
-echo "  3. Run: npm run plan:test   (confirm all suites pass)"
-echo "  4. Run: node tools/generate-plan.js   (generates docs/plan-status.html)"
+echo "  2. Edit agents.config.json to define your agent roster (if using the Agentic Dashboard)."
+echo "  3. Run: npm install   (to install jest dev dependency)"
+echo "  4. Run: npm run plan:test   (confirm all suites pass)"
+echo "  5. Run: node tools/generate-plan.js   (generates docs/plan-status.html)"
