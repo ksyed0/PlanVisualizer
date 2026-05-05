@@ -1749,18 +1749,18 @@ Dependencies: EPIC-0024
 US-0171 (EPIC-0025): As a developer, I want BUGS.md to sync bidirectionally with GitHub Issues, so that bug tracking stays consistent across both systems.
 Priority: High (P0)
 Estimate: L
-Status: Planned
-Branch:
+Status: Done
+Branch: feature/US-0171-github-sync-engine
 Acceptance Criteria:
 
-- [ ] AC-0615: sync-github.js CLI runs without error when GITHUB_TOKEN is set and config.github.enabled is true
-- [ ] AC-0616: --dry-run flag prints planned changes without modifying any files or calling the GitHub API
-- [ ] AC-0617: A new BUG entry with no GH Issue field creates a GitHub Issue with correct title, labels, and body
-- [ ] AC-0618: A BUG marked Fixed closes the linked GitHub Issue
-- [ ] AC-0619: A GitHub Issue closed externally updates the matching BUG status to Fixed in BUGS.md
-- [ ] AC-0620: A GitHub Issue with a defaultLabels label and no matching BUG entry creates a new BUG entry in BUGS.md with an allocated BUG ID
-- [ ] AC-0621: docs/github-sync-state.json is written after every sync run with correct summary counts
-- [ ] AC-0622: If GITHUB_TOKEN is absent, sync is skipped with a warning and generate-plan.js exits 0
+- [x] AC-0615: sync-github.js CLI runs without error when GITHUB_TOKEN is set and config.github.enabled is true
+- [x] AC-0616: --dry-run flag prints planned changes without modifying any files or calling the GitHub API
+- [x] AC-0617: A new BUG entry with no GH Issue field creates a GitHub Issue with correct title, labels, and body
+- [x] AC-0618: A BUG marked Fixed closes the linked GitHub Issue
+- [x] AC-0619: A GitHub Issue closed externally updates the matching BUG status to Fixed in BUGS.md
+- [x] AC-0620: A GitHub Issue with a defaultLabels label and no matching BUG entry creates a new BUG entry in BUGS.md with an allocated BUG ID
+- [x] AC-0621: docs/github-sync-state.json is written after every sync run with correct summary counts
+- [x] AC-0622: If GITHUB_TOKEN is absent, sync is skipped with a warning and generate-plan.js exits 0
       Dependencies: US-0170
 
 ```

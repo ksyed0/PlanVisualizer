@@ -380,6 +380,17 @@ function main() {
   console.log(
     `[generate-plan] Done. ${epics.length} epics, ${stories.length} stories, ${testCases.length} TCs, ${bugs.length} bugs, ${lessons.length} lessons.`,
   );
+
+  if (config.github && config.github.enabled) {
+    try {
+      require('child_process').execFileSync(process.execPath, [path.join(__dirname, 'sync-github.js')], {
+        env: process.env,
+        stdio: 'inherit',
+      });
+    } catch (e) {
+      console.warn('[generate-plan] GitHub sync failed (non-fatal):', e.message);
+    }
+  }
 }
 
 function watch(config) {
