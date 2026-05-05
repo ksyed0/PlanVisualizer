@@ -3658,3 +3658,33 @@ Notes: Diagnosed by a Session 34 background agent (the same one that "hit the or
 4. **Combine 2 + 3** — recover what's recoverable, then move the live log out of the working tree to prevent recurrence. Recommended long-term path.
 
 Recommendation: Option 3 immediately (recover the trapped data) and evaluate options 1 vs 2/4 in a future session. Not addressed in Session 34 — the recovery is a sizeable multi-stash merge that deserves its own focused PR with careful conflict resolution.
+
+---
+
+BUG-0253: Agentic dashboard idle agent portrait cards show only top of head — head and shoulders not visible
+Severity: Low
+Related Story: US-0142 (EPIC-0020)
+Steps to Reproduce:
+
+1. Open docs/dashboard.html with agents in idle state
+2. Observe the idle agent grid (4-column roster)
+   Expected: Each card portrait shows the character's head and shoulders clearly
+   Actual: Portrait height is 80px — only the very top of the character's head is visible above the card's bottom edge; the face and shoulders are cut off entirely
+   Status: Open
+   Fix Branch:
+   Lesson Encoded: No
+
+---
+
+BUG-0254: Agentic dashboard idle agent cards display name, role, and status badge as three stacked lines
+Severity: Low
+Related Story: US-0142 (EPIC-0020)
+Steps to Reproduce:
+
+1. Open docs/dashboard.html
+2. Observe the text below each idle agent card portrait
+   Expected: Name · Role · IDLE badge rendered on a single compact line
+   Actual: Name, role, and IDLE badge each occupy their own line — wastes vertical space and looks disconnected from the portrait above
+   Status: Open
+   Fix Branch:
+   Lesson Encoded: No

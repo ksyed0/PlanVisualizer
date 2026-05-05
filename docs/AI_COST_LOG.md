@@ -494,6 +494,14 @@ Input Tokens column = direct input + cache-write tokens; cost computed with dist
 | 2026-05-01 | bce3a31d-dfe1-405c-8136-9c2089653002 | bugfix/BUG-0252-stash-recovery                     | 4672351      | 435827        | 172960069         | 75.9461  |
 | 2026-05-02 | bce3a31d-dfe1-405c-8136-9c2089653002 | bugfix/BUG-0252-stash-recovery                     | 5618429      | 447585        | 179442327         | 81.6144  |
 | 2026-05-03 | 6178dad9-68de-4011-ae02-a2f52f6bcedd | feature/US-0169-hierarchy-risk-ui                  | 4470592      | 256309        | 38497462          | 32.1583  |
-| 2026-05-03 | 6178dad9-68de-4011-ae02-a2f52f6bcedd | feature/US-0169-hierarchy-risk-ui                  | 5529076      | 424255        | 137101695         | 68.2276  |
-| 2026-05-03 | 6178dad9-68de-4011-ae02-a2f52f6bcedd | feature/US-0169-hierarchy-risk-ui                  | 5530745      | 425331        | 139732110         | 69.0391  |
-| 2026-05-03 | 6178dad9-68de-4011-ae02-a2f52f6bcedd | feature/US-0169-hierarchy-risk-ui                  | 5531183      | 425666        | 140610644         | 69.3094  |
+
+<<<<<<< Updated upstream
+| 2026-05-03 | 6178dad9-68de-4011-ae02-a2f52f6bcedd | feature/US-0169-hierarchy-risk-ui | 5529076 | 424255 | 137101695 | 68.2276 |
+| 2026-05-03 | 6178dad9-68de-4011-ae02-a2f52f6bcedd | feature/US-0169-hierarchy-risk-ui | 5530745 | 425331 | 139732110 | 69.0391 |
+| 2026-05-03 | 6178dad9-68de-4011-ae02-a2f52f6bcedd | feature/US-0169-hierarchy-risk-ui | 5531183 | 425666 | 140610644 | 69.3094 |
+=======
+| 2026-05-03 | 6178dad9-68de-4011-ae02-a2f52f6bcedd | feature/US-0169-hierarchy-risk-ui | 6431792 | 436705 | 150808612 | 75.9116 |
+| 2026-05-03 | 6178dad9-68de-4011-ae02-a2f52f6bcedd | feature/US-0169-hierarchy-risk-ui | 6438796 | 441833 | 157993724 | 78.1703 |
+| 2026-05-04 | 6178dad9-68de-4011-ae02-a2f52f6bcedd | feature/US-0169-hierarchy-risk-ui | 7805769 | 445569 | 158903408 | 83.6254 |
+
+> > > > > > > Stashed changes
