@@ -111,9 +111,8 @@ function renderHtml(data, options = {}) {
     .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
     /* === Base === */
     .hidden { display: none !important; }
-    body { min-height: 100vh; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; padding-top: 52px; background-color: var(--clr-body-bg); color: var(--clr-text-primary); }
-    body.has-alert { padding-top: 80px; }
-    #topbar-fixed.has-alert { top: 28px; }
+    body { min-height: 100vh; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; padding-top: 0; background-color: var(--clr-body-bg); color: var(--clr-text-primary); }
+    body.has-alert { padding-top: 40px; }
     #sidebar.has-alert { top: 80px; height: calc(100vh - 80px); }
     code, .font-mono { font-family: ui-monospace, 'JetBrains Mono', 'Cascadia Code', monospace; }
     /* BUG-0228/BUG-0230: budget alert — replaces Tailwind utility classes */
@@ -198,10 +197,10 @@ function renderHtml(data, options = {}) {
     .chart-center-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none; }
 
     /* === App shell === */
-    #app-shell { display: flex; min-height: calc(100vh - 52px); }
+    #app-shell { display: flex; min-height: 100vh; }
 
     /* === Sidebar === */
-    #sidebar { width: 200px; flex-shrink: 0; position: sticky; top: 52px; height: calc(100vh - 52px); overflow-y: auto; background: var(--clr-sidebar-bg); border-right: 2px solid var(--clr-border); }
+    #sidebar { width: 200px; flex-shrink: 0; position: sticky; top: 40px; height: calc(100vh - 40px); overflow-y: auto; background: var(--clr-sidebar-bg); border-right: 2px solid var(--clr-border); }
     #sidebar-nav { display: flex; flex-direction: column; padding: 8px 0; }
     .nav-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; text-align: left; font-size: 13px; font-weight: 500; color: var(--clr-text-secondary); border: none; border-left: 3px solid transparent; border-bottom: 1px solid var(--clr-border); background: none; cursor: pointer; transition: color 150ms, background 150ms; }
     .nav-item:last-child { border-bottom: none; }
