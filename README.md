@@ -8,6 +8,12 @@ Press `⌘K` / `Ctrl+K` to open the global search modal and jump to any story, b
 
 No runtime dependencies — Node.js and git only.
 
+![PlanVisualizer Agent Team](docs/agents/images/team.png)
+
+| Plan Status Dashboard                                      | Agentic Dashboard                                            |
+| ---------------------------------------------------------- | ------------------------------------------------------------ |
+| ![Plan Status Dashboard](docs/screenshots/plan-status.png) | ![Agentic Dashboard](docs/screenshots/agentic-dashboard.png) |
+
 ---
 
 ## What's New in v2.1.0
