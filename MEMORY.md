@@ -323,3 +323,18 @@ Current coverage (2026-04-29 Session 33): ~93.8% statements / 80.6% branches. Al
 - `.section-header` utility: Geist, 11px/700, uppercase, 0.14em tracking. Shared across sections.
 - `.live-dot` component: 6×6 circle, ok/warn/err variants, pulse animation with `prefers-reduced-motion` guard. Used in header clock, spotlight, Quality card, Activity log.
 - Agent portraits: read from `docs/agents/images/optimized/{avatar}-{64,160,320}.png`. Fallback chain: optimized → headshot → emoji. `avatar` base name lives in agents.config.json per agent.
+
+### EPIC-0025 GitHub Issues Sync (Session 39, 2026-05-05)
+
+- `tools/lib/github-client.js` — thin Node `https` wrapper: `githubRequest`, `buildIssueTitle/Body`, `batchedRequests`, `createIssue/closeIssue/reopenIssue/listIssues`. NOTE: `listIssues` caps at 100 issues (no pagination). Use `gh auth token` to get token when `GITHUB_TOKEN` env var not set.
+- `tools/lib/sync-bugs.js` — `classifyBugChanges` (create/close/reopen/pull_close/skip), `writeBugIssueNumber` (MUST be block-scoped — use `blockRe = new RegExp(\`(^${bugId}:.+?)(?=\\nBUG-\\d+:|\\Z)\`, 'ms')`to avoid cross-block false positives),`loadSyncState/saveSyncState/buildStateEntry`.
+- `tools/lib/sync-stories.js` — `classifyStoryChanges`, `writeStoryIssueNumber` (block-scoped, inserts after `Branch:` line).
+- `tools/sync-github.js` — CLI entry, `--dry-run` flag, reads `plan-visualizer.config.json` for `github` block, writes `docs/github-sync-state.json` (gitignored).
+- `tools/lib/parse-bugs.js` NOW reads `ghIssueNumber` from `GH Issue: #NNN` field. Required for idempotent sync.
+- `tools/lib/render-tabs.js` has `renderSettingsTab({ githubConfig, githubTokenSet, syncState })` — called from render-html.js, data wired through generate-plan.js.
+- GitHub secondary rate limit blocks bulk issue creation; add 2s+ inter-batch delay for >100 creates. The default 100ms is too fast.
+- `classifyBugChanges` state-map fallback: `effectiveIssueNumber = bug.ghIssueNumber || state?.ghIssueNumber` — prevents re-creation when BUGS.md write failed.
+- `docs/github-sync-state.json` is gitignored (runtime sync state, not committed).
+- `scripts/update.sh` added (Session 39): idempotent updater that re-copies tools/, tests/, orchestrator/, dashboard.html, docs/agents/, agents.config.json without touching user data files.
+- `CLAUDE.md.template` added for `scripts/install.sh` to create CLAUDE.md in target repos.
+- **Blank gap above pv-chrome topbar (fixed Session 39):** `body { padding-top: 52px }` was for old `position: fixed` topbar. New `.pv-chrome` uses `position: sticky; top: 0` and creates its own flow space. Fix: `body { padding-top: 0 }`, `body.has-alert { padding-top: 40px }` (budget alert height only), `#sidebar { top: 40px }`, `#app-shell { min-height: 100vh }`.

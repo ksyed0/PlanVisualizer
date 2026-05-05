@@ -4,6 +4,32 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 39 — 2026-05-04/05 (EPIC-0025 GitHub Issues Sync + BUGS.md sync + install scripts)
+
+### What Was Done
+
+- **PR #532** (Dependabot ESLint 10.3.0) — merged to main
+- **US-0170** (4-digit ID regex cap removed) — PR #535 merged to develop; 6 parser files + render-tabs + generate-dashboard updated to `\d+`
+- **US-0171** (GitHub sync engine) — PR #537 merged; `github-client.js`, `sync-bugs.js`, `sync-github.js` created; `parseBugs` now reads `GH Issue:` field; block-scoped `writeBugIssueNumber`; state-map fallback in `classifyBugChanges`. Follow-up PR #979 (sync-bugs fixes) also merged.
+- **BUGS.md ↔ GitHub Issues sync** — all 219 bugs processed; 217/220 have `GH Issue: #NNN` in BUGS.md; 219 duplicate issues from rate-limit retries identified and closed; sync is idempotent (220 skipped on clean run)
+- **US-0172** (Settings tab UI) — PR #982 merged; `renderSettingsTab` in render-tabs.js, sidebar entry, generate-plan.js data wiring
+- **US-0173** (story sync extension) — PR #980 merged; `sync-stories.js` with `classifyStoryChanges` + `writeStoryIssueNumber`
+- **README** — team.png + Plan Status / Agentic Dashboard screenshots added; PR #540 merged to main
+- **install.sh + update.sh** — PR #678 merged; CLAUDE.md.template, directory creation, Bash allowlist hooks, full agentic dashboard setup (copies canonical agents.config.json + docs/agents/)
+- **BUG-topbar-blank-gap** — PR #984 open; `body { padding-top: 52px }` was stale from fixed topbar, causing 52px blank gap above sticky pv-chrome; fixed to 0 with `body.has-alert { padding-top: 40px }`
+
+### Test Results
+
+1539 tests, 55 suites, all passing. Coverage ≥ 80%.
+
+### Blockers / Notes
+
+- GitHub secondary rate limit hit 3× during BUGS.md sync; worked around with 10min waits between runs
+- `writeBugIssueNumber` had cross-block regex bug (false positive `alreadyLinked`); fixed to block-scoped pattern
+- `parseBugs` didn't read `GH Issue:` field; added, causing re-creation of already-synced bugs on retries; fixed
+
+---
+
 ## Session 38 — 2026-05-04 (v2.1.0 release + BUG-0253/0254 portrait fix)
 
 ### What Was Done
