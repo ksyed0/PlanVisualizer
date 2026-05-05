@@ -4,6 +4,44 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 38 — 2026-05-04 (v2.1.0 release + BUG-0253/0254 portrait fix)
+
+### What Was Done
+
+**Resumed from Session 37 — housekeeping:**
+
+- Synced develop ↔ main (merged main into develop to pick up v2.1.0 version bump)
+- Committed `docs/AI_COST_LOG.md` stop-hook rows
+- Identified Dependabot PR #532 (ESLint 10.2.1 → 10.3.0, open)
+
+**v2.1.0 release (from tail of Session 37, completed this session):**
+
+- Created `release/2.1.0` branch, bumped `package.json` to `2.1.0`
+- PR #531 merged → main; tag `v2.1.0` created and pushed (replaced an orphaned pre-existing tag)
+- GitHub release created: https://github.com/ksyed0/PlanVisualizer/releases/tag/v2.1.0
+
+**BUG-0253/0254 — Idle agent portrait cards (PR #534, merged):**
+
+- BUG-0253: `.mc-idle-portrait` height `80px` → `160px`; image src `-64.png` → `-160.png` (existing optimized variant)
+- BUG-0254: Three stacked `<div>` (name / role / IDLE badge) replaced with single `.mc-idle-info` flexbox row — all text on one line, role truncates with ellipsis on narrow cards
+- `.mc-idle-card` `align-items: center` → `align-items: stretch`
+
+### Test Results
+
+- 121 generate-dashboard tests pass; full suite green
+
+### Blockers
+
+- None
+
+### Next Session
+
+1. Merge Dependabot PR #532 (ESLint 10.2.1 → 10.3.0) — quick approve
+2. US-0170 — remove 4-digit ID regex cap (`\d{4}` → `\d+`, 6 files, ~30 min, EPIC-0025 prerequisite)
+3. EPIC-0025 implementation — US-0171 (sync engine) → {US-0172 (Settings UI) ∥ US-0173 (story sync)}
+
+---
+
 ## Session 37 — 2026-05-03 (EPIC-0024 backlog closure + EPIC-0025 design)
 
 ### What Was Done
