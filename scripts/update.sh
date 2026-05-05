@@ -1,0 +1,211 @@
+#!/usr/bin/env bash
+# update.sh — Update PlanVisualizer tools in an existing installation
+#
+# Usage (run from your project root):
+#   bash /path/to/PlanVisualizer/scripts/update.sh [TARGET_DIR]
+#
+# What it does:
+#   - Re-copies tools/, tests/, jest.config.js, eslint.config.js
+#   - Re-copies orchestrator/ (atomic-write, file-lock, etc.)
+#   - Appends any missing CLAUDE.md PlanVisualizer section
+#   - Re-runs migrate-config.js to add any new config keys
+#   - Ensures Stop hook and Bash allowlist are in .claude/settings.json
+#   - Does NOT overwrite plan-visualizer.config.json or AGENTS.md content
+#   - Does NOT overwrite docs/BUGS.md, docs/RELEASE_PLAN.md, or any user data
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+TARGET="${1:-$(pwd)}"
+
+echo "[update] Updating PlanVisualizer in: $TARGET"
+echo "[update] Source version: $(node -e "console.log(require('${REPO_ROOT}/package.json').version)" 2>/dev/null || echo 'unknown')"
+
+# ── 1. Re-copy tool files (non-destructive to user data) ────────────────────
+echo "[update] Updating tools/ ..."
+cp -r "${REPO_ROOT}/tools" "${TARGET}/"
+
+echo "[update] Updating tests/ ..."
+cp -r "${REPO_ROOT}/tests" "${TARGET}/"
+
+echo "[update] Updating orchestrator/ ..."
+mkdir -p "${TARGET}/orchestrator"
+cp -r "${REPO_ROOT}/orchestrator" "${TARGET}/"
+
+echo "[update] Updating jest.config.js ..."
+cp "${REPO_ROOT}/jest.config.js" "${TARGET}/jest.config.js"
+
+echo "[update] Updating eslint.config.js ..."
+cp "${REPO_ROOT}/eslint.config.js" "${TARGET}/eslint.config.js"
+
+# ── 2. Update GitHub Actions workflow ────────────────────────────────────────
+mkdir -p "${TARGET}/.github/workflows"
+if [ -f "${REPO_ROOT}/.github/workflows/plan-visualizer.yml" ]; then
+  echo "[update] Updating .github/workflows/plan-visualizer.yml ..."
+  cp "${REPO_ROOT}/.github/workflows/plan-visualizer.yml" "${TARGET}/.github/workflows/plan-visualizer.yml"
+fi
+
+# ── 3. Update scripts/cleanup-branches.sh ────────────────────────────────────
+mkdir -p "${TARGET}/scripts"
+if [ -f "${REPO_ROOT}/scripts/cleanup-branches.sh" ]; then
+  echo "[update] Updating scripts/cleanup-branches.sh ..."
+  cp "${REPO_ROOT}/scripts/cleanup-branches.sh" "${TARGET}/scripts/cleanup-branches.sh"
+  chmod +x "${TARGET}/scripts/cleanup-branches.sh"
+fi
+
+# ── 4. Update plan_visualizer.md format spec ─────────────────────────────────
+if [ -f "${REPO_ROOT}/plan_visualizer.md" ]; then
+  echo "[update] Updating plan_visualizer.md ..."
+  cp "${REPO_ROOT}/plan_visualizer.md" "${TARGET}/plan_visualizer.md"
+fi
+
+# ── 5. Ensure CLAUDE.md has PlanVisualizer section ───────────────────────────
+CLAUDE_DEST="${TARGET}/CLAUDE.md"
+if [ ! -f "$CLAUDE_DEST" ]; then
+  echo "[update] CLAUDE.md missing — creating from template ..."
+  cp "${REPO_ROOT}/CLAUDE.md.template" "$CLAUDE_DEST"
+  echo "[update] CLAUDE.md created."
+elif ! grep -q "PlanVisualizer Dashboard" "$CLAUDE_DEST"; then
+  echo "[update] Appending PlanVisualizer section to CLAUDE.md ..."
+  cat >> "$CLAUDE_DEST" <<'MD'
+
+---
+
+## PlanVisualizer Dashboard
+
+- **Entry point:** `node tools/generate-plan.js`
+- **Output:** `docs/plan-status.html`
+- **Config:** `plan-visualizer.config.json`
+- **Format guide:** `plan_visualizer.md`
+
+Run `npm run plan:generate` to regenerate the dashboard after changes to tracked docs.
+MD
+  echo "[update] Appended PlanVisualizer section to CLAUDE.md."
+else
+  echo "[update] CLAUDE.md already has PlanVisualizer section — skipping."
+fi
+
+# ── 6. Migrate config to latest schema ───────────────────────────────────────
+if [ -f "${TARGET}/tools/migrate-config.js" ]; then
+  echo "[update] Checking config schema ..."
+  (cd "$TARGET" && node "${TARGET}/tools/migrate-config.js" --auto) || true
+fi
+
+# ── 7. Ensure hooks and Bash allowlist in .claude/settings.json ──────────────
+SETTINGS_DIR="${TARGET}/.claude"
+SETTINGS_FILE="${SETTINGS_DIR}/settings.json"
+mkdir -p "$SETTINGS_DIR"
+node - <<'JS' "$SETTINGS_FILE"
+const fs = require('fs');
+const path = require('path');
+const filePath = process.argv[2];
+
+let settings = {};
+if (fs.existsSync(filePath)) {
+  try { settings = JSON.parse(fs.readFileSync(filePath, 'utf8')); } catch (e) {
+    console.error('[update] Warning: could not parse ' + filePath + ' — skipping hook merge.');
+    process.exit(0);
+  }
+}
+
+settings.hooks = settings.hooks || {};
+settings.hooks.Stop = settings.hooks.Stop || [];
+const hookCmd = 'node tools/capture-cost.js';
+const stopPresent = settings.hooks.Stop.some(
+  entry => (entry.hooks || []).some(h => h.type === 'command' && h.command === hookCmd)
+);
+if (!stopPresent) {
+  settings.hooks.Stop.push({ hooks: [{ type: 'command', command: hookCmd }] });
+  console.log('[update] Added Stop hook (capture-cost.js)');
+} else {
+  console.log('[update] Stop hook already present — skipping.');
+}
+
+settings.permissions = settings.permissions || {};
+settings.permissions.allow = settings.permissions.allow || [];
+const bashAllowlist = [
+  'Bash(npm run plan:*)',
+  'Bash(node tools/generate-plan.js*)',
+  'Bash(node tools/generate-dashboard.js*)',
+  'Bash(node tools/update-sdlc-status.js*)',
+  'Bash(node tools/migrate-config.js*)',
+  'Bash(npx jest*)',
+  'Bash(git status)',
+  'Bash(git log*)',
+  'Bash(git diff*)',
+  'Bash(git branch*)',
+  'Bash(git fetch*)',
+];
+let added = 0;
+for (const entry of bashAllowlist) {
+  if (!settings.permissions.allow.includes(entry)) {
+    settings.permissions.allow.push(entry);
+    added++;
+  }
+}
+if (added > 0) console.log('[update] Added ' + added + ' Bash allowlist entries');
+else console.log('[update] Bash allowlist already up to date — skipping.');
+
+fs.writeFileSync(filePath, JSON.stringify(settings, null, 2) + '\n', 'utf8');
+JS
+
+# ── 8. Merge any new npm scripts ─────────────────────────────────────────────
+TARGET_PKG="${TARGET}/package.json"
+if [ -f "$TARGET_PKG" ]; then
+  node - <<'JS' "$TARGET_PKG"
+const fs = require('fs');
+const pkgPath = process.argv[2];
+const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+pkg.scripts = pkg.scripts || {};
+const toAdd = {
+  'plan:test':               'jest --watchAll=false',
+  'plan:test:coverage':      'jest --watchAll=false --coverage',
+  'plan:generate':           'node tools/generate-plan.js',
+  'plan:cleanup':            'bash scripts/cleanup-branches.sh',
+  'plan:cleanup:dry':        'bash scripts/cleanup-branches.sh --dry-run',
+  'plan:migrate-config':     'node tools/migrate-config.js',
+  'plan:migrate-config:dry': 'node tools/migrate-config.js --dry-run',
+};
+let added = 0;
+for (const [k, v] of Object.entries(toAdd)) {
+  if (!pkg.scripts[k]) { pkg.scripts[k] = v; added++; }
+}
+if (added > 0) {
+  fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n', 'utf8');
+  console.log('[update] Added ' + added + ' new npm scripts to package.json');
+} else {
+  console.log('[update] npm scripts already up to date — skipping.');
+}
+JS
+fi
+
+# ── 9. Update Agentic Dashboard files if installed ───────────────────────────
+if [ -f "${TARGET}/docs/dashboard.html" ]; then
+  echo "[update] Updating docs/dashboard.html ..."
+  [ -f "${REPO_ROOT}/docs/dashboard.html" ] && cp "${REPO_ROOT}/docs/dashboard.html" "${TARGET}/docs/dashboard.html"
+  echo "[update] Updating orchestrator/ ..."
+  mkdir -p "${TARGET}/orchestrator"
+  cp -r "${REPO_ROOT}/orchestrator/." "${TARGET}/orchestrator/"
+  for f in tools/update-sdlc-status.js tools/init-sdlc-status.js; do
+    [ -f "${REPO_ROOT}/${f}" ] && cp "${REPO_ROOT}/${f}" "${TARGET}/${f}"
+  done
+  # agents.config.json — copy canonical roster if absent
+  if [ ! -f "${TARGET}/agents.config.json" ]; then
+    SRC="${REPO_ROOT}/agents.config.json"
+    [ ! -f "$SRC" ] && SRC="${REPO_ROOT}/agents.config.example.json"
+    [ -f "$SRC" ] && cp "$SRC" "${TARGET}/agents.config.json" && echo "[update] Copied agents.config.json."
+  fi
+  # docs/agents/ — always refresh instruction files + portraits (standardised assets)
+  if [ -d "${REPO_ROOT}/docs/agents" ]; then
+    mkdir -p "${TARGET}/docs/agents"
+    cp -r "${REPO_ROOT}/docs/agents/." "${TARGET}/docs/agents/"
+    echo "[update] Updated docs/agents/ (instruction files + portraits)."
+  fi
+  echo "[update] Agentic Dashboard files updated."
+else
+  echo "[update] Agentic Dashboard not installed — skipping (run install.sh to add it)."
+fi
+
+echo ""
+echo "[update] Done. Run 'npm run plan:test' to verify the update."
