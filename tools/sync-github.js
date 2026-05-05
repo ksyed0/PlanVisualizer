@@ -64,6 +64,18 @@ async function run() {
 
     const changes = classifyBugChanges(bugs, state.entries, ghIssues, { repo, labelMap, defaultLabels });
 
+    // Write back GH Issue numbers for bugs resolved from state (not yet in BUGS.md)
+    if (!dryRun) {
+      for (const bug of bugs) {
+        if (!bug.ghIssueNumber) {
+          const stateEntry = state.entries.find((e) => e.id === bug.id);
+          if (stateEntry?.ghIssueNumber) {
+            writeBugIssueNumber(bug.id, stateEntry.ghIssueNumber);
+          }
+        }
+      }
+    }
+
     // Pull unlinked GH issues → new BUGS.md entries
     const linkedNumbers = new Set(state.entries.map((e) => e.ghIssueNumber));
     const unlinkedGhIssues = ghIssues.filter((i) => !linkedNumbers.has(i.number) && i.state === 'open');
@@ -95,7 +107,8 @@ async function run() {
         ].join('\n');
         const bugsPath = path.join(ROOT, 'docs/BUGS.md');
         const existing = fs.readFileSync(bugsPath, 'utf8');
-        fs.writeFileSync(bugsPath, existing + entry, 'utf8');
+        const separator = existing.endsWith('\n') ? '' : '\n';
+        fs.writeFileSync(bugsPath, existing + separator + entry, 'utf8');
         state.entries.push(buildStateEntry(newBugId, ghIssue.number, 'open'));
       } else {
         console.log(`  [dry-run] PULL_CREATE BUG from GH #${ghIssue.number}: ${title}`);

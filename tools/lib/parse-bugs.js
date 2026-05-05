@@ -22,6 +22,8 @@ function parseBugs(markdown) {
       return m ? m[1].trim() : '';
     };
 
+    const ghRaw = get('GH Issue');
+    const ghNum = ghRaw ? parseInt(ghRaw.replace(/\D/g, ''), 10) : null;
     results.push({
       id,
       title,
@@ -32,6 +34,7 @@ function parseBugs(markdown) {
       fixBranch: get('Fix Branch'),
       lessonEncoded: get('Lesson Encoded'),
       estimatedCostUsd: parseFloat(get('Estimated Cost USD')) || 0,
+      ghIssueNumber: ghNum && !isNaN(ghNum) ? ghNum : null,
     });
   }
   return results;
