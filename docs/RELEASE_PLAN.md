@@ -1789,13 +1789,13 @@ Acceptance Criteria:
 US-0173 (EPIC-0025): As a developer, I want RELEASE_PLAN.md stories to optionally sync with GitHub Issues, so that story progress is visible in the GitHub Issues board.
 Priority: Low (P2)
 Estimate: S
-Status: Planned
-Branch:
+Status: Done
+Branch: feature/US-0173-github-story-sync
 Acceptance Criteria:
 
-- [ ] AC-0629: When syncStories is true, new US entries without GH Issue create GitHub Issues
-- [ ] AC-0630: When a US reaches Status Done, the linked GitHub Issue is closed
-- [ ] AC-0631: syncStories defaults to false — story sync is entirely opt-in
+- [x] AC-0629: When syncStories is true, new US entries without GH Issue create GitHub Issues
+- [x] AC-0630: When a US reaches Status Done, the linked GitHub Issue is closed
+- [x] AC-0631: syncStories defaults to false — story sync is entirely opt-in
       Dependencies: US-0171
 
 ```
