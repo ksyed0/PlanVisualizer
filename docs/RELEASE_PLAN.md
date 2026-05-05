@@ -1770,16 +1770,16 @@ Acceptance Criteria:
 US-0172 (EPIC-0025): As a developer, I want a Settings tab in plan-status.html to configure and monitor GitHub sync, so that I can manage the feature without editing config files manually.
 Priority: Medium (P1)
 Estimate: M
-Status: Planned
-Branch:
+Status: Done
+Branch: feature/US-0172-settings-panel
 Acceptance Criteria:
 
-- [ ] AC-0623: A Settings tab appears in the plan-status.html sidebar
-- [ ] AC-0624: Settings tab renders current config.github values embedded at generation time
-- [ ] AC-0625: Copy config JSON button copies the JSON block to the clipboard
-- [ ] AC-0626: Last sync summary (date, created, closed counts) is displayed when github-sync-state.json exists
-- [ ] AC-0627: A warning badge appears on the Settings tab icon when lastError is non-null
-- [ ] AC-0628: Token status shows Set or Not set based on the generation-time flag; the token value is never rendered
+- [x] AC-0623: A Settings tab appears in the plan-status.html sidebar
+- [x] AC-0624: Settings tab renders current config.github values embedded at generation time
+- [x] AC-0625: Copy config JSON button copies the JSON block to the clipboard
+- [x] AC-0626: Last sync summary (date, created, closed counts) is displayed when github-sync-state.json exists
+- [x] AC-0627: A warning badge appears on the Settings tab icon when lastError is non-null
+- [x] AC-0628: Token status shows Set or Not set based on the generation-time flag; the token value is never rendered
       Dependencies: US-0171
 
 ```

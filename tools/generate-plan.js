@@ -373,6 +373,15 @@ function main() {
   fs.writeFileSync(jsonPath, JSON.stringify(data, null, 2), 'utf8');
   console.log(`[generate-plan] Written ${jsonPath}`);
 
+  // GitHub Settings tab data
+  data.githubConfig = config.github || null;
+  data.githubTokenSet = !!process.env.GITHUB_TOKEN;
+  try {
+    data.syncState = JSON.parse(fs.readFileSync(path.join(ROOT, 'docs/github-sync-state.json'), 'utf8'));
+  } catch {
+    data.syncState = null;
+  }
+
   const html = renderHtml(data, { trends, budgetCSV });
   const htmlPath = path.join(outputDir, 'plan-status.html');
   fs.writeFileSync(htmlPath, html, 'utf8');
