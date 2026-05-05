@@ -13,6 +13,7 @@ Steps to Reproduce:
    Expected: A single-glance answer to "is the release on track?" with forecast, velocity, and top risks
    Actual: The tab leans on stat tiles and the Charts-style doughnut without an editorial hero summary; users have to visit 3+ tabs to infer health
    Status: Fixed
+   GH Issue: #541
    Fix Branch: bugfix/BUG-0183-0184-0223-plan-status-quality
    Lesson Encoded: Yes
    Notes: Tracked as visual/IA change under EPIC-0020 (CD-Redesign). See US-0135 Status Hero card.
@@ -30,6 +31,7 @@ Steps to Reproduce:
    Expected: All charts share a single semantic palette (ok/warn/risk/info/accent) so the same color always means the same thing
    Actual: Each tab uses a different legend and fill palette; "Done" is several different greens across tabs
    Status: Fixed
+   GH Issue: #542
    Fix Branch: bugfix/BUG-0183-0184-0223-plan-status-quality
    Lesson Encoded: Yes
    Notes: Fix by routing every chart through a shared palette token map (see AC in US-0140).
@@ -46,6 +48,7 @@ Steps to Reproduce:
    Expected: A 2-second glance identifies who is currently working
    Actual: All 9 agent cards carry the same visual weight; status pill is small, and the "now on air" dot is subtle; the currently-executing agent is not visually promoted
    Status: Fixed
+   GH Issue: #543
    Fix Branch: bugfix/BUG-0252-stash-recovery
    Lesson Encoded: Yes
    Notes: Fix by adding a left accent rail, tinted background, and outline glow on is-active cards; see US-0142.
@@ -62,6 +65,7 @@ Steps to Reproduce:
    Expected: Conductor's role in each hand-off is visible (it did just dispatch a task)
    Actual: Conductor transitions to active and back to idle faster than the 1s refresh can render, so the card is near-permanently idle and hand-offs appear to happen by magic
    Status: Fixed
+   GH Issue: #544
    Fix Branch: bugfix/BUG-0252-stash-recovery
    Lesson Encoded: Yes
    Notes: Fix by holding a visible "dispatching" state for a minimum of N seconds, and by promoting the most recent dispatch into the event ticker. See US-0143.
@@ -78,6 +82,7 @@ Steps to Reproduce:
    Expected: Each widget earns its space — pipeline shows macro phase progress, roster shows micro agent state
    Actual: Both widgets double-encode which agent is doing what right now (phase.agents field duplicates the active agent card); the pipeline loses its job as a cycle-progress artifact
    Status: Fixed
+   GH Issue: #545
    Fix Branch: bugfix/BUG-0252-stash-recovery
    Lesson Encoded: Yes
    Notes: Fix by trimming the pipeline to phase name + elapsed + partial fill, and letting the roster own "who is doing what." See US-0144.
@@ -94,6 +99,7 @@ Steps to Reproduce:
    Expected: Event log is one of the most prominent artefacts on a mission-control surface
    Actual: The "recent activity" pane is a 320px sidebar card with low contrast and no dedicated terminal-style event stream
    Status: Fixed
+   GH Issue: #546
    Fix Branch: bugfix/BUG-0252-stash-recovery
    Lesson Encoded: Yes
    Notes: Fix by promoting the stream to a full-width Event Log card in the main column with terminal monospace styling, while keeping a compressed feed in the rail. See US-0145.
@@ -110,6 +116,7 @@ Steps to Reproduce:
    Expected: Chrome is quiet; content leads
    Actual: Saturated navy gradient overpowers content — especially in light mode — and makes the two dashboards hard to distinguish because the header dominates identity
    Status: Fixed
+   GH Issue: #547
    Fix Branch: bugfix/BUG-0252-stash-recovery
    Lesson Encoded: Yes
    Notes: Fix by replacing with a thin neutral chrome + mode badge (REPORT / LIVE) and per-dashboard accent ornaments. See US-0136.
@@ -155,6 +162,7 @@ Steps to Reproduce:
    usage object — but cost_usd is absent there too (Anthropic does not expose
    per-message cost in transcripts); cost must be computed from token counts.
    Status: Fixed
+   GH Issue: #549
    Fix Branch: chore/fix-version-workflows
    Fix Summary:
    Part A fixes:
@@ -188,6 +196,7 @@ Steps to Reproduce:
    Expected: Badges show actual coverage percentages (e.g. 99.6% / 84.2%)
    Actual: Both badges display "N/A" in grey text
    Status: Fixed
+   GH Issue: #550
    Fix Branch: bugfix/BUG-0001-coverage-na
    Lesson Encoded: Yes — see docs/LESSONS.md
    Estimated Cost USD: 0.50
@@ -204,6 +213,7 @@ Steps to Reproduce:
    Expected: Chart shows split between covered (green) and gap (grey) based on actual coverage
    Actual: Chart is entirely grey — rendered as [0, 100] due to coverage.overall === 0 fallback
    Status: Fixed
+   GH Issue: #551
    Fix Branch: bugfix/BUG-0001-coverage-na
    Lesson Encoded: Yes — see docs/LESSONS.md
    Estimated Cost USD: 0.50
@@ -219,6 +229,7 @@ Steps to Reproduce:
    Expected: TCs linked to Done stories show Pass status
    Actual: All 23 TCs display amber "Not Run" — Status: [ ] Not Run in TEST_CASES.md was never updated
    Status: Fixed
+   GH Issue: #552
    Fix Branch: bugfix/BUG-0003-tc-statuses
    Lesson Encoded: Yes — see docs/LESSONS.md (L-0010)
    Estimated Cost USD: 0.25
@@ -234,6 +245,7 @@ Steps to Reproduce:
    Expected: Top bar, filter bar, and tab bar remain fixed at the top of the viewport
    Actual: All three scroll off-screen; user loses navigation and filter access
    Status: Fixed
+   GH Issue: #553
    Fix Branch: bugfix/BUG-0004-sticky-header
    Lesson Encoded: Yes — see docs/LESSONS.md (L-0009)
    Estimated Cost USD: 0.25
@@ -250,6 +262,7 @@ Steps to Reproduce:
    Expected: User-supplied content is HTML-escaped and rendered as plain text
    Actual: Raw HTML/JS from markdown files is injected verbatim into the dashboard — executable scripts run on load
    Status: Fixed
+   GH Issue: #554
    Fix Branch: bugfix/BUG-0005-xss-escape-html
    Lesson Encoded: No
    Estimated Cost USD: 0.50
@@ -266,6 +279,7 @@ Steps to Reproduce:
    Expected: Dashboard shows projected costs calculated from the configured hours and rate
    Actual: Dashboard always uses hardcoded S=4, M=8, L=16, XL=32 hours at $100/hr regardless of config
    Status: Fixed
+   GH Issue: #555
    Fix Branch: bugfix/BUG-0006-0009-0010-render-html
    Lesson Encoded: No
    Estimated Cost USD: 0.45
@@ -281,6 +295,7 @@ Steps to Reproduce:
    Expected: Returns zero-coverage fallback object without throwing
    Actual: Throws TypeError: Cannot read properties of undefined — crashes the generator
    Status: Fixed
+   GH Issue: #556
    Fix Branch: bugfix/BUG-0007-0011-parser-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.45
@@ -296,6 +311,7 @@ Steps to Reproduce:
    Expected: Generator reads from docs/ (lowercase) matching the actual directory structure
    Actual: Generator attempts to read from docs/ (uppercase) — silently produces empty data on Linux
    Status: Fixed
+   GH Issue: #557
    Fix Branch: bugfix/BUG-0008-0014-0015-0016-misc
    Lesson Encoded: No
    Estimated Cost USD: 0.45
@@ -312,6 +328,7 @@ Steps to Reproduce:
    Expected: Content is filtered to show only the selected type
    Actual: Filter selection is ignored — applyFilters() never reads the f-type value; all content remains visible
    Status: Fixed
+   GH Issue: #558
    Fix Branch: bugfix/BUG-0006-0009-0010-render-html
    Lesson Encoded: No
    Estimated Cost USD: 0.25
@@ -328,6 +345,7 @@ Steps to Reproduce:
    Expected: Badges show 0.0% (correct measured value)
    Actual: Badges show N/A — the > 0 guard cannot distinguish "no coverage file" from "0% coverage measured"
    Status: Fixed
+   GH Issue: #559
    Fix Branch: bugfix/BUG-0006-0009-0010-render-html
    Lesson Encoded: No
    Estimated Cost USD: 0.25
@@ -344,6 +362,7 @@ Steps to Reproduce:
    Expected: Most recent session is always first regardless of file order (AC-0013 requires reverse-chronological)
    Actual: Sessions are returned in the order they appear in the file — if appended at bottom, oldest appears first
    Status: Rejected
+   GH Issue: #560
    Fix Branch: bugfix/BUG-0007-0011-parser-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.25
@@ -360,6 +379,7 @@ Steps to Reproduce:
    Expected: All actions pinned to immutable full commit SHAs (e.g. actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683)
    Actual: Actions use mutable semver tags — a force-push to @v6 by the upstream maintainer would silently change CI behaviour
    Status: Fixed
+   GH Issue: #561
    Fix Branch: bugfix/BUG-0012-0013-0017-ci-config-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.45
@@ -375,6 +395,7 @@ Steps to Reproduce:
    Expected: All dependency versions are pinned exactly (no ^ or ~ ranges)
    Actual: ^ ranges allow automatic minor/patch upgrades on npm install in fresh environments
    Status: Fixed
+   GH Issue: #562
    Fix Branch: bugfix/BUG-0012-0013-0017-ci-config-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.20
@@ -390,6 +411,7 @@ Steps to Reproduce:
    Expected: bugs parameter is used to flag stories with open Critical/High bugs as at-risk
    Actual: bugs is declared but never read — function silently ignores bug data; ESLint reports no-unused-vars
    Status: Fixed
+   GH Issue: #563
    Fix Branch: bugfix/BUG-0008-0014-0015-0016-misc
    Lesson Encoded: No
    Estimated Cost USD: 0.20
@@ -405,6 +427,7 @@ Steps to Reproduce:
    Expected: Tool prints a warning that the config file failed to parse and is using defaults
    Actual: JSON.parse error is caught silently — tool falls back to DEFAULTS with no message; user is unaware
    Status: Fixed
+   GH Issue: #564
    Fix Branch: bugfix/BUG-0008-0014-0015-0016-misc
    Lesson Encoded: No
    Estimated Cost USD: 0.20
@@ -420,6 +443,7 @@ Steps to Reproduce:
    Expected: Human-readable error message per AGENTS.md §13; no raw stack trace exposed to user
    Actual: Node.js prints an unformatted stack trace and exits with code 1 — violates §13 error handling standard
    Status: Fixed
+   GH Issue: #565
    Fix Branch: bugfix/BUG-0008-0014-0015-0016-misc
    Lesson Encoded: No
    Estimated Cost USD: 0.20
@@ -435,6 +459,7 @@ Steps to Reproduce:
    Expected: generate-and-deploy job completes without deprecation warnings
    Actual: CI logs warn "peaceiris/actions-gh-pages@v4 is running on Node.js 20 and may not work as expected" — Node.js 20 will be forced off by June 2026
    Status: Fixed
+   GH Issue: #566
    Fix Branch: bugfix/BUG-0012-0013-0017-ci-config-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.25
@@ -450,6 +475,7 @@ Steps to Reproduce:
    Expected: Dashboard deploys successfully from both main and develop
    Actual: GitHub rejects the deploy-pages step: "Branch develop is not allowed to deploy to github-pages due to environment protection rules"
    Status: Fixed
+   GH Issue: #567
    Fix Branch: n/a — fixed via repo Settings → Environments → github-pages → add develop to allowed branches
    Lesson Encoded: No
    Estimated Cost USD: 0.20
@@ -465,6 +491,7 @@ Steps to Reproduce:
    Expected: No Node.js deprecation warnings in CI logs
    Actual: "actions/deploy-pages and actions/upload-artifact@v4 are running on Node.js 20 and may not work as expected; will be forced off by June 2026"
    Status: Fixed
+   GH Issue: #568
    Fix Branch: bugfix/BUG-0019-node24-actions
    Lesson Encoded: No
    Estimated Cost USD: 0.25
@@ -480,6 +507,7 @@ Steps to Reproduce:
    Expected: Header fits within the top ⅓ of the screen, leaving scrollable content visible below
    Actual: Header occupies more than ⅓ of the screen height due to large fonts, padding, and stat tiles
    Status: Fixed
+   GH Issue: #569
    Fix Branch: claude/fix-mobile-top-area-C7evU
    Lesson Encoded: No
    Estimated Cost USD: 0.25
@@ -496,6 +524,7 @@ Steps to Reproduce:
    Expected: Legend is collapsed by default on mobile with a toggle button to expand
    Actual: Legend is always expanded, pushing the table content left and wasting screen space
    Status: Fixed
+   GH Issue: #570
    Fix Branch: claude/fix-mobile-top-area-C7evU
    Lesson Encoded: No
    Estimated Cost USD: 0.20
@@ -512,6 +541,7 @@ Steps to Reproduce:
    Expected: Tapping the toggle button again closes the activity panel
    Actual: The panel (z-index:50, fixed top-0 right-0 width:280px) covers the toggle button at the same z-level once opened; the button is unreachable so the panel cannot be dismissed
    Status: Fixed
+   GH Issue: #571
    Fix Branch: claude/fix-mobile-top-area-C7evU
    Lesson Encoded: No
    Estimated Cost USD: 0.25
@@ -528,6 +558,7 @@ Steps to Reproduce:
    Actual: Every story shows $0; only the Totals footer row is correct
    Root Cause: generate-plan.js stored the field as `aiCostUsd` but render-html.js read `costUsd` — the key mismatch caused undefined → 0 for every story. The totals row was unaffected because it reads directly from costs.\_totals.costUsd
    Status: Fixed
+   GH Issue: #572
    Fix Branch: claude/fix-mobile-top-area-C7evU
    Lesson Encoded: No
    Estimated Cost USD: 0.45
@@ -543,6 +574,7 @@ Steps to Reproduce:
    Expected: AI Cost bars are visibly proportional to the AI spend per epic
    Actual: AI Cost bars are sub-pixel tall and invisible — projected costs ($1,600–$4,000/epic) and AI costs ($1–$7/epic) differ by ~3 orders of magnitude; sharing one y-axis makes the AI bars render with no visible height
    Status: Fixed
+   GH Issue: #573
    Fix Branch: claude/fix-mobile-top-area-C7evU
    Lesson Encoded: No
    Estimated Cost USD: 0.25
@@ -558,6 +590,7 @@ Steps to Reproduce:
    Expected: Legend panel appears above the scrollable table on mobile
    Actual: Legend panel renders to the right of the table (flex-row layout), compressing the table and making both hard to read on a narrow screen
    Status: Fixed
+   GH Issue: #574
    Fix Branch: claude/fix-mobile-top-area-C7evU
    Lesson Encoded: No
    Estimated Cost USD: 0.20
@@ -576,6 +609,7 @@ Steps to Reproduce:
    Expected: Coverage data appears in dashboard (summaryPath: "coverage/coverage-summary.json" as shown in spec)
    Actual: No coverage data rendered — generate-plan.js default is docs/coverage/coverage-summary.json; the spec example points to the wrong path
    Status: Fixed
+   GH Issue: #575
    Fix Branch: feature/docs-update-readme-update-prompt
    Lesson Encoded: No
    Estimated Cost USD: 0.35
@@ -593,6 +627,7 @@ Steps to Reproduce:
    Expected: PlanVisualizer reference section is appended to AGENTS.md
    Actual: grep -q "plan_visualizer.md" matches the prose; script prints "already references — skipping" and never injects the required section
    Status: Fixed
+   GH Issue: #576
    Fix Branch: feature/docs-update-readme-update-prompt
    Lesson Encoded: No
    Estimated Cost USD: 0.25
@@ -610,6 +645,7 @@ Steps to Reproduce:
    Expected: PlanVisualizer's namespaced plan:test suite runs, confirming correct installation
    Actual: Target project's own test suite runs instead (or "Missing script: test" error) — does not confirm PlanVisualizer installed correctly
    Status: Fixed
+   GH Issue: #577
    Fix Branch: feature/docs-update-readme-update-prompt
    Lesson Encoded: No
    Estimated Cost USD: 0.20
@@ -627,6 +663,7 @@ Steps to Reproduce:
    Expected: Script gracefully skips or prints an actionable [install]-prefixed error message
    Actual: cp fails with raw "No such file or directory"; set -euo pipefail aborts the script at step 2.5 — npm scripts, config, and stop hook steps never run
    Status: Fixed
+   GH Issue: #578
    Fix Branch: feature/docs-update-readme-update-prompt
    Lesson Encoded: No
    Estimated Cost USD: 0.25
@@ -645,6 +682,7 @@ Steps to Reproduce:
    Expected: Stop hook verified and restored (idempotent as stated in script header: "Idempotent — safe to re-run")
    Actual: Script sees .claude/settings.json exists, prints manual advisory, exits step 5 without verifying or restoring the hook
    Status: Fixed
+   GH Issue: #579
    Fix Branch: feature/docs-update-readme-update-prompt
    Lesson Encoded: No
    Estimated Cost USD: 0.20
@@ -660,6 +698,7 @@ Steps to Reproduce:
    Expected: Return object includes sessions field (matching attributeAICosts() shape: { costUsd, inputTokens, outputTokens, sessions })
    Actual: Return object omits sessions field; shape is { costUsd, inputTokens, outputTokens } only — inconsistent with attributeAICosts() and the zero-cost fallback also lacks sessions: 0
    Status: Fixed
+   GH Issue: #580
    Fix Branch: feature/US-0030-bug-fix-costs-tab
    Lesson Encoded: No
    Estimated Cost USD: 0.20
@@ -677,6 +716,7 @@ Steps to Reproduce:
    Expected: result.\_totals exists with { costUsd, inputTokens, outputTokens } summed across all matched bug branches
    Actual: result.\_totals is undefined — function only returns per-bug keyed entries
    Status: Fixed
+   GH Issue: #581
    Fix Branch: feature/US-0030-bug-fix-costs-tab
    Lesson Encoded: No
    Estimated Cost USD: 0.20
@@ -711,6 +751,7 @@ Steps to Reproduce:
    Expected: BUG/US IDs display on a single line without mid-string line breaks
    Actual: Font-mono IDs like "BUG-0001" and "US-0001" wrap between characters — e.g. "BUG-\n0001" — due to missing whitespace-nowrap constraint on the TD element
    Status: Fixed
+   GH Issue: #582
    Fix Branch: feature/US-0031-dashboard-ux-fixes
    Lesson Encoded: No
 
@@ -725,6 +766,7 @@ Steps to Reproduce:
    Expected: TC-0078 shows Pass — the version-bump workflow was verified via PRs #52 and #54
    Actual: TC-0078 displays "Not Run" because TEST_CASES.md status was never updated to [x] Pass
    Status: Fixed
+   GH Issue: #583
    Fix Branch: feature/dark-mode-readability
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -740,6 +782,7 @@ Steps to Reproduce:
    Expected: About modal adapts to light mode (white card, dark text)
    Actual: Modal always shows dark slate background and light text regardless of theme
    Status: Fixed
+   GH Issue: #584
    Fix Branch: feature/dark-mode-readability
    Lesson Encoded: Yes — see docs/LESSONS.md
    Estimated Cost USD: 0.00
@@ -756,6 +799,7 @@ Steps to Reproduce:
    Expected: AI Cost values are clearly readable in both light and dark modes
    Actual: text-teal-600 (#0d9488) has insufficient contrast on white — WCAG AA fails
    Status: Fixed
+   GH Issue: #585
    Fix Branch: feature/dark-mode-readability
    Lesson Encoded: Yes — see docs/LESSONS.md
    Estimated Cost USD: 0.00
@@ -771,6 +815,7 @@ Steps to Reproduce:
    Expected: Dash (—) for bugs whose token counts are unknown; real counts for bugs with cost log entries
    Actual: 0 / 0 displayed for all estimated-cost bugs — misleading, implies tokens were measured
    Status: Fixed
+   GH Issue: #586
    Fix Branch: feature/dark-mode-readability
    Lesson Encoded: Yes — see docs/LESSONS.md
    Estimated Cost USD: 0.00
@@ -786,6 +831,7 @@ Steps to Reproduce:
    Expected: ✓ shown for bugs with encoded lessons
    Actual: ○ always shown because renderer checks lessonEncoded === 'Yes' but parser returns full string "Yes — see docs/LESSONS.md"
    Status: Fixed
+   GH Issue: #587
    Fix Branch: feature/dark-mode-readability
    Lesson Encoded: Yes — see docs/LESSONS.md
    Estimated Cost USD: 0.00
@@ -801,6 +847,7 @@ Steps to Reproduce:
    Expected: Story ID (e.g. US-0031) stays on one line in the Story column
    Actual: Story cell wraps mid-string due to missing whitespace-nowrap on the td element
    Status: Fixed
+   GH Issue: #588
    Fix Branch: feature/dark-mode-readability
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -816,6 +863,7 @@ Steps to Reproduce:
    Expected: Entire page switches between light and dark themes
    Actual: Only the About modal responds; rest of page unchanged — tailwind.config={darkMode:'class'} was set before the CDN loaded so tailwind was undefined, config never applied, CDN defaulted to prefers-color-scheme strategy
    Status: Fixed
+   GH Issue: #589
    Fix Branch: feature/dark-mode-readability
    Lesson Encoded: Yes — see docs/LESSONS.md
    Estimated Cost USD: 0.00
@@ -831,6 +879,7 @@ Steps to Reproduce:
    Expected: AI cost and token columns show values from the feature/dark-mode-readability branch sessions
    Actual: $0.00 / 0/0 because no cost log entries existed for the fix branch and Estimated Cost USD was 0.00 so isEstimated stayed false (no — dash shown either)
    Status: Fixed
+   GH Issue: #590
    Fix Branch: feature/dark-mode-readability
    Lesson Encoded: Yes — see docs/LESSONS.md
    Estimated Cost USD: 0.00
@@ -846,6 +895,7 @@ Steps to Reproduce:
    Expected: All dark:text-_ and dark:bg-_ classes apply when html.dark is present
    Actual: Tailwind CDN generates styles using prefers-color-scheme strategy instead of class strategy because tailwind.config={darkMode:'class'} is set AFTER CDN loads; during initial CSS generation darkMode:'class' is unknown so dark: variants are never emitted
    Status: Fixed
+   GH Issue: #591
    Fix Branch: feature/dark-mode-readability
    Lesson Encoded: Yes — see docs/LESSONS.md
    Estimated Cost USD: 0.00
@@ -861,6 +911,7 @@ Steps to Reproduce:
    Expected: Header gradient shifts to a darker blue variant in dark mode
    Actual: Header always shows the same EPAM blue gradient — inline style= cannot use dark: Tailwind variants, and no CSS rule overrides it in .dark context
    Status: Fixed
+   GH Issue: #592
    Fix Branch: feature/dark-mode-readability
    Lesson Encoded: Yes — see docs/LESSONS.md
    Estimated Cost USD: 0.00
@@ -876,6 +927,7 @@ Steps to Reproduce:
    Expected: Done stories do not show ⚠ At Risk badge
    Actual: Done stories showed ⚠ At Risk badge because detectAtRisk() evaluated missingTCs/noBranch signals without excluding Done status
    Status: Fixed
+   GH Issue: #593
    Fix Branch: feature/US-0032-lessons-tab
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -892,6 +944,7 @@ Steps to Reproduce:
    Expected: A totals row shows the sum of AI Cost and Token columns across all bug entries
    Actual: Table ends after the last bug row; no totals row rendered
    Status: Fixed
+   GH Issue: #594
    Fix Branch: feature/US-0032-lessons-tab
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -907,6 +960,7 @@ Steps to Reproduce:
    Expected: Tab container fills available viewport height; scroll region occupies remaining space
    Actual: Container collapses to content height — blank area below short lists
    Status: Fixed
+   GH Issue: #595
    Fix Branch: feature/US-0032-lessons-tab
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -923,6 +977,7 @@ Steps to Reproduce:
    Expected: Column header (e.g. "In Progress") remains pinned at the top of its column
    Actual: The whole Kanban board scrolled as one unit; column headers disappeared off screen
    Status: Fixed
+   GH Issue: #596
    Fix Branch: feature/US-0032-lessons-tab
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -939,6 +994,7 @@ Steps to Reproduce:
    Expected: All six charts render at the same height (300 px)
    Actual: Doughnut charts rendered shorter than bar/line charts because Chart.js defaulted to 1:1 aspect ratio for doughnuts and 2:1 for bar/line charts
    Status: Fixed
+   GH Issue: #597
    Fix Branch: feature/US-0032-lessons-tab
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -955,6 +1011,7 @@ Steps to Reproduce:
    Expected: Filter bar hidden on tabs where filters have no applicable rows
    Actual: Filter bar remained visible with story-type dropdowns on tabs where they had no effect
    Status: Fixed
+   GH Issue: #598
    Fix Branch: feature/US-0032-lessons-tab
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -971,6 +1028,7 @@ Steps to Reproduce:
    Expected: Type dropdown should not include bug options on the Hierarchy tab since bugs are not rendered there
    Actual: Type dropdown showed 'Bugs only' and 'Stories + Bugs' options that returned zero results
    Status: Fixed
+   GH Issue: #599
    Fix Branch: feature/US-0032-lessons-tab
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -987,6 +1045,7 @@ Steps to Reproduce:
    Expected: '✓ L-XXXX ↗' renders on a single line
    Actual: Text wrapped mid-string (e.g. '✓ L-0010' on line one and '↗' on line two)
    Status: Fixed
+   GH Issue: #600
    Fix Branch: feature/US-0032-lessons-tab
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1003,6 +1062,7 @@ Steps to Reproduce:
    Expected: 'L-XXXX' ID token stays on a single line at all viewport widths
    Actual: ID text wrapped mid-value at certain card widths
    Status: Fixed
+   GH Issue: #601
    Fix Branch: feature/US-0032-lessons-tab
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1019,6 +1079,7 @@ Steps to Reproduce:
    Expected: AI Actual tile reflects total AI spend including bug fix sessions
    Actual: Tile showed only story branch costs from cost log; bug estimated costs and bug branch AI costs were excluded
    Status: Fixed
+   GH Issue: #602
    Fix Branch: feature/US-0032-lessons-tab
    Lesson Encoded: No
    Estimated Cost USD: 0.25
@@ -1034,6 +1095,7 @@ Steps to Reproduce:
    Expected: Projected column uses severity→t-shirt size×hourly rate (same formula as story Projected)
    Actual: Column showed raw Estimated Cost USD field values (e.g. $0.50) making values inconsistent with story projected costs ($800+)
    Status: Fixed
+   GH Issue: #603
    Fix Branch: feature/US-0032-lessons-tab
    Lesson Encoded: No
    Estimated Cost USD: 0.25
@@ -1050,6 +1112,7 @@ Steps to Reproduce:
    Expected: Projected tile = sum of story projected costs + sum of bug projected costs
    Actual: Tile showed only story projected costs; bug projected costs omitted
    Status: Fixed
+   GH Issue: #604
    Fix Branch: feature/US-0032-lessons-tab
    Lesson Encoded: No
    Estimated Cost USD: 0.25
@@ -1065,6 +1128,7 @@ Steps to Reproduce:
    Expected: Timeline reflects deduplicated session totals — same final figure as the Costs tab
    Actual: generate-plan.js:132 builds sessionTimeline from raw costRows (not deduplicateSessions); the same session's cost is summed multiple times, inflating the cumulative spend curve
    Status: Fixed
+   GH Issue: #605
    Fix Branch: fix/parse-cost-log-session-dedup
    Lesson Encoded: No
    Estimated Cost USD: 0.10
@@ -1080,6 +1144,7 @@ Steps to Reproduce:
    Expected: available: false when .pct cannot be read; renderer shows N/A
    Actual: Guard at parse-coverage.js:8 checks key presence not .pct presence; available:true returned with overall:NaN; renderer displays NaN% to user
    Status: Fixed
+   GH Issue: #606
    Fix Branch: feature/US-0048-ui-redesign-sidebar
    Lesson Encoded: No
    Estimated Cost USD: 0.02
@@ -1096,6 +1161,7 @@ Steps to Reproduce:
    Expected: ID safely rendered; no JS execution
    Actual: `onclick="toggleCardACs('${esc(story.id)}')"` breaks — esc() doesn't escape `'` in JS context
    Status: Fixed
+   GH Issue: #607
    Fix Branch: feature/US-0048-ui-redesign-sidebar
    Lesson Encoded: No
    Estimated Cost USD: 0.15
@@ -1112,6 +1178,7 @@ Steps to Reproduce:
    Expected: Named function or event listener
    Actual: Inline IIFE is fragile and hard to debug
    Status: Fixed
+   GH Issue: #608
    Fix Branch: feature/US-0048-ui-redesign-sidebar
    Lesson Encoded: No
    Estimated Cost USD: 0.10
@@ -1127,6 +1194,7 @@ Steps to Reproduce:
    Expected: Consistent output format
    Actual: With parens returns `P0`, without returns full string
    Status: Fixed
+   GH Issue: #609
    Fix Branch: feature/US-0048-ui-redesign-sidebar
    Lesson Encoded: No
    Estimated Cost USD: 0.05
@@ -1142,6 +1210,7 @@ Steps to Reproduce:
    Expected: Modular functions in separate files
    Actual: Single 1700-line file
    Status: Retired
+   GH Issue: #610
    Fix Branch:
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1188,6 +1257,7 @@ Steps to Reproduce:
    Expected: Warning printed
    Actual: Silent null returned
    Status: Fixed
+   GH Issue: #548
    Fix Branch: feature/US-0048-ui-redesign-sidebar
    Lesson Encoded: No
    Estimated Cost USD: 0.05
@@ -1203,6 +1273,7 @@ Steps to Reproduce:
    Expected: All six topbar stat tiles are fully visible; topbar ends where the activity panel begins
    Actual: #topbar-fixed uses right:0 and spans full viewport width, causing the Estimated tile to be obscured by the activity panel overlay
    Status: Fixed
+   GH Issue: #614
    Fix Branch: feature/US-0048-ui-redesign-sidebar
    Lesson Encoded: No
    Estimated Cost USD: 0.02
@@ -1220,6 +1291,7 @@ Steps to Reproduce:
    Expected: Open bug count excludes Retired and Cancelled bugs; shows only truly open bugs
    Actual: Bugs with status "Retired" are counted as open because filter uses !/^Fixed/i which passes Retired
    Status: Fixed
+   GH Issue: #611
    Fix Branch: develop (fixed in Session 16 — render-shell.js:20 + render-tabs.js:1254; BUGS.md status was stale)
    Lesson Encoded: No
 
@@ -1236,6 +1308,7 @@ Steps to Reproduce:
    Expected: Epic group headers with zero visible children are hidden; counts reflect filtered results
    Actual: Epic group headers remain visible even when all children are hidden by filters; counts show original totals
    Status: Fixed
+   GH Issue: #612
    Fix Branch: bugfix/BUG-0099-epic-header-filter-visibility
    Lesson Encoded: No
 
@@ -1251,6 +1324,7 @@ Steps to Reproduce:
    Expected: Tab scrolls normally as a page; all sections visible by scrolling
    Actual: Tab uses fixed viewport height (tab-fill class); budget table and stories table are cramped and neither the page nor the sections scroll usably
    Status: Fixed
+   GH Issue: #617
    Fix Branch: develop
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1267,6 +1341,7 @@ Steps to Reproduce:
    Expected: % Used column shows — (dash) when no budget has been set
    Actual: % Used shows NaN% with a green progress bar
    Status: Fixed
+   GH Issue: #618
    Fix Branch: develop
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1283,6 +1358,7 @@ Steps to Reproduce:
    Expected: Epic shown in results with title and status
    Actual: No results shown; epics were never added to buildSearchIndex()
    Status: Fixed
+   GH Issue: #619
    Fix Branch: develop
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1299,6 +1375,7 @@ Steps to Reproduce:
    Expected: Modal remains open until user closes it
    Actual: meta http-equiv="refresh" content="5" reloads the entire page, dismissing the modal
    Status: Fixed
+   GH Issue: #620
    Fix Branch: develop
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1315,6 +1392,7 @@ Steps to Reproduce:
    Expected: Portraits are stable; only animate on meaningful state change
    Actual: All images blink/reload every 5 seconds due to full page meta-refresh
    Status: Fixed
+   GH Issue: #621
    Fix Branch: develop
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1331,6 +1409,7 @@ Steps to Reproduce:
    Expected: Same scale + shadow hover effect as story cards
    Actual: No hover effect; bug and lesson cards lack the story-card-hover class
    Status: Fixed
+   GH Issue: #622
    Fix Branch: develop
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1347,6 +1426,7 @@ Steps to Reproduce:
    Expected: Button toggles to 🔕 Off and stops sending notifications
    Actual: requestAlerts() calls Notification.requestPermission() again which returns 'granted' instantly; button stays "🔔 On"
    Status: Fixed
+   GH Issue: #623
    Fix Branch: develop
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1363,6 +1443,7 @@ Steps to Reproduce:
    Expected: Badges have readable background/text contrast in both light and dark modes
    Actual: All badges use very dark backgrounds (#0a1628, #031a0e) with light text; in light mode they appear as tiny dark rectangles, clashing with the surrounding light UI
    Status: Fixed
+   GH Issue: #624
    Fix Branch: feature/US-0097-semantic-badges
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1379,6 +1460,7 @@ Steps to Reproduce:
    Expected: All card containers use the --clr-panel-bg / --clr-border token system consistently
    Actual: Cards mix `bg-white dark:bg-slate-800` + `border border-slate-200 dark:border-slate-700` — bypasses the token system and complicates theme swaps or future refactors
    Status: Fixed
+   GH Issue: #625
    Fix Branch: feature/US-0095-shadow-cards
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1396,6 +1478,7 @@ Steps to Reproduce:
    Actual: Hover uses `filter: brightness(1.05)` which on already-light backgrounds produces almost no visible change; users can't tell which row they're about to click
    Fix: Replaced `filter: brightness(1.05)` with `background: var(--clr-row-hover)` on `.ksw-swim-hdr:hover` — provides visible background-color shift in both light and dark modes
    Status: Fixed
+   GH Issue: #626
    Fix Branch: feature/US-0101-kanban-polish
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1419,6 +1502,7 @@ Steps to Reproduce:
 2. Found in: `tools/generate-dashboard.js`, `docs/dashboard.html`
    Description: The SDLC dashboard and Plan Visuali
    Status: Fixed
+   GH Issue: #627
    Fix Branch: est/BUG-0011
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1435,6 +1519,7 @@ Steps to Reproduce:
    Description: Dashboard has no light mode toggle. Several text colors fail WCAG AA contrast: #666 on #1a1a2e = 2.8:1 ratio (requires 4.5:1). Card borders and metric dividers are nearly invisible.
    Fix: P1.9 — Add CSS variable theming, light/dark toggle with localStorage persistence, fix contrast ratios.
    Status: Fixed
+   GH Issue: #628
    Fix Branch: est/BUG-0014
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1451,6 +1536,7 @@ Steps to Reproduce:
    Description: Dashboard subtitle and footer reference "EPAM EliteA" but the hackathon uses Claude Code as the agentic platform. EliteA is for the full production implementation.
    Fix: P1.10 — Replace "EPAM EliteA" with "Claude Code" in dashboard generator and status JSON.
    Status: Fixed
+   GH Issue: #629
    Fix Branch: est/BUG-0015
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1467,6 +1553,7 @@ Steps to Reproduce:
    Description: `@keyframes spin` is defined but never referenced by any CSS class. Dead code.
    Fix: P2.1 — Remove the unused keyframe.
    Status: Fixed
+   GH Issue: #630
    Fix Branch: est/BUG-0016
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1483,6 +1570,7 @@ Steps to Reproduce:
    Description: Must run `plan:generate` and `dashboard` separately. No single command to regenerate all outputs.
    Fix: P2.2 — Add `"build": "npm run plan:generate && npm run dashboard"`.
    Status: Fixed
+   GH Issue: #631
    Fix Branch: est/BUG-0017
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1499,6 +1587,7 @@ Steps to Reproduce:
    Description: Agent cards and story rows have no hover feedback. Dashboard feels static when interacting.
    Fix: P1.9 — Add hover brightness filter to agent cards and story rows.
    Status: Fixed
+   GH Issue: #632
    Fix Branch: est/BUG-0022
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1514,6 +1603,7 @@ Steps to Reproduce:
 2. Found in: `tools/generate-dashboard.js`
    Description: Dashboard uses fixed desktop grid layouts (3-column metrics, 2-column story grid, 6-phase hori
    Status: Fixed
+   GH Issue: #633
    Fix Branch: est/BUG-0023
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1530,6 +1620,7 @@ Steps to Reproduce:
    Description: No way for viewers to learn what the dashboard is, who built it, or find the source repo. Missing attribution and context for hackathon demo audience.
    Fix: Add "About" button in header with modal popup: title "AI-SDLC Orchestrator Visuali
    Status: Fixed
+   GH Issue: #634
    Fix Branch: est/BUG-0024
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1546,6 +1637,7 @@ Steps to Reproduce:
    Description: Agent spawning instructions, CLI invocations, and parallel execution patterns are hardcoded to Claude Code. Cannot run the same orchestration on Codex, Gemini, or open-source models without rewriting DM_AGENT.md and README.md. The agent instruction files themselves are platform-agnostic markdown, but the invocation and spawning mechanism is not.
    Fix: Create `orchestrator/` adapter layer with platform-specific spawn implementations. Abstract DM_AGENT.md spawning to use platform-agnostic patterns. Update README.md with multi-platform quick-start instructions.
    Status: Fixed
+   GH Issue: #635
    Fix Branch: est/BUG-0031
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1561,6 +1653,7 @@ Steps to Reproduce:
 2. Found in: `.github/workflows/`
    Description: Only 1 GitHub Actions workflow exists (`plan-visuali
    Status: Fixed
+   GH Issue: #636
    Fix Branch: est/BUG-0032
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1577,6 +1670,7 @@ Steps to Reproduce:
    Description: ESLint only targeted `tools/**/*.js`. The `orchestrator/` adapter code and `tests/` unit tests were never linted. Test files failed lint with hundreds of `no-undef` errors for Jest globals (`describe`, `it`, `expect`). Orchestrator files had unused imports.
    Fix: Expand ESLint config to cover `orchestrator/**/*.js` and `tests/**/*.js`. Add Jest globals to test config block. Add Node.js timer globals (`setTimeout`, `clearTimeout`).
    Status: Fixed
+   GH Issue: #637
    Fix Branch: est/BUG-0033
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1593,6 +1687,7 @@ Steps to Reproduce:
    Description: `path` and `fs` modules were imported but never used, causing ESLint `no-unused-vars` warnings.
    Fix: Remove unused `path` and `fs` require statements.
    Status: Fixed
+   GH Issue: #638
    Fix Branch: est/BUG-0034
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1609,6 +1704,7 @@ Steps to Reproduce:
    Description: `let spotlight = ''` was immediately overwritten in both branches of the following `if/else`, triggering ESLint `no-useless-assignment` error.
    Fix: Change to `let spotlight;` (uninitiali
    Status: Fixed
+   GH Issue: #639
    Fix Branch: est/BUG-0035
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1625,6 +1721,7 @@ Steps to Reproduce:
    Description: When rethrowing a caught error for failed `package.json` read, the original error cause was not attached. ESLint `preserve-caught-error` rule flagged this as losing the error chain.
    Fix: Add `{ cause: err }` to the rethrown `new Error(msg, { cause: err })`.
    Status: Fixed
+   GH Issue: #640
    Fix Branch: est/BUG-0036
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1641,6 +1738,7 @@ Steps to Reproduce:
    Description: No code formatter configured. Inconsistent formatting across JS files, markdown, and config files. No CI check to enforce formatting consistency.
    Fix: Added Prettier with `.prettierrc` config (semi, singleQuote, trailingComma all, printWidth 120), `.prettierignore`, `format` and `format:check` npm scripts, and CI job to enforce formatting on PRs.
    Status: Fixed
+   GH Issue: #641
    Fix Branch: est/BUG-0037
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1657,6 +1755,7 @@ Steps to Reproduce:
    Description: Phase pipeline only renders `pending`, `in-progress`, and `complete` states. No CSS class, icon, or visual treatment for `blocked` status. A blocked phase looks identical to pending, so human operators miss escalation events.
    Fix: Added `.phase-block.blocked` CSS (red background, red pulsing animation), ⛔ icon mapping, and light/dark theme support.
    Status: Fixed
+   GH Issue: #642
    Fix Branch: est/BUG-0038
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1673,6 +1772,7 @@ Steps to Reproduce:
    Description: Agent card status color logic only handles `active` and `complete`. Blocked agents render with gray status (#888), indistinguishable from idle. No border highlight or animation for blocked agents.
    Fix: Added blocked handling to statusBg/statusColor logic, `.agent-card.blocked` CSS class with red border and pulse animation, and `cardClass` variable for dynamic class assignment.
    Status: Fixed
+   GH Issue: #643
    Fix Branch: est/BUG-0039
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1689,6 +1789,7 @@ Steps to Reproduce:
    Description: When Conductor sets a phase/agent to `blocked` in sdlc-status.json, the dashboard shows no prominent notification. Humans must scroll to the phase pipeline to notice the blocked state — easy to miss.
    Fix: Added top-of-page red alert banner that appears when any phase or agent is blocked. Includes dynamic summary of which phases/agents are blocked, a dismiss button, and pulsing animation.
    Status: Fixed
+   GH Issue: #644
    Fix Branch: est/BUG-0040
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1705,6 +1806,7 @@ Steps to Reproduce:
    Description: When orchestration transitions to BLOCKED state, there is no audible notification. The dashboard auto-refreshes every 5 seconds but the human may not be watching the screen.
    Fix: Added Web Audio API three-tone ascending alert (440H
    Status: Fixed
+   GH Issue: #645
    Fix Branch: est/BUG-0041
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1721,6 +1823,7 @@ Steps to Reproduce:
    Description: No browser push notification when orchestration becomes BLOCKED. If the user has the dashboard in a background tab, they receive no notification that human input is required.
    Fix: Added Notification API integration that sends a persistent browser notification on BLOCK transitions. Requests permission on toggle, persists preference to localStorage, uses `requireInteraction: true` so notification stays until acknowledged.
    Status: Fixed
+   GH Issue: #646
    Fix Branch: est/BUG-0042
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1737,6 +1840,7 @@ Steps to Reproduce:
    Description: Prettier markdown formatting indented metadata fields (Status, Fix Branch, Estimated Cost USD) under a numbered list item. The `parseBugs` regex uses `^` anchors requiring column 0, causing 4 test failures in CI.
    Fix: Restructured fixture to keep numbered list items and metadata fields at separate paragraph levels so Prettier does not nest them.
    Status: Fixed
+   GH Issue: #647
    Fix Branch: est/BUG-0043
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1753,6 +1857,7 @@ Steps to Reproduce:
    Description: When Forge and Pixel run in parallel (Phase 3), both agents update `sdlc-status.json` to report progress. Without locking, one agent's write can overwrite the other's, losing status updates. This is a classic lost-update race condition.
    Fix: Added `orchestrator/file-lock.js` (mkdir-based locking with stale detection) and `orchestrator/atomic-write.js` (atomic read-modify-write via temp+rename). All agents must use `atomicReadModifyWriteJson()` for sdlc-status.json updates.
    Status: Fixed
+   GH Issue: #648
    Fix Branch: est/BUG-0044
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1769,6 +1874,7 @@ Steps to Reproduce:
    Description: When parallel agents both need to allocate a new bug or task ID, they could read the same "next available" value from ID_REGISTRY.md simultaneously, producing duplicate IDs. This corrupts cross-references across BUGS.md, RELEASE_PLAN.md, and TEST_CASES.md.
    Fix: Added `reserveId(sequence)` in `orchestrator/atomic-write.js` that acquires a file lock, reads the registry, increments the sequence, and writes back atomically. Agents must use this instead of manual ID allocation.
    Status: Fixed
+   GH Issue: #649
    Fix Branch: est/BUG-0045
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1785,6 +1891,7 @@ Steps to Reproduce:
    Description: Append-only log files written by multiple parallel agents can produce interleaved or corrupted entries when two processes append simultaneously. Markdown structure breaks when partial lines from different agents mix.
    Fix: Added `atomicAppend()` in `orchestrator/atomic-write.js` that acquires a file lock before appending. All log-style file writes must use this function.
    Status: Fixed
+   GH Issue: #650
    Fix Branch: est/BUG-0046
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1801,6 +1908,7 @@ Steps to Reproduce:
    Description: When parallel agents push to different branches simultaneously, network contention or remote rejections can cause silent push failures. Agents may believe code is pushed when it isn't, leading to lost work or stale PRs.
    Fix: Added `orchestrator/git-safe.js` with `safePush()` (exponential backoff retry, auto-pull on rejection), `detectConflicts()` (dry-run merge check), and `checkOverlap()` (overlapping file detection between branches).
    Status: Fixed
+   GH Issue: #651
    Fix Branch: est/BUG-0047
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1817,6 +1925,7 @@ Steps to Reproduce:
    Description: When Conductor merges parallel branches (e.g., Forge's backend + Pixel's frontend), there is no pre-merge conflict check. If both branches modify shared files (package.json, types, test fixtures), the merge fails mid-way and requires manual intervention.
    Fix: Added `checkOverlap()` and `detectConflicts()` to `orchestrator/git-safe.js`. Conductor must run overlap check before merging parallel branches. Sequential merge order: first-in merges clean, second rebases on top.
    Status: Fixed
+   GH Issue: #652
    Fix Branch: est/BUG-0048
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1833,6 +1942,7 @@ Steps to Reproduce:
    Description: Prettier formatting was only enforced in CI. Developers and agents could commit unformatted code, causing CI failures on every PR. No local feedback loop before push.
    Fix: Added husky pre-commit hook with lint-staged. On commit, staged `.js`, `.json`, `.md`, `.yml`, `.yaml` files are auto-formatted with Prettier, and `.js` files are auto-fixed with ESLint.
    Status: Fixed
+   GH Issue: #653
    Fix Branch: est/BUG-0049
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1849,6 +1959,7 @@ Steps to Reproduce:
    Description: Agent names, roles, icons, and colors were hardcoded independently in 3 separate files (spawn.js had the agent registry, generate-dashboard.js had duplicate role/color/icon maps, process-avatars.js had a hardcoded AGENTS_ORDER array). Adding or renaming an agent required changes in 3+ files, making the framework non-portable and error-prone.
    Fix: Created `agents.config.json` as the single source of truth for all agent definitions. Updated spawn.js, generate-dashboard.js, and process-avatars.js to load from config. Added `tools/init-sdlc-status.js` to generate sdlc-status.json from config. Any project can now customi
    Status: Fixed
+   GH Issue: #654
    Fix Branch: est/BUG-0050
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1865,6 +1976,7 @@ Steps to Reproduce:
    Description: No single file existed for AI agents to discover project-specific context on startup. Each agent had project knowledge baked into its instruction file. Different AI platforms (Claude Code, Gemini, Codex, etc.) auto-read different convention files (CLAUDE.md, Gemini.md, etc.) but none existed.
    Fix: Created `project.md` as the single project entry point referencing all architecture docs, release plan, test cases, and tracking files. Created 7 platform symlinks in repo root (`CLAUDE.md`, `Gemini.md`, `Codex.md`, `EliteA.md`, `CodeMie.md`, `Qwen.md`, `MiniMax.md`) all pointing to `project.md` for auto-discovery.
    Status: Fixed
+   GH Issue: #655
    Fix Branch: est/BUG-0053
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1881,6 +1993,7 @@ Steps to Reproduce:
    Description: Dashboard HTML had "Your Project" title, "Canadian Tire Corporation" footer, GitHub repo URL, and CTC brand color `#D52B1E` hardcoded throughout CSS and HTML. Changing the project required editing 15+ locations in the dashboard generator.
    Fix: Added `dashboard` section to `agents.config.json` with `title`, `subtitle`, `footer`, `repoUrl`, and `primaryColor` fields. Dashboard generator reads these from config, defaulting to the repo name from `package.json`. All `#D52B1E` CSS references replaced with `var(--brand-primary)` CSS variable set from config.
    Status: Fixed
+   GH Issue: #656
    Fix Branch: est/BUG-0054
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1897,6 +2010,7 @@ Steps to Reproduce:
    Description: Multiple `data-*` HTML attributes and `onclick` handler strings were interpolated without escaping. Malicious story/epic IDs or bug statuses could inject arbitrary HTML/JS. Affected: story cards, epic headers, bug table rows, bug card views.
    Fix: Applied `esc()` to all `data-*` attribute interpolations and `jsEsc()` to all `onclick` handler string interpolations across 9 locations.
    Status: Fixed
+   GH Issue: #657
    Fix Branch: est/BUG-0055
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1913,6 +2027,7 @@ Steps to Reproduce:
    Description: Branch names were interpolated into shell commands without quoting: `git push origin ${branch}`. A branch name containing shell metacharacters (`;`, `$()`, backticks) could execute arbitrary commands.
    Fix: Quoted all 6 branch name interpolations in git shell commands with double quotes.
    Status: Fixed
+   GH Issue: #658
    Fix Branch: est/BUG-0056
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1929,6 +2044,7 @@ Steps to Reproduce:
    Description: If a stale lock's info file was repeatedly unreadable, `tryAcquire()` would recursively call itself with no depth limit, causing a stack overflow.
    Fix: Added `_depth` parameter with max depth of 2 retries. Throws explicit error on excessive retries.
    Status: Fixed
+   GH Issue: #659
    Fix Branch: est/BUG-0057
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1945,6 +2061,7 @@ Steps to Reproduce:
    Description: Temp file suffix used only `process.pid`, so two rapid writes from the same process to the same directory could collide.
    Fix: Added `Date.now()` to temp file suffix: `.${basename}.tmp.${pid}.${timestamp}`.
    Status: Fixed
+   GH Issue: #660
    Fix Branch: est/BUG-0058
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1961,6 +2078,7 @@ Steps to Reproduce:
    Description: `JSON.parse()` call had no try-catch. A corrupt JSON file would throw an opaque error without identifying the problematic file.
    Fix: Wrapped in try-catch with descriptive error message including the file path.
    Status: Fixed
+   GH Issue: #661
    Fix Branch: est/BUG-0059
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1977,6 +2095,7 @@ Steps to Reproduce:
    Description: `JSON.parse()` of `agents.config.json` had no error handling. A malformed config file would crash with an unhelpful stack trace.
    Fix: Added try-catch with descriptive error message.
    Status: Fixed
+   GH Issue: #662
    Fix Branch: est/BUG-0060
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -1993,6 +2112,7 @@ Steps to Reproduce:
    Description: `--agent` and `--task` flags accessed `args[idx + 1]` without bounds checking, producing `undefined` if the argument was missing.
    Fix: Added bounds checks with descriptive error messages and usage hints.
    Status: Fixed
+   GH Issue: #663
    Fix Branch: est/BUG-0061
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2009,6 +2129,7 @@ Steps to Reproduce:
    Description: `rmdirSync` in `release()` could fail silently if directory had unexpected contents, leaving stale locks that would eventually expire via timeout.
    Fix: Added separate try-catch for `rmdirSync` with warning log.
    Status: Fixed
+   GH Issue: #664
    Fix Branch: est/BUG-0062
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2025,6 +2146,7 @@ Steps to Reproduce:
    Description: Author name "Kamal Syed" and title "Director of Program Management, EPAM Systems" were hardcoded in the About modal HTML.
    Fix: Added `author` and `authorTitle` fields to `agents.config.json` dashboard config. Dashboard reads from config and conditionally renders.
    Status: Fixed
+   GH Issue: #665
    Fix Branch: est/BUG-0063
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2041,6 +2163,7 @@ Steps to Reproduce:
    Description: Branch naming examples contained specific story/bug IDs (US-0003, BUG-0007, BUG-0012) instead of generic placeholders.
    Fix: Replaced with generic placeholders (US-XXXX, BUG-XXXX).
    Status: Fixed
+   GH Issue: #666
    Fix Branch: est/BUG-0065
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2057,6 +2180,7 @@ Steps to Reproduce:
    Description: CI pipeline had lint, test, build, format check, and dependency audit but no static analysis security testing (SAST) or secret scanning. Code vulnerabilities and accidentally committed secrets would go undetected.
    Fix: Added CodeQL SAST job (javascript-typescript) and TruffleHog secret scanning job to CI pipeline.
    Status: Fixed
+   GH Issue: #667
    Fix Branch: est/BUG-0066
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2073,6 +2197,7 @@ Steps to Reproduce:
    Description: The agentic SDLC dashboard auto-refreshes every 5 seconds but gives no audio or notification signal when pipeline phases complete, agents become blocked, or bugs are opened. Users stepping away from the terminal have no way to know when their attention is required.
    Fix: Added a `localStorage`-based state change detection system. Each generated page embeds a `DASH_SNAPSHOT` JSON object with current phase, bug count, agent statuses, and pipeline completion state. On page load, the snapshot is compared to the previous render stored in `localStorage`. When a meaningful change is detected (phase completes, agent blocked, pipeline finishes, new bugs opened), the system plays a Web Audio API tone and fires a browser `Notification`. A "🔔 Alerts" button in the header lets users grant notification permission. No new dependencies — uses only built-in browser APIs.
    Status: Fixed
+   GH Issue: #668
    Lesson Encoded: No
    Estimated Cost USD: 0.00
 
@@ -2088,6 +2213,7 @@ Steps to Reproduce:
    Description: `sessionTimeline` called `deduplicateSessions(costRows)` without filtering `est/*` branches. The 18 synthetic estimated-bug-cost rows (e.g. `est/BUG-0001`) — representing manual estimates injected into `AI_COST_LOG.md` for bugs without real session data — were included in the cumulative timeline, inflating it by $101.15. The header total (`_totals.costUsd`) correctly skips `est/*` branches in `aggregateCostByBranch`, causing the two metrics to diverge.
    Fix: Added `.filter((row) => !row.branch.startsWith('est/'))` to the `sessionTimeline` pipeline in `generate-plan.js`. Both metrics now end at $483.63.
    Status: Fixed
+   GH Issue: #669
    Fix Branch: develop
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2104,6 +2230,7 @@ Steps to Reproduce:
    Description: `applyFilters` queried `.story-row` children of each `.epic-block` element to determine whether to show or hide the block. In the column view, story rows are children of `.epic-block`. In the card view, the `.epic-block` is only the collapsible header; story rows live in a sibling `epic-cards-*` div. So `block.querySelectorAll('.story-row')` always returned 0 children for card view epic-blocks, causing all of them to be set to `display: none` on page load. Switching to card view showed a completely blank panel.
    Fix: Changed the search scope from `block` to `wrapper.closest('.mb-8') || block` so story rows in sibling divs are found correctly for card view epic blocks.
    Status: Fixed
+   GH Issue: #670
    Fix Branch: develop
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2120,6 +2247,7 @@ Steps to Reproduce:
    Expected: Clean console load
    Actual: "TypeError: Cannot read properties of null (reading 'addEventListener')" at plan-status.html:~20215 — search-body element lookup returns null before wire-up runs
    Status: Fixed
+   GH Issue: #671
    Fix Branch: bugfix/BUG-0157-search-body-null-fix
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2141,6 +2269,7 @@ Steps to Reproduce:
    b. US-0085/0086/0087 live inside adjacent code-fence empty blocks in the Standalone Stories section — extractCodeBlocks's regex pairing treated them as outside any block so they never got an epicId
    c. 44 bugs merged from legacy /BUGS.md have relatedStory="n/a" — no way to retroactively map
    Status: Fixed
+   GH Issue: #672
    Fix Branch: bugfix/BUG-0158-bug-epic-grouping
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2159,6 +2288,7 @@ Steps to Reproduce:
    Expected: Page refreshes polling data in place and preserves scroll position + any open modal/popup state
    Actual: setInterval fires location.reload(), the whole page reloads, scroll resets to top, and any open About modal / expanded card closes
    Status: Fixed
+   GH Issue: #673
    Fix Branch: feature/US-0111-live-fetch-and-patch
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2177,6 +2307,7 @@ Steps to Reproduce:
    Expected: A single AudioContext instance exists and is reused across beeps
    Actual: playBeep() calls `new AudioContext()` on every invocation; browsers limit AudioContexts per page and the count climbs until the limit is hit
    Status: Fixed
+   GH Issue: #674
    Fix Branch: feature/US-0122-alerts-incident-ticker
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2194,6 +2325,7 @@ Steps to Reproduce:
    Expected: A visible hover affordance indicates the card is interactive
    Actual: brightness(1.12) on an already-light surface produces almost no visible shift; users can't tell the card is hoverable
    Status: Fixed
+   GH Issue: #675
    Fix Branch: feature/US-0119-agent-spotlight-stations
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2211,6 +2343,7 @@ Steps to Reproduce:
    Expected: Header neutral/healthy when system is healthy; alert color reserved for incident states
    Actual: Header uses `linear-gradient(135deg, var(--brand-primary) 0%, #8B1A12 100%)` — the hardcoded dark red reads visually as "alert" even when nothing is blocked
    Status: Fixed
+   GH Issue: #676
    Fix Branch: feature/US-0114-header-3-zone
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2229,6 +2362,7 @@ Steps to Reproduce:
    Expected: Each agent card shows its portrait photo
    Actual: Cards render emoji-only because the renderer has no avatar path to use — agents.config.json has no `avatar` field and generate-dashboard.js doesn't read one
    Status: Fixed
+   GH Issue: #677
    Fix Branch: feature/US-0113-agent-portraits
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2244,6 +2378,7 @@ Steps to Reproduce:
    Expected: Each story row shows the story ID, title, and status; each epic header shows the epic ID once followed by its human-readable title
    Actual: Story title column reads "undefined" because docs/sdlc-status.json stories have no `title` field; epic header renders the epic ID twice ("EPIC-0015 EPIC-0015") because `status.epics` is an empty object and the fallback uses the same ID
    Status: Fixed
+   GH Issue: #816
    Fix Branch: bugfix/BUG-0164-0166-dashboard-honesty
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2261,6 +2396,7 @@ Steps to Reproduce:
    Expected: Both tabs show epic groupings with the same visual treatment — left-border accent in the epic color, epic ID + status badge + title in the header, and an aggregate counter on the right
    Actual: Hierarchy uses `.epic-block` cards with a 4px left accent border and status badge in the header; Bugs uses a plain `<tbody>` top-border with no left accent, no status badge, and only a `(N)` count
    Status: Fixed
+   GH Issue: #817
    Fix Branch: bugfix/BUG-0164-0166-dashboard-honesty
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2278,6 +2414,7 @@ Steps to Reproduce:
    Expected: All metric counts reflect the live state of the project — tasks/stories/bugs/tests/coverage derived from the authoritative sources (RELEASE_PLAN.md, BUGS.md, coverage-summary.json)
    Actual: Tasks Done renders "4 / 0" because `tasksTotal` is never bumped off its init-time zero default; Stories Done counts only pipeline-fired stories (5/6) not the project's 125; Bugs Open/Fixed are both frozen at 0 despite 130+ bug entries; Tests Passed 1861 is a stale sticky value from an earlier session
    Status: Fixed
+   GH Issue: #818
    Fix Branch: bugfix/BUG-0164-0166-dashboard-honesty
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2293,6 +2430,7 @@ Steps to Reproduce:
    Expected: Epic groups are default-collapsed (arrow ▶), matching the Hierarchy tab convention documented in MEMORY.md
    Actual: Groups are default-expanded (arrow ▼) and every bug row renders, making the list very long
    Status: Fixed
+   GH Issue: #819
    Fix Branch: bugfix/dashboard-polish-round-2
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2311,6 +2449,7 @@ Steps to Reproduce:
    Expected: Same tight spacing (mb-2) between epic groupings across Hierarchy, Bugs, and Costs
    Actual: Bugs card view uses mb-6, producing ~3x wider vertical gaps than Hierarchy
    Status: Fixed
+   GH Issue: #820
    Fix Branch: bugfix/dashboard-polish-round-2
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2329,6 +2468,7 @@ Steps to Reproduce:
    Expected: The chart sits vertically centered within the card's render height
    Actual: Chart is pinned to the top of the card with empty space below, because the sibling Epic Progress card is forced to ~648px (18 epics × 36px), and the grid equal-height layout stretches Cost Breakdown to match while its canvas is fixed at 300px
    Status: Fixed
+   GH Issue: #821
    Fix Branch: bugfix/dashboard-polish-round-2
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2345,6 +2485,7 @@ Steps to Reproduce:
    Expected: branch deleted after the auto-merge completes
    Actual: branch persists on origin; 25+ orphan version-bump branches accumulate after a typical epic (one per develop-advance)
    Status: Fixed
+   GH Issue: #822
    Fix Branch: chore/branch-cleanup-tooling
    Lesson Encoded: Yes — see docs/LESSONS.md
    Estimated Cost USD: 0.00
@@ -2363,6 +2504,7 @@ Steps to Reproduce:
    Expected: worktrees removed after each story merges; only the main repo worktree remains
    Actual: every agent-spawn worktree persists until manually removed; 14-story epic leaves 16+ worktrees (Pixel retries leave extras)
    Status: Fixed
+   GH Issue: #823
    Fix Branch: chore/branch-cleanup-tooling
    Lesson Encoded: Yes — see docs/LESSONS.md
    Estimated Cost USD: 0.00
@@ -2380,6 +2522,7 @@ Steps to Reproduce:
    Expected: local branch is deleted (it's merged upstream)
    Actual: git refuses because the branch's tip is not an ancestor of develop (squash created a NEW commit with a different SHA)
    Status: Fixed
+   GH Issue: #824
    Fix Branch: chore/branch-cleanup-tooling
    Lesson Encoded: Yes — see docs/LESSONS.md
    Estimated Cost USD: 0.00
@@ -2396,6 +2539,7 @@ Steps to Reproduce:
    Expected: only orphan version-bump branches (no PR or PR already MERGED/CLOSED) are deleted; open auto-merge PRs are left alone to complete
    Actual: PR #341 was auto-created by the version-bump workflow after PR #340 merged, my cleanup script ran seconds later and deleted the branch, PR #341 closed without merging, version bump was skipped
    Status: Fixed
+   GH Issue: #825
    Fix Branch: chore/cleanup-script-pr-gate
    Lesson Encoded: Yes — see docs/LESSONS.md
    Estimated Cost USD: 0.00
@@ -2412,6 +2556,7 @@ Steps to Reproduce:
    Expected: `scripts/cleanup-branches.sh` is present and `plan:cleanup` / `plan:cleanup:dry` npm scripts are registered, matching what PlanVisualizer itself ships with
    Actual: only `tools/`, `tests/`, `jest.config.js`, `eslint.config.js`, `plan_visualizer.md`, and the Pages workflow get copied. Branch hygiene tooling stays behind — target projects running DM_AGENT pipelines accumulate 50+ stale refs per epic with no bundled sweep command.
    Status: Fixed
+   GH Issue: #826
    Fix Branch: chore/install-cleanup-tooling-propagation
    Lesson Encoded: Yes — see docs/LESSONS.md
    Estimated Cost USD: 0.00
@@ -2428,6 +2573,7 @@ Steps to Reproduce:
    Expected: lessons tab renders; agent portraits resolve to optimized PNGs via the `avatar` key per agent
    Actual: `config.docs.lessons` is undefined so `parseLessons` throws or returns empty; agent cards fall back to headshots because `agents.<name>.avatar` is missing from the existing config; user has no automated way to know which fields to add
    Status: Fixed
+   GH Issue: #827
    Fix Branch: chore/config-schema-migration
    Lesson Encoded: Yes — see docs/LESSONS.md
    Estimated Cost USD: 0.00
@@ -2443,6 +2589,7 @@ Steps to Reproduce:
    Expected: Headers show gradient background and 2px accent border-bottom
    Actual: QA screenshot appeared to show plain headers
    Status: Retired
+   GH Issue: #828
    Fix Branch: feature/US-0101-kanban-polish
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2458,6 +2605,7 @@ Steps to Reproduce:
    Expected: P0 cards show danger-color left stripe; P1 show warn-color left stripe
    Actual: QA screenshot appeared to show cards without color stripes
    Status: Retired
+   GH Issue: #829
    Fix Branch: feature/US-0101-kanban-polish
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2473,6 +2621,7 @@ Steps to Reproduce:
    Expected: WIP count shows as a styled colored pill element
    Actual: QA screenshot appeared to show plain text WIP count
    Status: Retired
+   GH Issue: #830
    Fix Branch: feature/US-0101-kanban-polish
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2481,6 +2630,7 @@ Steps to Reproduce:
 BUG-0179: Status tab missing "Financial" section grouping — only "Delivery" section rendered
 Severity: Medium
 Status: Retired
+GH Issue: #831
 Related Story: US-0103
 Fix Branch:
 Description: Expected two named section groupings on the Status tab — "Delivery" (epic progress + test results charts) and "Financial" (budget/cost charts) — per the US-0103 AC. Observed in charts-light.png and charts-dark.png: only the "DELIVERY" section heading is visible with the epic progress bars and doughnut chart. No "FINANCIAL" section heading or financial charts (budget by epic, AI cost) appear in the viewport. The section may be absent from the rendered output or not reached by the screenshot viewport.
@@ -2497,6 +2647,7 @@ Steps to Reproduce:
    Actual: QA screenshot appeared to show no bug rows rendered (report from Sentinel QA pass)
    Root Cause: False positive. Bugs tab defaults to collapsed epic sections — bug rows are hidden behind collapsed accordions until user expands an epic. The bug-epic-header rows (57) and bug-row elements (291) are confirmed present in the generated HTML. This is the intended UX, not a rendering failure.
    Status: Retired
+   GH Issue: #832
    Fix Branch:
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2515,6 +2666,7 @@ Steps to Reproduce:
    Actual: Story block still shows Status: Planned with all ACs unchecked ([ ]) — no agent in the pipeline writes back to RELEASE_PLAN.md after the PR merges
    Root Cause: The "Post-merge — sync main repo" section of DM_AGENT.md contains only 3 git commands (checkout develop, pull, worktree remove). There is no step instructing the Conductor to update the merged story's Status field and AC checkboxes in RELEASE_PLAN.md.
    Status: Fixed
+   GH Issue: #833
    Fix Branch: chore/session-20-close
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2533,6 +2685,7 @@ Steps to Reproduce:
    Actual: Checklist covers progress.md, MEMORY.md, PROMPT_LOG.md, MIGRATION_LOG.md, LESSONS.md, and coverage — but has no step to audit RELEASE_PLAN.md story statuses against merged PRs. The EPIC-0016 session close (PR #338) updated the epic-level Status: Complete but all 13 story blocks remained Planned.
    Root Cause: The session close procedure was designed before the PR-based merge workflow (adopted 2026-04-14). It predates the pattern where per-story PRs ship code without updating the RELEASE_PLAN.md markdown.
    Status: Fixed
+   GH Issue: #834
    Fix Branch: chore/session-20-close
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2551,6 +2704,7 @@ Steps to Reproduce:
    Actual: Only the topbar/sidebar update; the main content area stays white (uses --clr-_ tokens unresolved to any value)
    Root Cause: Two compounding defects: (1) EPIC-0020 replaced --clr-_ CSS variable names with new OKLCH tokens (--bg, --text, --surface, --border, etc.) but left all CSS consumers still referencing the old --clr-_ names, so those resolved to empty strings. (2) Tailwind darkMode:'class' requires a .dark class on <html>, but setTheme() only set data-theme attribute — making all dark:_ Tailwind variants no-ops.
    Status: Fixed
+   GH Issue: #835
    Fix Branch: bugfix/BUG-0190-0197-ui-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2569,6 +2723,7 @@ Steps to Reproduce:
    Actual: A blank 52px white strip appears between the topbar and content, caused by stale body { padding-top: 52px } left over from when .pv-chrome was position:fixed
    Root Cause: EPIC-0020 changed .pv-chrome from position:fixed to position:sticky (in-flow layout), eliminating the need for body padding-top offset. The padding rule was not removed during the migration.
    Status: Fixed
+   GH Issue: #836
    Fix Branch: bugfix/BUG-0190-0197-ui-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2588,6 +2743,7 @@ Steps to Reproduce:
    Actual: The full title wraps onto multiple lines, pushing labels to a new line and misaligning the row with its fixed-width sibling columns
    Root Cause: Row container used flex flex-wrap allowing unconstrained width; title element lacked min-w-0 + truncate constraints; status/ID columns lacked min-width floor; labels lacked ml-auto + flex-shrink-0 anchoring.
    Status: Fixed
+   GH Issue: #837
    Fix Branch: bugfix/BUG-0190-0197-ui-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2606,6 +2762,7 @@ Steps to Reproduce:
    Actual: No search button rendered; the searchBox element exists in DOM but has no visible trigger in the masthead
    Root Cause: renderChrome() in render-shell.js never included the ⌘K trigger button in the masthead markup; it was designed but omitted during the EPIC-0020 shell refactor.
    Status: Fixed
+   GH Issue: #919
    Fix Branch: bugfix/BUG-0190-0197-ui-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2625,6 +2782,7 @@ Steps to Reproduce:
    Actual: All epic headers vanish — the entire card view becomes an empty page with only matching story cards and no grouping headers
    Root Cause: applyFilters() scoped story-row searches via block.closest('.mb-8') to find the ancestor epic wrapper. Card view wrappers used class mb-4 (not mb-8), so closest('.mb-8') returned null for every story — the filter logic resolved to a scope of 0 rows per header, hiding every epic section.
    Status: Fixed
+   GH Issue: #920
    Fix Branch: bugfix/BUG-0190-0197-ui-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2643,6 +2801,7 @@ Steps to Reproduce:
    Actual: The meta row shows Stories, Open Bugs, Coverage, and Last Updated — but no cost figure
    Root Cause: renderMasthead() in render-shell.js did not compute or render a budget meta tile; the feature was specified in US-0135 ACs but omitted during EPIC-0020 implementation.
    Status: Fixed
+   GH Issue: #921
    Fix Branch: bugfix/BUG-0190-0197-ui-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2662,6 +2821,7 @@ Steps to Reproduce:
    Actual: "In Progress" text overflows the status column and pushes the story title to the right (or causes wrap); "Planned" likewise overflows
    Root Cause: Status span had no min-width floor — it shrank to fit "Done" and then overflowed for longer strings. Combined with BUG-0192 flex-wrap issue, rows were visually misaligned.
    Status: Fixed
+   GH Issue: #922
    Fix Branch: bugfix/BUG-0190-0197-ui-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2680,6 +2840,7 @@ Steps to Reproduce:
    Actual: Legend text renders in white (CSS class trace-caption used rgba(255,255,255,0.5) as its fallback colour) and is invisible against the white panel background
    Root Cause: render-scripts.js set .trace-caption colour fallback to rgba(255,255,255,0.5) — visible only in dark mode. The EPIC-0020 token migration broke the light-mode value; --clr-text-secondary was unresolved (see BUG-0190 root cause).
    Status: Fixed
+   GH Issue: #923
    Fix Branch: bugfix/BUG-0190-0197-ui-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2698,6 +2859,7 @@ Steps to Reproduce:
    Actual: Button text is invisible (white text on white/near-white background); unselected state offers no contrast
    Root Cause: Range button styles relied on --clr-text-primary which was unresolved due to the BUG-0190 EPIC-0020 token migration gap. The active-range class also lost its background reference.
    Status: Fixed
+   GH Issue: #924
    Fix Branch: bugfix/BUG-0190-0197-ui-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2716,6 +2878,7 @@ Steps to Reproduce:
    Actual: Bug Fix Costs section is fully expanded on page load, adding excessive scroll depth to the Costs tab
    Root Cause: The bug-fix cost section markup had no collapsible wrapper or toggleSection() handler — it was rendered as an always-visible block, inconsistent with the collapsible-by-default pattern used for the Stories section.
    Status: Fixed
+   GH Issue: #925
    Fix Branch: bugfix/BUG-0190-0197-ui-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2734,6 +2897,7 @@ Steps to Reproduce:
    Actual: The entire status string including the parenthetical explanation renders in the badge, expanding the status column to 300px+ and misaligning all other rows
    Root Cause: badge() is called with the full status string including parenthetical suffixes. BUGS.md allows freeform status fields (e.g., "Fixed (false positive — …)").
    Status: Fixed
+   GH Issue: #926
    Fix Branch: bugfix/BUG-0190-0197-ui-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2752,6 +2916,7 @@ Steps to Reproduce:
    Actual: The Status tab renders only a minimal placeholder — no hero, no charts, no decision widgets, no quality section. The tab was entirely absent from the render-tabs.js module.
    Root Cause: EPIC-0020 (PR #412) marked all US-0135–US-0146 stories as Done but the renderStatusTab() function was never written. The tab section in the HTML output contained no content. The gap was not caught by CI because no acceptance tests asserted on Status tab content rendering.
    Status: Fixed
+   GH Issue: #927
    Fix Branch: bugfix/BUG-0190-0197-ui-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2770,6 +2935,7 @@ Steps to Reproduce:
    Actual: --surface (ink9, oklch(10%)) sits only 4 percentage points above --bg (ink10, oklch(6%)) — imperceptible contrast at typical viewing distances; panels appear to float on an identical-tone background
    Root Cause: EPIC-0020 chose ink9/ink8 for dark surface/surface-2, producing ~1.2:1 contrast ratio between layers. Good dark-mode layering requires at least 1.4:1 per layer step.
    Status: Fixed
+   GH Issue: #928
    Fix Branch: bugfix/BUG-0202-0208-ui-polish
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2788,6 +2954,7 @@ Steps to Reproduce:
    Actual: Narrow max-w-sm text-center single-column card with minimal project metadata — inconsistent with the unified About design implemented in the agentic dashboard (US-0123)
    Root Cause: render-html.js About modal was never updated to match the generate-dashboard.js two-column design adopted in US-0123.
    Status: Fixed
+   GH Issue: #929
    Fix Branch: bugfix/BUG-0202-0208-ui-polish
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2806,6 +2973,7 @@ Steps to Reproduce:
    Actual: "No active risks — looking good 🎉" is displayed even though the verdict is "At risk" — completely contradictory
    Root Cause: The verdict's "At risk" condition triggers when openBugs.length > 3 even if all open bugs are Medium severity. The Top Risks widget only collects High/Critical bugs and blocked stories. When all open bugs are Medium-or-lower, the risks array is empty and the fallback message is displayed.
    Status: Fixed
+   GH Issue: #930
    Fix Branch: bugfix/BUG-0202-0208-ui-polish
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2824,6 +2992,7 @@ Steps to Reproduce:
    Actual: Both buttons look identical — same border, same text, same background; no visual cue for active state
    Root Cause: setHierarchyView() applies classList.toggle('active-view', ...) correctly, but no CSS rule for button.active-view was ever defined — the class is toggled but has no visual effect.
    Status: Fixed
+   GH Issue: #931
    Fix Branch: bugfix/BUG-0202-0208-ui-polish
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2842,6 +3011,7 @@ Steps to Reproduce:
    Actual: Only Done-status epics auto-collapse; all active/in-progress epics are fully expanded, producing a very long page on initial load
    Root Cause: The DOMContentLoaded handler in render-scripts.js only collapsed epics matching [data-epic-status="Done"]. Active epics were intentionally left expanded by the original design but user preference is for all-collapsed.
    Status: Fixed
+   GH Issue: #932
    Fix Branch: bugfix/BUG-0202-0208-ui-polish
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2860,6 +3030,7 @@ Steps to Reproduce:
    Actual: Hierarchy has 4px left-border accent + "EPIC / 0001" style; Costs and Bugs epic headers use only a top border and raw epic ID string — different look and feel
    Root Cause: The Costs and Bugs tab epic header tr elements were written before the Hierarchy unified epic header style was established.
    Status: Fixed
+   GH Issue: #933
    Fix Branch: bugfix/BUG-0202-0208-ui-polish
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2878,6 +3049,7 @@ Steps to Reproduce:
    Actual: Epic rows are static table rows with no click handler and no expand behaviour; per-story data is only visible in the separate "Story Costs" section further down the page
    Root Cause: The Per-Epic Budget section was designed as a summary-only view. The expand/collapse pattern existed in the Story Costs section below but was never added to the budget summary table.
    Status: Fixed
+   GH Issue: #934
    Fix Branch: bugfix/BUG-0202-0208-ui-polish
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2897,6 +3069,7 @@ Steps to Reproduce:
    Actual: Card view wrapper used mb-4; column view used mb-2
    Root Cause: Card view template was written independently and never synced to column view spacing conventions.
    Status: Fixed
+   GH Issue: #935
    Fix Branch: bugfix/BUG-0202-0208-ui-polish
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2916,6 +3089,7 @@ Steps to Reproduce:
    Actual: Lessons headers used a plain concatenated label string with no badge, no accent border, and old formatting
    Root Cause: Lessons tab was developed before the Bugs tab established the shared epic-header pattern; the pattern was never backported.
    Status: Fixed
+   GH Issue: #936
    Fix Branch: bugfix/BUG-0202-0208-ui-polish
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2933,6 +3107,7 @@ Steps to Reproduce:
    Expected: Status Hero card (verdict, density toggle, stat blocks, mini-viz) + Rich Status widgets render
    Actual: White blank area
    Status: Fixed
+   GH Issue: #937
    Fix Branch: bugfix/BUG-0211-0226-dashboard-polish
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2950,6 +3125,7 @@ Steps to Reproduce:
    Expected: Cards render with epic groupings and story cards
    Actual: Blank content area
    Status: Fixed
+   GH Issue: #938
    Fix Branch: bugfix/BUG-0211-0226-dashboard-polish
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2967,6 +3143,7 @@ Steps to Reproduce:
    Expected: Epic header includes status badge/label (Done, In Progress, Planned)
    Actual: No status label shown
    Status: Fixed
+   GH Issue: #939
    Fix Branch: bugfix/BUG-0211-0226-dashboard-polish
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -2984,6 +3161,7 @@ Steps to Reproduce:
    Expected: All tabs use same epic header format (monospaced EPIC-XXXX + status badge + title + count + left accent border)
    Actual: Each tab uses a different header style
    Status: Fixed
+   GH Issue: #940
    Fix Branch: bugfix/BUG-0211-0226-dashboard-polish
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -3002,6 +3180,7 @@ Steps to Reproduce:
    Expected: Hero card changes density (compact/medium/large)
    Actual: No visual change
    Status: Fixed
+   GH Issue: #941
    Fix Branch: bugfix/BUG-0215-0222-dashboard-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -3019,6 +3198,7 @@ Steps to Reproduce:
    Expected: Chart fills available column width responsively
    Actual: Chart renders at a fixed small size with large empty area around it
    Status: Fixed
+   GH Issue: #942
    Fix Branch: bugfix/BUG-0215-0222-dashboard-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -3037,6 +3217,7 @@ Steps to Reproduce:
    Expected: AI costs accurately attributed to epics via story branch matching
    Actual: Recent epics show $0; older epics may absorb costs that belong elsewhere
    Status: Fixed
+   GH Issue: #943
    Fix Branch: bugfix/BUG-0217-0221-0224-cost-attribution
    Lesson Encoded: Yes — see L-0049
    Estimated Cost USD: 0.00
@@ -3054,6 +3235,7 @@ Steps to Reproduce:
    Expected: All epics including EPIC-0018 appear in the cost breakdown
    Actual: EPIC-0018 row is missing
    Status: Retired
+   GH Issue: #944
    Fix Branch:
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -3071,6 +3253,7 @@ Steps to Reproduce:
    Expected: Only non-Done epics shown; a note states "Showing incomplete epics only"
    Actual: All epics including Done ones shown, cluttering the chart
    Status: Fixed
+   GH Issue: #945
    Fix Branch: bugfix/BUG-0211-0226-dashboard-polish
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -3088,6 +3271,7 @@ Steps to Reproduce:
    Expected: Chart clearly labelled as "Stories Shipped per Session" with realistic values
    Actual: Axis label is ambiguous; recent sessions show values inconsistent with actual output
    Status: Fixed
+   GH Issue: #946
    Fix Branch: bugfix/BUG-0215-0222-dashboard-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -3105,6 +3289,7 @@ Steps to Reproduce:
    Expected: Charts reflect actual AI spend and token counts per session
    Actual: Recent sessions show identical or zero values
    Status: Fixed
+   GH Issue: #947
    Fix Branch: bugfix/BUG-0217-0221-0224-cost-attribution
    Lesson Encoded: Yes — see L-0049
    Estimated Cost USD: 0.00
@@ -3122,6 +3307,7 @@ Steps to Reproduce:
    Expected: Both sections use identical epic header format
    Actual: Budget and Stories use visually different header styles
    Status: Fixed
+   GH Issue: #948
    Fix Branch: bugfix/BUG-0215-0222-dashboard-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -3139,6 +3325,7 @@ Steps to Reproduce:
    Expected: All epic groups collapsed by default; user expands as needed
    Actual: All groups expanded, causing long scroll on first load
    Status: Fixed
+   GH Issue: #949
    Fix Branch: bugfix/BUG-0183-0184-0223-plan-status-quality
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -3156,6 +3343,7 @@ Steps to Reproduce:
    Expected: Each bug's AI cost attributed from sessions where it was fixed (via fix branch)
    Actual: Costs appear to be divided equally or mis-attributed
    Status: Fixed
+   GH Issue: #950
    Fix Branch: bugfix/BUG-0217-0221-0224-cost-attribution
    Lesson Encoded: Yes — see L-0049
    Estimated Cost USD: 0.00
@@ -3173,6 +3361,7 @@ Steps to Reproduce:
    Expected: Bugs sorted ascending by BUG-XXXX ID by default
    Actual: Sort order is not ascending by ID
    Status: Fixed
+   GH Issue: #951
    Fix Branch: bugfix/BUG-0211-0226-dashboard-polish
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -3190,6 +3379,7 @@ Steps to Reproduce:
    Expected: Epic headers are visually identical in both views
    Actual: Column view and card view render different header markup/styles
    Status: Fixed
+   GH Issue: #952
    Fix Branch: bugfix/BUG-0211-0226-dashboard-polish
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -3206,6 +3396,7 @@ Steps to Reproduce:
    Expected: File exists documenting the 6-phase pipeline per AC-0280
    Actual: `ls: docs/AGENT_PLAN.md: No such file or directory`
    Status: Fixed
+   GH Issue: #953
    Fix Branch: bugfix/BUG-0227-agent-plan-doc
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -3222,6 +3413,7 @@ Steps to Reproduce:
    Expected: No external dependencies per AC-0290
    Actual: Two `<link rel="stylesheet" href="https://fonts.googleapis.com/...">` tags present
    Status: Fixed
+   GH Issue: #954
    Fix Branch: bugfix/BUG-0228-0230-remove-cdn-deps
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -3238,6 +3430,7 @@ Steps to Reproduce:
    Expected: `node tools/generate-plan.js`
    Actual: `undefined` — scripts are named `generate` and `generate:watch` instead
    Status: Fixed
+   GH Issue: #955
    Fix Branch: bugfix/BUG-0229-0231-0232-quick-wins
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -3254,6 +3447,7 @@ Steps to Reproduce:
    Expected: No external dependencies per AC-0305
    Actual: Tailwind CSS via cdn.tailwindcss.com, Chart.js via cdn.jsdelivr.net, Google Fonts via fonts.googleapis.com
    Status: Fixed
+   GH Issue: #956
    Fix Branch: bugfix/BUG-0228-0230-remove-cdn-deps
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -3271,6 +3465,7 @@ Steps to Reproduce:
    Expected: Conductor card contains a visible dispatch counter element (e.g. "37 tasks") that increments and animates on change
    Actual: No dispatch counter element found in dashboard.html; only setConductorActive toggling is implemented
    Status: Fixed
+   GH Issue: #957
    Fix Branch: bugfix/BUG-0229-0231-0232-quick-wins
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -3288,6 +3483,7 @@ Steps to Reproduce:
    Expected: Agent Workload widget renders a "(N done)" sub-label showing the count of completed stories per agent
    Actual: Sub-label absent from dashboard.html output; inFlight filtering is implemented but the (N done) count is never rendered
    Status: Fixed
+   GH Issue: #958
    Fix Branch: bugfix/BUG-0229-0231-0232-quick-wins
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -3304,6 +3500,7 @@ Steps to Reproduce:
    Expected: Tabs switch correctly; charts render; epic headers collapse by default
    Actual: All tabs visible simultaneously (tab switching broken); no charts render; all epic headers expanded
    Status: Fixed
+   GH Issue: #959
    Fix Branch: bugfix/BUG-0233-cdn-removal-regressions
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -3321,6 +3518,7 @@ Steps to Reproduce:
    Expected: Column and Card toggle buttons are clearly styled with readable text and border
    Actual: Buttons render with no styling (browser defaults) — text and borders near-invisible on light backgrounds
    Status: Fixed
+   GH Issue: #960
    Fix Branch: bugfix/BUG-0234-toggle-btn-contrast
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -3338,6 +3536,7 @@ Steps to Reproduce:
    Expected: All tabs render with correct spacing, full-width tables, and card grid layouts
    Actual: ~55 Tailwind utility classes (flex, grid, gap-_, p-_, w-full, etc.) had no CSS replacements, causing widespread layout breakage
    Status: Fixed
+   GH Issue: #961
    Fix Branch: bugfix/BUG-0235-tailwind-utility-shim
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -3354,6 +3553,7 @@ Steps to Reproduce:
    Expected: Lessons render as multi-column card grid
    Actual: Cards stack vertically as full-width blocks (grid class used gap-4 not gap-3 and was missed by the sed replacement)
    Status: Fixed
+   GH Issue: #962
    Fix Branch: bugfix/BUG-0236-remaining-tailwind-stragglers
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -3370,6 +3570,7 @@ Steps to Reproduce:
    Expected: Chart axis labels and grid lines use theme text/border colors
    Actual: Chart.js ignores CSS custom property strings (e.g. 'var(--text-muted)') — all text defaults to Chart.js built-in grey (#666)
    Status: Fixed
+   GH Issue: #963
    Fix Branch: feature/US-0164-BUG-0242-0244-chart-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -3386,6 +3587,7 @@ Steps to Reproduce:
    Expected: Chart area fills show gradient
    Actual: Area fills may be transparent — Canvas 2D addColorStop does not support space-separated rgb(r g b / a) syntax in all browsers
    Status: Fixed
+   GH Issue: #964
    Fix Branch: feature/US-0164-BUG-0242-0244-chart-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -3402,6 +3604,7 @@ Steps to Reproduce:
    Expected: That epic shows Needs Attention status
    Actual: Epic always shows On Track or In Progress — hasOpenCritical always false because b.epicId is never set on parsed bug objects (parser sets relatedStory, not epicId)
    Status: Fixed
+   GH Issue: #965
    Fix Branch: bugfix/BUG-0239-0241-0248-stakeholder-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -3418,6 +3621,7 @@ Steps to Reproduce:
    Expected: Burn-up chart with two lines: total scope and completed work over time
    Actual: Bar chart of cumulative story points per snapshot — monotonically growing, visually misleading
    Status: Fixed
+   GH Issue: #966
    Fix Branch: bugfix/BUG-0240-burnup-epic022-closure
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -3434,6 +3638,7 @@ Steps to Reproduce:
    Expected: Open bug count consistent across Status hero and Status tab widgets
    Actual: renderStatusTab uses !/^(Fixed|Retired|Cancelled|Rejected)/i — \_renderStatusHero uses !/^(Fixed|Retired|Cancelled)/i (missing Rejected). Different counts show on same page.
    Status: Fixed
+   GH Issue: #967
    Fix Branch: bugfix/BUG-0239-0241-0248-stakeholder-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -3450,6 +3655,7 @@ Steps to Reproduce:
    Expected: "Apr 28–May 4"
    Actual: "Apr 28–4" — end month name dropped
    Status: Fixed
+   GH Issue: #968
    Fix Branch: feature/US-0164-BUG-0242-0244-chart-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -3466,6 +3672,7 @@ Steps to Reproduce:
    Expected: pvChartColors single authoritative definition
    Actual: var pvChartColors = ... declared in both renderChartsTab and renderTrendsTab inline scripts; second overwrites first silently
    Status: Fixed
+   GH Issue: #969
    Fix Branch: feature/US-0164-BUG-0242-0244-chart-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -3482,6 +3689,7 @@ Steps to Reproduce:
    Expected: Open Bugs trend line matches the open bug count shown on Status tab
    Actual: Trend only counts Open and In Progress; Blocked/Verified/Reopened excluded
    Status: Fixed
+   GH Issue: #970
    Fix Branch: feature/US-0164-BUG-0242-0244-chart-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -3498,6 +3706,7 @@ Steps to Reproduce:
    Expected: Agent task cell shows clickable branch link
    Actual: textContent assignment destroys the server-rendered <a href="..."> — plain text URL, not clickable
    Status: Fixed
+   GH Issue: #971
    Fix Branch: bugfix/BUG-0245-0246-0247-dashboard-fixes
    Lesson Encoded: No
    Estimated Cost UUID: 0.00
@@ -3514,6 +3723,7 @@ Steps to Reproduce:
    Expected: Dispatch event appears with distinct styling in event log
    Actual: appendEventLog maps unknown tag to 'evt-start' tone — dispatch events visually identical to story-start events
    Status: Fixed
+   GH Issue: #972
    Fix Branch: bugfix/BUG-0245-0246-0247-dashboard-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -3531,6 +3741,7 @@ Steps to Reproduce:
    Expected: Story renders with In Progress (amber) styling
    Actual: Story renders with Planned (grey) styling — isInProgress check uses 'In Progress' (space) but updater writes 'InProgress' (camelCase)
    Status: Fixed
+   GH Issue: #973
    Fix Branch: bugfix/BUG-0245-0246-0247-dashboard-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -3547,6 +3758,7 @@ Steps to Reproduce:
    Expected: Same hero as Status tab — "Release Health" eyebrow, large h2 verdict, 3-column sparkline row (Progress · past 14 snapshots, Coverage · last 30, Burn · cumulative), plus KPI tiles and decision widgets
    Actual: Simplified variant — small chip with verdict, one-line narrative, a 30-cell coverage heat strip only; missing the eyebrow label, h2, and sparkline columns
    Status: Fixed
+   GH Issue: #974
    Fix Branch: bugfix/BUG-0239-0241-0248-stakeholder-fixes
    Lesson Encoded: No
    Estimated Cost USD: 0.00
@@ -3575,6 +3787,7 @@ The misleading fallback appears in three places:
 A fourth inconsistent fallback exists in `render-tabs.js:1313` — the Charts tab's `pvChartColors.mute` falls back to `'oklch(70% 0.012 95)'` (a third value, neither light's 78% nor dark's 65%).
 
 Status: Fixed
+GH Issue: #975
 Fix Branch: bugfix/BUG-0249-0250-chart-fallback-and-theme-sync
 Lesson Encoded: No
 Estimated Cost USD: 0.00
@@ -3602,6 +3815,7 @@ Actual: Each dashboard reads/writes its own localStorage key:
 The two keys never sync. A user who switches dashboards mid-session has to set theme twice. Both keys also accumulate in localStorage indefinitely, which is mild but unnecessary clutter.
 
 Status: Fixed
+GH Issue: #976
 Fix Branch: bugfix/BUG-0249-0250-chart-fallback-and-theme-sync
 Lesson Encoded: No
 Estimated Cost USD: 0.00
@@ -3624,6 +3838,7 @@ Actual: The Stop hook (`tools/capture-cost.js`) writes new rows to the local wor
 Root cause: `MEMORY.md` records the explicit guidance "git add -A caution: Easily adds noise (… AI_COST_LOG stop-hook updates)" — i.e. the session-close commit pattern was deliberately avoiding the cost log to prevent commit-message noise. With nothing else committing it, drift accumulates.
 
 Status: Fixed
+GH Issue: #977
 Fix Branch: bugfix/BUG-0251-cost-log-commit-drift
 Lesson Encoded: Yes (L-0050)
 Estimated Cost USD: 0.00
@@ -3645,6 +3860,7 @@ Expected: Every Stop hook fire's row eventually lands on develop via a regular c
 Actual: Rows for the 2026-04-20→04-28 window were stashed during normal branch-switching (`git stash` followed by `git checkout <other-branch>`) and never popped. Each stash carries the appended rows away. When the next branch is checked out, the file reverts to the committed state, the hook appends a new row on top of that older base, and the stashed rows are orphaned.
 
 Status: Fixed
+GH Issue: #978
 Fix Branch: bugfix/BUG-0252-stash-recovery
 Lesson Encoded: No
 Estimated Cost USD: 0.00
@@ -3659,32 +3875,17 @@ Notes: Diagnosed by a Session 34 background agent (the same one that "hit the or
 
 Recommendation: Option 3 immediately (recover the trapped data) and evaluate options 1 vs 2/4 in a future session. Not addressed in Session 34 — the recovery is a sizeable multi-stash merge that deserves its own focused PR with careful conflict resolution.
 
----
-
-BUG-0253: Agentic dashboard idle agent portrait cards show only top of head — head and shoulders not visible
-Severity: Low
-Related Story: US-0142 (EPIC-0020)
+BUG-0253: Agentic Dashboard About modal auto-closes every 5 seconds
+Severity: Medium
+Related Story:
 Steps to Reproduce:
 
-1. Open docs/dashboard.html with agents in idle state
-2. Observe the idle agent grid (4-column roster)
-   Expected: Each card portrait shows the character's head and shoulders clearly
-   Actual: Portrait height is 80px — only the very top of the character's head is visible above the card's bottom edge; the face and shoulders are cut off entirely
-   Status: Open
-   Fix Branch:
-   Lesson Encoded: No
+1.  Open dashboard.html → click ℹ️ About → wait 5 seconds
+    Expected: Modal stays open
+    Actual: Duplicate of BUG-0104 (meta http-equiv="refresh" content="5"). Already fixed in develop — no meta refresh tag present in current dashboard.html or generate-dashboard.js.
+    Status: Fixed
+    GH Issue: #918
+    Fix Branch: develop
+    Lesson Encoded: No
 
 ---
-
-BUG-0254: Agentic dashboard idle agent cards display name, role, and status badge as three stacked lines
-Severity: Low
-Related Story: US-0142 (EPIC-0020)
-Steps to Reproduce:
-
-1. Open docs/dashboard.html
-2. Observe the text below each idle agent card portrait
-   Expected: Name · Role · IDLE badge rendered on a single compact line
-   Actual: Name, role, and IDLE badge each occupy their own line — wastes vertical space and looks disconnected from the portrait above
-   Status: Open
-   Fix Branch:
-   Lesson Encoded: No

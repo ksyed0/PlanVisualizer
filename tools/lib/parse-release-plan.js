@@ -41,7 +41,7 @@ function parseDeps(val) {
  * Parse a single epic block into an object.
  */
 function parseEpicBlock(text) {
-  const idTitle = text.match(/^(EPIC-\d{4}):\s*(.+)/m);
+  const idTitle = text.match(/^(EPIC-\d+):\s*(.+)/m);
   if (!idTitle) return null;
   const get = (key) => {
     const m = text.match(new RegExp(`^${key}:[ \\t]*(.*)`, 'm'));
@@ -65,7 +65,7 @@ function parseEpicBlock(text) {
  */
 function parseACs(text) {
   const acs = [];
-  const re = /- \[( |x)\] (AC-\d{4}|AC-TBD):\s*(.+)/g;
+  const re = /- \[( |x)\] (AC-\d+|AC-TBD):\s*(.+)/g;
   let m;
   while ((m = re.exec(text)) !== null) {
     acs.push({ id: m[2], text: m[3].trim(), done: m[1] === 'x' });
@@ -77,7 +77,7 @@ function parseACs(text) {
  * Parse a single user story block.
  */
 function parseStoryBlock(text) {
-  const header = text.match(/^(US-\d{4})\s*\((EPIC-\d{4})\):\s*(.+)/m);
+  const header = text.match(/^(US-\d+)\s*\((EPIC-\d+)\):\s*(.+)/m);
   if (!header) return null;
   const get = (key) => {
     const m = text.match(new RegExp(`^${key}:[ \\t]*(.*)`, 'm'));
@@ -107,7 +107,7 @@ function parseStoryBlock(text) {
  * Parse a single task block.
  */
 function parseTaskBlock(text) {
-  const header = text.match(/^(TASK-\d{4})\s*\((US-\d{4})\):\s*(.+)/m);
+  const header = text.match(/^(TASK-\d+)\s*\((US-\d+)\):\s*(.+)/m);
   if (!header) return null;
   const get = (key) => {
     const m = text.match(new RegExp(`^${key}:[ \\t]*(.*)`, 'm'));
@@ -147,19 +147,19 @@ function parseReleasePlan(markdown) {
   for (const chunk of chunks) {
     const trimmed = chunk.trim();
     if (!trimmed) continue;
-    if (/^EPIC-\d{4}:/.test(trimmed)) {
+    if (/^EPIC-\d+:/.test(trimmed)) {
       const e = parseEpicBlock(trimmed);
       if (e && !seenEpics.has(e.id)) {
         seenEpics.add(e.id);
         epics.push(e);
       }
-    } else if (/^US-\d{4}\s*\(EPIC-/.test(trimmed)) {
+    } else if (/^US-\d+\s*\(EPIC-/.test(trimmed)) {
       const s = parseStoryBlock(trimmed);
       if (s && !seenStories.has(s.id)) {
         seenStories.add(s.id);
         stories.push(s);
       }
-    } else if (/^TASK-\d{4}\s*\(US-/.test(trimmed)) {
+    } else if (/^TASK-\d+\s*\(US-/.test(trimmed)) {
       const t = parseTaskBlock(trimmed);
       if (t && !seenTasks.has(t.id)) {
         seenTasks.add(t.id);

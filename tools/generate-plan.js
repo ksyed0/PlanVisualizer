@@ -373,6 +373,15 @@ function main() {
   fs.writeFileSync(jsonPath, JSON.stringify(data, null, 2), 'utf8');
   console.log(`[generate-plan] Written ${jsonPath}`);
 
+  // GitHub Settings tab data
+  data.githubConfig = config.github || null;
+  data.githubTokenSet = !!process.env.GITHUB_TOKEN;
+  try {
+    data.syncState = JSON.parse(fs.readFileSync(path.join(ROOT, 'docs/github-sync-state.json'), 'utf8'));
+  } catch {
+    data.syncState = null;
+  }
+
   const html = renderHtml(data, { trends, budgetCSV });
   const htmlPath = path.join(outputDir, 'plan-status.html');
   fs.writeFileSync(htmlPath, html, 'utf8');
@@ -380,6 +389,17 @@ function main() {
   console.log(
     `[generate-plan] Done. ${epics.length} epics, ${stories.length} stories, ${testCases.length} TCs, ${bugs.length} bugs, ${lessons.length} lessons.`,
   );
+
+  if (config.github && config.github.enabled) {
+    try {
+      require('child_process').execFileSync(process.execPath, [path.join(__dirname, 'sync-github.js')], {
+        env: process.env,
+        stdio: 'inherit',
+      });
+    } catch (e) {
+      console.warn('[generate-plan] GitHub sync failed (non-fatal):', e.message);
+    }
+  }
 }
 
 function watch(config) {

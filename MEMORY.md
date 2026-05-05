@@ -117,6 +117,18 @@ Branch name in `AI_COST_LOG.md` row must exactly match `Branch:` field in story 
 
 ---
 
+## Project Completion Status (as of 2026-05-04 Session 38)
+
+v2.1.0 released. Next: EPIC-0025 (GitHub Issues Sync). Dependabot PR #532 (ESLint bump) open.
+Next IDs: always check `docs/ID_REGISTRY.md` — as of end of Session 38: Next BUG = BUG-0254.
+
+Key additions (Session 38):
+
+- **BUG-0253/0254 (PR #534)**: `.mc-idle-portrait` height 80px → 160px; image src `-64.png` → `-160.png`; three stacked text divs (name/role/badge) replaced with `.mc-idle-info` single flex row — `Name · Role IDLE` on one line, role truncates with ellipsis.
+- **v2.1.0 release**: tag `v2.1.0` → commit `a88cb4b` on main; GitHub release live. `release/2.1.0` branch deleted.
+- **Dependabot PR #532**: ESLint 10.2.1 → 10.3.0 — open, needs a quick approve+merge at start of next session.
+- **EPIC-0025 implementation order**: US-0170 (ID regex `\d{4}` → `\d+`, prerequisite) → US-0171 (sync engine) → {US-0172 (Settings UI) ∥ US-0173 (story sync)}. Plan at `docs/superpowers/plans/2026-05-03-epic-0025-github-issues-sync.md`.
+
 ## Project Completion Status (as of 2026-05-03 Session 37)
 
 EPIC-0024 in flight: 4 PRs (#526–#529) open with auto-merge. Next: EPIC-0025 (GitHub Issues Sync) planned, implementation deferred until EPIC-0024 merges.
@@ -311,3 +323,18 @@ Current coverage (2026-04-29 Session 33): ~93.8% statements / 80.6% branches. Al
 - `.section-header` utility: Geist, 11px/700, uppercase, 0.14em tracking. Shared across sections.
 - `.live-dot` component: 6×6 circle, ok/warn/err variants, pulse animation with `prefers-reduced-motion` guard. Used in header clock, spotlight, Quality card, Activity log.
 - Agent portraits: read from `docs/agents/images/optimized/{avatar}-{64,160,320}.png`. Fallback chain: optimized → headshot → emoji. `avatar` base name lives in agents.config.json per agent.
+
+### EPIC-0025 GitHub Issues Sync (Session 39, 2026-05-05)
+
+- `tools/lib/github-client.js` — thin Node `https` wrapper: `githubRequest`, `buildIssueTitle/Body`, `batchedRequests`, `createIssue/closeIssue/reopenIssue/listIssues`. NOTE: `listIssues` caps at 100 issues (no pagination). Use `gh auth token` to get token when `GITHUB_TOKEN` env var not set.
+- `tools/lib/sync-bugs.js` — `classifyBugChanges` (create/close/reopen/pull_close/skip), `writeBugIssueNumber` (MUST be block-scoped — use `blockRe = new RegExp(\`(^${bugId}:.+?)(?=\\nBUG-\\d+:|\\Z)\`, 'ms')`to avoid cross-block false positives),`loadSyncState/saveSyncState/buildStateEntry`.
+- `tools/lib/sync-stories.js` — `classifyStoryChanges`, `writeStoryIssueNumber` (block-scoped, inserts after `Branch:` line).
+- `tools/sync-github.js` — CLI entry, `--dry-run` flag, reads `plan-visualizer.config.json` for `github` block, writes `docs/github-sync-state.json` (gitignored).
+- `tools/lib/parse-bugs.js` NOW reads `ghIssueNumber` from `GH Issue: #NNN` field. Required for idempotent sync.
+- `tools/lib/render-tabs.js` has `renderSettingsTab({ githubConfig, githubTokenSet, syncState })` — called from render-html.js, data wired through generate-plan.js.
+- GitHub secondary rate limit blocks bulk issue creation; add 2s+ inter-batch delay for >100 creates. The default 100ms is too fast.
+- `classifyBugChanges` state-map fallback: `effectiveIssueNumber = bug.ghIssueNumber || state?.ghIssueNumber` — prevents re-creation when BUGS.md write failed.
+- `docs/github-sync-state.json` is gitignored (runtime sync state, not committed).
+- `scripts/update.sh` added (Session 39): idempotent updater that re-copies tools/, tests/, orchestrator/, dashboard.html, docs/agents/, agents.config.json without touching user data files.
+- `CLAUDE.md.template` added for `scripts/install.sh` to create CLAUDE.md in target repos.
+- **Blank gap above pv-chrome topbar (fixed Session 39):** `body { padding-top: 52px }` was for old `position: fixed` topbar. New `.pv-chrome` uses `position: sticky; top: 0` and creates its own flow space. Fix: `body { padding-top: 0 }`, `body.has-alert { padding-top: 40px }` (budget alert height only), `#sidebar { top: 40px }`, `#app-shell { min-height: 100vh }`.

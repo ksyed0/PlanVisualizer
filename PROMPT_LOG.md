@@ -4,6 +4,17 @@ Timestamped log of every user prompt across all sessions. Append-only. Never edi
 
 ---
 
+## Session 38 — 2026-05-04
+
+| #   | Timestamp            | Prompt                                                                                                                                                                                                  |
+| --- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | 2026-05-04T00:00:00Z | Continue from where you left off.                                                                                                                                                                       |
+| 2   | 2026-05-04T02:00:00Z | [screenshot] capture this to @docs/BUGS.md — can you update the portrait card to have all the text on one line and increase the card image to capture the head and shoulders of each character portrait |
+| 3   | 2026-05-04T02:15:00Z | monitor CI for the PR and merge and delete the branch when you're done and then tell me whats next                                                                                                      |
+| 4   | 2026-05-04T02:30:00Z | close this session and create a prompt to start a new session with the scope above                                                                                                                      |
+
+---
+
 ## Session 37 — 2026-05-03
 
 | #   | Timestamp            | Prompt                                                                                                                                                                                                                                                                                                                                    |

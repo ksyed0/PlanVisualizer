@@ -820,3 +820,67 @@ describe('renderHierarchyTab — US-0169 risk UI', () => {
     expect(html).toContain('_isRefLine:true');
   });
 });
+
+describe('US-0170: variable-length artefact IDs', () => {
+  it('normalizeStoryRef handles 5-digit US IDs (US-10000)', () => {
+    const { normalizeStoryRef } = require('../../tools/lib/render-utils');
+    expect(normalizeStoryRef('US-10000')).toBe('US-10000');
+    expect(normalizeStoryRef('US-10000 (some title)')).toBe('US-10000');
+  });
+});
+
+describe('renderSettingsTab — US-0172', () => {
+  const { renderSettingsTab } = require('../../tools/lib/render-tabs');
+
+  const baseGithubConfig = {
+    enabled: false,
+    repo: 'owner/repo',
+    syncBugs: true,
+    syncStories: false,
+    labelMap: { Critical: 'critical', High: 'high', Medium: 'medium', Low: 'low' },
+    defaultLabels: ['planvisualizer'],
+  };
+
+  it('renders #tab-settings container', () => {
+    const html = renderSettingsTab({ githubConfig: baseGithubConfig, githubTokenSet: false, syncState: null });
+    expect(html).toContain('id="tab-settings"');
+  });
+
+  it('renders GitHub Sync section heading', () => {
+    const html = renderSettingsTab({ githubConfig: baseGithubConfig, githubTokenSet: false, syncState: null });
+    expect(html).toContain('GitHub Issues Sync');
+  });
+
+  it('renders repo field with current value', () => {
+    const html = renderSettingsTab({ githubConfig: baseGithubConfig, githubTokenSet: false, syncState: null });
+    expect(html).toContain('owner/repo');
+  });
+
+  it('shows token NOT SET when githubTokenSet is false', () => {
+    const html = renderSettingsTab({ githubConfig: baseGithubConfig, githubTokenSet: false, syncState: null });
+    expect(html).toContain('Not set');
+  });
+
+  it('shows token SET when githubTokenSet is true', () => {
+    const html = renderSettingsTab({ githubConfig: baseGithubConfig, githubTokenSet: true, syncState: null });
+    expect(html).toContain('Set');
+  });
+
+  it('renders Copy config JSON button', () => {
+    const html = renderSettingsTab({ githubConfig: baseGithubConfig, githubTokenSet: false, syncState: null });
+    expect(html).toContain('copyGithubConfig');
+  });
+
+  it('shows last sync summary when syncState provided', () => {
+    const syncState = { lastSyncAt: '2026-05-03T14:32:00Z', summary: { created: 3, closed: 1 }, lastError: null };
+    const html = renderSettingsTab({ githubConfig: baseGithubConfig, githubTokenSet: true, syncState });
+    expect(html).toContain('2026-05-03');
+    expect(html).toContain('3');
+  });
+
+  it('shows warning badge when lastError is set', () => {
+    const syncState = { lastSyncAt: '2026-05-03T14:32:00Z', summary: {}, lastError: 'API 401' };
+    const html = renderSettingsTab({ githubConfig: baseGithubConfig, githubTokenSet: true, syncState });
+    expect(html).toContain('API 401');
+  });
+});

@@ -8,13 +8,13 @@ function parseStatus(raw) {
 
 function parseTestCases(markdown) {
   const results = [];
-  const re = /^(TC-\d{4}):\s*(.+)$/gm;
+  const re = /^(TC-\d+):\s*(.+)$/gm;
   let match;
   while ((match = re.exec(markdown)) !== null) {
     const id = match[1];
     const title = match[2].trim();
     const startIdx = match.index;
-    const nextRe = /^TC-\d{4}:/gm;
+    const nextRe = /^TC-\d+:/gm;
     nextRe.lastIndex = startIdx + 1;
     const nextResult = nextRe.exec(markdown);
     const block = markdown.slice(startIdx, nextResult ? nextResult.index : undefined);

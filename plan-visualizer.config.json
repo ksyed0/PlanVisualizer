@@ -31,5 +31,18 @@
     "totalUsd": null,
     "byEpic": {},
     "thresholds": [50, 75, 90, 100]
+  },
+  "github": {
+    "enabled": false,
+    "repo": "ksyed0/PlanVisualizer",
+    "syncBugs": true,
+    "syncStories": false,
+    "labelMap": {
+      "Critical": "critical",
+      "High": "high",
+      "Medium": "medium",
+      "Low": "low"
+    },
+    "defaultLabels": ["planvisualizer"]
   }
 }
