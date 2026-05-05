@@ -3027,6 +3027,112 @@ function renderStakeholderTab(data) {
   </script>`;
 }
 
+function renderSettingsTab({ githubConfig, githubTokenSet, syncState }) {
+  const cfg = githubConfig || {};
+  const enabled = cfg.enabled || false;
+  const repo = esc(cfg.repo || '');
+  const syncBugs = cfg.syncBugs !== false;
+  const syncStories = cfg.syncStories || false;
+  const defaultLabels = esc((cfg.defaultLabels || ['planvisualizer']).join(', '));
+
+  const tokenStatus = githubTokenSet
+    ? `<span style="color:var(--ok)">&#x2713; Set</span>`
+    : `<span style="color:var(--risk)">&#x2717; Not set &mdash; export GITHUB_TOKEN before running generate-plan</span>`;
+
+  let syncSummary = '<span style="opacity:.5">&mdash;</span>';
+  let errorBanner = '';
+  if (syncState) {
+    const d = syncState.lastSyncAt
+      ? new Date(syncState.lastSyncAt).toISOString().slice(0, 16).replace('T', ' ') + ' UTC'
+      : '&mdash;';
+    const s = syncState.summary || {};
+    syncSummary = `${esc(d)} &middot; ${s.created || 0} created &middot; ${s.closed || 0} closed &middot; ${s.reopened || 0} reopened`;
+    if (syncState.lastError) {
+      errorBanner = `<div class="card-elev rounded p-3 mb-4" style="border-left:3px solid var(--risk);background:var(--clr-panel-bg)">
+        <span style="color:var(--risk);font-weight:600">&#x26A0; Last sync failed:</span> ${esc(syncState.lastError)}
+      </div>`;
+    }
+  }
+
+  return `
+  <div id="tab-settings" class="p-6 hidden" role="tabpanel" aria-labelledby="tab-btn-settings">
+    <h2 class="display-title mb-6">Settings</h2>
+    ${errorBanner}
+    <div class="card-elev rounded-lg p-6 mb-6" style="max-width:640px">
+      <h3 class="font-semibold text-sm uppercase tracking-widest mb-4" style="opacity:.6">GitHub Issues Sync</h3>
+
+      <div class="flex items-center gap-3 mb-4">
+        <span class="text-sm font-medium" style="min-width:120px">Enabled</span>
+        <input type="checkbox" id="gh-enabled" ${enabled ? 'checked' : ''} onchange="ghSettingsChanged()">
+      </div>
+      <div class="flex items-center gap-3 mb-3">
+        <label for="gh-repo" class="text-sm font-medium" style="min-width:120px">Repository</label>
+        <input id="gh-repo" type="text" value="${repo}" placeholder="owner/repo"
+          style="flex:1;font-size:12px;padding:4px 8px;border:1px solid var(--clr-border);border-radius:4px;background:var(--clr-input-bg);color:var(--clr-input-text)"
+          oninput="ghSettingsChanged()">
+      </div>
+      <div class="flex items-center gap-3 mb-3">
+        <span class="text-sm font-medium" style="min-width:120px">Sync bugs</span>
+        <input type="checkbox" id="gh-sync-bugs" ${syncBugs ? 'checked' : ''} onchange="ghSettingsChanged()">
+        <span class="text-sm font-medium ml-4">Sync stories</span>
+        <input type="checkbox" id="gh-sync-stories" ${syncStories ? 'checked' : ''} onchange="ghSettingsChanged()">
+      </div>
+      <div class="flex items-center gap-3 mb-4">
+        <label for="gh-default-labels" class="text-sm font-medium" style="min-width:120px">Default labels</label>
+        <input id="gh-default-labels" type="text" value="${defaultLabels}"
+          style="flex:1;font-size:12px;padding:4px 8px;border:1px solid var(--clr-border);border-radius:4px;background:var(--clr-input-bg);color:var(--clr-input-text)"
+          oninput="ghSettingsChanged()">
+      </div>
+
+      <div class="mb-4" style="padding:10px 12px;background:var(--clr-surface);border-radius:6px;font-size:12px">
+        <div style="opacity:.6;margin-bottom:4px">Token (GITHUB_TOKEN env var)</div>
+        ${tokenStatus}
+      </div>
+
+      <div class="mb-4" style="padding:10px 12px;background:var(--clr-surface);border-radius:6px;font-size:12px">
+        <div style="opacity:.6;margin-bottom:4px">Last sync</div>
+        <div>${syncSummary}</div>
+      </div>
+
+      <div class="flex gap-2">
+        <button onclick="copyGithubConfig()" class="chip info" style="cursor:pointer">Copy config JSON</button>
+        <button onclick="resetGithubConfig()" class="chip mute" style="cursor:pointer">Reset to defaults</button>
+      </div>
+    </div>
+
+    <script>
+    var _ghDefaults = ${JSON.stringify(cfg)};
+    function ghSettingsChanged() {
+      var cfg = {
+        enabled:      document.getElementById('gh-enabled').checked,
+        repo:         document.getElementById('gh-repo').value.trim(),
+        syncBugs:     document.getElementById('gh-sync-bugs').checked,
+        syncStories:  document.getElementById('gh-sync-stories').checked,
+        defaultLabels: document.getElementById('gh-default-labels').value.split(',').map(function(s){ return s.trim(); }).filter(Boolean),
+        labelMap:     _ghDefaults.labelMap || { Critical:'critical', High:'high', Medium:'medium', Low:'low' },
+      };
+      localStorage.setItem('pv-github-config', JSON.stringify(cfg));
+    }
+    function copyGithubConfig() {
+      var stored = localStorage.getItem('pv-github-config');
+      var cfg = stored ? JSON.parse(stored) : _ghDefaults;
+      var json = JSON.stringify({ github: cfg }, null, 2);
+      navigator.clipboard && navigator.clipboard.writeText(json).then(function(){
+        alert('Copied! Paste into plan-visualizer.config.json');
+      }).catch(function(){ alert(json); });
+    }
+    function resetGithubConfig() {
+      localStorage.removeItem('pv-github-config');
+      document.getElementById('gh-enabled').checked      = _ghDefaults.enabled || false;
+      document.getElementById('gh-repo').value           = _ghDefaults.repo || '';
+      document.getElementById('gh-sync-bugs').checked    = _ghDefaults.syncBugs !== false;
+      document.getElementById('gh-sync-stories').checked = _ghDefaults.syncStories || false;
+      document.getElementById('gh-default-labels').value = (_ghDefaults.defaultLabels || ['planvisualizer']).join(', ');
+    }
+    </script>
+  </div>`;
+}
+
 module.exports = {
   renderHierarchyTab,
   renderKanbanTab,
@@ -3039,4 +3145,5 @@ module.exports = {
   renderLessonsTab,
   renderRecentActivity,
   renderStakeholderTab,
+  renderSettingsTab,
 };

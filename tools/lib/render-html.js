@@ -30,6 +30,7 @@ const {
   renderLessonsTab,
   renderRecentActivity,
   renderStakeholderTab,
+  renderSettingsTab,
 } = require('./render-tabs');
 const { renderScripts, renderPrintCSS } = require('./render-scripts');
 
@@ -481,6 +482,11 @@ function renderHtml(data, options = {}) {
         ${renderBugsTab(data)}
         ${renderLessonsTab(data)}
         ${renderStakeholderTab(data)}
+        ${renderSettingsTab({
+          githubConfig: data.githubConfig || null,
+          githubTokenSet: data.githubTokenSet || false,
+          syncState: data.syncState || null,
+        })}
       </div>
     </main>
   </div>
