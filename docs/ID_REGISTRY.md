@@ -19,3 +19,4 @@ Single source of truth for the next available ID in every artefact sequence.
 - Update immediately after assigning — before writing the artefact content.
 - IDs are permanent. Retired artefacts are marked `Status: Retired`, never deleted.
 - All cross-references must use the full ID (e.g., `US-0003`, not "the login story").
+- Zero-padding to 4 digits is cosmetic. IDs beyond 9999 use 5+ digits naturally (e.g. AC-10000). All parser regexes accept variable-length digit sequences.

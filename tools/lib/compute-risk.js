@@ -27,7 +27,7 @@ function computeStoryRisk(story, linkedBugs = []) {
 
 function _normalizeRef(raw) {
   if (!raw) return null;
-  const m = String(raw).match(/US-\d{4}/);
+  const m = String(raw).match(/US-\d+/);
   return m ? m[0] : null;
 }
 

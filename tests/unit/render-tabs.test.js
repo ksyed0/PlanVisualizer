@@ -820,3 +820,11 @@ describe('renderHierarchyTab — US-0169 risk UI', () => {
     expect(html).toContain('_isRefLine:true');
   });
 });
+
+describe('US-0170: variable-length artefact IDs', () => {
+  it('normalizeStoryRef handles 5-digit US IDs (US-10000)', () => {
+    const { normalizeStoryRef } = require('../../tools/lib/render-utils');
+    expect(normalizeStoryRef('US-10000')).toBe('US-10000');
+    expect(normalizeStoryRef('US-10000 (some title)')).toBe('US-10000');
+  });
+});
