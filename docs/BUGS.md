@@ -3880,12 +3880,12 @@ Severity: Medium
 Related Story:
 Steps to Reproduce:
 
-1.  Reported via GitHub Issue #918
-    Expected:
-    Actual:
-    Status: Open
+1.  Open dashboard.html → click ℹ️ About → wait 5 seconds
+    Expected: Modal stays open
+    Actual: Duplicate of BUG-0104 (meta http-equiv="refresh" content="5"). Already fixed in develop — no meta refresh tag present in current dashboard.html or generate-dashboard.js.
+    Status: Fixed
     GH Issue: #918
-    Fix Branch:
+    Fix Branch: develop
     Lesson Encoded: No
 
 ---
