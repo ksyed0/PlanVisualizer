@@ -2151,6 +2151,19 @@ Dependencies: US-0108
 ```
 
 ```
+US-0174 (EPIC-0014): As a developer, I want a dedicated PR Status tab in plan-status.html showing open pull requests, CI check results, and deployment history, so that I can monitor GitHub activity in full detail without leaving the dashboard.
+Priority: Low (P3)
+Estimate: M
+Status: Planned
+Branch: feature/US-0174-pr-status-tab
+Acceptance Criteria:
+  - [ ] AC-0632: A "GitHub" tab appears in the sidebar when github.enabled = true and GITHUB_TOKEN is set
+  - [ ] AC-0633: The tab lists all open PRs with title, PR number (linked), CI check status (pass/fail/pending), review count, and age
+  - [ ] AC-0634: A deployment history section shows the last 5 deployments with environment, status, sha/tag, and timestamp
+Dependencies: US-0171, US-0172, US-0173
+```
+
+```
 EPIC-0015: UI Review and Redesign
 Description: Editorial Operations Dashboard aesthetic pass. Promotes PlanVisualizer from "generic utility dashboard" to a refined, information-dense interface with display typography, semantic badge tokens, shadow-based cards, zebra-striped tables, and per-tab polish across Hierarchy, Kanban, Traceability, Status, Trends, Costs, Bugs, and Lessons.
 Release Target: Release 1.9
