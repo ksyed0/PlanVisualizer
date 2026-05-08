@@ -1802,6 +1802,39 @@ Acceptance Criteria:
 
 ---
 
+## Epic — EPIC-0026: Memory Token Optimisation
+
+```
+
+EPIC-0026: Memory Token Optimisation
+Description: Reduce the token cost of loading MEMORY.md and linked topic files into context. Provides a compact mode that trims verbose entries, archives stale memories, and surfaces a token-usage summary so users know when the memory index is growing expensive.
+Release Target: TBD
+Status: Planned
+StartDate:
+DoneDate:
+Dependencies: None
+
+```
+
+## User Stories — EPIC-0026: Memory Token Optimisation
+
+```
+
+US-0175 (EPIC-0026): As a developer, I want a --compact flag on the memory system that produces a trimmed version of MEMORY.md and topic files, so that I can reduce the token overhead of memory injection in token-sensitive sessions.
+Priority: Low (P3)
+Estimate: M
+Status: Planned
+Branch: feature/US-0175-memory-token-optimisation
+Acceptance Criteria:
+
+- [ ] AC-0635: Running the compact command produces a MEMORY.compact.md that contains only the one-line index entries from MEMORY.md (no topic file content inlined)
+- [ ] AC-0636: Memories older than a configurable staleness threshold (default: 90 days, based on file mtime) are moved to a MEMORY.archive.md and removed from the active index
+      Dependencies: None
+
+```
+
+---
+
 ## Standalone Stories
 
 ```
