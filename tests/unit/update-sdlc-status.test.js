@@ -684,4 +684,22 @@ describe('HANDLERS[github-status]', () => {
     expect(evt).toBeTruthy();
     expect(evt.message).toMatch(/opened/i);
   });
+
+  test('emits PR merged/closed event when PR disappears', async () => {
+    fetchGitHubStatus.mockResolvedValue({
+      prs: [],
+      ciSummary: { total: 0, passing: 0, failing: 0, pending: 0 },
+      deployment: null,
+      fetchedAt: new Date().toISOString(),
+    });
+    const data = {
+      ...baseData(),
+      githubStatus: { prs: [{ number: 55, ciStatus: 'success' }], deployment: null },
+      log: [],
+    };
+    const result = await HANDLERS['github-status'](data, { token: 'tok' });
+    const evt = result.log.find((e) => e.message && e.message.includes('#55'));
+    expect(evt).toBeTruthy();
+    expect(evt.message).toMatch(/merged|closed/i);
+  });
 });

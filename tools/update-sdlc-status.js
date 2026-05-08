@@ -389,7 +389,8 @@ const HANDLERS = {
         appendLog(data, 'GitHub', `PR #${pr.number} opened: ${pr.title}`);
       } else if (old.ciStatus === 'pending' && (pr.ciStatus === 'success' || pr.ciStatus === 'failure')) {
         const icon = pr.ciStatus === 'success' ? '✓' : '✗';
-        appendLog(data, 'GitHub', `CI ${icon} passed on #${pr.number}`);
+        const ciResult = pr.ciStatus === 'success' ? 'passed' : 'failed';
+        appendLog(data, 'GitHub', `CI ${icon} ${ciResult} on #${pr.number}`);
       }
     }
     // PRs that disappeared (merged/closed)
