@@ -43,6 +43,20 @@ function renderMasthead(data) {
   const covLabel = cov && cov.available !== false ? `${cov.overall.toFixed(1)}%` : 'N/A';
   const totalAI = (data.costs && data.costs._totals && data.costs._totals.costUsd) || 0;
   const openBugs = (data.bugs || []).filter((b) => !/^(Fixed|Retired|Cancelled|Rejected)/i.test(b.status)).length;
+  const gs = data.githubStatus || null;
+  const ciChip = (() => {
+    if (!gs || gs.ciSummary.total === 0) return '';
+    const { passing, failing, pending, total } = gs.ciSummary;
+    const color = failing > 0 ? 'var(--risk)' : pending > 0 ? 'var(--warn)' : 'var(--ok)';
+    return `<div class="pv-meta-item pv-meta-item--hide-sm">
+    <span class="pv-meta-lbl" style="color:${color}">${passing}/${total} PRs ✓ CI</span>
+  </div>`;
+  })();
+  const prChip = gs
+    ? `<div class="pv-meta-item pv-meta-item--hide-sm">
+    <span class="pv-meta-lbl">${gs.ciSummary.total} open PRs</span>
+  </div>`
+    : '';
   /* BUG-0195: add projected budget total */
   const totalProjected = activeStories.reduce(
     (sum, st) => sum + ((data.costs && data.costs[st.id] && data.costs[st.id].projectedUsd) || 0),
@@ -76,6 +90,7 @@ function renderMasthead(data) {
         <span class="pv-meta-lbl">AI spend</span>
         <span class="pv-meta-val tnum">${usd(totalAI)}</span>
       </div>
+      ${ciChip}${prChip}
     </div>
   </div>`;
 }
