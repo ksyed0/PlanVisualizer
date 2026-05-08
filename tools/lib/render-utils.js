@@ -70,6 +70,17 @@ const EPIC_ACCENT_COLORS = [
   { border: '#14b8a6', bg: 'rgba(20,184,166,0.07)', text: '#14b8a6' }, // teal
 ];
 
+function timeAgo(isoString) {
+  if (!isoString) return '';
+  const diffMs = Date.now() - new Date(isoString).getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 1) return 'just now';
+  if (diffMin < 60) return `${diffMin}m ago`;
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `${diffHr}h ago`;
+  return '>1d ago';
+}
+
 module.exports = {
   esc,
   jsEsc,
@@ -81,4 +92,5 @@ module.exports = {
   EPIC_ACCENT_COLORS,
   BADGE_TONE,
   badge,
+  timeAgo,
 };

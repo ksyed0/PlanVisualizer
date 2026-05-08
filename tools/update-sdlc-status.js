@@ -53,6 +53,8 @@
 const path = require('path');
 const fs = require('fs');
 const { atomicReadModifyWriteJson, atomicWriteJson } = require('../orchestrator/atomic-write');
+const { fetchGitHubStatus } = require('./lib/fetch-github-status');
+const CONFIG_PATH = path.join(__dirname, '..', 'plan-visualizer.config.json');
 
 const STATUS_PATH = path.join(__dirname, '..', 'docs', 'sdlc-status.json');
 
@@ -363,6 +365,56 @@ const HANDLERS = {
 
   log: (data, opts) => {
     appendLog(data, opts.agent || 'Conductor', opts.message || '(no message)');
+    return data;
+  },
+
+  'github-status': async (data, opts) => {
+    const token = opts.token || process.env.GITHUB_TOKEN;
+    let config = null;
+    try {
+      config = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8')).github;
+    } catch (_e) {
+      /* config file optional */
+    }
+    const newStatus = await fetchGitHubStatus(config, token);
+    if (!newStatus) return data;
+
+    const prev = data.githubStatus;
+    const prevPrMap = prev && prev.prs ? new Map(prev.prs.map((p) => [p.number, p])) : new Map();
+
+    // Change detection: CI transitions and new PRs
+    for (const pr of newStatus.prs) {
+      const old = prevPrMap.get(pr.number);
+      if (!old) {
+        appendLog(data, 'GitHub', `PR #${pr.number} opened: ${pr.title}`);
+      } else if (old.ciStatus === 'pending' && (pr.ciStatus === 'success' || pr.ciStatus === 'failure')) {
+        const icon = pr.ciStatus === 'success' ? '✓' : '✗';
+        const ciResult = pr.ciStatus === 'success' ? 'passed' : 'failed';
+        appendLog(data, 'GitHub', `CI ${icon} ${ciResult} on #${pr.number}`);
+      }
+    }
+    // PRs that disappeared (merged/closed)
+    for (const [num] of prevPrMap) {
+      if (!newStatus.prs.find((p) => p.number === num)) {
+        appendLog(data, 'GitHub', `PR #${num} merged/closed`);
+      }
+    }
+    // Deployment status change
+    if (prev && prev.deployment && newStatus.deployment) {
+      if (
+        prev.deployment.status !== newStatus.deployment.status &&
+        (newStatus.deployment.status === 'success' || newStatus.deployment.status === 'failure')
+      ) {
+        const icon = newStatus.deployment.status === 'success' ? '↑' : '✗';
+        appendLog(data, 'GitHub', `${icon} deployed ${newStatus.deployment.ref} → ${newStatus.deployment.environment}`);
+      }
+    }
+
+    // ciPollUntil: set when any PR is pending, clear when all terminal
+    const hasPending = newStatus.prs.some((p) => p.ciStatus === 'pending');
+    newStatus.ciPollUntil = hasPending ? new Date(Date.now() + 15 * 60 * 1000).toISOString() : null;
+
+    data.githubStatus = newStatus;
     return data;
   },
 };
