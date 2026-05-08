@@ -206,6 +206,17 @@ function formatElapsed(startedAt, nowMs) {
   return `${seconds}s`;
 }
 
+function timeAgoJS(isoString) {
+  if (!isoString) return '';
+  const diffMs = Date.now() - new Date(isoString).getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 1) return 'just now';
+  if (diffMin < 60) return `${diffMin}m ago`;
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `${diffHr}h ago`;
+  return '>1d ago';
+}
+
 // US-0147: Agent Workload — builds per-agent bar chart from sdlcStatus.stories
 function renderAgentWorkload(agents, stories) {
   const agentNames = Object.keys(agents || {}).filter((n) => !/conductor/i.test(n));
@@ -2551,11 +2562,14 @@ ${
       const blockedCount = blockedAgents.length;
       const reviewCount = reviewAgents.length;
       const bugsCount = metrics.bugsOpen || 0;
+      const gs = status && status.githubStatus;
+      const prsNeedingReview = gs ? (gs.prs || []).filter((p) => p.reviewCount === 0).length : 0;
       return (
         `<div class="mc-attn-chips">
         <span class="mc-attn-chip${blockedCount > 0 ? ' risk' : ''}">${blockedCount} blocked</span>
         <span class="mc-attn-chip${reviewCount > 0 ? ' info' : ''}">${reviewCount} review</span>
         <span class="mc-attn-chip${bugsCount > 0 ? ' warn' : ''}">${bugsCount} bugs</span>
+        ${prsNeedingReview > 0 ? `<span class="mc-attn-chip warn">${prsNeedingReview} PRs need review</span>` : ''}
       </div>` +
         (blockedAgents.length === 0 && reviewAgents.length === 0
           ? `<div style="font-size:11px;color:var(--mc-muted);font-style:italic;padding:4px 0;">All clear — no blockers.</div>`
@@ -2577,6 +2591,36 @@ ${
               })
               .join(''))
       );
+    })()}
+  </div>
+
+  <!-- GITHUB sidebar widget -->
+  <div class="mc-sidebar-panel">
+    <div class="mc-sidebar-title">GITHUB</div>
+    ${(() => {
+      const gs = status && status.githubStatus;
+      if (!gs)
+        return `<div style="font-size:11px;color:var(--mc-muted);font-style:italic;">Starting up — no data yet</div>`;
+      const prRows = (gs.prs || [])
+        .slice(0, 4)
+        .map((pr) => {
+          const color =
+            pr.ciStatus === 'success' ? 'var(--ok)' : pr.ciStatus === 'failure' ? 'var(--risk)' : 'var(--mc-muted)';
+          const icon = pr.ciStatus === 'success' ? '✓' : pr.ciStatus === 'failure' ? '✗' : '⟳';
+          return `<div style="font-size:11px;color:var(--mc-muted);margin-bottom:2px">
+          <a href="${esc(pr.url)}" target="_blank" rel="noopener" style="color:var(--info)">#${pr.number}</a>
+          <span style="color:${color}">${icon}</span>
+          ${esc((pr.title || '').slice(0, 32))}${(pr.title || '').length > 32 ? '…' : ''}
+        </div>`;
+        })
+        .join('');
+      const deployLine = gs.deployment
+        ? `<div style="font-size:10px;color:var(--mc-dim);margin-top:4px">↑ ${esc(gs.deployment.ref)} · ${esc(gs.deployment.environment)}</div>`
+        : '';
+      const staleLabel = gs.fetchedAt
+        ? `<div style="font-size:9px;color:var(--mc-dim);margin-top:4px">last updated ${esc(timeAgoJS(gs.fetchedAt))}</div>`
+        : '';
+      return `${prRows || '<div style="font-size:11px;color:var(--mc-muted);font-style:italic;">No open PRs</div>'}${deployLine}${staleLabel}`;
     })()}
   </div>
 
