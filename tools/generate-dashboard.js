@@ -23,6 +23,8 @@ const { execSync } = require('child_process');
 const { badge, BADGE_TONE, generateDashboardCssTokens } = require('./lib/theme');
 const { renderChrome, SHELL_CHROME_CSS } = require('./lib/render-shell');
 const { renderAboutModal } = require('./lib/render-html');
+const { HANDLERS: sdlcHandlers } = require('./update-sdlc-status');
+const { atomicReadModifyWriteJson: atomicRMW } = require('../orchestrator/atomic-write');
 
 const ROOT = path.resolve(__dirname, '..');
 
@@ -2674,7 +2676,8 @@ ${(() => {
                 : tagKey
                   ? tagKey.toUpperCase()
                   : '';
-      return `      <div class="mc-evt-card">
+      const isGh = (entry.agent || '').toLowerCase() === 'github';
+      return `      <div class="mc-evt-card"${isGh ? ' style="border-left:3px solid oklch(60% 0.18 260)"' : ''}>
         <div class="mc-evt-card-head">
           <span class="mc-evt-card-agent"><span class="mc-evt-card-dot" style="background:${agentColor}" aria-hidden="true"></span>${esc(entry.agent || 'System')}</span>
           <span class="mc-evt-time">${esc(timeFormatted)}</span>
@@ -3919,6 +3922,40 @@ function generate() {
   console.log(`[${new Date().toLocaleTimeString()}] Dashboard generated: ${OUTPUT_PATH}`);
 }
 
+let _pollTimer = null;
+
+function _managePollTimer(statusPath) {
+  let sdlc;
+  try {
+    sdlc = JSON.parse(fs.readFileSync(statusPath, 'utf8'));
+  } catch (_) {
+    return;
+  }
+  const gs = sdlc && sdlc.githubStatus;
+  const shouldPoll =
+    gs &&
+    gs.ciPollUntil &&
+    new Date(gs.ciPollUntil) > new Date() &&
+    gs.prs &&
+    gs.prs.some((p) => p.ciStatus === 'pending');
+
+  if (shouldPoll && !_pollTimer) {
+    _pollTimer = setInterval(async () => {
+      try {
+        await atomicRMW(statusPath, (data) => sdlcHandlers['github-status'](data, { token: process.env.GITHUB_TOKEN }));
+      } catch (e) {
+        console.warn('[generate-dashboard] poll-until failed:', e.message);
+      }
+      _managePollTimer(statusPath);
+    }, 60000);
+    console.log('[generate-dashboard] CI poll-until loop started');
+  } else if (!shouldPoll && _pollTimer) {
+    clearInterval(_pollTimer);
+    _pollTimer = null;
+    console.log('[generate-dashboard] CI poll-until loop stopped');
+  }
+}
+
 // Main — only run the pipeline when invoked as a CLI, so tests and other
 // consumers can safely `require('tools/generate-dashboard')` to access
 // generateHTML without triggering file writes or fs.watch side-effects.
@@ -3933,8 +3970,10 @@ if (require.main === module) {
       debounce = setTimeout(() => {
         console.log(`[${new Date().toLocaleTimeString()}] Status changed, regenerating...`);
         generate();
+        _managePollTimer(STATUS_PATH);
       }, 500);
     });
+    _managePollTimer(STATUS_PATH);
   }
 }
 
