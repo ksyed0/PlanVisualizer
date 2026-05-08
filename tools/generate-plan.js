@@ -25,6 +25,7 @@ const { saveSnapshot, loadSnapshots, extractTrends, velocityByWeek } = require('
 const { computeBudgetMetrics, generateBudgetCSV } = require('./lib/budget');
 const { renderHtml } = require('./lib/render-html');
 const { backfillHistory, calculateAvgTokensPerEstimate, estimateStoryCost } = require('./lib/historical-sim');
+const { fetchGitHubStatus } = require('./lib/fetch-github-status');
 
 const TOKEN_RATES = { input: 3, output: 15 };
 
@@ -171,7 +172,7 @@ function computeCompletion(stories, trends) {
   };
 }
 
-function main() {
+async function main() {
   const config = loadConfig();
   const HOURS = config.costs.tshirtHours;
   const RATE = config.costs.hourlyRate;
@@ -400,6 +401,22 @@ function main() {
       console.warn('[generate-plan] GitHub sync failed (non-fatal):', e.message);
     }
   }
+
+  // GitHub status monitoring (read-only — fetches PR/CI/deployment state)
+  if (config.github && config.github.enabled && process.env.GITHUB_TOKEN) {
+    try {
+      data.githubStatus = await fetchGitHubStatus(config.github, process.env.GITHUB_TOKEN);
+      console.log(
+        '[generate-plan] GitHub status fetched:',
+        data.githubStatus ? `${data.githubStatus.prs.length} PRs` : 'null',
+      );
+    } catch (e) {
+      console.warn('[generate-plan] GitHub status fetch failed:', e.message);
+      data.githubStatus = null;
+    }
+  } else {
+    data.githubStatus = null;
+  }
 }
 
 function watch(config) {
@@ -430,13 +447,14 @@ function watch(config) {
   }
 }
 
-try {
-  main();
-  if (process.argv.includes('--watch')) {
-    watch(loadConfig());
-  }
-} catch (e) {
-  console.error('[generate-plan] Fatal:', e.message);
-  console.error('[generate-plan] Stack:', e.stack);
-  process.exit(1);
-}
+main()
+  .then(() => {
+    if (process.argv.includes('--watch')) {
+      watch(loadConfig());
+    }
+  })
+  .catch((e) => {
+    console.error('[generate-plan] Fatal:', e.message);
+    console.error('[generate-plan] Stack:', e.stack);
+    process.exit(1);
+  });
