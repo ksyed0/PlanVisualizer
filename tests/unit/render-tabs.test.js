@@ -900,10 +900,10 @@ describe('renderStatusTab GitHub surfaces', () => {
     risk: null,
     githubStatus: {
       deployment: {
-        env: 'production',
+        environment: 'production',
         url: 'https://example.com',
-        state: 'success',
-        updatedAt: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+        status: 'success',
+        createdAt: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
       },
       prs: [
         {

@@ -2724,12 +2724,12 @@ function renderStatusTab(data) {
     ${(() => {
       const dep = data.githubStatus && data.githubStatus.deployment;
       if (!dep) return '';
-      const stateClass = dep.state === 'success' ? 'ok' : dep.state === 'failure' ? 'risk' : 'warn';
-      const stateLabel = dep.state === 'success' ? '✓ Deployed' : dep.state === 'failure' ? '✗ Failed' : '⟳ Pending';
-      const ago = dep.updatedAt ? timeAgo(dep.updatedAt) : '';
+      const stateClass = dep.status === 'success' ? 'ok' : dep.status === 'failure' ? 'risk' : 'warn';
+      const stateLabel = dep.status === 'success' ? '✓ Deployed' : dep.status === 'failure' ? '✗ Failed' : '⟳ Pending';
+      const ago = dep.createdAt ? timeAgo(dep.createdAt) : '';
       return `<div class="pv-gh-deploy-banner card mb-4" style="display:flex;align-items:center;gap:12px;padding:10px 16px">
         <span class="chip ${stateClass}" style="font-size:11px">${stateLabel}</span>
-        <span style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text-mute)">${esc(dep.env)}</span>
+        <span style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text-mute)">${esc(dep.environment)}</span>
         ${dep.url ? `<a href="${esc(dep.url)}" target="_blank" rel="noopener" style="font-size:12px;color:var(--plan-accent)">${esc(dep.url)}</a>` : ''}
         ${ago ? `<span style="margin-left:auto;font-size:11px;color:var(--text-mute)">${esc(ago)}</span>` : ''}
       </div>`;
