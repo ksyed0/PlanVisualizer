@@ -884,3 +884,66 @@ describe('renderSettingsTab — US-0172', () => {
     expect(html).toContain('API 401');
   });
 });
+
+describe('renderStatusTab GitHub surfaces', () => {
+  const baseData = {
+    epics: [{ id: 'EPIC-0001', title: 'Auth', status: 'In Progress' }],
+    stories: [
+      { id: 'US-0001', epicId: 'EPIC-0001', title: 'Login', status: 'Done', acs: [] },
+      { id: 'US-0002', epicId: 'EPIC-0001', title: 'Session', status: 'In Progress', acs: [] },
+    ],
+    bugs: [],
+    costs: { _totals: { costUsd: 0 } },
+    coverage: { available: false },
+    trends: null,
+    completion: null,
+    risk: null,
+    githubStatus: {
+      deployment: {
+        env: 'production',
+        url: 'https://example.com',
+        state: 'success',
+        updatedAt: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+      },
+      prs: [
+        {
+          storyId: 'US-0002',
+          number: 42,
+          url: 'https://github.com/owner/repo/pull/42',
+          ciStatus: 'success',
+        },
+        {
+          storyId: 'US-0001',
+          number: 41,
+          url: 'https://github.com/owner/repo/pull/41',
+          ciStatus: 'failure',
+        },
+      ],
+    },
+  };
+
+  it('renders deployment banner when githubStatus.deployment is present', () => {
+    const html = renderStatusTab(baseData);
+    expect(html).toContain('pv-gh-deploy-banner');
+  });
+
+  it('renders deployment env label in banner', () => {
+    const html = renderStatusTab(baseData);
+    expect(html).toContain('production');
+  });
+
+  it('renders deployment URL as link in banner', () => {
+    const html = renderStatusTab(baseData);
+    expect(html).toContain('https://example.com');
+  });
+
+  it('renders CI tile in the KPI grid when githubStatus is set', () => {
+    const html = renderStatusTab(baseData);
+    expect(html).toContain('CI Status');
+  });
+
+  it('renders open PRs details section', () => {
+    const html = renderStatusTab(baseData);
+    expect(html).toContain('pv-gh-pr-list');
+  });
+});

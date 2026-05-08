@@ -11,8 +11,21 @@ const {
   EPIC_ACCENT_COLORS,
   badge,
   BADGE_TONE,
+  timeAgo,
 } = require('./render-utils');
 const { LEVEL_COLORS: RISK_LEVEL_COLORS } = require('./compute-risk');
+
+function renderGhBadge(id, githubStatus) {
+  if (!githubStatus || !githubStatus.prs) return '';
+  const pr = githubStatus.prs.find((p) => p.storyId === id || p.bugId === id);
+  if (!pr) return '';
+  const ciClass = pr.ciStatus === 'success' ? 'ok' : pr.ciStatus === 'failure' ? 'risk' : 'warn';
+  const ciLabel = pr.ciStatus === 'success' ? '✓' : pr.ciStatus === 'failure' ? '✗' : '⟳';
+  return (
+    `<span class="chip ${ciClass}" style="font-size:9px;padding:1px 5px">${ciLabel}</span>` +
+    `<a href="${esc(pr.url)}" target="_blank" rel="noopener" style="font-size:10px;color:var(--plan-accent)">#${pr.number}&thinsp;→</a>`
+  );
+}
 
 function renderHierarchyTab(data) {
   const sortedEpics =
@@ -1008,7 +1021,22 @@ function _renderFullStatusHero(data) {
   })();
 
   const kpiTiles = (() => {
-    if (!trends || !trends.dates || trends.dates.length < 2) return '';
+    if (!trends || !trends.dates || trends.dates.length < 2) {
+      // No trend data — still render CI tile if githubStatus present
+      if (!data.githubStatus) return '';
+      const prs = data.githubStatus.prs || [];
+      const total = prs.length;
+      const passing = prs.filter((p) => p.ciStatus === 'success').length;
+      const failing = prs.filter((p) => p.ciStatus === 'failure').length;
+      const ciClass = failing > 0 ? 'var(--risk)' : passing > 0 ? 'var(--ok)' : 'var(--text-mute)';
+      return `<div style="display:grid;grid-template-columns:repeat(1,1fr);gap:12px;margin-bottom:16px">
+        <div class="card" style="padding:14px 16px;position:relative;overflow:hidden">
+          <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-mute);margin-bottom:4px">CI Status</div>
+          <div style="font-family:var(--font-display);font-size:clamp(22px,2.5vw,30px);font-weight:700;line-height:1;margin-bottom:5px;color:${ciClass}">${failing > 0 ? '✗' : passing > 0 ? '✓' : '—'}</div>
+          <div style="font-size:12px;color:var(--text-mute)">${passing}/${total} passing</div>
+        </div>
+      </div>`;
+    }
     const n = trends.dates.length;
     const donePctSeries = (trends.doneCounts || []).map((c, i) => {
       const tot = (trends.totalStories || [])[i] || 1;
@@ -1037,11 +1065,26 @@ function _renderFullStatusHero(data) {
         <div style="font-size:12px;color:${dColor};font-weight:600">${arrow} ${delta > 0 ? '+' : ''}${delta}${deltaUnit}<span style="font-weight:400;color:var(--text-mute)"> / wk</span></div>
       </div>`;
     }
-    return `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
+    const ciTile = (() => {
+      if (!data.githubStatus) return '';
+      const prs = data.githubStatus.prs || [];
+      const total = prs.length;
+      const passing = prs.filter((p) => p.ciStatus === 'success').length;
+      const failing = prs.filter((p) => p.ciStatus === 'failure').length;
+      const ciClass = failing > 0 ? 'var(--risk)' : passing > 0 ? 'var(--ok)' : 'var(--text-mute)';
+      return `<div class="card" style="padding:14px 16px;position:relative;overflow:hidden">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-mute);margin-bottom:4px">CI Status</div>
+        <div style="font-family:var(--font-display);font-size:clamp(22px,2.5vw,30px);font-weight:700;line-height:1;margin-bottom:5px;color:${ciClass}">${failing > 0 ? '✗' : passing > 0 ? '✓' : '—'}</div>
+        <div style="font-size:12px;color:var(--text-mute)">${passing}/${total} passing</div>
+      </div>`;
+    })();
+    const cols = data.githubStatus ? 'repeat(5,1fr)' : 'repeat(4,1fr)';
+    return `<div style="display:grid;grid-template-columns:${cols};gap:12px;margin-bottom:16px">
       ${kpiTile('Overall Progress', donePctSeries[n - 1] || donePct, '%', lastDelta(donePctSeries), '%', donePctSeries, true)}
       ${kpiTile('Test Coverage', covSeries[n - 1] !== undefined ? covSeries[n - 1].toFixed(1) : covPct !== null ? covPct.toFixed(1) : '—', '%', lastDelta(covSeries), '%', covSeries, true)}
       ${kpiTile('Open Bugs', bugSeries[n - 1] !== undefined ? bugSeries[n - 1] : openBugs.length, '', lastDelta(bugSeries), '', bugSeries, false)}
       ${kpiTile('AI Spend', usd(costSeries[n - 1] || totalAI), '', +((costSeries[n - 1] || 0) - (costSeries[n - 2] || 0)).toFixed(2), '', costSeries, null)}
+      ${ciTile}
     </div>`;
   })();
 
@@ -2676,6 +2719,20 @@ function renderStatusTab(data) {
 
     ${_renderFullStatusHero(data)}
 
+    ${(() => {
+      const dep = data.githubStatus && data.githubStatus.deployment;
+      if (!dep) return '';
+      const stateClass = dep.state === 'success' ? 'ok' : dep.state === 'failure' ? 'risk' : 'warn';
+      const stateLabel = dep.state === 'success' ? '✓ Deployed' : dep.state === 'failure' ? '✗ Failed' : '⟳ Pending';
+      const ago = dep.updatedAt ? timeAgo(dep.updatedAt) : '';
+      return `<div class="pv-gh-deploy-banner card mb-4" style="display:flex;align-items:center;gap:12px;padding:10px 16px">
+        <span class="chip ${stateClass}" style="font-size:11px">${stateLabel}</span>
+        <span style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text-mute)">${esc(dep.env)}</span>
+        ${dep.url ? `<a href="${esc(dep.url)}" target="_blank" rel="noopener" style="font-size:12px;color:var(--plan-accent)">${esc(dep.url)}</a>` : ''}
+        ${ago ? `<span style="margin-left:auto;font-size:11px;color:var(--text-mute)">${esc(ago)}</span>` : ''}
+      </div>`;
+    })()}
+
     <!-- Decision widgets row -->
     <div class="pv-widgets mb-4">
       <!-- Overall progress KPIs -->
@@ -2796,6 +2853,27 @@ function renderStatusTab(data) {
         </div>
       </div>
     </div>
+
+    ${(() => {
+      const prs = data.githubStatus && data.githubStatus.prs;
+      if (!prs || prs.length === 0) return '';
+      const rows = prs
+        .map((pr) => {
+          const ciClass = pr.ciStatus === 'success' ? 'ok' : pr.ciStatus === 'failure' ? 'risk' : 'warn';
+          const ciLabel = pr.ciStatus === 'success' ? '✓' : pr.ciStatus === 'failure' ? '✗' : '⟳';
+          const id = pr.storyId || pr.bugId || '';
+          return `<li style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--border)">
+            <span class="chip ${ciClass}" style="font-size:9px;padding:1px 5px">${ciLabel}</span>
+            <code style="font-size:11px">${esc(id)}</code>
+            <a href="${esc(pr.url)}" target="_blank" rel="noopener" style="font-size:12px;color:var(--plan-accent)">#${pr.number}</a>
+          </li>`;
+        })
+        .join('');
+      return `<details class="pv-gh-pr-list card mb-4" style="padding:12px 16px">
+        <summary style="cursor:pointer;font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-mute)">Open PRs (${prs.length})</summary>
+        <ul style="list-style:none;margin:8px 0 0;padding:0">${rows}</ul>
+      </details>`;
+    })()}
   </div>
   <style>
   @media(max-width:1100px){.pv-widgets{grid-template-columns:1fr}}
