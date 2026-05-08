@@ -46,7 +46,7 @@ New pure module. No file I/O. Wraps existing `github-client.js`.
       bugId: null,
       ciStatus: "success",      // "success" | "failure" | "pending" | "skipped" | null
       reviewCount: 1,
-      age: "2d"
+      createdAt: "2026-05-05T10:00:00Z"  // raw ISO — render layer formats to "2d ago"
     }
   ],
   ciSummary: {
@@ -143,17 +143,33 @@ Every surface that displays GitHub data shows a muted `GitHub · last updated X 
 
 ### Fetch timing
 
-The Conductor writes GitHub status into `sdlc-status.json` at each pipeline transition by calling:
+The Conductor writes GitHub status into `sdlc-status.json` at four specific pipeline transitions:
 
 ```bash
 node tools/update-sdlc-status.js github-status --token $GITHUB_TOKEN
 ```
 
-`update-sdlc-status.js` gains a new `github-status` command handler that calls `fetchGitHubStatus()` and writes the result to `sdlcStatus.githubStatus`. `generate-dashboard.js` reads it from there — no direct GitHub API calls in the generator.
+Triggered after: `story-start`, `story-complete`, `review`, and `test-pass`. These are the moments when PR/CI state is most likely to have changed. All other transitions (`phase`, `log`, `coverage`, etc.) do not trigger a GitHub fetch.
+
+`update-sdlc-status.js` gains a new `github-status` command handler that:
+
+1. Calls `fetchGitHubStatus()` to get fresh data
+2. Diffs the result against the existing `sdlcStatus.githubStatus` to detect state changes
+3. Pushes change events into `sdlcStatus.log` (e.g. `{ agent: 'GitHub', message: 'CI ✓ passed on #994', type: 'ci' }`)
+4. Writes the new `githubStatus` object (including `ciPollUntil` if any PR is pending — see below)
+
+`generate-dashboard.js` reads `sdlcStatus.githubStatus` — no direct GitHub API calls in the generator.
+
+**Change detection rules for event emission:**
+
+- `pending → success/failure/cancelled` on any PR → emit CI result event
+- New PR appears in list → emit PR opened event
+- PR disappears from open list → emit PR merged/closed event
+- `deployment.status` changes to `success`/`failure` → emit deployment event
 
 ### CI poll-until mechanism
 
-When the Conductor writes a CI status containing any `pending` PR, it also writes:
+The `github-status` handler itself sets `ciPollUntil` whenever it observes any PR with `ciStatus: "pending"` after writing new state — regardless of which Conductor transition triggered the call:
 
 ```json
 "githubStatus": {
@@ -162,15 +178,17 @@ When the Conductor writes a CI status containing any `pending` PR, it also write
 }
 ```
 
-A companion poll loop (runs alongside `generate-dashboard.js --watch`) checks every 60 seconds:
+This means `ciPollUntil` is always set at the right moment (when pending CI is first observed) without the Conductor needing to know about it. If a subsequent handler call finds all CI terminal, it clears `ciPollUntil` before writing.
 
-- If `now < ciPollUntil` and any PR has `ciStatus: "pending"` → call `github-status` command, update `sdlc-status.json`
-- If all PRs reach terminal state (`success`/`failure`/`cancelled`) → clear `ciPollUntil`, stop polling
-- If `now >= ciPollUntil` → stop polling, leave status as-is (dashboard will show staleness timestamp)
+A companion poll loop (a `setInterval` inside `generate-dashboard.js --watch`, not a separate process) checks every 60 seconds:
+
+- If `now < ciPollUntil` and any PR has `ciStatus: "pending"` → invoke the `github-status` handler directly, which updates `sdlc-status.json` and emits any change events
+- If all PRs reach terminal state (`success`/`failure`/`cancelled`) → handler clears `ciPollUntil`; poll loop sees it gone and stops
+- If `now >= ciPollUntil` → stop polling, leave status as-is (staleness timestamp will be visible)
+
+The poll loop uses the same `atomicReadModifyWriteJson` pattern as the rest of `update-sdlc-status.js` to prevent write conflicts if a Conductor event and a poll tick fire simultaneously.
 
 TTL: 15 minutes. Max additional API calls per CI run: ~15.
-
-**Implementation note:** The poll loop can be a simple `setInterval` added to `generate-dashboard.js --watch` mode, guarded by `ciPollUntil`. No separate process needed.
 
 ### Live bar
 
