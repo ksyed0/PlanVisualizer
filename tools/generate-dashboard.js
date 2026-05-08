@@ -428,6 +428,28 @@ function generateHTML(status) {
   // so stroke-dasharray can be written as "<percent> 100" without extra math.
   const doughnutOffset = (100 - Math.max(0, Math.min(100, coveragePct))).toFixed(2);
 
+  // Pre-computed to avoid nested template literal inside the main HTML string
+  const lbCiChip = (() => {
+    const gs = status.githubStatus;
+    if (!gs || gs.ciSummary.total === 0) return '';
+    const { failing, pending } = gs.ciSummary;
+    const color = failing > 0 ? 'var(--risk)' : pending > 0 ? 'var(--warn)' : 'var(--ok)';
+    const label = failing > 0 ? '&#10007; CI' : pending > 0 ? '&#8635; CI' : '&#10003; CI';
+    return (
+      '<span id="pv-lb-ci-chip" style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;' +
+      'background:color-mix(in oklab,' +
+      color +
+      ' 15%,transparent);color:' +
+      color +
+      ';' +
+      'border:1px solid color-mix(in oklab,' +
+      color +
+      ' 40%,transparent)">' +
+      label +
+      '</span>'
+    );
+  })();
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -2124,6 +2146,7 @@ ${(() => {
 <div class="pv-live-bar" id="pv-live-bar" role="status" aria-live="polite" style="display:none;">
   <div class="pv-live-col-left">
     <span class="pv-on-air">ON AIR</span>
+    ${lbCiChip}
   </div>
   <div class="pv-live-col-mid">
     <div class="pv-live-exec-lbl">NOW EXECUTING</div>
