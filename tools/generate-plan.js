@@ -383,6 +383,22 @@ async function main() {
     data.syncState = null;
   }
 
+  // GitHub status monitoring (read-only — fetches PR/CI/deployment state)
+  if (config.github && config.github.enabled && process.env.GITHUB_TOKEN) {
+    try {
+      data.githubStatus = await fetchGitHubStatus(config.github, process.env.GITHUB_TOKEN);
+      console.log(
+        '[generate-plan] GitHub status fetched:',
+        data.githubStatus ? `${data.githubStatus.prs.length} PRs` : 'null',
+      );
+    } catch (e) {
+      console.warn('[generate-plan] GitHub status fetch failed:', e.message);
+      data.githubStatus = null;
+    }
+  } else {
+    data.githubStatus = null;
+  }
+
   const html = renderHtml(data, { trends, budgetCSV });
   const htmlPath = path.join(outputDir, 'plan-status.html');
   fs.writeFileSync(htmlPath, html, 'utf8');
@@ -400,22 +416,6 @@ async function main() {
     } catch (e) {
       console.warn('[generate-plan] GitHub sync failed (non-fatal):', e.message);
     }
-  }
-
-  // GitHub status monitoring (read-only — fetches PR/CI/deployment state)
-  if (config.github && config.github.enabled && process.env.GITHUB_TOKEN) {
-    try {
-      data.githubStatus = await fetchGitHubStatus(config.github, process.env.GITHUB_TOKEN);
-      console.log(
-        '[generate-plan] GitHub status fetched:',
-        data.githubStatus ? `${data.githubStatus.prs.length} PRs` : 'null',
-      );
-    } catch (e) {
-      console.warn('[generate-plan] GitHub status fetch failed:', e.message);
-      data.githubStatus = null;
-    }
-  } else {
-    data.githubStatus = null;
   }
 }
 
