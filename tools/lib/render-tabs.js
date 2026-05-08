@@ -2859,19 +2859,43 @@ function renderStatusTab(data) {
       if (!prs || prs.length === 0) return '';
       const rows = prs
         .map((pr) => {
-          const ciClass = pr.ciStatus === 'success' ? 'ok' : pr.ciStatus === 'failure' ? 'risk' : 'warn';
-          const ciLabel = pr.ciStatus === 'success' ? '✓' : pr.ciStatus === 'failure' ? '✗' : '⟳';
-          const id = pr.storyId || pr.bugId || '';
-          return `<li style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--border)">
-            <span class="chip ${ciClass}" style="font-size:9px;padding:1px 5px">${ciLabel}</span>
-            <code style="font-size:11px">${esc(id)}</code>
-            <a href="${esc(pr.url)}" target="_blank" rel="noopener" style="font-size:12px;color:var(--plan-accent)">#${pr.number}</a>
-          </li>`;
+          const ciClass =
+            pr.ciStatus === 'success'
+              ? 'ok'
+              : pr.ciStatus === 'failure'
+                ? 'risk'
+                : pr.ciStatus === 'pending'
+                  ? 'warn'
+                  : 'mute';
+          const ciLabel =
+            pr.ciStatus === 'success'
+              ? '✓ CI'
+              : pr.ciStatus === 'failure'
+                ? '✗ CI'
+                : pr.ciStatus === 'pending'
+                  ? '⟳ CI'
+                  : '— CI';
+          return `<tr>
+          <td><a href="${esc(pr.url)}" target="_blank" rel="noopener" style="color:var(--plan-accent)">#${pr.number}</a></td>
+          <td>${esc(pr.title || '')}</td>
+          <td><span class="chip ${ciClass}" style="font-size:9px">${ciLabel}</span></td>
+          <td>${pr.reviewCount !== null && pr.reviewCount !== undefined ? pr.reviewCount : ''}</td>
+          <td style="color:var(--text-mute)">${pr.createdAt ? timeAgo(pr.createdAt) : ''}</td>
+        </tr>`;
         })
         .join('');
       return `<details class="pv-gh-pr-list card mb-4" style="padding:12px 16px">
         <summary style="cursor:pointer;font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-mute)">Open PRs (${prs.length})</summary>
-        <ul style="list-style:none;margin:8px 0 0;padding:0">${rows}</ul>
+        <table style="width:100%;border-collapse:collapse;margin:8px 0 0;font-size:12px">
+          <thead><tr style="color:var(--text-mute);font-size:10px;text-transform:uppercase;letter-spacing:.07em">
+            <th style="text-align:left;padding:4px 8px 4px 0;font-weight:700">PR</th>
+            <th style="text-align:left;padding:4px 8px;font-weight:700">Title</th>
+            <th style="text-align:left;padding:4px 8px;font-weight:700">CI</th>
+            <th style="text-align:left;padding:4px 8px;font-weight:700">Reviews</th>
+            <th style="text-align:left;padding:4px 8px;font-weight:700">Age</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
       </details>`;
     })()}
   </div>

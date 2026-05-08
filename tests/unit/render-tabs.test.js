@@ -908,15 +908,21 @@ describe('renderStatusTab GitHub surfaces', () => {
       prs: [
         {
           storyId: 'US-0002',
-          number: 42,
-          url: 'https://github.com/owner/repo/pull/42',
+          number: 994,
+          url: 'https://github.com/owner/repo/pull/994',
           ciStatus: 'success',
+          title: 'feat: test',
+          reviewCount: 1,
+          createdAt: new Date().toISOString(),
         },
         {
           storyId: 'US-0001',
           number: 41,
           url: 'https://github.com/owner/repo/pull/41',
           ciStatus: 'failure',
+          title: 'fix: something',
+          reviewCount: 0,
+          createdAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
         },
       ],
     },
@@ -945,5 +951,14 @@ describe('renderStatusTab GitHub surfaces', () => {
   it('renders open PRs details section', () => {
     const html = renderStatusTab(baseData);
     expect(html).toContain('pv-gh-pr-list');
+  });
+
+  it('open PRs list rendered when PRs present', () => {
+    const html = renderStatusTab(baseData);
+    expect(html).toContain('#994');
+    expect(html).toContain('feat: test');
+    expect(html).toContain('1</td>');
+    // timeAgo of a just-created PR should be recent (contains "ago" or "just now" or "0m")
+    expect(html).toMatch(/just now|0m ago|<1m/);
   });
 });
