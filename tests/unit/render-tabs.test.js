@@ -962,3 +962,82 @@ describe('renderStatusTab GitHub surfaces', () => {
     expect(html).toMatch(/just now|0m ago|<1m/);
   });
 });
+
+describe('renderHierarchyTab GitHub badges', () => {
+  const { renderHierarchyTab } = require('../../tools/lib/render-tabs');
+
+  const baseData = () => ({
+    projectName: 'Test',
+    release: 'R1',
+    stories: [
+      {
+        id: 'US-0001',
+        status: 'In Progress',
+        epicId: 'EPIC-0001',
+        title: 'My story',
+        acs: [],
+        priority: 'P1',
+        estimate: 'S',
+      },
+    ],
+    epics: [{ id: 'EPIC-0001', title: 'Epic One', status: 'In Progress' }],
+    bugs: [],
+    testCases: [],
+    lessons: [],
+    coverage: { available: false },
+    costs: { 'US-0001': { projectedUsd: 0 } },
+    atRisk: { 'US-0001': { isAtRisk: false } },
+    risk: { byStory: new Map(), byEpic: new Map() },
+    githubStatus: null,
+  });
+
+  test('no badge when githubStatus is null', () => {
+    const html = renderHierarchyTab(baseData());
+    expect(html).not.toMatch(/#\d+&thinsp;→/);
+  });
+
+  test('renders CI badge and PR link for matched story', () => {
+    const data = baseData();
+    data.githubStatus = {
+      prs: [
+        {
+          number: 994,
+          ciStatus: 'success',
+          storyId: 'US-0001',
+          bugId: null,
+          url: 'https://github.com/x/y/pull/994',
+          title: 't',
+          reviewCount: 0,
+          createdAt: new Date().toISOString(),
+        },
+      ],
+      ciSummary: { total: 1, passing: 1, failing: 0, pending: 0 },
+      fetchedAt: new Date().toISOString(),
+    };
+    const html = renderHierarchyTab(data);
+    expect(html).toContain('#994');
+    expect(html).toContain('chip ok');
+  });
+
+  test('no badge for unmatched story', () => {
+    const data = baseData();
+    data.githubStatus = {
+      prs: [
+        {
+          number: 999,
+          ciStatus: 'success',
+          storyId: 'US-9999',
+          bugId: null,
+          url: 'u',
+          title: 't',
+          reviewCount: 0,
+          createdAt: new Date().toISOString(),
+        },
+      ],
+      ciSummary: { total: 1, passing: 1, failing: 0, pending: 0 },
+      fetchedAt: new Date().toISOString(),
+    };
+    const html = renderHierarchyTab(data);
+    expect(html).not.toContain('#999');
+  });
+});

@@ -93,6 +93,7 @@ function renderHierarchyTab(data) {
           <span class="text-sm font-medium">${esc(story.title)}</span>
           ${riskBadge}
           ${riskScoreBadge}
+          ${renderGhBadge(story.id, data.githubStatus)}
           <span class="ml-auto text-xs text-slate-500">${esc(story.estimate || '?')} · ${usd((data.costs[story.id] && data.costs[story.id].projectedUsd) || 0)}</span>
         </div>
         <ul id="acs-${story.id}" class="ac-guide mt-2 hidden">${acItems || '<li class="text-xs text-slate-500 pl-4">No ACs yet</li>'}</ul>
@@ -139,6 +140,7 @@ function renderHierarchyTab(data) {
           <span>${cost}</span>
           ${acTotal ? `<span class="cursor-pointer" onclick="toggleCardACs('${jsEsc(story.id)}')">${acDone}/${acTotal} ACs ▾</span>` : ''}
           ${riskScoreBadge}
+          ${renderGhBadge(story.id, data.githubStatus)}
           <span class="ml-auto">${riskBadge}</span>
         </div>
         ${acTotal ? `<ul id="card-acs-${story.id}" class="ac-guide hidden mt-1 pt-1 border-t border-slate-100 dark:border-slate-600 space-y-0.5">${acItems || '<li class="text-xs text-slate-500 pl-4">No ACs yet</li>'}</ul>` : ''}
