@@ -54,16 +54,17 @@ else
     OLDER=$(printf '%s\n%s' "$SP_VER_CLEAN" "$SP_LATEST_CLEAN" | sort -V | head -1)
     if [ "$OLDER" = "$SP_VER_CLEAN" ]; then
       echo ""
-      echo "[install] superpowers v${SP_VER} installed — v${SP_LATEST} is available."
+      echo "[install] superpowers v${SP_VER} installed — v${SP_LATEST_CLEAN} is available."
       read -p "[install] Upgrade? (y/n) " -n 1 -r; echo
       if [[ $REPLY =~ ^[Yy]$ ]]; then
         echo ""
-        echo "[install] Run inside a Claude Code session:"
+        echo "[install] Run inside a Claude Code session, then re-run install.sh:"
         echo ""
         echo "  /plugin install superpowers@claude-plugins-official"
         echo ""
         echo "  See: https://github.com/obra/superpowers"
         echo ""
+        exit 0
       fi
     else
       echo "[install] superpowers v${SP_VER} ✓ (up to date)"
