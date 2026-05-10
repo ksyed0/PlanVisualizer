@@ -26,6 +26,7 @@ const { computeBudgetMetrics, generateBudgetCSV } = require('./lib/budget');
 const { renderHtml } = require('./lib/render-html');
 const { backfillHistory, calculateAvgTokensPerEstimate, estimateStoryCost } = require('./lib/historical-sim');
 const { fetchGitHubStatus } = require('./lib/fetch-github-status');
+const { compactMemory } = require('./lib/memory-index');
 
 const TOKEN_RATES = { input: 3, output: 15 };
 
@@ -177,6 +178,11 @@ function computeCompletion(stories, trends) {
 
 async function main() {
   const config = loadConfig();
+  try {
+    compactMemory({ root: ROOT });
+  } catch (e) {
+    console.warn('[generate-plan] memory:compact skipped:', e.message);
+  }
   const HOURS = config.costs.tshirtHours;
   const RATE = config.costs.hourlyRate;
 
@@ -388,6 +394,7 @@ async function main() {
   // GitHub Settings tab data
   data.githubConfig = config.github || null;
   data.githubTokenSet = !!process.env.GITHUB_TOKEN;
+  data.memoryConfig = config.memory || { staleDays: 90, autoArchive: false };
   try {
     data.syncState = JSON.parse(fs.readFileSync(path.join(ROOT, 'docs/github-sync-state.json'), 'utf8'));
   } catch {
