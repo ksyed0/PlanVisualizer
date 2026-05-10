@@ -28,7 +28,12 @@ function getSectionMtime(root, heading) {
 
 function triageLessons(root, lessonsBody, dry) {
   const lessonsPath = path.join(root, 'docs', 'LESSONS.md');
-  const existing = fs.existsSync(lessonsPath) ? fs.readFileSync(lessonsPath, 'utf8') : '';
+  let existing = '';
+  try {
+    existing = fs.readFileSync(lessonsPath, 'utf8');
+  } catch {
+    /* file may not exist yet */
+  }
   const today = new Date().toISOString().slice(0, 10);
   const orphans = [];
   // Split on entry boundaries (lines starting with '- L-XXXX')

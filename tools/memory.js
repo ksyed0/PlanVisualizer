@@ -6,6 +6,22 @@ const fs = require('fs');
 
 const ROOT = path.join(__dirname, '..');
 
+/**
+ * Read a file's content and mtime atomically via a file descriptor.
+ * Avoids TOCTOU race between stat and read (CodeQL js/file-system-race).
+ */
+function readFileSafe(fp) {
+  const fd = fs.openSync(fp, 'r');
+  try {
+    const stat = fs.fstatSync(fd);
+    const buf = Buffer.allocUnsafe(stat.size);
+    fs.readSync(fd, buf, 0, stat.size, 0);
+    return { content: buf.toString('utf8'), mtimeMs: stat.mtimeMs };
+  } finally {
+    fs.closeSync(fd);
+  }
+}
+
 function parseArgs(argv) {
   const args = argv.slice(2);
   const cmd = args[0] || null;
@@ -60,14 +76,13 @@ function dispatch({ cmd, dry, force, days }) {
       for (const f of fs.readdirSync(dir)) {
         if (!f.endsWith('.md')) continue;
         const fp = path.join(dir, f);
-        const stat = fs.statSync(fp);
-        const content = fs.readFileSync(fp, 'utf8');
+        const { content, mtimeMs } = readFileSafe(fp);
         const titleMatch = content.match(/^# (.+?)\s*$/m);
         const title = titleMatch ? titleMatch[1] : f.replace(/\.md$/, '');
         const dateMatch = f.match(/^(\d{4}-\d{2}-\d{2})/);
         files.push({
           path: fp,
-          mtime: stat.mtimeMs,
+          mtime: mtimeMs,
           category: cat,
           scope: cat === 'snapshots' ? scopeFromTitle(title) : null,
           date: dateMatch ? dateMatch[1] : null,
