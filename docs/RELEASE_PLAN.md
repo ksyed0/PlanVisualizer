@@ -1807,7 +1807,7 @@ Acceptance Criteria:
 ```
 
 EPIC-0026: Memory Token Optimisation
-Description: Reduce the token cost of loading MEMORY.md and linked topic files into context. Provides a compact mode that trims verbose entries, archives stale memories, and surfaces a token-usage summary so users know when the memory index is growing expensive.
+Description: Improve the developer experience around claude-mem. Two tracks: (1) reduce token cost of loading MEMORY.md and linked topic files into context (compact mode + staleness archive); (2) integrate the live claude-mem worker dashboard with the agentic SDLC dashboard so memory activity is visible alongside pipeline state.
 Release Target: TBD
 Status: Planned
 StartDate:
@@ -1830,6 +1830,22 @@ Acceptance Criteria:
 - [ ] AC-0635: Running the compact command produces a MEMORY.compact.md that contains only the one-line index entries from MEMORY.md (no topic file content inlined)
 - [ ] AC-0636: Memories older than a configurable staleness threshold (default: 90 days, based on file mtime) are moved to a MEMORY.archive.md and removed from the active index
       Dependencies: None
+
+```
+
+```
+
+US-0176 (EPIC-0026): As a developer running the agentic SDLC dashboard, I want a live link to the local claude-mem worker dashboard so I can correlate agent pipeline activity with memory observations being captured in real time.
+Priority: Low (P3)
+Estimate: S
+Status: Planned
+Branch: feature/US-0176-claude-mem-dashboard-link
+Acceptance Criteria:
+
+- [ ] AC-0637: Agentic dashboard sidebar shows a "MEMORY" widget when claude-mem is detected (~/.claude-mem/settings.json exists at generate time), with a "view live →" link to http://${CLAUDE_MEM_WORKER_HOST}:${CLAUDE_MEM_WORKER_PORT} (defaults: 127.0.0.1:37701)
+- [ ] AC-0638: Widget shows observation count from claude-mem.db when accessible; falls back to "live" status indicator when DB read fails
+- [ ] AC-0639: Widget is hidden when claude-mem is not installed (no settings.json present); no errors thrown
+      Dependencies: None (claude-mem detection is independent of EPIC-0026 US-0175)
 
 ```
 
