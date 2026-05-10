@@ -72,6 +72,44 @@ else
   fi
 fi
 
+# ── 0.1. Check claude-mem plugin ────────────────────────────────────────────
+# claude-mem provides persistent cross-session memory for Claude Code.
+# Installed via: npx claude-mem install
+CM_SETTINGS="$HOME/.claude-mem/settings.json"
+CM_BASE="$HOME/.claude/plugins/cache/thedotmack/claude-mem"
+CM_VER=$(ls "$CM_BASE" 2>/dev/null | sort -V | tail -1)
+
+if [ ! -f "$CM_SETTINGS" ]; then
+  echo ""
+  echo "[install] claude-mem not detected."
+  read -p "[install] Install claude-mem for persistent cross-session memory? (y/n) " -n 1 -r; echo
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    echo ""
+    echo "[install] Running: npx claude-mem install"
+    echo ""
+    npx claude-mem install || true
+    if [ -f "$CM_SETTINGS" ]; then
+      echo ""
+      echo "[install] claude-mem installed successfully ✓"
+      echo ""
+    else
+      echo ""
+      echo "[install] Warning: claude-mem install may have failed."
+      echo "[install] Retry manually with: npx claude-mem install"
+      echo ""
+    fi
+  else
+    echo "[install] Skipping. Install later with: npx claude-mem install"
+    echo ""
+  fi
+else
+  if [ -n "$CM_VER" ]; then
+    echo "[install] claude-mem v${CM_VER} already installed ✓"
+  else
+    echo "[install] claude-mem already installed ✓"
+  fi
+fi
+
 # ── 0.5. Create required directory structure ────────────────────────────────
 echo "[install] Creating directory structure ..."
 mkdir -p "${TARGET}/docs/coverage"
