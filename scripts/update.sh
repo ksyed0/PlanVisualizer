@@ -260,6 +260,10 @@ const toAdd = {
   'plan:cleanup:dry':        'bash scripts/cleanup-branches.sh --dry-run',
   'plan:migrate-config':     'node tools/migrate-config.js',
   'plan:migrate-config:dry': 'node tools/migrate-config.js --dry-run',
+  'memory:compact':          'node tools/memory.js compact',
+  'memory:archive':          'node tools/memory.js archive',
+  'memory:migrate':          'node tools/memory.js migrate',
+  'memory:validate':         'node tools/memory.js validate',
 };
 let added = 0;
 for (const [k, v] of Object.entries(toAdd)) {
