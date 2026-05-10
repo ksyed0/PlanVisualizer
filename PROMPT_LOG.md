@@ -4,6 +4,40 @@ Timestamped log of every user prompt across all sessions. Append-only. Never edi
 
 ---
 
+## Session 41 — 2026-05-08/09
+
+| #   | Timestamp            | Prompt                                                                                                   |
+| --- | -------------------- | -------------------------------------------------------------------------------------------------------- |
+| 1   | 2026-05-08T20:00:00Z | clean up unused branches                                                                                 |
+| 2   | 2026-05-08T20:01:00Z | I want to assess the feasibility of incorporating GitHub status monitoring into Plan Visualizer          |
+| 3   | 2026-05-08T20:05:00Z | Detect my project's dev servers and save all their configurations to .claude/launch.json                 |
+| 4   | 2026-05-08T20:10:00Z | i can't see the option preview, the current claude preview window says [Set up screen]                   |
+| 5   | 2026-05-08T20:15:00Z | the preview window is showing fablesoft.biz website                                                      |
+| 6   | 2026-05-08T20:18:00Z | no, the preview panel is still showing fablesoft.biz and opening localhost:4321 also shows the same      |
+| 7   | 2026-05-08T20:20:00Z | OK I thought we fixed the blank gap at the top of the plan status screen / What are we looking for next  |
+| 8   | 2026-05-08T20:25:00Z | yes, lets use the visualizer - I have Chrome open, lets use it there (use a new port)                    |
+| 9   | 2026-05-08T20:30:00Z | looks good, lets log a future enhancement to add a PR Status tab                                         |
+| 10  | 2026-05-08T20:32:00Z | next question                                                                                            |
+| 11  | 2026-05-08T20:35:00Z | I agree for this page to use Option A but we should iterate the same decisions for the agentic dashboard |
+| 12  | 2026-05-08T20:38:00Z | C                                                                                                        |
+| 13  | 2026-05-08T20:40:00Z | I like option A, but what happens when CI is running for 10 minutes with no events?                      |
+| 14  | 2026-05-08T20:42:00Z | I like the first option of a 60 second poll, but does the stale data warning apply in other areas?       |
+| 15  | 2026-05-08T20:44:00Z | This is good for now                                                                                     |
+| 16  | 2026-05-08T20:45:00Z | what do you think [re: design summary]                                                                   |
+| 17  | 2026-05-08T20:46:00Z | 1. PR x CI passing chip 2. Starting up no data 3. ok with density / continue with spec                   |
+| 18  | 2026-05-08T20:48:00Z | what do you think [re: spec]                                                                             |
+| 19  | 2026-05-08T20:50:00Z | yes [patch 4 spec gaps]                                                                                  |
+| 20  | 2026-05-08T20:51:00Z | can we add to the roadmap a token saver option for memory files to a future epic                         |
+| 21  | 2026-05-08T20:52:00Z | ok use subagent drive pipeline to implement the plan                                                     |
+| 22  | 2026-05-09T00:00:00Z | resume / continue                                                                                        |
+| 23  | 2026-05-09T00:02:00Z | 2 [Push and create PR — finishing-a-development-branch]                                                  |
+| 24  | 2026-05-09T00:03:00Z | 2 [second "2" — interpreted as session close confirmation]                                               |
+| 25  | 2026-05-09T00:05:00Z | monitor CI 989 until green then merge                                                                    |
+| 26  | 2026-05-09T00:06:00Z | Continue from where you left off                                                                         |
+| 27  | 2026-05-09T00:07:00Z | yes [session close]                                                                                      |
+
+---
+
 ## Session 40 — 2026-05-05
 
 | #   | Timestamp            | Prompt                                                                              |

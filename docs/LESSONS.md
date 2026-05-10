@@ -4,6 +4,24 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
+## L-0054 — Haiku subagents commit to whichever repo their CWD resolves to — not necessarily the worktree
+
+**Rule:** When a subagent is dispatched into a worktree, its shell CWD is reset to the worktree path, but `haiku` model subagents with limited context sometimes run `git commit` from the main repo root (especially when the hook resets the CWD mid-turn). Always verify that implementation commits appeared on the expected branch (`git log --oneline -3`) before running the spec reviewer — a "DONE" report that references a commit SHA which doesn't appear in the worktree log means the commit landed elsewhere. Fix: hard-reset the main repo branch to origin, cherry-pick only the docs/spec commits that were intentionally on that branch.
+_Observed in Session 41: Tasks 7 and 9 haiku fixes committed to local `develop` instead of the `claude/zen-bohr-2418e8` worktree, requiring a post-session `git reset --hard origin/develop && git cherry-pick` cleanup._
+**Date:** 2026-05-08
+
+---
+
+## L-0053 — Nested template literals inside `generate-dashboard.js` cause silent syntax errors
+
+**Rule:** `generate-dashboard.js` uses one giant ES6 template literal for the entire HTML output. Any `${...}` interpolation inside it that itself contains backtick sub-expressions will silently produce malformed HTML or a JS syntax error at runtime. Always pre-compute complex conditional strings as named `const` variables before the `return \`` line. Pattern: `const lbCiChip = (() => { ... })(); return \`...${lbCiChip}...\``. This is especially important for conditional blocks that need to branch on runtime data. Do NOT use `${(() => { return \`nested\`; })()}` — even though JS supports it, prettier and the existing test suite can catch the wrong thing being interpolated.
+_Observed in Session 41 (Task 9): live bar CI chip implementation required a pre-computed variable pattern because the inline IIFE with its own template literal caused the prettier hook to reformat incorrectly._
+**Date:** 2026-05-08
+
+---
+
+## L-0052 — Separate visual hierarchy by information priority, not by component type
+
 ## L-0050 — Files written by a Stop hook (or any per-turn local-only writer) drift from the committed tree
 
 **Rule:** A Claude Code Stop hook that appends to a tracked file every turn (e.g. `tools/capture-cost.js` writing to `docs/AI_COST_LOG.md`) creates a "live working copy" that no commit step ever touches. Without an explicit sync, the committed file lags the local one by weeks — silently breaking any downstream tool that reads the committed version (parsers, dashboards, GitHub Pages). The Stop hook itself shouldn't auto-commit (commit-per-turn is spammy and conflicts with normal feature-branch workflow), but the **session close protocol must explicitly include the locally-written file in its commit list**. Document this in `CLAUDE.md` so future sessions don't re-discover the drift. If a "git add -A caution" rule was added to keep the file out of normal commits, balance it with a "commit-at-session-close" rule for the same file.

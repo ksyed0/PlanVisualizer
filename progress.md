@@ -4,6 +4,50 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 41 — 2026-05-08/09 (GitHub Status Monitoring + EPIC-0026 roadmap)
+
+### What Was Done
+
+- **Branch cleanup:** Removed stale `claude/eager-clarke-c29d17` worktree (Session 38 artifact, all merged).
+- **Dev server detection:** Auto-detected project servers from `package.json`, wrote `.claude/launch.json` with `plan-status` (port 4323), `generate:watch`, `dashboard:watch`. Started `plan-status` server via `preview_start`; resolved port conflict with FableSoft Astro dev server on 4321.
+- **Bug fix — body margin gap (BUG discovered live):** Added `margin: 0` to the `body` CSS rule in `render-html.js`. Browser's default `margin: 8px` was never reset, causing an 8px gap above the sticky topbar. Verified live in preview.
+- **Brainstorm — GitHub Status Monitoring:** Full brainstorm session using visual companion (port 60047). Decisions: plan-status uses Option C (topbar chips + inline story badges + deployment banner); agentic dashboard uses Option C (CI chip in live bar + GitHub events in event log + sidebar widget); fetch timing = generate-time for plan-status, Conductor-driven for dashboard; CI poll-until (60s, 15min TTL) for pending CI between events; `fetchedAt` staleness timestamps everywhere.
+- **Roadmap additions:** Logged US-0174 (dedicated PR Status tab, deferred) under EPIC-0014; added EPIC-0026 Memory Token Optimisation with US-0175.
+- **Spec:** `docs/superpowers/specs/2026-05-07-github-status-monitoring-design.md` — patched 4 gaps (raw `createdAt` not pre-formatted `age`, change detection home in `github-status` handler, specific Conductor trigger list, `ciPollUntil` set by handler not Conductor).
+- **Implementation — PR #989 (merged):** 10 tasks via subagent-driven development pipeline. 12 commits, 808→1616 tests (develop after merge).
+  - Task 1: `fetch-github-status.js` + 11 tests (summarizeCIStatus exported, dead code removed)
+  - Task 2: `timeAgo()` in `render-utils.js` + 5 tests
+  - Task 3: `generate-plan.js` made async; `fetchGitHubStatus` wired before `renderHtml`
+  - Task 4: CI + open-PR chips in `renderMasthead()` (render-shell.js)
+  - Task 5: Deployment banner, CI STATUS tile (5-col KPI grid), PR list table on Status tab
+  - Task 6: Inline CI badges + PR links on Hierarchy list-view and card-view story rows
+  - Task 7: Async `github-status` handler in `update-sdlc-status.js` with change detection + `ciPollUntil`
+  - Task 8: GITHUB sidebar widget + "N PRs need review" chip in Needs Attention (dashboard)
+  - Task 9: Live bar CI chip via pre-computed variable (avoids nested template literal)
+  - Task 10: GitHub event log indigo styling + `_managePollTimer` watch-mode poll loop
+  - Post-merge fix: aligned deployment field names (`environment/status/createdAt` vs stray `env/state/updatedAt`)
+
+### Test Results
+
+- **1616 tests, 60 suites — all pass**
+- Statement coverage: 88.63% | Branch: 77.11% | Functions: 89.23% | Lines: 91.01%
+- Coverage gate: ✅ (>80% statements)
+
+### Errors or Blockers
+
+- Haiku subagent (`--no-coverage`) ran out of monthly token budget mid-session; switched to sonnet for remaining reviews
+- Haiku subagents committed 4 implementation commits to local `develop` instead of the worktree; resolved by hard-resetting develop to `origin/develop` and cherry-picking the 5 intentional docs commits
+- Nested template literal in `generate-dashboard.js` prevented direct `${...}` for live bar CI chip; fixed by pre-computing `lbCiChip` before the main `return` template literal
+- `preview_start` resolves `.claude/launch.json` relative to the worktree root, not the main repo — required a second copy with absolute paths in `.claude/worktrees/zen-bohr-2418e8/.claude/launch.json`
+
+### What's Next
+
+- Wire GitHub status monitoring into remaining EPIC-0025 stories (US-0174 PR Status tab — Status: Planned)
+- Implement EPIC-0026 Memory Token Optimisation (US-0175) when needed
+- Continue subagent-driven development pipeline for future epics
+
+---
+
 ## Session 40 — 2026-05-05 (v2.2.0 release + BUG-0253 + branch cleanup)
 
 ### What Was Done
