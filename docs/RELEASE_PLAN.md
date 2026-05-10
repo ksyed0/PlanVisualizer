@@ -1907,6 +1907,41 @@ Acceptance Criteria:
 
 ---
 
+## Epic — EPIC-0027: Data Store Architecture Assessment
+
+```
+
+EPIC-0027: Data Store Architecture Assessment
+Description: Structured markdown files (RELEASE_PLAN.md, BUGS.md, TEST_CASES.md, AI_COST_LOG.md, MEMORY.md) are the current data store. Assess whether migrating to a proper data store (SQLite, JSON, or a hybrid) would reduce parse complexity, improve query performance, and unlock richer analytics — and produce a concrete recommendation with a migration plan or a justified decision to stay on markdown.
+Release Target: TBD
+Status: Planned
+StartDate:
+DoneDate:
+Dependencies: None
+
+```
+
+## User Stories — EPIC-0027: Data Store Architecture Assessment
+
+```
+
+US-0181 (EPIC-0027): As a project maintainer, I want a documented assessment of replacing structured markdown files with an alternative data store, so that I can make an informed architectural decision before the project scales further.
+Priority: Low (P3)
+Estimate: L
+Status: Planned
+Branch: feature/US-0181-data-store-assessment
+Acceptance Criteria:
+
+- [ ] AC-0659: Assessment document at `docs/architecture/data-store-assessment.md` covering: (1) current markdown schema surface (tables, parse time, query patterns), (2) candidate alternatives (SQLite via better-sqlite3, JSON sidecar files, DuckDB, PostgreSQL), (3) pros/cons matrix for each candidate against the criteria: parse performance, query flexibility, git-diffability, zero-dependency install, schema evolution, multi-agent concurrency safety
+- [ ] AC-0660: Assessment includes benchmarks — parse time of current RELEASE_PLAN.md (≈3,000 lines) vs equivalent SQLite query; median generate-plan.js wall time with and without proposed store
+- [ ] AC-0661: Assessment concludes with a clear recommendation (migrate or stay) with justification; if "migrate", includes a phased migration plan (which files first, backward-compat strategy, rollback path); if "stay", lists the specific thresholds that would trigger a future reassessment
+- [ ] AC-0662: Assessment reviewed and approved by project owner before any migration work begins
+      Dependencies: None
+
+```
+
+---
+
 ## Standalone Stories
 
 ```
@@ -2266,6 +2301,22 @@ Acceptance Criteria:
   - [ ] AC-0633: The tab lists all open PRs with title, PR number (linked), CI check status (pass/fail/pending), review count, and age
   - [ ] AC-0634: A deployment history section shows the last 5 deployments with environment, status, sha/tag, and timestamp
 Dependencies: US-0171, US-0172, US-0173
+```
+
+```
+US-0180 (EPIC-0014): As the Conductor and each specialist agent in the agentic SDLC pipeline, I want to select the appropriate LLM model (haiku/sonnet/opus) based on task complexity at dispatch time, so that routine tasks use cheaper/faster models and only high-complexity decisions escalate to more capable models.
+Priority: Medium (P1)
+Estimate: M
+Status: Planned
+Branch: feature/US-0180-agent-model-selection
+Acceptance Criteria:
+
+- [ ] AC-0655: Each agent instruction file in `docs/agents/` gains a `## Model Selection` section that maps task type to recommended model tier (e.g. "code review → sonnet", "simple grep/read → haiku", "architecture decision → opus"); the DM_AGENT reads this section before dispatching
+- [ ] AC-0656: `docs/agents/DM_AGENT.md` updated with a model-selection decision table covering all 9 specialist agents and common dispatch scenarios (story-start, code review, test execution, bug triage, release prep)
+- [ ] AC-0657: `tools/update-sdlc-status.js` gains a `dispatch-model` command that the Conductor calls to log which model was selected for a given dispatch, surfacing model-spend attribution in the agentic dashboard's Agent Workload section
+- [ ] AC-0658: Agentic dashboard Agent Workload widget shows model tier (H/S/O badge) alongside each agent's active/idle status
+      Dependencies: US-0108
+
 ```
 
 ```
