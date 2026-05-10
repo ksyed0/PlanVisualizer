@@ -17,26 +17,58 @@ echo "[install] Installing PlanVisualizer into: $TARGET"
 
 # ── 0. Check superpowers plugin ─────────────────────────────────────────────
 # superpowers enhances agent workflows via structured skill invocations.
-# Cannot be auto-installed — it requires a Claude Code slash command.
+# Cannot be auto-installed — requires a Claude Code slash command.
+# See: https://github.com/obra/superpowers
 SP_BASE="$HOME/.claude/plugins/cache/claude-plugins-official/superpowers"
-if [ ! -d "$SP_BASE" ]; then
+SP_VER=$(ls "$SP_BASE" 2>/dev/null | sort -V | tail -1)
+
+if [ -z "$SP_VER" ]; then
   echo ""
-  echo "[install] superpowers plugin not detected at $SP_BASE"
+  echo "[install] superpowers plugin not detected."
   read -p "[install] Install superpowers for enhanced agent workflows? (y/n) " -n 1 -r; echo
   if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo ""
-    echo "[install] Run the following inside a Claude Code session, then re-run install.sh:"
+    echo "[install] Run inside a Claude Code session, then re-run install.sh:"
     echo ""
     echo "  /plugin install superpowers@claude-plugins-official"
     echo ""
+    echo "  See: https://github.com/obra/superpowers"
+    echo ""
     exit 0
   else
-    echo "[install] Skipping superpowers. Agent files note skills are optional when not installed."
+    echo "[install] Skipping superpowers. Skills are optional when not installed."
     echo ""
   fi
 else
-  SP_VER=$(ls "$SP_BASE" | sort -V | tail -1)
-  echo "[install] superpowers plugin detected (v${SP_VER}) ✓"
+  echo "[install] superpowers v${SP_VER} detected — checking for updates..."
+  SP_LATEST=$(curl -fsSL --max-time 5 \
+    "https://api.github.com/repos/obra/superpowers/releases/latest" \
+    2>/dev/null | grep '"tag_name"' | sed 's/.*"tag_name": *"\([^"]*\)".*/\1/')
+  SP_VER_CLEAN="${SP_VER#v}"
+  SP_LATEST_CLEAN="${SP_LATEST#v}"
+  if [ -z "$SP_LATEST_CLEAN" ]; then
+    echo "[install] superpowers v${SP_VER} ✓ (version check failed — skipping)"
+  elif [ "$SP_VER_CLEAN" = "$SP_LATEST_CLEAN" ]; then
+    echo "[install] superpowers v${SP_VER} ✓ (up to date)"
+  else
+    OLDER=$(printf '%s\n%s' "$SP_VER_CLEAN" "$SP_LATEST_CLEAN" | sort -V | head -1)
+    if [ "$OLDER" = "$SP_VER_CLEAN" ]; then
+      echo ""
+      echo "[install] superpowers v${SP_VER} installed — v${SP_LATEST} is available."
+      read -p "[install] Upgrade? (y/n) " -n 1 -r; echo
+      if [[ $REPLY =~ ^[Yy]$ ]]; then
+        echo ""
+        echo "[install] Run inside a Claude Code session:"
+        echo ""
+        echo "  /plugin install superpowers@claude-plugins-official"
+        echo ""
+        echo "  See: https://github.com/obra/superpowers"
+        echo ""
+      fi
+    else
+      echo "[install] superpowers v${SP_VER} ✓ (up to date)"
+    fi
+  fi
 fi
 
 # ── 0.5. Create required directory structure ────────────────────────────────
