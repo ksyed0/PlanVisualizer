@@ -4,6 +4,30 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
+## L-0057 — CodeQL TOCTOU (`js/file-system-race`) fires on `statSync+readFileSync` — use fd for atomic stat+read
+
+**Rule:** Any code that calls `fs.statSync(fp)` followed by `fs.readFileSync(fp)` as separate operations will fail CodeQL's `js/file-system-race` rule (and the PR will not merge). The window between the two calls is a real TOCTOU race in web/server contexts. Fix: open the file once to get a file descriptor, then use `fs.fstatSync(fd)` and `fs.readSync(fd, ...)` on the same fd. Pattern:
+
+```js
+function readFileSafe(fp) {
+  const fd = fs.openSync(fp, 'r');
+  try {
+    const stat = fs.fstatSync(fd);
+    const buf = Buffer.allocUnsafe(stat.size);
+    fs.readSync(fd, buf, 0, stat.size, 0);
+    return { content: buf.toString('utf8'), mtimeMs: stat.mtimeMs };
+  } finally {
+    fs.closeSync(fd);
+  }
+}
+```
+
+Similarly, replace `fs.existsSync(p)` followed by `fs.readFileSync(p)` with a `try { content = fs.readFileSync(p) } catch { content = '' }` pattern — the catch replaces the existsSync check atomically.
+_Learned during US-0175 PR A — 3 high-severity CodeQL alerts in `memory-archiver.js`, `memory.js`, and `memory-migrator.js` blocked the merge until all three patterns were fixed._
+**Date:** 2026-05-10
+
+---
+
 ## L-0056 — Trend chart spikiness is usually snapshot density, not data quality
 
 **Rule:** When trend charts plot N snapshots at uniform x-axis spacing, dense bursts of snapshots (e.g. 12 in one hour during an active session) render as flat segments while inter-burst gaps render as sudden jumps. The data is correct; the visual representation is misleading. Always run a snapshot deduplication pass before plotting: collapse near-in-time snapshots within a small window (e.g. 30 minutes) to a single representative — keep the LAST one in each window so the chart reflects the freshest state. Rule of thumb: if `dedupeSnapshots()` collapses more than 30% of the input, the charts were likely showing density artefacts more than real change.

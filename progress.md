@@ -4,6 +4,38 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 43 — 2026-05-10 (US-0175 PR A: memory token optimisation tooling + roadmap additions)
+
+### What Was Done
+
+- **PR #995 — US-0175 Memory Token Optimisation (PR A):** Shipped all 12 tasks via subagent-driven pipeline. Created 6 lib modules (`memory-{parser,classifier,archiver,index,validator,migrator}.js`), CLI wrapper (`tools/memory.js compact/archive/migrate/validate`), `generate-plan.js` integration (calls `compactMemory` + conditional `archiveStaleMemory`), Settings tab Memory card, CI validate step, migrate-config schema migration. 1683 tests passing. Resolved 3 CodeQL `js/file-system-race` TOCTOU alerts by replacing `statSync+readFileSync` with atomic `openSync+fstatSync+readSync` via `readFileSafe()` helper. PR rebased on develop to resolve ID_REGISTRY conflict before merge.
+- **Roadmap additions:**
+  - US-0178 — Automated PR B migration commit (`migrate-commit` subcommand)
+  - US-0179 — Memory model optimisation (`suggest-model` CLI, complexity hints)
+  - US-0180 (EPIC-0014) — Agent model selection: DM_AGENT + specialists choose haiku/sonnet/opus by task complexity; dispatch-model command logs model spend
+  - EPIC-0027 + US-0181 — Data store architecture assessment spike (SQLite/JSON vs markdown)
+- **Haiku CWD drift pattern confirmed (L-0054):** Tasks 4 committed outside main repo again. Fixed by always dispatching from `/Users/Kamal_Syed/Projects/PlanVisualizer` explicitly in subagent prompts after Task 3 drift was caught.
+- **Model optimisation applied:** haiku for leaf lib tasks (parser, classifier, index, validator, CLI); sonnet for judgment tasks (archiver, migrator, integrations, Settings UI, final review).
+
+### Test Results
+
+- **1683 tests, 69 suites — all pass** (post PR A merge with version bump)
+- Coverage gate: ✅
+
+### Errors or Blockers
+
+- PR initially had no CI checks (GitHub Actions not firing) — caused by merge conflict (`CONFLICTING` state). Resolved by rebase onto current develop.
+- 3 CodeQL `js/file-system-race` alerts in new memory files — fixed by `readFileSafe()` atomic helper before re-push.
+- Haiku subagents committed to wrong path for Task 4 (memory-index.js) — re-implemented via sonnet agent with explicit absolute path.
+
+### What's Next
+
+- Run PR B: `node tools/memory.js migrate` on real MEMORY.md (splits into docs/memory/, compacts MEMORY.md to ~500 tokens)
+- US-0178 (automated migrate-commit), US-0179 (memory model suggest), US-0180 (agent model selection)
+- Cut v2.3.0 release to main
+
+---
+
 ## Session 42 — 2026-05-09/10 (plugin install integration + 4 dashboard bugs + US-0176)
 
 ### What Was Done
