@@ -126,7 +126,7 @@ Deterministic, implemented in `memory-classifier.js`:
 | `Plugin Install Integration + Dashboard Fixes (Session 42, 2026-05-09/10)`           | `2026-05-10-plugin-install-integration-dashboard-fixes.md`       |
 | `GitHub Status Monitoring (Session 41, 2026-05-08)`                                  | `2026-05-08-github-status-monitoring.md`                         |
 | `Project Completion Status (as of 2026-05-05 Session 40)`                            | `2026-05-05-project-completion-status.md`                        |
-| `Session 18 learnings (2026-04-15/16) — EPIC-0016 Agentic Dashboard Mission Control` | `2026-04-15-session-18-learnings-epic-0016-agentic-dashboard.md` |
+| `Session 18 learnings (2026-04-15/16) — EPIC-0016 Agentic Dashboard Mission Control` | `2026-04-16-session-18-learnings-epic-0016-agentic-dashboard.md` |
 
 ---
 

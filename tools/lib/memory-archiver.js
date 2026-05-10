@@ -45,4 +45,53 @@ function selectForArchive(files, opts) {
   return [...archive];
 }
 
-module.exports = { selectForArchive, scopeFromTitle };
+/**
+ * Archive stale topic/session files from docs/memory/ using staleness + snapshot supersession rules.
+ * Uses git mv when possible, falls back to fs.rename.
+ *
+ * @param {{ root: string, days?: number }} opts
+ */
+function archiveStaleMemory(opts) {
+  const fs = require('fs');
+  const path = require('path');
+  const { execFileSync } = require('child_process');
+  const { root, days = 90 } = opts;
+  const memDir = path.join(root, 'docs', 'memory');
+  if (!fs.existsSync(memDir)) return;
+  const files = [];
+  for (const cat of ['topics', 'sessions', 'snapshots']) {
+    const dir = path.join(memDir, cat);
+    if (!fs.existsSync(dir)) continue;
+    for (const f of fs.readdirSync(dir)) {
+      if (!f.endsWith('.md')) continue;
+      const fp = path.join(dir, f);
+      const stat = fs.statSync(fp);
+      const content = fs.readFileSync(fp, 'utf8');
+      const titleMatch = content.match(/^# (.+?)\s*$/m);
+      const title = titleMatch ? titleMatch[1] : f.replace(/\.md$/, '');
+      const dateMatch = f.match(/^(\d{4}-\d{2}-\d{2})/);
+      files.push({
+        path: fp,
+        mtime: stat.mtimeMs,
+        category: cat,
+        scope: cat === 'snapshots' ? scopeFromTitle(title) : null,
+        date: dateMatch ? dateMatch[1] : null,
+      });
+    }
+  }
+  const targets = selectForArchive(files, { now: Date.now(), staleDays: days });
+  for (const t of targets) {
+    const dest = t.path.replace(
+      `${path.sep}memory${path.sep}${t.category}${path.sep}`,
+      `${path.sep}memory${path.sep}archive${path.sep}${t.category}${path.sep}`,
+    );
+    fs.mkdirSync(path.dirname(dest), { recursive: true });
+    try {
+      execFileSync('git', ['-C', root, 'mv', t.path, dest], { stdio: 'ignore' });
+    } catch {
+      fs.renameSync(t.path, dest);
+    }
+  }
+}
+
+module.exports = { selectForArchive, scopeFromTitle, archiveStaleMemory };
