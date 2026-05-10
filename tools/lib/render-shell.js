@@ -128,6 +128,22 @@ function renderFilterBar(data) {
         <option>Critical</option><option>High</option><option>Medium</option><option>Low</option>
       </select>
     </span>
+    <span id="fgrp-hier" class="fgrp hidden">
+      <select id="f-hier-risk" onchange="applyHierRiskFilter(this.value)" class="${sel}" aria-label="Filter by risk level">
+        <option value="all">All Risk Levels</option>
+        <option value="high">High+</option>
+        <option value="critical">Critical only</option>
+      </select>
+      <select id="f-hier-sort" onchange="sortHierarchyBy(this.value)" class="${sel}" aria-label="Sort stories">
+        <option value="default">Sort: Default order</option>
+        <option value="id">Sort: by ID</option>
+        <option value="status">Sort: by Status</option>
+        <option value="priority">Sort: by Priority</option>
+        <option value="estimate">Sort: by Estimate</option>
+        <option value="risk">Sort: by Risk ↓</option>
+        <option value="cost">Sort: by Cost ↓</option>
+      </select>
+    </span>
     <input id="f-search" oninput="applyFilters()" type="text" placeholder="Search IDs, titles…"
       class="${sel} filter-search" aria-label="Search" />
     <button onclick="clearFilters()" class="filter-clear">Clear</button>

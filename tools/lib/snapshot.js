@@ -84,6 +84,30 @@ function loadSnapshots(options = {}) {
   return snapshots;
 }
 
+// BUG-0257: Multiple snapshots within a short window (e.g. 12 snapshots in
+// one hour during a development session) make trend charts look spiky because
+// the chart x-axis spaces points evenly, so dense clusters render as flat
+// segments and inter-cluster gaps render as sudden jumps. Collapse near-in-time
+// snapshots to a single representative per window — keep the last one, which
+// reflects the freshest state.
+const DEDUPE_WINDOW_MS = 30 * 60 * 1000; // 30 minutes
+function dedupeSnapshots(snapshots, windowMs = DEDUPE_WINDOW_MS) {
+  if (!snapshots || snapshots.length < 2) return snapshots || [];
+  const result = [];
+  let lastKept = null;
+  for (const snap of snapshots) {
+    const t = new Date(snap.generatedAt).getTime();
+    if (lastKept !== null && t - lastKept < windowMs) {
+      // Replace previous with current (keep newest in window)
+      result[result.length - 1] = snap;
+    } else {
+      result.push(snap);
+      lastKept = t;
+    }
+  }
+  return result;
+}
+
 function extractTrends(snapshots) {
   if (snapshots.length < 2) {
     return null;
@@ -253,7 +277,9 @@ module.exports = {
   getSnapshotFilename,
   saveSnapshot,
   loadSnapshots,
+  dedupeSnapshots,
   extractTrends,
   velocityByWeek,
   SNAPSHOT_REGEX,
+  DEDUPE_WINDOW_MS,
 };

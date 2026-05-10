@@ -4,6 +4,22 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
+## L-0056 — Trend chart spikiness is usually snapshot density, not data quality
+
+**Rule:** When trend charts plot N snapshots at uniform x-axis spacing, dense bursts of snapshots (e.g. 12 in one hour during an active session) render as flat segments while inter-burst gaps render as sudden jumps. The data is correct; the visual representation is misleading. Always run a snapshot deduplication pass before plotting: collapse near-in-time snapshots within a small window (e.g. 30 minutes) to a single representative — keep the LAST one in each window so the chart reflects the freshest state. Rule of thumb: if `dedupeSnapshots()` collapses more than 30% of the input, the charts were likely showing density artefacts more than real change.
+_Learned during BUG-0257 investigation — 150 raw snapshots reduced to 93 after dedup, removing 57 near-duplicates that were creating phantom spikes in the AI cost and coverage charts._
+**Date:** 2026-05-10
+
+---
+
+## L-0055 — Compare versions in bash with `printf | sort -V`, strip leading `v` first
+
+**Rule:** Bash has no built-in semver comparison, but `printf '%s\n%s' "$A" "$B" | sort -V | head -1` returns the older of two version strings (and `tail -1` returns the newer). This is portable across macOS and Linux without installing extra tools. Critical detail: GitHub release `tag_name` values typically have a leading `v` (e.g. `v5.2.0`) while plugin cache directory names typically don't (e.g. `5.2.0`). Strip with `${VAR#v}` on BOTH sides before comparing — otherwise `5.2.0` and `v5.2.0` sort lexicographically and the comparison is wrong. Also: the GitHub Releases API can return rate-limit JSON without `tag_name`, in which case grep+sed yields empty — always guard with `[ -z "$VAR" ]` and fall back to "skipping" rather than crashing.
+_Learned while implementing the superpowers version-check in scripts/install.sh + scripts/update.sh. Caught the double-`v` bug ("vv5.2.0" in the available message) during code review and fixed by using the cleaned version string._
+**Date:** 2026-05-09
+
+---
+
 ## L-0054 — Haiku subagents commit to whichever repo their CWD resolves to — not necessarily the worktree
 
 **Rule:** When a subagent is dispatched into a worktree, its shell CWD is reset to the worktree path, but `haiku` model subagents with limited context sometimes run `git commit` from the main repo root (especially when the hook resets the CWD mid-turn). Always verify that implementation commits appeared on the expected branch (`git log --oneline -3`) before running the spec reviewer — a "DONE" report that references a commit SHA which doesn't appear in the worktree log means the commit landed elsewhere. Fix: hard-reset the main repo branch to origin, cherry-pick only the docs/spec commits that were intentionally on that branch.

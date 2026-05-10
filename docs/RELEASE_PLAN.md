@@ -1838,14 +1838,34 @@ Acceptance Criteria:
 US-0176 (EPIC-0026): As a developer running the agentic SDLC dashboard, I want a live link to the local claude-mem worker dashboard so I can correlate agent pipeline activity with memory observations being captured in real time.
 Priority: Low (P3)
 Estimate: S
-Status: Planned
-Branch: feature/US-0176-claude-mem-dashboard-link
+Status: Done
+Branch: bugfix/BUG-0254-0257-dashboard-ux-and-data-issues
+DoneDate: 2026-05-10
 Acceptance Criteria:
 
-- [ ] AC-0637: Agentic dashboard sidebar shows a "MEMORY" widget when claude-mem is detected (~/.claude-mem/settings.json exists at generate time), with a "view live →" link to http://${CLAUDE_MEM_WORKER_HOST}:${CLAUDE_MEM_WORKER_PORT} (defaults: 127.0.0.1:37701)
-- [ ] AC-0638: Widget shows observation count from claude-mem.db when accessible; falls back to "live" status indicator when DB read fails
-- [ ] AC-0639: Widget is hidden when claude-mem is not installed (no settings.json present); no errors thrown
+- [x] AC-0637: Agentic dashboard sidebar shows a "MEMORY" widget when claude-mem is detected (~/.claude-mem/settings.json exists at generate time), with a "view live →" link to http://${CLAUDE_MEM_WORKER_HOST}:${CLAUDE_MEM_WORKER_PORT} (defaults: 127.0.0.1:37701)
+- [x] AC-0638: Widget shows observation count from claude-mem.db when accessible; falls back to "live" status indicator when DB read fails
+- [x] AC-0639: Widget is hidden when claude-mem is not installed (no settings.json present); no errors thrown
       Dependencies: None (claude-mem detection is independent of EPIC-0026 US-0175)
+
+```
+
+```
+
+US-0177 (EPIC-0026): As a developer adopting PlanVisualizer, I want install.sh and update.sh to detect and offer to install/upgrade superpowers and claude-mem so I can wire up both optional plugins without separate manual steps.
+Priority: Medium (P1)
+Estimate: S
+Status: Done
+Branch: feature/plugin-install-integration
+DoneDate: 2026-05-10
+Acceptance Criteria:
+
+- [x] AC-0640: install.sh §0 detects superpowers, fetches latest release tag from the GitHub API, prompts to upgrade if a newer version is available, and exits 0 on either install or upgrade y-path
+- [x] AC-0641: install.sh §0.1 detects claude-mem via ~/.claude-mem/settings.json; runs `npx claude-mem install` (interactive) when not installed; shows version when installed
+- [x] AC-0642: update.sh §0 mirrors install.sh §0 with [update] prefix
+- [x] AC-0643: update.sh §0.1 runs `npx claude-mem update` when claude-mem is installed; prompts to install otherwise
+- [x] AC-0644: README "Optional Plugins" section under Prerequisites documents both plugins; Updating section notes plugin checks
+      Dependencies: None
 
 ```
 

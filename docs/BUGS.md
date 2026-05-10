@@ -3888,4 +3888,63 @@ Steps to Reproduce:
     Fix Branch: develop
     Lesson Encoded: No
 
+BUG-0254: Hierarchy tab — risk filter is detached from the filter bar; sort dropdown only offers risk
+Severity: Low
+Related Story:
+Steps to Reproduce:
+
+1.  Open plan-status.html → Hierarchy tab
+2.  Look at the filter bar (Epic / Status / Priority chips)
+3.  Look at the risk filter (separate UI element below)
+4.  Open the sort dropdown
+    Expected: Risk filter sits inside the filter bar alongside Epic / Status / Priority. Sort dropdown offers multiple options (e.g. by ID, status, priority, estimate, risk, cost).
+    Actual: Risk filter is rendered as a separate row, visually disconnected from the filter bar. Sort dropdown only allows sorting by risk.
+    Status: Open
+    GH Issue:
+    Fix Branch:
+    Lesson Encoded: No
+
+BUG-0255: Status tab — VELOCITY box shows lookback window (e.g. "10wk") instead of actual velocity
+Severity: Low
+Related Story:
+Steps to Reproduce:
+
+1.  Open plan-status.html → Status tab
+2.  Look at the Release Health hero — the VELOCITY box
+    Expected: Shows the actual velocity (stories/week, e.g. "1.2 stories/wk") with a small label explaining "based on 10-week lookback".
+    Actual: Shows "10wk" — which is `velocityWeeks` (the lookback window length, not the velocity itself). No stories/wk number, no explanation of what 10 weeks means. Code at `tools/lib/render-tabs.js:950` builds the label from `comp.velocityWeeks` only.
+    Status: Open
+    GH Issue:
+    Fix Branch:
+    Lesson Encoded: No
+
+BUG-0256: Lessons tab — default sort order is not logical (neither newest-first nor by ID)
+Severity: Low
+Related Story:
+Steps to Reproduce:
+
+1.  Open plan-status.html → Lessons tab
+2.  Look at the order of lesson cards/rows on initial load (no sort selected)
+    Expected: Default sort by lesson ID descending (newest L-XXXX first) or by date descending — matches expectation that the latest lessons surface at the top.
+    Actual: Lessons appear in an apparently arbitrary order. Sort picker exists but the default ordering does not match any obvious criterion.
+    Status: Open
+    GH Issue:
+    Fix Branch:
+    Lesson Encoded: No
+
+BUG-0257: Trends charts appear spiky due to uneven snapshot density + backfill discontinuities
+Severity: Low
+Related Story:
+Steps to Reproduce:
+
+1.  Open plan-status.html → Trends tab
+2.  View any trend chart (Done, Coverage, AI Cost, Open Bugs)
+    Expected: Smooth lines that reflect actual project change over time.
+    Actual: Charts look spiky with flat segments followed by sudden jumps. Root cause is snapshot cadence: e.g. 12 snapshots on 2026-04-28 (clustered minutes apart), then an 8-day gap (2026-04-29 → 2026-05-07), then a 3-day gap with significant work (PR #989, PR #991). Charts plot snapshots at equal x-axis spacing so dense periods look flat and gaps render as jumps. AI Cost and Open Bugs charts also include backfill artefacts (e.g. open bugs jumping 118 → 11 in one snapshot when status filter logic changed).
+    Status: Open
+    GH Issue:
+    Fix Branch:
+    Notes: Possible fixes: (a) snapshot deduplication — collapse N snapshots within a 5-min window into one; (b) time-axis charts — use actual timestamps for x-axis rather than equal spacing; (c) post-hoc smoothing or sparse-aware rendering. Pick one or combine.
+    Lesson Encoded: No
+
 ---

@@ -15,6 +15,22 @@ Persistent semantic knowledge base. Organised by topic. Updated every session.
 
 ---
 
+## Plugin Install Integration + Dashboard Fixes (Session 42, 2026-05-09/10)
+
+- **`scripts/install.sh §0` and `scripts/update.sh §0`** — superpowers detection now fetches latest GitHub release via `curl -fsSL --max-time 5 .../releases/latest`, compares with `printf | sort -V | head -1`, and prompts upgrade. Network failures fall back silently. Both install and upgrade y-paths `exit 0` to prevent fall-through.
+- **`scripts/install.sh §0.1` and `scripts/update.sh §0.1`** — claude-mem detection via `~/.claude-mem/settings.json`. install.sh runs `npx claude-mem install` (interactive). update.sh runs `npx claude-mem update` if installed.
+- **Bash version-check pattern:** `printf '%s\n%s' "$A" "$B" | sort -V | head -1` returns the older of two versions. Strip leading `v` with `${VAR#v}` before comparing because GitHub tags are `v5.2.0` but plugin cache dirs are `5.2.0`.
+- **Hierarchy filter UX (BUG-0254):** New `fgrp-hier` group inside the global `filter-bar` (`render-shell.js`) holds risk filter + sort dropdown. `updateFilterBar()` in `render-scripts.js` toggles its visibility on the Hierarchy tab. `render-tabs.js` renderHierarchyTab keeps the implementation functions (`sortHierarchyBy`, `applyHierRiskFilter`) and exposes them on `window` for the global controls to call.
+- **Story row data attrs for sorting:** Story rows in column AND card views now have `data-id`, `data-estimate`, `data-cost` (in addition to existing `data-status`, `data-priority`, `data-risk-score`). The `sortHierarchyBy(key)` JS uses these to support id/status/priority/estimate/risk/cost sort modes plus a "default" restore-original-order mode.
+- **Velocity hero box (BUG-0255):** `computeCompletion()` in `generate-plan.js` now also returns `storiesPerWeek` and `pointsPerWeek`. Hero `velocityLabel` shows `"16.9 st/wk"` with subtitle `"based on 10-week lookback"`.
+- **Lessons sort (BUG-0256):** `renderLessonsTab` sorts lessons by `parseInt(L-id digits)` descending within each epic group, then sorts epic groups by ID ascending with `_ungrouped` last.
+- **Snapshot dedup (BUG-0257):** New `dedupeSnapshots(snapshots, windowMs=30*60*1000)` in `tools/lib/snapshot.js`. Walks chronologically-sorted snapshots; if next is within windowMs of last kept, replaces the last kept (newest wins). On this project: 150 → 93 snapshots.
+- **claude-mem MEMORY widget (US-0176):** `loadClaudeMemSettings()` reads `~/.claude-mem/settings.json`. `readClaudeMemObservationCount(dbPath)` shells out to system `sqlite3` with 2s timeout. Widget uses `os.homedir()` + `path.join` for cross-platform paths. Returns `''` (no widget) when settings.json absent — silent and error-free.
+- **Subagent CWD drift mitigation (carry-over from S41):** When a subagent agent commits to develop instead of the worktree, fix is `git reset --hard origin/develop` + `git cherry-pick <intended-only commits>`. Drove the choice this session to make all bug-fix commits directly from the main repo on a single feature branch instead of orchestrating subagents in a worktree.
+- **`npx claude-mem update` is NOT non-interactive:** despite docs saying it's idempotent, on this machine it triggered an interactive reinstall when run via `update.sh`. The `2>&1 || echo "Warning..."` guard ensures the update.sh script itself never fails, but the user may see prompts. Worth a future flag.
+
+---
+
 ## GitHub Status Monitoring (Session 41, 2026-05-08)
 
 - `tools/lib/fetch-github-status.js` — pure module, exports `fetchGitHubStatus(config, token)` and `summarizeCIStatus`. Returns `null` when disabled/no-token. Fetches open PRs, CI check-runs per PR (batched), latest deployment. Returns `{ prs, ciSummary, deployment, fetchedAt }`. PR shape: `{ number, title, url, headBranch, storyId, bugId, ciStatus, reviewCount, createdAt }` — `createdAt` is raw ISO string (NOT pre-formatted).
