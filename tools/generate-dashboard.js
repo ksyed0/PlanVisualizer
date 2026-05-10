@@ -9,8 +9,9 @@
  */
 
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
-const { execSync } = require('child_process');
+const { execSync, execFileSync } = require('child_process');
 // US-0125 (EPIC-0016): shared semantic badge helpers extracted from
 // tools/lib/render-html.js. Imported here so later stories
 // (US-0118/US-0119/US-0120) can wire the Agentic Dashboard's status
@@ -217,6 +218,44 @@ function timeAgoJS(isoString) {
   const diffHr = Math.floor(diffMin / 60);
   if (diffHr < 24) return `${diffHr}h ago`;
   return '>1d ago';
+}
+
+// US-0176 (EPIC-0026): claude-mem detection for the MEMORY sidebar widget.
+// Returns { host, port, dbPath } when ~/.claude-mem/settings.json is readable,
+// or null when claude-mem is not installed. Errors are swallowed silently —
+// claude-mem is an optional plugin; its absence must never break dashboard
+// generation (AC-0639).
+function loadClaudeMemSettings() {
+  try {
+    const settingsPath = path.join(os.homedir(), '.claude-mem', 'settings.json');
+    if (!fs.existsSync(settingsPath)) return null;
+    const raw = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+    return {
+      host: raw.CLAUDE_MEM_WORKER_HOST || '127.0.0.1',
+      port: raw.CLAUDE_MEM_WORKER_PORT || '37701',
+      dbPath: path.join(os.homedir(), '.claude-mem', 'claude-mem.db'),
+    };
+  } catch {
+    return null;
+  }
+}
+
+// AC-0638: try to read observation count from claude-mem.db using the system
+// `sqlite3` CLI. Returns the count as a number, or null when the read fails
+// (db missing, table missing, sqlite3 not on PATH, locked DB, anything else).
+function readClaudeMemObservationCount(dbPath) {
+  if (!dbPath || !fs.existsSync(dbPath)) return null;
+  try {
+    const out = execFileSync('sqlite3', [dbPath, 'SELECT COUNT(*) FROM observations;'], {
+      encoding: 'utf8',
+      timeout: 2000,
+      stdio: ['ignore', 'pipe', 'ignore'],
+    });
+    const n = parseInt(String(out).trim(), 10);
+    return Number.isFinite(n) ? n : null;
+  } catch {
+    return null;
+  }
 }
 
 // US-0147: Agent Workload — builds per-agent bar chart from sdlcStatus.stories
@@ -2648,6 +2687,24 @@ ${
       return `${prRows || '<div style="font-size:11px;color:var(--mc-muted);font-style:italic;">No open PRs</div>'}${deployLine}${staleLabel}`;
     })()}
   </div>
+
+  <!-- MEMORY sidebar widget — US-0176 (EPIC-0026) -->
+  ${(() => {
+    const cmSettings = loadClaudeMemSettings();
+    if (!cmSettings) return ''; // AC-0639: hidden when claude-mem not installed
+    const obsCount = readClaudeMemObservationCount(cmSettings.dbPath);
+    const url = `http://${cmSettings.host}:${cmSettings.port}`;
+    const statusLine =
+      obsCount !== null
+        ? `<div style="font-size:11px;color:var(--mc-muted);margin-bottom:4px"><span style="color:var(--ok)">●</span> ${obsCount.toLocaleString()} observations</div>`
+        : `<div style="font-size:11px;color:var(--mc-muted);margin-bottom:4px"><span style="color:var(--ok)">●</span> live</div>`;
+    return `<div class="mc-sidebar-panel">
+    <div class="mc-sidebar-title">MEMORY</div>
+    ${statusLine}
+    <div style="font-size:10px;color:var(--mc-dim);margin-bottom:4px">${esc(cmSettings.host)}:${esc(cmSettings.port)}</div>
+    <a href="${esc(url)}" target="_blank" rel="noopener" style="font-size:11px;color:var(--info)">view live →</a>
+  </div>`;
+  })()}
 
   <!-- EVENT LOG panel -->
   <div class="mc-sidebar-panel">
