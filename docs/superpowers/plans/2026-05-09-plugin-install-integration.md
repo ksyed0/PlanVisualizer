@@ -97,20 +97,14 @@ bash -n scripts/install.sh && echo "OK"
 
 Expected: `OK` with no errors.
 
-- [ ] **Step 3: Smoke-test the installed path (superpowers is installed on this machine)**
-
-```bash
-bash scripts/install.sh /tmp/pv-test-install 2>&1 | head -5
-```
-
-Expected: First line contains `[install] superpowers v` and either `✓ (up to date)` or `v... is available.`
-
-- [ ] **Step 4: Commit**
+- [ ] **Step 3: Commit**
 
 ```bash
 git add scripts/install.sh
 git commit -m "feat: extend superpowers §0 in install.sh with version-check + upgrade prompt"
 ```
+
+(End-to-end smoke test happens in Task 5 after all script edits land — running the full install.sh against `/tmp` here would copy tools/, tests/, etc. into the test directory unnecessarily.)
 
 ---
 
@@ -197,15 +191,7 @@ bash -n scripts/update.sh && echo "OK"
 
 Expected: `OK`
 
-- [ ] **Step 3: Smoke-test**
-
-```bash
-bash scripts/update.sh /tmp/pv-test-install 2>&1 | head -5
-```
-
-Expected: First few lines include `[update] Updating PlanVisualizer` then `[update] superpowers v...`
-
-- [ ] **Step 4: Commit**
+- [ ] **Step 3: Commit**
 
 ```bash
 git add scripts/update.sh
@@ -361,11 +347,11 @@ Expected: `[update] Updating claude-mem (v... installed)...` followed by claude-
 - [ ] **Step 4: Final full smoke-test — both scripts end-to-end**
 
 ```bash
-bash scripts/install.sh /tmp/pv-final-test < /dev/null 2>&1 | grep -E "\[install\] (superpowers|claude-mem)"
-bash scripts/update.sh /tmp/pv-final-test < /dev/null 2>&1 | grep -E "\[update\] (superpowers|claude-mem)"
+yes n | bash scripts/install.sh /tmp/pv-final-test 2>&1 | grep -E "\[install\] (superpowers|claude-mem)"
+yes n | bash scripts/update.sh /tmp/pv-final-test 2>&1 | grep -E "\[update\] (superpowers|claude-mem)"
 ```
 
-Note: `< /dev/null` sends EOF to stdin so all y/n prompts auto-answer `n` — this tests the non-interactive path without manual input.
+Note: `yes n |` feeds infinite "n" answers to stdin so each `read -n 1 -r` succeeds with `REPLY=n`. Using `< /dev/null` would EOF on the first `read`, which combined with `set -euo pipefail` would exit the script early on machines where plugins are not yet installed.
 
 Expected install output:
 
