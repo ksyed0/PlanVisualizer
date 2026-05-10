@@ -165,6 +165,32 @@
   }
   .cycle-counter .cycle-elapsed::before { content: 'ELAPSED '; color: var(--text-dim); margin-right: 6px; }
 
+  @keyframes pvPhaseFlash {
+    0%   { background: var(--ok, oklch(65% 0.18 142)); opacity: 1; }
+    100% { opacity: 1; }
+  }
+  @keyframes pvSweep {
+    0%   { transform: scaleX(0); transform-origin: left; opacity: 0.45; }
+    60%  { transform: scaleX(1); transform-origin: left; opacity: 0.35; }
+    100% { transform: scaleX(1); transform-origin: left; opacity: 0; }
+  }
+  @keyframes pvFlip {
+    0%   { transform: translateY(0); opacity: 1; }
+    45%  { transform: translateY(-100%); opacity: 0; }
+    55%  { transform: translateY(100%); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+  .pv-phase-flash { animation: pvPhaseFlash 0.3s ease-out; }
+  .pv-sweep-overlay {
+    position: absolute;
+    inset: 0;
+    background: var(--ok, oklch(65% 0.18 142));
+    animation: pvSweep 0.6s ease-out forwards;
+    pointer-events: none;
+    border-radius: inherit;
+  }
+  .pv-flip { animation: pvFlip 0.15s ease-in-out; }
+
   .pipeline {
     display: flex;
     align-items: stretch;
@@ -1458,6 +1484,7 @@
     align-items: center;
     gap: 10px;
     margin-bottom: 10px;
+    position: relative;
   }
   .mc-conductor-portrait { width: 32px; height: 32px; border-radius: 50%; overflow: hidden; border: 1px solid oklch(45% 0.15 264 / 35%); flex-shrink: 0; }
   .mc-conductor-portrait img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
@@ -1474,16 +1501,20 @@
     opacity: 0.65;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    padding-bottom: 8px;
+    align-items: stretch;
+    padding-bottom: 6px;
     transition: opacity .15s;
   }
   .mc-idle-card:hover { opacity: 1; }
-  .mc-idle-portrait { width: 100%; height: 80px; overflow: hidden; }
+  /* BUG-0253: height increased from 80px → 160px so head + shoulders are visible */
+  .mc-idle-portrait { width: 100%; height: 160px; overflow: hidden; }
   .mc-idle-portrait img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
-  .mc-idle-name { font-size: 9px; font-weight: 600; color: var(--text-muted); margin-top: 5px; text-align: center; }
-  .mc-idle-role { font-size: 7.5px; color: var(--mc-dim); margin-top: 1px; text-align: center; padding: 0 4px; }
-  .mc-idle-badge { margin-top: 4px; background: var(--mc-surface); color: var(--mc-dim); font-size: 7px; font-weight: 700; letter-spacing: .06em; padding: 1px 6px; border-radius: 10px; border: 1px solid var(--mc-border); }
+  /* BUG-0254: single-line info row replaces three stacked divs */
+  .mc-idle-info { display: flex; align-items: center; justify-content: center; gap: 4px; padding: 5px 6px 0; width: 100%; min-width: 0; }
+  .mc-idle-name { font-size: 9px; font-weight: 600; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
+  .mc-idle-sep { font-size: 8px; color: var(--mc-dim); flex-shrink: 0; }
+  .mc-idle-role { font-size: 8px; color: var(--mc-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .mc-idle-badge { background: var(--mc-surface); color: var(--mc-dim); font-size: 7px; font-weight: 700; letter-spacing: .06em; padding: 1px 5px; border-radius: 10px; border: 1px solid var(--mc-border); white-space: nowrap; flex-shrink: 0; }
   @media (max-width: 768px) { .mc-idle-roster { grid-template-columns: repeat(3, 1fr); } }
   @media (max-width: 480px) { .mc-idle-roster { grid-template-columns: repeat(2, 1fr); } }
 
@@ -1674,7 +1705,7 @@
       <button class="pv-seg pv-seg-active" aria-pressed="true">Pipeline</button>
     </div>
     <div class="pv-chrome-spacer"></div>
-    <span id="gen-time" data-iso="2026-05-01T03:28:54.291Z" style="font-size:11px;color:var(--text-mute);white-space:nowrap"></span>
+    <span id="gen-time" data-iso="2026-05-08T17:56:05.738Z" style="font-size:11px;color:var(--text-mute);white-space:nowrap"></span>
     <span class="mode-badge mode-live" aria-label="Mode: Live" tabindex="0">
     <span class="pip" aria-hidden="true"></span>LIVE
   </span>
@@ -1700,7 +1731,7 @@
     </span>
   </div>
   <div class="mc-topbar-center">
-    <span class="mc-assigned">ASSIGNED <strong>Pixel</strong></span>
+    
     <span class="mc-elapsed-display">ELAPSED <strong id="mc-topbar-elapsed">00:00:00</strong></span>
     <span class="mc-cycle-disp" id="mc-topbar-cycle">CYCLE 001</span>
     <span class="mc-topbar-clock" id="mc-topbar-clock">00:00:00</span>
@@ -1714,6 +1745,7 @@
 <div class="pv-live-bar" id="pv-live-bar" role="status" aria-live="polite" style="display:none;">
   <div class="pv-live-col-left">
     <span class="pv-on-air">ON AIR</span>
+    
   </div>
   <div class="pv-live-col-mid">
     <div class="pv-live-exec-lbl">NOW EXECUTING</div>
@@ -1756,19 +1788,19 @@
     <!-- PHASE -->
     <div class="mc-stat-tile">
       <div class="mc-stat-label">PHASE</div>
-      <div class="mc-stat-value info" id="mc-stat-phase">2<span style="font-size:13px;opacity:0.6;">/6</span></div>
-      <div class="mc-stat-sub">Build</div>
+      <div class="mc-stat-value info" id="mc-stat-phase">0<span style="font-size:13px;opacity:0.6;">/6</span></div>
+      <div class="mc-stat-sub">STANDBY</div>
     </div>
     <!-- ACTIVE AGENTS -->
     <div class="mc-stat-tile">
       <div class="mc-stat-label">ACTIVE</div>
-      <div class="mc-stat-value warn" id="mc-stat-active">1</div>
+      <div class="mc-stat-value warn" id="mc-stat-active">0</div>
       <div class="mc-stat-sub">of 9 agents</div>
     </div>
     <!-- QUEUE (stories in progress/planned) -->
     <div class="mc-stat-tile">
       <div class="mc-stat-label">QUEUE</div>
-      <div class="mc-stat-value" id="mc-stat-queue">6</div>
+      <div class="mc-stat-value" id="mc-stat-queue">4</div>
       <div class="mc-stat-sub">stories remaining</div>
     </div>
     <!-- REVIEWS -->
@@ -1785,13 +1817,13 @@
     <!-- TESTS -->
     <div class="mc-stat-tile">
       <div class="mc-stat-label">TESTS</div>
-      <div class="mc-stat-value ok" id="mc-stat-tests">2341<span style="font-size:13px;opacity:0.6;">/0</span></div>
+      <div class="mc-stat-value ok" id="mc-stat-tests">0<span style="font-size:13px;opacity:0.6;">/0</span></div>
       <div class="mc-stat-sub">passing</div>
     </div>
     <!-- COVERAGE -->
     <div class="mc-stat-tile">
       <div class="mc-stat-label">COVERAGE</div>
-      <div class="mc-stat-value green" id="mc-stat-coverage">93.67%</div>
+      <div class="mc-stat-value green" id="mc-stat-coverage">90.35%</div>
       <div class="mc-stat-sub">statements</div>
     </div>
     <!-- AI SPEND -->
@@ -1810,42 +1842,42 @@
 <!-- PIPELINE section -->
 <div class="mc-section-bar">
   <span class="mc-section-label">PIPELINE</span>
-  <span class="mc-section-meta" id="cycle-counter" aria-live="polite">CYCLE 001 &middot; <span id="cycle-elapsed" data-started-at="2026-04-30T20:00:00Z">00:00:00</span></span>
+  <span class="mc-section-meta" id="cycle-counter" aria-live="polite">CYCLE 001 &middot; <span id="cycle-elapsed" data-started-at="">00:00:00</span></span>
 </div>
 <div class="pipeline mc-legacy-section">
-  <div class="phase-block complete" id="phase-1" data-phase-status="complete">
+  <div class="phase-block pending" id="phase-1" data-phase-status="pending">
     <div class="phase-beacon" aria-hidden="true"></div>
-    <div class="phase-status" id="phase-1-icon" aria-hidden="true">✅</div>
+    <div class="phase-status" id="phase-1-icon" aria-hidden="true">⏳</div>
     <div class="phase-number" id="phase-1-num">01</div>
     <div class="phase-name">Blueprint</div>
-    <div class="phase-deliverables"></div>
-    <div class="phase-elapsed" id="phase-1-elapsed" data-has-elapsed="1"><span class="phase-check" id="phase-1-check" aria-label="complete">✓</span>00:30:00</div>
-    <div class="phase-fill-track"><div class="phase-fill-bar pv-phase-fill" id="phase-1-fill" style="width: 100%"></div></div>
+    <div class="phase-deliverables">refined ACs · priority list</div>
+    <div class="phase-elapsed" id="phase-1-elapsed" data-has-elapsed="0"><span class="phase-check" id="phase-1-check" aria-label="complete">✓</span></div>
+    <div class="phase-fill-track"><div class="phase-fill-bar pv-phase-fill" id="phase-1-fill" style="width: 0%"></div></div>
   </div>
-  <div class="phase-block complete" id="phase-2" data-phase-status="complete">
+  <div class="phase-block pending" id="phase-2" data-phase-status="pending">
     <div class="phase-beacon" aria-hidden="true"></div>
-    <div class="phase-status" id="phase-2-icon" aria-hidden="true">✅</div>
+    <div class="phase-status" id="phase-2-icon" aria-hidden="true">⏳</div>
     <div class="phase-number" id="phase-2-num">02</div>
     <div class="phase-name">Architect</div>
-    <div class="phase-deliverables"></div>
-    <div class="phase-elapsed" id="phase-2-elapsed" data-has-elapsed="1"><span class="phase-check" id="phase-2-check" aria-label="complete">✓</span>00:30:00</div>
-    <div class="phase-fill-track"><div class="phase-fill-bar pv-phase-fill" id="phase-2-fill" style="width: 100%"></div></div>
+    <div class="phase-deliverables">scaffold · types · service stubs</div>
+    <div class="phase-elapsed" id="phase-2-elapsed" data-has-elapsed="0"><span class="phase-check" id="phase-2-check" aria-label="complete">✓</span></div>
+    <div class="phase-fill-track"><div class="phase-fill-bar pv-phase-fill" id="phase-2-fill" style="width: 0%"></div></div>
   </div>
-  <div class="phase-block in-progress" id="phase-3" data-phase-status="in-progress">
+  <div class="phase-block pending" id="phase-3" data-phase-status="pending">
     <div class="phase-beacon" aria-hidden="true"></div>
-    <div class="phase-status" id="phase-3-icon" aria-hidden="true">🔄</div>
+    <div class="phase-status" id="phase-3-icon" aria-hidden="true">⏳</div>
     <div class="phase-number" id="phase-3-num">03</div>
     <div class="phase-name">Build</div>
-    <div class="phase-deliverables"></div>
+    <div class="phase-deliverables">implementation · unit tests</div>
     <div class="phase-elapsed" id="phase-3-elapsed" data-has-elapsed="0"><span class="phase-check" id="phase-3-check" aria-label="complete">✓</span></div>
-    <div class="phase-fill-track"><div class="phase-fill-bar pv-phase-fill" id="phase-3-fill" style="width: 96%"></div></div>
+    <div class="phase-fill-track"><div class="phase-fill-bar pv-phase-fill" id="phase-3-fill" style="width: 0%"></div></div>
   </div>
   <div class="phase-block pending" id="phase-4" data-phase-status="pending">
     <div class="phase-beacon" aria-hidden="true"></div>
     <div class="phase-status" id="phase-4-icon" aria-hidden="true">⏳</div>
     <div class="phase-number" id="phase-4-num">04</div>
     <div class="phase-name">Integration</div>
-    <div class="phase-deliverables"></div>
+    <div class="phase-deliverables">wired services · e2e flows</div>
     <div class="phase-elapsed" id="phase-4-elapsed" data-has-elapsed="0"><span class="phase-check" id="phase-4-check" aria-label="complete">✓</span></div>
     <div class="phase-fill-track"><div class="phase-fill-bar pv-phase-fill" id="phase-4-fill" style="width: 0%"></div></div>
   </div>
@@ -1854,7 +1886,7 @@
     <div class="phase-status" id="phase-5-icon" aria-hidden="true">⏳</div>
     <div class="phase-number" id="phase-5-num">05</div>
     <div class="phase-name">Test</div>
-    <div class="phase-deliverables"></div>
+    <div class="phase-deliverables">test report · coverage</div>
     <div class="phase-elapsed" id="phase-5-elapsed" data-has-elapsed="0"><span class="phase-check" id="phase-5-check" aria-label="complete">✓</span></div>
     <div class="phase-fill-track"><div class="phase-fill-bar pv-phase-fill" id="phase-5-fill" style="width: 0%"></div></div>
   </div>
@@ -1863,44 +1895,23 @@
     <div class="phase-status" id="phase-6-icon" aria-hidden="true">⏳</div>
     <div class="phase-number" id="phase-6-num">06</div>
     <div class="phase-name">Polish</div>
-    <div class="phase-deliverables"></div>
+    <div class="phase-deliverables">bug fixes · demo prep</div>
     <div class="phase-elapsed" id="phase-6-elapsed" data-has-elapsed="0"><span class="phase-check" id="phase-6-check" aria-label="complete">✓</span></div>
     <div class="phase-fill-track"><div class="phase-fill-bar pv-phase-fill" id="phase-6-fill" style="width: 0%"></div></div>
   </div>
 </div>
 
 <!-- ROSTER section -->
-<div class="mc-active-card agent-card is-active active" id="agent-Pixel" data-agent-name="Pixel" data-agent="Pixel" data-agent-status="active" style="--agent-color:oklch(38% 0.20 270);">
-  <div class="mc-active-portrait-banner">
-    <img src="agents/images/pixel.png" alt="Pixel" onerror="this.src=&#39;agents/images/optimized/pixel-160.png&#39;">
-    <span class="mc-active-status-dot" aria-hidden="true"></span>
-  </div>
-  <div class="mc-active-info">
-    <div class="mc-active-top">
-      <div>
-        <div class="mc-active-name">Pixel</div>
-        <div class="mc-active-role">Frontend Developer</div>
-      </div>
-      <span class="mc-active-badge">ACTIVE</span>
-    </div>
-    <div class="mc-active-story"><span class="mc-active-story-id">US-0171</span><span class="mc-active-story-desc">US-0171 dashboard visual hierarchy</span></div>
-    <div class="mc-active-meta">
-      <div>Branch <span>feature/US-0171-dashboard-ux</span></div>
-      <div>Started <span>20:15 UTC</span></div>
-    </div>
-  </div>
-  <div class="agent-status" id="agent-Pixel-status" style="display:none;">active</div>
-  <div id="agent-Pixel-task" style="display:none;">US-0171 dashboard visual hierarchy</div>
-</div>
+
 <div class="mc-conductor-dispatch" id="mc-conductor-dispatch" data-agent="Conductor">
   <div class="mc-conductor-portrait">
     <img src="agents/images/optimized/conductor-64.png" alt="Conductor" onerror="this.style.display='none'">
   </div>
   <div>
     <div class="mc-conductor-label">Conductor · Last Dispatch</div>
-    <div class="mc-conductor-value">dispatched → Pixel · US-0171 · Build phase</div>
+    <div class="mc-conductor-value">No dispatches yet</div>
   </div>
-  <span class="mc-conductor-time">20:15:02</span>
+  <span class="mc-conductor-time"></span>
   <div id="agent-Conductor-task" style="display:none;"></div>
   <div class="agent-status" id="agent-Conductor-status" style="display:none;">idle</div>
   <div class="conductor-dispatch-count" id="conductor-dispatch-count" style="display:none;">0 dispatched</div>
@@ -1910,58 +1921,90 @@
 </div>
 <div class="mc-idle-roster" id="mc-idle-roster">
 <div class="mc-idle-card agent-card is-idle" id="agent-Compass" data-agent-name="Compass" data-agent="Compass" data-agent-status="idle" style="--agent-color:oklch(50% 0.20 264);">
-  <div class="mc-idle-portrait"><img src="agents/images/optimized/compass-64.png" alt="Compass" onerror="this.parentElement.innerHTML=&#39;&lt;div style=&quot;width:100%;aspect-ratio:1;background:var(--mc-surface);display:flex;align-items:center;justify-content:center;font-size:22px;&quot;&gt;C&lt;/div&gt;&#39;"></div>
-  <div class="mc-idle-name">Compass</div>
-  <div class="mc-idle-role">Product Owner</div>
-  <div class="mc-idle-badge">IDLE</div>
+  <div class="mc-idle-portrait"><img src="agents/images/optimized/compass-160.png" alt="Compass" onerror="this.parentElement.innerHTML=&#39;&lt;div style=&quot;width:100%;aspect-ratio:1;background:var(--mc-surface);display:flex;align-items:center;justify-content:center;font-size:22px;&quot;&gt;C&lt;/div&gt;&#39;"></div>
+  <div class="mc-idle-info">
+    <span class="mc-idle-name">Compass</span>
+    <span class="mc-idle-sep">·</span>
+    <span class="mc-idle-role">Product Owner</span>
+    <span class="mc-idle-badge">IDLE</span>
+  </div>
   <div class="agent-status" id="agent-Compass-status" style="display:none;">idle</div>
   <div id="agent-Compass-task" style="display:none;"></div>
 </div>
 <div class="mc-idle-card agent-card is-idle" id="agent-Keystone" data-agent-name="Keystone" data-agent="Keystone" data-agent-status="idle" style="--agent-color:oklch(44% 0.22 310);">
-  <div class="mc-idle-portrait"><img src="agents/images/optimized/keystone-64.png" alt="Keystone" onerror="this.parentElement.innerHTML=&#39;&lt;div style=&quot;width:100%;aspect-ratio:1;background:var(--mc-surface);display:flex;align-items:center;justify-content:center;font-size:22px;&quot;&gt;K&lt;/div&gt;&#39;"></div>
-  <div class="mc-idle-name">Keystone</div>
-  <div class="mc-idle-role">Architect</div>
-  <div class="mc-idle-badge">IDLE</div>
+  <div class="mc-idle-portrait"><img src="agents/images/optimized/keystone-160.png" alt="Keystone" onerror="this.parentElement.innerHTML=&#39;&lt;div style=&quot;width:100%;aspect-ratio:1;background:var(--mc-surface);display:flex;align-items:center;justify-content:center;font-size:22px;&quot;&gt;K&lt;/div&gt;&#39;"></div>
+  <div class="mc-idle-info">
+    <span class="mc-idle-name">Keystone</span>
+    <span class="mc-idle-sep">·</span>
+    <span class="mc-idle-role">Architect</span>
+    <span class="mc-idle-badge">IDLE</span>
+  </div>
   <div class="agent-status" id="agent-Keystone-status" style="display:none;">idle</div>
   <div id="agent-Keystone-task" style="display:none;"></div>
 </div>
 <div class="mc-idle-card agent-card is-idle" id="agent-Lens" data-agent-name="Lens" data-agent="Lens" data-agent-status="idle" style="--agent-color:oklch(72% 0.19 46);">
-  <div class="mc-idle-portrait"><img src="agents/images/optimized/lens-64.png" alt="Lens" onerror="this.parentElement.innerHTML=&#39;&lt;div style=&quot;width:100%;aspect-ratio:1;background:var(--mc-surface);display:flex;align-items:center;justify-content:center;font-size:22px;&quot;&gt;L&lt;/div&gt;&#39;"></div>
-  <div class="mc-idle-name">Lens</div>
-  <div class="mc-idle-role">Code Reviewer</div>
-  <div class="mc-idle-badge">IDLE</div>
+  <div class="mc-idle-portrait"><img src="agents/images/optimized/lens-160.png" alt="Lens" onerror="this.parentElement.innerHTML=&#39;&lt;div style=&quot;width:100%;aspect-ratio:1;background:var(--mc-surface);display:flex;align-items:center;justify-content:center;font-size:22px;&quot;&gt;L&lt;/div&gt;&#39;"></div>
+  <div class="mc-idle-info">
+    <span class="mc-idle-name">Lens</span>
+    <span class="mc-idle-sep">·</span>
+    <span class="mc-idle-role">Code Reviewer</span>
+    <span class="mc-idle-badge">IDLE</span>
+  </div>
   <div class="agent-status" id="agent-Lens-status" style="display:none;">idle</div>
   <div id="agent-Lens-task" style="display:none;"></div>
 </div>
 <div class="mc-idle-card agent-card is-idle" id="agent-Palette" data-agent-name="Palette" data-agent="Palette" data-agent-status="idle" style="--agent-color:oklch(60% 0.14 185);">
-  <div class="mc-idle-portrait"><img src="agents/images/optimized/palette-64.png" alt="Palette" onerror="this.parentElement.innerHTML=&#39;&lt;div style=&quot;width:100%;aspect-ratio:1;background:var(--mc-surface);display:flex;align-items:center;justify-content:center;font-size:22px;&quot;&gt;P&lt;/div&gt;&#39;"></div>
-  <div class="mc-idle-name">Palette</div>
-  <div class="mc-idle-role">UI Designer</div>
-  <div class="mc-idle-badge">IDLE</div>
+  <div class="mc-idle-portrait"><img src="agents/images/optimized/palette-160.png" alt="Palette" onerror="this.parentElement.innerHTML=&#39;&lt;div style=&quot;width:100%;aspect-ratio:1;background:var(--mc-surface);display:flex;align-items:center;justify-content:center;font-size:22px;&quot;&gt;P&lt;/div&gt;&#39;"></div>
+  <div class="mc-idle-info">
+    <span class="mc-idle-name">Palette</span>
+    <span class="mc-idle-sep">·</span>
+    <span class="mc-idle-role">UI Designer</span>
+    <span class="mc-idle-badge">IDLE</span>
+  </div>
   <div class="agent-status" id="agent-Palette-status" style="display:none;">idle</div>
   <div id="agent-Palette-task" style="display:none;"></div>
 </div>
 <div class="mc-idle-card agent-card is-idle" id="agent-Forge" data-agent-name="Forge" data-agent="Forge" data-agent-status="idle" style="--agent-color:oklch(44% 0.22 25);">
-  <div class="mc-idle-portrait"><img src="agents/images/optimized/forge-64.png" alt="Forge" onerror="this.parentElement.innerHTML=&#39;&lt;div style=&quot;width:100%;aspect-ratio:1;background:var(--mc-surface);display:flex;align-items:center;justify-content:center;font-size:22px;&quot;&gt;F&lt;/div&gt;&#39;"></div>
-  <div class="mc-idle-name">Forge</div>
-  <div class="mc-idle-role">Backend Developer</div>
-  <div class="mc-idle-badge">IDLE</div>
+  <div class="mc-idle-portrait"><img src="agents/images/optimized/forge-160.png" alt="Forge" onerror="this.parentElement.innerHTML=&#39;&lt;div style=&quot;width:100%;aspect-ratio:1;background:var(--mc-surface);display:flex;align-items:center;justify-content:center;font-size:22px;&quot;&gt;F&lt;/div&gt;&#39;"></div>
+  <div class="mc-idle-info">
+    <span class="mc-idle-name">Forge</span>
+    <span class="mc-idle-sep">·</span>
+    <span class="mc-idle-role">Backend Developer</span>
+    <span class="mc-idle-badge">IDLE</span>
+  </div>
   <div class="agent-status" id="agent-Forge-status" style="display:none;">idle</div>
   <div id="agent-Forge-task" style="display:none;"></div>
 </div>
+<div class="mc-idle-card agent-card is-idle" id="agent-Pixel" data-agent-name="Pixel" data-agent="Pixel" data-agent-status="idle" style="--agent-color:oklch(38% 0.20 270);">
+  <div class="mc-idle-portrait"><img src="agents/images/optimized/pixel-160.png" alt="Pixel" onerror="this.parentElement.innerHTML=&#39;&lt;div style=&quot;width:100%;aspect-ratio:1;background:var(--mc-surface);display:flex;align-items:center;justify-content:center;font-size:22px;&quot;&gt;P&lt;/div&gt;&#39;"></div>
+  <div class="mc-idle-info">
+    <span class="mc-idle-name">Pixel</span>
+    <span class="mc-idle-sep">·</span>
+    <span class="mc-idle-role">Frontend Developer</span>
+    <span class="mc-idle-badge">IDLE</span>
+  </div>
+  <div class="agent-status" id="agent-Pixel-status" style="display:none;">idle</div>
+  <div id="agent-Pixel-task" style="display:none;"></div>
+</div>
 <div class="mc-idle-card agent-card is-idle" id="agent-Sentinel" data-agent-name="Sentinel" data-agent="Sentinel" data-agent-status="idle" style="--agent-color:oklch(50% 0.17 145);">
-  <div class="mc-idle-portrait"><img src="agents/images/optimized/sentinel-64.png" alt="Sentinel" onerror="this.parentElement.innerHTML=&#39;&lt;div style=&quot;width:100%;aspect-ratio:1;background:var(--mc-surface);display:flex;align-items:center;justify-content:center;font-size:22px;&quot;&gt;S&lt;/div&gt;&#39;"></div>
-  <div class="mc-idle-name">Sentinel</div>
-  <div class="mc-idle-role">Functional Tester</div>
-  <div class="mc-idle-badge">IDLE</div>
+  <div class="mc-idle-portrait"><img src="agents/images/optimized/sentinel-160.png" alt="Sentinel" onerror="this.parentElement.innerHTML=&#39;&lt;div style=&quot;width:100%;aspect-ratio:1;background:var(--mc-surface);display:flex;align-items:center;justify-content:center;font-size:22px;&quot;&gt;S&lt;/div&gt;&#39;"></div>
+  <div class="mc-idle-info">
+    <span class="mc-idle-name">Sentinel</span>
+    <span class="mc-idle-sep">·</span>
+    <span class="mc-idle-role">Functional Tester</span>
+    <span class="mc-idle-badge">IDLE</span>
+  </div>
   <div class="agent-status" id="agent-Sentinel-status" style="display:none;">idle</div>
   <div id="agent-Sentinel-task" style="display:none;"></div>
 </div>
 <div class="mc-idle-card agent-card is-idle" id="agent-Circuit" data-agent-name="Circuit" data-agent="Circuit" data-agent-status="idle" style="--agent-color:oklch(40% 0.22 285);">
-  <div class="mc-idle-portrait"><img src="agents/images/optimized/circuit-64.png" alt="Circuit" onerror="this.parentElement.innerHTML=&#39;&lt;div style=&quot;width:100%;aspect-ratio:1;background:var(--mc-surface);display:flex;align-items:center;justify-content:center;font-size:22px;&quot;&gt;C&lt;/div&gt;&#39;"></div>
-  <div class="mc-idle-name">Circuit</div>
-  <div class="mc-idle-role">Automation Tester</div>
-  <div class="mc-idle-badge">IDLE</div>
+  <div class="mc-idle-portrait"><img src="agents/images/optimized/circuit-160.png" alt="Circuit" onerror="this.parentElement.innerHTML=&#39;&lt;div style=&quot;width:100%;aspect-ratio:1;background:var(--mc-surface);display:flex;align-items:center;justify-content:center;font-size:22px;&quot;&gt;C&lt;/div&gt;&#39;"></div>
+  <div class="mc-idle-info">
+    <span class="mc-idle-name">Circuit</span>
+    <span class="mc-idle-sep">·</span>
+    <span class="mc-idle-role">Automation Tester</span>
+    <span class="mc-idle-badge">IDLE</span>
+  </div>
   <div class="agent-status" id="agent-Circuit-status" style="display:none;">idle</div>
   <div id="agent-Circuit-task" style="display:none;"></div>
 </div>
@@ -1971,7 +2014,7 @@
   <div id="agent-spotlight-name"></div>
   <div id="agent-spotlight-role"></div>
   <div id="agent-spotlight-task"></div>
-  <div id="agent-spotlight-elapsed" data-started-at="2026-04-30T20:00:00Z"></div>
+  <div id="agent-spotlight-elapsed" data-started-at=""></div>
 </div>
 
 <!-- US-0130: Epic progress strip — rendered by patchDOM on each tick -->
@@ -1987,40 +2030,48 @@
   <div id="cycle-lap-strip" style="display:flex; gap:8px; overflow-x:auto; padding-bottom:4px;"></div>
 </div>
 
+<dialog id="pv-cycle-detail" style="border:1px solid var(--bg-card-border);border-radius:8px;padding:16px;min-width:280px;font-family:var(--font-sans);background:var(--bg-card)">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+    <span style="font-weight:600;font-size:13px">Cycle Detail</span>
+    <button onclick="document.getElementById('pv-cycle-detail').close()" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--text-dim)">&#x2715;</button>
+  </div>
+  <div id="pv-cycle-detail-body"></div>
+</dialog>
+
 <!-- TELEMETRY: hidden metric IDs for patchDOM compatibility (US-0111) -->
 <div style="display:none;" aria-hidden="true">
-  <span id="metric-phasesComplete">2 / 6</span>
-  <span id="metric-phasesCompleteNum">2</span>
+  <span id="metric-phasesComplete">0 / 6</span>
+  <span id="metric-phasesCompleteNum">0</span>
   <span id="metric-phasesTotalNum">6</span>
-  <span id="metric-storiesDone">155 / 161</span>
+  <span id="metric-storiesDone">165 / 169</span>
   <span id="metric-tasksDone">54 / 54</span>
-  <span id="metric-testsPassed">2341</span>
+  <span id="metric-testsPassed">0</span>
   <span id="metric-testsFailed">0</span>
-  <span id="metric-testsTotal">undefined</span>
-  <span id="metric-bugsOpen">12</span>
-  <span id="metric-bugsFixed">181</span>
-  <span id="metric-reviewsApproved">undefined</span>
-  <span id="metric-reviewsBlocked">undefined</span>
-  <span id="metric-coveragePercent">93.67%</span>
-  <b id="stamp-phase-progress">23:28</b>
-  <b id="stamp-quality">23:28</b>
-  <b id="stamp-reviews">23:28</b>
+  <span id="metric-testsTotal">0</span>
+  <span id="metric-bugsOpen">1</span>
+  <span id="metric-bugsFixed">212</span>
+  <span id="metric-reviewsApproved">0</span>
+  <span id="metric-reviewsBlocked">0</span>
+  <span id="metric-coveragePercent">90.35%</span>
+  <b id="stamp-phase-progress">13:56</b>
+  <b id="stamp-quality">13:56</b>
+  <b id="stamp-reviews">13:56</b>
   <!-- Doughnut for patchDOM coverage -->
-  <div id="metric-coverageDoughnut" data-coverage="93.67" data-tone="green">
-    <circle id="metric-coverageDoughnutFill" class="d-fill green" stroke-dashoffset="6.33"></circle>
+  <div id="metric-coverageDoughnut" data-coverage="90.35" data-tone="green">
+    <circle id="metric-coverageDoughnutFill" class="d-fill green" stroke-dashoffset="9.65"></circle>
   </div>
   <!-- Sparkline for patchDOM -->
   <div id="metric-phasesSparkline">
-    <div class="spark-bar complete" data-phase-id="1" data-phase-status="complete" style="height: 100%"></div>
-    <div class="spark-bar complete" data-phase-id="2" data-phase-status="complete" style="height: 100%"></div>
-    <div class="spark-bar in-progress" data-phase-id="3" data-phase-status="in-progress" style="height: 60%"></div>
+    <div class="spark-bar pending" data-phase-id="1" data-phase-status="pending" style="height: 18%"></div>
+    <div class="spark-bar pending" data-phase-id="2" data-phase-status="pending" style="height: 18%"></div>
+    <div class="spark-bar pending" data-phase-id="3" data-phase-status="pending" style="height: 18%"></div>
     <div class="spark-bar pending" data-phase-id="4" data-phase-status="pending" style="height: 18%"></div>
     <div class="spark-bar pending" data-phase-id="5" data-phase-status="pending" style="height: 18%"></div>
     <div class="spark-bar pending" data-phase-id="6" data-phase-status="pending" style="height: 18%"></div>
   </div>
   <!-- Progress bars -->
-  <div class="progress-bar"><div id="metric-phasesBar" class="progress-fill blue" style="width:33%"></div></div>
-  <div class="progress-bar"><div id="metric-storiesBar" class="progress-fill green" style="width:96%"></div></div>
+  <div class="progress-bar"><div id="metric-phasesBar" class="progress-fill blue" style="width:0%"></div></div>
+  <div class="progress-bar"><div id="metric-storiesBar" class="progress-fill green" style="width:98%"></div></div>
   <div class="progress-bar"><div id="metric-tasksBar" class="progress-fill red" style="width:100%"></div></div>
 </div>
 
@@ -2064,8 +2115,7 @@
     </label>
   </div>
   <div class="log-scroll" id="log-scroll" data-active-filter="all">
-    <div class="log-entry" data-log-key="20:15:03|Pixel|started US-0171 feature/US-0171-dashboard-ux" data-category="other" style="border-left-color: oklch(38% 0.20 270)"><span class="log-time" data-log-time="20:15:03">[20:15:03]</span><span class="log-agent" style="color: oklch(38% 0.20 270)">[Pixel]</span><span class="log-msg">started US-0171 feature/US-0171-dashboard-ux</span></div>
-    <div class="log-entry" data-log-key="20:15:02|Conductor|dispatched → Pixel · US-0171 · Build phase" data-category="other" style="border-left-color: oklch(52% 0.22 25)"><span class="log-time" data-log-time="20:15:02">[20:15:02]</span><span class="log-agent" style="color: oklch(52% 0.22 25)">[Conductor]</span><span class="log-msg">dispatched → Pixel · US-0171 · Build phase</span></div>
+    <div class="log-empty" id="log-empty"><span class="log-cursor" aria-hidden="true"></span><span>Awaiting agent activity&hellip;</span></div>
   </div>
 </div>
 
@@ -2080,30 +2130,22 @@
     <div class="mc-attn-chips">
         <span class="mc-attn-chip">0 blocked</span>
         <span class="mc-attn-chip">0 review</span>
-        <span class="mc-attn-chip warn">12 bugs</span>
+        <span class="mc-attn-chip warn">1 bugs</span>
+        
       </div><div style="font-size:11px;color:var(--mc-muted);font-style:italic;padding:4px 0;">All clear — no blockers.</div>
+  </div>
+
+  <!-- GITHUB sidebar widget -->
+  <div class="mc-sidebar-panel">
+    <div class="mc-sidebar-title">GITHUB</div>
+    <div style="font-size:11px;color:var(--mc-muted);font-style:italic;">Starting up — no data yet</div>
   </div>
 
   <!-- EVENT LOG panel -->
   <div class="mc-sidebar-panel">
     <div class="mc-evtlog-title">LAST 10 EVENTS · AUTO-SCROLL</div>
     <div class="mc-evtlog-scroll" id="mc-evtlog-scroll">
-      <div class="mc-evt-card">
-        <div class="mc-evt-card-head">
-          <span class="mc-evt-card-agent"><span class="mc-evt-card-dot" style="background:oklch(38% 0.20 270)" aria-hidden="true"></span>Pixel</span>
-          <span class="mc-evt-time">20:15:03</span>
-        </div>
-        <div class="mc-evt-msg">started US-0171 feature/US-0171-dashboard-ux</div>
-        <span class="mc-evt-tag mc-evt-tag-start">STARTED</span>
-      </div>
-      <div class="mc-evt-card">
-        <div class="mc-evt-card-head">
-          <span class="mc-evt-card-agent"><span class="mc-evt-card-dot" style="background:oklch(52% 0.22 25)" aria-hidden="true"></span>Conductor</span>
-          <span class="mc-evt-time">20:15:02</span>
-        </div>
-        <div class="mc-evt-msg">dispatched → Pixel · US-0171 · Build phase</div>
-        <span class="mc-evt-tag mc-evt-tag-dispatch">DISPATCH</span>
-      </div>
+      <div style="font-size:11px;color:var(--mc-muted);font-style:italic;">No events yet.</div>
     </div>
   </div>
 
@@ -2113,17 +2155,17 @@
     <div id="card-phase-progress" style="font-size:12px;">
       <div class="metric-sub">Phases Complete</div>
       <div class="metric-hero blue" style="font-size:32px;" id="metric-phaseHero">
-        <span id="metric-phasesCompleteNum2">2</span>/<span class="hero-den">6</span>
+        <span id="metric-phasesCompleteNum2">0</span>/<span class="hero-den">6</span>
       </div>
       <div class="phase-sparkline" id="metric-phasesSparkline2" aria-hidden="true" style="height:20px;margin-bottom:6px;">
-        <div class="spark-bar complete" style="height:100%" title="Blueprint"></div>
-        <div class="spark-bar complete" style="height:100%" title="Architect"></div>
-        <div class="spark-bar in-progress" style="height:60%" title="Build"></div>
+        <div class="spark-bar pending" style="height:18%" title="Blueprint"></div>
+        <div class="spark-bar pending" style="height:18%" title="Architect"></div>
+        <div class="spark-bar pending" style="height:18%" title="Build"></div>
         <div class="spark-bar pending" style="height:18%" title="Integration"></div>
         <div class="spark-bar pending" style="height:18%" title="Test"></div>
         <div class="spark-bar pending" style="height:18%" title="Polish"></div>
       </div>
-      <div class="progress-bar" style="height:5px;"><div class="progress-fill blue" style="width:33%"></div></div>
+      <div class="progress-bar" style="height:5px;"><div class="progress-fill blue" style="width:0%"></div></div>
     </div>
   </div>
 
@@ -2131,11 +2173,11 @@
   <div class="mc-sidebar-panel">
     <div class="mc-sidebar-title">QUALITY</div>
     <div style="display:flex;align-items:center;gap:12px;font-size:12px;">
-      <span style="font-family:var(--font-display),monospace;font-size:28px;color:var(--ok);">93.67%</span>
+      <span style="font-family:var(--font-display),monospace;font-size:28px;color:var(--ok);">90.35%</span>
       <div>
         <div style="color:var(--mc-muted);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;">Coverage</div>
         <div id="card-quality" style="margin-top:4px;font-size:11px;color:var(--mc-muted);">
-          <span style="color:var(--ok);">2341 pass</span> &middot; <span style="color:var(--mc-muted);">0 fail</span> &middot; <span style="color:var(--risk);">12 bugs</span>
+          <span style="color:var(--ok);">0 pass</span> &middot; <span style="color:var(--mc-muted);">0 fail</span> &middot; <span style="color:var(--risk);">1 bugs</span>
         </div>
       </div>
     </div>
@@ -2264,15 +2306,15 @@
         <div>
           <p class="pv-about-supertitle">This Project</p>
           <div class="pv-about-meta-row"><span class="pv-about-meta-label">Name: </span><span class="pv-about-meta-value">plan-visualizer</span></div>
-          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Version: </span><span class="pv-about-meta-value">v1.5.80</span></div>
-          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Branch: </span><span class="pv-about-meta-value">bugfix/BUG-0252-stash-recovery</span></div>
-          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Build: </span><span class="pv-about-meta-value">r659 edff886</span></div>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Version: </span><span class="pv-about-meta-value">v2.2.0</span></div>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Branch: </span><span class="pv-about-meta-value">develop</span></div>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Build: </span><span class="pv-about-meta-value">r712 0687139</span></div>
         </div>
         <div>
           <p class="pv-about-supertitle">Dashboard Tool</p>
           <div class="pv-about-meta-row"><span class="pv-about-meta-label">View: </span><span class="pv-about-meta-value">Agentic SDLC Dashboard</span></div>
-          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Generated by: </span><span class="pv-about-meta-value">plan-visualizer v1.5.80</span></div>
-          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Generated at: </span><span id="about-gen-time" data-iso="Apr 30, 2026, 11:28 PM" class="pv-about-meta-value"></span></div>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Generated by: </span><span class="pv-about-meta-value">plan-visualizer v2.2.0</span></div>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Generated at: </span><span id="about-gen-time" data-iso="May 8, 2026, 01:56 PM" class="pv-about-meta-value"></span></div>
         </div>
       </div>
     </div>
@@ -2280,7 +2322,7 @@
 </div>
 
 <div class="footer">
-  Claude Code Agentic AI SDLC | Last refreshed: Apr 30, 2026, 11:28 PM
+  Claude Code Agentic AI SDLC | Last refreshed: May 8, 2026, 01:56 PM
 </div>
 
 <script>
@@ -2492,7 +2534,7 @@ function _applyLogFilter(filter) {
 // ── Dashboard Alert System ────────────────────────────────────────────────────
 // Detects state changes across page refreshes using localStorage, then plays
 // a Web Audio tone and fires a browser Notification when attention is needed.
-var DASH_SNAPSHOT = {"currentPhase":3,"bugsOpen":12,"agentStatuses":{"Conductor":"idle","Compass":"idle","Keystone":"idle","Lens":"idle","Palette":"idle","Forge":"idle","Pixel":"active","Sentinel":"idle","Circuit":"idle"},"phaseStatuses":[{"id":1,"status":"complete"},{"id":2,"status":"complete"},{"id":3,"status":"in-progress"},{"id":4,"status":"pending"},{"id":5,"status":"pending"},{"id":6,"status":"pending"}],"pipelineComplete":false};
+var DASH_SNAPSHOT = {"currentPhase":0,"bugsOpen":1,"agentStatuses":{"Conductor":"idle","Compass":"idle","Keystone":"idle","Lens":"idle","Palette":"idle","Forge":"idle","Pixel":"idle","Sentinel":"idle","Circuit":"idle"},"phaseStatuses":[{"id":1,"status":"pending"},{"id":2,"status":"pending"},{"id":3,"status":"pending"},{"id":4,"status":"pending"},{"id":5,"status":"pending"},{"id":6,"status":"pending"}],"pipelineComplete":false};
 
 // US-0111: expose agent colors to the client so patchDOM() can restyle
 // agent-status pills when an agent transitions between idle/active/blocked
@@ -2826,6 +2868,35 @@ function _agentStatusColors(stat) {
 function patchDOM(status) {
   if (!status || typeof status !== 'object') return;
 
+  // --- US-0117: cycle-complete animation ------------------------------------
+  var msg = status;
+  if (msg.type === 'cycle-complete') {
+    // 1. Flash all phase blocks green for 300ms
+    document.querySelectorAll('.phase-block').forEach(function(el) {
+      el.classList.remove('pv-phase-flash');
+      void el.offsetWidth; // force reflow to restart animation
+      el.classList.add('pv-phase-flash');
+    });
+    // 2. Green sweep overlay on conductor header
+    var hdr = document.getElementById('mc-conductor-dispatch');
+    if (hdr) {
+      var overlay = document.createElement('div');
+      overlay.className = 'pv-sweep-overlay';
+      hdr.appendChild(overlay);
+      setTimeout(function() {
+        if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+      }, 700);
+    }
+    // 3. Flip animation on cycle dispatch counter
+    var ctr = document.getElementById('conductor-dispatch-count');
+    if (ctr) {
+      ctr.classList.remove('pv-flip');
+      void ctr.offsetWidth;
+      ctr.classList.add('pv-flip');
+    }
+    return;
+  }
+
   // --- Project identity (US-0128) ------------------------------------------
   var proj = status.project;
   if (proj) {
@@ -2889,33 +2960,75 @@ function patchDOM(status) {
         var total = Object.values(c.phaseDurations || {}).reduce(function(a, b) { return a + b; }, 0);
         return sum + total;
       }, 0) / cycles.length;
-      var avgMin = Math.round(avgTotalSec / 60);
       var today = new Date().toDateString();
       var cyclesToday = cycles.filter(function(c) { return c.completedAt && new Date(c.completedAt).toDateString() === today; }).length;
-      var successRate = cycles.length > 0 ? Math.round((cycles.filter(function(c) { return (c.testsFailed || 0) === 0; }).length / cycles.length) * 100) : 0;
+      var successRate = cycles.length > 0 ? Math.round((cycles.filter(function(c) { return c.outcome === 'success' || (c.outcome === undefined && (c.testsFailed || 0) === 0); }).length / cycles.length) * 100) : 0;
+      var totalIncidents = cycles.reduce(function(sum, c){ return sum + (c.incidents || 0); }, 0);
+      var avgHrs = Math.floor(avgTotalSec / 3600);
+      var avgMins = Math.floor((avgTotalSec % 3600) / 60);
+      var avgCycleLabel = avgHrs > 0 ? avgHrs + 'h ' + avgMins + 'm' : (avgMins || '–') + 'm';
       telemetryRow.innerHTML = [
-        { label: 'Cycles Total', value: cycles.length },
-        { label: 'Today', value: cyclesToday },
-        { label: 'Avg Cycle (min)', value: avgMin || '–' },
-        { label: 'Success Rate', value: successRate + '%' },
+        { label: 'AVG CYCLE TIME', value: avgCycleLabel },
+        { label: 'CYCLES TODAY', value: cyclesToday },
+        { label: 'INCIDENTS', value: totalIncidents },
+        { label: 'SUCCESS RATE', value: successRate + '%' },
       ].map(function(t) {
         return '<div class="cycle-telemetry-tile"><div class="tile-value">' + escH(String(t.value)) + '</div><div class="tile-label">' + escH(t.label) + '</div></div>';
       }).join('');
       var recent = cycles.slice(-10).reverse();
       var prevLen = parseInt(lapStrip.getAttribute('data-cycle-count') || '0', 10);
+      var PHASE_COLORS = [
+        'var(--clr-accent)',
+        'oklch(72% 0.19 200)',
+        'var(--ok)',
+        'var(--clr-warn)',
+        'oklch(64% 0.20 25)',
+        'oklch(78% 0.012 95)'
+      ];
+      var PHASE_NAMES = Object.keys((recent[0] && recent[0].phaseDurations) || {});
+      if (!PHASE_NAMES.length) PHASE_NAMES = ['Blueprint','Link','Architect','Stylize','Trigger','Review'];
       lapStrip.innerHTML = recent.map(function(c) {
-        return '<div class="cycle-card">'
-          + '<div class="cycle-card-id">#' + escH(String(c.id)) + '</div>'
-          + '<div class="cycle-card-stat">' + escH(String(c.storiesCompleted)) + ' stories</div>'
-          + '<div class="cycle-card-stat">' + escH((c.coveragePercent || 0).toFixed(1)) + '% cov</div>'
-          + '</div>';
+        var durations = c.phaseDurations || {};
+        var totalSec = Object.values(durations).reduce(function(a, b){ return a + b; }, 0) || 1;
+        var elapsed = totalSec >= 3600
+          ? Math.floor(totalSec/3600) + 'h ' + Math.floor((totalSec%3600)/60) + 'm'
+          : Math.floor(totalSec/60) + 'm';
+        var daysAgo = c.completedAt
+          ? Math.floor((Date.now() - new Date(c.completedAt).getTime()) / 86400000)
+          : '?';
+        var tooltip = 'Cycle #' + c.id + ' · ' + elapsed + ' · ' + daysAgo + 'd ago';
+        var segments = PHASE_NAMES.map(function(name, idx) {
+          var sec = durations[name] || 0;
+          var pct = totalSec > 0 ? Math.max(2, Math.round(sec / totalSec * 100)) : Math.round(100 / Math.max(PHASE_NAMES.length, 1));
+          var color = ((c.outcome === 'failed') || (c.outcome === undefined && (c.testsFailed || 0) > 0)) && sec > 0
+            ? 'oklch(64% 0.20 25)'
+            : PHASE_COLORS[idx % PHASE_COLORS.length];
+          return '<div style="flex:' + pct + ';background:' + color + ';height:32px;min-width:4px" title="' + escH(name) + ': ' + Math.floor(sec/60) + 'm"></div>';
+        }).join('');
+        return '<div class="pv-lap-bar" title="' + escH(tooltip) + '" data-cycle-id="' + escH(String(c.id)) + '" '
+          + 'onclick="openCycleDetail(' + c.id + ')" '
+          + 'style="display:flex;border-radius:4px;overflow:hidden;cursor:pointer;min-width:64px;max-width:120px;flex-shrink:0">'
+          + segments + '</div>';
       }).join('');
-      if (cycles.length > prevLen && prevLen > 0 && typeof playBeep === 'function') {
-        playBeep(523, 0.15);
-        setTimeout(function() { playBeep(659, 0.15); }, 150);
-        setTimeout(function() { playBeep(784, 0.2); }, 300);
-      }
       lapStrip.setAttribute('data-cycle-count', String(cycles.length));
+      window.openCycleDetail = function(id) {
+          var c = cycles.find(function(x){ return x.id === id; });
+          if (!c) return;
+          var dlg = document.getElementById('pv-cycle-detail');
+          if (!dlg) return;
+          var rows = Object.entries(c.phaseDurations || {}).map(function(e) {
+            return '<tr><td style="padding:4px 8px">' + escH(e[0]) + '</td>'
+              + '<td style="padding:4px 8px;text-align:right">' + Math.floor(e[1]/60) + 'm</td></tr>';
+          }).join('');
+          document.getElementById('pv-cycle-detail-body').innerHTML =
+            '<p style="margin:0 0 8px"><strong>Cycle #' + escH(String(c.id)) + '</strong>'
+            + ' · ' + escH(c.outcome || 'unknown') + ' · ' + escH(String(c.incidents || 0)) + ' incidents</p>'
+            + '<table style="width:100%;border-collapse:collapse;font-size:12px">'
+            + '<thead><tr><th style="text-align:left;padding:4px 8px;border-bottom:1px solid var(--bg-card-border)">Phase</th>'
+            + '<th style="text-align:right;padding:4px 8px;border-bottom:1px solid var(--bg-card-border)">Duration</th></tr></thead>'
+            + '<tbody>' + rows + '</tbody></table>';
+          dlg.showModal();
+        };
     }
   }
 

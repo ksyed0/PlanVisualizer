@@ -110,9 +110,9 @@
       "title": "Risk Analytics",
       "description": "Composite risk scoring per story, risk trend charts, velocity-based completion prediction, at-risk epic summary, and Monte Carlo delivery simulation.",
       "releaseTarget": "Release 1.6",
-      "status": "Planned",
+      "status": "Done",
       "startDate": "2026-04-19",
-      "doneDate": null,
+      "doneDate": "2026-04-19",
       "dependencies": [
         "EPIC-0009"
       ]
@@ -134,9 +134,9 @@
       "title": "Stakeholder View",
       "description": "Non-technical stakeholder dashboard with milestone progress, budget traffic lights, PDF export, email digests, and password protection.",
       "releaseTarget": "Release 1.8",
-      "status": "Planned",
+      "status": "Done",
       "startDate": "2026-04-22",
-      "doneDate": null,
+      "doneDate": "2026-04-28",
       "dependencies": [
         "EPIC-0011"
       ]
@@ -214,6 +214,32 @@
       ]
     },
     {
+      "id": "EPIC-0024",
+      "title": "Backlog Closure",
+      "description": "Ships deferred stories US-0056 (Trends date-range), US-0169 (Hierarchy risk UI), US-0116 (lap history), US-0117 (telemetry + animation) before EPIC-0025 begins.",
+      "releaseTarget": "Release 2.1",
+      "status": "In Progress",
+      "startDate": "2026-05-03",
+      "doneDate": null,
+      "dependencies": [
+        "EPIC-0008",
+        "EPIC-0010",
+        "EPIC-0019"
+      ]
+    },
+    {
+      "id": "EPIC-0025",
+      "title": "GitHub Issues Sync",
+      "description": "Optional bidirectional sync between BUGS.md/RELEASE_PLAN.md and a GitHub repository's Issues. Enabled via plan-visualizer.config.json and configured through a Settings tab in plan-status.html.",
+      "releaseTarget": "Release 2.2",
+      "status": "Planned",
+      "startDate": null,
+      "doneDate": null,
+      "dependencies": [
+        "EPIC-0024"
+      ]
+    },
+    {
       "id": "EPIC-0020",
       "title": "Cross-Dashboard Redesign",
       "description": "Unify Plan-Status and Agentic dashboards under a single Editorial × Mission Control design language. Share a token set (neutrals, semantic colors, typography, card/chip/bar primitives) while differentiating each dashboard with its own accent hue, mode badge (REPORT vs LIVE), and voice (calm report vs live broadcast). First-class light and dark themes. Replaces the saturated navy gradient header, consolidates the chart palette, lifts the Status tab out of sparseness, promotes active agents and event activity on the Agentic surface, and removes pipeline/agent-roster redundancy.",
@@ -224,6 +250,18 @@
       "dependencies": [
         "EPIC-0015",
         "EPIC-0016"
+      ]
+    },
+    {
+      "id": "EPIC-0023",
+      "title": "Dashboard Quality & Reliability",
+      "description": "Fix bugs identified by Session 31 Lens code review across both the plan-status and agentic dashboards. Covers chart rendering correctness, CSS token consistency, Stakeholder tab bug-risk accuracy, and agentic dashboard live-update reliability.",
+      "releaseTarget": "v2.x",
+      "status": "Done",
+      "startDate": "2026-04-29",
+      "doneDate": "2026-04-29",
+      "dependencies": [
+        "EPIC-0022"
       ]
     }
   ],
@@ -2396,6 +2434,47 @@
       ]
     },
     {
+      "id": "US-0169",
+      "epicId": "EPIC-0010",
+      "title": "As a project manager, I want sort, filter, and threshold UI enhancements for risk analytics, so that I can quickly surface the highest-risk stories and epics in the Hierarchy tab.",
+      "priority": "P2",
+      "estimate": "M",
+      "status": "Done",
+      "branch": "feature/US-0169-hierarchy-risk-ui",
+      "acs": [
+        {
+          "id": "AC-0601",
+          "text": "Stories can be sorted by risk score descending in the Hierarchy tab (deferred from AC-0190)",
+          "done": true
+        },
+        {
+          "id": "AC-0602",
+          "text": "Risk trend chart shows a horizontal reference line at 2.0 (High threshold) (deferred from AC-0193)",
+          "done": true
+        },
+        {
+          "id": "AC-0603",
+          "text": "Hierarchy tab epic headers display a risk indicator badge matching the epic's aggregate risk score (deferred from AC-0201)",
+          "done": true
+        },
+        {
+          "id": "AC-0604",
+          "text": "Epics are sorted by risk score descending by default within tabs that show epics (deferred from AC-0202)",
+          "done": true
+        },
+        {
+          "id": "AC-0605",
+          "text": "A filter in the Hierarchy tab allows showing only High/Critical risk epics (deferred from AC-0203)",
+          "done": true
+        }
+      ],
+      "dependencies": [
+        "US-0064",
+        "US-0065",
+        "US-0067"
+      ]
+    },
+    {
       "id": "US-0069",
       "epicId": "EPIC-0011",
       "title": "As a user, I want a global search bar that searches across all content types, so that I can quickly find any story, bug, or lesson.",
@@ -2729,6 +2808,50 @@
       "dependencies": [
         "US-0073"
       ]
+    },
+    {
+      "id": "US-0170",
+      "epicId": "EPIC-0024",
+      "title": "As a developer, I want artefact ID sequences to support more than 9,999 entries, so that the project tracking system does not hit an artificial ceiling as the codebase grows.",
+      "priority": "P2",
+      "estimate": "XS",
+      "status": "Done",
+      "branch": "feature/US-0170-id-regex-variable-length",
+      "acs": [],
+      "dependencies": []
+    },
+    {
+      "id": "US-0171",
+      "epicId": "EPIC-0025",
+      "title": "As a developer, I want BUGS.md to sync bidirectionally with GitHub Issues, so that bug tracking stays consistent across both systems.",
+      "priority": "P0",
+      "estimate": "L",
+      "status": "Done",
+      "branch": "feature/US-0171-github-sync-engine",
+      "acs": [],
+      "dependencies": []
+    },
+    {
+      "id": "US-0172",
+      "epicId": "EPIC-0025",
+      "title": "As a developer, I want a Settings tab in plan-status.html to configure and monitor GitHub sync, so that I can manage the feature without editing config files manually.",
+      "priority": "P1",
+      "estimate": "M",
+      "status": "Done",
+      "branch": "feature/US-0172-settings-panel",
+      "acs": [],
+      "dependencies": []
+    },
+    {
+      "id": "US-0173",
+      "epicId": "EPIC-0025",
+      "title": "As a developer, I want RELEASE_PLAN.md stories to optionally sync with GitHub Issues, so that story progress is visible in the GitHub Issues board.",
+      "priority": "P2",
+      "estimate": "S",
+      "status": "Done",
+      "branch": "feature/US-0173-github-story-sync",
+      "acs": [],
+      "dependencies": []
     },
     {
       "id": "US-0085",
@@ -4150,28 +4273,28 @@
       "title": "As a user, I want a lap-history strip beneath the current cycle showing the last 10 completed cycles, so that I can see operational tempo and open any past cycle for phase-timing details.",
       "priority": "P1",
       "estimate": "M",
-      "status": "Planned",
+      "status": "Done",
       "branch": "feature/US-0116-lap-history-strip",
       "acs": [
         {
           "id": "AC-0388",
           "text": "docs/sdlc-status.json schema gains a cycles[] array: {id, implementationTarget, startedAt, endedAt, phaseTimings, outcome, incidents}; retention keeps the last 50",
-          "done": false
+          "done": true
         },
         {
           "id": "AC-0389",
           "text": "Tier B renders a 32px-tall horizontal strip of the last 10 cycles as mini segmented bars (one segment per phase, matching the 6-phase canonical pipeline from US-0115)",
-          "done": false
+          "done": true
         },
         {
           "id": "AC-0390",
           "text": "Hovering a bar shows a tooltip (\"Cycle N · US-XXXX · HH:MM · Xd ago\"); failed phases render red segments",
-          "done": false
+          "done": true
         },
         {
           "id": "AC-0391",
           "text": "Clicking a bar opens a cycle-detail popover with per-phase timings and outcome",
-          "done": false
+          "done": true
         }
       ],
       "dependencies": [
@@ -4184,27 +4307,27 @@
       "title": "As a user, I want a telemetry row summarizing aggregate cycle performance plus a satisfying animation when a cycle completes, so that the dashboard reinforces the \"machine that keeps running\" feel.",
       "priority": "P2",
       "estimate": "S",
-      "status": "Planned",
-      "branch": "feature/US-0117-telemetry-and-completion",
+      "status": "Done",
+      "branch": "feature/US-0117-telemetry-completion",
       "acs": [
         {
           "id": "AC-0392",
           "text": "Tier C row shows \"AVG CYCLE TIME · CYCLES TODAY · INCIDENTS · SUCCESS RATE\" in Departure Mono tracked-out muted text",
-          "done": false
+          "done": true
         },
         {
           "id": "AC-0393",
           "text": "Values are derived from cycles[] aggregation in sdlc-status.json",
-          "done": false
+          "done": true
         },
         {
           "id": "AC-0394",
           "text": "On cycle completion the dashboard plays a phase-6 flash, green sweep left-to-right, cycle-counter flip, and a new lap-bar push into Tier B",
-          "done": false
+          "done": true
         },
         {
           "id": "AC-0395",
-          "text": "A 200ms ascending audio chime plays on cycle completion (respects user's alert-mute preference)",
+          "text": "A 200ms ascending audio chime plays on cycle completion (respects user's alert-mute preference) — deferred: requires alert-mute preference story",
           "done": false
         }
       ],
@@ -4843,6 +4966,39 @@
       "estimate": "S",
       "status": "Done",
       "branch": "bugfix/hierarchy-hidden-default",
+      "acs": [],
+      "dependencies": []
+    },
+    {
+      "id": "US-0164",
+      "epicId": "EPIC-0023",
+      "title": "As a developer, I want chart axis labels, grid lines, and legend text to use the correct theme colours in both light and dark mode, so that charts are readable without hardcoded greys.",
+      "priority": "P1",
+      "estimate": "S",
+      "status": "Done",
+      "branch": "feature/US-0164-BUG-0242-0244-chart-fixes",
+      "acs": [],
+      "dependencies": []
+    },
+    {
+      "id": "US-0165",
+      "epicId": "EPIC-0023",
+      "title": "As a project lead, I want the Stakeholder tab to correctly flag epics that have open Critical/High bugs as Needs Attention, so that risk is accurately communicated to stakeholders.",
+      "priority": "P1",
+      "estimate": "XS",
+      "status": "Done",
+      "branch": "bugfix/BUG-0239-0241-0248-stakeholder-fixes",
+      "acs": [],
+      "dependencies": []
+    },
+    {
+      "id": "US-0166",
+      "epicId": "EPIC-0023",
+      "title": "As a user, I want patchDOM to preserve branch link anchors in agent task cells and correctly style InProgress stories, so that live updates do not degrade the agentic dashboard display.",
+      "priority": "P1",
+      "estimate": "S",
+      "status": "Done",
+      "branch": "bugfix/BUG-0245-0246-0247-dashboard-fixes",
       "acs": [],
       "dependencies": []
     }
@@ -8718,10 +8874,11 @@
       "severity": "Low",
       "relatedStory": "US-0135 (EPIC-0020)",
       "relatedTask": "",
-      "status": "Open",
-      "fixBranch": "",
-      "lessonEncoded": "",
-      "estimatedCostUsd": 0
+      "status": "Fixed",
+      "fixBranch": "bugfix/BUG-0183-0184-0223-plan-status-quality",
+      "lessonEncoded": "Yes",
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 541
     },
     {
       "id": "BUG-0184",
@@ -8729,10 +8886,11 @@
       "severity": "Low",
       "relatedStory": "US-0140 (EPIC-0020)",
       "relatedTask": "",
-      "status": "Open",
-      "fixBranch": "",
-      "lessonEncoded": "",
-      "estimatedCostUsd": 0
+      "status": "Fixed",
+      "fixBranch": "bugfix/BUG-0183-0184-0223-plan-status-quality",
+      "lessonEncoded": "Yes",
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 542
     },
     {
       "id": "BUG-0185",
@@ -8740,10 +8898,11 @@
       "severity": "Medium",
       "relatedStory": "US-0142 (EPIC-0020)",
       "relatedTask": "",
-      "status": "Open",
-      "fixBranch": "",
-      "lessonEncoded": "",
-      "estimatedCostUsd": 0
+      "status": "Fixed",
+      "fixBranch": "bugfix/BUG-0252-stash-recovery",
+      "lessonEncoded": "Yes",
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 543
     },
     {
       "id": "BUG-0186",
@@ -8751,10 +8910,11 @@
       "severity": "Medium",
       "relatedStory": "US-0143 (EPIC-0020)",
       "relatedTask": "",
-      "status": "Open",
-      "fixBranch": "",
-      "lessonEncoded": "",
-      "estimatedCostUsd": 0
+      "status": "Fixed",
+      "fixBranch": "bugfix/BUG-0252-stash-recovery",
+      "lessonEncoded": "Yes",
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 544
     },
     {
       "id": "BUG-0187",
@@ -8762,10 +8922,11 @@
       "severity": "Low",
       "relatedStory": "US-0144 (EPIC-0020)",
       "relatedTask": "",
-      "status": "Open",
-      "fixBranch": "",
-      "lessonEncoded": "",
-      "estimatedCostUsd": 0
+      "status": "Fixed",
+      "fixBranch": "bugfix/BUG-0252-stash-recovery",
+      "lessonEncoded": "Yes",
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 545
     },
     {
       "id": "BUG-0188",
@@ -8773,10 +8934,11 @@
       "severity": "Low",
       "relatedStory": "US-0145 (EPIC-0020)",
       "relatedTask": "",
-      "status": "Open",
-      "fixBranch": "",
-      "lessonEncoded": "",
-      "estimatedCostUsd": 0
+      "status": "Fixed",
+      "fixBranch": "bugfix/BUG-0252-stash-recovery",
+      "lessonEncoded": "Yes",
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 546
     },
     {
       "id": "BUG-0189",
@@ -8784,10 +8946,11 @@
       "severity": "Low",
       "relatedStory": "US-0136 (EPIC-0020)",
       "relatedTask": "",
-      "status": "Open",
-      "fixBranch": "",
-      "lessonEncoded": "",
-      "estimatedCostUsd": 0
+      "status": "Fixed",
+      "fixBranch": "bugfix/BUG-0252-stash-recovery",
+      "lessonEncoded": "Yes",
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 547
     },
     {
       "id": "BUG-0100",
@@ -8798,7 +8961,8 @@
       "status": "Fixed",
       "fixBranch": "feature/US-0084-trends-ui-polish",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": null
     },
     {
       "id": "BUG-0056",
@@ -8809,7 +8973,8 @@
       "status": "Fixed",
       "fixBranch": "chore/fix-version-workflows",
       "lessonEncoded": "",
-      "estimatedCostUsd": 0.1
+      "estimatedCostUsd": 0.1,
+      "ghIssueNumber": 549
     },
     {
       "id": "BUG-0001",
@@ -8820,7 +8985,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0001-coverage-na",
       "lessonEncoded": "Yes — see docs/LESSONS.md",
-      "estimatedCostUsd": 0.5
+      "estimatedCostUsd": 0.5,
+      "ghIssueNumber": 550
     },
     {
       "id": "BUG-0002",
@@ -8831,7 +8997,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0001-coverage-na",
       "lessonEncoded": "Yes — see docs/LESSONS.md",
-      "estimatedCostUsd": 0.5
+      "estimatedCostUsd": 0.5,
+      "ghIssueNumber": 551
     },
     {
       "id": "BUG-0003",
@@ -8842,7 +9009,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0003-tc-statuses",
       "lessonEncoded": "Yes — see docs/LESSONS.md (L-0010)",
-      "estimatedCostUsd": 0.25
+      "estimatedCostUsd": 0.25,
+      "ghIssueNumber": 552
     },
     {
       "id": "BUG-0004",
@@ -8853,7 +9021,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0004-sticky-header",
       "lessonEncoded": "Yes — see docs/LESSONS.md (L-0009)",
-      "estimatedCostUsd": 0.25
+      "estimatedCostUsd": 0.25,
+      "ghIssueNumber": 553
     },
     {
       "id": "BUG-0005",
@@ -8864,7 +9033,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0005-xss-escape-html",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0.5
+      "estimatedCostUsd": 0.5,
+      "ghIssueNumber": 554
     },
     {
       "id": "BUG-0006",
@@ -8875,7 +9045,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0006-0009-0010-render-html",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0.45
+      "estimatedCostUsd": 0.45,
+      "ghIssueNumber": 555
     },
     {
       "id": "BUG-0007",
@@ -8886,7 +9057,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0007-0011-parser-fixes",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0.45
+      "estimatedCostUsd": 0.45,
+      "ghIssueNumber": 556
     },
     {
       "id": "BUG-0008",
@@ -8897,7 +9069,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0008-0014-0015-0016-misc",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0.45
+      "estimatedCostUsd": 0.45,
+      "ghIssueNumber": 557
     },
     {
       "id": "BUG-0009",
@@ -8908,7 +9081,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0006-0009-0010-render-html",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0.25
+      "estimatedCostUsd": 0.25,
+      "ghIssueNumber": 558
     },
     {
       "id": "BUG-0010",
@@ -8919,7 +9093,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0006-0009-0010-render-html",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0.25
+      "estimatedCostUsd": 0.25,
+      "ghIssueNumber": 559
     },
     {
       "id": "BUG-0011",
@@ -8930,7 +9105,8 @@
       "status": "Rejected",
       "fixBranch": "bugfix/BUG-0007-0011-parser-fixes",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0.25
+      "estimatedCostUsd": 0.25,
+      "ghIssueNumber": 560
     },
     {
       "id": "BUG-0012",
@@ -8941,7 +9117,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0012-0013-0017-ci-config-fixes",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0.45
+      "estimatedCostUsd": 0.45,
+      "ghIssueNumber": 561
     },
     {
       "id": "BUG-0013",
@@ -8952,7 +9129,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0012-0013-0017-ci-config-fixes",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0.2
+      "estimatedCostUsd": 0.2,
+      "ghIssueNumber": 562
     },
     {
       "id": "BUG-0014",
@@ -8963,7 +9141,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0008-0014-0015-0016-misc",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0.2
+      "estimatedCostUsd": 0.2,
+      "ghIssueNumber": 563
     },
     {
       "id": "BUG-0015",
@@ -8974,7 +9153,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0008-0014-0015-0016-misc",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0.2
+      "estimatedCostUsd": 0.2,
+      "ghIssueNumber": 564
     },
     {
       "id": "BUG-0016",
@@ -8985,7 +9165,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0008-0014-0015-0016-misc",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0.2
+      "estimatedCostUsd": 0.2,
+      "ghIssueNumber": 565
     },
     {
       "id": "BUG-0017",
@@ -8996,7 +9177,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0012-0013-0017-ci-config-fixes",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0.25
+      "estimatedCostUsd": 0.25,
+      "ghIssueNumber": 566
     },
     {
       "id": "BUG-0018",
@@ -9007,7 +9189,8 @@
       "status": "Fixed",
       "fixBranch": "n/a — fixed via repo Settings → Environments → github-pages → add develop to allowed branches",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0.2
+      "estimatedCostUsd": 0.2,
+      "ghIssueNumber": 567
     },
     {
       "id": "BUG-0019",
@@ -9018,7 +9201,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0019-node24-actions",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0.25
+      "estimatedCostUsd": 0.25,
+      "ghIssueNumber": 568
     },
     {
       "id": "BUG-0020",
@@ -9029,7 +9213,8 @@
       "status": "Fixed",
       "fixBranch": "claude/fix-mobile-top-area-C7evU",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0.25
+      "estimatedCostUsd": 0.25,
+      "ghIssueNumber": 569
     },
     {
       "id": "BUG-0021",
@@ -9040,7 +9225,8 @@
       "status": "Fixed",
       "fixBranch": "claude/fix-mobile-top-area-C7evU",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0.2
+      "estimatedCostUsd": 0.2,
+      "ghIssueNumber": 570
     },
     {
       "id": "BUG-0022",
@@ -9051,7 +9237,8 @@
       "status": "Fixed",
       "fixBranch": "claude/fix-mobile-top-area-C7evU",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0.25
+      "estimatedCostUsd": 0.25,
+      "ghIssueNumber": 571
     },
     {
       "id": "BUG-0023",
@@ -9062,7 +9249,8 @@
       "status": "Fixed",
       "fixBranch": "claude/fix-mobile-top-area-C7evU",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0.45
+      "estimatedCostUsd": 0.45,
+      "ghIssueNumber": 572
     },
     {
       "id": "BUG-0024",
@@ -9073,7 +9261,8 @@
       "status": "Fixed",
       "fixBranch": "claude/fix-mobile-top-area-C7evU",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0.25
+      "estimatedCostUsd": 0.25,
+      "ghIssueNumber": 573
     },
     {
       "id": "BUG-0025",
@@ -9084,7 +9273,8 @@
       "status": "Fixed",
       "fixBranch": "claude/fix-mobile-top-area-C7evU",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0.2
+      "estimatedCostUsd": 0.2,
+      "ghIssueNumber": 574
     },
     {
       "id": "BUG-0026",
@@ -9095,7 +9285,8 @@
       "status": "Fixed",
       "fixBranch": "feature/docs-update-readme-update-prompt",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0.35
+      "estimatedCostUsd": 0.35,
+      "ghIssueNumber": 575
     },
     {
       "id": "BUG-0027",
@@ -9106,7 +9297,8 @@
       "status": "Fixed",
       "fixBranch": "feature/docs-update-readme-update-prompt",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0.25
+      "estimatedCostUsd": 0.25,
+      "ghIssueNumber": 576
     },
     {
       "id": "BUG-0028",
@@ -9117,7 +9309,8 @@
       "status": "Fixed",
       "fixBranch": "feature/docs-update-readme-update-prompt",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0.2
+      "estimatedCostUsd": 0.2,
+      "ghIssueNumber": 577
     },
     {
       "id": "BUG-0029",
@@ -9128,7 +9321,8 @@
       "status": "Fixed",
       "fixBranch": "feature/docs-update-readme-update-prompt",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0.25
+      "estimatedCostUsd": 0.25,
+      "ghIssueNumber": 578
     },
     {
       "id": "BUG-0030",
@@ -9139,7 +9333,8 @@
       "status": "Fixed",
       "fixBranch": "feature/docs-update-readme-update-prompt",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0.2
+      "estimatedCostUsd": 0.2,
+      "ghIssueNumber": 579
     },
     {
       "id": "BUG-0031",
@@ -9150,7 +9345,8 @@
       "status": "Fixed",
       "fixBranch": "feature/US-0030-bug-fix-costs-tab",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0.2
+      "estimatedCostUsd": 0.2,
+      "ghIssueNumber": 580
     },
     {
       "id": "BUG-0032",
@@ -9161,7 +9357,8 @@
       "status": "Fixed",
       "fixBranch": "feature/US-0030-bug-fix-costs-tab",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0.2
+      "estimatedCostUsd": 0.2,
+      "ghIssueNumber": 581
     },
     {
       "id": "BUG-0033",
@@ -9172,7 +9369,8 @@
       "status": "Fixed",
       "fixBranch": "feature/US-0031-dashboard-ux-fixes",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 582
     },
     {
       "id": "BUG-0034",
@@ -9183,7 +9381,8 @@
       "status": "Fixed",
       "fixBranch": "feature/dark-mode-readability",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 583
     },
     {
       "id": "BUG-0035",
@@ -9194,7 +9393,8 @@
       "status": "Fixed",
       "fixBranch": "feature/dark-mode-readability",
       "lessonEncoded": "Yes — see docs/LESSONS.md",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 584
     },
     {
       "id": "BUG-0036",
@@ -9205,7 +9405,8 @@
       "status": "Fixed",
       "fixBranch": "feature/dark-mode-readability",
       "lessonEncoded": "Yes — see docs/LESSONS.md",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 585
     },
     {
       "id": "BUG-0037",
@@ -9216,7 +9417,8 @@
       "status": "Fixed",
       "fixBranch": "feature/dark-mode-readability",
       "lessonEncoded": "Yes — see docs/LESSONS.md",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 586
     },
     {
       "id": "BUG-0038",
@@ -9227,7 +9429,8 @@
       "status": "Fixed",
       "fixBranch": "feature/dark-mode-readability",
       "lessonEncoded": "Yes — see docs/LESSONS.md",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 587
     },
     {
       "id": "BUG-0039",
@@ -9238,7 +9441,8 @@
       "status": "Fixed",
       "fixBranch": "feature/dark-mode-readability",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 588
     },
     {
       "id": "BUG-0040",
@@ -9249,7 +9453,8 @@
       "status": "Fixed",
       "fixBranch": "feature/dark-mode-readability",
       "lessonEncoded": "Yes — see docs/LESSONS.md",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 589
     },
     {
       "id": "BUG-0041",
@@ -9260,7 +9465,8 @@
       "status": "Fixed",
       "fixBranch": "feature/dark-mode-readability",
       "lessonEncoded": "Yes — see docs/LESSONS.md",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 590
     },
     {
       "id": "BUG-0042",
@@ -9271,7 +9477,8 @@
       "status": "Fixed",
       "fixBranch": "feature/dark-mode-readability",
       "lessonEncoded": "Yes — see docs/LESSONS.md",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 591
     },
     {
       "id": "BUG-0043",
@@ -9282,7 +9489,8 @@
       "status": "Fixed",
       "fixBranch": "feature/dark-mode-readability",
       "lessonEncoded": "Yes — see docs/LESSONS.md",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 592
     },
     {
       "id": "BUG-0044",
@@ -9293,7 +9501,8 @@
       "status": "Fixed",
       "fixBranch": "feature/US-0032-lessons-tab",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 593
     },
     {
       "id": "BUG-0045",
@@ -9304,7 +9513,8 @@
       "status": "Fixed",
       "fixBranch": "feature/US-0032-lessons-tab",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 594
     },
     {
       "id": "BUG-0046",
@@ -9315,7 +9525,8 @@
       "status": "Fixed",
       "fixBranch": "feature/US-0032-lessons-tab",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 595
     },
     {
       "id": "BUG-0047",
@@ -9326,7 +9537,8 @@
       "status": "Fixed",
       "fixBranch": "feature/US-0032-lessons-tab",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 596
     },
     {
       "id": "BUG-0048",
@@ -9337,7 +9549,8 @@
       "status": "Fixed",
       "fixBranch": "feature/US-0032-lessons-tab",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 597
     },
     {
       "id": "BUG-0049",
@@ -9348,7 +9561,8 @@
       "status": "Fixed",
       "fixBranch": "feature/US-0032-lessons-tab",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 598
     },
     {
       "id": "BUG-0050",
@@ -9359,7 +9573,8 @@
       "status": "Fixed",
       "fixBranch": "feature/US-0032-lessons-tab",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 599
     },
     {
       "id": "BUG-0051",
@@ -9370,7 +9585,8 @@
       "status": "Fixed",
       "fixBranch": "feature/US-0032-lessons-tab",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 600
     },
     {
       "id": "BUG-0052",
@@ -9381,7 +9597,8 @@
       "status": "Fixed",
       "fixBranch": "feature/US-0032-lessons-tab",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 601
     },
     {
       "id": "BUG-0053",
@@ -9392,7 +9609,8 @@
       "status": "Fixed",
       "fixBranch": "feature/US-0032-lessons-tab",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0.25
+      "estimatedCostUsd": 0.25,
+      "ghIssueNumber": 602
     },
     {
       "id": "BUG-0054",
@@ -9403,7 +9621,8 @@
       "status": "Fixed",
       "fixBranch": "feature/US-0032-lessons-tab",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0.25
+      "estimatedCostUsd": 0.25,
+      "ghIssueNumber": 603
     },
     {
       "id": "BUG-0055",
@@ -9414,7 +9633,8 @@
       "status": "Fixed",
       "fixBranch": "feature/US-0032-lessons-tab",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0.25
+      "estimatedCostUsd": 0.25,
+      "ghIssueNumber": 604
     },
     {
       "id": "BUG-0075",
@@ -9425,7 +9645,8 @@
       "status": "Fixed",
       "fixBranch": "fix/parse-cost-log-session-dedup",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0.1
+      "estimatedCostUsd": 0.1,
+      "ghIssueNumber": 605
     },
     {
       "id": "BUG-0076",
@@ -9436,7 +9657,8 @@
       "status": "Fixed",
       "fixBranch": "feature/US-0048-ui-redesign-sidebar",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0.02
+      "estimatedCostUsd": 0.02,
+      "ghIssueNumber": 606
     },
     {
       "id": "BUG-0094",
@@ -9447,7 +9669,8 @@
       "status": "Fixed",
       "fixBranch": "feature/US-0048-ui-redesign-sidebar",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0.15
+      "estimatedCostUsd": 0.15,
+      "ghIssueNumber": 607
     },
     {
       "id": "BUG-0095",
@@ -9458,7 +9681,8 @@
       "status": "Fixed",
       "fixBranch": "feature/US-0048-ui-redesign-sidebar",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0.1
+      "estimatedCostUsd": 0.1,
+      "ghIssueNumber": 608
     },
     {
       "id": "BUG-0096",
@@ -9469,7 +9693,8 @@
       "status": "Fixed",
       "fixBranch": "feature/US-0048-ui-redesign-sidebar",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0.05
+      "estimatedCostUsd": 0.05,
+      "ghIssueNumber": 609
     },
     {
       "id": "BUG-0097",
@@ -9480,7 +9705,8 @@
       "status": "Retired",
       "fixBranch": "",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 610
     },
     {
       "id": "BUG-0098",
@@ -9491,7 +9717,8 @@
       "status": "Fixed",
       "fixBranch": "feature/US-0048-ui-redesign-sidebar",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0.05
+      "estimatedCostUsd": 0.05,
+      "ghIssueNumber": null
     },
     {
       "id": "BUG-0099",
@@ -9502,7 +9729,8 @@
       "status": "Fixed",
       "fixBranch": "feature/US-0048-ui-redesign-sidebar",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0.02
+      "estimatedCostUsd": 0.02,
+      "ghIssueNumber": null
     },
     {
       "id": "BUG-0100",
@@ -9513,7 +9741,8 @@
       "status": "Fixed",
       "fixBranch": "feature/US-0048-ui-redesign-sidebar",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0.05
+      "estimatedCostUsd": 0.05,
+      "ghIssueNumber": 548
     },
     {
       "id": "BUG-0091",
@@ -9524,7 +9753,8 @@
       "status": "Fixed",
       "fixBranch": "feature/US-0048-ui-redesign-sidebar",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0.02
+      "estimatedCostUsd": 0.02,
+      "ghIssueNumber": 614
     },
     {
       "id": "BUG-0098",
@@ -9535,7 +9765,8 @@
       "status": "Fixed",
       "fixBranch": "develop (fixed in Session 16 — render-shell.js:20 + render-tabs.js:1254; BUGS.md status was stale)",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 611
     },
     {
       "id": "BUG-0099",
@@ -9546,7 +9777,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0099-epic-header-filter-visibility",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 612
     },
     {
       "id": "BUG-0101",
@@ -9557,7 +9789,8 @@
       "status": "Fixed",
       "fixBranch": "develop",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 617
     },
     {
       "id": "BUG-0102",
@@ -9568,7 +9801,8 @@
       "status": "Fixed",
       "fixBranch": "develop",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 618
     },
     {
       "id": "BUG-0103",
@@ -9579,7 +9813,8 @@
       "status": "Fixed",
       "fixBranch": "develop",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 619
     },
     {
       "id": "BUG-0104",
@@ -9590,7 +9825,8 @@
       "status": "Fixed",
       "fixBranch": "develop",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 620
     },
     {
       "id": "BUG-0105",
@@ -9601,7 +9837,8 @@
       "status": "Fixed",
       "fixBranch": "develop",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 621
     },
     {
       "id": "BUG-0106",
@@ -9612,7 +9849,8 @@
       "status": "Fixed",
       "fixBranch": "develop",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 622
     },
     {
       "id": "BUG-0107",
@@ -9623,7 +9861,8 @@
       "status": "Fixed",
       "fixBranch": "develop",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 623
     },
     {
       "id": "BUG-0110",
@@ -9634,7 +9873,8 @@
       "status": "Fixed",
       "fixBranch": "feature/US-0097-semantic-badges",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 624
     },
     {
       "id": "BUG-0111",
@@ -9645,7 +9885,8 @@
       "status": "Fixed",
       "fixBranch": "feature/US-0095-shadow-cards",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 625
     },
     {
       "id": "BUG-0112",
@@ -9656,7 +9897,8 @@
       "status": "Fixed",
       "fixBranch": "feature/US-0101-kanban-polish",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 626
     },
     {
       "id": "BUG-0113",
@@ -9667,7 +9909,8 @@
       "status": "Fixed",
       "fixBranch": "est/BUG-0011",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 627
     },
     {
       "id": "BUG-0114",
@@ -9678,7 +9921,8 @@
       "status": "Fixed",
       "fixBranch": "est/BUG-0014",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 628
     },
     {
       "id": "BUG-0115",
@@ -9689,7 +9933,8 @@
       "status": "Fixed",
       "fixBranch": "est/BUG-0015",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 629
     },
     {
       "id": "BUG-0116",
@@ -9700,7 +9945,8 @@
       "status": "Fixed",
       "fixBranch": "est/BUG-0016",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 630
     },
     {
       "id": "BUG-0117",
@@ -9711,7 +9957,8 @@
       "status": "Fixed",
       "fixBranch": "est/BUG-0017",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 631
     },
     {
       "id": "BUG-0118",
@@ -9722,7 +9969,8 @@
       "status": "Fixed",
       "fixBranch": "est/BUG-0022",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 632
     },
     {
       "id": "BUG-0119",
@@ -9733,7 +9981,8 @@
       "status": "Fixed",
       "fixBranch": "est/BUG-0023",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 633
     },
     {
       "id": "BUG-0120",
@@ -9744,7 +9993,8 @@
       "status": "Fixed",
       "fixBranch": "est/BUG-0024",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 634
     },
     {
       "id": "BUG-0121",
@@ -9755,7 +10005,8 @@
       "status": "Fixed",
       "fixBranch": "est/BUG-0031",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 635
     },
     {
       "id": "BUG-0122",
@@ -9766,7 +10017,8 @@
       "status": "Fixed",
       "fixBranch": "est/BUG-0032",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 636
     },
     {
       "id": "BUG-0123",
@@ -9777,7 +10029,8 @@
       "status": "Fixed",
       "fixBranch": "est/BUG-0033",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 637
     },
     {
       "id": "BUG-0124",
@@ -9788,7 +10041,8 @@
       "status": "Fixed",
       "fixBranch": "est/BUG-0034",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 638
     },
     {
       "id": "BUG-0125",
@@ -9799,7 +10053,8 @@
       "status": "Fixed",
       "fixBranch": "est/BUG-0035",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 639
     },
     {
       "id": "BUG-0126",
@@ -9810,7 +10065,8 @@
       "status": "Fixed",
       "fixBranch": "est/BUG-0036",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 640
     },
     {
       "id": "BUG-0127",
@@ -9821,7 +10077,8 @@
       "status": "Fixed",
       "fixBranch": "est/BUG-0037",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 641
     },
     {
       "id": "BUG-0128",
@@ -9832,7 +10089,8 @@
       "status": "Fixed",
       "fixBranch": "est/BUG-0038",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 642
     },
     {
       "id": "BUG-0129",
@@ -9843,7 +10101,8 @@
       "status": "Fixed",
       "fixBranch": "est/BUG-0039",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 643
     },
     {
       "id": "BUG-0130",
@@ -9854,7 +10113,8 @@
       "status": "Fixed",
       "fixBranch": "est/BUG-0040",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 644
     },
     {
       "id": "BUG-0131",
@@ -9865,7 +10125,8 @@
       "status": "Fixed",
       "fixBranch": "est/BUG-0041",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 645
     },
     {
       "id": "BUG-0132",
@@ -9876,7 +10137,8 @@
       "status": "Fixed",
       "fixBranch": "est/BUG-0042",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 646
     },
     {
       "id": "BUG-0133",
@@ -9887,7 +10149,8 @@
       "status": "Fixed",
       "fixBranch": "est/BUG-0043",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 647
     },
     {
       "id": "BUG-0134",
@@ -9898,7 +10161,8 @@
       "status": "Fixed",
       "fixBranch": "est/BUG-0044",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 648
     },
     {
       "id": "BUG-0135",
@@ -9909,7 +10173,8 @@
       "status": "Fixed",
       "fixBranch": "est/BUG-0045",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 649
     },
     {
       "id": "BUG-0136",
@@ -9920,7 +10185,8 @@
       "status": "Fixed",
       "fixBranch": "est/BUG-0046",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 650
     },
     {
       "id": "BUG-0137",
@@ -9931,7 +10197,8 @@
       "status": "Fixed",
       "fixBranch": "est/BUG-0047",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 651
     },
     {
       "id": "BUG-0138",
@@ -9942,7 +10209,8 @@
       "status": "Fixed",
       "fixBranch": "est/BUG-0048",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 652
     },
     {
       "id": "BUG-0139",
@@ -9953,7 +10221,8 @@
       "status": "Fixed",
       "fixBranch": "est/BUG-0049",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 653
     },
     {
       "id": "BUG-0140",
@@ -9964,7 +10233,8 @@
       "status": "Fixed",
       "fixBranch": "est/BUG-0050",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 654
     },
     {
       "id": "BUG-0141",
@@ -9975,7 +10245,8 @@
       "status": "Fixed",
       "fixBranch": "est/BUG-0053",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 655
     },
     {
       "id": "BUG-0142",
@@ -9986,7 +10257,8 @@
       "status": "Fixed",
       "fixBranch": "est/BUG-0054",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 656
     },
     {
       "id": "BUG-0143",
@@ -9997,7 +10269,8 @@
       "status": "Fixed",
       "fixBranch": "est/BUG-0055",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 657
     },
     {
       "id": "BUG-0144",
@@ -10008,7 +10281,8 @@
       "status": "Fixed",
       "fixBranch": "est/BUG-0056",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 658
     },
     {
       "id": "BUG-0145",
@@ -10019,7 +10293,8 @@
       "status": "Fixed",
       "fixBranch": "est/BUG-0057",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 659
     },
     {
       "id": "BUG-0146",
@@ -10030,7 +10305,8 @@
       "status": "Fixed",
       "fixBranch": "est/BUG-0058",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 660
     },
     {
       "id": "BUG-0147",
@@ -10041,7 +10317,8 @@
       "status": "Fixed",
       "fixBranch": "est/BUG-0059",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 661
     },
     {
       "id": "BUG-0148",
@@ -10052,7 +10329,8 @@
       "status": "Fixed",
       "fixBranch": "est/BUG-0060",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 662
     },
     {
       "id": "BUG-0149",
@@ -10063,7 +10341,8 @@
       "status": "Fixed",
       "fixBranch": "est/BUG-0061",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 663
     },
     {
       "id": "BUG-0150",
@@ -10074,7 +10353,8 @@
       "status": "Fixed",
       "fixBranch": "est/BUG-0062",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 664
     },
     {
       "id": "BUG-0151",
@@ -10085,7 +10365,8 @@
       "status": "Fixed",
       "fixBranch": "est/BUG-0063",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 665
     },
     {
       "id": "BUG-0152",
@@ -10096,7 +10377,8 @@
       "status": "Fixed",
       "fixBranch": "est/BUG-0065",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 666
     },
     {
       "id": "BUG-0153",
@@ -10107,7 +10389,8 @@
       "status": "Fixed",
       "fixBranch": "est/BUG-0066",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 667
     },
     {
       "id": "BUG-0154",
@@ -10118,7 +10401,8 @@
       "status": "Fixed",
       "fixBranch": "",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 668
     },
     {
       "id": "BUG-0155",
@@ -10129,7 +10413,8 @@
       "status": "Fixed",
       "fixBranch": "develop",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 669
     },
     {
       "id": "BUG-0156",
@@ -10140,7 +10425,8 @@
       "status": "Fixed",
       "fixBranch": "develop",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 670
     },
     {
       "id": "BUG-0157",
@@ -10151,7 +10437,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0157-search-body-null-fix",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 671
     },
     {
       "id": "BUG-0158",
@@ -10162,7 +10449,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0158-bug-epic-grouping",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 672
     },
     {
       "id": "BUG-0159",
@@ -10173,7 +10461,8 @@
       "status": "Fixed",
       "fixBranch": "feature/US-0111-live-fetch-and-patch",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 673
     },
     {
       "id": "BUG-0160",
@@ -10184,7 +10473,8 @@
       "status": "Fixed",
       "fixBranch": "feature/US-0122-alerts-incident-ticker",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 674
     },
     {
       "id": "BUG-0161",
@@ -10195,7 +10485,8 @@
       "status": "Fixed",
       "fixBranch": "feature/US-0119-agent-spotlight-stations",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 675
     },
     {
       "id": "BUG-0162",
@@ -10206,7 +10497,8 @@
       "status": "Fixed",
       "fixBranch": "feature/US-0114-header-3-zone",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 676
     },
     {
       "id": "BUG-0163",
@@ -10217,7 +10509,8 @@
       "status": "Fixed",
       "fixBranch": "feature/US-0113-agent-portraits",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 677
     },
     {
       "id": "BUG-0164",
@@ -10228,7 +10521,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0164-0166-dashboard-honesty",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 816
     },
     {
       "id": "BUG-0165",
@@ -10239,7 +10533,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0164-0166-dashboard-honesty",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 817
     },
     {
       "id": "BUG-0166",
@@ -10250,7 +10545,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0164-0166-dashboard-honesty",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 818
     },
     {
       "id": "BUG-0167",
@@ -10261,7 +10557,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/dashboard-polish-round-2",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 819
     },
     {
       "id": "BUG-0168",
@@ -10272,7 +10569,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/dashboard-polish-round-2",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 820
     },
     {
       "id": "BUG-0169",
@@ -10283,7 +10581,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/dashboard-polish-round-2",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 821
     },
     {
       "id": "BUG-0170",
@@ -10294,7 +10593,8 @@
       "status": "Fixed",
       "fixBranch": "chore/branch-cleanup-tooling",
       "lessonEncoded": "Yes — see docs/LESSONS.md",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 822
     },
     {
       "id": "BUG-0171",
@@ -10305,7 +10605,8 @@
       "status": "Fixed",
       "fixBranch": "chore/branch-cleanup-tooling",
       "lessonEncoded": "Yes — see docs/LESSONS.md",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 823
     },
     {
       "id": "BUG-0172",
@@ -10316,7 +10617,8 @@
       "status": "Fixed",
       "fixBranch": "chore/branch-cleanup-tooling",
       "lessonEncoded": "Yes — see docs/LESSONS.md",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 824
     },
     {
       "id": "BUG-0173",
@@ -10327,7 +10629,8 @@
       "status": "Fixed",
       "fixBranch": "chore/cleanup-script-pr-gate",
       "lessonEncoded": "Yes — see docs/LESSONS.md",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 825
     },
     {
       "id": "BUG-0174",
@@ -10338,7 +10641,8 @@
       "status": "Fixed",
       "fixBranch": "chore/install-cleanup-tooling-propagation",
       "lessonEncoded": "Yes — see docs/LESSONS.md",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 826
     },
     {
       "id": "BUG-0175",
@@ -10349,7 +10653,8 @@
       "status": "Fixed",
       "fixBranch": "chore/config-schema-migration",
       "lessonEncoded": "Yes — see docs/LESSONS.md",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 827
     },
     {
       "id": "BUG-0176",
@@ -10360,7 +10665,8 @@
       "status": "Retired",
       "fixBranch": "feature/US-0101-kanban-polish",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 828
     },
     {
       "id": "BUG-0177",
@@ -10371,7 +10677,8 @@
       "status": "Retired",
       "fixBranch": "feature/US-0101-kanban-polish",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 829
     },
     {
       "id": "BUG-0178",
@@ -10382,7 +10689,8 @@
       "status": "Retired",
       "fixBranch": "feature/US-0101-kanban-polish",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 830
     },
     {
       "id": "BUG-0179",
@@ -10393,7 +10701,8 @@
       "status": "Retired",
       "fixBranch": "",
       "lessonEncoded": "",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 831
     },
     {
       "id": "BUG-0180",
@@ -10404,7 +10713,8 @@
       "status": "Retired",
       "fixBranch": "",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 832
     },
     {
       "id": "BUG-0181",
@@ -10415,7 +10725,8 @@
       "status": "Fixed",
       "fixBranch": "chore/session-20-close",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 833
     },
     {
       "id": "BUG-0182",
@@ -10426,7 +10737,8 @@
       "status": "Fixed",
       "fixBranch": "chore/session-20-close",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 834
     },
     {
       "id": "BUG-0190",
@@ -10437,7 +10749,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0190-0197-ui-fixes",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 835
     },
     {
       "id": "BUG-0191",
@@ -10448,7 +10761,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0190-0197-ui-fixes",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 836
     },
     {
       "id": "BUG-0192",
@@ -10459,7 +10773,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0190-0197-ui-fixes",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 837
     },
     {
       "id": "BUG-0193",
@@ -10470,7 +10785,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0190-0197-ui-fixes",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 919
     },
     {
       "id": "BUG-0194",
@@ -10481,7 +10797,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0190-0197-ui-fixes",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 920
     },
     {
       "id": "BUG-0195",
@@ -10492,7 +10809,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0190-0197-ui-fixes",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 921
     },
     {
       "id": "BUG-0196",
@@ -10503,7 +10821,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0190-0197-ui-fixes",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 922
     },
     {
       "id": "BUG-0197",
@@ -10514,7 +10833,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0190-0197-ui-fixes",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 923
     },
     {
       "id": "BUG-0198",
@@ -10525,7 +10845,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0190-0197-ui-fixes",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 924
     },
     {
       "id": "BUG-0199",
@@ -10536,7 +10857,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0190-0197-ui-fixes",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 925
     },
     {
       "id": "BUG-0200",
@@ -10547,7 +10869,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0190-0197-ui-fixes",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 926
     },
     {
       "id": "BUG-0201",
@@ -10558,7 +10881,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0190-0197-ui-fixes",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 927
     },
     {
       "id": "BUG-0202",
@@ -10569,7 +10893,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0202-0208-ui-polish",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 928
     },
     {
       "id": "BUG-0203",
@@ -10580,7 +10905,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0202-0208-ui-polish",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 929
     },
     {
       "id": "BUG-0204",
@@ -10591,7 +10917,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0202-0208-ui-polish",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 930
     },
     {
       "id": "BUG-0205",
@@ -10602,7 +10929,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0202-0208-ui-polish",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 931
     },
     {
       "id": "BUG-0206",
@@ -10613,7 +10941,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0202-0208-ui-polish",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 932
     },
     {
       "id": "BUG-0207",
@@ -10624,7 +10953,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0202-0208-ui-polish",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 933
     },
     {
       "id": "BUG-0208",
@@ -10635,7 +10965,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0202-0208-ui-polish",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 934
     },
     {
       "id": "BUG-0209",
@@ -10646,7 +10977,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0202-0208-ui-polish",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 935
     },
     {
       "id": "BUG-0210",
@@ -10657,7 +10989,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0202-0208-ui-polish",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 936
     },
     {
       "id": "BUG-0211",
@@ -10668,7 +11001,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0211-0226-dashboard-polish",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 937
     },
     {
       "id": "BUG-0212",
@@ -10679,7 +11013,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0211-0226-dashboard-polish",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 938
     },
     {
       "id": "BUG-0213",
@@ -10690,7 +11025,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0211-0226-dashboard-polish",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 939
     },
     {
       "id": "BUG-0214",
@@ -10701,7 +11037,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0211-0226-dashboard-polish",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 940
     },
     {
       "id": "BUG-0215",
@@ -10712,7 +11049,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0215-0222-dashboard-fixes",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 941
     },
     {
       "id": "BUG-0216",
@@ -10723,7 +11061,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0215-0222-dashboard-fixes",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 942
     },
     {
       "id": "BUG-0217",
@@ -10731,10 +11070,11 @@
       "severity": "Medium",
       "relatedStory": "US-0084 (EPIC-0008)",
       "relatedTask": "",
-      "status": "Open",
-      "fixBranch": "",
-      "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "status": "Fixed",
+      "fixBranch": "bugfix/BUG-0217-0221-0224-cost-attribution",
+      "lessonEncoded": "Yes — see L-0049",
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 943
     },
     {
       "id": "BUG-0218",
@@ -10745,7 +11085,8 @@
       "status": "Retired",
       "fixBranch": "",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 944
     },
     {
       "id": "BUG-0219",
@@ -10756,7 +11097,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0211-0226-dashboard-polish",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 945
     },
     {
       "id": "BUG-0220",
@@ -10767,7 +11109,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0215-0222-dashboard-fixes",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 946
     },
     {
       "id": "BUG-0221",
@@ -10775,10 +11118,11 @@
       "severity": "Medium",
       "relatedStory": "US-0055 (EPIC-0008)",
       "relatedTask": "",
-      "status": "Open",
-      "fixBranch": "",
-      "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "status": "Fixed",
+      "fixBranch": "bugfix/BUG-0217-0221-0224-cost-attribution",
+      "lessonEncoded": "Yes — see L-0049",
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 947
     },
     {
       "id": "BUG-0222",
@@ -10789,7 +11133,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0215-0222-dashboard-fixes",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 948
     },
     {
       "id": "BUG-0223",
@@ -10797,10 +11142,11 @@
       "severity": "Low",
       "relatedStory": "US-0064 (EPIC-0007)",
       "relatedTask": "",
-      "status": "Open",
-      "fixBranch": "",
+      "status": "Fixed",
+      "fixBranch": "bugfix/BUG-0183-0184-0223-plan-status-quality",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 949
     },
     {
       "id": "BUG-0224",
@@ -10808,10 +11154,11 @@
       "severity": "Medium",
       "relatedStory": "US-0084 (EPIC-0008)",
       "relatedTask": "",
-      "status": "Open",
-      "fixBranch": "",
-      "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "status": "Fixed",
+      "fixBranch": "bugfix/BUG-0217-0221-0224-cost-attribution",
+      "lessonEncoded": "Yes — see L-0049",
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 950
     },
     {
       "id": "BUG-0225",
@@ -10822,7 +11169,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0211-0226-dashboard-polish",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 951
     },
     {
       "id": "BUG-0226",
@@ -10833,7 +11181,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0211-0226-dashboard-polish",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 952
     },
     {
       "id": "BUG-0227",
@@ -10844,7 +11193,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0227-agent-plan-doc",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 953
     },
     {
       "id": "BUG-0228",
@@ -10855,7 +11205,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0228-0230-remove-cdn-deps",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 954
     },
     {
       "id": "BUG-0229",
@@ -10866,7 +11217,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0229-0231-0232-quick-wins",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 955
     },
     {
       "id": "BUG-0230",
@@ -10877,7 +11229,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0228-0230-remove-cdn-deps",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 956
     },
     {
       "id": "BUG-0231",
@@ -10888,7 +11241,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0229-0231-0232-quick-wins",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 957
     },
     {
       "id": "BUG-0232",
@@ -10899,7 +11253,8 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0229-0231-0232-quick-wins",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 958
     },
     {
       "id": "BUG-0233",
@@ -10910,980 +11265,1269 @@
       "status": "Fixed",
       "fixBranch": "bugfix/BUG-0233-cdn-removal-regressions",
       "lessonEncoded": "No",
-      "estimatedCostUsd": 0
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 959
+    },
+    {
+      "id": "BUG-0234",
+      "title": "view-toggle button contrast — Column/Card buttons unreadable after Tailwind CDN removal",
+      "severity": "Medium",
+      "relatedStory": "US-0160 (EPIC-0022)",
+      "relatedTask": "",
+      "status": "Fixed",
+      "fixBranch": "bugfix/BUG-0234-toggle-btn-contrast",
+      "lessonEncoded": "No",
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 960
+    },
+    {
+      "id": "BUG-0235",
+      "title": "comprehensive Tailwind utility regression — all tabs broken after CDN removal",
+      "severity": "Critical",
+      "relatedStory": "US-0160 (EPIC-0022)",
+      "relatedTask": "",
+      "status": "Fixed",
+      "fixBranch": "bugfix/BUG-0235-tailwind-utility-shim",
+      "lessonEncoded": "No",
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 961
+    },
+    {
+      "id": "BUG-0236",
+      "title": "Lessons card view grid class missed in BUG-0235 sweep",
+      "severity": "Low",
+      "relatedStory": "US-0160 (EPIC-0022)",
+      "relatedTask": "",
+      "status": "Fixed",
+      "fixBranch": "bugfix/BUG-0236-remaining-tailwind-stragglers",
+      "lessonEncoded": "No",
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 962
+    },
+    {
+      "id": "BUG-0237",
+      "title": "Chart.defaults.color set to CSS custom property string — Chart.js ignores it",
+      "severity": "High",
+      "relatedStory": "US-0093 (EPIC-0013)",
+      "relatedTask": "",
+      "status": "Fixed",
+      "fixBranch": "feature/US-0164-BUG-0242-0244-chart-fixes",
+      "lessonEncoded": "No",
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 963
+    },
+    {
+      "id": "BUG-0238",
+      "title": "Canvas gradient uses space-separated rgb() syntax — fails in some browsers",
+      "severity": "High",
+      "relatedStory": "US-0058 (EPIC-0008)",
+      "relatedTask": "",
+      "status": "Fixed",
+      "fixBranch": "feature/US-0164-BUG-0242-0244-chart-fixes",
+      "lessonEncoded": "No",
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 964
+    },
+    {
+      "id": "BUG-0239",
+      "title": "shEpicCompositeStatus checks b.epicId — field does not exist on bug objects",
+      "severity": "High",
+      "relatedStory": "US-0094 (EPIC-0013)",
+      "relatedTask": "",
+      "status": "Fixed",
+      "fixBranch": "bugfix/BUG-0239-0241-0248-stakeholder-fixes",
+      "lessonEncoded": "No",
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 965
+    },
+    {
+      "id": "BUG-0240",
+      "title": "Trends tab \"Burn Up\" chart is not a burn-up — renders cumulative totals as bars",
+      "severity": "Medium",
+      "relatedStory": "US-0058 (EPIC-0008)",
+      "relatedTask": "",
+      "status": "Fixed",
+      "fixBranch": "bugfix/BUG-0240-burnup-epic022-closure",
+      "lessonEncoded": "No",
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 966
+    },
+    {
+      "id": "BUG-0241",
+      "title": "Open bug count inconsistent between \\_renderStatusHero and renderStatusTab",
+      "severity": "Medium",
+      "relatedStory": "US-0093 (EPIC-0013)",
+      "relatedTask": "",
+      "status": "Fixed",
+      "fixBranch": "bugfix/BUG-0239-0241-0248-stakeholder-fixes",
+      "lessonEncoded": "No",
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 967
+    },
+    {
+      "id": "BUG-0242",
+      "title": "Week label truncates month name at month boundaries in \"This Week\" widget",
+      "severity": "Low",
+      "relatedStory": "US-0093 (EPIC-0013)",
+      "relatedTask": "",
+      "status": "Fixed",
+      "fixBranch": "feature/US-0164-BUG-0242-0244-chart-fixes",
+      "lessonEncoded": "No",
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 968
+    },
+    {
+      "id": "BUG-0243",
+      "title": "pvChartColors defined twice — second definition silently overwrites first",
+      "severity": "Low",
+      "relatedStory": "US-0058 (EPIC-0008)",
+      "relatedTask": "",
+      "status": "Fixed",
+      "fixBranch": "feature/US-0164-BUG-0242-0244-chart-fixes",
+      "lessonEncoded": "No",
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 969
+    },
+    {
+      "id": "BUG-0244",
+      "title": "Trends openBugs uses allowlist — undercounts vs all other open-bug counts",
+      "severity": "Low",
+      "relatedStory": "US-0058 (EPIC-0008)",
+      "relatedTask": "",
+      "status": "Fixed",
+      "fixBranch": "feature/US-0164-BUG-0242-0244-chart-fixes",
+      "lessonEncoded": "No",
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 970
+    },
+    {
+      "id": "BUG-0245",
+      "title": "patchDOM textContent destroys branch link anchor in agent task cell (agentic dashboard)",
+      "severity": "High",
+      "relatedStory": "US-0143 (EPIC-0016)",
+      "relatedTask": "",
+      "status": "Fixed",
+      "fixBranch": "bugfix/BUG-0245-0246-0247-dashboard-fixes",
+      "lessonEncoded": "No",
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 971
+    },
+    {
+      "id": "BUG-0246",
+      "title": "dispatch tag not in appendEventLog tone map — styled as story-start event (agentic dashboard)",
+      "severity": "Low",
+      "relatedStory": "US-0143 (EPIC-0016)",
+      "relatedTask": "",
+      "status": "Fixed",
+      "fixBranch": "bugfix/BUG-0245-0246-0247-dashboard-fixes",
+      "lessonEncoded": "No",
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 972
+    },
+    {
+      "id": "BUG-0247",
+      "title": "InProgress vs \"In Progress\" mismatch — story status badge wrong color (agentic dashboard)",
+      "severity": "Medium",
+      "relatedStory": "US-0119 (EPIC-0016)",
+      "relatedTask": "",
+      "status": "Fixed",
+      "fixBranch": "bugfix/BUG-0245-0246-0247-dashboard-fixes",
+      "lessonEncoded": "No",
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 973
+    },
+    {
+      "id": "BUG-0248",
+      "title": "Stakeholder tab hero section shows simplified chip variant, not the full Status tab hero",
+      "severity": "High",
+      "relatedStory": "US-0163 (EPIC-0022)",
+      "relatedTask": "",
+      "status": "Fixed",
+      "fixBranch": "bugfix/BUG-0239-0241-0248-stakeholder-fixes",
+      "lessonEncoded": "No",
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 974
+    },
+    {
+      "id": "BUG-0249",
+      "title": "Chart-init fallback string `oklch(65% 0.014 95)` matches dark theme, not light (default)",
+      "severity": "Low",
+      "relatedStory": "US-0164 (EPIC-0023)",
+      "relatedTask": "",
+      "status": "Fixed",
+      "fixBranch": "bugfix/BUG-0249-0250-chart-fallback-and-theme-sync",
+      "lessonEncoded": "No",
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 975
+    },
+    {
+      "id": "BUG-0250",
+      "title": "Theme preference does not persist across the two dashboards — different localStorage keys",
+      "severity": "Medium",
+      "relatedStory": "US-0157 (EPIC-0020 Cross-Dashboard Redesign)",
+      "relatedTask": "",
+      "status": "Fixed",
+      "fixBranch": "bugfix/BUG-0249-0250-chart-fallback-and-theme-sync",
+      "lessonEncoded": "No",
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 976
+    },
+    {
+      "id": "BUG-0251",
+      "title": "docs/AI_COST_LOG.md drifts between local working copy and committed develop tree",
+      "severity": "Low",
+      "relatedStory": "US-0004 (EPIC-0001)",
+      "relatedTask": "",
+      "status": "Fixed",
+      "fixBranch": "bugfix/BUG-0251-cost-log-commit-drift",
+      "lessonEncoded": "Yes (L-0050)",
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 977
+    },
+    {
+      "id": "BUG-0252",
+      "title": "~33 git stash entries hold trapped AI_COST_LOG.md rows from 2026-04-20→04-28 that were never popped",
+      "severity": "Medium",
+      "relatedStory": "US-0012 / EPIC-0009 (Cost Tracking)",
+      "relatedTask": "",
+      "status": "Fixed",
+      "fixBranch": "bugfix/BUG-0252-stash-recovery",
+      "lessonEncoded": "No",
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 978
+    },
+    {
+      "id": "BUG-0253",
+      "title": "Agentic Dashboard About modal auto-closes every 5 seconds",
+      "severity": "Medium",
+      "relatedStory": "",
+      "relatedTask": "",
+      "status": "Fixed",
+      "fixBranch": "develop",
+      "lessonEncoded": "No",
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 918
     }
   ],
   "costs": {
     "US-0001": {
       "projectedUsd": 1600,
-      "costUsd": 0.6135,
+      "costUsd": 3.81636,
       "inputTokens": 90000,
       "outputTokens": 22000
     },
     "US-0002": {
       "projectedUsd": 800,
-      "costUsd": 0.4455,
+      "costUsd": 3.64836,
       "inputTokens": 65000,
       "outputTokens": 16000
     },
     "US-0003": {
       "projectedUsd": 400,
-      "costUsd": 0.369,
+      "costUsd": 3.57186,
       "inputTokens": 55000,
       "outputTokens": 13000
     },
     "US-0004": {
       "projectedUsd": 800,
-      "costUsd": 0.4005,
+      "costUsd": 3.60336,
       "inputTokens": 60000,
       "outputTokens": 14000
     },
     "US-0005": {
       "projectedUsd": 400,
-      "costUsd": 0.2925,
+      "costUsd": 3.49536,
       "inputTokens": 45000,
       "outputTokens": 10000
     },
     "US-0006": {
       "projectedUsd": 400,
-      "costUsd": 0.369,
+      "costUsd": 3.57186,
       "inputTokens": 55000,
       "outputTokens": 13000
     },
     "US-0007": {
       "projectedUsd": 400,
-      "costUsd": 0.3525,
+      "costUsd": 3.55536,
       "inputTokens": 55000,
       "outputTokens": 12000
     },
     "US-0008": {
       "projectedUsd": 400,
-      "costUsd": 0.3525,
+      "costUsd": 3.55536,
       "inputTokens": 55000,
       "outputTokens": 12000
     },
     "US-0009": {
       "projectedUsd": 3200,
-      "costUsd": 3.099,
-      "inputTokens": 440000,
-      "outputTokens": 111000
+      "costUsd": 4.75236,
+      "inputTokens": 220000,
+      "outputTokens": 55500
     },
     "US-0010": {
       "projectedUsd": 800,
-      "costUsd": 3.099,
-      "inputTokens": 440000,
-      "outputTokens": 111000
+      "costUsd": 4.75236,
+      "inputTokens": 220000,
+      "outputTokens": 55500
     },
     "US-0011": {
       "projectedUsd": 800,
-      "costUsd": 0.447,
+      "costUsd": 3.64986,
       "inputTokens": 65000,
       "outputTokens": 16000
     },
     "US-0012": {
       "projectedUsd": 400,
-      "costUsd": 0.369,
+      "costUsd": 3.57186,
       "inputTokens": 55000,
       "outputTokens": 13000
     },
     "US-0013": {
       "projectedUsd": 400,
-      "costUsd": 0.3375,
+      "costUsd": 3.54036,
       "inputTokens": 50000,
       "outputTokens": 12000
     },
     "US-0029": {
       "projectedUsd": 400,
-      "costUsd": 1.5179999999999998,
+      "costUsd": 4.72086,
       "inputTokens": 220000,
       "outputTokens": 55000
     },
     "US-0030": {
       "projectedUsd": 400,
-      "costUsd": 1.4369999999999998,
+      "costUsd": 4.63986,
       "inputTokens": 210000,
       "outputTokens": 52000
     },
     "US-0082": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0014": {
       "projectedUsd": 400,
-      "costUsd": 207.409,
-      "inputTokens": 15775925,
-      "outputTokens": 1790454
+      "costUsd": 20.884668,
+      "inputTokens": 1298990,
+      "outputTokens": 163277
     },
     "US-0015": {
       "projectedUsd": 400,
-      "costUsd": 207.409,
-      "inputTokens": 15775925,
-      "outputTokens": 1790454
+      "costUsd": 20.884668,
+      "inputTokens": 1298990,
+      "outputTokens": 163277
     },
     "US-0016": {
       "projectedUsd": 400,
-      "costUsd": 207.409,
-      "inputTokens": 15775925,
-      "outputTokens": 1790454
+      "costUsd": 20.884668,
+      "inputTokens": 1298990,
+      "outputTokens": 163277
     },
     "US-0017": {
       "projectedUsd": 800,
-      "costUsd": 207.409,
-      "inputTokens": 15775925,
-      "outputTokens": 1790454
+      "costUsd": 20.884668,
+      "inputTokens": 1298990,
+      "outputTokens": 163277
     },
     "US-0018": {
       "projectedUsd": 400,
-      "costUsd": 207.409,
-      "inputTokens": 15775925,
-      "outputTokens": 1790454
+      "costUsd": 20.884668,
+      "inputTokens": 1298990,
+      "outputTokens": 163277
     },
     "US-0083": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0019": {
       "projectedUsd": 800,
-      "costUsd": 0.537,
+      "costUsd": 3.73986,
       "inputTokens": 75000,
       "outputTokens": 20000
     },
     "US-0020": {
       "projectedUsd": 800,
-      "costUsd": 0.5835,
+      "costUsd": 3.78636,
       "inputTokens": 80000,
       "outputTokens": 22000
     },
     "US-0021": {
       "projectedUsd": 800,
-      "costUsd": 0.597,
+      "costUsd": 3.79986,
       "inputTokens": 70000,
       "outputTokens": 25000
     },
     "US-0022": {
       "projectedUsd": 800,
-      "costUsd": 0.9675,
+      "costUsd": 4.17036,
       "inputTokens": 140000,
       "outputTokens": 35000
     },
     "US-0023": {
       "projectedUsd": 800,
-      "costUsd": 1.977,
-      "inputTokens": 270000,
-      "outputTokens": 75000
+      "costUsd": 4.19136,
+      "inputTokens": 135000,
+      "outputTokens": 37500
     },
     "US-0024": {
       "projectedUsd": 400,
-      "costUsd": 1.977,
-      "inputTokens": 270000,
-      "outputTokens": 75000
+      "costUsd": 4.19136,
+      "inputTokens": 135000,
+      "outputTokens": 37500
     },
     "US-0025": {
       "projectedUsd": 400,
-      "costUsd": 3.396,
-      "inputTokens": 480000,
-      "outputTokens": 125000
+      "costUsd": 4.33486,
+      "inputTokens": 160000,
+      "outputTokens": 41667
     },
     "US-0026": {
       "projectedUsd": 400,
-      "costUsd": 3.396,
-      "inputTokens": 480000,
-      "outputTokens": 125000
+      "costUsd": 4.33486,
+      "inputTokens": 160000,
+      "outputTokens": 41667
     },
     "US-0028": {
       "projectedUsd": 400,
-      "costUsd": 2.2575000000000003,
+      "costUsd": 5.46036,
       "inputTokens": 330000,
       "outputTokens": 82000
     },
     "US-0027": {
       "projectedUsd": 400,
-      "costUsd": 3.396,
-      "inputTokens": 480000,
-      "outputTokens": 125000
+      "costUsd": 4.33486,
+      "inputTokens": 160000,
+      "outputTokens": 41667
     },
     "US-0031": {
       "projectedUsd": 400,
-      "costUsd": 3.9404999999999997,
+      "costUsd": 7.14336,
       "inputTokens": 570000,
       "outputTokens": 143000
     },
     "US-0032": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0033": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0034": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0035": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0036": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0037": {
       "projectedUsd": 200,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0038": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0039": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0040": {
       "projectedUsd": 400,
-      "costUsd": 2.895,
-      "inputTokens": 400000,
-      "outputTokens": 106000
+      "costUsd": 3.564735,
+      "inputTokens": 50000,
+      "outputTokens": 13250
     },
     "US-0041": {
       "projectedUsd": 400,
-      "costUsd": 2.895,
-      "inputTokens": 400000,
-      "outputTokens": 106000
+      "costUsd": 3.564735,
+      "inputTokens": 50000,
+      "outputTokens": 13250
     },
     "US-0042": {
       "projectedUsd": 400,
-      "costUsd": 2.895,
-      "inputTokens": 400000,
-      "outputTokens": 106000
+      "costUsd": 3.564735,
+      "inputTokens": 50000,
+      "outputTokens": 13250
     },
     "US-0043": {
       "projectedUsd": 200,
-      "costUsd": 2.895,
-      "inputTokens": 400000,
-      "outputTokens": 106000
+      "costUsd": 3.564735,
+      "inputTokens": 50000,
+      "outputTokens": 13250
     },
     "US-0044": {
       "projectedUsd": 200,
-      "costUsd": 2.895,
-      "inputTokens": 400000,
-      "outputTokens": 106000
+      "costUsd": 3.564735,
+      "inputTokens": 50000,
+      "outputTokens": 13250
     },
     "US-0045": {
       "projectedUsd": 200,
-      "costUsd": 2.895,
-      "inputTokens": 400000,
-      "outputTokens": 106000
+      "costUsd": 3.564735,
+      "inputTokens": 50000,
+      "outputTokens": 13250
     },
     "US-0046": {
       "projectedUsd": 200,
-      "costUsd": 2.895,
-      "inputTokens": 400000,
-      "outputTokens": 106000
+      "costUsd": 3.564735,
+      "inputTokens": 50000,
+      "outputTokens": 13250
     },
     "US-0047": {
       "projectedUsd": 400,
-      "costUsd": 2.895,
-      "inputTokens": 400000,
-      "outputTokens": 106000
+      "costUsd": 3.564735,
+      "inputTokens": 50000,
+      "outputTokens": 13250
     },
     "US-0048": {
       "projectedUsd": 1600,
-      "costUsd": 58.4156,
-      "inputTokens": 3568348,
-      "outputTokens": 340311
+      "costUsd": 14.88598,
+      "inputTokens": 713670,
+      "outputTokens": 68062
     },
     "US-0049": {
-      "projectedUsd": 25.808184,
-      "costUsd": 58.4156,
-      "inputTokens": 3568348,
-      "outputTokens": 340311
+      "projectedUsd": 2.718162,
+      "costUsd": 14.88598,
+      "inputTokens": 713670,
+      "outputTokens": 68062
     },
     "US-0050": {
       "projectedUsd": 800,
-      "costUsd": 58.4156,
-      "inputTokens": 3568348,
-      "outputTokens": 340311
+      "costUsd": 14.88598,
+      "inputTokens": 713670,
+      "outputTokens": 68062
     },
     "US-0051": {
       "projectedUsd": 400,
-      "costUsd": 58.4156,
-      "inputTokens": 3568348,
-      "outputTokens": 340311
+      "costUsd": 14.88598,
+      "inputTokens": 713670,
+      "outputTokens": 68062
     },
     "US-0052": {
       "projectedUsd": 400,
-      "costUsd": 58.4156,
-      "inputTokens": 3568348,
-      "outputTokens": 340311
+      "costUsd": 14.88598,
+      "inputTokens": 713670,
+      "outputTokens": 68062
     },
     "US-0053": {
       "projectedUsd": 800,
-      "costUsd": 0.3666,
+      "costUsd": 3.56946,
       "inputTokens": 55887,
       "outputTokens": 2644
     },
     "US-0054": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0055": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0056": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0057": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0058": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0079": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0080": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0084": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0059": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0060": {
       "projectedUsd": 800,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0061": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0062": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0063": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0081": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0064": {
       "projectedUsd": 800,
-      "costUsd": 27.4393,
-      "inputTokens": 1405647,
-      "outputTokens": 435797
-    },
-    "US-0065": {
-      "projectedUsd": 400,
-      "costUsd": 27.4393,
-      "inputTokens": 1405647,
-      "outputTokens": 435797
-    },
-    "US-0066": {
-      "projectedUsd": 800,
-      "costUsd": 27.4393,
-      "inputTokens": 1405647,
-      "outputTokens": 435797
-    },
-    "US-0067": {
-      "projectedUsd": 400,
-      "costUsd": 27.4393,
-      "inputTokens": 1405647,
-      "outputTokens": 435797
-    },
-    "US-0068": {
-      "projectedUsd": 35.324244,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
+    "US-0065": {
+      "projectedUsd": 400,
+      "costUsd": 3.20286,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0066": {
+      "projectedUsd": 800,
+      "costUsd": 3.20286,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0067": {
+      "projectedUsd": 400,
+      "costUsd": 3.20286,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0068": {
+      "projectedUsd": 3.533994,
+      "costUsd": 3.20286,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0169": {
+      "projectedUsd": 800,
+      "costUsd": 86.82826,
+      "inputTokens": 7805769,
+      "outputTokens": 445569
+    },
     "US-0069": {
       "projectedUsd": 800,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0070": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0071": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0072": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0073": {
       "projectedUsd": 800,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0074": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0075": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0076": {
       "projectedUsd": 800,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0077": {
-      "projectedUsd": 35.324244,
-      "costUsd": 0,
+      "projectedUsd": 3.533994,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0078": {
-      "projectedUsd": 25.808184,
-      "costUsd": 0,
+      "projectedUsd": 2.718162,
+      "costUsd": 3.20286,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0170": {
+      "projectedUsd": 200,
+      "costUsd": 3.20286,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0171": {
+      "projectedUsd": 1600,
+      "costUsd": 3.20286,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0172": {
+      "projectedUsd": 800,
+      "costUsd": 3.20286,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0173": {
+      "projectedUsd": 400,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0085": {
       "projectedUsd": 200,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0086": {
       "projectedUsd": 400,
-      "costUsd": 207.409,
-      "inputTokens": 15775925,
-      "outputTokens": 1790454
+      "costUsd": 20.884668,
+      "inputTokens": 1298990,
+      "outputTokens": 163277
     },
     "US-0087": {
       "projectedUsd": 200,
-      "costUsd": 207.409,
-      "inputTokens": 15775925,
-      "outputTokens": 1790454
+      "costUsd": 20.884668,
+      "inputTokens": 1298990,
+      "outputTokens": 163277
     },
     "US-0088": {
       "projectedUsd": 800,
-      "costUsd": 207.409,
-      "inputTokens": 15775925,
-      "outputTokens": 1790454
+      "costUsd": 20.884668,
+      "inputTokens": 1298990,
+      "outputTokens": 163277
     },
     "US-0089": {
       "projectedUsd": 800,
-      "costUsd": 207.409,
-      "inputTokens": 15775925,
-      "outputTokens": 1790454
+      "costUsd": 20.884668,
+      "inputTokens": 1298990,
+      "outputTokens": 163277
     },
     "US-0090": {
       "projectedUsd": 800,
-      "costUsd": 207.409,
-      "inputTokens": 15775925,
-      "outputTokens": 1790454
+      "costUsd": 20.884668,
+      "inputTokens": 1298990,
+      "outputTokens": 163277
     },
     "US-0091": {
       "projectedUsd": 1600,
-      "costUsd": 207.409,
-      "inputTokens": 15775925,
-      "outputTokens": 1790454
+      "costUsd": 20.884668,
+      "inputTokens": 1298990,
+      "outputTokens": 163277
     },
     "US-0092": {
       "projectedUsd": 400,
-      "costUsd": 207.409,
-      "inputTokens": 15775925,
-      "outputTokens": 1790454
+      "costUsd": 20.884668,
+      "inputTokens": 1298990,
+      "outputTokens": 163277
     },
     "US-0093": {
       "projectedUsd": 800,
-      "costUsd": 207.409,
-      "inputTokens": 15775925,
-      "outputTokens": 1790454
+      "costUsd": 20.884668,
+      "inputTokens": 1298990,
+      "outputTokens": 163277
     },
     "US-0108": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0109": {
       "projectedUsd": 200,
-      "costUsd": 152.6469,
+      "costUsd": 155.84976,
       "inputTokens": 3937957,
       "outputTokens": 737215
     },
     "US-0094": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0095": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0096": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0097": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0098": {
       "projectedUsd": 200,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0099": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0100": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0101": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0102": {
       "projectedUsd": 800,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0103": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0104": {
       "projectedUsd": 800,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0105": {
       "projectedUsd": 800,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0106": {
       "projectedUsd": 400,
-      "costUsd": 0.8951,
+      "costUsd": 4.09796,
       "inputTokens": 92003,
       "outputTokens": 14272
     },
     "US-0107": {
       "projectedUsd": 200,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0110": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0111": {
       "projectedUsd": 1600,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0112": {
       "projectedUsd": 200,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0113": {
       "projectedUsd": 200,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0114": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0115": {
       "projectedUsd": 1600,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0118": {
       "projectedUsd": 800,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0119": {
       "projectedUsd": 800,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0120": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0121": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0122": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0123": {
       "projectedUsd": 200,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0124": {
       "projectedUsd": 200,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0125": {
       "projectedUsd": 200,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0148": {
       "projectedUsd": 1600,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0126": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0116": {
-      "projectedUsd": 42.620922,
-      "costUsd": 0,
+      "projectedUsd": 800,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0117": {
-      "projectedUsd": 25.808184,
-      "costUsd": 0,
+      "projectedUsd": 400,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0127": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0128": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0129": {
       "projectedUsd": 800,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0130": {
       "projectedUsd": 800,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0131": {
       "projectedUsd": 800,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0132": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0133": {
       "projectedUsd": 1600,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0134": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0135": {
       "projectedUsd": 800,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0136": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0137": {
       "projectedUsd": 800,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0138": {
       "projectedUsd": 200,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0139": {
       "projectedUsd": 800,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0140": {
       "projectedUsd": 800,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0141": {
       "projectedUsd": 800,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0142": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0143": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0144": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0145": {
       "projectedUsd": 800,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0146": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0147": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0149": {
       "projectedUsd": 800,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0150": {
       "projectedUsd": 800,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0151": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0152": {
       "projectedUsd": 1600,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0153": {
       "projectedUsd": 800,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0154": {
       "projectedUsd": 1600,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0155": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0156": {
       "projectedUsd": 800,
-      "costUsd": 0,
-      "inputTokens": 0,
-      "outputTokens": 0
+      "costUsd": 41.65676,
+      "inputTokens": 2876600,
+      "outputTokens": 545597
     },
     "US-0157": {
       "projectedUsd": 1600,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0158": {
       "projectedUsd": 800,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0159": {
       "projectedUsd": 1600,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0160": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0161": {
       "projectedUsd": 400,
-      "costUsd": 0,
+      "costUsd": 3.20286,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0164": {
+      "projectedUsd": 400,
+      "costUsd": 3.20286,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0165": {
+      "projectedUsd": 200,
+      "costUsd": 3.20286,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0166": {
+      "projectedUsd": 400,
+      "costUsd": 3.20286,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "_totals": {
-      "costUsd": 629.2417999999999,
-      "inputTokens": 36904101,
-      "outputTokens": 5989274
+      "costUsd": 1133.1037999999999,
+      "inputTokens": 73384240,
+      "outputTokens": 10692483
     },
     "_bugs": {
       "BUG-0183": {
@@ -11903,49 +12547,49 @@
         "projectedUsd": 400
       },
       "BUG-0185": {
-        "costUsd": 0,
-        "inputTokens": 0,
-        "outputTokens": 0,
-        "sessions": 0,
+        "costUsd": 13.6024,
+        "inputTokens": 936405,
+        "outputTokens": 74598,
+        "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
       "BUG-0186": {
-        "costUsd": 0,
-        "inputTokens": 0,
-        "outputTokens": 0,
-        "sessions": 0,
+        "costUsd": 13.6024,
+        "inputTokens": 936405,
+        "outputTokens": 74598,
+        "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
       "BUG-0187": {
-        "costUsd": 0,
-        "inputTokens": 0,
-        "outputTokens": 0,
-        "sessions": 0,
+        "costUsd": 13.6024,
+        "inputTokens": 936405,
+        "outputTokens": 74598,
+        "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
       "BUG-0188": {
-        "costUsd": 0,
-        "inputTokens": 0,
-        "outputTokens": 0,
-        "sessions": 0,
+        "costUsd": 13.6024,
+        "inputTokens": 936405,
+        "outputTokens": 74598,
+        "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
       "BUG-0189": {
-        "costUsd": 0,
-        "inputTokens": 0,
-        "outputTokens": 0,
-        "sessions": 0,
+        "costUsd": 13.6024,
+        "inputTokens": 936405,
+        "outputTokens": 74598,
+        "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
       "BUG-0100": {
-        "costUsd": 58.4156,
-        "inputTokens": 3568348,
-        "outputTokens": 340311,
+        "costUsd": 7.30195,
+        "inputTokens": 446044,
+        "outputTokens": 42539,
         "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
@@ -11959,17 +12603,17 @@
         "projectedUsd": 400
       },
       "BUG-0001": {
-        "costUsd": 1,
-        "inputTokens": 116667,
-        "outputTokens": 40000,
+        "costUsd": 0.5,
+        "inputTokens": 58334,
+        "outputTokens": 20000,
         "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 800
       },
       "BUG-0002": {
-        "costUsd": 1,
-        "inputTokens": 116667,
-        "outputTokens": 40000,
+        "costUsd": 0.5,
+        "inputTokens": 58334,
+        "outputTokens": 20000,
         "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 800
@@ -11999,97 +12643,97 @@
         "projectedUsd": 1600
       },
       "BUG-0006": {
-        "costUsd": 0.95,
-        "inputTokens": 110833,
-        "outputTokens": 38000,
+        "costUsd": 0.316667,
+        "inputTokens": 36944,
+        "outputTokens": 12667,
         "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 800
       },
       "BUG-0007": {
-        "costUsd": 0.7,
-        "inputTokens": 81667,
-        "outputTokens": 28000,
+        "costUsd": 0.35,
+        "inputTokens": 40834,
+        "outputTokens": 14000,
         "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 800
       },
       "BUG-0008": {
-        "costUsd": 1.05,
-        "inputTokens": 122500,
-        "outputTokens": 42000,
+        "costUsd": 0.2625,
+        "inputTokens": 30625,
+        "outputTokens": 10500,
         "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 800
       },
       "BUG-0009": {
-        "costUsd": 0.95,
-        "inputTokens": 110833,
-        "outputTokens": 38000,
+        "costUsd": 0.316667,
+        "inputTokens": 36944,
+        "outputTokens": 12667,
         "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
       "BUG-0010": {
-        "costUsd": 0.95,
-        "inputTokens": 110833,
-        "outputTokens": 38000,
+        "costUsd": 0.316667,
+        "inputTokens": 36944,
+        "outputTokens": 12667,
         "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
       "BUG-0011": {
-        "costUsd": 0.7,
-        "inputTokens": 81667,
-        "outputTokens": 28000,
+        "costUsd": 0.35,
+        "inputTokens": 40834,
+        "outputTokens": 14000,
         "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
       "BUG-0012": {
-        "costUsd": 0.9,
-        "inputTokens": 105000,
-        "outputTokens": 36000,
+        "costUsd": 0.3,
+        "inputTokens": 35000,
+        "outputTokens": 12000,
         "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 800
       },
       "BUG-0013": {
-        "costUsd": 0.9,
-        "inputTokens": 105000,
-        "outputTokens": 36000,
+        "costUsd": 0.3,
+        "inputTokens": 35000,
+        "outputTokens": 12000,
         "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
       "BUG-0014": {
-        "costUsd": 1.05,
-        "inputTokens": 122500,
-        "outputTokens": 42000,
+        "costUsd": 0.2625,
+        "inputTokens": 30625,
+        "outputTokens": 10500,
         "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
       "BUG-0015": {
-        "costUsd": 1.05,
-        "inputTokens": 122500,
-        "outputTokens": 42000,
+        "costUsd": 0.2625,
+        "inputTokens": 30625,
+        "outputTokens": 10500,
         "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
       "BUG-0016": {
-        "costUsd": 1.05,
-        "inputTokens": 122500,
-        "outputTokens": 42000,
+        "costUsd": 0.2625,
+        "inputTokens": 30625,
+        "outputTokens": 10500,
         "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
       "BUG-0017": {
-        "costUsd": 0.9,
-        "inputTokens": 105000,
-        "outputTokens": 36000,
+        "costUsd": 0.3,
+        "inputTokens": 35000,
+        "outputTokens": 12000,
         "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
@@ -12111,106 +12755,106 @@
         "projectedUsd": 400
       },
       "BUG-0020": {
-        "costUsd": 1.977,
-        "inputTokens": 270000,
-        "outputTokens": 75000,
-        "sessions": 2,
+        "costUsd": 0.3295,
+        "inputTokens": 45000,
+        "outputTokens": 12500,
+        "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
       "BUG-0021": {
-        "costUsd": 1.977,
-        "inputTokens": 270000,
-        "outputTokens": 75000,
-        "sessions": 2,
+        "costUsd": 0.3295,
+        "inputTokens": 45000,
+        "outputTokens": 12500,
+        "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
       "BUG-0022": {
-        "costUsd": 1.977,
-        "inputTokens": 270000,
-        "outputTokens": 75000,
-        "sessions": 2,
+        "costUsd": 0.3295,
+        "inputTokens": 45000,
+        "outputTokens": 12500,
+        "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
       "BUG-0023": {
-        "costUsd": 1.977,
-        "inputTokens": 270000,
-        "outputTokens": 75000,
-        "sessions": 2,
+        "costUsd": 0.3295,
+        "inputTokens": 45000,
+        "outputTokens": 12500,
+        "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 800
       },
       "BUG-0024": {
-        "costUsd": 1.977,
-        "inputTokens": 270000,
-        "outputTokens": 75000,
-        "sessions": 2,
+        "costUsd": 0.3295,
+        "inputTokens": 45000,
+        "outputTokens": 12500,
+        "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
       "BUG-0025": {
-        "costUsd": 1.977,
-        "inputTokens": 270000,
-        "outputTokens": 75000,
-        "sessions": 2,
+        "costUsd": 0.3295,
+        "inputTokens": 45000,
+        "outputTokens": 12500,
+        "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
       "BUG-0026": {
-        "costUsd": 1.5179999999999998,
-        "inputTokens": 220000,
-        "outputTokens": 55000,
-        "sessions": 2,
+        "costUsd": 0.3036,
+        "inputTokens": 44000,
+        "outputTokens": 11000,
+        "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 800
       },
       "BUG-0027": {
-        "costUsd": 1.5179999999999998,
-        "inputTokens": 220000,
-        "outputTokens": 55000,
-        "sessions": 2,
+        "costUsd": 0.3036,
+        "inputTokens": 44000,
+        "outputTokens": 11000,
+        "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
       "BUG-0028": {
-        "costUsd": 1.5179999999999998,
-        "inputTokens": 220000,
-        "outputTokens": 55000,
-        "sessions": 2,
+        "costUsd": 0.3036,
+        "inputTokens": 44000,
+        "outputTokens": 11000,
+        "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
       "BUG-0029": {
-        "costUsd": 1.5179999999999998,
-        "inputTokens": 220000,
-        "outputTokens": 55000,
-        "sessions": 2,
+        "costUsd": 0.3036,
+        "inputTokens": 44000,
+        "outputTokens": 11000,
+        "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
       "BUG-0030": {
-        "costUsd": 1.5179999999999998,
-        "inputTokens": 220000,
-        "outputTokens": 55000,
-        "sessions": 2,
+        "costUsd": 0.3036,
+        "inputTokens": 44000,
+        "outputTokens": 11000,
+        "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
       "BUG-0031": {
-        "costUsd": 1.4369999999999998,
-        "inputTokens": 210000,
-        "outputTokens": 52000,
-        "sessions": 2,
+        "costUsd": 0.7185,
+        "inputTokens": 105000,
+        "outputTokens": 26000,
+        "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
       "BUG-0032": {
-        "costUsd": 1.4369999999999998,
-        "inputTokens": 210000,
-        "outputTokens": 52000,
-        "sessions": 2,
+        "costUsd": 0.7185,
+        "inputTokens": 105000,
+        "outputTokens": 26000,
+        "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
@@ -12223,82 +12867,82 @@
         "projectedUsd": 400
       },
       "BUG-0034": {
-        "costUsd": 3.9404999999999997,
-        "inputTokens": 570000,
-        "outputTokens": 143000,
-        "sessions": 4,
+        "costUsd": 0.39405,
+        "inputTokens": 57000,
+        "outputTokens": 14300,
+        "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
       "BUG-0035": {
-        "costUsd": 3.9404999999999997,
-        "inputTokens": 570000,
-        "outputTokens": 143000,
-        "sessions": 4,
+        "costUsd": 0.39405,
+        "inputTokens": 57000,
+        "outputTokens": 14300,
+        "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
       "BUG-0036": {
-        "costUsd": 3.9404999999999997,
-        "inputTokens": 570000,
-        "outputTokens": 143000,
-        "sessions": 4,
+        "costUsd": 0.39405,
+        "inputTokens": 57000,
+        "outputTokens": 14300,
+        "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
       "BUG-0037": {
-        "costUsd": 3.9404999999999997,
-        "inputTokens": 570000,
-        "outputTokens": 143000,
-        "sessions": 4,
+        "costUsd": 0.39405,
+        "inputTokens": 57000,
+        "outputTokens": 14300,
+        "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
       "BUG-0038": {
-        "costUsd": 3.9404999999999997,
-        "inputTokens": 570000,
-        "outputTokens": 143000,
-        "sessions": 4,
+        "costUsd": 0.39405,
+        "inputTokens": 57000,
+        "outputTokens": 14300,
+        "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
       "BUG-0039": {
-        "costUsd": 3.9404999999999997,
-        "inputTokens": 570000,
-        "outputTokens": 143000,
-        "sessions": 4,
+        "costUsd": 0.39405,
+        "inputTokens": 57000,
+        "outputTokens": 14300,
+        "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
       "BUG-0040": {
-        "costUsd": 3.9404999999999997,
-        "inputTokens": 570000,
-        "outputTokens": 143000,
-        "sessions": 4,
+        "costUsd": 0.39405,
+        "inputTokens": 57000,
+        "outputTokens": 14300,
+        "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 800
       },
       "BUG-0041": {
-        "costUsd": 3.9404999999999997,
-        "inputTokens": 570000,
-        "outputTokens": 143000,
-        "sessions": 4,
+        "costUsd": 0.39405,
+        "inputTokens": 57000,
+        "outputTokens": 14300,
+        "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
       "BUG-0042": {
-        "costUsd": 3.9404999999999997,
-        "inputTokens": 570000,
-        "outputTokens": 143000,
-        "sessions": 4,
+        "costUsd": 0.39405,
+        "inputTokens": 57000,
+        "outputTokens": 14300,
+        "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 800
       },
       "BUG-0043": {
-        "costUsd": 3.9404999999999997,
-        "inputTokens": 570000,
-        "outputTokens": 143000,
-        "sessions": 4,
+        "costUsd": 0.39405,
+        "inputTokens": 57000,
+        "outputTokens": 14300,
+        "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
@@ -12407,33 +13051,33 @@
         "projectedUsd": 800
       },
       "BUG-0076": {
-        "costUsd": 58.4156,
-        "inputTokens": 3568348,
-        "outputTokens": 340311,
+        "costUsd": 7.30195,
+        "inputTokens": 446044,
+        "outputTokens": 42539,
         "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 800
       },
       "BUG-0094": {
-        "costUsd": 58.4156,
-        "inputTokens": 3568348,
-        "outputTokens": 340311,
+        "costUsd": 7.30195,
+        "inputTokens": 446044,
+        "outputTokens": 42539,
         "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 800
       },
       "BUG-0095": {
-        "costUsd": 58.4156,
-        "inputTokens": 3568348,
-        "outputTokens": 340311,
+        "costUsd": 7.30195,
+        "inputTokens": 446044,
+        "outputTokens": 42539,
         "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
       "BUG-0096": {
-        "costUsd": 58.4156,
-        "inputTokens": 3568348,
-        "outputTokens": 340311,
+        "costUsd": 7.30195,
+        "inputTokens": 446044,
+        "outputTokens": 42539,
         "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
@@ -12463,66 +13107,66 @@
         "projectedUsd": 400
       },
       "BUG-0091": {
-        "costUsd": 58.4156,
-        "inputTokens": 3568348,
-        "outputTokens": 340311,
+        "costUsd": 7.30195,
+        "inputTokens": 446044,
+        "outputTokens": 42539,
         "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
       "BUG-0101": {
-        "costUsd": 207.409,
-        "inputTokens": 15775925,
-        "outputTokens": 1790454,
-        "sessions": 7,
+        "costUsd": 22.98635,
+        "inputTokens": 1688687,
+        "outputTokens": 212260,
+        "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
       "BUG-0102": {
-        "costUsd": 207.409,
-        "inputTokens": 15775925,
-        "outputTokens": 1790454,
-        "sessions": 7,
+        "costUsd": 22.98635,
+        "inputTokens": 1688687,
+        "outputTokens": 212260,
+        "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
       "BUG-0103": {
-        "costUsd": 207.409,
-        "inputTokens": 15775925,
-        "outputTokens": 1790454,
-        "sessions": 7,
+        "costUsd": 22.98635,
+        "inputTokens": 1688687,
+        "outputTokens": 212260,
+        "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
       "BUG-0104": {
-        "costUsd": 207.409,
-        "inputTokens": 15775925,
-        "outputTokens": 1790454,
-        "sessions": 7,
+        "costUsd": 22.98635,
+        "inputTokens": 1688687,
+        "outputTokens": 212260,
+        "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
       "BUG-0105": {
-        "costUsd": 207.409,
-        "inputTokens": 15775925,
-        "outputTokens": 1790454,
-        "sessions": 7,
+        "costUsd": 22.98635,
+        "inputTokens": 1688687,
+        "outputTokens": 212260,
+        "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
       "BUG-0106": {
-        "costUsd": 207.409,
-        "inputTokens": 15775925,
-        "outputTokens": 1790454,
-        "sessions": 7,
+        "costUsd": 22.98635,
+        "inputTokens": 1688687,
+        "outputTokens": 212260,
+        "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
       "BUG-0107": {
-        "costUsd": 207.409,
-        "inputTokens": 15775925,
-        "outputTokens": 1790454,
-        "sessions": 7,
+        "costUsd": 22.98635,
+        "inputTokens": 1688687,
+        "outputTokens": 212260,
+        "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
@@ -12887,18 +13531,18 @@
         "projectedUsd": 400
       },
       "BUG-0155": {
-        "costUsd": 207.409,
-        "inputTokens": 15775925,
-        "outputTokens": 1790454,
-        "sessions": 7,
+        "costUsd": 22.98635,
+        "inputTokens": 1688687,
+        "outputTokens": 212260,
+        "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
       "BUG-0156": {
-        "costUsd": 207.409,
-        "inputTokens": 15775925,
-        "outputTokens": 1790454,
-        "sessions": 7,
+        "costUsd": 22.98635,
+        "inputTokens": 1688687,
+        "outputTokens": 212260,
+        "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
@@ -13095,17 +13739,17 @@
         "projectedUsd": 400
       },
       "BUG-0181": {
-        "costUsd": 15.3088,
-        "inputTokens": 750885,
-        "outputTokens": 294895,
+        "costUsd": 7.6544,
+        "inputTokens": 375443,
+        "outputTokens": 147448,
         "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
       },
       "BUG-0182": {
-        "costUsd": 15.3088,
-        "inputTokens": 750885,
-        "outputTokens": 294895,
+        "costUsd": 7.6544,
+        "inputTokens": 375443,
+        "outputTokens": 147448,
         "sessions": 1,
         "isEstimated": false,
         "projectedUsd": 400
@@ -13462,10 +14106,170 @@
         "isEstimated": false,
         "projectedUsd": 1600
       },
+      "BUG-0234": {
+        "costUsd": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "sessions": 0,
+        "isEstimated": false,
+        "projectedUsd": 400
+      },
+      "BUG-0235": {
+        "costUsd": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "sessions": 0,
+        "isEstimated": false,
+        "projectedUsd": 1600
+      },
+      "BUG-0236": {
+        "costUsd": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "sessions": 0,
+        "isEstimated": false,
+        "projectedUsd": 400
+      },
+      "BUG-0237": {
+        "costUsd": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "sessions": 0,
+        "isEstimated": false,
+        "projectedUsd": 800
+      },
+      "BUG-0238": {
+        "costUsd": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "sessions": 0,
+        "isEstimated": false,
+        "projectedUsd": 800
+      },
+      "BUG-0239": {
+        "costUsd": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "sessions": 0,
+        "isEstimated": false,
+        "projectedUsd": 800
+      },
+      "BUG-0240": {
+        "costUsd": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "sessions": 0,
+        "isEstimated": false,
+        "projectedUsd": 400
+      },
+      "BUG-0241": {
+        "costUsd": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "sessions": 0,
+        "isEstimated": false,
+        "projectedUsd": 400
+      },
+      "BUG-0242": {
+        "costUsd": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "sessions": 0,
+        "isEstimated": false,
+        "projectedUsd": 400
+      },
+      "BUG-0243": {
+        "costUsd": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "sessions": 0,
+        "isEstimated": false,
+        "projectedUsd": 400
+      },
+      "BUG-0244": {
+        "costUsd": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "sessions": 0,
+        "isEstimated": false,
+        "projectedUsd": 400
+      },
+      "BUG-0245": {
+        "costUsd": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "sessions": 0,
+        "isEstimated": false,
+        "projectedUsd": 800
+      },
+      "BUG-0246": {
+        "costUsd": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "sessions": 0,
+        "isEstimated": false,
+        "projectedUsd": 400
+      },
+      "BUG-0247": {
+        "costUsd": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "sessions": 0,
+        "isEstimated": false,
+        "projectedUsd": 400
+      },
+      "BUG-0248": {
+        "costUsd": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "sessions": 0,
+        "isEstimated": false,
+        "projectedUsd": 800
+      },
+      "BUG-0249": {
+        "costUsd": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "sessions": 0,
+        "isEstimated": false,
+        "projectedUsd": 400
+      },
+      "BUG-0250": {
+        "costUsd": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "sessions": 0,
+        "isEstimated": false,
+        "projectedUsd": 400
+      },
+      "BUG-0251": {
+        "costUsd": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "sessions": 0,
+        "isEstimated": false,
+        "projectedUsd": 400
+      },
+      "BUG-0252": {
+        "costUsd": 13.6024,
+        "inputTokens": 936405,
+        "outputTokens": 74598,
+        "sessions": 1,
+        "isEstimated": false,
+        "projectedUsd": 400
+      },
+      "BUG-0253": {
+        "costUsd": 22.98635,
+        "inputTokens": 1688687,
+        "outputTokens": 212260,
+        "sessions": 1,
+        "isEstimated": false,
+        "projectedUsd": 400
+      },
       "_totals": {
-        "costUsd": 2443.9069,
-        "inputTokens": 182841880,
-        "outputTokens": 22334364
+        "costUsd": 403.077301,
+        "inputTokens": 29067040,
+        "outputTokens": 3837397
       }
     }
   },
@@ -13988,6 +14792,13 @@
       "openCriticalBug": false,
       "isAtRisk": true
     },
+    "US-0169": {
+      "missingTCs": true,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
     "US-0069": {
       "missingTCs": true,
       "noBranch": false,
@@ -14057,6 +14868,34 @@
       "failedTCNoBug": false,
       "openCriticalBug": false,
       "isAtRisk": true
+    },
+    "US-0170": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0171": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0172": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0173": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
     },
     "US-0085": {
       "missingTCs": false,
@@ -14350,14 +15189,14 @@
       "noBranch": false,
       "failedTCNoBug": false,
       "openCriticalBug": false,
-      "isAtRisk": true
+      "isAtRisk": false
     },
     "US-0117": {
       "missingTCs": true,
       "noBranch": false,
       "failedTCNoBug": false,
       "openCriticalBug": false,
-      "isAtRisk": true
+      "isAtRisk": false
     },
     "US-0127": {
       "missingTCs": true,
@@ -14596,6 +15435,27 @@
       "failedTCNoBug": false,
       "openCriticalBug": false,
       "isAtRisk": false
+    },
+    "US-0164": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0165": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0166": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
     }
   },
   "risk": {
@@ -14603,42 +15463,82 @@
     "byEpic": {}
   },
   "coverage": {
-    "lines": 95.81,
-    "statements": 93.67,
-    "functions": 94.53,
-    "branches": 80.49,
-    "overall": 95.81,
+    "lines": 92.6,
+    "statements": 90.35,
+    "functions": 91.12,
+    "branches": 79.45,
+    "overall": 92.6,
     "meetsTarget": true,
     "available": true
   },
   "recentActivity": [
     {
-      "sessionNum": 31,
-      "date": "2026-04-28",
-      "summary": "**Branch cleanup** — Removed 25 stale merged branches and 4 stale locked worktrees from local repo before starting work.; ; **BUG-0229 Fixed (PR #468):** Added `plan:generate` and `plan:watch` npm aliases to `package.json` (AC-0304)."
+      "sessionNum": 40,
+      "date": "2026-05-05",
+      "summary": "**BUG-0253** — investigated About modal auto-close every 5 seconds; confirmed duplicate of already-fixed BUG-0104 (meta-refresh removed in prior session). Marked Fixed. PR #986 merged.; **Branch cleanup** — deleted all merged local and remote feature/bugfix branches from Session 39.; **v2.2.0 release** — cut `release/2.2.0` branch from develop, bumped to 2.2.0, PR #988 merged into main, GitHub release tagged and published."
     },
     {
-      "sessionNum": 30,
-      "date": "2026-04-27",
-      "summary": "**Wave 2 merged** (PRs #447, #446, #449, #448):; ; US-0150 EPIC-0009 Budget: TC-0244–TC-0265, TC-0345, TC-0346 (24 TCs)"
+      "sessionNum": 39,
+      "date": "2026-05-04",
+      "summary": "**PR #532** (Dependabot ESLint 10.3.0) — merged to main; **US-0170** (4-digit ID regex cap removed) — PR #535 merged to develop; 6 parser files + render-tabs + generate-dashboard updated to `\\d+`; **US-0171** (GitHub sync engine) — PR #537 merged; `github-client.js`, `sync-bugs.js`, `sync-github.js` created; `parseBugs` now reads `GH Issue:` field; block-scoped `writeBugIssueNumber`; state-map fallback in `classifyBugChanges`. Follow-up PR #979 (sync-bugs fixes) also merged."
     },
     {
-      "sessionNum": 29,
-      "date": "2026-04-25",
-      "summary": "1. **CI build crash fixed** (`render-tabs.js:2291`) — The guard `v.toFixed ? v.toFixed(1) : v` in the Status tab coverage bar tooltip was itself throwing `TypeError: Cannot read properties of null (reading 'toFixed')` because accessing any property on `null` throws before the ternary can protect. Fixed to `v !== null && v !== undefined ? v.toFixed(1) : '?'`. Stack trace was obtained by adding `e.stack` logging to the `generate-plan.js` catch block in the previous push.; ; 2. **CodeQL TOCTOU fixes** (`migrate-config.js`) — Two CWE-367 \"Potential file system race condition\" findings at lines 82 and 125: `fs.existsSync(filePath)` check followed by `fs.writeFileSync(filePath)` write (with an intermediate `readFileSync`), creating a race window where a symlink swap could redirect the write. Removed the `existsSync` guard in both `migratePlanVisualizerConfig()` and `migrateAgentsConfig()`, replaced with `try { raw = fs.readFileSync(...) } catch (err) { if (err.code === 'ENOENT') ... }` — atomically handles the missing-file case. Both PRs merged into develop."
+      "sessionNum": 38,
+      "date": "2026-05-04",
+      "summary": "**Resumed from Session 37 — housekeeping:**; ; Synced develop ↔ main (merged main into develop to pick up v2.1.0 version bump)"
     },
     {
-      "sessionNum": 28,
-      "date": "2026-04-24",
-      "summary": "1. **Epic header formatting unified across all tabs** — Hierarchy (column + card), Kanban, Costs (Stories + Bugs sections), Bugs tab (column + card), Lessons tab (column + card) all now use `EPIC-0001` full monospace format matching Traceability. Costs Stories/Bugs headers have `border-left:4px solid` accent. Bugs/Lessons card views use flush `border-t-2` format matching their column views. Kanban fixed `EPIC_ACCENT_COLORS` modulo guard (`% length`) to prevent `undefined` crash on >8 epics.; ; 2. **Hierarchy card view collapsed by default** — Added `hidden` class and `▶` arrow to card view epic wrappers so all epics start collapsed."
+      "sessionNum": 37,
+      "date": "2026-05-03",
+      "summary": "**Branch/worktree cleanup:**; ; Deleted stale local branches: `bugfix/BUG-0252-stash-recovery`, `claude/awesome-moore-6815ed`"
     },
     {
-      "sessionNum": 27,
-      "date": "2026-04-24",
-      "summary": "1. **Font consistency (all tabs)** — Replaced all hardcoded font stacks (`'Inter Tight', sans-serif`, `'JetBrains Mono', monospace`, etc.) with CSS custom properties (`var(--font-sans)`, `var(--font-mono)`, `var(--font-display)`) across `render-tabs.js`, `render-scripts.js`, and `generate-dashboard.js`. Chart.js resolves vars at init time via `getComputedStyle`.; ; 2. **Epic header card/column alignment (Bugs + Lessons)** — Column and card view epic headers now use the same \"EPIC / 0001\" two-part coloured format as Hierarchy. `epic-id-label` + `epic-id-num` with `accent.text` colour, guarded for `_ungrouped` section."
+      "sessionNum": 36,
+      "date": "2026-05-01",
+      "summary": "**BUG-0183/0184/0223 — Plan-Status quality sweep (PR #523):**; ; BUG-0223: Confirmed Bugs tab card-view groups already collapsed; added regression test"
     }
   ],
   "lessons": [
+    {
+      "id": "L-0050",
+      "title": "Files written by a Stop hook (or any per-turn local-only writer) drift from the committed tree",
+      "rule": "A Claude Code Stop hook that appends to a tracked file every turn (e.g. `tools/capture-cost.js` writing to `docs/AI_COST_LOG.md`) creates a \"live working copy\" that no commit step ever touches. Without an explicit sync, the committed file lags the local one by weeks — silently breaking any downstream tool that reads the committed version (parsers, dashboards, GitHub Pages). The Stop hook itself shouldn't auto-commit (commit-per-turn is spammy and conflicts with normal feature-branch workflow), but the **session close protocol must explicitly include the locally-written file in its commit list**. Document this in `CLAUDE.md` so future sessions don't re-discover the drift. If a \"git add -A caution\" rule was added to keep the file out of normal commits, balance it with a \"commit-at-session-close\" rule for the same file.\n_Learned during Session 33 follow-up while diagnosing why the Trends tab \"AI Costs\" chart showed a flat line for ten days. PR #507 fixed the cost attribution math; this lesson addresses the freshness gap. Bug: BUG-0251._",
+      "context": "",
+      "date": "2026-04-30",
+      "bugIds": []
+    },
+    {
+      "id": "L-0049",
+      "title": "Cost attribution by branch must split, not duplicate, when multiple artefacts share the branch",
+      "rule": "Any function that maps an aggregate (a branch's session cost in `AI_COST_LOG.md`) to N artefacts (stories with the same `Branch:` field, or bugs with the same `Fix Branch:`) MUST divide the aggregate by N — never credit the full aggregate to each artefact. Naive `result[id] = match.costUsd` produces double-counting that compounds with branch popularity: 36 stories on `Branch: develop` × $26.77 = $964 of phantom inflation; 12 bugs sharing one bugfix branch all read identical $X with bug-cost grand total = 12·$X. The cost log is a single source of truth — every dollar should appear exactly once across the rolled-up totals. Apply the same rule to tokens and session counts. When summing per-snapshot aggregates in trend extractors, prefer a published `_totals.costUsd` field over `Object.values(costs).reduce(...)` — the latter sums the aggregate again on top of the per-row entries.\n_Learned during Session 34: BUG-0217 (epic costs wildly inflated for older epics, $0 for recent ones), BUG-0224 (12 bugs showing identical AI cost), BUG-0221 (chart double-counting `_totals` on top of per-story rows). All three traced to the same \"credit the aggregate to every claimant\" pattern._",
+      "context": "",
+      "date": "2026-04-29",
+      "bugIds": []
+    },
+    {
+      "id": "L-0048",
+      "title": "Chart.js ignores CSS custom properties in Chart.defaults.color; use getComputedStyle",
+      "rule": "Assigning `Chart.defaults.color = 'var(--text-mute)'` looks valid but is silently ignored. Chart.js passes the string directly to `canvas.fillStyle` at draw time, and the browser's canvas API cannot resolve CSS custom property references — it treats the value as an unknown color and falls back to black. Always resolve the computed value at init time: `Chart.defaults.color = getComputedStyle(document.documentElement).getPropertyValue('--text-mute').trim()`. The same applies to any canvas-drawn color (gradients, grid lines, tick labels). For theme switching, re-read via `getComputedStyle` and call `chart.update('none')`.\n_Learned during Session 33: AC-0591 fix — the `'var(--text-muted)'` string had been in place since the chart was first introduced but the bug was only caught by Lens review because Chart.js silently uses an invisible fallback rather than throwing._",
+      "context": "",
+      "date": "2026-04-29",
+      "bugIds": []
+    },
+    {
+      "id": "L-0047",
+      "title": "Scope parallel agents to files, not just bugs; enforce with explicit file lists",
+      "rule": "When dispatching parallel worktree agents, the prompt must explicitly list which files the agent may commit and instruct the agent to `git add` only those paths. Saying \"your scope is BUG-X\" is insufficient — agents will fix related bugs they encounter and commit the changes, causing rebase conflicts in sibling agents. Use: \"Only commit changes to: `tools/lib/render-tabs.js`, `tests/unit/render-tabs.test.js`, `docs/BUGS.md`. Run `git add` with explicit file paths, never `git add -A`.\"\n_Learned during Session 32: Group A agent fixed BUG-0245/0246/0240 (Group B/C scope) while modifying render-tabs.js, requiring manual rebase conflict resolution on two sibling PRs._",
+      "context": "",
+      "date": "2026-04-29",
+      "bugIds": []
+    },
+    {
+      "id": "L-0046",
+      "title": "When removing a CSS framework, audit every utility class it silently provided",
+      "rule": "Removing a CSS CDN (Tailwind, Bootstrap, etc.) eliminates not just the classes you knowingly used but also invisible primitives like `.hidden { display: none }`, `.flex { display: flex }`, `.w-full { width: 100% }` that are used pervasively without any visible import. Before removing any CSS framework: (1) grep the entire codebase for class names, (2) map each class to a named replacement or CSS rule, (3) verify the map is complete by loading the page with CDN blocked before merging.\n_Learned during Session 31: Tailwind CDN removal broke tab switching, epic collapse, filter toggles, and all layout across every tab because `.hidden { display: none !important }` and ~55 layout utilities were never replaced._",
+      "context": "",
+      "date": "2026-04-28",
+      "bugIds": []
+    },
     {
       "id": "L-0045",
       "title": "`v.toFixed ? …` does NOT protect against null — use `v !== null && v !== undefined`",
@@ -15020,12 +15920,47 @@
       "context": "",
       "date": "2026-04-24",
       "bugIds": []
+    },
+    {
+      "id": "L-0051",
+      "title": "Always commit docs/AI_COST_LOG.md before git stash or branch-switch",
+      "rule": "",
+      "context": "",
+      "date": "2026-04-30",
+      "bugIds": [
+        "BUG-0252"
+      ]
+    },
+    {
+      "id": "L-0052",
+      "title": "Separate visual hierarchy by information priority, not by component type",
+      "rule": "",
+      "context": "",
+      "date": "2026-04-30",
+      "bugIds": [
+        "BUG-0185",
+        "BUG-0186",
+        "BUG-0187",
+        "BUG-0188",
+        "BUG-0189"
+      ]
+    },
+    {
+      "id": "L-0053",
+      "title": "Shared helper functions benefit from visual consistency audits at call sites",
+      "rule": "",
+      "context": "",
+      "date": "2026-05-01",
+      "bugIds": [
+        "BUG-0183",
+        "BUG-0184"
+      ]
     }
   ],
-  "generatedAt": "2026-04-29T02:58:24.256Z",
-  "commitSha": "d7676af",
-  "buildNumber": "615",
-  "branch": "feature/US-0162-stakeholder-hero-epic-dates",
+  "generatedAt": "2026-05-07T17:34:42.019Z",
+  "commitSha": "46288cf",
+  "buildNumber": "705",
+  "branch": "develop",
   "sessionTimeline": [
     {
       "date": "2026-03-09",
@@ -15288,12 +16223,56 @@
       "cumCost": 552.5914
     },
     {
-      "date": "2026-04-19",
-      "cumCost": 580.0307
+      "date": "2026-04-20",
+      "cumCost": 586.1221
+    },
+    {
+      "date": "2026-04-20",
+      "cumCost": 586.6397
+    },
+    {
+      "date": "2026-04-22",
+      "cumCost": 602.5852
+    },
+    {
+      "date": "2026-04-22",
+      "cumCost": 625.0397
+    },
+    {
+      "date": "2026-04-22",
+      "cumCost": 625.4126
+    },
+    {
+      "date": "2026-04-27",
+      "cumCost": 783.3335
     },
     {
       "date": "2026-04-28",
-      "cumCost": 629.2418
+      "cumCost": 821.7874
+    },
+    {
+      "date": "2026-04-29",
+      "cumCost": 830.0037
+    },
+    {
+      "date": "2026-04-29",
+      "cumCost": 836.2505
+    },
+    {
+      "date": "2026-04-29",
+      "cumCost": 918.3265
+    },
+    {
+      "date": "2026-04-30",
+      "cumCost": 967.864
+    },
+    {
+      "date": "2026-05-02",
+      "cumCost": 1049.4784
+    },
+    {
+      "date": "2026-05-04",
+      "cumCost": 1133.1038
     }
   ],
   "costHistory": {
@@ -15419,6 +16398,10 @@
       {
         "date": "2026-04-19",
         "costUsd": 26.7712
+      },
+      {
+        "date": "2026-04-22",
+        "costUsd": 22.4545
       }
     ],
     "feature/US-0019-design-docs": [
@@ -15641,25 +16624,83 @@
         "costUsd": 15.3088
       }
     ],
-    "bugfix/BUG-0098-stale-open-status": [
+    "docs/session-23-close": [
       {
-        "date": "2026-04-19",
-        "costUsd": 27.4393
+        "date": "2026-04-20",
+        "costUsd": 33.5307
+      },
+      {
+        "date": "2026-04-20",
+        "costUsd": 0.5176
+      }
+    ],
+    "claude/admiring-ishizaka-29009a": [
+      {
+        "date": "2026-04-22",
+        "costUsd": 15.9455
+      }
+    ],
+    "claude/cranky-pasteur-75a78e": [
+      {
+        "date": "2026-04-22",
+        "costUsd": 0.3729
+      }
+    ],
+    "fix/prettier-test-cases": [
+      {
+        "date": "2026-04-27",
+        "costUsd": 157.9209
+      }
+    ],
+    "feature/US-0156-tc-audit-epic-0019": [
+      {
+        "date": "2026-04-28",
+        "costUsd": 38.4539
+      }
+    ],
+    "claude/modest-cohen-959f76": [
+      {
+        "date": "2026-04-29",
+        "costUsd": 8.2163
+      }
+    ],
+    "docs/session33-epic-closure": [
+      {
+        "date": "2026-04-29",
+        "costUsd": 6.2468
       }
     ],
     "claude/quizzical-cannon-606127": [
       {
-        "date": "2026-04-28",
-        "costUsd": 49.2111
+        "date": "2026-04-29",
+        "costUsd": 82.076
+      }
+    ],
+    "session-34-close": [
+      {
+        "date": "2026-04-30",
+        "costUsd": 49.5375
+      }
+    ],
+    "bugfix/BUG-0252-stash-recovery": [
+      {
+        "date": "2026-05-02",
+        "costUsd": 81.6144
+      }
+    ],
+    "feature/US-0169-hierarchy-risk-ui": [
+      {
+        "date": "2026-05-04",
+        "costUsd": 83.6254
       }
     ]
   },
-  "deltaSpend": 49.21,
+  "deltaSpend": 83.63,
   "projectName": "PlanVisualizer",
   "tagline": "Self-documenting project dashboards for Agentic coding platforms.",
-  "version": "1.5.64",
+  "version": "2.2.0",
   "appName": "plan-visualizer",
-  "appVersion": "1.5.64",
+  "appVersion": "2.2.0",
   "githubUrl": "https://github.com/ksyed0/PlanVisualizer",
   "agents": {
     "Conductor": {
@@ -15727,13 +16768,13 @@
     }
   },
   "budget": {
-    "totalBudget": 794.1275779999999,
-    "totalSpent": 629.2417999999999,
-    "totalProjected": 91390.693962,
-    "percentUsed": 79,
-    "burnRate": 17.635640888888883,
-    "daysRemaining": 9,
-    "projectedExhaustion": 9,
+    "totalBudget": 1142.8899499999998,
+    "totalSpent": 1133.1037999999999,
+    "totalProjected": 97212.504312,
+    "percentUsed": 99,
+    "burnRate": 34.10036666666666,
+    "daysRemaining": 0,
+    "projectedExhaustion": 0,
     "thresholds": [
       50,
       75,
@@ -15742,169 +16783,194 @@
     ],
     "crossedThresholds": [
       50,
-      75
+      75,
+      90
     ],
     "epicBudgets": [
       {
         "id": "EPIC-0001",
         "title": "Core Parsing Engine",
-        "budget": 3.1950000000000003,
-        "spent": 3.1950000000000003,
+        "budget": 28.817880000000002,
+        "spent": 28.817880000000002,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0002",
         "title": "HTML Dashboard Renderer",
-        "budget": 6.198,
-        "spent": 6.198,
+        "budget": 9.50472,
+        "spent": 9.50472,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0003",
         "title": "Installation and Distribution",
-        "budget": 4.108499999999999,
-        "spent": 4.108499999999999,
+        "budget": 23.32566,
+        "spent": 23.32566,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0004",
         "title": "CI/CD Pipeline",
-        "budget": 1037.045,
-        "spent": 1037.045,
+        "budget": 104.42334000000001,
+        "spent": 104.42334000000001,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0005",
         "title": "Project Self-Documentation",
-        "budget": 2.685,
-        "spent": 2.685,
+        "budget": 15.49644,
+        "spent": 15.49644,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0006",
         "title": "Dashboard UX & Quality Improvements",
-        "budget": 20.34,
-        "spent": 20.34,
+        "budget": 59.61390000000001,
+        "spent": 59.61390000000001,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0007",
         "title": "Dashboard Visual Design Overhaul",
-        "budget": 315.23799999999994,
-        "spent": 315.23799999999994,
+        "budget": 102.94778000000001,
+        "spent": 102.94778000000001,
+        "remaining": 0,
+        "percentUsed": 100
+      },
+      {
+        "id": "EPIC-0008",
+        "title": "Trend Analysis & Historical Tracking",
+        "budget": 25.622880000000002,
+        "spent": 25.622880000000002,
+        "remaining": 0,
+        "percentUsed": 100
+      },
+      {
+        "id": "EPIC-0009",
+        "title": "Budget Forecasting",
+        "budget": 19.21716,
+        "spent": 19.21716,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0011",
         "title": "Search",
-        "budget": 207.409,
-        "spent": 207.409,
+        "budget": 33.696108,
+        "spent": 33.696108,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0013",
         "title": "Agentic SDLC Dashboard",
-        "budget": 1244.4540000000002,
-        "spent": 1244.4540000000002,
+        "budget": 128.51086800000002,
+        "spent": 128.51086800000002,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0014",
         "title": "Follow-Up Changes",
-        "budget": 153.0135,
-        "spent": 153.0135,
+        "budget": 165.82494,
+        "spent": 165.82494,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0015",
         "title": "UI Review and Redesign",
-        "budget": 208.3041,
-        "spent": 208.3041,
+        "budget": 66.619808,
+        "spent": 66.619808,
+        "remaining": 0,
+        "percentUsed": 100
+      },
+      {
+        "id": "EPIC-0016",
+        "title": "Agentic Dashboard Mission Control Redesign",
+        "budget": 48.04290000000001,
+        "spent": 48.04290000000001,
+        "remaining": 0,
+        "percentUsed": 100
+      },
+      {
+        "id": "EPIC-0017",
+        "title": "Agentic Dashboard Effectiveness Review",
+        "budget": 3.20286,
+        "spent": 3.20286,
+        "remaining": 0,
+        "percentUsed": 100
+      },
+      {
+        "id": "EPIC-0019",
+        "title": "Dashboard Cycle History",
+        "budget": 32.028600000000004,
+        "spent": 32.028600000000004,
+        "remaining": 0,
+        "percentUsed": 100
+      },
+      {
+        "id": "EPIC-0024",
+        "title": "Backlog Closure",
+        "budget": 3.20286,
+        "spent": 3.20286,
+        "remaining": 0,
+        "percentUsed": 100
+      },
+      {
+        "id": "EPIC-0025",
+        "title": "GitHub Issues Sync",
+        "budget": 9.60858,
+        "spent": 9.60858,
+        "remaining": 0,
+        "percentUsed": 100
+      },
+      {
+        "id": "EPIC-0020",
+        "title": "Cross-Dashboard Redesign",
+        "budget": 41.63718000000001,
+        "spent": 41.63718000000001,
+        "remaining": 0,
+        "percentUsed": 100
+      },
+      {
+        "id": "EPIC-0023",
+        "title": "Dashboard Quality & Reliability",
+        "budget": 9.60858,
+        "spent": 9.60858,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0010",
         "title": "Risk Analytics",
-        "budget": 145.081444,
-        "spent": 109.7572,
-        "remaining": 35.32424400000001,
-        "percentUsed": 76
+        "budget": 106.376554,
+        "spent": 102.84255999999999,
+        "remaining": 3.533994000000007,
+        "percentUsed": 97
       },
       {
         "id": "EPIC-0012",
         "title": "Stakeholder View",
-        "budget": 61.132428000000004,
-        "spent": 0,
-        "remaining": 61.132428000000004,
-        "percentUsed": 0
-      },
-      {
-        "id": "EPIC-0019",
-        "title": "Dashboard Cycle History",
-        "budget": 68.429106,
-        "spent": 0,
-        "remaining": 68.429106,
-        "percentUsed": 0
-      },
-      {
-        "id": "EPIC-0008",
-        "title": "Trend Analysis & Historical Tracking",
-        "budget": 0,
-        "spent": 0,
-        "remaining": 0,
-        "percentUsed": null
-      },
-      {
-        "id": "EPIC-0009",
-        "title": "Budget Forecasting",
-        "budget": 0,
-        "spent": 0,
-        "remaining": 0,
-        "percentUsed": null
-      },
-      {
-        "id": "EPIC-0016",
-        "title": "Agentic Dashboard Mission Control Redesign",
-        "budget": 0,
-        "spent": 0,
-        "remaining": 0,
-        "percentUsed": null
-      },
-      {
-        "id": "EPIC-0017",
-        "title": "Agentic Dashboard Effectiveness Review",
-        "budget": 0,
-        "spent": 0,
-        "remaining": 0,
-        "percentUsed": null
-      },
-      {
-        "id": "EPIC-0020",
-        "title": "Cross-Dashboard Redesign",
-        "budget": 0,
-        "spent": 0,
-        "remaining": 0,
-        "percentUsed": null
+        "budget": 25.469316,
+        "spent": 19.21716,
+        "remaining": 6.252155999999999,
+        "percentUsed": 75
       }
     ],
     "hasBudget": true
   },
   "completion": {
-    "likelyDate": "May 2",
-    "rangeStart": "May 1",
-    "rangeEnd": "May 2",
-    "velocityWeeks": 8
+    "likelyDate": "May 9",
+    "rangeStart": "May 9",
+    "rangeEnd": "May 10",
+    "velocityWeeks": 9
   },
   "trends": {
     "dates": [
@@ -16049,7 +17115,10 @@
       "2026-04-29T02:45:26.158Z",
       "2026-04-29T02:49:45.424Z",
       "2026-04-29T02:57:38.461Z",
-      "2026-04-29T02:58:24.328Z"
+      "2026-04-29T02:58:24.328Z",
+      "2026-04-29T03:09:53.828Z",
+      "2026-04-29T12:41:45.660Z",
+      "2026-05-07T17:34:42.267Z"
     ],
     "doneCounts": [
       2,
@@ -16193,7 +17262,10 @@
       155,
       155,
       155,
-      155
+      155,
+      155,
+      155,
+      165
     ],
     "totalStories": [
       81,
@@ -16337,151 +17409,157 @@
       161,
       161,
       161,
-      161
+      161,
+      161,
+      164,
+      169
     ],
     "aiCosts": [
+      3.4542266666666666,
       6.908453333333333,
-      13.816906666666668,
+      10.362680000000001,
+      13.816906666666666,
+      17.27113333333333,
       20.725360000000002,
-      27.633813333333336,
+      24.17958666666667,
+      27.633813333333332,
+      31.08804,
       34.54226666666666,
+      37.99649333333333,
       41.450720000000004,
+      44.90494666666667,
       48.35917333333334,
-      55.26762666666667,
+      51.8134,
+      55.267626666666665,
+      58.721853333333335,
       62.17608,
+      65.63030666666667,
       69.08453333333333,
+      72.53876,
       75.99298666666667,
+      79.44721333333334,
       82.90144000000001,
-      89.80989333333332,
+      82.90144000000001,
+      86.35566666666668,
+      86.35566666666668,
+      89.80989333333333,
+      89.80989333333333,
+      93.26412,
+      93.26412,
       96.71834666666668,
-      103.62679999999997,
-      110.53525333333334,
-      117.44370666666663,
-      124.35215999999996,
-      131.26061333333334,
-      138.16906666666662,
-      145.07752000000002,
-      151.98597333333328,
-      158.89442666666673,
-      165.80288000000007,
-      165.80288000000007,
-      172.71133333333324,
-      172.71133333333324,
-      179.6197866666667,
-      179.6197866666667,
-      186.5282400000001,
-      186.5282400000001,
-      193.43669333333347,
-      193.43669333333347,
-      200.34514666666655,
-      232.01228000000003,
-      232.01228000000003,
+      96.71834666666668,
+      100.17257333333333,
+      116.00613999999999,
+      116.00613999999999,
+      135.34049666666664,
+      135.34049666666664,
+      154.67485333333332,
+      174.00920999999997,
+      193.34356666666662,
+      212.6779233333333,
+      232.01227999999998,
+      251.34663666666663,
+      251.34663666666663,
+      251.34663666666663,
+      251.34663666666663,
+      251.34663666666663,
+      251.34663666666663,
       270.6809933333333,
-      502.27289999999994,
-      502.27289999999994,
-      502.27289999999994,
-      502.27289999999994,
-      502.27289999999994,
-      502.27289999999994,
-      502.69327333333365,
-      530.8983,
-      560.7105,
-      560.7105,
-      560.7105,
-      560.7105,
-      560.7105,
-      560.7105,
-      581.0904999999999,
-      747.1868999999998,
-      747.1868999999998,
-      747.1868999999998,
-      747.1868999999998,
-      747.1868999999998,
-      747.1868999999998,
-      747.1868999999998,
-      747.1868999999998,
-      747.1868999999998,
-      747.1868999999998,
-      747.1868999999998,
-      747.1868999999998,
-      747.1868999999998,
-      747.1868999999998,
-      747.1868999999998,
-      747.1868999999998,
-      747.1868999999998,
-      747.1868999999998,
-      747.1868999999998,
-      747.1868999999998,
-      747.1868999999998,
-      747.1868999999998,
-      747.1868999999998,
-      747.1868999999998,
-      747.1868999999998,
-      747.1868999999998,
-      747.1868999999998,
-      747.1868999999998,
-      747.1868999999998,
-      747.1868999999998,
-      747.1868999999998,
-      747.1868999999998,
-      758.3197900000006,
-      758.3197900000006,
-      758.3197900000006,
-      758.3197900000006,
-      766.0399900000003,
-      766.0399900000003,
-      766.0399900000003,
-      766.0399900000003,
-      766.0399900000003,
-      766.0399900000003,
-      766.0399900000003,
-      766.0399900000003,
-      766.0399900000003,
-      773.374266666667,
-      803.7015000000001,
-      803.7015000000001,
-      803.7015000000001,
-      871.4042999999999,
-      871.4042999999999,
-      910.3263000000003,
-      910.3263000000003,
-      910.3263000000003,
-      910.3263000000003,
-      1194.8726999999997,
-      1320.3027,
-      1533.3326999999997,
-      1533.3326999999997,
-      1533.3326999999997,
-      1533.3326999999997,
-      1533.3326999999997,
-      1533.3326999999997,
-      1533.3326999999997,
-      1533.3326999999997,
-      1533.3326999999997,
-      1533.3326999999997,
-      1533.3326999999997,
-      4037.4571000000005,
-      4049.494800000001,
-      4049.494800000001,
-      4049.494800000001,
-      4049.494800000001,
-      4049.494800000001,
-      4463.6072,
-      4463.6072,
-      4463.6072,
-      4463.6072,
-      4463.6072,
-      4463.6072,
-      4463.6072,
-      4463.6072,
-      4463.6072,
-      4463.6072,
-      4463.6072,
-      4463.6072,
-      4463.6072,
-      4463.6072,
-      4463.6072,
-      4463.6072
+      270.6809933333333,
+      270.6809933333333,
+      270.6809933333333,
+      270.6809933333333,
+      270.6809933333333,
+      270.6809933333333,
+      290.01534999999996,
+      290.01534999999996,
+      290.01534999999996,
+      290.01534999999996,
+      290.01534999999996,
+      290.01534999999996,
+      290.01534999999996,
+      290.01534999999996,
+      290.01534999999996,
+      290.01534999999996,
+      290.01534999999996,
+      290.01534999999996,
+      290.01534999999996,
+      290.01534999999996,
+      290.01534999999996,
+      290.01534999999996,
+      290.01534999999996,
+      290.01534999999996,
+      290.01534999999996,
+      290.01534999999996,
+      290.01534999999996,
+      290.01534999999996,
+      290.01534999999996,
+      290.01534999999996,
+      290.01534999999996,
+      290.01534999999996,
+      290.01534999999996,
+      309.34970666666663,
+      309.34970666666663,
+      328.68406333333326,
+      348.01841999999994,
+      367.3527766666666,
+      367.3527766666666,
+      367.3527766666666,
+      367.3527766666666,
+      367.3527766666666,
+      367.3527766666666,
+      367.3527766666666,
+      367.3527766666666,
+      367.3527766666666,
+      367.3527766666666,
+      386.68713333333324,
+      386.68713333333324,
+      386.68713333333324,
+      386.68713333333324,
+      386.68713333333324,
+      386.68713333333324,
+      386.68713333333324,
+      386.68713333333324,
+      386.68713333333324,
+      386.68713333333324,
+      386.68713333333324,
+      386.68713333333324,
+      386.68713333333324,
+      406.0214899999999,
+      425.3558466666666,
+      444.6902033333333,
+      464.02455999999995,
+      483.35891666666663,
+      502.69327333333325,
+      522.0276299999999,
+      541.3619866666666,
+      560.6963433333333,
+      580.0306999999999,
+      725.7097999999999,
+      737.7475,
+      737.7475,
+      737.7475,
+      737.7475,
+      737.7475,
+      737.7475,
+      737.7475,
+      737.7475,
+      737.7475,
+      737.7475,
+      737.7475,
+      737.7475,
+      737.7475,
+      737.7475,
+      737.7475,
+      737.7475,
+      737.7475,
+      737.7475,
+      737.7475,
+      737.7475,
+      737.7475,
+      737.7475,
+      737.7475,
+      1133.1037999999999
     ],
     "coverage": [
       19,
@@ -16625,7 +17703,10 @@
       95.6,
       95.62,
       95.81,
-      95.81
+      95.81,
+      95.81,
+      95.81,
+      92.6
     ],
     "velocity": [
       8,
@@ -16769,7 +17850,10 @@
       280,
       280,
       280,
-      280
+      280,
+      280,
+      280,
+      299
     ],
     "openBugs": [
       66,
@@ -16816,24 +17900,24 @@
       185,
       185,
       185,
-      0,
-      0,
-      0,
-      0,
-      0,
+      68,
+      68,
+      68,
+      68,
+      68,
       185,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
+      68,
+      68,
+      69,
+      69,
+      76,
+      76,
       185,
-      0,
-      0,
-      0,
-      0,
-      0,
+      76,
+      76,
+      76,
+      76,
+      76,
       2,
       2,
       2,
@@ -16861,13 +17945,13 @@
       185,
       185,
       0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
+      76,
+      76,
+      76,
+      76,
+      76,
+      76,
+      76,
       2,
       185,
       2,
@@ -16913,9 +17997,15 @@
       11,
       11,
       11,
-      11
+      11,
+      11,
+      22,
+      0
     ],
     "atRisk": [
+      0,
+      0,
+      0,
       0,
       0,
       0,
@@ -17060,292 +18150,298 @@
       0
     ],
     "inputTokens": [
-      396518,
-      901040,
-      1690080,
-      2585724,
-      4093794,
-      4489744,
-      5274998,
-      6174428,
-      6641720,
-      7550344,
-      8334098,
-      8793696,
-      9463152,
-      10129818,
-      10912912,
-      11375960,
-      12283018,
-      13187346,
-      13647520,
-      14556144,
-      15460982,
-      16274368,
-      17182992,
-      18089400,
-      22809020,
-      19346114,
-      33093792,
-      20165128,
-      52902942,
-      21782568,
-      67929680,
-      22349706,
-      90060404,
-      22685368,
-      109322934,
-      23593992,
-      124360224,
-      39811859,
-      139386962,
-      154432564,
-      166567580,
-      187176804,
-      204589472,
-      219614678,
-      41014769,
-      43631855,
-      40063721,
-      40063721,
-      40063721,
-      234053076,
-      41337709,
-      44191981,
-      53230967,
-      53230967,
-      53230967,
-      53230967,
-      253862226,
-      40063721,
-      45064853,
-      48013875,
-      48337339,
-      48438053,
-      48570626,
-      48570626,
-      48718980,
-      48730754,
-      48735944,
-      48741641,
-      48741641,
-      48741641,
-      48741641,
-      48741641,
-      48935540,
-      48981646,
-      48996960,
-      49000831,
-      49412854,
-      49412854,
-      49412854,
-      49412854,
-      49412854,
-      49430175,
-      49432138,
-      271274894,
-      49440548,
-      288087138,
-      307947760,
-      330914950,
-      49779123,
-      43186477,
-      43186477,
-      44291539,
-      48093830,
-      51098029,
-      48117273,
-      48117273,
-      48158234,
-      345969652,
-      52367785,
-      52367785,
-      52367785,
-      60639649,
-      48915389,
-      60949165,
-      49445819,
-      49445819,
-      49445819,
-      68127001,
-      69407173,
-      70863565,
-      358035772,
-      380230852,
-      398501908,
-      421464484,
-      433556340,
-      451779634,
-      477125344,
-      496959226,
-      516157490,
-      533580710,
-      286051148,
-      286503816,
-      286503816,
-      286503816,
-      286503816,
-      286503816,
-      323612023,
-      323612023,
-      323612023,
-      323612023,
-      276680193,
-      276680193,
-      277178904,
-      276680193,
-      276680193,
-      276680193,
-      276680193,
-      276680193,
-      277946301,
-      277946301,
-      277946301,
-      277946301
+      198259,
+      450520,
+      845040,
+      1292862,
+      2046897,
+      2244872,
+      2637499,
+      3087214,
+      3320860,
+      3775172,
+      4167049,
+      4396848,
+      4731576,
+      5064909,
+      5456456,
+      5687980,
+      6141509,
+      6593673,
+      6823760,
+      7278072,
+      7730491,
+      8137184,
+      8591496,
+      9044700,
+      11404510,
+      9673057,
+      16546896,
+      10082564,
+      26451471,
+      10891284,
+      33964840,
+      11174853,
+      45030202,
+      11342684,
+      54661467,
+      11796996,
+      62180112,
+      9607394,
+      69693481,
+      77216282,
+      83283790,
+      93588402,
+      102294736,
+      109807339,
+      9807879,
+      10244060,
+      9649371,
+      9649371,
+      9649371,
+      117026538,
+      11072199,
+      11773037,
+      11843912,
+      11843912,
+      11843912,
+      11843912,
+      126931113,
+      9649371,
+      9649371,
+      12925841,
+      13249305,
+      13350019,
+      13482592,
+      13482592,
+      13630946,
+      13642720,
+      13647910,
+      13653607,
+      13653607,
+      13653607,
+      13653607,
+      13653607,
+      13847506,
+      13893612,
+      13908926,
+      13912797,
+      14324820,
+      14324820,
+      14324820,
+      14324820,
+      14324820,
+      14342141,
+      14344104,
+      135637447,
+      14352514,
+      144043569,
+      153973880,
+      165457475,
+      14691089,
+      12920967,
+      12920967,
+      12958344,
+      13005796,
+      13016906,
+      13029239,
+      13029239,
+      13070200,
+      172984826,
+      13122719,
+      13122719,
+      13122719,
+      13812041,
+      13827355,
+      13837834,
+      14357785,
+      14357785,
+      14357785,
+      14435987,
+      14542668,
+      14664034,
+      179017886,
+      190115426,
+      199250954,
+      210732242,
+      216778170,
+      225889817,
+      238562672,
+      248479613,
+      258078745,
+      266790355,
+      45008948,
+      45461616,
+      45461616,
+      45461616,
+      45461616,
+      45461616,
+      39245282,
+      39245282,
+      39245282,
+      39245282,
+      35637993,
+      35637993,
+      36136704,
+      35637993,
+      35637993,
+      35637993,
+      35637993,
+      35637993,
+      36904101,
+      36904101,
+      36904101,
+      36904101,
+      35637993,
+      38849420,
+      73384240
     ],
     "outputTokens": [
-      396518,
-      901040,
-      1690080,
-      2585724,
-      4093794,
-      4489744,
-      5274998,
-      6174428,
-      6641720,
-      7550344,
-      8334098,
-      8793696,
-      9463152,
-      10129818,
-      10912912,
-      11375960,
-      12283018,
-      13187346,
-      13647520,
-      14556144,
-      15460982,
-      16274368,
-      17182992,
-      18089400,
-      22809020,
-      19346114,
-      33093792,
-      20165128,
-      52902942,
-      21782568,
-      67929680,
-      22349706,
-      90060404,
-      22685368,
-      109322934,
-      23593992,
-      124360224,
-      6084250,
-      139386962,
-      154432564,
-      166567580,
-      187176804,
-      204589472,
-      219614678,
-      6370990,
-      6496372,
-      6106732,
-      6106732,
-      6106732,
-      234053076,
-      6287008,
-      6581706,
-      7655602,
-      7655602,
-      7655602,
-      7655602,
-      253862226,
-      6106732,
-      6585598,
-      6990069,
-      6990429,
-      7002914,
-      7004360,
-      7004360,
-      7036812,
-      7039862,
-      7040841,
-      7043761,
-      7043761,
-      7043761,
-      7043761,
-      7043761,
-      7079785,
-      7091400,
-      7095773,
-      7099141,
-      7159373,
-      7159373,
-      7159373,
-      7159373,
-      7159373,
-      7165824,
-      7167109,
-      271274894,
-      7172109,
-      288087138,
-      307947760,
-      330914950,
-      7212351,
-      6468115,
-      6468115,
-      6637743,
-      6963061,
-      7426257,
-      6972127,
-      6972127,
-      6991459,
-      345969652,
-      7915317,
-      7915317,
-      7915317,
-      8073825,
-      7029665,
-      8272665,
-      7190399,
-      7190399,
-      7190399,
-      10524693,
-      11438973,
-      12446205,
-      358035772,
-      380230852,
-      398501908,
-      421464484,
-      433556340,
-      451779634,
-      477125344,
-      496959226,
-      516157490,
-      533580710,
-      37104047,
-      37166645,
-      37166645,
-      37166645,
-      37166645,
-      37166645,
-      43079024,
-      43079024,
-      43079024,
-      43079024,
-      35316621,
-      35316621,
-      35521373,
-      35316621,
-      35316621,
-      35316621,
-      35316621,
-      35316621,
-      35646050,
-      35646050,
-      35646050,
-      35646050
+      198259,
+      450520,
+      845040,
+      1292862,
+      2046897,
+      2244872,
+      2637499,
+      3087214,
+      3320860,
+      3775172,
+      4167049,
+      4396848,
+      4731576,
+      5064909,
+      5456456,
+      5687980,
+      6141509,
+      6593673,
+      6823760,
+      7278072,
+      7730491,
+      8137184,
+      8591496,
+      9044700,
+      11404510,
+      9673057,
+      16546896,
+      10082564,
+      26451471,
+      10891284,
+      33964840,
+      11174853,
+      45030202,
+      11342684,
+      54661467,
+      11796996,
+      62180112,
+      1820375,
+      69693481,
+      77216282,
+      83283790,
+      93588402,
+      102294736,
+      109807339,
+      1868165,
+      1889062,
+      1824122,
+      1824122,
+      1824122,
+      117026538,
+      2007688,
+      2062925,
+      2082267,
+      2082267,
+      2082267,
+      2082267,
+      126931113,
+      1824122,
+      1824122,
+      2235831,
+      2236191,
+      2248676,
+      2250122,
+      2250122,
+      2282574,
+      2285624,
+      2286603,
+      2289523,
+      2289523,
+      2289523,
+      2289523,
+      2289523,
+      2325547,
+      2337162,
+      2341535,
+      2344903,
+      2405135,
+      2405135,
+      2405135,
+      2405135,
+      2405135,
+      2411586,
+      2412871,
+      135637447,
+      2417871,
+      144043569,
+      153973880,
+      165457475,
+      2458113,
+      2188795,
+      2188795,
+      2202353,
+      2208823,
+      2212879,
+      2217889,
+      2217889,
+      2237221,
+      172984826,
+      2253634,
+      2253634,
+      2253634,
+      2266843,
+      2275427,
+      2283413,
+      2436161,
+      2436161,
+      2436161,
+      2471082,
+      2547272,
+      2631208,
+      179017886,
+      190115426,
+      199250954,
+      210732242,
+      216778170,
+      225889817,
+      238562672,
+      248479613,
+      258078745,
+      266790355,
+      7447271,
+      7509869,
+      7509869,
+      7509869,
+      7509869,
+      7509869,
+      6302122,
+      6302122,
+      6302122,
+      6302122,
+      5659845,
+      5659845,
+      5864597,
+      5659845,
+      5659845,
+      5659845,
+      5659845,
+      5659845,
+      5989274,
+      5989274,
+      5989274,
+      5989274,
+      5659845,
+      6070911,
+      10692483
     ],
     "avgRisk": [
       1.61025641025641,
@@ -17489,7 +18585,10 @@
       1.6600000000000001,
       1.6600000000000001,
       1.6600000000000001,
-      1.6600000000000001
+      1.6600000000000001,
+      1.6600000000000001,
+      1.7500000000000002,
+      1.6333333333333335
     ],
     "velocityByWeek": {
       "labels": [
@@ -17501,7 +18600,8 @@
         "2026-W15",
         "2026-W16",
         "2026-W17",
-        "2026-W18"
+        "2026-W18",
+        "2026-W19"
       ],
       "points": [
         31,
@@ -17512,7 +18612,8 @@
         56,
         51,
         58.5,
-        21
+        21,
+        19
       ],
       "rollingAvg": [
         31,
@@ -17523,7 +18624,8 @@
         24.1,
         33.4,
         44.6,
-        46.6
+        46.6,
+        37.4
       ]
     }
   }
