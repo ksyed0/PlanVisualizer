@@ -85,7 +85,8 @@ function renderHierarchyTab(data) {
           .join('');
         return `
       <div id="story-${esc(story.id)}" class="story-row border-t border-slate-100 dark:border-slate-700 px-3 py-2"
-           data-epic="${esc(story.epicId)}" data-status="${esc(story.status)}" data-priority="${esc(story.priority)}"
+           data-id="${esc(story.id)}" data-epic="${esc(story.epicId)}" data-status="${esc(story.status)}" data-priority="${esc(story.priority)}"
+           data-estimate="${esc(story.estimate || '')}" data-cost="${(data.costs[story.id] && data.costs[story.id].projectedUsd) || 0}"
            data-risk-score="${storyRisk ? String(storyRisk.score) : '0'}" data-risk-level="${storyRisk ? esc(storyRisk.level) : 'Low'}">
         <div class="flex flex-wrap items-center gap-2 cursor-pointer" onclick="toggleACs('${jsEsc(story.id)}')">
           <span class="font-mono text-xs text-slate-500 whitespace-nowrap">${story.id}</span>
@@ -128,7 +129,8 @@ function renderHierarchyTab(data) {
           .join('');
         return `
       <div class="story-row story-card-hover card-elev rounded-lg p-3 flex flex-col gap-1"
-           data-epic="${esc(story.epicId)}" data-status="${esc(story.status)}" data-priority="${esc(story.priority)}"
+           data-id="${esc(story.id)}" data-epic="${esc(story.epicId)}" data-status="${esc(story.status)}" data-priority="${esc(story.priority)}"
+           data-estimate="${esc(story.estimate || '')}" data-cost="${(data.costs[story.id] && data.costs[story.id].projectedUsd) || 0}"
            data-risk-score="${storyRisk ? String(storyRisk.score) : '0'}" data-risk-level="${storyRisk ? esc(storyRisk.level) : 'Low'}">
         <div class="flex flex-wrap items-center gap-1 cursor-pointer" onclick="toggleCardACs('${jsEsc(story.id)}')">
           ${badge(story.status)} ${badge(story.priority)}
@@ -226,19 +228,7 @@ function renderHierarchyTab(data) {
 
   return `
   <div id="tab-hierarchy" class="p-6 hidden" role="tabpanel" aria-labelledby="tab-btn-hierarchy">
-    <div class="flex items-center justify-between mb-4 flex-shrink-0 flex-wrap gap-2">
-      <div class="flex items-center gap-2">
-        <select id="hier-risk-filter" style="font-size:11px;padding:3px 6px;border:1px solid var(--clr-border);border-radius:4px;background:var(--clr-input-bg);color:var(--clr-input-text)"
-          onchange="applyHierRiskFilter(this.value)">
-          <option value="all">All Risk Levels</option>
-          <option value="high">High+</option>
-          <option value="critical">Critical only</option>
-        </select>
-        <button id="hier-risk-sort-btn" onclick="sortHierarchyByRisk(this)"
-          style="font-size:11px;padding:3px 8px;border:1px solid var(--clr-border);border-radius:4px;background:var(--clr-input-bg);color:var(--clr-input-text);cursor:pointer">
-          Sort by Risk ↓
-        </button>
-      </div>
+    <div class="flex items-center justify-end mb-4 flex-shrink-0 flex-wrap gap-2">
       <div class="flex gap-1">
         <button id="hier-col-btn" onclick="setHierarchyView('column')" class="view-toggle-btn">≡ Column</button>
         <button id="hier-card-btn" onclick="setHierarchyView('card')" class="view-toggle-btn">⊞ Card</button>
@@ -248,30 +238,53 @@ function renderHierarchyTab(data) {
     <div id="hier-card-view" class="hidden">${cardView}</div>
     <script>
     (function(){
-      var _hierRiskSorted = false;
       var _storyOriginalOrder = new Map(); // epic-block id → original story row array
 
-      function sortHierarchyByRisk(btn) {
-        _hierRiskSorted = !_hierRiskSorted;
-        btn.textContent = _hierRiskSorted ? 'Restore Order' : 'Sort by Risk ↓';
+      var STATUS_RANK = { 'Done': 0, 'In Progress': 1, 'Planned': 2, 'To Do': 3, 'Blocked': 4 };
+      var PRIO_RANK = { 'P0': 0, 'P1': 1, 'P2': 2, 'P3': 3 };
+      var ESTIMATE_RANK = { 'XS': 0, 'S': 1, 'M': 2, 'L': 3, 'XL': 4 };
+
+      function sortHierarchyBy(key) {
         document.querySelectorAll('#hier-column-view .epic-block').forEach(function(block) {
           var container = block.querySelector('[id^="epic-stories-"]');
           if (!container) return;
           var rows = Array.from(container.querySelectorAll('.story-row'));
           if (rows.length < 2) return;
-          if (_hierRiskSorted) {
-            if (!_storyOriginalOrder.has(container.id)) {
-              _storyOriginalOrder.set(container.id, rows.slice());
-            }
-            rows.sort(function(a, b) {
-              return parseFloat(b.getAttribute('data-risk-score') || '0')
-                   - parseFloat(a.getAttribute('data-risk-score') || '0');
-            });
-            rows.forEach(function(r) { container.appendChild(r); });
-          } else {
+
+          // Cache original order on first sort
+          if (!_storyOriginalOrder.has(container.id)) {
+            _storyOriginalOrder.set(container.id, rows.slice());
+          }
+
+          if (key === 'default') {
             var orig = _storyOriginalOrder.get(container.id);
             if (orig) orig.forEach(function(r) { container.appendChild(r); });
+            return;
           }
+
+          rows.sort(function(a, b) {
+            switch (key) {
+              case 'id':
+                return (a.getAttribute('data-id') || '').localeCompare(b.getAttribute('data-id') || '');
+              case 'status':
+                return (STATUS_RANK[a.getAttribute('data-status')] || 99)
+                     - (STATUS_RANK[b.getAttribute('data-status')] || 99);
+              case 'priority':
+                return (PRIO_RANK[a.getAttribute('data-priority')] || 99)
+                     - (PRIO_RANK[b.getAttribute('data-priority')] || 99);
+              case 'estimate':
+                return (ESTIMATE_RANK[a.getAttribute('data-estimate')] || 99)
+                     - (ESTIMATE_RANK[b.getAttribute('data-estimate')] || 99);
+              case 'risk':
+                return parseFloat(b.getAttribute('data-risk-score') || '0')
+                     - parseFloat(a.getAttribute('data-risk-score') || '0');
+              case 'cost':
+                return parseFloat(b.getAttribute('data-cost') || '0')
+                     - parseFloat(a.getAttribute('data-cost') || '0');
+              default: return 0;
+            }
+          });
+          rows.forEach(function(r) { container.appendChild(r); });
         });
       }
       function applyHierRiskFilter(value) {
@@ -283,7 +296,7 @@ function renderHierarchyTab(data) {
           block.style.display = show ? '' : 'none';
         });
       }
-      window.sortHierarchyByRisk = sortHierarchyByRisk;
+      window.sortHierarchyBy = sortHierarchyBy;
       window.applyHierRiskFilter = applyHierRiskFilter;
     })();
     </script>
@@ -947,7 +960,8 @@ function _renderFullStatusHero(data) {
   const comp = data.completion;
   const forecastLabel = comp ? `${comp.likelyDate}` : '—';
   const rangeLabel = comp ? `${comp.rangeStart} – ${comp.rangeEnd}` : '—';
-  const velocityLabel = comp ? `${comp.velocityWeeks}wk` : '—';
+  const velocityLabel = comp && comp.storiesPerWeek !== undefined ? `${comp.storiesPerWeek.toFixed(1)} st/wk` : '—';
+  const velocitySublabel = comp ? `based on ${comp.velocityWeeks}-week lookback` : 'rolling avg';
 
   const trends = data.trends;
 
@@ -1105,7 +1119,7 @@ function _renderFullStatusHero(data) {
         <div style="flex:1;padding:8px 12px">
           <div style="font-size:8px;color:var(--text-mute);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px">Velocity</div>
           <div style="font-size:14px;font-weight:700">${velocityLabel}</div>
-          <div style="font-size:9px;color:var(--text-mute);margin-top:1px">rolling avg</div>
+          <div style="font-size:9px;color:var(--text-mute);margin-top:1px">${velocitySublabel}</div>
         </div>
       </div>`
     : `<div style="font-size:11px;color:var(--text-mute);font-style:italic;margin-bottom:14px;padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px">Forecast unavailable — insufficient velocity data</div>`;
@@ -2357,18 +2371,25 @@ function renderLessonsTab(data) {
     lessonStoryEpicMap[s.id] = s.epicId;
   });
 
-  const lessonEpicIds = [];
   const lessonsByEpic = {};
   lessons.forEach((l) => {
     const storyId = lessonStoryMap[l.id];
     const epicId = (storyId && lessonStoryEpicMap[storyId]) || '_ungrouped';
-    if (!lessonsByEpic[epicId]) {
-      lessonsByEpic[epicId] = [];
-      lessonEpicIds.push(epicId);
-    }
+    if (!lessonsByEpic[epicId]) lessonsByEpic[epicId] = [];
     lessonsByEpic[epicId].push(l);
   });
-  const lessonEpicOrder = [...new Set(lessonEpicIds)];
+  // BUG-0256: deterministic order so the dashboard isn't a random shuffle.
+  //  - within each epic group, sort lessons by L-ID descending (newest first)
+  //  - across epics, sort by EPIC ID ascending; _ungrouped goes last
+  const lessonIdNum = (id) => parseInt(String(id).replace(/[^0-9]/g, ''), 10) || 0;
+  Object.keys(lessonsByEpic).forEach((eid) => {
+    lessonsByEpic[eid].sort((a, b) => lessonIdNum(b.id) - lessonIdNum(a.id));
+  });
+  const lessonEpicOrder = Object.keys(lessonsByEpic).sort((a, b) => {
+    if (a === '_ungrouped') return 1;
+    if (b === '_ungrouped') return -1;
+    return a.localeCompare(b);
+  });
 
   const renderLessonRow = (l) => `
   <tr id="lesson-col-${l.id}" class="lesson-row border-t border-slate-100 dark:border-slate-700 align-top">

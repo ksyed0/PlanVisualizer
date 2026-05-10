@@ -21,7 +21,7 @@ const { parseLessons } = require('./lib/parse-lessons');
 const { computeProjectedCost, attributeAICosts, attributeBugCosts } = require('./lib/compute-costs');
 const { detectAtRisk } = require('./lib/detect-at-risk');
 const { computeAllRisk } = require('./lib/compute-risk');
-const { saveSnapshot, loadSnapshots, extractTrends, velocityByWeek } = require('./lib/snapshot');
+const { saveSnapshot, loadSnapshots, dedupeSnapshots, extractTrends, velocityByWeek } = require('./lib/snapshot');
 const { computeBudgetMetrics, generateBudgetCSV } = require('./lib/budget');
 const { renderHtml } = require('./lib/render-html');
 const { backfillHistory, calculateAvgTokensPerEstimate, estimateStoryCost } = require('./lib/historical-sim');
@@ -164,11 +164,14 @@ function computeCompletion(stories, trends) {
   const rangeMs = weeksRemaining * 0.2 * 7 * 24 * 60 * 60 * 1000;
   const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const fmt = (d) => `${MONTH_NAMES[d.getMonth()]} ${d.getDate()}`;
+  const storiesPerWeek = done.length / weeksElapsed;
   return {
     likelyDate: fmt(new Date(likelyMs)),
     rangeStart: fmt(new Date(likelyMs - rangeMs)),
     rangeEnd: fmt(new Date(likelyMs + rangeMs)),
     velocityWeeks: Math.round(weeksElapsed),
+    storiesPerWeek: Number(storiesPerWeek.toFixed(1)),
+    pointsPerWeek: Number(ptsPerWeek.toFixed(1)),
   };
 }
 
@@ -354,7 +357,15 @@ async function main() {
     }
   }
 
-  const trends = extractTrends(snapshots);
+  // BUG-0257: collapse near-in-time snapshots (default 30-min window) so trend
+  // charts don't render dense bursts as flat segments + sudden jumps.
+  const dedupedSnapshots = dedupeSnapshots(snapshots);
+  if (dedupedSnapshots.length !== snapshots.length) {
+    console.log(
+      `[generate-plan] Snapshot dedup: ${snapshots.length} → ${dedupedSnapshots.length} (collapsed ${snapshots.length - dedupedSnapshots.length} near-in-time duplicates)`,
+    );
+  }
+  const trends = extractTrends(dedupedSnapshots);
 
   console.log('[generate-plan] Computing budget metrics...');
   const budgetMetrics = computeBudgetMetrics(data, config, snapshots);
