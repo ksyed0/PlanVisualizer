@@ -47,6 +47,16 @@ No runtime dependencies — Node.js and git only.
 - git
 - A project with `package.json` (files can be empty to start — see `plan_visualizer.md` for required formats)
 
+### Optional Plugins
+
+PlanVisualizer's install/update scripts will detect and offer to install two optional Claude Code plugins:
+
+- **[superpowers](https://github.com/obra/superpowers)** — structured skill workflows (brainstorming, plan-writing, subagent-driven development, code review). The script detects the installed version and prompts to upgrade if a newer release is available. Cannot be auto-installed: requires running `/plugin install superpowers@claude-plugins-official` inside a Claude Code session.
+
+- **[claude-mem](https://github.com/thedotmack/claude-mem)** — persistent cross-session memory for Claude Code. Auto-injects relevant context from previous sessions. The script runs `npx claude-mem install` (interactive — choose your LLM provider and model). Updates run via `npx claude-mem update`.
+
+Both are optional — you can answer `n` at the prompt and continue without them. They can be installed later by re-running `scripts/install.sh` or `scripts/update.sh`.
+
 ---
 
 ## Quickstart
@@ -191,6 +201,8 @@ rm -rf /tmp/PlanVisualizer
 ```
 
 The script is idempotent — it is safe to re-run at any time. If you have existing project data, it will prompt: "Would you like to estimate historical data? (y/n)" — answering yes runs a 30-day backfill to populate trend charts immediately.
+
+**Optional plugins are checked on every update:** `update.sh` detects superpowers and claude-mem; if installed, it checks for updates (superpowers → GitHub releases API; claude-mem → `npx claude-mem update`). If not installed, it prompts whether to install them. Network failures (e.g., GitHub API rate-limit) are handled silently — the update never blocks on a plugin check.
 
 **What gets overwritten on update:** `tools/`, `tests/` (including `tests/e2e/`), `scripts/cleanup-branches.sh`, `jest.config.js`, `playwright.config.js`, `plan_visualizer.md`, `.github/workflows/plan-visualizer.yml`, `eslint.config.js` — these are tool files managed by PlanVisualizer.
 
