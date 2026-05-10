@@ -3152,7 +3152,7 @@ function renderStakeholderTab(data) {
   </script>`;
 }
 
-function renderSettingsTab({ githubConfig, githubTokenSet, syncState }) {
+function renderSettingsTab({ githubConfig, githubTokenSet, syncState, memoryConfig } = {}) {
   const cfg = githubConfig || {};
   const enabled = cfg.enabled || false;
   const repo = esc(cfg.repo || '');
@@ -3224,6 +3224,26 @@ function renderSettingsTab({ githubConfig, githubTokenSet, syncState }) {
         <button onclick="resetGithubConfig()" class="chip mute" style="cursor:pointer">Reset to defaults</button>
       </div>
     </div>
+
+        <div class="card mb-4">
+          <h3 style="font-size:14px;margin-bottom:8px">Memory</h3>
+          <p style="font-size:11px;color:var(--text-mute);margin-bottom:10px">
+            Configures how stale memory files are archived. See <code>docs/memory/</code> and <code>tools/memory.js</code>.
+          </p>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <label style="display:flex;align-items:center;gap:10px;font-size:12px">
+              <span style="min-width:160px">Stale threshold (days)</span>
+              <input id="memory-staleDays" type="number" min="1" max="3650" value="${(memoryConfig && memoryConfig.staleDays) || 90}" style="width:80px;padding:4px;background:var(--card);border:1px solid var(--border);border-radius:4px;color:var(--text)">
+            </label>
+            <label style="display:flex;align-items:center;gap:10px;font-size:12px">
+              <span style="min-width:160px">Auto-archive on regenerate</span>
+              <input id="memory-autoArchive" type="checkbox" ${memoryConfig && memoryConfig.autoArchive ? 'checked' : ''}>
+            </label>
+          </div>
+          <div style="margin-top:10px;font-size:10px;color:var(--text-mute)">
+            Default: 90 days; auto-archive off. Edit <code>plan-visualizer.config.json</code> → <code>memory</code> block to persist.
+          </div>
+        </div>
 
     <script>
     var _ghDefaults = ${JSON.stringify(cfg)};
