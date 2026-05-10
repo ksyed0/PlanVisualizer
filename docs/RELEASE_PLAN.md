@@ -1869,6 +1869,25 @@ Acceptance Criteria:
 
 ```
 
+```
+
+US-0178 (EPIC-0026): As a maintainer running the memory layout migration, I want a single `tools/memory.js migrate-commit` command that runs the migration, patches CLAUDE.md, runs tests, commits, and optionally creates a PR — so PR B is reproducible and gated rather than a manual three-step ritual.
+Priority: Low (P3)
+Estimate: M
+Status: Planned
+Branch: feature/US-0178-memory-migrate-commit
+Acceptance Criteria:
+
+- [ ] AC-0645: New `tools/memory.js migrate-commit` subcommand orchestrates pre-flight checks → `migrate` → CLAUDE.md patch → `npx jest` → `validate` → `git add` (only memory paths) → `git commit` with templated message including counts
+- [ ] AC-0646: `--push` flag adds `git push -u origin <branch>` after commit; `--pr` flag adds `gh pr create` with auto-discovered PR-A reference (via `gh pr list --search "feature/US-0175 in:head"`)
+- [ ] AC-0647: `--dry` prints every operation (including unified diff of proposed CLAUDE.md changes and full commit message) without writing
+- [ ] AC-0648: CLAUDE.md patcher is AST-style (find `## Mandatory Session Startup` heading, insert templated bullet at known position; renumber subsequent items; for Session Close Checklist, replace the canonical "MEMORY.md updated with new learnings" checkbox with 4 nested lines)
+- [ ] AC-0649: Idempotency — when CLAUDE.md already contains the spec marker string, patcher is a no-op; when `docs/memory/topics/` exists and is non-empty, command aborts unless `--force`
+- [ ] AC-0650: Abort safely on dirty working tree, on `develop`/`main` branch, on test failures, on validate drift, on patcher detecting an edited Session Close Checklist (not matching canonical text); commit never lands when any abort fires
+      Dependencies: US-0175 (PR A merged)
+
+```
+
 ---
 
 ## Standalone Stories
