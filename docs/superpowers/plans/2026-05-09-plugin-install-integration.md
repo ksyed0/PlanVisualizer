@@ -387,3 +387,55 @@ Expected update output:
 git add scripts/update.sh
 git commit -m "feat: add claude-mem §0.1 to update.sh with update + install prompt"
 ```
+
+---
+
+### Task 5: Update README.md with Optional Plugins section
+
+**Files:**
+
+- Modify: `README.md` (insert "Optional Plugins" subsection after Prerequisites; add note to Updating section)
+
+The README's **Prerequisites** section (line 44) currently lists Node.js, git, and a project with `package.json`. The new optional plugins should be documented here so users know about them before running install.sh.
+
+- [ ] **Step 1: Insert Optional Plugins subsection after Prerequisites**
+
+In `README.md`, after the existing Prerequisites list (line 48: "files can be empty to start — see `plan_visualizer.md`"), add this section before the `---` separator:
+
+```markdown
+### Optional Plugins
+
+PlanVisualizer's install/update scripts will detect and offer to install two optional Claude Code plugins:
+
+- **[superpowers](https://github.com/obra/superpowers)** — structured skill workflows (brainstorming, plan-writing, subagent-driven development, code review). The script detects the installed version and prompts to upgrade if a newer release is available. Cannot be auto-installed: requires running `/plugin install superpowers@claude-plugins-official` inside a Claude Code session.
+
+- **[claude-mem](https://github.com/thedotmack/claude-mem)** — persistent cross-session memory for Claude Code. Auto-injects relevant context from previous sessions. The script runs `npx claude-mem install` (interactive — choose your LLM provider and model). Updates run via `npx claude-mem update`.
+
+Both are optional — you can answer `n` at the prompt and continue without them. They can be installed later by re-running `scripts/install.sh` or `scripts/update.sh`.
+```
+
+- [ ] **Step 2: Add note to the Updating section**
+
+Find the existing Updating section's first paragraph (line 183–193). After the existing "The script is idempotent..." paragraph (line 193), add:
+
+```markdown
+**Optional plugins are checked on every update:** `update.sh` detects superpowers and claude-mem; if installed, it checks for updates (superpowers → GitHub releases API; claude-mem → `npx claude-mem update`). If not installed, it prompts whether to install them. Network failures (e.g., GitHub API rate-limit) are handled silently — the update never blocks on a plugin check.
+```
+
+- [ ] **Step 3: Verify the markdown renders cleanly**
+
+```bash
+# Open the README in a markdown viewer or run a markdown lint check:
+npx markdownlint-cli README.md 2>&1 || true
+# (markdownlint may not be installed; the manual visual check is the real test)
+head -100 README.md
+```
+
+Expected: The new subsection appears with `### Optional Plugins` heading and two bullet points.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add README.md
+git commit -m "docs: add Optional Plugins section + update note about plugin checks"
+```
