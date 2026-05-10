@@ -48,6 +48,9 @@ jobs:
         env:
           CI: true
 
+      - name: Validate memory layout
+        run: node tools/memory.js validate
+
       - name: Generate plan-status.html
         run: node tools/generate-plan.js
 

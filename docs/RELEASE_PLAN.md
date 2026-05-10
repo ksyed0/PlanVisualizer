@@ -1869,6 +1869,77 @@ Acceptance Criteria:
 
 ```
 
+```
+
+US-0178 (EPIC-0026): As a maintainer running the memory layout migration, I want a single `tools/memory.js migrate-commit` command that runs the migration, patches CLAUDE.md, runs tests, commits, and optionally creates a PR — so PR B is reproducible and gated rather than a manual three-step ritual.
+Priority: Low (P3)
+Estimate: M
+Status: Planned
+Branch: feature/US-0178-memory-migrate-commit
+Acceptance Criteria:
+
+- [ ] AC-0645: New `tools/memory.js migrate-commit` subcommand orchestrates pre-flight checks → `migrate` → CLAUDE.md patch → `npx jest` → `validate` → `git add` (only memory paths) → `git commit` with templated message including counts
+- [ ] AC-0646: `--push` flag adds `git push -u origin <branch>` after commit; `--pr` flag adds `gh pr create` with auto-discovered PR-A reference (via `gh pr list --search "feature/US-0175 in:head"`)
+- [ ] AC-0647: `--dry` prints every operation (including unified diff of proposed CLAUDE.md changes and full commit message) without writing
+- [ ] AC-0648: CLAUDE.md patcher is AST-style (find `## Mandatory Session Startup` heading, insert templated bullet at known position; renumber subsequent items; for Session Close Checklist, replace the canonical "MEMORY.md updated with new learnings" checkbox with 4 nested lines)
+- [ ] AC-0649: Idempotency — when CLAUDE.md already contains the spec marker string, patcher is a no-op; when `docs/memory/topics/` exists and is non-empty, command aborts unless `--force`
+- [ ] AC-0650: Abort safely on dirty working tree, on `develop`/`main` branch, on test failures, on validate drift, on patcher detecting an edited Session Close Checklist (not matching canonical text); commit never lands when any abort fires
+      Dependencies: US-0175 (PR A merged)
+
+```
+
+```
+
+US-0179 (EPIC-0026): As a developer using the subagent-driven pipeline, I want the memory system to recommend the appropriate model for each task based on topic complexity signals, so I don't have to manually decide between haiku/sonnet/opus for every dispatch.
+Priority: Low (P3)
+Estimate: M
+Status: Planned
+Branch: feature/US-0179-memory-model-optimisation
+Acceptance Criteria:
+
+- [ ] AC-0651: Each topic file optionally includes a `<!-- complexity: low|medium|high -->` comment on its second line; `readEntries` surfaces this as a `complexity` field on each entry
+- [ ] AC-0652: New `tools/memory.js suggest-model --task "<brief description>"` subcommand reads all topic files, matches task keywords against topic titles and content, returns a recommended model (`haiku|sonnet|opus`) with a brief justification listing which topics were matched and what drove the decision
+- [ ] AC-0653: `renderIndex` includes a `Complexity` column in the compact MEMORY.md listing per topic (e.g. `[Project Identity](path) · 2026-03-09 · low`) so a session can scan complexity at a glance before choosing a model
+- [ ] AC-0654: CLAUDE.md updated to reference `npm run memory:suggest-model -- --task "..."` as a pre-task step for choosing the right model in agent workflows
+      Dependencies: US-0175 (PR A merged)
+
+```
+
+---
+
+## Epic — EPIC-0027: Data Store Architecture Assessment
+
+```
+
+EPIC-0027: Data Store Architecture Assessment
+Description: Structured markdown files (RELEASE_PLAN.md, BUGS.md, TEST_CASES.md, AI_COST_LOG.md, MEMORY.md) are the current data store. Assess whether migrating to a proper data store (SQLite, JSON, or a hybrid) would reduce parse complexity, improve query performance, and unlock richer analytics — and produce a concrete recommendation with a migration plan or a justified decision to stay on markdown.
+Release Target: TBD
+Status: Planned
+StartDate:
+DoneDate:
+Dependencies: None
+
+```
+
+## User Stories — EPIC-0027: Data Store Architecture Assessment
+
+```
+
+US-0181 (EPIC-0027): As a project maintainer, I want a documented assessment of replacing structured markdown files with an alternative data store, so that I can make an informed architectural decision before the project scales further.
+Priority: Low (P3)
+Estimate: L
+Status: Planned
+Branch: feature/US-0181-data-store-assessment
+Acceptance Criteria:
+
+- [ ] AC-0659: Assessment document at `docs/architecture/data-store-assessment.md` covering: (1) current markdown schema surface (tables, parse time, query patterns), (2) candidate alternatives (SQLite via better-sqlite3, JSON sidecar files, DuckDB, PostgreSQL), (3) pros/cons matrix for each candidate against the criteria: parse performance, query flexibility, git-diffability, zero-dependency install, schema evolution, multi-agent concurrency safety
+- [ ] AC-0660: Assessment includes benchmarks — parse time of current RELEASE_PLAN.md (≈3,000 lines) vs equivalent SQLite query; median generate-plan.js wall time with and without proposed store
+- [ ] AC-0661: Assessment concludes with a clear recommendation (migrate or stay) with justification; if "migrate", includes a phased migration plan (which files first, backward-compat strategy, rollback path); if "stay", lists the specific thresholds that would trigger a future reassessment
+- [ ] AC-0662: Assessment reviewed and approved by project owner before any migration work begins
+      Dependencies: None
+
+```
+
 ---
 
 ## Standalone Stories
@@ -2230,6 +2301,22 @@ Acceptance Criteria:
   - [ ] AC-0633: The tab lists all open PRs with title, PR number (linked), CI check status (pass/fail/pending), review count, and age
   - [ ] AC-0634: A deployment history section shows the last 5 deployments with environment, status, sha/tag, and timestamp
 Dependencies: US-0171, US-0172, US-0173
+```
+
+```
+US-0180 (EPIC-0014): As the Conductor and each specialist agent in the agentic SDLC pipeline, I want to select the appropriate LLM model (haiku/sonnet/opus) based on task complexity at dispatch time, so that routine tasks use cheaper/faster models and only high-complexity decisions escalate to more capable models.
+Priority: Medium (P1)
+Estimate: M
+Status: Planned
+Branch: feature/US-0180-agent-model-selection
+Acceptance Criteria:
+
+- [ ] AC-0655: Each agent instruction file in `docs/agents/` gains a `## Model Selection` section that maps task type to recommended model tier (e.g. "code review → sonnet", "simple grep/read → haiku", "architecture decision → opus"); the DM_AGENT reads this section before dispatching
+- [ ] AC-0656: `docs/agents/DM_AGENT.md` updated with a model-selection decision table covering all 9 specialist agents and common dispatch scenarios (story-start, code review, test execution, bug triage, release prep)
+- [ ] AC-0657: `tools/update-sdlc-status.js` gains a `dispatch-model` command that the Conductor calls to log which model was selected for a given dispatch, surfacing model-spend attribution in the agentic dashboard's Agent Workload section
+- [ ] AC-0658: Agentic dashboard Agent Workload widget shows model tier (H/S/O badge) alongside each agent's active/idle status
+      Dependencies: US-0108
+
 ```
 
 ```

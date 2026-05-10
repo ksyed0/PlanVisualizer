@@ -18,7 +18,12 @@
     "cleanup:branches:dry": "bash scripts/cleanup-branches.sh --dry-run",
     "prepare": "husky",
     "migrate-config": "node tools/migrate-config.js",
-    "migrate-config:dry": "node tools/migrate-config.js --dry-run"
+    "migrate-config:dry": "node tools/migrate-config.js --dry-run",
+    "memory:compact": "node tools/memory.js compact",
+    "memory:archive": "node tools/memory.js archive",
+    "memory:archive:dry": "node tools/memory.js archive --dry",
+    "memory:migrate": "node tools/memory.js migrate",
+    "memory:validate": "node tools/memory.js validate"
   },
   "lint-staged": {
     "*.{js,json,md,yml,yaml}": "prettier --write",

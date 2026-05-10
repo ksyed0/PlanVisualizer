@@ -105,6 +105,21 @@ function migratePlanVisualizerConfig(filePath) {
     additions.push('github.defaultLabels');
   }
 
+  // v2.2.0: memory block
+  if (!cfg.memory || typeof cfg.memory !== 'object') {
+    cfg.memory = { staleDays: 90, autoArchive: false };
+    additions.push('added memory block');
+  } else {
+    if (typeof cfg.memory.staleDays !== 'number') {
+      cfg.memory.staleDays = 90;
+      additions.push('added memory.staleDays');
+    }
+    if (typeof cfg.memory.autoArchive !== 'boolean') {
+      cfg.memory.autoArchive = false;
+      additions.push('added memory.autoArchive');
+    }
+  }
+
   const changed = additions.length > 0;
   if (changed && !DRY_RUN) {
     fs.writeFileSync(filePath, JSON.stringify(cfg, null, 2) + '\n', 'utf8');

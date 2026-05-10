@@ -239,6 +239,10 @@ pkg.scripts['plan:cleanup'] = pkg.scripts['plan:cleanup'] || 'bash scripts/clean
 pkg.scripts['plan:cleanup:dry'] = pkg.scripts['plan:cleanup:dry'] || 'bash scripts/cleanup-branches.sh --dry-run';
 pkg.scripts['plan:migrate-config'] = pkg.scripts['plan:migrate-config'] || 'node tools/migrate-config.js';
 pkg.scripts['plan:migrate-config:dry'] = pkg.scripts['plan:migrate-config:dry'] || 'node tools/migrate-config.js --dry-run';
+pkg.scripts['memory:compact'] = pkg.scripts['memory:compact'] || 'node tools/memory.js compact';
+pkg.scripts['memory:archive'] = pkg.scripts['memory:archive'] || 'node tools/memory.js archive';
+pkg.scripts['memory:migrate'] = pkg.scripts['memory:migrate'] || 'node tools/memory.js migrate';
+pkg.scripts['memory:validate'] = pkg.scripts['memory:validate'] || 'node tools/memory.js validate';
 fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n', 'utf8');
 console.log('[install] Scripts added: plan:test, plan:test:coverage, plan:generate, plan:cleanup, plan:cleanup:dry, plan:migrate-config, plan:migrate-config:dry');
 JS
