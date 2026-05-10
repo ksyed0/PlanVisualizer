@@ -4,6 +4,39 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 42 — 2026-05-09/10 (plugin install integration + 4 dashboard bugs + US-0176)
+
+### What Was Done
+
+- **PR #991 merged:** plugin install integration — superpowers version-check + claude-mem install/update prompts in `scripts/install.sh` and `scripts/update.sh`, plus README "Optional Plugins" section. 9 commits, all CI green.
+- **US-0177 retro-logged** under EPIC-0026 documenting the merged plugin install work (`Done`, 5 ACs all checked).
+- **EPIC-0026 broadened** from "Memory Token Optimisation" to cover both token cost reduction AND claude-mem dashboard integration tracks.
+- **4 bugs filed and fixed in one PR:**
+  - **BUG-0254** — Hierarchy filter UX: moved risk filter into the global filter-bar (new `fgrp-hier`), expanded sort dropdown from "risk only" to id/status/priority/estimate/risk/cost. Added `data-id`, `data-estimate`, `data-cost` attrs to story rows.
+  - **BUG-0255** — VELOCITY hero box now shows actual velocity ("16.9 st/wk") instead of just the lookback window ("10wk"). Added `storiesPerWeek` and `pointsPerWeek` to `computeCompletion` output.
+  - **BUG-0256** — Lessons default sort fixed: by L-ID descending within each epic group, epics sorted by ID ascending with `_ungrouped` last.
+  - **BUG-0257** — Trends spikiness fixed: new `dedupeSnapshots()` collapses near-in-time snapshots within a 30-minute window. On this project: 150 snapshots → 93 (57 near-duplicates collapsed).
+- **US-0176 implemented** (EPIC-0026): MEMORY sidebar widget on the agentic dashboard. Detects claude-mem via `~/.claude-mem/settings.json`, reads observation count from `claude-mem.db` via system `sqlite3` (2s timeout, falls back to "live"), shows host:port + view-live link. Hidden entirely when claude-mem not installed.
+
+### Test Results
+
+- **1622 tests, 60 suites — all pass** (including 4 new dedupe tests + 2 new MEMORY widget tests + 3 updated risk-filter tests)
+- Statement coverage: ≥80% (gate passing)
+- Snapshot dedup collapsed 150 → 93 (57 near-duplicates)
+
+### Errors or Blockers
+
+- Network flakiness mid-session — git push failures handled by deferring push to session close
+- 1 transient atomic-write concurrency test failure (known flaky, passed on retry)
+
+### What's Next
+
+- Push + PR `bugfix/BUG-0254-0257-dashboard-ux-and-data-issues` (5 commits: US-0177 docs, 4 bug fixes, US-0176 widget) → develop
+- US-0174 (PR Status tab) still Planned in EPIC-0014 — pickup candidate for next session
+- US-0175 (memory --compact flag + staleness archive) still Planned in EPIC-0026
+
+---
+
 ## Session 41 — 2026-05-08/09 (GitHub Status Monitoring + EPIC-0026 roadmap)
 
 ### What Was Done
