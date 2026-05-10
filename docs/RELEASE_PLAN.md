@@ -1888,6 +1888,23 @@ Acceptance Criteria:
 
 ```
 
+```
+
+US-0179 (EPIC-0026): As a developer using the subagent-driven pipeline, I want the memory system to recommend the appropriate model for each task based on topic complexity signals, so I don't have to manually decide between haiku/sonnet/opus for every dispatch.
+Priority: Low (P3)
+Estimate: M
+Status: Planned
+Branch: feature/US-0179-memory-model-optimisation
+Acceptance Criteria:
+
+- [ ] AC-0651: Each topic file optionally includes a `<!-- complexity: low|medium|high -->` comment on its second line; `readEntries` surfaces this as a `complexity` field on each entry
+- [ ] AC-0652: New `tools/memory.js suggest-model --task "<brief description>"` subcommand reads all topic files, matches task keywords against topic titles and content, returns a recommended model (`haiku|sonnet|opus`) with a brief justification listing which topics were matched and what drove the decision
+- [ ] AC-0653: `renderIndex` includes a `Complexity` column in the compact MEMORY.md listing per topic (e.g. `[Project Identity](path) · 2026-03-09 · low`) so a session can scan complexity at a glance before choosing a model
+- [ ] AC-0654: CLAUDE.md updated to reference `npm run memory:suggest-model -- --task "..."` as a pre-task step for choosing the right model in agent workflows
+      Dependencies: US-0175 (PR A merged)
+
+```
+
 ---
 
 ## Standalone Stories
