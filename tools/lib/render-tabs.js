@@ -1756,6 +1756,7 @@ function renderCostsTab(data, options = {}) {
         <span class="font-mono text-xs font-bold" style="color:${accent.border}">${epic.id}</span>
         <span class="text-sm font-semibold ml-2 text-slate-700 dark:text-slate-200">${esc(epic.title)}</span>
         <span class="ml-2">${badge(epic.status)}</span>
+        <span style="font-size:10px;color:var(--text-mute);margin-left:8px">click to expand stories</span>
       </td>
       <td class="px-3 py-2 text-right text-sm font-medium dark:text-slate-200">${usd(epicProjected)}</td>
       <td class="px-3 py-2 text-right text-sm font-medium text-teal-700 dark:text-teal-400">${usd(epicAI)}</td>
@@ -3127,7 +3128,7 @@ function renderStakeholderTab(data) {
     .join('');
 
   return `
-  <div id="tab-stakeholder" class="p-6 hidden tab-fill" role="tabpanel" aria-labelledby="tab-btn-stakeholder">
+  <div id="tab-stakeholder" class="p-6 hidden" role="tabpanel" aria-labelledby="tab-btn-stakeholder">
     ${_renderStatusHero(data)}
     ${_renderFullStatusHero(data)}
     ${_renderDecisionWidgets(data)}
@@ -3162,8 +3163,8 @@ function renderSettingsTab({ githubConfig, githubTokenSet, syncState, memoryConf
   const defaultLabels = esc((cfg.defaultLabels || ['planvisualizer']).join(', '));
 
   const tokenStatus = githubTokenSet
-    ? `<span style="color:var(--ok)">&#x2713; Set</span>`
-    : `<span style="color:var(--risk)">&#x2717; Not set &mdash; export GITHUB_TOKEN before running generate-plan</span>`;
+    ? `<span style="color:var(--ok)">&#x2713; Set — GitHub sync is authorised</span>`
+    : `<span style="color:var(--text-mute)">&#x2717; Not set &mdash; only needed if you want to sync bugs/stories to GitHub Issues. Set it with: <code style="font-size:11px;background:var(--clr-surface);padding:1px 4px;border-radius:3px">export GITHUB_TOKEN=&lt;your-token&gt;</code> in your shell before running <code style="font-size:11px;background:var(--clr-surface);padding:1px 4px;border-radius:3px">node tools/generate-plan.js</code></span>`;
 
   let syncSummary = '<span style="opacity:.5">&mdash;</span>';
   let errorBanner = '';
@@ -3182,7 +3183,12 @@ function renderSettingsTab({ githubConfig, githubTokenSet, syncState, memoryConf
 
   return `
   <div id="tab-settings" class="p-6 hidden" role="tabpanel" aria-labelledby="tab-btn-settings">
-    <h2 class="display-title mb-6">Settings</h2>
+    <h2 class="display-title mb-2">Settings</h2>
+    <p style="font-size:12px;color:var(--text-mute);margin-bottom:16px">
+      Changes are <strong>auto-saved to browser storage</strong> as you type.
+      To make them permanent, click <strong>Copy config JSON</strong> and paste the result into <code style="font-size:11px;background:var(--clr-surface);padding:1px 4px;border-radius:3px">plan-visualizer.config.json</code> at your project root.
+    </p>
+    <div id="settings-save-indicator" style="display:none;margin-bottom:12px;font-size:11px;color:var(--ok)">&#x2713; Saved to browser storage</div>
     ${errorBanner}
     <div class="card-elev rounded-lg p-6 mb-6" style="max-width:640px">
       <h3 class="font-semibold text-sm uppercase tracking-widest mb-4" style="opacity:.6">GitHub Issues Sync</h3>
@@ -3258,6 +3264,8 @@ function renderSettingsTab({ githubConfig, githubTokenSet, syncState, memoryConf
         labelMap:     _ghDefaults.labelMap || { Critical:'critical', High:'high', Medium:'medium', Low:'low' },
       };
       localStorage.setItem('pv-github-config', JSON.stringify(cfg));
+      var ind = document.getElementById('settings-save-indicator');
+      if (ind) { ind.style.display = 'block'; clearTimeout(ind._t); ind._t = setTimeout(function(){ ind.style.display='none'; }, 2000); }
     }
     function copyGithubConfig() {
       var stored = localStorage.getItem('pv-github-config');
