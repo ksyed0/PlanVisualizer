@@ -110,3 +110,10 @@ Mock the persistence layer (e.g., AsyncStorage, database) for all service tests.
 - Tests must pass before committing — failing tests are build blockers (see AGENTS.md)
 - Coverage report must be generated to the configured path for the dashboard
 - Follow AGENTS.md commit standards for all test commits
+
+## Model Selection
+
+| Task type                                               | Model  | Rationale                                         |
+| ------------------------------------------------------- | ------ | ------------------------------------------------- |
+| Automated test run, flake re-run, simple fixture update | haiku  | Pattern application                               |
+| New test suite, fixture design, framework refactor      | sonnet | Integration judgment across the test architecture |
