@@ -1846,10 +1846,7 @@ function dispatch(opts, ctx = {}) {
 
     switch (cmd) {
       case 'spec-start':
-        newOrch = State.specStart(orch, {
-          specPath: opts.field === 'specPath' ? opts.value : null,
-          uiSurface: opts.uiSurface === 'true',
-        });
+        newOrch = State.specStart(orch, { uiSurface: opts.uiSurface === 'true' });
         applyOrchestration(story, newOrch);
         writeSdlc(sdlcPath, data);
         return 0;
@@ -2779,7 +2776,10 @@ Loop on questions until you understand purpose + constraints + success criteria.
 
 **Step 4: Write spec.** Save to `docs/superpowers/specs/<date>-<story>-design.md` per the schema in §Spec Output Schema.
 
-**Step 5: Set UI flag.** Call `node tools/agent-spec-plan.js spec-update --story <id> --field uiSurface --value true|false`.
+**Step 5: Record spec path and UI flag.** Call:
+
+- `node tools/agent-spec-plan.js spec-update --story <id> --field specPath --value docs/superpowers/specs/<date>-<story>-design.md`
+- `node tools/agent-spec-plan.js spec-update --story <id> --field uiSurface --value true|false`
 
 **Step 6: Signal AC checkpoint.** Call `node tools/agent-spec-plan.js spec-await-ac --story <id>`. This exits 2 — orchestration pauses for user approval.
 
