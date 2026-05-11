@@ -35,16 +35,16 @@ Invoked via: `npm run memory:suggest-model -- --task "fix bug in render-tabs.js"
 
 ### Default output (human-readable)
 
+Task tokens after filtering: `[update, release, plan, run, coverage, checks]`.
+
 ```
-$ npm run memory:suggest-model -- --task "update release plan format rules"
+$ npm run memory:suggest-model -- --task "update the release plan and run coverage checks"
 Recommended: sonnet
 Matched 2 topics (score ≥ 2):
-  - Release Plan Format Rules (high, explicit) — score 6 (title hit ×3)
-  - Project Identity (low, explicit) — score 2 (title hit)
+  - Release Plan Format Rules (high, explicit) — score 4 (title hits: release, plan)
+  - Coverage Thresholds (low, explicit) — score 2 (title hit: coverage)
 Reason: Found high-complexity topic 'Release Plan Format Rules' → sonnet
 ```
-
-(Note: the example is illustrative — exact scores depend on the actual title and headBody content of the matched topics.)
 
 ### JSON output (with `--json`)
 
@@ -57,16 +57,16 @@ Reason: Found high-complexity topic 'Release Plan Format Rules' → sonnet
       "file": "docs/memory/topics/release-plan-format-rules.md",
       "complexity": "high",
       "complexitySource": "explicit",
-      "score": 6,
-      "matchedTokens": ["release", "plan", "format"]
+      "score": 4,
+      "matchedTokens": ["release", "plan"]
     },
     {
-      "title": "Project Identity",
-      "file": "docs/memory/topics/project-identity.md",
+      "title": "Coverage Thresholds",
+      "file": "docs/memory/topics/coverage-thresholds.md",
       "complexity": "low",
       "complexitySource": "explicit",
       "score": 2,
-      "matchedTokens": ["project"]
+      "matchedTokens": ["coverage"]
     }
   ],
   "reason": "Found high-complexity topic 'Release Plan Format Rules' → sonnet"
@@ -301,7 +301,7 @@ tests/unit/memory-model-suggester.test.js   ← NEW, ~15 tests
   - tokenisation (stopwords removed, length-3 filter, punctuation split)
   - tokenisation edge case: --task "" → throws
   - tokenisation edge case: --task "the of and" → throws (all stopwords)
-  - word-boundary matching: "render" matches "render-tabs" but NOT "renderer" in source
+  - word-boundary matching: "render" matches "render-tabs" AND "renderer" (left-boundary prefix-match), but NOT "surrender" (no leading word boundary inside the word)
   - score threshold: single body hit (score=1) → not matched
   - score threshold: title hit (score=2) → matched
   - score threshold: 2 body hits (score=2) → matched
@@ -317,7 +317,7 @@ tests/unit/memory-model-suggester.test.js   ← NEW, ~15 tests
 tests/unit/memory-index.test.js (extend)    ← +5 tests
   - readEntries surfaces complexity from hint comment
   - readEntries returns complexity:null when no hint
-  - readEntries returns headBody (first 5 non-empty lines after H1)
+  - readEntries returns headBody (first 5 content lines after H1, skipping the complexity hint comment line)
   - renderIndex includes legend line
   - renderIndex renders correct badge per category/complexity combination
 
