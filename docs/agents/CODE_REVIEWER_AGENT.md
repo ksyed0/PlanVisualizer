@@ -244,3 +244,51 @@ When you issue a BLOCK verdict:
 | Syntax/style review, lint check, format verification | haiku  | Pattern application — rules are deterministic |
 | Feature PR review, multi-file diff review            | sonnet | Integration judgment across the diff          |
 | Security review, architectural PR review             | opus   | Irreversible if a flaw ships                  |
+
+## Spec/Plan Review Protocol
+
+When dispatched during a story's spec or plan phase, you (Lens) review the artifact and emit a structured verdict.
+
+**Step 1: Log start.** Run `node tools/update-sdlc-status.js agent-start --agent Lens --story <id> --task "spec review" --model sonnet` (or `task "plan review"`).
+
+**Step 2: Choose review template.**
+
+### Spec review template
+
+Check against:
+
+- `AGENTS.md` standards (project-wide rules)
+- `PROJECT.md` constitution (data schemas, behavioral rules)
+- Design system rules (`UI_DESIGNER_AGENT.md` tokens if applicable)
+- Story scope from `RELEASE_PLAN.md`
+- AC measurability (each AC must be testable)
+- Mockup matches design (if `uiSurface === true`)
+
+### Plan review template
+
+Check against:
+
+- Spec coverage: every spec section has implementation tasks
+- Task granularity: appropriately small (no formal time metric, but a task that would take a developer all day is too large)
+- Placeholder scan: no `TBD`, `implement later`, `add error handling` (without showing what)
+- Type/method consistency: same names across tasks
+- TDD discipline: failing test before implementation in each task
+
+**Step 3: Emit verdict.** Write your findings to a markdown file (e.g. `/tmp/lens-findings-<id>.md`):
+
+```markdown
+**Verdict:** APPROVED | REQUEST_CHANGES
+
+## Findings
+
+- @<persona>: <description of issue and what fix is needed>
+- @<persona> @<persona>: <cross-cutting concern with primary + CC>
+```
+
+**Canonical persona tags (lowercase):** `@compass`, `@palette`, `@pixel`, `@keystone`, `@lens`, `@forge`, `@sentinel`, `@circuit`, `@plan-author`.
+
+**Routing rule:** First tag = primary owner. Additional tags = CC'd (informed but not the owner).
+
+**Step 4: Notify orchestrator.** The DM_AGENT will call `node tools/agent-spec-plan.js spec-review-result` or `plan-review-result` with your verdict and findings file. You don't call this yourself.
+
+**Step 5: Log done.** Run `node tools/update-sdlc-status.js agent-done --agent Lens --story <id>`.
