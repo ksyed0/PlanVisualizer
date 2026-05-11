@@ -54,13 +54,21 @@ function runMigrateCommit(opts) {
   // 3. Patch CLAUDE.md
   const claudePath = path.join(root, 'CLAUDE.md');
   let claudeChanged = false;
-  if (!fs.existsSync(claudePath)) {
-    console.warn('[migrate-commit] Warning: CLAUDE.md not found — skipping patch.');
-  } else {
-    const original = fs.readFileSync(claudePath, 'utf8');
+  let claudeOriginal;
+  try {
+    claudeOriginal = fs.readFileSync(claudePath, 'utf8');
+  } catch (e) {
+    if (e.code === 'ENOENT') {
+      console.warn('[migrate-commit] Warning: CLAUDE.md not found — skipping patch.');
+    } else {
+      console.error('[migrate-commit] Abort: could not read CLAUDE.md:', e.message);
+      return 1;
+    }
+  }
+  if (claudeOriginal !== undefined) {
     let patchResult;
     try {
-      patchResult = patchClaudeMd(original);
+      patchResult = patchClaudeMd(claudeOriginal);
     } catch (e) {
       console.error('[migrate-commit] Abort:', e.message);
       return 1;
