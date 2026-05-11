@@ -12,6 +12,8 @@ describe('parseArgs', () => {
       push: false,
       pr: false,
       noTest: false,
+      task: null,
+      json: false,
     });
   });
   test('dry flag', () => {
@@ -36,5 +38,23 @@ describe('parseArgs', () => {
   });
   test('--no-test flag', () => {
     expect(parseArgs(['node', 'memory.js', 'migrate-commit', '--no-test']).noTest).toBe(true);
+  });
+});
+
+describe('parseArgs — suggest-model flags', () => {
+  test('--task captures next argument', () => {
+    const r = parseArgs(['node', 'memory.js', 'suggest-model', '--task', 'fix a bug']);
+    expect(r.cmd).toBe('suggest-model');
+    expect(r.task).toBe('fix a bug');
+  });
+
+  test('--json sets json:true', () => {
+    const r = parseArgs(['node', 'memory.js', 'suggest-model', '--task', 'fix', '--json']);
+    expect(r.json).toBe(true);
+  });
+
+  test('task with quotes works', () => {
+    const r = parseArgs(['node', 'memory.js', 'suggest-model', '--task', 'fix "thing"']);
+    expect(r.task).toBe('fix "thing"');
   });
 });
