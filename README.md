@@ -16,6 +16,24 @@ No runtime dependencies — Node.js and git only.
 
 ---
 
+## What's New in v2.3.0
+
+- **Memory Token Optimisation** — `tools/memory.js` CLI replaces the monolithic `MEMORY.md` with a compact auto-generated index + per-topic files under `docs/memory/{topics,sessions,snapshots}/`. Run `node tools/memory.js migrate` to split, `compact` to regenerate the index, `archive` to retire stale snapshots, `validate` to check drift. Reduces `MEMORY.md` from ~40 KB to ~2 KB (~95% token reduction per session start).
+- **`suggest-model` CLI** — `node tools/memory.js suggest-model --task "<description>"` recommends `haiku` (all matched topics low-complexity) or `sonnet` (any medium/high/unknown) based on `<!-- complexity: low|medium|high -->` hints in topic files. Outputs human-readable or `--json`. Also available as `npm run memory:suggest-model`.
+- **Complexity badges in MEMORY.md** — Topic entries in the compact index now show ○ (low → haiku), ◐ (medium → sonnet), ● (high → sonnet) badge prefixes. `validate` warns on topic files missing hints.
+- **Automated PR B pipeline** — `node tools/memory.js migrate-commit` runs the full migration, patches `CLAUDE.md` with memory layout instructions, runs the test suite, validates, and commits — all in one command. Supports `--push`, `--pr`, `--no-test`, `--dry` flags. Also available as `npm run memory:migrate-commit`.
+- **Agent model selection** — All 8 specialist agent files (`docs/agents/`) now include a `## Model Selection` table (Task type | Model | Rationale) for haiku/sonnet/opus dispatch decisions. `DM_AGENT.md` adds a scenario quick-reference index and Model Selection Ritual. `agent-start` accepts `--model` and `--model-rationale`; the Agentic Dashboard renders an inline model chip (haiku/sonnet/opus) on each active agent card.
+- **MEMORY sidebar widget** — Agentic Dashboard shows a live MEMORY widget (requires [claude-mem](https://github.com/thedotmack/claude-mem)) with observation count and live sync indicator.
+
+---
+
+## What's New in v2.2.0
+
+- **GitHub Status Monitoring** — Live CI/PR/deployment sidebar widget in both dashboards. Polls the GitHub API every 30 s; shows open PRs, last CI run status, deployment environment, and a "Needs Attention" chip for failed checks or unreviewed PRs.
+- **Optional Plugin Integration** — `scripts/install.sh` and `scripts/update.sh` now detect and offer to install [superpowers](https://github.com/obra/superpowers) (structured skill workflows) and [claude-mem](https://github.com/thedotmack/claude-mem) (persistent cross-session memory). The update script checks for newer superpowers versions via the GitHub releases API.
+
+---
+
 ## What's New in v2.1.0
 
 - **Trends Date-Range Picker** — `From` / `To` date inputs sit beside the existing All / 90d / 30d / 7d preset buttons. Selecting a date range filters all trend charts to snapshots within that window. Both modes persist to `localStorage` and restore on page load. The weekly velocity chart is excluded (ISO week axis).
@@ -207,6 +225,17 @@ The script is idempotent — it is safe to re-run at any time. If you have exist
 **What gets overwritten on update:** `tools/`, `tests/` (including `tests/e2e/`), `scripts/cleanup-branches.sh`, `jest.config.js`, `playwright.config.js`, `plan_visualizer.md`, `.github/workflows/plan-visualizer.yml`, `eslint.config.js` — these are tool files managed by PlanVisualizer.
 
 **Config schema migration runs automatically** on every install/upgrade — `tools/migrate-config.js` adds any required fields introduced in newer versions (e.g. `docs.lessons`, `agents.<name>.avatar`) to your existing `plan-visualizer.config.json` and `agents.config.json` without touching values you've already set. Preview what would change with `npm run plan:migrate-config:dry`; apply manually with `npm run plan:migrate-config`. Safe to re-run.
+
+**v2.3.0 migrations (applied automatically):**
+
+- No `plan-visualizer.config.json` or `agents.config.json` schema changes in this release.
+- **Memory layout (manual, one-time):** If you have an existing monolithic `MEMORY.md`, run `node tools/memory.js migrate` on a feature branch to split it into `docs/memory/{topics,sessions,snapshots}/` and rewrite `MEMORY.md` as the compact auto-generated index. Preview first with `--dry`. This is intentionally manual — it's a one-time migration that modifies your project's memory files.
+- **Complexity hints (manual, ongoing):** After migration, add `<!-- complexity: low|medium|high -->` on the line after the H1 title in each topic file under `docs/memory/topics/`. Run `node tools/memory.js validate` to see which files still need hints. Run `node tools/memory.js suggest-model --task "<description>"` to test the CLI.
+- **Agent model selection:** `docs/agents/` files ship with `## Model Selection` tables pre-populated. No action required unless you have custom agent files — in that case, add the table manually following the format in any existing agent file.
+
+**v2.2.0 migrations (applied automatically):**
+
+- `agents.config.json` gains a `github` block with `sync.enabled: false` and `deployment.environment: "github-pages"` defaults.
 
 **v2.1.0 migrations (applied automatically):**
 
