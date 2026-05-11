@@ -95,6 +95,23 @@ Phase 3 example — launch Backend Dev and Frontend Dev simultaneously:
 
 After both complete, merge their returned branches sequentially into the target branch.
 
+### Model Selection Ritual
+
+Before spawning any sub-agent:
+
+1. Read the target agent's `## Model Selection` section in `docs/agents/<Agent>_AGENT.md`.
+2. Match the dispatch task to a row in the table. If no row matches, default to `sonnet`.
+3. Record the dispatch with the chosen model:
+   `node tools/update-sdlc-status.js agent-start --agent <name> --story <id> --task "<desc>" --model <tier>`
+4. Spawn the sub-agent using the platform's model-override mechanism (in Claude Code: pass `model: <tier>` to the Task tool).
+5. If the table's recommendation does not fit the task — i.e., you have a deliberate reason to override — add `--model-rationale "<short justification>"` to step 3.
+
+**Ordering rule:** log after spawn lands. If the spawn fails, do not log; if the log fails after a successful spawn, surface as an event but do not block.
+
+**Opus discipline:** Opus dispatches require `--model-rationale "<reason>"` even when the table recommends opus. The rationale becomes the audit trail for high-cost decisions.
+
+**Fallback rule:** If no row in the target agent's table matches the task, default to `sonnet`. Record `--model-rationale "no table match"` so adherence can be measured over time.
+
 ## Orchestration Playbook
 
 Read the release plan and project-specific timeline from `project.md` references to determine:
@@ -179,6 +196,24 @@ The playbook structure is:
 4. After pushing to remote, verify CI checks pass
 5. Prepare demo
 ```
+
+## Model Selection — Scenario Quick-Reference
+
+Scenario → agent index. Consult the target agent's `## Model Selection` section for the model choice.
+
+| Scenario                                       | Target agent                          | Notes                                             |
+| ---------------------------------------------- | ------------------------------------- | ------------------------------------------------- |
+| story-start (analysis, AC writing, breakdown)  | PO                                    | —                                                 |
+| story-start (architecture review)              | Architect                             | opus when introducing a new architectural pattern |
+| feature implementation                         | FE Dev / BE Dev                       | —                                                 |
+| code review / release prep / pre-release audit | Code Reviewer                         | opus for security or architecture-level review    |
+| test execution (automated or manual)           | Automation Tester / Functional Tester | —                                                 |
+| design, mockups, design-system work            | UI Designer                           | —                                                 |
+| bug triage / priority update                   | PO                                    | —                                                 |
+
+**Fallback rule:** if no scenario matches, default to `sonnet`. Record `--model-rationale "no scenario match"` on the agent-start call.
+
+**Cost ground rule:** opus dispatches require an irreversible-decision justification documented via `--model-rationale "..."`. If unsure whether opus is justified, sonnet is the right call.
 
 ## Phase Exit Criteria
 
