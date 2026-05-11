@@ -1816,6 +1816,23 @@ function renderCostsTab(data, options = {}) {
             })
             .join('')
         : '';
+      // Per-section totals for breakdown display
+      const _storiesProj = epicStories.reduce(
+        (s, st) => s + ((data.costs[st.id] && data.costs[st.id].projectedUsd) || 0),
+        0,
+      );
+      const _bugsProj = epicBugs.reduce(
+        (s, b) => s + ((data.costs._bugs && data.costs._bugs[b.id] && data.costs._bugs[b.id].projectedUsd) || 0),
+        0,
+      );
+      const _storiesAI = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).costUsd || 0), 0);
+      const _bugsAI = epicBugs.reduce(
+        (s, b) => s + ((data.costs._bugs && data.costs._bugs[b.id] && data.costs._bugs[b.id].costUsd) || 0),
+        0,
+      );
+      const breakdownNote = epicBugs.length
+        ? `<span style="font-size:10px;color:var(--text-mute);margin-left:6px">stories ${usd(_storiesProj)} · bugs ${usd(_bugsProj)}</span>`
+        : '';
       return `<tbody>
     <tr class="border-t-2 border-slate-300 dark:border-slate-600 cursor-pointer select-none anim-stagger" style="--i:${Math.min(epicIdx, 19)};background:${accent.bg}" onclick="toggleSection('${ceid}','${ceid}-arrow')">
       <td colspan="4" class="px-3 py-2" style="border-left:4px solid ${accent.border}">
@@ -1825,7 +1842,7 @@ function renderCostsTab(data, options = {}) {
         <span class="ml-2">${badge(epic.status)}</span>
         <span style="font-size:10px;color:var(--text-mute);margin-left:8px">${countLabel} · click to expand</span>
       </td>
-      <td class="px-3 py-2 text-right text-sm font-medium dark:text-slate-200">${usd(epicProjected)}</td>
+      <td class="px-3 py-2 text-right text-sm font-medium dark:text-slate-200">${usd(epicProjected)}${breakdownNote}</td>
       <td class="px-3 py-2 text-right text-sm font-medium text-teal-700 dark:text-teal-400">${usd(epicAI)}</td>
       <td class="px-3 py-2 text-right text-xs text-slate-500 tokens-col">${fmtNum(epicIn)} / ${fmtNum(epicOut)}</td>
     </tr>
@@ -1932,7 +1949,8 @@ function renderCostsTab(data, options = {}) {
   const epicCardBlocks = data.epics
     .map((epic) => {
       const epicStories = data.stories.filter((s) => s.epicId === epic.id);
-      if (!epicStories.length) return '';
+      const epicBugs = _bugsByEpic[epic.id] || [];
+      if (!epicStories.length && !epicBugs.length) return '';
       const storyCards = epicStories
         .map((story) => {
           const ai = data.costs[story.id] || {};
@@ -1945,24 +1963,56 @@ function renderCostsTab(data, options = {}) {
         </div>
         <p class="text-sm font-medium dark:text-slate-200">${esc(story.title)}</p>
         <div class="cost-detail-grid text-xs mt-1">
-          <div>
-            <span class="text-slate-500 block">Projected</span>
-            <span class="font-mono dark:text-slate-200">${usd(projected)}</span>
-          </div>
-          <div>
-            <span class="text-slate-500 block">AI Actual</span>
-            <span class="font-mono text-teal-700 dark:text-teal-400">${usd(ai.costUsd || 0)}</span>
-          </div>
-          <div class="tokens-col col-span-2">
-            <span class="text-slate-500 block">Tokens (in / out)</span>
-            <span class="font-mono text-slate-500">${fmtNum(ai.inputTokens || 0)} / ${fmtNum(ai.outputTokens || 0)}</span>
-          </div>
+          <div><span class="text-slate-500 block">Projected</span><span class="font-mono dark:text-slate-200">${usd(projected)}</span></div>
+          <div><span class="text-slate-500 block">AI Actual</span><span class="font-mono text-teal-700 dark:text-teal-400">${usd(ai.costUsd || 0)}</span></div>
+          <div class="tokens-col col-span-2"><span class="text-slate-500 block">Tokens (in / out)</span><span class="font-mono text-slate-500">${fmtNum(ai.inputTokens || 0)} / ${fmtNum(ai.outputTokens || 0)}</span></div>
         </div>
       </div>`;
         })
         .join('');
-      const epicProjTotal = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).projectedUsd || 0), 0);
-      const epicAITotal = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).costUsd || 0), 0);
+      const bugCards = epicBugs.length
+        ? `<div style="grid-column:1/-1;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-mute);padding:4px 0 2px">Bug Fixes (${epicBugs.length})</div>` +
+          epicBugs
+            .map((bug) => {
+              const bc = (data.costs._bugs && data.costs._bugs[bug.id]) || {};
+              return `<div class="card-elev rounded-lg p-4 flex flex-col gap-2" style="opacity:.85;border-left:3px solid var(--warn)">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="font-mono text-xs text-slate-500 whitespace-nowrap">${esc(bug.id)}</span>
+          ${badge(bug.severity)}
+          ${badge(bug.status)}
+        </div>
+        <p class="text-sm font-medium dark:text-slate-200">${esc(bug.title)}</p>
+        <div class="cost-detail-grid text-xs mt-1">
+          <div><span class="text-slate-500 block">Projected</span><span class="font-mono dark:text-slate-200">${bc.projectedUsd ? usd(bc.projectedUsd) : '—'}</span></div>
+          <div><span class="text-slate-500 block">AI Actual</span><span class="font-mono text-teal-700 dark:text-teal-400">${usd(bc.costUsd || 0)}</span></div>
+          <div class="tokens-col col-span-2"><span class="text-slate-500 block">Tokens (in / out)</span><span class="font-mono text-slate-500">${bc.isEstimated ? '—' : `${fmtNum(bc.inputTokens || 0)} / ${fmtNum(bc.outputTokens || 0)}`}</span></div>
+        </div>
+      </div>`;
+            })
+            .join('')
+        : '';
+      const epicStoriesProj = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).projectedUsd || 0), 0);
+      const epicStoriesAI = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).costUsd || 0), 0);
+      const epicBugsProj = epicBugs.reduce(
+        (s, b) => s + ((data.costs._bugs && data.costs._bugs[b.id] && data.costs._bugs[b.id].projectedUsd) || 0),
+        0,
+      );
+      const epicBugsAI = epicBugs.reduce(
+        (s, b) => s + ((data.costs._bugs && data.costs._bugs[b.id] && data.costs._bugs[b.id].costUsd) || 0),
+        0,
+      );
+      const epicProjTotal = epicStoriesProj + epicBugsProj;
+      const epicAITotal = epicStoriesAI + epicBugsAI;
+      const breakdownHtml =
+        epicBugsProj > 0
+          ? `<span style="font-size:10px;color:var(--text-mute)"> (stories ${usd(epicStoriesProj)} · bugs ${usd(epicBugsProj)})</span>`
+          : '';
+      const countLabel = [
+        epicStories.length ? `${epicStories.length} stor${epicStories.length !== 1 ? 'ies' : 'y'}` : '',
+        epicBugs.length ? `${epicBugs.length} bug${epicBugs.length !== 1 ? 's' : ''}` : '',
+      ]
+        .filter(Boolean)
+        .join(' · ');
       const cceid = `costs-card-ep-${jsEsc(epic.id)}`;
       const accent2 = EPIC_ACCENT_COLORS[data.epics.indexOf(epic) % EPIC_ACCENT_COLORS.length];
       return `<div class="mb-6 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden" style="border-left:4px solid ${accent2.border}">
@@ -1971,10 +2021,11 @@ function renderCostsTab(data, options = {}) {
         <span class="font-mono text-xs font-bold" style="color:${accent2.border}">${epic.id}</span>
         <span class="text-sm font-semibold text-slate-700 dark:text-slate-200">${esc(epic.title)}</span>
         ${badge(epic.status)}
-        <span class="ml-auto text-xs text-slate-500">Proj ${usd(epicProjTotal)} · AI ${usd(epicAITotal)}</span>
+        <span style="font-size:10px;color:var(--text-mute);margin-left:4px">${countLabel}</span>
+        <span class="ml-auto text-xs text-slate-500">Proj ${usd(epicProjTotal)} · AI ${usd(epicAITotal)}${breakdownHtml}</span>
       </div>
       <div id="${cceid}" class="p-3 hidden">
-        <div class="story-card-grid">${storyCards}</div>
+        <div class="story-card-grid">${storyCards}${bugCards}</div>
       </div>
     </div>`;
     })
@@ -2045,11 +2096,8 @@ function renderCostsTab(data, options = {}) {
     ? `<p style="font-size:11px;color:var(--text-mute);margin-top:8px">Bug fix costs are included in each epic's row totals above. Bug total: projected ${usd(bugTotalProjected)} · AI ${usd(bugTotalAI)}.</p>`
     : '';
 
-  const bugFixCardSection = data.bugs.length
-    ? `
-    <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mt-6 mb-3">Bug Fix Costs</h3>
-    ${bugCardEpicBlocks}`
-    : '';
+  // Bug cards are now inline within each epic block above.
+  const bugFixCardSection = '';
 
   return `
   <div id="tab-costs" class="p-6 hidden" role="tabpanel" aria-labelledby="tab-btn-costs">
