@@ -628,3 +628,15 @@ _Learned from BUG-0210 — Lessons and Bugs tabs both have epic group headers, b
 
 **Bugs:** BUG-0183, BUG-0184
 **Date:** 2026-05-01
+
+---
+
+## L-0058 — Cherry-pick story commits onto clean branch; don't rebase a branch built on top of a squash-to-be-merged branch
+
+**Context:** US-0179 and US-0180 feature branches were created from `feature/US-0178-memory-migrate-commit` before US-0178 was squash-merged to develop. After the squash merge, rebasing the downstream branches failed because `git rebase --onto` or plain `git rebase origin/develop` tried to replay all the intermediate individual commits from US-0178 (now represented differently in develop as a squash), causing dozens of conflicts.
+
+**Fix:** Abort the rebase. Create a fresh branch from `origin/develop`. Cherry-pick only the story-specific commits (identified by their US-XXXX commit messages) onto the clean branch. Force-push and update (or recreate) the PR.
+
+**Prevention:** When developing a story that depends on an unmerged story, either (a) wait for the upstream story to merge before branching, or (b) branch from develop and note the dependency explicitly. Do not chain feature branches — they will always conflict on squash-merge.
+
+**Date:** 2026-05-11

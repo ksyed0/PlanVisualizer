@@ -4,6 +4,33 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 44 — 2026-05-10/11 (US-0178 migrate-commit + US-0179 suggest-model + US-0180 agent model selection)
+
+### What Was Done
+
+- **PR #997 — US-0178 Automated PR B (`migrate-commit`):** Added `tools/memory.js migrate-commit` subcommand with 7-step pipeline (pre-flight → migrate → patch CLAUDE.md → test → validate → commit → optional push/PR). Created `memory-claude-md-patcher.js` (idempotent AST-style CLAUDE.md patcher, two patches) and `memory-commit-orchestrator.js`. Fixed CodeQL `js/file-system-race` TOCTOU in CLAUDE.md read by replacing `existsSync+readFileSync` with try/catch on `readFileSync`. 886 tests.
+- **PR #998 — US-0180 Agent Model Selection:** Added `--model`/`--model-rationale` flags to `agent-start`; `agent-done` clears model field. Added inline model chip (haiku/sonnet/opus, low-saturation oklch palette) to Agent Workload dashboard widget. Added `## Model Selection` tables to all 8 specialist agent files + scenario quick-reference + Model Selection Ritual to DM_AGENT.md. New `agent-files.test.js` enforces format contract and ≤20% opus policy. Ran in parallel worktree. 883 tests.
+- **PR #1005 — US-0179 Memory Model Optimisation (`suggest-model`):** Extended `readEntries` with `complexity` + `headBody`. New `memory-model-suggester.js` (tokenise + word-boundary scoring + two-tier aggregation: haiku/sonnet). `renderIndex` now emits ○/◐/● badges + legend. `validateMemory` returns `warnings[]` for missing hints (non-fatal). `patchSuggestModelItem` added to patcher + chained in orchestrator. Seeded all 12 topic files with explicit hints. 940 tests.
+
+### Test Results
+
+- **940 tests, 41 suites — all pass** (develop post US-0178+US-0179+US-0180 squash-merges)
+- Coverage gate: ✅
+- All CodeQL scans: ✅ (no new alerts on any PR)
+
+### Errors or Blockers
+
+- PR #997 CodeQL `js/file-system-race`: `existsSync+readFileSync` pattern on CLAUDE.md. Fixed by try/catch ENOENT on the read (L-0057 pattern).
+- US-0179 and US-0180 feature branches created from pre-squash develop — conflicted with squash merges of US-0178/US-0180. Resolved both by cherry-picking the story-specific commits onto a fresh `*-clean` branch from current develop.
+- PROMPT_LOG.md sessions historically not tracked from Session 32+ — appending session 44 entry now.
+
+### What's Next
+
+- US-0181: Data store assessment spike (evaluate SQLite/JSON vs markdown, write findings doc)
+- Cut v2.3.0 release to main (US-0178 + US-0179 + US-0180 all merged to develop)
+
+---
+
 ## Session 43 — 2026-05-10 (US-0175 PR A: memory token optimisation tooling + roadmap additions)
 
 ### What Was Done
