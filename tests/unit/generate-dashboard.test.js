@@ -967,3 +967,49 @@ describe('US-0176 (EPIC-0026) MEMORY sidebar widget', () => {
     expect(hasCount || hasLive).toBe(true);
   });
 });
+
+describe('agent workload — model chip', () => {
+  const { generateHTML } = require('../../tools/generate-dashboard.js');
+
+  function statusWithAgent(model) {
+    return {
+      currentPhase: 0,
+      phases: [{ id: 1, name: 'Build', status: 'active' }],
+      agents: {
+        Pixel: { status: 'active', currentTask: 'X', currentStory: 'US-0001', model },
+      },
+      stories: { 'US-0001': { status: 'InProgress' } },
+      metrics: {},
+      log: [],
+    };
+  }
+
+  test('renders inline model chip when model is sonnet', () => {
+    const html = generateHTML(statusWithAgent('sonnet'));
+    expect(html).toMatch(/mc-agent-model-chip sonnet[^>]*>sonnet</);
+  });
+
+  test('renders inline model chip when model is haiku', () => {
+    const html = generateHTML(statusWithAgent('haiku'));
+    expect(html).toMatch(/mc-agent-model-chip haiku[^>]*>haiku</);
+  });
+
+  test('renders inline model chip when model is opus', () => {
+    const html = generateHTML(statusWithAgent('opus'));
+    expect(html).toMatch(/mc-agent-model-chip opus[^>]*>opus</);
+  });
+
+  test('renders no model chip when model is null (idle)', () => {
+    const status = statusWithAgent(null);
+    status.agents.Pixel.status = 'idle';
+    const html = generateHTML(status);
+    expect(html).not.toMatch(/<span class="mc-agent-model-chip/);
+  });
+
+  test('renders no model chip when model is undefined (pre-migration)', () => {
+    const status = statusWithAgent(undefined);
+    delete status.agents.Pixel.model;
+    const html = generateHTML(status);
+    expect(html).not.toMatch(/<span class="mc-agent-model-chip/);
+  });
+});
