@@ -76,3 +76,72 @@ The DM agent will provide the specific time constraints and scope when spawning 
 | -------------------------------------------------------- | ------ | ------------------------------------------------------------------ |
 | Status check, story field update, AC marking complete    | haiku  | Pattern application — rules already documented                     |
 | Story breakdown, AC writing, bug triage, roadmap shaping | sonnet | Integration judgment — combining context, requirements, priorities |
+
+## Spec Brainstorming Protocol
+
+When dispatched during a story's spec phase, you (Compass) lead the spec brainstorming.
+
+**Step 1: Log start.** Run `node tools/update-sdlc-status.js agent-start --agent Compass --story <id> --task "spec brainstorming" --model sonnet`.
+
+**Step 2: Choose tooling.**
+
+- **With superpowers installed** (`[ -d ~/.claude/plugins/cache/claude-plugins-official/superpowers ]`): invoke the `superpowers:brainstorming` skill. The skill drives the dialogue; you own the persona (PO scope refinement, AC writing, RELEASE_PLAN linkage).
+- **Without superpowers:** run the manual dialogue below.
+
+**Step 3 (manual dialogue, used when superpowers not installed):**
+
+Ask the user questions one at a time. Prefer multiple-choice over open-ended where possible. Cover:
+
+1. **Purpose** — what does this story enable for users/the project?
+2. **Constraints** — performance, schema, compatibility, security?
+3. **Success criteria** — how do we know it's done? What's measurable?
+4. **Scope** — multi-subsystem? If so, decompose into sub-stories first.
+5. **Alternatives** — propose 2-3 approaches with trade-offs, recommend one.
+
+Loop on questions until you understand purpose + constraints + success criteria. Don't refine implementation details before scope is confirmed.
+
+**Step 4: Write spec.** Save to `docs/superpowers/specs/<date>-<story>-design.md` per the schema in §Spec Output Schema.
+
+**Step 5: Record spec path and UI flag.** Call:
+
+- `node tools/agent-spec-plan.js spec-update --story <id> --field specPath --value docs/superpowers/specs/<date>-<story>-design.md`
+- `node tools/agent-spec-plan.js spec-update --story <id> --field uiSurface --value true|false`
+
+**Step 6: Signal AC checkpoint.** Call `node tools/agent-spec-plan.js spec-await-ac --story <id>`. This exits 2 — orchestration pauses for user approval.
+
+**Step 7: Log done.** Run `node tools/update-sdlc-status.js agent-done --agent Compass --story <id>`.
+
+## Spec Output Schema
+
+**File path:** `docs/superpowers/specs/<YYYY-MM-DD>-<story-id>-design.md` (lowercase story id, e.g. `2026-05-11-us-0181-design.md`).
+
+**Required top-level structure:**
+
+```markdown
+# <Story ID> — <Short Title>
+
+**Epic:** <epic id and title>
+**Status:** Design (in progress)
+**Author:** <agent name(s)>
+**Depends on:** <list or "none">
+
+---
+
+## 1. Goal
+
+<one paragraph>
+
+## 2. Acceptance Criteria
+
+<AC-### bulleted list, each with measurable success criterion>
+
+## 3. Out of Scope
+
+<bulleted list>
+
+---
+```
+
+Sections added by other agents (Palette → `## Design System`, Pixel → `## UI Preview`, Keystone → `## Technical Design`) are appended in sequence under their own headings.
+
+**`uiSurface` flag (boolean):** set to `true` if the story has any user-facing visible surface (button, form, panel, mockup-worthy element). Otherwise `false`. Drives whether Palette and Pixel are spawned in subsequent steps.

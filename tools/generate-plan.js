@@ -29,6 +29,15 @@ const { fetchGitHubStatus } = require('./lib/fetch-github-status');
 const { compactMemory } = require('./lib/memory-index');
 const { archiveStaleMemory } = require('./lib/memory-archiver');
 
+function applyPendingApprovals() {
+  try {
+    const { dispatch } = require('./agent-spec-plan');
+    dispatch({ cmd: 'apply-pending' }, {});
+  } catch (e) {
+    console.warn(`[generate-plan] apply-pending skipped: ${e.message}`);
+  }
+}
+
 const TOKEN_RATES = { input: 3, output: 15 };
 
 const ROOT = path.join(__dirname, '..');
@@ -178,6 +187,7 @@ function computeCompletion(stories, trends) {
 }
 
 async function main() {
+  applyPendingApprovals();
   const config = loadConfig();
   try {
     compactMemory({ root: ROOT });

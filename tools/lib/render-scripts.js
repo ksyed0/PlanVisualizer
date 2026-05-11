@@ -11,7 +11,7 @@ function renderScripts(data, options = {}) {
   const ALL_DATA = ${allData};
   const SEARCH_INDEX = ${JSON.stringify(buildSearchIndex(data)).replace(/<\/script>/gi, '<\\/script>')};
 
-  const VALID_TABS = ['status','hierarchy','kanban','traceability','charts','trends','costs','bugs','lessons','stakeholder'];
+  const VALID_TABS = ['status','hierarchy','kanban','traceability','charts','trends','costs','bugs','lessons','stakeholder','settings'];
 
   function downloadBudgetCSV() {
     const csv = ${JSON.stringify(options.budgetCSV || '')};
@@ -783,7 +783,8 @@ function renderPrintCSS() {
   .lesson-bug-inline summary { display: flex; }
   /* EPIC-0012: Stakeholder tab ───────────────────────────── */
   .sh-section-label { font-size: 9px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-mute); margin-bottom: 8px; }
-  .sh-epics-list { display: flex; flex-direction: column; gap: 4px; }
+  .sh-epics-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  @media (max-width: 800px) { .sh-epics-list { grid-template-columns: 1fr; } }
   .sh-epic-row { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
   .sh-epic-header { display: flex; align-items: center; gap: 10px; padding: 10px 14px; cursor: pointer; }
   .sh-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }

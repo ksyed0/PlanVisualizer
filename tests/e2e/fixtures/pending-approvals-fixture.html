@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Pending Approvals Fixture</title>
+  </head>
+  <body>
+    <div class="pv-pending-row">
+      <button data-action="approve" data-story="US-0181" data-gate="ac" onclick="pvDownloadFlag(this)">Approve</button>
+    </div>
+    <script>
+      function pvDownloadFlag(btn) {
+        var story = btn.getAttribute('data-story');
+        var gate = btn.getAttribute('data-gate');
+        var action = btn.getAttribute('data-action');
+        var payload = { story: story, gate: gate, action: action, timestamp: new Date().toISOString() };
+        var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = action + '-' + story + '-' + gate + '.flag';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+    </script>
+  </body>
+</html>

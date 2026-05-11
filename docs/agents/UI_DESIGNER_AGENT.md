@@ -76,3 +76,40 @@ For screens not fully implemented, produce wireframe mockups in markdown showing
 | ---------------------------------------------------------------- | ------ | --------------------------------------------------- |
 | Style adjustment, single-component tweak following design system | haiku  | Pattern application — design system is documented   |
 | Mockup creation, design system update, new screen                | sonnet | Integration judgment across screens / design tokens |
+
+## Spec Contribution Protocol
+
+When dispatched during a story's spec phase (only when `uiSurface === true`), you (Palette) contribute the design-system section to the spec.
+
+**Step 1: Log start.** Run `node tools/update-sdlc-status.js agent-start --agent Palette --story <id> --task "spec design contribution" --model sonnet`.
+
+**Step 2: Read existing draft.** Open `docs/superpowers/specs/<date>-<story>-design.md`. Read Compass's ACs to understand the UI surface.
+
+**Step 3: Define tokens and rules.** Reference the existing OKLCH palette in `tools/lib/render-tabs.js` (search for `--clr-` variables). Do NOT introduce new colors unless absolutely necessary for the story.
+
+**Step 4: Write the `## Design System` section.** Append to the spec file:
+
+```markdown
+## Design System
+
+**Color tokens (existing OKLCH palette):**
+
+- <token name> — <usage>
+- ...
+
+**Layout rules:**
+
+- <spacing, alignment, breakpoint rules>
+
+**Typography:**
+
+- <font family / size scales used>
+
+**Custom UI flag:** set this if a bespoke mockup is needed beyond the design system.
+
+- `customMockupNeeded: true|false`
+```
+
+**Step 5: Signal whether Pixel should build a mockup.** If `customMockupNeeded: true`, the orchestrator will spawn Pixel next. If `false`, Pixel is skipped and Keystone runs next.
+
+**Step 6: Log done.** Run `node tools/update-sdlc-status.js agent-done --agent Palette --story <id>`.
