@@ -1,5 +1,8 @@
 'use strict';
-const { parseArgs } = require('../../tools/agent-spec-plan');
+const fs = require('fs');
+const path = require('path');
+const os = require('os');
+const { parseArgs, dispatch } = require('../../tools/agent-spec-plan');
 
 describe('parseArgs', () => {
   test('subcommand only', () => {
@@ -66,5 +69,61 @@ describe('parseArgs', () => {
     expect(r).toHaveProperty('dir');
     expect(r).toHaveProperty('state');
     expect(r).toHaveProperty('phase');
+  });
+});
+
+describe('dispatch — spec phase', () => {
+  let tmpdir;
+  let sdlcPath;
+  beforeEach(() => {
+    tmpdir = fs.mkdtempSync(path.join(os.tmpdir(), 'agt-cli-'));
+    sdlcPath = path.join(tmpdir, 'sdlc-status.json');
+    fs.writeFileSync(sdlcPath, JSON.stringify({ stories: { 'US-0181': { status: 'Planned' } } }));
+  });
+  afterEach(() => fs.rmSync(tmpdir, { recursive: true, force: true }));
+
+  test('spec-start creates specPhase + planPhase, writes to sdlc-status', () => {
+    const exitCode = dispatch({ cmd: 'spec-start', story: 'US-0181', uiSurface: 'false' }, { sdlcPath });
+    expect(exitCode).toBe(0);
+    const data = JSON.parse(fs.readFileSync(sdlcPath, 'utf8'));
+    expect(data.stories['US-0181'].specPhase.state).toBe('in_progress');
+  });
+
+  test('spec-start exits 1 if story missing', () => {
+    const exitCode = dispatch({ cmd: 'spec-start', story: 'US-9999' }, { sdlcPath });
+    expect(exitCode).toBe(1);
+  });
+
+  test('spec-await-ac exits 2 (await signal)', () => {
+    dispatch({ cmd: 'spec-start', story: 'US-0181' }, { sdlcPath });
+    const exitCode = dispatch({ cmd: 'spec-await-ac', story: 'US-0181' }, { sdlcPath });
+    expect(exitCode).toBe(2);
+  });
+
+  test('approve --gate ac transitions awaiting_ac_approval → in_progress', () => {
+    dispatch({ cmd: 'spec-start', story: 'US-0181' }, { sdlcPath });
+    dispatch({ cmd: 'spec-await-ac', story: 'US-0181' }, { sdlcPath });
+    const exitCode = dispatch({ cmd: 'approve', story: 'US-0181', gate: 'ac' }, { sdlcPath });
+    expect(exitCode).toBe(0);
+    const data = JSON.parse(fs.readFileSync(sdlcPath, 'utf8'));
+    expect(data.stories['US-0181'].specPhase.acApprovedAt).toBeTruthy();
+  });
+
+  test('spec-update sets uiSurface field', () => {
+    dispatch({ cmd: 'spec-start', story: 'US-0181' }, { sdlcPath });
+    dispatch({ cmd: 'spec-update', story: 'US-0181', field: 'uiSurface', value: 'true' }, { sdlcPath });
+    const data = JSON.parse(fs.readFileSync(sdlcPath, 'utf8'));
+    expect(data.stories['US-0181'].specPhase.uiSurface).toBe(true);
+  });
+
+  test('iteration cap auto-escalates and returns exit 1', () => {
+    dispatch({ cmd: 'spec-start', story: 'US-0181' }, { sdlcPath });
+    dispatch({ cmd: 'spec-await-ac', story: 'US-0181' }, { sdlcPath });
+    dispatch({ cmd: 'approve', story: 'US-0181', gate: 'ac' }, { sdlcPath });
+    expect(dispatch({ cmd: 'spec-review-result', story: 'US-0181', verdict: 'REQUEST_CHANGES' }, { sdlcPath })).toBe(0);
+    expect(dispatch({ cmd: 'spec-review-result', story: 'US-0181', verdict: 'REQUEST_CHANGES' }, { sdlcPath })).toBe(0);
+    expect(dispatch({ cmd: 'spec-review-result', story: 'US-0181', verdict: 'REQUEST_CHANGES' }, { sdlcPath })).toBe(1);
+    const data = JSON.parse(fs.readFileSync(sdlcPath, 'utf8'));
+    expect(data.stories['US-0181'].specPhase.state).toBe('escalated');
   });
 });
