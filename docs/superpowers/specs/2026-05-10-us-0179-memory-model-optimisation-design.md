@@ -36,13 +36,15 @@ Invoked via: `npm run memory:suggest-model -- --task "fix bug in render-tabs.js"
 ### Default output (human-readable)
 
 ```
-$ npm run memory:suggest-model -- --task "fix bug in render-tabs.js"
+$ npm run memory:suggest-model -- --task "update release plan format rules"
 Recommended: sonnet
 Matched 2 topics (score ≥ 2):
-  - Parser Contracts (high, explicit) — score 4 (title + 2 body hits)
+  - Release Plan Format Rules (high, explicit) — score 6 (title hit ×3)
   - Project Identity (low, explicit) — score 2 (title hit)
-Reason: Found high-complexity topic 'Parser Contracts' → sonnet
+Reason: Found high-complexity topic 'Release Plan Format Rules' → sonnet
 ```
+
+(Note: the example is illustrative — exact scores depend on the actual title and headBody content of the matched topics.)
 
 ### JSON output (with `--json`)
 
@@ -51,12 +53,12 @@ Reason: Found high-complexity topic 'Parser Contracts' → sonnet
   "model": "sonnet",
   "matched": [
     {
-      "title": "Parser Contracts",
-      "file": "docs/memory/topics/parser-contracts.md",
+      "title": "Release Plan Format Rules",
+      "file": "docs/memory/topics/release-plan-format-rules.md",
       "complexity": "high",
       "complexitySource": "explicit",
-      "score": 4,
-      "matchedTokens": ["render"]
+      "score": 6,
+      "matchedTokens": ["release", "plan", "format"]
     },
     {
       "title": "Project Identity",
@@ -64,10 +66,10 @@ Reason: Found high-complexity topic 'Parser Contracts' → sonnet
       "complexity": "low",
       "complexitySource": "explicit",
       "score": 2,
-      "matchedTokens": ["render", "bug"]
+      "matchedTokens": ["project"]
     }
   ],
-  "reason": "Found high-complexity topic 'Parser Contracts' → sonnet"
+  "reason": "Found high-complexity topic 'Release Plan Format Rules' → sonnet"
 }
 ```
 
@@ -93,12 +95,12 @@ tools/memory.js (modify)              ← parseArgs adds --task + --json; dispat
   file: string,            // existing
   date: string | null,     // existing
   complexity: 'low' | 'medium' | 'high' | null,   // NEW
-  headBody: string         // NEW — first 5 non-empty lines after the H1
+  headBody: string         // NEW — first 5 content lines after the H1 (see definition below)
 }
 ```
 
 - `complexity` is parsed from the file body using the regex `/<!--\s*complexity:\s*(low|medium|high)\s*-->/i`. Case-insensitive on the value. Whitespace-tolerant. Returns `null` when no hint is present.
-- `headBody` is the first 5 non-empty lines after the H1 title, joined by `\n`. Used by the suggester for scoring. Other callers ignore it.
+- `headBody` is the first 5 **content lines** after the H1 title, joined by `\n`. A "content line" is any line that contains at least one non-whitespace character AND is not entirely an HTML comment (e.g., the `<!-- complexity: ... -->` hint line is skipped). Used by the suggester for scoring. Other callers ignore it.
 - Existing callers (`renderIndex`, `validateMemory`) continue to work — the new fields are additive.
 
 ---
@@ -127,6 +129,14 @@ For each token, use **word-boundary regex matching** (not substring):
 - Pattern: `new RegExp('\\b' + escapeRegex(token), 'i')`.
 - Hit in title → score `+2`.
 - Hit in headBody → score `+1`.
+
+`escapeRegex` is a one-liner the implementer adds at the top of `memory-model-suggester.js`:
+
+```js
+const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+```
+
+This prevents tokens containing regex special chars (e.g., `c++`, `node.js`) from crashing the matcher.
 
 A topic is "matched" only if its total score `>= 2`. This filters out drive-by single-body matches that pull in unrelated topics.
 
@@ -249,10 +259,22 @@ $ node tools/memory.js validate
 [memory] Warning: 2 topic files missing complexity hints:
   - docs/memory/topics/new-topic.md
   - docs/memory/topics/another-new.md
-  Run `npm run memory:suggest-model -- --help` for guidance on hint values.
+  Add `<!-- complexity: low|medium|high -->` on the line after the H1 title. See docs/superpowers/specs/2026-05-10-us-0179-memory-model-optimisation-design.md for the heuristic.
 ```
 
-The warning is informational only — exit code stays 0 (otherwise CI would fail every time a new topic is added before the author annotates it). Implemented as a post-validate step in `validateMemory` or a sibling function.
+The warning is informational only — exit code stays 0 (otherwise CI would fail every time a new topic is added before the author annotates it).
+
+**`validateMemory` return shape extension:**
+
+```ts
+// Before (US-0175):
+{ ok: boolean, diff: string }
+
+// After (US-0179):
+{ ok: boolean, diff: string, warnings: string[] }
+```
+
+`warnings` is always present; empty array when no warnings. The CLI iterates `result.warnings` and prints each on its own line with `[memory] Warning:` prefix. Existing callers that destructure only `{ ok, diff }` continue to work; consumers wanting warnings opt in by reading the new field.
 
 ---
 
