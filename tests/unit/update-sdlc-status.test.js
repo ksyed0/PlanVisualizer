@@ -703,3 +703,53 @@ describe('HANDLERS[github-status]', () => {
     expect(evt.message).toMatch(/merged|closed/i);
   });
 });
+
+describe('agent-start — model selection', () => {
+  test('records --model sonnet on agents.<name>.model', () => {
+    const data = baseState();
+    HANDLERS['agent-start'](data, { agent: 'Pixel', story: 'US-0181', task: 't', model: 'sonnet' });
+    expect(data.agents.Pixel.model).toBe('sonnet');
+  });
+
+  test('defaults to sonnet when --model not provided', () => {
+    const data = baseState();
+    HANDLERS['agent-start'](data, { agent: 'Pixel', story: 'US-0181', task: 't' });
+    expect(data.agents.Pixel.model).toBe('sonnet');
+  });
+
+  test('accepts haiku/sonnet/opus', () => {
+    for (const m of ['haiku', 'sonnet', 'opus']) {
+      const data = baseState();
+      HANDLERS['agent-start'](data, { agent: 'A', model: m });
+      expect(data.agents.A.model).toBe(m);
+    }
+  });
+
+  test('rejects invalid model tier with error', () => {
+    const data = baseState();
+    expect(() => HANDLERS['agent-start'](data, { agent: 'A', model: 'gpt5' })).toThrow(/must be one of/i);
+  });
+
+  test('stores model-rationale on the log entry', () => {
+    const data = baseState();
+    HANDLERS['agent-start'](data, {
+      agent: 'Pixel',
+      story: 'US-0181',
+      task: 't',
+      model: 'opus',
+      'model-rationale': 'system-design decision',
+    });
+    const last = data.log[data.log.length - 1];
+    expect(last.model).toBe('opus');
+    expect(last.modelRationale).toBe('system-design decision');
+  });
+});
+
+describe('agent-done — clears model field', () => {
+  test('agent-done sets agents.<name>.model to null', () => {
+    const data = baseState();
+    HANDLERS['agent-start'](data, { agent: 'Pixel', story: 'US-0181', task: 't', model: 'sonnet' });
+    HANDLERS['agent-done'](data, { agent: 'Pixel', story: 'US-0181' });
+    expect(data.agents.Pixel.model).toBeNull();
+  });
+});
