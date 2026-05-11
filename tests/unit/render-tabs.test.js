@@ -745,9 +745,12 @@ describe('renderHierarchyTab — US-0169 risk UI', () => {
     expect(html).toContain('data-risk-level="Medium"');
   });
 
-  it('AC-0601: Sort by Risk button present in Hierarchy tab', () => {
+  it('AC-0601: sortHierarchyBy function exposed for global filter-bar sort dropdown', () => {
     const html = renderHierarchyTab(makeData());
-    expect(html).toContain('sortHierarchyByRisk');
+    // BUG-0254: risk sort moved into the global filter-bar (fgrp-hier).
+    // The Hierarchy tab keeps the implementation function and exposes it on window.
+    expect(html).toContain('sortHierarchyBy');
+    expect(html).toContain("case 'risk'");
   });
 
   it('AC-0603: epic block for EPIC-0001 shows risk badge with level and avgScore', () => {
@@ -765,9 +768,11 @@ describe('renderHierarchyTab — US-0169 risk UI', () => {
     expect(pos1).toBeLessThan(pos2);
   });
 
-  it('AC-0605: hier-risk-filter select is present', () => {
+  it('AC-0605: applyHierRiskFilter function exposed for global filter-bar risk-filter dropdown', () => {
     const html = renderHierarchyTab(makeData());
-    expect(html).toContain('id="hier-risk-filter"');
+    // BUG-0254: risk filter moved into the global filter-bar (fgrp-hier).
+    // The Hierarchy tab keeps the implementation function and exposes it on window.
+    expect(html).toContain('applyHierRiskFilter');
   });
 
   it('AC-0605: epic blocks have data-epic-risk-level attribute', () => {
@@ -794,7 +799,7 @@ describe('renderHierarchyTab — US-0169 risk UI', () => {
     expect(matches.length).toBeGreaterThanOrEqual(3); // 3 stories in makeData
   });
 
-  it('AC-0601: sortHierarchyByRisk targets story rows within epic-stories containers', () => {
+  it('AC-0601: sortHierarchyBy targets story rows within epic-stories containers', () => {
     const html = renderHierarchyTab(makeData());
     // JS function should reference epic-stories containers and .story-row
     expect(html).toContain('epic-stories-');
@@ -882,5 +887,162 @@ describe('renderSettingsTab — US-0172', () => {
     const syncState = { lastSyncAt: '2026-05-03T14:32:00Z', summary: {}, lastError: 'API 401' };
     const html = renderSettingsTab({ githubConfig: baseGithubConfig, githubTokenSet: true, syncState });
     expect(html).toContain('API 401');
+  });
+});
+
+describe('renderStatusTab GitHub surfaces', () => {
+  const baseData = {
+    epics: [{ id: 'EPIC-0001', title: 'Auth', status: 'In Progress' }],
+    stories: [
+      { id: 'US-0001', epicId: 'EPIC-0001', title: 'Login', status: 'Done', acs: [] },
+      { id: 'US-0002', epicId: 'EPIC-0001', title: 'Session', status: 'In Progress', acs: [] },
+    ],
+    bugs: [],
+    costs: { _totals: { costUsd: 0 } },
+    coverage: { available: false },
+    trends: null,
+    completion: null,
+    risk: null,
+    githubStatus: {
+      deployment: {
+        environment: 'production',
+        url: 'https://example.com',
+        status: 'success',
+        createdAt: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+      },
+      prs: [
+        {
+          storyId: 'US-0002',
+          number: 994,
+          url: 'https://github.com/owner/repo/pull/994',
+          ciStatus: 'success',
+          title: 'feat: test',
+          reviewCount: 1,
+          createdAt: new Date().toISOString(),
+        },
+        {
+          storyId: 'US-0001',
+          number: 41,
+          url: 'https://github.com/owner/repo/pull/41',
+          ciStatus: 'failure',
+          title: 'fix: something',
+          reviewCount: 0,
+          createdAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+        },
+      ],
+    },
+  };
+
+  it('renders deployment banner when githubStatus.deployment is present', () => {
+    const html = renderStatusTab(baseData);
+    expect(html).toContain('pv-gh-deploy-banner');
+  });
+
+  it('renders deployment env label in banner', () => {
+    const html = renderStatusTab(baseData);
+    expect(html).toContain('production');
+  });
+
+  it('renders deployment URL as link in banner', () => {
+    const html = renderStatusTab(baseData);
+    expect(html).toContain('https://example.com');
+  });
+
+  it('renders CI tile in the KPI grid when githubStatus is set', () => {
+    const html = renderStatusTab(baseData);
+    expect(html).toContain('CI Status');
+  });
+
+  it('renders open PRs details section', () => {
+    const html = renderStatusTab(baseData);
+    expect(html).toContain('pv-gh-pr-list');
+  });
+
+  it('open PRs list rendered when PRs present', () => {
+    const html = renderStatusTab(baseData);
+    expect(html).toContain('#994');
+    expect(html).toContain('feat: test');
+    expect(html).toContain('1</td>');
+    // timeAgo of a just-created PR should be recent (contains "ago" or "just now" or "0m")
+    expect(html).toMatch(/just now|0m ago|<1m/);
+  });
+});
+
+describe('renderHierarchyTab GitHub badges', () => {
+  const { renderHierarchyTab } = require('../../tools/lib/render-tabs');
+
+  const baseData = () => ({
+    projectName: 'Test',
+    release: 'R1',
+    stories: [
+      {
+        id: 'US-0001',
+        status: 'In Progress',
+        epicId: 'EPIC-0001',
+        title: 'My story',
+        acs: [],
+        priority: 'P1',
+        estimate: 'S',
+      },
+    ],
+    epics: [{ id: 'EPIC-0001', title: 'Epic One', status: 'In Progress' }],
+    bugs: [],
+    testCases: [],
+    lessons: [],
+    coverage: { available: false },
+    costs: { 'US-0001': { projectedUsd: 0 } },
+    atRisk: { 'US-0001': { isAtRisk: false } },
+    risk: { byStory: new Map(), byEpic: new Map() },
+    githubStatus: null,
+  });
+
+  test('no badge when githubStatus is null', () => {
+    const html = renderHierarchyTab(baseData());
+    expect(html).not.toMatch(/#\d+&thinsp;→/);
+  });
+
+  test('renders CI badge and PR link for matched story', () => {
+    const data = baseData();
+    data.githubStatus = {
+      prs: [
+        {
+          number: 994,
+          ciStatus: 'success',
+          storyId: 'US-0001',
+          bugId: null,
+          url: 'https://github.com/x/y/pull/994',
+          title: 't',
+          reviewCount: 0,
+          createdAt: new Date().toISOString(),
+        },
+      ],
+      ciSummary: { total: 1, passing: 1, failing: 0, pending: 0 },
+      fetchedAt: new Date().toISOString(),
+    };
+    const html = renderHierarchyTab(data);
+    expect(html).toContain('#994');
+    expect(html).toContain('chip ok');
+  });
+
+  test('no badge for unmatched story', () => {
+    const data = baseData();
+    data.githubStatus = {
+      prs: [
+        {
+          number: 999,
+          ciStatus: 'success',
+          storyId: 'US-9999',
+          bugId: null,
+          url: 'u',
+          title: 't',
+          reviewCount: 0,
+          createdAt: new Date().toISOString(),
+        },
+      ],
+      ciSummary: { total: 1, passing: 1, failing: 0, pending: 0 },
+      fetchedAt: new Date().toISOString(),
+    };
+    const html = renderHierarchyTab(data);
+    expect(html).not.toContain('#999');
   });
 });

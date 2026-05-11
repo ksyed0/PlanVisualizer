@@ -69,3 +69,10 @@ For screens not fully implemented, produce wireframe mockups in markdown showing
 - Maintain WCAG AA contrast ratios (4.5:1 for text, 3:1 for large text)
 - Follow the spacing grid defined in the design system — all spacing values must be on-grid
 - Use consistent border radius values as defined in the design system
+
+## Model Selection
+
+| Task type                                                        | Model  | Rationale                                           |
+| ---------------------------------------------------------------- | ------ | --------------------------------------------------- |
+| Style adjustment, single-component tweak following design system | haiku  | Pattern application — design system is documented   |
+| Mockup creation, design system update, new screen                | sonnet | Integration judgment across screens / design tokens |

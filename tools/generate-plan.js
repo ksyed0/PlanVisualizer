@@ -21,10 +21,13 @@ const { parseLessons } = require('./lib/parse-lessons');
 const { computeProjectedCost, attributeAICosts, attributeBugCosts } = require('./lib/compute-costs');
 const { detectAtRisk } = require('./lib/detect-at-risk');
 const { computeAllRisk } = require('./lib/compute-risk');
-const { saveSnapshot, loadSnapshots, extractTrends, velocityByWeek } = require('./lib/snapshot');
+const { saveSnapshot, loadSnapshots, dedupeSnapshots, extractTrends, velocityByWeek } = require('./lib/snapshot');
 const { computeBudgetMetrics, generateBudgetCSV } = require('./lib/budget');
 const { renderHtml } = require('./lib/render-html');
 const { backfillHistory, calculateAvgTokensPerEstimate, estimateStoryCost } = require('./lib/historical-sim');
+const { fetchGitHubStatus } = require('./lib/fetch-github-status');
+const { compactMemory } = require('./lib/memory-index');
+const { archiveStaleMemory } = require('./lib/memory-archiver');
 
 const TOKEN_RATES = { input: 3, output: 15 };
 
@@ -163,16 +166,27 @@ function computeCompletion(stories, trends) {
   const rangeMs = weeksRemaining * 0.2 * 7 * 24 * 60 * 60 * 1000;
   const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const fmt = (d) => `${MONTH_NAMES[d.getMonth()]} ${d.getDate()}`;
+  const storiesPerWeek = done.length / weeksElapsed;
   return {
     likelyDate: fmt(new Date(likelyMs)),
     rangeStart: fmt(new Date(likelyMs - rangeMs)),
     rangeEnd: fmt(new Date(likelyMs + rangeMs)),
     velocityWeeks: Math.round(weeksElapsed),
+    storiesPerWeek: Number(storiesPerWeek.toFixed(1)),
+    pointsPerWeek: Number(ptsPerWeek.toFixed(1)),
   };
 }
 
-function main() {
+async function main() {
   const config = loadConfig();
+  try {
+    compactMemory({ root: ROOT });
+  } catch (e) {
+    console.warn('[generate-plan] memory:compact skipped:', e.message);
+  }
+  if (config.memory && config.memory.autoArchive) {
+    archiveStaleMemory({ root: ROOT, days: config.memory.staleDays || 90 });
+  }
   const HOURS = config.costs.tshirtHours;
   const RATE = config.costs.hourlyRate;
 
@@ -353,7 +367,15 @@ function main() {
     }
   }
 
-  const trends = extractTrends(snapshots);
+  // BUG-0257: collapse near-in-time snapshots (default 30-min window) so trend
+  // charts don't render dense bursts as flat segments + sudden jumps.
+  const dedupedSnapshots = dedupeSnapshots(snapshots);
+  if (dedupedSnapshots.length !== snapshots.length) {
+    console.log(
+      `[generate-plan] Snapshot dedup: ${snapshots.length} → ${dedupedSnapshots.length} (collapsed ${snapshots.length - dedupedSnapshots.length} near-in-time duplicates)`,
+    );
+  }
+  const trends = extractTrends(dedupedSnapshots);
 
   console.log('[generate-plan] Computing budget metrics...');
   const budgetMetrics = computeBudgetMetrics(data, config, snapshots);
@@ -376,10 +398,27 @@ function main() {
   // GitHub Settings tab data
   data.githubConfig = config.github || null;
   data.githubTokenSet = !!process.env.GITHUB_TOKEN;
+  data.memoryConfig = config.memory || { staleDays: 90, autoArchive: false };
   try {
     data.syncState = JSON.parse(fs.readFileSync(path.join(ROOT, 'docs/github-sync-state.json'), 'utf8'));
   } catch {
     data.syncState = null;
+  }
+
+  // GitHub status monitoring (read-only — fetches PR/CI/deployment state)
+  if (config.github && config.github.enabled && process.env.GITHUB_TOKEN) {
+    try {
+      data.githubStatus = await fetchGitHubStatus(config.github, process.env.GITHUB_TOKEN);
+      console.log(
+        '[generate-plan] GitHub status fetched:',
+        data.githubStatus ? `${data.githubStatus.prs.length} PRs` : 'null',
+      );
+    } catch (e) {
+      console.warn('[generate-plan] GitHub status fetch failed:', e.message);
+      data.githubStatus = null;
+    }
+  } else {
+    data.githubStatus = null;
   }
 
   const html = renderHtml(data, { trends, budgetCSV });
@@ -430,13 +469,14 @@ function watch(config) {
   }
 }
 
-try {
-  main();
-  if (process.argv.includes('--watch')) {
-    watch(loadConfig());
-  }
-} catch (e) {
-  console.error('[generate-plan] Fatal:', e.message);
-  console.error('[generate-plan] Stack:', e.stack);
-  process.exit(1);
-}
+main()
+  .then(() => {
+    if (process.argv.includes('--watch')) {
+      watch(loadConfig());
+    }
+  })
+  .catch((e) => {
+    console.error('[generate-plan] Fatal:', e.message);
+    console.error('[generate-plan] Stack:', e.stack);
+    process.exit(1);
+  });

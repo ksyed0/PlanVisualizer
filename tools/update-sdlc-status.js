@@ -53,6 +53,8 @@
 const path = require('path');
 const fs = require('fs');
 const { atomicReadModifyWriteJson, atomicWriteJson } = require('../orchestrator/atomic-write');
+const { fetchGitHubStatus } = require('./lib/fetch-github-status');
+const CONFIG_PATH = path.join(__dirname, '..', 'plan-visualizer.config.json');
 
 const STATUS_PATH = path.join(__dirname, '..', 'docs', 'sdlc-status.json');
 
@@ -72,9 +74,9 @@ function nowISO() {
   return new Date().toISOString();
 }
 
-function appendLog(data, agent, message) {
+function appendLog(data, agent, message, extra) {
   data.log = data.log || [];
-  data.log.push({ time: nowISO(), agent: agent || 'Conductor', message });
+  data.log.push({ time: nowISO(), agent: agent || 'Conductor', message, ...extra });
   // Keep log bounded at last 200 entries
   if (data.log.length > 200) data.log = data.log.slice(-200);
   return data;
@@ -137,9 +139,15 @@ function resetSession(data, storiesTotal) {
 const HANDLERS = {
   'agent-start': (data, opts) => {
     requireAgent(opts);
+    const VALID_MODELS = ['haiku', 'sonnet', 'opus'];
+    const model = opts.model || 'sonnet';
+    if (!VALID_MODELS.includes(model)) {
+      throw new Error(`[update-sdlc-status] --model must be one of: ${VALID_MODELS.join(', ')}. Got: ${model}`);
+    }
     const agent = ensureAgent(data, opts.agent);
     agent.status = 'active';
     agent.currentTask = opts.task || `Working on ${opts.story || 'task'}`;
+    agent.model = model;
     if (opts.story) {
       const story = ensureStory(data, opts.story);
       story.assignedAgent = opts.agent;
@@ -148,7 +156,9 @@ const HANDLERS = {
         story.startedAt = nowISO();
       }
     }
-    appendLog(data, opts.agent, `started ${opts.story ? opts.story + ': ' : ''}${opts.task || 'task'}`);
+    const logExtra = { model };
+    if (opts['model-rationale']) logExtra.modelRationale = opts['model-rationale'];
+    appendLog(data, opts.agent, `started ${opts.story ? opts.story + ': ' : ''}${opts.task || 'task'}`, logExtra);
     return data;
   },
 
@@ -157,6 +167,7 @@ const HANDLERS = {
     const agent = ensureAgent(data, opts.agent);
     agent.status = 'idle';
     agent.currentTask = null;
+    agent.model = null;
     agent.tasksCompleted = (agent.tasksCompleted || 0) + 1;
     data.metrics = data.metrics || {};
     data.metrics.tasksCompleted = (data.metrics.tasksCompleted || 0) + 1;
@@ -363,6 +374,56 @@ const HANDLERS = {
 
   log: (data, opts) => {
     appendLog(data, opts.agent || 'Conductor', opts.message || '(no message)');
+    return data;
+  },
+
+  'github-status': async (data, opts) => {
+    const token = opts.token || process.env.GITHUB_TOKEN;
+    let config = null;
+    try {
+      config = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8')).github;
+    } catch (_e) {
+      /* config file optional */
+    }
+    const newStatus = await fetchGitHubStatus(config, token);
+    if (!newStatus) return data;
+
+    const prev = data.githubStatus;
+    const prevPrMap = prev && prev.prs ? new Map(prev.prs.map((p) => [p.number, p])) : new Map();
+
+    // Change detection: CI transitions and new PRs
+    for (const pr of newStatus.prs) {
+      const old = prevPrMap.get(pr.number);
+      if (!old) {
+        appendLog(data, 'GitHub', `PR #${pr.number} opened: ${pr.title}`);
+      } else if (old.ciStatus === 'pending' && (pr.ciStatus === 'success' || pr.ciStatus === 'failure')) {
+        const icon = pr.ciStatus === 'success' ? '✓' : '✗';
+        const ciResult = pr.ciStatus === 'success' ? 'passed' : 'failed';
+        appendLog(data, 'GitHub', `CI ${icon} ${ciResult} on #${pr.number}`);
+      }
+    }
+    // PRs that disappeared (merged/closed)
+    for (const [num] of prevPrMap) {
+      if (!newStatus.prs.find((p) => p.number === num)) {
+        appendLog(data, 'GitHub', `PR #${num} merged/closed`);
+      }
+    }
+    // Deployment status change
+    if (prev && prev.deployment && newStatus.deployment) {
+      if (
+        prev.deployment.status !== newStatus.deployment.status &&
+        (newStatus.deployment.status === 'success' || newStatus.deployment.status === 'failure')
+      ) {
+        const icon = newStatus.deployment.status === 'success' ? '↑' : '✗';
+        appendLog(data, 'GitHub', `${icon} deployed ${newStatus.deployment.ref} → ${newStatus.deployment.environment}`);
+      }
+    }
+
+    // ciPollUntil: set when any PR is pending, clear when all terminal
+    const hasPending = newStatus.prs.some((p) => p.ciStatus === 'pending');
+    newStatus.ciPollUntil = hasPending ? new Date(Date.now() + 15 * 60 * 1000).toISOString() : null;
+
+    data.githubStatus = newStatus;
     return data;
   },
 };

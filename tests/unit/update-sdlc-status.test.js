@@ -539,3 +539,217 @@ describe('update-sdlc-status — log', () => {
     expect(data.log[199].message).toBe('entry 249');
   });
 });
+
+describe('HANDLERS[github-status]', () => {
+  jest.mock('../../tools/lib/fetch-github-status');
+
+  let fetchGitHubStatus;
+  let HANDLERS;
+
+  beforeAll(() => {
+    jest.resetModules();
+    fetchGitHubStatus = require('../../tools/lib/fetch-github-status').fetchGitHubStatus;
+    HANDLERS = require('../../tools/update-sdlc-status').HANDLERS;
+  });
+
+  function baseData() {
+    return { githubStatus: null, log: [], metrics: {} };
+  }
+
+  beforeEach(() => jest.clearAllMocks());
+
+  test('sets githubStatus on data', async () => {
+    const gs = {
+      prs: [],
+      ciSummary: { total: 0, passing: 0, failing: 0, pending: 0 },
+      deployment: null,
+      fetchedAt: '2026-05-07T10:00:00Z',
+    };
+    fetchGitHubStatus.mockResolvedValue(gs);
+    const data = baseData();
+    const result = await HANDLERS['github-status'](data, { token: 'tok' });
+    expect(result.githubStatus).toMatchObject({ ciSummary: { total: 0 }, fetchedAt: '2026-05-07T10:00:00Z' });
+  });
+
+  test('returns data unchanged when fetch returns null', async () => {
+    fetchGitHubStatus.mockResolvedValue(null);
+    const data = baseData();
+    const result = await HANDLERS['github-status'](data, { token: 'tok' });
+    expect(result.githubStatus).toBeNull();
+    expect(result.log).toHaveLength(0);
+  });
+
+  test('sets ciPollUntil when any PR is pending', async () => {
+    fetchGitHubStatus.mockResolvedValue({
+      prs: [
+        {
+          number: 1,
+          ciStatus: 'pending',
+          storyId: null,
+          bugId: null,
+          url: 'u',
+          title: 't',
+          reviewCount: 0,
+          createdAt: '2026-05-07T00:00:00Z',
+        },
+      ],
+      ciSummary: { total: 1, passing: 0, failing: 0, pending: 1 },
+      deployment: null,
+      fetchedAt: new Date().toISOString(),
+    });
+    const data = baseData();
+    const result = await HANDLERS['github-status'](data, { token: 'tok' });
+    expect(result.githubStatus.ciPollUntil).toBeTruthy();
+    const pollUntil = new Date(result.githubStatus.ciPollUntil);
+    expect(pollUntil.getTime()).toBeGreaterThan(Date.now() + 14 * 60000);
+  });
+
+  test('clears ciPollUntil when no PR is pending', async () => {
+    fetchGitHubStatus.mockResolvedValue({
+      prs: [
+        {
+          number: 1,
+          ciStatus: 'success',
+          storyId: null,
+          bugId: null,
+          url: 'u',
+          title: 't',
+          reviewCount: 0,
+          createdAt: '2026-05-07T00:00:00Z',
+        },
+      ],
+      ciSummary: { total: 1, passing: 1, failing: 0, pending: 0 },
+      deployment: null,
+      fetchedAt: new Date().toISOString(),
+    });
+    const data = { ...baseData(), githubStatus: { ciPollUntil: '2026-05-07T12:00:00Z' } };
+    const result = await HANDLERS['github-status'](data, { token: 'tok' });
+    expect(result.githubStatus.ciPollUntil).toBeNull();
+  });
+
+  test('emits CI resolved event on pending → success transition', async () => {
+    fetchGitHubStatus.mockResolvedValue({
+      prs: [
+        {
+          number: 99,
+          ciStatus: 'success',
+          storyId: 'US-0001',
+          bugId: null,
+          url: 'u',
+          title: 't',
+          reviewCount: 0,
+          createdAt: '2026-05-07T00:00:00Z',
+        },
+      ],
+      ciSummary: { total: 1, passing: 1, failing: 0, pending: 0 },
+      deployment: null,
+      fetchedAt: new Date().toISOString(),
+    });
+    const data = {
+      ...baseData(),
+      githubStatus: {
+        prs: [{ number: 99, ciStatus: 'pending' }],
+        deployment: null,
+        fetchedAt: '2026-05-07T09:00:00Z',
+      },
+      log: [],
+    };
+    const result = await HANDLERS['github-status'](data, { token: 'tok' });
+    const ciEvent = result.log.find((e) => e.message && e.message.includes('#99'));
+    expect(ciEvent).toBeTruthy();
+    expect(ciEvent.message).toMatch(/CI.*passed|✓/i);
+  });
+
+  test('emits PR opened event for new PR', async () => {
+    fetchGitHubStatus.mockResolvedValue({
+      prs: [
+        {
+          number: 100,
+          ciStatus: null,
+          storyId: null,
+          bugId: null,
+          url: 'u',
+          title: 'new PR',
+          reviewCount: 0,
+          createdAt: '2026-05-07T00:00:00Z',
+        },
+      ],
+      ciSummary: { total: 1, passing: 0, failing: 0, pending: 0 },
+      deployment: null,
+      fetchedAt: new Date().toISOString(),
+    });
+    const data = { ...baseData(), githubStatus: { prs: [], deployment: null } };
+    const result = await HANDLERS['github-status'](data, { token: 'tok' });
+    const evt = result.log.find((e) => e.message && e.message.includes('#100'));
+    expect(evt).toBeTruthy();
+    expect(evt.message).toMatch(/opened/i);
+  });
+
+  test('emits PR merged/closed event when PR disappears', async () => {
+    fetchGitHubStatus.mockResolvedValue({
+      prs: [],
+      ciSummary: { total: 0, passing: 0, failing: 0, pending: 0 },
+      deployment: null,
+      fetchedAt: new Date().toISOString(),
+    });
+    const data = {
+      ...baseData(),
+      githubStatus: { prs: [{ number: 55, ciStatus: 'success' }], deployment: null },
+      log: [],
+    };
+    const result = await HANDLERS['github-status'](data, { token: 'tok' });
+    const evt = result.log.find((e) => e.message && e.message.includes('#55'));
+    expect(evt).toBeTruthy();
+    expect(evt.message).toMatch(/merged|closed/i);
+  });
+});
+
+describe('agent-start — model selection', () => {
+  test('records --model sonnet on agents.<name>.model', () => {
+    const data = baseState();
+    HANDLERS['agent-start'](data, { agent: 'Pixel', story: 'US-0181', task: 't', model: 'sonnet' });
+    expect(data.agents.Pixel.model).toBe('sonnet');
+  });
+
+  test('defaults to sonnet when --model not provided', () => {
+    const data = baseState();
+    HANDLERS['agent-start'](data, { agent: 'Pixel', story: 'US-0181', task: 't' });
+    expect(data.agents.Pixel.model).toBe('sonnet');
+  });
+
+  test('accepts haiku/sonnet/opus', () => {
+    for (const m of ['haiku', 'sonnet', 'opus']) {
+      const data = baseState();
+      HANDLERS['agent-start'](data, { agent: 'A', model: m });
+      expect(data.agents.A.model).toBe(m);
+    }
+  });
+
+  test('rejects invalid model tier with error', () => {
+    const data = baseState();
+    expect(() => HANDLERS['agent-start'](data, { agent: 'A', model: 'gpt5' })).toThrow(/must be one of/i);
+  });
+
+  test('stores model-rationale on the log entry', () => {
+    const data = baseState();
+    HANDLERS['agent-start'](data, {
+      agent: 'Pixel',
+      story: 'US-0181',
+      task: 't',
+      model: 'opus',
+      'model-rationale': 'system-design decision',
+    });
+    const last = data.log[data.log.length - 1];
+    expect(last.model).toBe('opus');
+    expect(last.modelRationale).toBe('system-design decision');
+  });
+});
+
+describe('agent-done — clears model field', () => {
+  test('agent-done sets agents.<name>.model to null', () => {
+    const data = baseState();
+    HANDLERS['agent-start'](data, { agent: 'Pixel', story: 'US-0181', task: 't', model: 'sonnet' });
+    HANDLERS['agent-done'](data, { agent: 'Pixel', story: 'US-0181' });
+    expect(data.agents.Pixel.model).toBeNull();
+  });
+});

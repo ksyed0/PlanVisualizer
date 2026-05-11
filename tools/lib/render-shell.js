@@ -43,6 +43,20 @@ function renderMasthead(data) {
   const covLabel = cov && cov.available !== false ? `${cov.overall.toFixed(1)}%` : 'N/A';
   const totalAI = (data.costs && data.costs._totals && data.costs._totals.costUsd) || 0;
   const openBugs = (data.bugs || []).filter((b) => !/^(Fixed|Retired|Cancelled|Rejected)/i.test(b.status)).length;
+  const gs = data.githubStatus || null;
+  const ciChip = (() => {
+    if (!gs || gs.ciSummary.total === 0) return '';
+    const { passing, failing, pending, total } = gs.ciSummary;
+    const color = failing > 0 ? 'var(--risk)' : pending > 0 ? 'var(--warn)' : 'var(--ok)';
+    return `<div class="pv-meta-item pv-meta-item--hide-sm">
+    <span class="pv-meta-lbl" style="color:${color}">${passing}/${total} PRs ✓ CI</span>
+  </div>`;
+  })();
+  const prChip = gs
+    ? `<div class="pv-meta-item pv-meta-item--hide-sm">
+    <span class="pv-meta-lbl">${gs.ciSummary.total} open PRs</span>
+  </div>`
+    : '';
   /* BUG-0195: add projected budget total */
   const totalProjected = activeStories.reduce(
     (sum, st) => sum + ((data.costs && data.costs[st.id] && data.costs[st.id].projectedUsd) || 0),
@@ -76,6 +90,7 @@ function renderMasthead(data) {
         <span class="pv-meta-lbl">AI spend</span>
         <span class="pv-meta-val tnum">${usd(totalAI)}</span>
       </div>
+      ${ciChip}${prChip}
     </div>
   </div>`;
 }
@@ -111,6 +126,22 @@ function renderFilterBar(data) {
       <select id="f-bug-severity" onchange="applyFilters()" class="${sel}" aria-label="Filter bugs by severity">
         <option value="">All Severities</option>
         <option>Critical</option><option>High</option><option>Medium</option><option>Low</option>
+      </select>
+    </span>
+    <span id="fgrp-hier" class="fgrp hidden">
+      <select id="f-hier-risk" onchange="applyHierRiskFilter(this.value)" class="${sel}" aria-label="Filter by risk level">
+        <option value="all">All Risk Levels</option>
+        <option value="high">High+</option>
+        <option value="critical">Critical only</option>
+      </select>
+      <select id="f-hier-sort" onchange="sortHierarchyBy(this.value)" class="${sel}" aria-label="Sort stories">
+        <option value="default">Sort: Default order</option>
+        <option value="id">Sort: by ID</option>
+        <option value="status">Sort: by Status</option>
+        <option value="priority">Sort: by Priority</option>
+        <option value="estimate">Sort: by Estimate</option>
+        <option value="risk">Sort: by Risk ↓</option>
+        <option value="cost">Sort: by Cost ↓</option>
       </select>
     </span>
     <input id="f-search" oninput="applyFilters()" type="text" placeholder="Search IDs, titles…"

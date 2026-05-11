@@ -22,6 +22,100 @@ TARGET="${1:-$(pwd)}"
 echo "[update] Updating PlanVisualizer in: $TARGET"
 echo "[update] Source version: $(node -e "console.log(require('${REPO_ROOT}/package.json').version)" 2>/dev/null || echo 'unknown')"
 
+# ── 0. Check superpowers plugin ─────────────────────────────────────────────
+# See: https://github.com/obra/superpowers
+SP_BASE="$HOME/.claude/plugins/cache/claude-plugins-official/superpowers"
+SP_VER=$(ls "$SP_BASE" 2>/dev/null | sort -V | tail -1)
+
+if [ -z "$SP_VER" ]; then
+  echo ""
+  echo "[update] superpowers plugin not detected."
+  read -p "[update] Install superpowers for enhanced agent workflows? (y/n) " -n 1 -r; echo
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    echo ""
+    echo "[update] Run inside a Claude Code session, then re-run update.sh:"
+    echo ""
+    echo "  /plugin install superpowers@claude-plugins-official"
+    echo ""
+    echo "  See: https://github.com/obra/superpowers"
+    echo ""
+    exit 0
+  else
+    echo "[update] Skipping superpowers. Skills are optional when not installed."
+    echo ""
+  fi
+else
+  echo "[update] superpowers v${SP_VER} detected — checking for updates..."
+  SP_LATEST=$(curl -fsSL --max-time 5 \
+    "https://api.github.com/repos/obra/superpowers/releases/latest" \
+    2>/dev/null | grep '"tag_name"' | sed 's/.*"tag_name": *"\([^"]*\)".*/\1/')
+  SP_VER_CLEAN="${SP_VER#v}"
+  SP_LATEST_CLEAN="${SP_LATEST#v}"
+  if [ -z "$SP_LATEST_CLEAN" ]; then
+    echo "[update] superpowers v${SP_VER} ✓ (version check failed — skipping)"
+  elif [ "$SP_VER_CLEAN" = "$SP_LATEST_CLEAN" ]; then
+    echo "[update] superpowers v${SP_VER} ✓ (up to date)"
+  else
+    OLDER=$(printf '%s\n%s' "$SP_VER_CLEAN" "$SP_LATEST_CLEAN" | sort -V | head -1)
+    if [ "$OLDER" = "$SP_VER_CLEAN" ]; then
+      echo ""
+      echo "[update] superpowers v${SP_VER} installed — v${SP_LATEST_CLEAN} is available."
+      read -p "[update] Upgrade? (y/n) " -n 1 -r; echo
+      if [[ $REPLY =~ ^[Yy]$ ]]; then
+        echo ""
+        echo "[update] Run inside a Claude Code session, then re-run update.sh:"
+        echo ""
+        echo "  /plugin install superpowers@claude-plugins-official"
+        echo ""
+        echo "  See: https://github.com/obra/superpowers"
+        echo ""
+        exit 0
+      fi
+    else
+      echo "[update] superpowers v${SP_VER} ✓ (up to date)"
+    fi
+  fi
+fi
+
+# ── 0.1. Check claude-mem plugin ────────────────────────────────────────────
+# claude-mem provides persistent cross-session memory for Claude Code.
+CM_SETTINGS="$HOME/.claude-mem/settings.json"
+CM_BASE="$HOME/.claude/plugins/cache/thedotmack/claude-mem"
+CM_VER=$(ls "$CM_BASE" 2>/dev/null | sort -V | tail -1)
+
+if [ -f "$CM_SETTINGS" ]; then
+  if [ -n "$CM_VER" ]; then
+    echo "[update] Updating claude-mem (v${CM_VER} installed)..."
+  else
+    echo "[update] Updating claude-mem..."
+  fi
+  npx claude-mem update 2>&1 || echo "[update] Warning: claude-mem update failed — continuing."
+  echo ""
+else
+  echo ""
+  echo "[update] claude-mem not detected."
+  read -p "[update] Install claude-mem for persistent cross-session memory? (y/n) " -n 1 -r; echo
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    echo ""
+    echo "[update] Running: npx claude-mem install"
+    echo ""
+    npx claude-mem install || true
+    if [ -f "$CM_SETTINGS" ]; then
+      echo ""
+      echo "[update] claude-mem installed successfully ✓"
+      echo ""
+    else
+      echo ""
+      echo "[update] Warning: claude-mem install may have failed."
+      echo "[update] Retry manually with: npx claude-mem install"
+      echo ""
+    fi
+  else
+    echo "[update] Skipping. Install with: npx claude-mem install"
+    echo ""
+  fi
+fi
+
 # ── 1. Re-copy tool files (non-destructive to user data) ────────────────────
 echo "[update] Updating tools/ ..."
 cp -r "${REPO_ROOT}/tools" "${TARGET}/"
@@ -166,6 +260,10 @@ const toAdd = {
   'plan:cleanup:dry':        'bash scripts/cleanup-branches.sh --dry-run',
   'plan:migrate-config':     'node tools/migrate-config.js',
   'plan:migrate-config:dry': 'node tools/migrate-config.js --dry-run',
+  'memory:compact':          'node tools/memory.js compact',
+  'memory:archive':          'node tools/memory.js archive',
+  'memory:migrate':          'node tools/memory.js migrate',
+  'memory:validate':         'node tools/memory.js validate',
 };
 let added = 0;
 for (const [k, v] of Object.entries(toAdd)) {

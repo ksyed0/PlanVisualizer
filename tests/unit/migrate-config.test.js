@@ -54,7 +54,7 @@ describe('migrate-config: plan-visualizer.config.json', () => {
   test('idempotent: second run reports no changes when all fields present', () => {
     const dir = tmpDir();
     const file = path.join(dir, 'plan-visualizer.config.json');
-    // Fully-migrated config — all v2.1.0 fields already present
+    // Fully-migrated config — all v2.2.0 fields already present
     fs.writeFileSync(
       file,
       JSON.stringify({
@@ -68,6 +68,7 @@ describe('migrate-config: plan-visualizer.config.json', () => {
           labelMap: { Critical: 'critical', High: 'high', Medium: 'medium', Low: 'low' },
           defaultLabels: ['planvisualizer'],
         },
+        memory: { staleDays: 90, autoArchive: false },
       }),
     );
 
@@ -109,6 +110,7 @@ describe('migrate-config: plan-visualizer.config.json', () => {
           labelMap: { Critical: 'p0', High: 'p1', Medium: 'p2', Low: 'p3' },
           defaultLabels: ['pv', 'auto'],
         },
+        memory: { staleDays: 90, autoArchive: false },
       }),
     );
 

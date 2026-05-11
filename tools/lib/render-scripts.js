@@ -28,13 +28,16 @@ function renderScripts(data, options = {}) {
     const bar = document.getElementById('filter-bar');
     const storyGrp = document.getElementById('fgrp-story');
     const bugGrp = document.getElementById('fgrp-bug');
+    const hierGrp = document.getElementById('fgrp-hier');
     const showStory = name === 'hierarchy' || name === 'kanban';
     const showBug = name === 'bugs';
+    const showHier = name === 'hierarchy';
     const showSearch = name === 'traceability' || name === 'lessons';
     // 'status' tab has no filter bar
     bar.classList.toggle('hidden', !showStory && !showBug && !showSearch);
     storyGrp.classList.toggle('hidden', !showStory);
     bugGrp.classList.toggle('hidden', !showBug);
+    if (hierGrp) hierGrp.classList.toggle('hidden', !showHier);
   }
 
   function showTab(name) {

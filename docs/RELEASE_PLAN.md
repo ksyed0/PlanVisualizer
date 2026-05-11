@@ -1802,6 +1802,146 @@ Acceptance Criteria:
 
 ---
 
+## Epic — EPIC-0026: Memory Token Optimisation
+
+```
+
+EPIC-0026: Memory Token Optimisation
+Description: Improve the developer experience around claude-mem. Two tracks: (1) reduce token cost of loading MEMORY.md and linked topic files into context (compact mode + staleness archive); (2) integrate the live claude-mem worker dashboard with the agentic SDLC dashboard so memory activity is visible alongside pipeline state.
+Release Target: TBD
+Status: Planned
+StartDate:
+DoneDate:
+Dependencies: None
+
+```
+
+## User Stories — EPIC-0026: Memory Token Optimisation
+
+```
+
+US-0175 (EPIC-0026): As a developer, I want a --compact flag on the memory system that produces a trimmed version of MEMORY.md and topic files, so that I can reduce the token overhead of memory injection in token-sensitive sessions.
+Priority: Low (P3)
+Estimate: M
+Status: Planned
+Branch: feature/US-0175-memory-token-optimisation
+Acceptance Criteria:
+
+- [ ] AC-0635: Running the compact command produces a MEMORY.compact.md that contains only the one-line index entries from MEMORY.md (no topic file content inlined)
+- [ ] AC-0636: Memories older than a configurable staleness threshold (default: 90 days, based on file mtime) are moved to a MEMORY.archive.md and removed from the active index
+      Dependencies: None
+
+```
+
+```
+
+US-0176 (EPIC-0026): As a developer running the agentic SDLC dashboard, I want a live link to the local claude-mem worker dashboard so I can correlate agent pipeline activity with memory observations being captured in real time.
+Priority: Low (P3)
+Estimate: S
+Status: Done
+Branch: bugfix/BUG-0254-0257-dashboard-ux-and-data-issues
+DoneDate: 2026-05-10
+Acceptance Criteria:
+
+- [x] AC-0637: Agentic dashboard sidebar shows a "MEMORY" widget when claude-mem is detected (~/.claude-mem/settings.json exists at generate time), with a "view live →" link to http://${CLAUDE_MEM_WORKER_HOST}:${CLAUDE_MEM_WORKER_PORT} (defaults: 127.0.0.1:37701)
+- [x] AC-0638: Widget shows observation count from claude-mem.db when accessible; falls back to "live" status indicator when DB read fails
+- [x] AC-0639: Widget is hidden when claude-mem is not installed (no settings.json present); no errors thrown
+      Dependencies: None (claude-mem detection is independent of EPIC-0026 US-0175)
+
+```
+
+```
+
+US-0177 (EPIC-0026): As a developer adopting PlanVisualizer, I want install.sh and update.sh to detect and offer to install/upgrade superpowers and claude-mem so I can wire up both optional plugins without separate manual steps.
+Priority: Medium (P1)
+Estimate: S
+Status: Done
+Branch: feature/plugin-install-integration
+DoneDate: 2026-05-10
+Acceptance Criteria:
+
+- [x] AC-0640: install.sh §0 detects superpowers, fetches latest release tag from the GitHub API, prompts to upgrade if a newer version is available, and exits 0 on either install or upgrade y-path
+- [x] AC-0641: install.sh §0.1 detects claude-mem via ~/.claude-mem/settings.json; runs `npx claude-mem install` (interactive) when not installed; shows version when installed
+- [x] AC-0642: update.sh §0 mirrors install.sh §0 with [update] prefix
+- [x] AC-0643: update.sh §0.1 runs `npx claude-mem update` when claude-mem is installed; prompts to install otherwise
+- [x] AC-0644: README "Optional Plugins" section under Prerequisites documents both plugins; Updating section notes plugin checks
+      Dependencies: None
+
+```
+
+```
+
+US-0178 (EPIC-0026): As a maintainer running the memory layout migration, I want a single `tools/memory.js migrate-commit` command that runs the migration, patches CLAUDE.md, runs tests, commits, and optionally creates a PR — so PR B is reproducible and gated rather than a manual three-step ritual.
+Priority: Low (P3)
+Estimate: M
+Status: Planned
+Branch: feature/US-0178-memory-migrate-commit
+Acceptance Criteria:
+
+- [ ] AC-0645: New `tools/memory.js migrate-commit` subcommand orchestrates pre-flight checks → `migrate` → CLAUDE.md patch → `npx jest` → `validate` → `git add` (only memory paths) → `git commit` with templated message including counts
+- [ ] AC-0646: `--push` flag adds `git push -u origin <branch>` after commit; `--pr` flag adds `gh pr create` with auto-discovered PR-A reference (via `gh pr list --search "feature/US-0175 in:head"`)
+- [ ] AC-0647: `--dry` prints every operation (including unified diff of proposed CLAUDE.md changes and full commit message) without writing
+- [ ] AC-0648: CLAUDE.md patcher is AST-style (find `## Mandatory Session Startup` heading, insert templated bullet at known position; renumber subsequent items; for Session Close Checklist, replace the canonical "MEMORY.md updated with new learnings" checkbox with 4 nested lines)
+- [ ] AC-0649: Idempotency — when CLAUDE.md already contains the spec marker string, patcher is a no-op; when `docs/memory/topics/` exists and is non-empty, command aborts unless `--force`
+- [ ] AC-0650: Abort safely on dirty working tree, on `develop`/`main` branch, on test failures, on validate drift, on patcher detecting an edited Session Close Checklist (not matching canonical text); commit never lands when any abort fires
+      Dependencies: US-0175 (PR A merged)
+
+```
+
+```
+
+US-0179 (EPIC-0026): As a developer using the subagent-driven pipeline, I want the memory system to recommend the appropriate model for each task based on topic complexity signals, so I don't have to manually decide between haiku/sonnet/opus for every dispatch.
+Priority: Low (P3)
+Estimate: M
+Status: Planned
+Branch: feature/US-0179-memory-model-optimisation
+Acceptance Criteria:
+
+- [ ] AC-0651: Each topic file optionally includes a `<!-- complexity: low|medium|high -->` comment on its second line; `readEntries` surfaces this as a `complexity` field on each entry
+- [ ] AC-0652: New `tools/memory.js suggest-model --task "<brief description>"` subcommand reads all topic files, matches task keywords against topic titles and content, returns a recommended model (`haiku|sonnet|opus`) with a brief justification listing which topics were matched and what drove the decision
+- [ ] AC-0653: `renderIndex` includes a `Complexity` column in the compact MEMORY.md listing per topic (e.g. `[Project Identity](path) · 2026-03-09 · low`) so a session can scan complexity at a glance before choosing a model
+- [ ] AC-0654: CLAUDE.md updated to reference `npm run memory:suggest-model -- --task "..."` as a pre-task step for choosing the right model in agent workflows
+      Dependencies: US-0175 (PR A merged)
+
+```
+
+---
+
+## Epic — EPIC-0027: Data Store Architecture Assessment
+
+```
+
+EPIC-0027: Data Store Architecture Assessment
+Description: Structured markdown files (RELEASE_PLAN.md, BUGS.md, TEST_CASES.md, AI_COST_LOG.md, MEMORY.md) are the current data store. Assess whether migrating to a proper data store (SQLite, JSON, or a hybrid) would reduce parse complexity, improve query performance, and unlock richer analytics — and produce a concrete recommendation with a migration plan or a justified decision to stay on markdown.
+Release Target: TBD
+Status: Planned
+StartDate:
+DoneDate:
+Dependencies: None
+
+```
+
+## User Stories — EPIC-0027: Data Store Architecture Assessment
+
+```
+
+US-0181 (EPIC-0027): As a project maintainer, I want a documented assessment of replacing structured markdown files with an alternative data store, so that I can make an informed architectural decision before the project scales further.
+Priority: Low (P3)
+Estimate: L
+Status: Planned
+Branch: feature/US-0181-data-store-assessment
+Acceptance Criteria:
+
+- [ ] AC-0659: Assessment document at `docs/architecture/data-store-assessment.md` covering: (1) current markdown schema surface (tables, parse time, query patterns), (2) candidate alternatives (SQLite via better-sqlite3, JSON sidecar files, DuckDB, PostgreSQL), (3) pros/cons matrix for each candidate against the criteria: parse performance, query flexibility, git-diffability, zero-dependency install, schema evolution, multi-agent concurrency safety
+- [ ] AC-0660: Assessment includes benchmarks — parse time of current RELEASE_PLAN.md (≈3,000 lines) vs equivalent SQLite query; median generate-plan.js wall time with and without proposed store
+- [ ] AC-0661: Assessment concludes with a clear recommendation (migrate or stay) with justification; if "migrate", includes a phased migration plan (which files first, backward-compat strategy, rollback path); if "stay", lists the specific thresholds that would trigger a future reassessment
+- [ ] AC-0662: Assessment reviewed and approved by project owner before any migration work begins
+      Dependencies: None
+
+```
+
+---
+
 ## Standalone Stories
 
 ```
@@ -2148,6 +2288,35 @@ Acceptance Criteria:
   - [x] AC-0342: Title and subtitle use DASH_META.title/subtitle from agents.config.json (configurable per project)
   - [x] AC-0343: Author attribution (if present in agents.config.json) renders as a centered footer line below the metadata
 Dependencies: US-0108
+```
+
+```
+US-0174 (EPIC-0014): As a developer, I want a dedicated PR Status tab in plan-status.html showing open pull requests, CI check results, and deployment history, so that I can monitor GitHub activity in full detail without leaving the dashboard.
+Priority: Low (P3)
+Estimate: M
+Status: Planned
+Branch: feature/US-0174-pr-status-tab
+Acceptance Criteria:
+  - [ ] AC-0632: A "GitHub" tab appears in the sidebar when github.enabled = true and GITHUB_TOKEN is set
+  - [ ] AC-0633: The tab lists all open PRs with title, PR number (linked), CI check status (pass/fail/pending), review count, and age
+  - [ ] AC-0634: A deployment history section shows the last 5 deployments with environment, status, sha/tag, and timestamp
+Dependencies: US-0171, US-0172, US-0173
+```
+
+```
+US-0180 (EPIC-0014): As the Conductor and each specialist agent in the agentic SDLC pipeline, I want to select the appropriate LLM model (haiku/sonnet/opus) based on task complexity at dispatch time, so that routine tasks use cheaper/faster models and only high-complexity decisions escalate to more capable models.
+Priority: Medium (P1)
+Estimate: M
+Status: Planned
+Branch: feature/US-0180-agent-model-selection
+Acceptance Criteria:
+
+- [ ] AC-0655: Each agent instruction file in `docs/agents/` gains a `## Model Selection` section that maps task type to recommended model tier (e.g. "code review → sonnet", "simple grep/read → haiku", "architecture decision → opus"); the DM_AGENT reads this section before dispatching
+- [ ] AC-0656: `docs/agents/DM_AGENT.md` updated with a model-selection decision table covering all 9 specialist agents and common dispatch scenarios (story-start, code review, test execution, bug triage, release prep)
+- [ ] AC-0657: `tools/update-sdlc-status.js` gains a `dispatch-model` command that the Conductor calls to log which model was selected for a given dispatch, surfacing model-spend attribution in the agentic dashboard's Agent Workload section
+- [ ] AC-0658: Agentic dashboard Agent Workload widget shows model tier (H/S/O badge) alongside each agent's active/idle status
+      Dependencies: US-0108
+
 ```
 
 ```

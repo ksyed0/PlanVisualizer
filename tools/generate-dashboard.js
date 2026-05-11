@@ -9,8 +9,9 @@
  */
 
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
-const { execSync } = require('child_process');
+const { execSync, execFileSync } = require('child_process');
 // US-0125 (EPIC-0016): shared semantic badge helpers extracted from
 // tools/lib/render-html.js. Imported here so later stories
 // (US-0118/US-0119/US-0120) can wire the Agentic Dashboard's status
@@ -23,6 +24,8 @@ const { execSync } = require('child_process');
 const { badge, BADGE_TONE, generateDashboardCssTokens } = require('./lib/theme');
 const { renderChrome, SHELL_CHROME_CSS } = require('./lib/render-shell');
 const { renderAboutModal } = require('./lib/render-html');
+const { HANDLERS: sdlcHandlers } = require('./update-sdlc-status');
+const { atomicReadModifyWriteJson: atomicRMW } = require('../orchestrator/atomic-write');
 
 const ROOT = path.resolve(__dirname, '..');
 
@@ -204,6 +207,55 @@ function formatElapsed(startedAt, nowMs) {
   if (hours > 0) return `${hours}h ${minutes}m`;
   if (minutes > 0) return `${minutes}m`;
   return `${seconds}s`;
+}
+
+function timeAgoJS(isoString) {
+  if (!isoString) return '';
+  const diffMs = Date.now() - new Date(isoString).getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 1) return 'just now';
+  if (diffMin < 60) return `${diffMin}m ago`;
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `${diffHr}h ago`;
+  return '>1d ago';
+}
+
+// US-0176 (EPIC-0026): claude-mem detection for the MEMORY sidebar widget.
+// Returns { host, port, dbPath } when ~/.claude-mem/settings.json is readable,
+// or null when claude-mem is not installed. Errors are swallowed silently —
+// claude-mem is an optional plugin; its absence must never break dashboard
+// generation (AC-0639).
+function loadClaudeMemSettings() {
+  try {
+    const settingsPath = path.join(os.homedir(), '.claude-mem', 'settings.json');
+    if (!fs.existsSync(settingsPath)) return null;
+    const raw = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+    return {
+      host: raw.CLAUDE_MEM_WORKER_HOST || '127.0.0.1',
+      port: raw.CLAUDE_MEM_WORKER_PORT || '37701',
+      dbPath: path.join(os.homedir(), '.claude-mem', 'claude-mem.db'),
+    };
+  } catch {
+    return null;
+  }
+}
+
+// AC-0638: try to read observation count from claude-mem.db using the system
+// `sqlite3` CLI. Returns the count as a number, or null when the read fails
+// (db missing, table missing, sqlite3 not on PATH, locked DB, anything else).
+function readClaudeMemObservationCount(dbPath) {
+  if (!dbPath || !fs.existsSync(dbPath)) return null;
+  try {
+    const out = execFileSync('sqlite3', [dbPath, 'SELECT COUNT(*) FROM observations;'], {
+      encoding: 'utf8',
+      timeout: 2000,
+      stdio: ['ignore', 'pipe', 'ignore'],
+    });
+    const n = parseInt(String(out).trim(), 10);
+    return Number.isFinite(n) ? n : null;
+  } catch {
+    return null;
+  }
 }
 
 // US-0147: Agent Workload — builds per-agent bar chart from sdlcStatus.stories
@@ -416,6 +468,28 @@ function generateHTML(status) {
   // SVG doughnut geometry. With r=15.9155 the circumference is exactly 100,
   // so stroke-dasharray can be written as "<percent> 100" without extra math.
   const doughnutOffset = (100 - Math.max(0, Math.min(100, coveragePct))).toFixed(2);
+
+  // Pre-computed to avoid nested template literal inside the main HTML string
+  const lbCiChip = (() => {
+    const gs = status.githubStatus;
+    if (!gs || gs.ciSummary.total === 0) return '';
+    const { failing, pending } = gs.ciSummary;
+    const color = failing > 0 ? 'var(--risk)' : pending > 0 ? 'var(--warn)' : 'var(--ok)';
+    const label = failing > 0 ? '&#10007; CI' : pending > 0 ? '&#8635; CI' : '&#10003; CI';
+    return (
+      '<span id="pv-lb-ci-chip" style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;' +
+      'background:color-mix(in oklab,' +
+      color +
+      ' 15%,transparent);color:' +
+      color +
+      ';' +
+      'border:1px solid color-mix(in oklab,' +
+      color +
+      ' 40%,transparent)">' +
+      label +
+      '</span>'
+    );
+  })();
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -1848,6 +1922,10 @@ function generateHTML(status) {
   .mc-active-name { font-size: 17px; font-weight: 700; color: oklch(93% 0.10 70); line-height: 1; }
   .mc-active-role { font-size: 10px; color: oklch(70% 0.15 50); margin-top: 3px; }
   .mc-active-badge { background: oklch(72% 0.19 38); color: oklch(0% 0 0); font-size: 9px; font-weight: 800; letter-spacing: .1em; padding: 3px 11px; border-radius: 20px; flex-shrink: 0; margin-top: 2px; }
+  .mc-agent-model-chip { font-size: 9px; padding: 1px 6px; border-radius: 8px; margin-left: 4px; display: inline-block; font-weight: 600; }
+  .mc-agent-model-chip.haiku { background: oklch(72% 0.17 145 / 10%); color: oklch(60% 0.08 145); }
+  .mc-agent-model-chip.sonnet { background: oklch(55% 0.19 264 / 10%); color: oklch(60% 0.08 260); }
+  .mc-agent-model-chip.opus { background: oklch(55% 0.22 290 / 10%); color: oklch(60% 0.1 290); }
   .mc-active-story { background: oklch(0% 0 0 / .35); border-radius: 6px; padding: 7px 10px; font-size: 10px; margin-bottom: 6px; }
   .mc-active-story-id { color: oklch(83% 0.15 70); font-weight: 700; margin-right: 6px; }
   .mc-active-story-desc { color: oklch(70% 0.15 50); }
@@ -2113,6 +2191,7 @@ ${(() => {
 <div class="pv-live-bar" id="pv-live-bar" role="status" aria-live="polite" style="display:none;">
   <div class="pv-live-col-left">
     <span class="pv-on-air">ON AIR</span>
+    ${lbCiChip}
   </div>
   <div class="pv-live-col-mid">
     <div class="pv-live-exec-lbl">NOW EXECUTING</div>
@@ -2273,6 +2352,10 @@ ${(() => {
       const startedAt = (agent && agent.startedAt) || '';
       const storyId = (task.match(/US-\d{4}/) || [])[0] || '';
       const onerror = `this.src='${imgBase}/optimized/${esc(avatar)}-160.png'`;
+      const modelChip =
+        agent.model && ['haiku', 'sonnet', 'opus'].includes(agent.model)
+          ? `<span class="mc-agent-model-chip ${agent.model}">${agent.model}</span>`
+          : '';
       return `<div class="mc-active-card agent-card is-active active" id="agent-${esc(name)}" data-agent-name="${esc(name)}" data-agent="${esc(name)}" data-agent-status="active" style="--agent-color:${color};">
   <div class="mc-active-portrait-banner">
     <img src="${imgBase}/${esc(avatar)}.png" alt="${esc(name)}" onerror="${esc(onerror)}">
@@ -2284,7 +2367,7 @@ ${(() => {
         <div class="mc-active-name">${esc(name)}</div>
         <div class="mc-active-role">${esc(role)}</div>
       </div>
-      <span class="mc-active-badge">ACTIVE</span>
+      <span class="mc-active-badge">ACTIVE</span>${modelChip}
     </div>
     ${task ? `<div class="mc-active-story"><span class="mc-active-story-id">${esc(storyId)}</span><span class="mc-active-story-desc">${esc(task)}</span></div>` : ''}
     <div class="mc-active-meta">
@@ -2551,11 +2634,14 @@ ${
       const blockedCount = blockedAgents.length;
       const reviewCount = reviewAgents.length;
       const bugsCount = metrics.bugsOpen || 0;
+      const gs = status && status.githubStatus;
+      const prsNeedingReview = gs ? (gs.prs || []).filter((p) => p.reviewCount === 0).length : 0;
       return (
         `<div class="mc-attn-chips">
         <span class="mc-attn-chip${blockedCount > 0 ? ' risk' : ''}">${blockedCount} blocked</span>
         <span class="mc-attn-chip${reviewCount > 0 ? ' info' : ''}">${reviewCount} review</span>
         <span class="mc-attn-chip${bugsCount > 0 ? ' warn' : ''}">${bugsCount} bugs</span>
+        ${prsNeedingReview > 0 ? `<span class="mc-attn-chip warn">${prsNeedingReview} PRs need review</span>` : ''}
       </div>` +
         (blockedAgents.length === 0 && reviewAgents.length === 0
           ? `<div style="font-size:11px;color:var(--mc-muted);font-style:italic;padding:4px 0;">All clear — no blockers.</div>`
@@ -2579,6 +2665,54 @@ ${
       );
     })()}
   </div>
+
+  <!-- GITHUB sidebar widget -->
+  <div class="mc-sidebar-panel">
+    <div class="mc-sidebar-title">GITHUB</div>
+    ${(() => {
+      const gs = status && status.githubStatus;
+      if (!gs)
+        return `<div style="font-size:11px;color:var(--mc-muted);font-style:italic;">Starting up — no data yet</div>`;
+      const prRows = (gs.prs || [])
+        .slice(0, 4)
+        .map((pr) => {
+          const color =
+            pr.ciStatus === 'success' ? 'var(--ok)' : pr.ciStatus === 'failure' ? 'var(--risk)' : 'var(--mc-muted)';
+          const icon = pr.ciStatus === 'success' ? '✓' : pr.ciStatus === 'failure' ? '✗' : '⟳';
+          return `<div style="font-size:11px;color:var(--mc-muted);margin-bottom:2px">
+          <a href="${esc(pr.url)}" target="_blank" rel="noopener" style="color:var(--info)">#${pr.number}</a>
+          <span style="color:${color}">${icon}</span>
+          ${esc((pr.title || '').slice(0, 32))}${(pr.title || '').length > 32 ? '…' : ''}
+        </div>`;
+        })
+        .join('');
+      const deployLine = gs.deployment
+        ? `<div style="font-size:10px;color:var(--mc-dim);margin-top:4px">↑ ${esc(gs.deployment.ref)} · ${esc(gs.deployment.environment)}</div>`
+        : '';
+      const staleLabel = gs.fetchedAt
+        ? `<div style="font-size:9px;color:var(--mc-dim);margin-top:4px">last updated ${esc(timeAgoJS(gs.fetchedAt))}</div>`
+        : '';
+      return `${prRows || '<div style="font-size:11px;color:var(--mc-muted);font-style:italic;">No open PRs</div>'}${deployLine}${staleLabel}`;
+    })()}
+  </div>
+
+  <!-- MEMORY sidebar widget — US-0176 (EPIC-0026) -->
+  ${(() => {
+    const cmSettings = loadClaudeMemSettings();
+    if (!cmSettings) return ''; // AC-0639: hidden when claude-mem not installed
+    const obsCount = readClaudeMemObservationCount(cmSettings.dbPath);
+    const url = `http://${cmSettings.host}:${cmSettings.port}`;
+    const statusLine =
+      obsCount !== null
+        ? `<div style="font-size:11px;color:var(--mc-muted);margin-bottom:4px"><span style="color:var(--ok)">●</span> ${obsCount.toLocaleString()} observations</div>`
+        : `<div style="font-size:11px;color:var(--mc-muted);margin-bottom:4px"><span style="color:var(--ok)">●</span> live</div>`;
+    return `<div class="mc-sidebar-panel">
+    <div class="mc-sidebar-title">MEMORY</div>
+    ${statusLine}
+    <div style="font-size:10px;color:var(--mc-dim);margin-bottom:4px">${esc(cmSettings.host)}:${esc(cmSettings.port)}</div>
+    <a href="${esc(url)}" target="_blank" rel="noopener" style="font-size:11px;color:var(--info)">view live →</a>
+  </div>`;
+  })()}
 
   <!-- EVENT LOG panel -->
   <div class="mc-sidebar-panel">
@@ -2607,7 +2741,8 @@ ${(() => {
                 : tagKey
                   ? tagKey.toUpperCase()
                   : '';
-      return `      <div class="mc-evt-card">
+      const isGh = (entry.agent || '').toLowerCase() === 'github';
+      return `      <div class="mc-evt-card"${isGh ? ' style="border-left:3px solid oklch(60% 0.18 260)"' : ''}>
         <div class="mc-evt-card-head">
           <span class="mc-evt-card-agent"><span class="mc-evt-card-dot" style="background:${agentColor}" aria-hidden="true"></span>${esc(entry.agent || 'System')}</span>
           <span class="mc-evt-time">${esc(timeFormatted)}</span>
@@ -3852,6 +3987,40 @@ function generate() {
   console.log(`[${new Date().toLocaleTimeString()}] Dashboard generated: ${OUTPUT_PATH}`);
 }
 
+let _pollTimer = null;
+
+function _managePollTimer(statusPath) {
+  let sdlc;
+  try {
+    sdlc = JSON.parse(fs.readFileSync(statusPath, 'utf8'));
+  } catch (_) {
+    return;
+  }
+  const gs = sdlc && sdlc.githubStatus;
+  const shouldPoll =
+    gs &&
+    gs.ciPollUntil &&
+    new Date(gs.ciPollUntil) > new Date() &&
+    gs.prs &&
+    gs.prs.some((p) => p.ciStatus === 'pending');
+
+  if (shouldPoll && !_pollTimer) {
+    _pollTimer = setInterval(async () => {
+      try {
+        await atomicRMW(statusPath, (data) => sdlcHandlers['github-status'](data, { token: process.env.GITHUB_TOKEN }));
+      } catch (e) {
+        console.warn('[generate-dashboard] poll-until failed:', e.message);
+      }
+      _managePollTimer(statusPath);
+    }, 60000);
+    console.log('[generate-dashboard] CI poll-until loop started');
+  } else if (!shouldPoll && _pollTimer) {
+    clearInterval(_pollTimer);
+    _pollTimer = null;
+    console.log('[generate-dashboard] CI poll-until loop stopped');
+  }
+}
+
 // Main — only run the pipeline when invoked as a CLI, so tests and other
 // consumers can safely `require('tools/generate-dashboard')` to access
 // generateHTML without triggering file writes or fs.watch side-effects.
@@ -3866,8 +4035,10 @@ if (require.main === module) {
       debounce = setTimeout(() => {
         console.log(`[${new Date().toLocaleTimeString()}] Status changed, regenerating...`);
         generate();
+        _managePollTimer(STATUS_PATH);
       }, 500);
     });
+    _managePollTimer(STATUS_PATH);
   }
 }
 

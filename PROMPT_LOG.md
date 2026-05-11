@@ -4,6 +4,138 @@ Timestamped log of every user prompt across all sessions. Append-only. Never edi
 
 ---
 
+## Session 44 — 2026-05-10/11
+
+| #   | Timestamp            | Prompt                                                                                          |
+| --- | -------------------- | ----------------------------------------------------------------------------------------------- |
+| 1   | 2026-05-10T21:51:00Z | 1 with us-0180 in parallel                                                                      |
+| 2   | 2026-05-10T22:10:00Z | (continued — reviewing CI for PR 997 and 998 until green then merge)                            |
+| 3   | 2026-05-10T22:15:00Z | continue with US-0179                                                                           |
+| 4   | 2026-05-11T10:30:00Z | review CI for PR 997 and 998 until they turn green then merge / continue                        |
+| 5   | 2026-05-11T10:35:00Z | whats next                                                                                      |
+| 6   | 2026-05-11T10:36:00Z | 2 (session close)                                                                               |
+| 7   | 2026-05-11T10:38:00Z | monitor CI and fix any issues, when green merge and close session (×3 wakeups)                  |
+| 8   | 2026-05-11T10:42:00Z | monitor CI and fix any issues, when green merge and close session (final merge + session close) |
+
+---
+
+## Session 43 — 2026-05-10
+
+| #   | Timestamp            | Prompt                                                                                              |
+| --- | -------------------- | --------------------------------------------------------------------------------------------------- |
+| 1   | 2026-05-10T16:00:00Z | Continue from where you left off                                                                    |
+| 2   | 2026-05-10T16:02:00Z | try again i restarted and seems to be working [network fixed]                                       |
+| 3   | 2026-05-10T16:05:00Z | lets execute US-0175 PR A                                                                           |
+| 4   | 2026-05-10T16:06:00Z | can you explain #2 [re: US-0175 memory token optimisation]                                          |
+| 5   | 2026-05-10T16:10:00Z | lets start brainstorming for us-0175                                                                |
+| 6   | 2026-05-10T16:12:00Z | B [compact + split into topic files]                                                                |
+| 7   | 2026-05-10T16:14:00Z | b+c [grouped folders + auto-detection by section title]                                             |
+| 8   | 2026-05-10T16:16:00Z | 1. Default 90 config in settings 2. B (archive subfolder) 3. X (snapshot N=1) 4. P (mtime from git) |
+| 9   | 2026-05-10T16:18:00Z | A [topic files source of truth, MEMORY.md generated]                                                |
+| 10  | 2026-05-10T16:20:00Z | what do you think [re: Section 1 design]                                                            |
+| 11  | 2026-05-10T16:22:00Z | yes [to patching 4 issues in Section 1]                                                             |
+| 12  | 2026-05-10T16:24:00Z | what do you think [re: Section 5 migration]                                                         |
+| 13  | 2026-05-10T16:26:00Z | 1.agree 2.OK 3.agree 4.no human review 5.agree 6.agree / can we optimize model usage                |
+| 14  | 2026-05-10T16:28:00Z | can you write a spec to automate PR B as well as a future story                                     |
+| 15  | 2026-05-10T16:30:00Z | lets continue [writing-plans skill]                                                                 |
+| 16  | 2026-05-10T16:32:00Z | review the implementation plan                                                                      |
+| 17  | 2026-05-10T16:34:00Z | do we need to update CLAUDE.md / we should update README                                            |
+| 18  | 2026-05-10T16:36:00Z | yes [add README task]                                                                               |
+| 19  | 2026-05-10T16:38:00Z | 1 [subagent-driven execution]                                                                       |
+| 20  | 2026-05-10T16:40:00Z | continue [resumed after model switch]                                                               |
+| 21  | 2026-05-10T19:00:00Z | lets execute US-0175 PR A                                                                           |
+| 22  | 2026-05-10T19:02:00Z | 1 [option 1: push and create PR]                                                                    |
+| 23  | 2026-05-10T19:10:00Z | yes [monitor CI and merge when green]                                                               |
+| 24  | 2026-05-10T19:30:00Z | is the model optimization being done for the build or part of the memory feature                    |
+| 25  | 2026-05-10T19:32:00Z | yes [add US-0179 memory model optimisation]                                                         |
+| 26  | 2026-05-10T20:00:00Z | add DM agent model selection feature to release plan                                                |
+| 27  | 2026-05-10T20:02:00Z | add data store assessment to release plan                                                           |
+| 28  | 2026-05-10T20:05:00Z | whats next                                                                                          |
+| 29  | 2026-05-10T20:06:00Z | 1 then 2 [session close then PR B migration]                                                        |
+
+---
+
+## Session 42 — 2026-05-09/10
+
+| #   | Timestamp            | Prompt                                                                                       |
+| --- | -------------------- | -------------------------------------------------------------------------------------------- |
+| 1   | 2026-05-09T22:00:00Z | did you already add in a superpowers plugin / skill dependency                               |
+| 2   | 2026-05-09T22:05:00Z | can you add a new feature to integrate Claude-Mem in the install and configuration / upgrade |
+| 3   | 2026-05-09T22:10:00Z | can you add a feature to ask the user if they want to install obra/superpowers ...           |
+| 4   | 2026-05-09T22:15:00Z | for claude-mem its installation and configuration per the original repo script               |
+| 5   | 2026-05-09T22:20:00Z | for superpowers I agree but prefer if the script can detect a newer version is available     |
+| 6   | 2026-05-09T22:25:00Z | looks good                                                                                   |
+| 7   | 2026-05-09T22:30:00Z | lets proceed to implementation plan                                                          |
+| 8   | 2026-05-09T22:35:00Z | review the implementation plan                                                               |
+| 9   | 2026-05-09T22:40:00Z | do we need to updated Claude.md as part of the implementation plan? We should update README  |
+| 10  | 2026-05-09T22:45:00Z | yes I accept both your suggested fixes 1 and 2 from the previous ask                         |
+| 11  | 2026-05-09T22:50:00Z | 1 [Subagent-Driven Development]                                                              |
+| 12  | 2026-05-10T00:00:00Z | Please apply the sidechat here / broaden EPIC-0026 + add US-0176                             |
+| 13  | 2026-05-10T00:05:00Z | 2 [Push and create PR]                                                                       |
+| 14  | 2026-05-10T00:10:00Z | monitor the CI and merge when green                                                          |
+| 15  | 2026-05-10T00:15:00Z | open the plat status from develop                                                            |
+| 16  | 2026-05-10T00:20:00Z | what should I look for                                                                       |
+| 17  | 2026-05-10T12:00:00Z | Hierarchy view risk filter / velocity box / Lessons sort / plugin install story / Trends     |
+| 18  | 2026-05-10T12:30:00Z | whats next                                                                                   |
+| 19  | 2026-05-10T12:35:00Z | ok lets do all of these as presented, fix all the bugs and then go to us-0176                |
+
+---
+
+## Session 41 — 2026-05-08/09
+
+| #   | Timestamp            | Prompt                                                                                                   |
+| --- | -------------------- | -------------------------------------------------------------------------------------------------------- |
+| 1   | 2026-05-08T20:00:00Z | clean up unused branches                                                                                 |
+| 2   | 2026-05-08T20:01:00Z | I want to assess the feasibility of incorporating GitHub status monitoring into Plan Visualizer          |
+| 3   | 2026-05-08T20:05:00Z | Detect my project's dev servers and save all their configurations to .claude/launch.json                 |
+| 4   | 2026-05-08T20:10:00Z | i can't see the option preview, the current claude preview window says [Set up screen]                   |
+| 5   | 2026-05-08T20:15:00Z | the preview window is showing fablesoft.biz website                                                      |
+| 6   | 2026-05-08T20:18:00Z | no, the preview panel is still showing fablesoft.biz and opening localhost:4321 also shows the same      |
+| 7   | 2026-05-08T20:20:00Z | OK I thought we fixed the blank gap at the top of the plan status screen / What are we looking for next  |
+| 8   | 2026-05-08T20:25:00Z | yes, lets use the visualizer - I have Chrome open, lets use it there (use a new port)                    |
+| 9   | 2026-05-08T20:30:00Z | looks good, lets log a future enhancement to add a PR Status tab                                         |
+| 10  | 2026-05-08T20:32:00Z | next question                                                                                            |
+| 11  | 2026-05-08T20:35:00Z | I agree for this page to use Option A but we should iterate the same decisions for the agentic dashboard |
+| 12  | 2026-05-08T20:38:00Z | C                                                                                                        |
+| 13  | 2026-05-08T20:40:00Z | I like option A, but what happens when CI is running for 10 minutes with no events?                      |
+| 14  | 2026-05-08T20:42:00Z | I like the first option of a 60 second poll, but does the stale data warning apply in other areas?       |
+| 15  | 2026-05-08T20:44:00Z | This is good for now                                                                                     |
+| 16  | 2026-05-08T20:45:00Z | what do you think [re: design summary]                                                                   |
+| 17  | 2026-05-08T20:46:00Z | 1. PR x CI passing chip 2. Starting up no data 3. ok with density / continue with spec                   |
+| 18  | 2026-05-08T20:48:00Z | what do you think [re: spec]                                                                             |
+| 19  | 2026-05-08T20:50:00Z | yes [patch 4 spec gaps]                                                                                  |
+| 20  | 2026-05-08T20:51:00Z | can we add to the roadmap a token saver option for memory files to a future epic                         |
+| 21  | 2026-05-08T20:52:00Z | ok use subagent drive pipeline to implement the plan                                                     |
+| 22  | 2026-05-09T00:00:00Z | resume / continue                                                                                        |
+| 23  | 2026-05-09T00:02:00Z | 2 [Push and create PR — finishing-a-development-branch]                                                  |
+| 24  | 2026-05-09T00:03:00Z | 2 [second "2" — interpreted as session close confirmation]                                               |
+| 25  | 2026-05-09T00:05:00Z | monitor CI 989 until green then merge                                                                    |
+| 26  | 2026-05-09T00:06:00Z | Continue from where you left off                                                                         |
+| 27  | 2026-05-09T00:07:00Z | yes [session close]                                                                                      |
+
+---
+
+## Session 40 — 2026-05-05
+
+| #   | Timestamp            | Prompt                                                                              |
+| --- | -------------------- | ----------------------------------------------------------------------------------- |
+| 1   | 2026-05-05T14:00:00Z | clean up unused branches                                                            |
+| 2   | 2026-05-05T14:05:00Z | whats next                                                                          |
+| 3   | 2026-05-05T14:06:00Z | create a PR from Develop to Main and create a new release based on main after merge |
+| 4   | 2026-05-05T14:07:00Z | fix bug-0253                                                                        |
+| 5   | 2026-05-05T14:30:00Z | proceed with push to main and updated release                                       |
+| 6   | 2026-05-05T14:45:00Z | close the session                                                                   |
+
+---
+
+## Session 39 — 2026-05-04/05
+
+| #   | Timestamp            | Prompt                                                                                                                                                                                                                                                                                                |
+| --- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | 2026-05-05T12:00:00Z | cleanup unused branches and then: read AGENTS.md, MEMORY.md, PROMPT_LOG.md. A — Dependabot PR #532. B — US-0170 4-digit ID cap. C — EPIC-0025 GitHub Issues Sync (US-0171, US-0172, US-0173). Also: add team.png to README; sync BUGS.md to GitHub Issues; fix install scripts; fix blank topbar gap. |
+
+---
+
 ## Session 38 — 2026-05-04
 
 | #   | Timestamp            | Prompt                                                                                                                                                                                                  |

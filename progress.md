@@ -4,6 +4,163 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 44 — 2026-05-10/11 (US-0178 migrate-commit + US-0179 suggest-model + US-0180 agent model selection)
+
+### What Was Done
+
+- **PR #997 — US-0178 Automated PR B (`migrate-commit`):** Added `tools/memory.js migrate-commit` subcommand with 7-step pipeline (pre-flight → migrate → patch CLAUDE.md → test → validate → commit → optional push/PR). Created `memory-claude-md-patcher.js` (idempotent AST-style CLAUDE.md patcher, two patches) and `memory-commit-orchestrator.js`. Fixed CodeQL `js/file-system-race` TOCTOU in CLAUDE.md read by replacing `existsSync+readFileSync` with try/catch on `readFileSync`. 886 tests.
+- **PR #998 — US-0180 Agent Model Selection:** Added `--model`/`--model-rationale` flags to `agent-start`; `agent-done` clears model field. Added inline model chip (haiku/sonnet/opus, low-saturation oklch palette) to Agent Workload dashboard widget. Added `## Model Selection` tables to all 8 specialist agent files + scenario quick-reference + Model Selection Ritual to DM_AGENT.md. New `agent-files.test.js` enforces format contract and ≤20% opus policy. Ran in parallel worktree. 883 tests.
+- **PR #1005 — US-0179 Memory Model Optimisation (`suggest-model`):** Extended `readEntries` with `complexity` + `headBody`. New `memory-model-suggester.js` (tokenise + word-boundary scoring + two-tier aggregation: haiku/sonnet). `renderIndex` now emits ○/◐/● badges + legend. `validateMemory` returns `warnings[]` for missing hints (non-fatal). `patchSuggestModelItem` added to patcher + chained in orchestrator. Seeded all 12 topic files with explicit hints. 940 tests.
+
+### Test Results
+
+- **940 tests, 41 suites — all pass** (develop post US-0178+US-0179+US-0180 squash-merges)
+- Coverage gate: ✅
+- All CodeQL scans: ✅ (no new alerts on any PR)
+
+### Errors or Blockers
+
+- PR #997 CodeQL `js/file-system-race`: `existsSync+readFileSync` pattern on CLAUDE.md. Fixed by try/catch ENOENT on the read (L-0057 pattern).
+- US-0179 and US-0180 feature branches created from pre-squash develop — conflicted with squash merges of US-0178/US-0180. Resolved both by cherry-picking the story-specific commits onto a fresh `*-clean` branch from current develop.
+- PROMPT_LOG.md sessions historically not tracked from Session 32+ — appending session 44 entry now.
+
+### What's Next
+
+- US-0181: Data store assessment spike (evaluate SQLite/JSON vs markdown, write findings doc)
+- Cut v2.3.0 release to main (US-0178 + US-0179 + US-0180 all merged to develop)
+
+---
+
+## Session 43 — 2026-05-10 (US-0175 PR A: memory token optimisation tooling + roadmap additions)
+
+### What Was Done
+
+- **PR #995 — US-0175 Memory Token Optimisation (PR A):** Shipped all 12 tasks via subagent-driven pipeline. Created 6 lib modules (`memory-{parser,classifier,archiver,index,validator,migrator}.js`), CLI wrapper (`tools/memory.js compact/archive/migrate/validate`), `generate-plan.js` integration (calls `compactMemory` + conditional `archiveStaleMemory`), Settings tab Memory card, CI validate step, migrate-config schema migration. 1683 tests passing. Resolved 3 CodeQL `js/file-system-race` TOCTOU alerts by replacing `statSync+readFileSync` with atomic `openSync+fstatSync+readSync` via `readFileSafe()` helper. PR rebased on develop to resolve ID_REGISTRY conflict before merge.
+- **Roadmap additions:**
+  - US-0178 — Automated PR B migration commit (`migrate-commit` subcommand)
+  - US-0179 — Memory model optimisation (`suggest-model` CLI, complexity hints)
+  - US-0180 (EPIC-0014) — Agent model selection: DM_AGENT + specialists choose haiku/sonnet/opus by task complexity; dispatch-model command logs model spend
+  - EPIC-0027 + US-0181 — Data store architecture assessment spike (SQLite/JSON vs markdown)
+- **Haiku CWD drift pattern confirmed (L-0054):** Tasks 4 committed outside main repo again. Fixed by always dispatching from `/Users/Kamal_Syed/Projects/PlanVisualizer` explicitly in subagent prompts after Task 3 drift was caught.
+- **Model optimisation applied:** haiku for leaf lib tasks (parser, classifier, index, validator, CLI); sonnet for judgment tasks (archiver, migrator, integrations, Settings UI, final review).
+
+### Test Results
+
+- **1683 tests, 69 suites — all pass** (post PR A merge with version bump)
+- Coverage gate: ✅
+
+### Errors or Blockers
+
+- PR initially had no CI checks (GitHub Actions not firing) — caused by merge conflict (`CONFLICTING` state). Resolved by rebase onto current develop.
+- 3 CodeQL `js/file-system-race` alerts in new memory files — fixed by `readFileSafe()` atomic helper before re-push.
+- Haiku subagents committed to wrong path for Task 4 (memory-index.js) — re-implemented via sonnet agent with explicit absolute path.
+
+### What's Next
+
+- Run PR B: `node tools/memory.js migrate` on real MEMORY.md (splits into docs/memory/, compacts MEMORY.md to ~500 tokens)
+- US-0178 (automated migrate-commit), US-0179 (memory model suggest), US-0180 (agent model selection)
+- Cut v2.3.0 release to main
+
+---
+
+## Session 42 — 2026-05-09/10 (plugin install integration + 4 dashboard bugs + US-0176)
+
+### What Was Done
+
+- **PR #991 merged:** plugin install integration — superpowers version-check + claude-mem install/update prompts in `scripts/install.sh` and `scripts/update.sh`, plus README "Optional Plugins" section. 9 commits, all CI green.
+- **US-0177 retro-logged** under EPIC-0026 documenting the merged plugin install work (`Done`, 5 ACs all checked).
+- **EPIC-0026 broadened** from "Memory Token Optimisation" to cover both token cost reduction AND claude-mem dashboard integration tracks.
+- **4 bugs filed and fixed in one PR:**
+  - **BUG-0254** — Hierarchy filter UX: moved risk filter into the global filter-bar (new `fgrp-hier`), expanded sort dropdown from "risk only" to id/status/priority/estimate/risk/cost. Added `data-id`, `data-estimate`, `data-cost` attrs to story rows.
+  - **BUG-0255** — VELOCITY hero box now shows actual velocity ("16.9 st/wk") instead of just the lookback window ("10wk"). Added `storiesPerWeek` and `pointsPerWeek` to `computeCompletion` output.
+  - **BUG-0256** — Lessons default sort fixed: by L-ID descending within each epic group, epics sorted by ID ascending with `_ungrouped` last.
+  - **BUG-0257** — Trends spikiness fixed: new `dedupeSnapshots()` collapses near-in-time snapshots within a 30-minute window. On this project: 150 snapshots → 93 (57 near-duplicates collapsed).
+- **US-0176 implemented** (EPIC-0026): MEMORY sidebar widget on the agentic dashboard. Detects claude-mem via `~/.claude-mem/settings.json`, reads observation count from `claude-mem.db` via system `sqlite3` (2s timeout, falls back to "live"), shows host:port + view-live link. Hidden entirely when claude-mem not installed.
+
+### Test Results
+
+- **1622 tests, 60 suites — all pass** (including 4 new dedupe tests + 2 new MEMORY widget tests + 3 updated risk-filter tests)
+- Statement coverage: ≥80% (gate passing)
+- Snapshot dedup collapsed 150 → 93 (57 near-duplicates)
+
+### Errors or Blockers
+
+- Network flakiness mid-session — git push failures handled by deferring push to session close
+- 1 transient atomic-write concurrency test failure (known flaky, passed on retry)
+
+### What's Next
+
+- Push + PR `bugfix/BUG-0254-0257-dashboard-ux-and-data-issues` (5 commits: US-0177 docs, 4 bug fixes, US-0176 widget) → develop
+- US-0174 (PR Status tab) still Planned in EPIC-0014 — pickup candidate for next session
+- US-0175 (memory --compact flag + staleness archive) still Planned in EPIC-0026
+
+---
+
+## Session 41 — 2026-05-08/09 (GitHub Status Monitoring + EPIC-0026 roadmap)
+
+### What Was Done
+
+- **Branch cleanup:** Removed stale `claude/eager-clarke-c29d17` worktree (Session 38 artifact, all merged).
+- **Dev server detection:** Auto-detected project servers from `package.json`, wrote `.claude/launch.json` with `plan-status` (port 4323), `generate:watch`, `dashboard:watch`. Started `plan-status` server via `preview_start`; resolved port conflict with FableSoft Astro dev server on 4321.
+- **Bug fix — body margin gap (BUG discovered live):** Added `margin: 0` to the `body` CSS rule in `render-html.js`. Browser's default `margin: 8px` was never reset, causing an 8px gap above the sticky topbar. Verified live in preview.
+- **Brainstorm — GitHub Status Monitoring:** Full brainstorm session using visual companion (port 60047). Decisions: plan-status uses Option C (topbar chips + inline story badges + deployment banner); agentic dashboard uses Option C (CI chip in live bar + GitHub events in event log + sidebar widget); fetch timing = generate-time for plan-status, Conductor-driven for dashboard; CI poll-until (60s, 15min TTL) for pending CI between events; `fetchedAt` staleness timestamps everywhere.
+- **Roadmap additions:** Logged US-0174 (dedicated PR Status tab, deferred) under EPIC-0014; added EPIC-0026 Memory Token Optimisation with US-0175.
+- **Spec:** `docs/superpowers/specs/2026-05-07-github-status-monitoring-design.md` — patched 4 gaps (raw `createdAt` not pre-formatted `age`, change detection home in `github-status` handler, specific Conductor trigger list, `ciPollUntil` set by handler not Conductor).
+- **Implementation — PR #989 (merged):** 10 tasks via subagent-driven development pipeline. 12 commits, 808→1616 tests (develop after merge).
+  - Task 1: `fetch-github-status.js` + 11 tests (summarizeCIStatus exported, dead code removed)
+  - Task 2: `timeAgo()` in `render-utils.js` + 5 tests
+  - Task 3: `generate-plan.js` made async; `fetchGitHubStatus` wired before `renderHtml`
+  - Task 4: CI + open-PR chips in `renderMasthead()` (render-shell.js)
+  - Task 5: Deployment banner, CI STATUS tile (5-col KPI grid), PR list table on Status tab
+  - Task 6: Inline CI badges + PR links on Hierarchy list-view and card-view story rows
+  - Task 7: Async `github-status` handler in `update-sdlc-status.js` with change detection + `ciPollUntil`
+  - Task 8: GITHUB sidebar widget + "N PRs need review" chip in Needs Attention (dashboard)
+  - Task 9: Live bar CI chip via pre-computed variable (avoids nested template literal)
+  - Task 10: GitHub event log indigo styling + `_managePollTimer` watch-mode poll loop
+  - Post-merge fix: aligned deployment field names (`environment/status/createdAt` vs stray `env/state/updatedAt`)
+
+### Test Results
+
+- **1616 tests, 60 suites — all pass**
+- Statement coverage: 88.63% | Branch: 77.11% | Functions: 89.23% | Lines: 91.01%
+- Coverage gate: ✅ (>80% statements)
+
+### Errors or Blockers
+
+- Haiku subagent (`--no-coverage`) ran out of monthly token budget mid-session; switched to sonnet for remaining reviews
+- Haiku subagents committed 4 implementation commits to local `develop` instead of the worktree; resolved by hard-resetting develop to `origin/develop` and cherry-picking the 5 intentional docs commits
+- Nested template literal in `generate-dashboard.js` prevented direct `${...}` for live bar CI chip; fixed by pre-computing `lbCiChip` before the main `return` template literal
+- `preview_start` resolves `.claude/launch.json` relative to the worktree root, not the main repo — required a second copy with absolute paths in `.claude/worktrees/zen-bohr-2418e8/.claude/launch.json`
+
+### What's Next
+
+- Wire GitHub status monitoring into remaining EPIC-0025 stories (US-0174 PR Status tab — Status: Planned)
+- Implement EPIC-0026 Memory Token Optimisation (US-0175) when needed
+- Continue subagent-driven development pipeline for future epics
+
+---
+
+## Session 40 — 2026-05-05 (v2.2.0 release + BUG-0253 + branch cleanup)
+
+### What Was Done
+
+- **BUG-0253** — investigated About modal auto-close every 5 seconds; confirmed duplicate of already-fixed BUG-0104 (meta-refresh removed in prior session). Marked Fixed. PR #986 merged.
+- **Branch cleanup** — deleted all merged local and remote feature/bugfix branches from Session 39.
+- **v2.2.0 release** — cut `release/2.2.0` branch from develop, bumped to 2.2.0, PR #988 merged into main, GitHub release tagged and published.
+- **main → develop sync** — merged main back into develop to keep branches aligned.
+
+### Test Results
+
+1539 tests, 55 suites, all passing. Coverage ≥ 80%.
+
+### State at Close
+
+- 0 open bugs
+- develop == main (post v2.2.0 merge-back)
+- Next: EPIC-0026 or user-driven work
+
+---
+
 ## Session 39 — 2026-05-04/05 (EPIC-0025 GitHub Issues Sync + BUGS.md sync + install scripts)
 
 ### What Was Done

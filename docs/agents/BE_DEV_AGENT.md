@@ -80,3 +80,11 @@ The DM agent will assign you specific stories and tasks from the release plan. Y
 - Never throw raw errors — wrap in structured error objects
 - All dates must be ISO 8601 strings
 - Follow AGENTS.md git workflow: feature branches, atomic commits, tests pass before push
+
+## Model Selection
+
+| Task type                                                | Model  | Rationale                                          |
+| -------------------------------------------------------- | ------ | -------------------------------------------------- |
+| Constants change, pattern-following endpoint addition    | haiku  | Pattern application                                |
+| Net-new feature, integration logic, multi-file bugfix    | sonnet | Integration judgment                               |
+| Database schema migration, security-sensitive auth logic | opus   | Irreversible — hard to roll back without data loss |

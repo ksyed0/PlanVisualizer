@@ -924,3 +924,92 @@ describe('generate-dashboard — US-0117 completion animation', () => {
     expect(patchSection).toContain('pv-sweep-overlay');
   });
 });
+
+describe('US-0176 (EPIC-0026) MEMORY sidebar widget', () => {
+  // The widget is conditionally rendered based on the host's `~/.claude-mem/settings.json`.
+  // We can't reliably mock the os.homedir() reads inside generateHTML, so these tests
+  // assert presence/absence based on whatever state the running machine is in.
+  test('AC-0637/0639: widget block renders only when claude-mem settings file is present', () => {
+    const fs = require('fs');
+    const os = require('os');
+    const path = require('path');
+    const settingsPath = path.join(os.homedir(), '.claude-mem', 'settings.json');
+    const settingsExists = fs.existsSync(settingsPath);
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    const html = generateHTML(makeHealthyFixture());
+    const widgetMarker = '<!-- MEMORY sidebar widget — US-0176 (EPIC-0026) -->';
+    expect(html).toContain(widgetMarker);
+    if (settingsExists) {
+      // When installed: widget body must be present
+      expect(html).toContain('<div class="mc-sidebar-title">MEMORY</div>');
+      expect(html).toContain('view live →');
+    } else {
+      // When NOT installed: only the comment marker remains, no inner widget
+      expect(html).not.toContain('<div class="mc-sidebar-title">MEMORY</div>');
+    }
+  });
+
+  // AC-0638: when the DB is readable, the widget shows an observation count;
+  // otherwise it falls back to "live". Either path is correct — just assert
+  // that one of them appears when the widget is rendered.
+  test('AC-0638: widget shows either an observation count or a "live" indicator', () => {
+    const fs = require('fs');
+    const os = require('os');
+    const path = require('path');
+    const settingsPath = path.join(os.homedir(), '.claude-mem', 'settings.json');
+    if (!fs.existsSync(settingsPath)) return; // nothing to assert when not installed
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    const html = generateHTML(makeHealthyFixture());
+    const memBlock = html.split('MEMORY sidebar widget')[1] || '';
+    const widgetSlice = memBlock.slice(0, 800);
+    const hasCount = /\d[\d,]* observations/.test(widgetSlice);
+    const hasLive = />\s*live\s*</.test(widgetSlice) || widgetSlice.includes('live</div>');
+    expect(hasCount || hasLive).toBe(true);
+  });
+});
+
+describe('agent workload — model chip', () => {
+  const { generateHTML } = require('../../tools/generate-dashboard.js');
+
+  function statusWithAgent(model) {
+    return {
+      currentPhase: 0,
+      phases: [{ id: 1, name: 'Build', status: 'active' }],
+      agents: {
+        Pixel: { status: 'active', currentTask: 'X', currentStory: 'US-0001', model },
+      },
+      stories: { 'US-0001': { status: 'InProgress' } },
+      metrics: {},
+      log: [],
+    };
+  }
+
+  test('renders inline model chip when model is sonnet', () => {
+    const html = generateHTML(statusWithAgent('sonnet'));
+    expect(html).toMatch(/mc-agent-model-chip sonnet[^>]*>sonnet</);
+  });
+
+  test('renders inline model chip when model is haiku', () => {
+    const html = generateHTML(statusWithAgent('haiku'));
+    expect(html).toMatch(/mc-agent-model-chip haiku[^>]*>haiku</);
+  });
+
+  test('renders inline model chip when model is opus', () => {
+    const html = generateHTML(statusWithAgent('opus'));
+    expect(html).toMatch(/mc-agent-model-chip opus[^>]*>opus</);
+  });
+
+  test('renders no model chip when model is null (idle)', () => {
+    const status = statusWithAgent(null);
+    status.agents.Pixel.status = 'idle';
+    const html = generateHTML(status);
+    expect(html).not.toMatch(/<span class="mc-agent-model-chip/);
+  });
+
+  test('renders no model chip when model is undefined (pre-migration)', () => {
+    const status = statusWithAgent(undefined);
+    delete status.agents.Pixel.model;
+    const html = generateHTML(status);
+    expect(html).not.toMatch(/<span class="mc-agent-model-chip/);
+  });
+});

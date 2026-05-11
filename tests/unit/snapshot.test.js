@@ -5,6 +5,7 @@ const {
   getSnapshotFilename,
   saveSnapshot,
   loadSnapshots,
+  dedupeSnapshots,
   extractTrends,
   velocityByWeek,
   SNAPSHOT_REGEX,
@@ -410,5 +411,47 @@ describe('velocityByWeek', () => {
     expect(result.labels).toHaveLength(2);
     expect(result.points[0]).toBeCloseTo(4, 1);
     expect(result.points[1]).toBeCloseTo(5, 1);
+  });
+});
+
+describe('dedupeSnapshots (BUG-0257)', () => {
+  const mk = (iso) => ({ generatedAt: iso, data: {} });
+
+  it('returns input unchanged for fewer than 2 snapshots', () => {
+    expect(dedupeSnapshots([])).toEqual([]);
+    const single = [mk('2026-05-01T10:00:00Z')];
+    expect(dedupeSnapshots(single)).toEqual(single);
+  });
+
+  it('keeps the LAST snapshot in each 30-minute window', () => {
+    const snaps = [
+      mk('2026-05-01T10:00:00Z'),
+      mk('2026-05-01T10:05:00Z'), // within 30min of previous → collapsed
+      mk('2026-05-01T10:20:00Z'), // within 30min → collapsed
+      mk('2026-05-01T11:00:00Z'), // 60min gap → kept
+      mk('2026-05-01T11:10:00Z'), // within 30min → collapsed
+    ];
+    const result = dedupeSnapshots(snaps);
+    expect(result).toHaveLength(2);
+    expect(result[0].generatedAt).toBe('2026-05-01T10:20:00Z'); // newest in 1st window
+    expect(result[1].generatedAt).toBe('2026-05-01T11:10:00Z'); // newest in 2nd window
+  });
+
+  it('does not collapse snapshots more than 30 minutes apart', () => {
+    const snaps = [mk('2026-05-01T10:00:00Z'), mk('2026-05-01T10:31:00Z'), mk('2026-05-01T11:02:00Z')];
+    const result = dedupeSnapshots(snaps);
+    expect(result).toHaveLength(3);
+  });
+
+  it('respects custom windowMs', () => {
+    const snaps = [
+      mk('2026-05-01T10:00:00Z'),
+      mk('2026-05-01T10:01:00Z'), // 60s after previous
+      mk('2026-05-01T10:05:00Z'), // 4min after previous
+    ];
+    // 90-second window: snap[1] is within 60s, snap[2] is 240s later → 2 results
+    expect(dedupeSnapshots(snaps, 90 * 1000)).toHaveLength(2);
+    // 10-minute window: all collapse to one
+    expect(dedupeSnapshots(snaps, 10 * 60 * 1000)).toHaveLength(1);
   });
 });

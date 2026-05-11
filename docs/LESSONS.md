@@ -4,6 +4,64 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
+## L-0057 — CodeQL TOCTOU (`js/file-system-race`) fires on `statSync+readFileSync` — use fd for atomic stat+read
+
+**Rule:** Any code that calls `fs.statSync(fp)` followed by `fs.readFileSync(fp)` as separate operations will fail CodeQL's `js/file-system-race` rule (and the PR will not merge). The window between the two calls is a real TOCTOU race in web/server contexts. Fix: open the file once to get a file descriptor, then use `fs.fstatSync(fd)` and `fs.readSync(fd, ...)` on the same fd. Pattern:
+
+```js
+function readFileSafe(fp) {
+  const fd = fs.openSync(fp, 'r');
+  try {
+    const stat = fs.fstatSync(fd);
+    const buf = Buffer.allocUnsafe(stat.size);
+    fs.readSync(fd, buf, 0, stat.size, 0);
+    return { content: buf.toString('utf8'), mtimeMs: stat.mtimeMs };
+  } finally {
+    fs.closeSync(fd);
+  }
+}
+```
+
+Similarly, replace `fs.existsSync(p)` followed by `fs.readFileSync(p)` with a `try { content = fs.readFileSync(p) } catch { content = '' }` pattern — the catch replaces the existsSync check atomically.
+_Learned during US-0175 PR A — 3 high-severity CodeQL alerts in `memory-archiver.js`, `memory.js`, and `memory-migrator.js` blocked the merge until all three patterns were fixed._
+**Date:** 2026-05-10
+
+---
+
+## L-0056 — Trend chart spikiness is usually snapshot density, not data quality
+
+**Rule:** When trend charts plot N snapshots at uniform x-axis spacing, dense bursts of snapshots (e.g. 12 in one hour during an active session) render as flat segments while inter-burst gaps render as sudden jumps. The data is correct; the visual representation is misleading. Always run a snapshot deduplication pass before plotting: collapse near-in-time snapshots within a small window (e.g. 30 minutes) to a single representative — keep the LAST one in each window so the chart reflects the freshest state. Rule of thumb: if `dedupeSnapshots()` collapses more than 30% of the input, the charts were likely showing density artefacts more than real change.
+_Learned during BUG-0257 investigation — 150 raw snapshots reduced to 93 after dedup, removing 57 near-duplicates that were creating phantom spikes in the AI cost and coverage charts._
+**Date:** 2026-05-10
+
+---
+
+## L-0055 — Compare versions in bash with `printf | sort -V`, strip leading `v` first
+
+**Rule:** Bash has no built-in semver comparison, but `printf '%s\n%s' "$A" "$B" | sort -V | head -1` returns the older of two version strings (and `tail -1` returns the newer). This is portable across macOS and Linux without installing extra tools. Critical detail: GitHub release `tag_name` values typically have a leading `v` (e.g. `v5.2.0`) while plugin cache directory names typically don't (e.g. `5.2.0`). Strip with `${VAR#v}` on BOTH sides before comparing — otherwise `5.2.0` and `v5.2.0` sort lexicographically and the comparison is wrong. Also: the GitHub Releases API can return rate-limit JSON without `tag_name`, in which case grep+sed yields empty — always guard with `[ -z "$VAR" ]` and fall back to "skipping" rather than crashing.
+_Learned while implementing the superpowers version-check in scripts/install.sh + scripts/update.sh. Caught the double-`v` bug ("vv5.2.0" in the available message) during code review and fixed by using the cleaned version string._
+**Date:** 2026-05-09
+
+---
+
+## L-0054 — Haiku subagents commit to whichever repo their CWD resolves to — not necessarily the worktree
+
+**Rule:** When a subagent is dispatched into a worktree, its shell CWD is reset to the worktree path, but `haiku` model subagents with limited context sometimes run `git commit` from the main repo root (especially when the hook resets the CWD mid-turn). Always verify that implementation commits appeared on the expected branch (`git log --oneline -3`) before running the spec reviewer — a "DONE" report that references a commit SHA which doesn't appear in the worktree log means the commit landed elsewhere. Fix: hard-reset the main repo branch to origin, cherry-pick only the docs/spec commits that were intentionally on that branch.
+_Observed in Session 41: Tasks 7 and 9 haiku fixes committed to local `develop` instead of the `claude/zen-bohr-2418e8` worktree, requiring a post-session `git reset --hard origin/develop && git cherry-pick` cleanup._
+**Date:** 2026-05-08
+
+---
+
+## L-0053 — Nested template literals inside `generate-dashboard.js` cause silent syntax errors
+
+**Rule:** `generate-dashboard.js` uses one giant ES6 template literal for the entire HTML output. Any `${...}` interpolation inside it that itself contains backtick sub-expressions will silently produce malformed HTML or a JS syntax error at runtime. Always pre-compute complex conditional strings as named `const` variables before the `return \`` line. Pattern: `const lbCiChip = (() => { ... })(); return \`...${lbCiChip}...\``. This is especially important for conditional blocks that need to branch on runtime data. Do NOT use `${(() => { return \`nested\`; })()}` — even though JS supports it, prettier and the existing test suite can catch the wrong thing being interpolated.
+_Observed in Session 41 (Task 9): live bar CI chip implementation required a pre-computed variable pattern because the inline IIFE with its own template literal caused the prettier hook to reformat incorrectly._
+**Date:** 2026-05-08
+
+---
+
+## L-0052 — Separate visual hierarchy by information priority, not by component type
+
 ## L-0050 — Files written by a Stop hook (or any per-turn local-only writer) drift from the committed tree
 
 **Rule:** A Claude Code Stop hook that appends to a tracked file every turn (e.g. `tools/capture-cost.js` writing to `docs/AI_COST_LOG.md`) creates a "live working copy" that no commit step ever touches. Without an explicit sync, the committed file lags the local one by weeks — silently breaking any downstream tool that reads the committed version (parsers, dashboards, GitHub Pages). The Stop hook itself shouldn't auto-commit (commit-per-turn is spammy and conflicts with normal feature-branch workflow), but the **session close protocol must explicitly include the locally-written file in its commit list**. Document this in `CLAUDE.md` so future sessions don't re-discover the drift. If a "git add -A caution" rule was added to keep the file out of normal commits, balance it with a "commit-at-session-close" rule for the same file.
@@ -570,3 +628,15 @@ _Learned from BUG-0210 — Lessons and Bugs tabs both have epic group headers, b
 
 **Bugs:** BUG-0183, BUG-0184
 **Date:** 2026-05-01
+
+---
+
+## L-0058 — Cherry-pick story commits onto clean branch; don't rebase a branch built on top of a squash-to-be-merged branch
+
+**Context:** US-0179 and US-0180 feature branches were created from `feature/US-0178-memory-migrate-commit` before US-0178 was squash-merged to develop. After the squash merge, rebasing the downstream branches failed because `git rebase --onto` or plain `git rebase origin/develop` tried to replay all the intermediate individual commits from US-0178 (now represented differently in develop as a squash), causing dozens of conflicts.
+
+**Fix:** Abort the rebase. Create a fresh branch from `origin/develop`. Cherry-pick only the story-specific commits (identified by their US-XXXX commit messages) onto the clean branch. Force-push and update (or recreate) the PR.
+
+**Prevention:** When developing a story that depends on an unmerged story, either (a) wait for the upstream story to merge before branching, or (b) branch from develop and note the dependency explicitly. Do not chain feature branches — they will always conflict on squash-merge.
+
+**Date:** 2026-05-11

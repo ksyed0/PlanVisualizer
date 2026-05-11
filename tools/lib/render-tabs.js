@@ -11,8 +11,21 @@ const {
   EPIC_ACCENT_COLORS,
   badge,
   BADGE_TONE,
+  timeAgo,
 } = require('./render-utils');
 const { LEVEL_COLORS: RISK_LEVEL_COLORS } = require('./compute-risk');
+
+function renderGhBadge(id, githubStatus) {
+  if (!githubStatus || !githubStatus.prs) return '';
+  const pr = githubStatus.prs.find((p) => p.storyId === id || p.bugId === id);
+  if (!pr) return '';
+  const ciClass = pr.ciStatus === 'success' ? 'ok' : pr.ciStatus === 'failure' ? 'risk' : 'warn';
+  const ciLabel = pr.ciStatus === 'success' ? '✓' : pr.ciStatus === 'failure' ? '✗' : '⟳';
+  return (
+    `<span class="chip ${ciClass}" style="font-size:9px;padding:1px 5px">${ciLabel}</span>` +
+    `<a href="${esc(pr.url)}" target="_blank" rel="noopener" style="font-size:10px;color:var(--plan-accent)">#${pr.number}&thinsp;→</a>`
+  );
+}
 
 function renderHierarchyTab(data) {
   const sortedEpics =
@@ -72,7 +85,8 @@ function renderHierarchyTab(data) {
           .join('');
         return `
       <div id="story-${esc(story.id)}" class="story-row border-t border-slate-100 dark:border-slate-700 px-3 py-2"
-           data-epic="${esc(story.epicId)}" data-status="${esc(story.status)}" data-priority="${esc(story.priority)}"
+           data-id="${esc(story.id)}" data-epic="${esc(story.epicId)}" data-status="${esc(story.status)}" data-priority="${esc(story.priority)}"
+           data-estimate="${esc(story.estimate || '')}" data-cost="${(data.costs[story.id] && data.costs[story.id].projectedUsd) || 0}"
            data-risk-score="${storyRisk ? String(storyRisk.score) : '0'}" data-risk-level="${storyRisk ? esc(storyRisk.level) : 'Low'}">
         <div class="flex flex-wrap items-center gap-2 cursor-pointer" onclick="toggleACs('${jsEsc(story.id)}')">
           <span class="font-mono text-xs text-slate-500 whitespace-nowrap">${story.id}</span>
@@ -80,6 +94,7 @@ function renderHierarchyTab(data) {
           <span class="text-sm font-medium">${esc(story.title)}</span>
           ${riskBadge}
           ${riskScoreBadge}
+          ${renderGhBadge(story.id, data.githubStatus)}
           <span class="ml-auto text-xs text-slate-500">${esc(story.estimate || '?')} · ${usd((data.costs[story.id] && data.costs[story.id].projectedUsd) || 0)}</span>
         </div>
         <ul id="acs-${story.id}" class="ac-guide mt-2 hidden">${acItems || '<li class="text-xs text-slate-500 pl-4">No ACs yet</li>'}</ul>
@@ -114,7 +129,8 @@ function renderHierarchyTab(data) {
           .join('');
         return `
       <div class="story-row story-card-hover card-elev rounded-lg p-3 flex flex-col gap-1"
-           data-epic="${esc(story.epicId)}" data-status="${esc(story.status)}" data-priority="${esc(story.priority)}"
+           data-id="${esc(story.id)}" data-epic="${esc(story.epicId)}" data-status="${esc(story.status)}" data-priority="${esc(story.priority)}"
+           data-estimate="${esc(story.estimate || '')}" data-cost="${(data.costs[story.id] && data.costs[story.id].projectedUsd) || 0}"
            data-risk-score="${storyRisk ? String(storyRisk.score) : '0'}" data-risk-level="${storyRisk ? esc(storyRisk.level) : 'Low'}">
         <div class="flex flex-wrap items-center gap-1 cursor-pointer" onclick="toggleCardACs('${jsEsc(story.id)}')">
           ${badge(story.status)} ${badge(story.priority)}
@@ -126,6 +142,7 @@ function renderHierarchyTab(data) {
           <span>${cost}</span>
           ${acTotal ? `<span class="cursor-pointer" onclick="toggleCardACs('${jsEsc(story.id)}')">${acDone}/${acTotal} ACs ▾</span>` : ''}
           ${riskScoreBadge}
+          ${renderGhBadge(story.id, data.githubStatus)}
           <span class="ml-auto">${riskBadge}</span>
         </div>
         ${acTotal ? `<ul id="card-acs-${story.id}" class="ac-guide hidden mt-1 pt-1 border-t border-slate-100 dark:border-slate-600 space-y-0.5">${acItems || '<li class="text-xs text-slate-500 pl-4">No ACs yet</li>'}</ul>` : ''}
@@ -211,19 +228,7 @@ function renderHierarchyTab(data) {
 
   return `
   <div id="tab-hierarchy" class="p-6 hidden" role="tabpanel" aria-labelledby="tab-btn-hierarchy">
-    <div class="flex items-center justify-between mb-4 flex-shrink-0 flex-wrap gap-2">
-      <div class="flex items-center gap-2">
-        <select id="hier-risk-filter" style="font-size:11px;padding:3px 6px;border:1px solid var(--clr-border);border-radius:4px;background:var(--clr-input-bg);color:var(--clr-input-text)"
-          onchange="applyHierRiskFilter(this.value)">
-          <option value="all">All Risk Levels</option>
-          <option value="high">High+</option>
-          <option value="critical">Critical only</option>
-        </select>
-        <button id="hier-risk-sort-btn" onclick="sortHierarchyByRisk(this)"
-          style="font-size:11px;padding:3px 8px;border:1px solid var(--clr-border);border-radius:4px;background:var(--clr-input-bg);color:var(--clr-input-text);cursor:pointer">
-          Sort by Risk ↓
-        </button>
-      </div>
+    <div class="flex items-center justify-end mb-4 flex-shrink-0 flex-wrap gap-2">
       <div class="flex gap-1">
         <button id="hier-col-btn" onclick="setHierarchyView('column')" class="view-toggle-btn">≡ Column</button>
         <button id="hier-card-btn" onclick="setHierarchyView('card')" class="view-toggle-btn">⊞ Card</button>
@@ -233,30 +238,53 @@ function renderHierarchyTab(data) {
     <div id="hier-card-view" class="hidden">${cardView}</div>
     <script>
     (function(){
-      var _hierRiskSorted = false;
       var _storyOriginalOrder = new Map(); // epic-block id → original story row array
 
-      function sortHierarchyByRisk(btn) {
-        _hierRiskSorted = !_hierRiskSorted;
-        btn.textContent = _hierRiskSorted ? 'Restore Order' : 'Sort by Risk ↓';
+      var STATUS_RANK = { 'Done': 0, 'In Progress': 1, 'Planned': 2, 'To Do': 3, 'Blocked': 4 };
+      var PRIO_RANK = { 'P0': 0, 'P1': 1, 'P2': 2, 'P3': 3 };
+      var ESTIMATE_RANK = { 'XS': 0, 'S': 1, 'M': 2, 'L': 3, 'XL': 4 };
+
+      function sortHierarchyBy(key) {
         document.querySelectorAll('#hier-column-view .epic-block').forEach(function(block) {
           var container = block.querySelector('[id^="epic-stories-"]');
           if (!container) return;
           var rows = Array.from(container.querySelectorAll('.story-row'));
           if (rows.length < 2) return;
-          if (_hierRiskSorted) {
-            if (!_storyOriginalOrder.has(container.id)) {
-              _storyOriginalOrder.set(container.id, rows.slice());
-            }
-            rows.sort(function(a, b) {
-              return parseFloat(b.getAttribute('data-risk-score') || '0')
-                   - parseFloat(a.getAttribute('data-risk-score') || '0');
-            });
-            rows.forEach(function(r) { container.appendChild(r); });
-          } else {
+
+          // Cache original order on first sort
+          if (!_storyOriginalOrder.has(container.id)) {
+            _storyOriginalOrder.set(container.id, rows.slice());
+          }
+
+          if (key === 'default') {
             var orig = _storyOriginalOrder.get(container.id);
             if (orig) orig.forEach(function(r) { container.appendChild(r); });
+            return;
           }
+
+          rows.sort(function(a, b) {
+            switch (key) {
+              case 'id':
+                return (a.getAttribute('data-id') || '').localeCompare(b.getAttribute('data-id') || '');
+              case 'status':
+                return (STATUS_RANK[a.getAttribute('data-status')] || 99)
+                     - (STATUS_RANK[b.getAttribute('data-status')] || 99);
+              case 'priority':
+                return (PRIO_RANK[a.getAttribute('data-priority')] || 99)
+                     - (PRIO_RANK[b.getAttribute('data-priority')] || 99);
+              case 'estimate':
+                return (ESTIMATE_RANK[a.getAttribute('data-estimate')] || 99)
+                     - (ESTIMATE_RANK[b.getAttribute('data-estimate')] || 99);
+              case 'risk':
+                return parseFloat(b.getAttribute('data-risk-score') || '0')
+                     - parseFloat(a.getAttribute('data-risk-score') || '0');
+              case 'cost':
+                return parseFloat(b.getAttribute('data-cost') || '0')
+                     - parseFloat(a.getAttribute('data-cost') || '0');
+              default: return 0;
+            }
+          });
+          rows.forEach(function(r) { container.appendChild(r); });
         });
       }
       function applyHierRiskFilter(value) {
@@ -268,7 +296,7 @@ function renderHierarchyTab(data) {
           block.style.display = show ? '' : 'none';
         });
       }
-      window.sortHierarchyByRisk = sortHierarchyByRisk;
+      window.sortHierarchyBy = sortHierarchyBy;
       window.applyHierRiskFilter = applyHierRiskFilter;
     })();
     </script>
@@ -932,7 +960,8 @@ function _renderFullStatusHero(data) {
   const comp = data.completion;
   const forecastLabel = comp ? `${comp.likelyDate}` : '—';
   const rangeLabel = comp ? `${comp.rangeStart} – ${comp.rangeEnd}` : '—';
-  const velocityLabel = comp ? `${comp.velocityWeeks}wk` : '—';
+  const velocityLabel = comp && comp.storiesPerWeek !== undefined ? `${comp.storiesPerWeek.toFixed(1)} st/wk` : '—';
+  const velocitySublabel = comp ? `based on ${comp.velocityWeeks}-week lookback` : 'rolling avg';
 
   const trends = data.trends;
 
@@ -1008,7 +1037,22 @@ function _renderFullStatusHero(data) {
   })();
 
   const kpiTiles = (() => {
-    if (!trends || !trends.dates || trends.dates.length < 2) return '';
+    if (!trends || !trends.dates || trends.dates.length < 2) {
+      // No trend data — still render CI tile if githubStatus present
+      if (!data.githubStatus) return '';
+      const prs = data.githubStatus.prs || [];
+      const total = prs.length;
+      const passing = prs.filter((p) => p.ciStatus === 'success').length;
+      const failing = prs.filter((p) => p.ciStatus === 'failure').length;
+      const ciClass = failing > 0 ? 'var(--risk)' : passing > 0 ? 'var(--ok)' : 'var(--text-mute)';
+      return `<div style="display:grid;grid-template-columns:repeat(1,1fr);gap:12px;margin-bottom:16px">
+        <div class="card" style="padding:14px 16px;position:relative;overflow:hidden">
+          <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-mute);margin-bottom:4px">CI Status</div>
+          <div style="font-family:var(--font-display);font-size:clamp(22px,2.5vw,30px);font-weight:700;line-height:1;margin-bottom:5px;color:${ciClass}">${failing > 0 ? '✗' : passing > 0 ? '✓' : '—'}</div>
+          <div style="font-size:12px;color:var(--text-mute)">${passing}/${total} passing</div>
+        </div>
+      </div>`;
+    }
     const n = trends.dates.length;
     const donePctSeries = (trends.doneCounts || []).map((c, i) => {
       const tot = (trends.totalStories || [])[i] || 1;
@@ -1037,11 +1081,26 @@ function _renderFullStatusHero(data) {
         <div style="font-size:12px;color:${dColor};font-weight:600">${arrow} ${delta > 0 ? '+' : ''}${delta}${deltaUnit}<span style="font-weight:400;color:var(--text-mute)"> / wk</span></div>
       </div>`;
     }
-    return `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
+    const ciTile = (() => {
+      if (!data.githubStatus) return '';
+      const prs = data.githubStatus.prs || [];
+      const total = prs.length;
+      const passing = prs.filter((p) => p.ciStatus === 'success').length;
+      const failing = prs.filter((p) => p.ciStatus === 'failure').length;
+      const ciClass = failing > 0 ? 'var(--risk)' : passing > 0 ? 'var(--ok)' : 'var(--text-mute)';
+      return `<div class="card" style="padding:14px 16px;position:relative;overflow:hidden">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-mute);margin-bottom:4px">CI Status</div>
+        <div style="font-family:var(--font-display);font-size:clamp(22px,2.5vw,30px);font-weight:700;line-height:1;margin-bottom:5px;color:${ciClass}">${failing > 0 ? '✗' : passing > 0 ? '✓' : '—'}</div>
+        <div style="font-size:12px;color:var(--text-mute)">${passing}/${total} passing</div>
+      </div>`;
+    })();
+    const cols = data.githubStatus ? 'repeat(5,1fr)' : 'repeat(4,1fr)';
+    return `<div style="display:grid;grid-template-columns:${cols};gap:12px;margin-bottom:16px">
       ${kpiTile('Overall Progress', donePctSeries[n - 1] || donePct, '%', lastDelta(donePctSeries), '%', donePctSeries, true)}
       ${kpiTile('Test Coverage', covSeries[n - 1] !== undefined ? covSeries[n - 1].toFixed(1) : covPct !== null ? covPct.toFixed(1) : '—', '%', lastDelta(covSeries), '%', covSeries, true)}
       ${kpiTile('Open Bugs', bugSeries[n - 1] !== undefined ? bugSeries[n - 1] : openBugs.length, '', lastDelta(bugSeries), '', bugSeries, false)}
       ${kpiTile('AI Spend', usd(costSeries[n - 1] || totalAI), '', +((costSeries[n - 1] || 0) - (costSeries[n - 2] || 0)).toFixed(2), '', costSeries, null)}
+      ${ciTile}
     </div>`;
   })();
 
@@ -1060,7 +1119,7 @@ function _renderFullStatusHero(data) {
         <div style="flex:1;padding:8px 12px">
           <div style="font-size:8px;color:var(--text-mute);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px">Velocity</div>
           <div style="font-size:14px;font-weight:700">${velocityLabel}</div>
-          <div style="font-size:9px;color:var(--text-mute);margin-top:1px">rolling avg</div>
+          <div style="font-size:9px;color:var(--text-mute);margin-top:1px">${velocitySublabel}</div>
         </div>
       </div>`
     : `<div style="font-size:11px;color:var(--text-mute);font-style:italic;margin-bottom:14px;padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px">Forecast unavailable — insufficient velocity data</div>`;
@@ -2312,18 +2371,25 @@ function renderLessonsTab(data) {
     lessonStoryEpicMap[s.id] = s.epicId;
   });
 
-  const lessonEpicIds = [];
   const lessonsByEpic = {};
   lessons.forEach((l) => {
     const storyId = lessonStoryMap[l.id];
     const epicId = (storyId && lessonStoryEpicMap[storyId]) || '_ungrouped';
-    if (!lessonsByEpic[epicId]) {
-      lessonsByEpic[epicId] = [];
-      lessonEpicIds.push(epicId);
-    }
+    if (!lessonsByEpic[epicId]) lessonsByEpic[epicId] = [];
     lessonsByEpic[epicId].push(l);
   });
-  const lessonEpicOrder = [...new Set(lessonEpicIds)];
+  // BUG-0256: deterministic order so the dashboard isn't a random shuffle.
+  //  - within each epic group, sort lessons by L-ID descending (newest first)
+  //  - across epics, sort by EPIC ID ascending; _ungrouped goes last
+  const lessonIdNum = (id) => parseInt(String(id).replace(/[^0-9]/g, ''), 10) || 0;
+  Object.keys(lessonsByEpic).forEach((eid) => {
+    lessonsByEpic[eid].sort((a, b) => lessonIdNum(b.id) - lessonIdNum(a.id));
+  });
+  const lessonEpicOrder = Object.keys(lessonsByEpic).sort((a, b) => {
+    if (a === '_ungrouped') return 1;
+    if (b === '_ungrouped') return -1;
+    return a.localeCompare(b);
+  });
 
   const renderLessonRow = (l) => `
   <tr id="lesson-col-${l.id}" class="lesson-row border-t border-slate-100 dark:border-slate-700 align-top">
@@ -2676,6 +2742,20 @@ function renderStatusTab(data) {
 
     ${_renderFullStatusHero(data)}
 
+    ${(() => {
+      const dep = data.githubStatus && data.githubStatus.deployment;
+      if (!dep) return '';
+      const stateClass = dep.status === 'success' ? 'ok' : dep.status === 'failure' ? 'risk' : 'warn';
+      const stateLabel = dep.status === 'success' ? '✓ Deployed' : dep.status === 'failure' ? '✗ Failed' : '⟳ Pending';
+      const ago = dep.createdAt ? timeAgo(dep.createdAt) : '';
+      return `<div class="pv-gh-deploy-banner card mb-4" style="display:flex;align-items:center;gap:12px;padding:10px 16px">
+        <span class="chip ${stateClass}" style="font-size:11px">${stateLabel}</span>
+        <span style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text-mute)">${esc(dep.environment)}</span>
+        ${dep.url ? `<a href="${esc(dep.url)}" target="_blank" rel="noopener" style="font-size:12px;color:var(--plan-accent)">${esc(dep.url)}</a>` : ''}
+        ${ago ? `<span style="margin-left:auto;font-size:11px;color:var(--text-mute)">${esc(ago)}</span>` : ''}
+      </div>`;
+    })()}
+
     <!-- Decision widgets row -->
     <div class="pv-widgets mb-4">
       <!-- Overall progress KPIs -->
@@ -2796,6 +2876,51 @@ function renderStatusTab(data) {
         </div>
       </div>
     </div>
+
+    ${(() => {
+      const prs = data.githubStatus && data.githubStatus.prs;
+      if (!prs || prs.length === 0) return '';
+      const rows = prs
+        .map((pr) => {
+          const ciClass =
+            pr.ciStatus === 'success'
+              ? 'ok'
+              : pr.ciStatus === 'failure'
+                ? 'risk'
+                : pr.ciStatus === 'pending'
+                  ? 'warn'
+                  : 'mute';
+          const ciLabel =
+            pr.ciStatus === 'success'
+              ? '✓ CI'
+              : pr.ciStatus === 'failure'
+                ? '✗ CI'
+                : pr.ciStatus === 'pending'
+                  ? '⟳ CI'
+                  : '— CI';
+          return `<tr>
+          <td><a href="${esc(pr.url)}" target="_blank" rel="noopener" style="color:var(--plan-accent)">#${pr.number}</a></td>
+          <td>${esc(pr.title || '')}</td>
+          <td><span class="chip ${ciClass}" style="font-size:9px">${ciLabel}</span></td>
+          <td>${pr.reviewCount !== null && pr.reviewCount !== undefined ? pr.reviewCount : ''}</td>
+          <td style="color:var(--text-mute)">${pr.createdAt ? timeAgo(pr.createdAt) : ''}</td>
+        </tr>`;
+        })
+        .join('');
+      return `<details class="pv-gh-pr-list card mb-4" style="padding:12px 16px">
+        <summary style="cursor:pointer;font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-mute)">Open PRs (${prs.length})</summary>
+        <table style="width:100%;border-collapse:collapse;margin:8px 0 0;font-size:12px">
+          <thead><tr style="color:var(--text-mute);font-size:10px;text-transform:uppercase;letter-spacing:.07em">
+            <th style="text-align:left;padding:4px 8px 4px 0;font-weight:700">PR</th>
+            <th style="text-align:left;padding:4px 8px;font-weight:700">Title</th>
+            <th style="text-align:left;padding:4px 8px;font-weight:700">CI</th>
+            <th style="text-align:left;padding:4px 8px;font-weight:700">Reviews</th>
+            <th style="text-align:left;padding:4px 8px;font-weight:700">Age</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </details>`;
+    })()}
   </div>
   <style>
   @media(max-width:1100px){.pv-widgets{grid-template-columns:1fr}}
@@ -3027,7 +3152,7 @@ function renderStakeholderTab(data) {
   </script>`;
 }
 
-function renderSettingsTab({ githubConfig, githubTokenSet, syncState }) {
+function renderSettingsTab({ githubConfig, githubTokenSet, syncState, memoryConfig } = {}) {
   const cfg = githubConfig || {};
   const enabled = cfg.enabled || false;
   const repo = esc(cfg.repo || '');
@@ -3099,6 +3224,26 @@ function renderSettingsTab({ githubConfig, githubTokenSet, syncState }) {
         <button onclick="resetGithubConfig()" class="chip mute" style="cursor:pointer">Reset to defaults</button>
       </div>
     </div>
+
+        <div class="card mb-4">
+          <h3 style="font-size:14px;margin-bottom:8px">Memory</h3>
+          <p style="font-size:11px;color:var(--text-mute);margin-bottom:10px">
+            Configures how stale memory files are archived. See <code>docs/memory/</code> and <code>tools/memory.js</code>.
+          </p>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <label style="display:flex;align-items:center;gap:10px;font-size:12px">
+              <span style="min-width:160px">Stale threshold (days)</span>
+              <input id="memory-staleDays" type="number" min="1" max="3650" value="${(memoryConfig && memoryConfig.staleDays) || 90}" style="width:80px;padding:4px;background:var(--card);border:1px solid var(--border);border-radius:4px;color:var(--text)">
+            </label>
+            <label style="display:flex;align-items:center;gap:10px;font-size:12px">
+              <span style="min-width:160px">Auto-archive on regenerate</span>
+              <input id="memory-autoArchive" type="checkbox" ${memoryConfig && memoryConfig.autoArchive ? 'checked' : ''}>
+            </label>
+          </div>
+          <div style="margin-top:10px;font-size:10px;color:var(--text-mute)">
+            Default: 90 days; auto-archive off. Edit <code>plan-visualizer.config.json</code> → <code>memory</code> block to persist.
+          </div>
+        </div>
 
     <script>
     var _ghDefaults = ${JSON.stringify(cfg)};

@@ -69,3 +69,10 @@ The DM agent will provide the specific time constraints and scope when spawning 
 - Never create a story or AC without first checking `docs/ID_REGISTRY.md`
 - Never approve a story that doesn't meet its Definition of Done (see AGENTS.md)
 - All cross-references must use full IDs (e.g., `US-XXXX`, not informal names)
+
+## Model Selection
+
+| Task type                                                | Model  | Rationale                                                          |
+| -------------------------------------------------------- | ------ | ------------------------------------------------------------------ |
+| Status check, story field update, AC marking complete    | haiku  | Pattern application — rules already documented                     |
+| Story breakdown, AC writing, bug triage, roadmap shaping | sonnet | Integration judgment — combining context, requirements, priorities |

@@ -62,3 +62,11 @@ Implement type definitions exactly as specified in the data flow architecture do
 - State providers must nest in the order specified by the architecture
 - Follow the persistence strategy defined in the architecture docs
 - Follow AGENTS.md git workflow: feature branches, atomic commits, test before push
+
+## Model Selection
+
+| Task type                                                                 | Model  | Rationale                                              |
+| ------------------------------------------------------------------------- | ------ | ------------------------------------------------------ |
+| Routine code structure question, lookup, clarification                    | haiku  | Pattern application                                    |
+| Refactor planning, design doc within existing patterns, component diagram | sonnet | Integration judgment within established architecture   |
+| System design, new architectural pattern, cross-cutting decision          | opus   | Irreversible — cascades through every downstream agent |

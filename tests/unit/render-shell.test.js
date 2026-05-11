@@ -141,3 +141,55 @@ describe('renderCompletionBanner (EPIC-0010 preservation)', () => {
     expect(html).toContain('&lt;b&gt;');
   });
 });
+
+describe('renderMasthead GitHub chips', () => {
+  const { renderMasthead } = require('../../tools/lib/render-shell');
+
+  const baseData = {
+    projectName: 'TestProject',
+    release: 'R1',
+    stories: [{ id: 'US-0001', status: 'Done' }],
+    coverage: { available: true, overall: 90 },
+    costs: { _totals: { costUsd: 100 }, 'US-0001': { projectedUsd: 200 } },
+    bugs: [],
+  };
+
+  test('renders no GitHub chips when githubStatus is null', () => {
+    const html = renderMasthead({ ...baseData, githubStatus: null });
+    expect(html).not.toContain('PRs ✓ CI');
+    expect(html).not.toContain('open PRs');
+  });
+
+  test('renders CI chip and open PRs chip when githubStatus is present', () => {
+    const gs = {
+      prs: [{ number: 1, ciStatus: 'success' }],
+      ciSummary: { total: 1, passing: 1, failing: 0, pending: 0 },
+      fetchedAt: new Date().toISOString(),
+    };
+    const html = renderMasthead({ ...baseData, githubStatus: gs });
+    expect(html).toContain('1/1 PRs ✓ CI');
+    expect(html).toContain('1 open PRs');
+  });
+
+  test('hides CI chip when total === 0', () => {
+    const gs = {
+      prs: [],
+      ciSummary: { total: 0, passing: 0, failing: 0, pending: 0 },
+      fetchedAt: new Date().toISOString(),
+    };
+    const html = renderMasthead({ ...baseData, githubStatus: gs });
+    expect(html).not.toContain('PRs ✓ CI');
+    expect(html).toContain('0 open PRs');
+  });
+
+  test('uses risk color when any CI failing', () => {
+    const gs = {
+      prs: [{ ciStatus: 'failure' }, { ciStatus: 'success' }],
+      ciSummary: { total: 2, passing: 1, failing: 1, pending: 0 },
+      fetchedAt: new Date().toISOString(),
+    };
+    const html = renderMasthead({ ...baseData, githubStatus: gs });
+    expect(html).toContain('var(--risk)');
+    expect(html).toContain('1/2 PRs ✓ CI');
+  });
+});

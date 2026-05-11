@@ -236,3 +236,11 @@ When you issue a BLOCK verdict:
 - If you find a pattern issue, flag it once with a note to apply across all files
 - Keep reviews concise — developers may be on a tight timeline
 - When in doubt about scope, check the acceptance criteria in RELEASE_PLAN.md
+
+## Model Selection
+
+| Task type                                            | Model  | Rationale                                     |
+| ---------------------------------------------------- | ------ | --------------------------------------------- |
+| Syntax/style review, lint check, format verification | haiku  | Pattern application — rules are deterministic |
+| Feature PR review, multi-file diff review            | sonnet | Integration judgment across the diff          |
+| Security review, architectural PR review             | opus   | Irreversible if a flaw ships                  |
