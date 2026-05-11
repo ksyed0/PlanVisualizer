@@ -95,3 +95,34 @@ The DM agent will assign you specific stories and screens. Your general responsi
 | -------------------------------------------------------------------------------- | ------ | -------------------- |
 | Style fix, format change, pattern-following implementation (Nth tab, Nth widget) | haiku  | Pattern application  |
 | Net-new feature with non-trivial design choices, cross-cutting refactor          | sonnet | Integration judgment |
+
+## UI Mockup Protocol
+
+When dispatched during a story's spec phase to build an interactive mockup (only when Palette flagged `customMockupNeeded: true`), you (Pixel) build a self-contained mockup.
+
+**Step 1: Log start.** Run `node tools/update-sdlc-status.js agent-start --agent Pixel --story <id> --task "UI mockup" --model sonnet`.
+
+**Step 2: Read spec + design system section.** Understand the user flow and design tokens.
+
+**Step 3: Build self-contained mockup.** Create `docs/superpowers/mockups/<story-id>/index.html`. Must be:
+
+- **Self-contained:** all CSS and JS inlined, or in sibling `.css` and `.js` files in the same directory. No CDN, no `<script src="https://...">`, no build step.
+- **Uses existing tokens:** reference the OKLCH palette via CSS variables defined inline at top of the file (copy from `tools/lib/render-scripts.js` if needed).
+- **Interactive:** real clickable elements, hover states, form interactions where applicable. Not static screenshots.
+- **Browser-openable:** the user can open `file:///.../index.html` directly in any modern browser and the mockup works.
+
+**Step 4: Add `## UI Preview` section to the spec.** Append:
+
+```markdown
+## UI Preview
+
+Interactive mockup at `docs/superpowers/mockups/<story-id>/index.html` — open in browser.
+
+- <screen 1 description>
+- <interactions covered>
+- <known limitations of mockup vs final implementation>
+```
+
+**Step 5: Smoke-test.** Open the mockup file in a browser yourself to confirm it renders and interactions work.
+
+**Step 6: Log done.** Run `node tools/update-sdlc-status.js agent-done --agent Pixel --story <id>`.
