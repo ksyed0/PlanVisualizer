@@ -485,6 +485,7 @@ function renderHtml(data, options = {}) {
           githubConfig: data.githubConfig || null,
           githubTokenSet: data.githubTokenSet || false,
           syncState: data.syncState || null,
+          memoryConfig: data.memoryConfig || null,
         })}
       </div>
     </main>

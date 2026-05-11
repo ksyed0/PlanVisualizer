@@ -250,6 +250,16 @@
       "dependencies": []
     },
     {
+      "id": "EPIC-0027",
+      "title": "Data Store Architecture Assessment",
+      "description": "Structured markdown files (RELEASE_PLAN.md, BUGS.md, TEST_CASES.md, AI_COST_LOG.md, MEMORY.md) are the current data store. Assess whether migrating to a proper data store (SQLite, JSON, or a hybrid) would reduce parse complexity, improve query performance, and unlock richer analytics — and produce a concrete recommendation with a migration plan or a justified decision to stay on markdown.",
+      "releaseTarget": "TBD",
+      "status": "Planned",
+      "startDate": null,
+      "doneDate": null,
+      "dependencies": []
+    },
+    {
       "id": "EPIC-0020",
       "title": "Cross-Dashboard Redesign",
       "description": "Unify Plan-Status and Agentic dashboards under a single Editorial × Mission Control design language. Share a token set (neutrals, semantic colors, typography, card/chip/bar primitives) while differentiating each dashboard with its own accent hue, mode badge (REPORT vs LIVE), and voice (calm report vs live broadcast). First-class light and dark themes. Replaces the saturated navy gradient header, consolidates the chart palette, lifts the Status tab out of sparseness, promotes active agents and event activity on the Agentic surface, and removes pipeline/agent-roster redundancy.",
@@ -2908,6 +2918,28 @@
       "dependencies": []
     },
     {
+      "id": "US-0179",
+      "epicId": "EPIC-0026",
+      "title": "As a developer using the subagent-driven pipeline, I want the memory system to recommend the appropriate model for each task based on topic complexity signals, so I don't have to manually decide between haiku/sonnet/opus for every dispatch.",
+      "priority": "P3",
+      "estimate": "M",
+      "status": "Planned",
+      "branch": "feature/US-0179-memory-model-optimisation",
+      "acs": [],
+      "dependencies": []
+    },
+    {
+      "id": "US-0181",
+      "epicId": "EPIC-0027",
+      "title": "As a project maintainer, I want a documented assessment of replacing structured markdown files with an alternative data store, so that I can make an informed architectural decision before the project scales further.",
+      "priority": "P3",
+      "estimate": "L",
+      "status": "Planned",
+      "branch": "feature/US-0181-data-store-assessment",
+      "acs": [],
+      "dependencies": []
+    },
+    {
       "id": "US-0085",
       "epicId": "EPIC-0013",
       "title": "As a user, I want the agentic dashboard footer to show the full date and time of the last generation, so that I know how fresh the data is.",
@@ -3274,6 +3306,17 @@
         "US-0172",
         "US-0173"
       ]
+    },
+    {
+      "id": "US-0180",
+      "epicId": "EPIC-0014",
+      "title": "As the Conductor and each specialist agent in the agentic SDLC pipeline, I want to select the appropriate LLM model (haiku/sonnet/opus) based on task complexity at dispatch time, so that routine tasks use cheaper/faster models and only high-complexity decisions escalate to more capable models.",
+      "priority": "P1",
+      "estimate": "M",
+      "status": "Planned",
+      "branch": "feature/US-0180-agent-model-selection",
+      "acs": [],
+      "dependencies": []
     },
     {
       "id": "US-0094",
@@ -11645,1045 +11688,1063 @@
   "costs": {
     "US-0001": {
       "projectedUsd": 1600,
-      "costUsd": 3.724324,
+      "costUsd": 3.671598,
       "inputTokens": 90000,
       "outputTokens": 22000
     },
     "US-0002": {
       "projectedUsd": 800,
-      "costUsd": 3.556324,
+      "costUsd": 3.503598,
       "inputTokens": 65000,
       "outputTokens": 16000
     },
     "US-0003": {
       "projectedUsd": 400,
-      "costUsd": 3.479824,
+      "costUsd": 3.427098,
       "inputTokens": 55000,
       "outputTokens": 13000
     },
     "US-0004": {
       "projectedUsd": 800,
-      "costUsd": 3.511324,
+      "costUsd": 3.458598,
       "inputTokens": 60000,
       "outputTokens": 14000
     },
     "US-0005": {
       "projectedUsd": 400,
-      "costUsd": 3.403324,
+      "costUsd": 3.350598,
       "inputTokens": 45000,
       "outputTokens": 10000
     },
     "US-0006": {
       "projectedUsd": 400,
-      "costUsd": 3.479824,
+      "costUsd": 3.427098,
       "inputTokens": 55000,
       "outputTokens": 13000
     },
     "US-0007": {
       "projectedUsd": 400,
-      "costUsd": 3.463324,
+      "costUsd": 3.410598,
       "inputTokens": 55000,
       "outputTokens": 12000
     },
     "US-0008": {
       "projectedUsd": 400,
-      "costUsd": 3.463324,
+      "costUsd": 3.410598,
       "inputTokens": 55000,
       "outputTokens": 12000
     },
     "US-0009": {
       "projectedUsd": 3200,
-      "costUsd": 4.660324,
+      "costUsd": 4.607598,
       "inputTokens": 220000,
       "outputTokens": 55500
     },
     "US-0010": {
       "projectedUsd": 800,
-      "costUsd": 4.660324,
+      "costUsd": 4.607598,
       "inputTokens": 220000,
       "outputTokens": 55500
     },
     "US-0011": {
       "projectedUsd": 800,
-      "costUsd": 3.557824,
+      "costUsd": 3.505098,
       "inputTokens": 65000,
       "outputTokens": 16000
     },
     "US-0012": {
       "projectedUsd": 400,
-      "costUsd": 3.479824,
+      "costUsd": 3.427098,
       "inputTokens": 55000,
       "outputTokens": 13000
     },
     "US-0013": {
       "projectedUsd": 400,
-      "costUsd": 3.448324,
+      "costUsd": 3.395598,
       "inputTokens": 50000,
       "outputTokens": 12000
     },
     "US-0029": {
       "projectedUsd": 400,
-      "costUsd": 4.628824,
+      "costUsd": 4.576098,
       "inputTokens": 220000,
       "outputTokens": 55000
     },
     "US-0030": {
       "projectedUsd": 400,
-      "costUsd": 4.547824,
+      "costUsd": 4.495098,
       "inputTokens": 210000,
       "outputTokens": 52000
     },
     "US-0082": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0014": {
       "projectedUsd": 400,
-      "costUsd": 20.792632,
+      "costUsd": 20.739906,
       "inputTokens": 1298990,
       "outputTokens": 163277
     },
     "US-0015": {
       "projectedUsd": 400,
-      "costUsd": 20.792632,
+      "costUsd": 20.739906,
       "inputTokens": 1298990,
       "outputTokens": 163277
     },
     "US-0016": {
       "projectedUsd": 400,
-      "costUsd": 20.792632,
+      "costUsd": 20.739906,
       "inputTokens": 1298990,
       "outputTokens": 163277
     },
     "US-0017": {
       "projectedUsd": 800,
-      "costUsd": 20.792632,
+      "costUsd": 20.739906,
       "inputTokens": 1298990,
       "outputTokens": 163277
     },
     "US-0018": {
       "projectedUsd": 400,
-      "costUsd": 20.792632,
+      "costUsd": 20.739906,
       "inputTokens": 1298990,
       "outputTokens": 163277
     },
     "US-0083": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0019": {
       "projectedUsd": 800,
-      "costUsd": 3.647824,
+      "costUsd": 3.595098,
       "inputTokens": 75000,
       "outputTokens": 20000
     },
     "US-0020": {
       "projectedUsd": 800,
-      "costUsd": 3.694324,
+      "costUsd": 3.641598,
       "inputTokens": 80000,
       "outputTokens": 22000
     },
     "US-0021": {
       "projectedUsd": 800,
-      "costUsd": 3.707824,
+      "costUsd": 3.655098,
       "inputTokens": 70000,
       "outputTokens": 25000
     },
     "US-0022": {
       "projectedUsd": 800,
-      "costUsd": 4.078324,
+      "costUsd": 4.025598,
       "inputTokens": 140000,
       "outputTokens": 35000
     },
     "US-0023": {
       "projectedUsd": 800,
-      "costUsd": 4.099324,
+      "costUsd": 4.046598,
       "inputTokens": 135000,
       "outputTokens": 37500
     },
     "US-0024": {
       "projectedUsd": 400,
-      "costUsd": 4.099324,
+      "costUsd": 4.046598,
       "inputTokens": 135000,
       "outputTokens": 37500
     },
     "US-0025": {
       "projectedUsd": 400,
-      "costUsd": 4.242824,
+      "costUsd": 4.190098,
       "inputTokens": 160000,
       "outputTokens": 41667
     },
     "US-0026": {
       "projectedUsd": 400,
-      "costUsd": 4.242824,
+      "costUsd": 4.190098,
       "inputTokens": 160000,
       "outputTokens": 41667
     },
     "US-0028": {
       "projectedUsd": 400,
-      "costUsd": 5.368324,
+      "costUsd": 5.315598,
       "inputTokens": 330000,
       "outputTokens": 82000
     },
     "US-0027": {
       "projectedUsd": 400,
-      "costUsd": 4.242824,
+      "costUsd": 4.190098,
       "inputTokens": 160000,
       "outputTokens": 41667
     },
     "US-0031": {
       "projectedUsd": 400,
-      "costUsd": 7.051324,
+      "costUsd": 6.998598,
       "inputTokens": 570000,
       "outputTokens": 143000
     },
     "US-0032": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0033": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0034": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0035": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0036": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0037": {
       "projectedUsd": 200,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0038": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0039": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0040": {
       "projectedUsd": 400,
-      "costUsd": 3.472699,
+      "costUsd": 3.419973,
       "inputTokens": 50000,
       "outputTokens": 13250
     },
     "US-0041": {
       "projectedUsd": 400,
-      "costUsd": 3.472699,
+      "costUsd": 3.419973,
       "inputTokens": 50000,
       "outputTokens": 13250
     },
     "US-0042": {
       "projectedUsd": 400,
-      "costUsd": 3.472699,
+      "costUsd": 3.419973,
       "inputTokens": 50000,
       "outputTokens": 13250
     },
     "US-0043": {
       "projectedUsd": 200,
-      "costUsd": 3.472699,
+      "costUsd": 3.419973,
       "inputTokens": 50000,
       "outputTokens": 13250
     },
     "US-0044": {
       "projectedUsd": 200,
-      "costUsd": 3.472699,
+      "costUsd": 3.419973,
       "inputTokens": 50000,
       "outputTokens": 13250
     },
     "US-0045": {
       "projectedUsd": 200,
-      "costUsd": 3.472699,
+      "costUsd": 3.419973,
       "inputTokens": 50000,
       "outputTokens": 13250
     },
     "US-0046": {
       "projectedUsd": 200,
-      "costUsd": 3.472699,
+      "costUsd": 3.419973,
       "inputTokens": 50000,
       "outputTokens": 13250
     },
     "US-0047": {
       "projectedUsd": 400,
-      "costUsd": 3.472699,
+      "costUsd": 3.419973,
       "inputTokens": 50000,
       "outputTokens": 13250
     },
     "US-0048": {
       "projectedUsd": 1600,
-      "costUsd": 14.793944,
+      "costUsd": 14.741218,
       "inputTokens": 713670,
       "outputTokens": 68062
     },
     "US-0049": {
       "projectedUsd": 2.659086,
-      "costUsd": 14.793944,
+      "costUsd": 14.741218,
       "inputTokens": 713670,
       "outputTokens": 68062
     },
     "US-0050": {
       "projectedUsd": 800,
-      "costUsd": 14.793944,
+      "costUsd": 14.741218,
       "inputTokens": 713670,
       "outputTokens": 68062
     },
     "US-0051": {
       "projectedUsd": 400,
-      "costUsd": 14.793944,
+      "costUsd": 14.741218,
       "inputTokens": 713670,
       "outputTokens": 68062
     },
     "US-0052": {
       "projectedUsd": 400,
-      "costUsd": 14.793944,
+      "costUsd": 14.741218,
       "inputTokens": 713670,
       "outputTokens": 68062
     },
     "US-0053": {
       "projectedUsd": 800,
-      "costUsd": 3.477424,
+      "costUsd": 3.424698,
       "inputTokens": 55887,
       "outputTokens": 2644
     },
     "US-0054": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0055": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0056": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0057": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0058": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0079": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0080": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0084": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0059": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0060": {
       "projectedUsd": 800,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0061": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0062": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0063": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0081": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0064": {
       "projectedUsd": 800,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0065": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0066": {
       "projectedUsd": 800,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0067": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0068": {
       "projectedUsd": 3.533994,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0169": {
       "projectedUsd": 800,
-      "costUsd": 86.736224,
+      "costUsd": 86.683498,
       "inputTokens": 7805769,
       "outputTokens": 445569
     },
     "US-0069": {
       "projectedUsd": 800,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0070": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0071": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0072": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0073": {
       "projectedUsd": 800,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0074": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0075": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0076": {
       "projectedUsd": 800,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0077": {
       "projectedUsd": 3.533994,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0078": {
       "projectedUsd": 2.659086,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0170": {
       "projectedUsd": 200,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0171": {
       "projectedUsd": 1600,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0172": {
       "projectedUsd": 800,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0173": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0175": {
       "projectedUsd": 8.58114,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0176": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0177": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0178": {
       "projectedUsd": 8.58114,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0179": {
+      "projectedUsd": 8.58114,
+      "costUsd": 3.058098,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0181": {
+      "projectedUsd": 3.533994,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0085": {
       "projectedUsd": 200,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0086": {
       "projectedUsd": 400,
-      "costUsd": 20.792632,
+      "costUsd": 20.739906,
       "inputTokens": 1298990,
       "outputTokens": 163277
     },
     "US-0087": {
       "projectedUsd": 200,
-      "costUsd": 20.792632,
+      "costUsd": 20.739906,
       "inputTokens": 1298990,
       "outputTokens": 163277
     },
     "US-0088": {
       "projectedUsd": 800,
-      "costUsd": 20.792632,
+      "costUsd": 20.739906,
       "inputTokens": 1298990,
       "outputTokens": 163277
     },
     "US-0089": {
       "projectedUsd": 800,
-      "costUsd": 20.792632,
+      "costUsd": 20.739906,
       "inputTokens": 1298990,
       "outputTokens": 163277
     },
     "US-0090": {
       "projectedUsd": 800,
-      "costUsd": 20.792632,
+      "costUsd": 20.739906,
       "inputTokens": 1298990,
       "outputTokens": 163277
     },
     "US-0091": {
       "projectedUsd": 1600,
-      "costUsd": 20.792632,
+      "costUsd": 20.739906,
       "inputTokens": 1298990,
       "outputTokens": 163277
     },
     "US-0092": {
       "projectedUsd": 400,
-      "costUsd": 20.792632,
+      "costUsd": 20.739906,
       "inputTokens": 1298990,
       "outputTokens": 163277
     },
     "US-0093": {
       "projectedUsd": 800,
-      "costUsd": 20.792632,
+      "costUsd": 20.739906,
       "inputTokens": 1298990,
       "outputTokens": 163277
     },
     "US-0108": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0109": {
       "projectedUsd": 200,
-      "costUsd": 155.757724,
+      "costUsd": 155.704998,
       "inputTokens": 3937957,
       "outputTokens": 737215
     },
     "US-0174": {
       "projectedUsd": 8.58114,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0180": {
+      "projectedUsd": 8.58114,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0094": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0095": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0096": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0097": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0098": {
       "projectedUsd": 200,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0099": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0100": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0101": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0102": {
       "projectedUsd": 800,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0103": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0104": {
       "projectedUsd": 800,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0105": {
       "projectedUsd": 800,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0106": {
       "projectedUsd": 400,
-      "costUsd": 4.005924,
+      "costUsd": 3.953198,
       "inputTokens": 92003,
       "outputTokens": 14272
     },
     "US-0107": {
       "projectedUsd": 200,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0110": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0111": {
       "projectedUsd": 1600,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0112": {
       "projectedUsd": 200,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0113": {
       "projectedUsd": 200,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0114": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0115": {
       "projectedUsd": 1600,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0118": {
       "projectedUsd": 800,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0119": {
       "projectedUsd": 800,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0120": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0121": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0122": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0123": {
       "projectedUsd": 200,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0124": {
       "projectedUsd": 200,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0125": {
       "projectedUsd": 200,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0148": {
       "projectedUsd": 1600,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0126": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0116": {
       "projectedUsd": 800,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0117": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0127": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0128": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0129": {
       "projectedUsd": 800,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0130": {
       "projectedUsd": 800,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0131": {
       "projectedUsd": 800,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0132": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0133": {
       "projectedUsd": 1600,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0134": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0135": {
       "projectedUsd": 800,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0136": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0137": {
       "projectedUsd": 800,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0138": {
       "projectedUsd": 200,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0139": {
       "projectedUsd": 800,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0140": {
       "projectedUsd": 800,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0141": {
       "projectedUsd": 800,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0142": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0143": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0144": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0145": {
       "projectedUsd": 800,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0146": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0147": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0149": {
       "projectedUsd": 800,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0150": {
       "projectedUsd": 800,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0151": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0152": {
       "projectedUsd": 1600,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0153": {
       "projectedUsd": 800,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0154": {
       "projectedUsd": 1600,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0155": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0156": {
       "projectedUsd": 800,
-      "costUsd": 41.564724,
+      "costUsd": 41.511998,
       "inputTokens": 2876600,
       "outputTokens": 545597
     },
     "US-0157": {
       "projectedUsd": 1600,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0158": {
       "projectedUsd": 800,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0159": {
       "projectedUsd": 1600,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0160": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0161": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0164": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0165": {
       "projectedUsd": 200,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0166": {
       "projectedUsd": 400,
-      "costUsd": 3.110824,
+      "costUsd": 3.058098,
       "inputTokens": 0,
       "outputTokens": 0
     },
@@ -15120,6 +15181,20 @@
       "openCriticalBug": false,
       "isAtRisk": false
     },
+    "US-0179": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0181": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
     "US-0085": {
       "missingTCs": false,
       "noBranch": false,
@@ -15203,6 +15278,13 @@
       "failedTCNoBug": false,
       "openCriticalBug": false,
       "isAtRisk": true
+    },
+    "US-0180": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
     },
     "US-0094": {
       "missingTCs": true,
@@ -15693,15 +15775,25 @@
     "byEpic": {}
   },
   "coverage": {
-    "lines": 1.78,
-    "statements": 1.61,
-    "functions": 0.6,
-    "branches": 0.86,
-    "overall": 1.78,
-    "meetsTarget": false,
+    "lines": 89.79,
+    "statements": 87.8,
+    "functions": 89.09,
+    "branches": 77.33,
+    "overall": 89.79,
+    "meetsTarget": true,
     "available": true
   },
   "recentActivity": [
+    {
+      "sessionNum": 44,
+      "date": "2026-05-10",
+      "summary": "**PR #997 — US-0178 Automated PR B (`migrate-commit`):** Added `tools/memory.js migrate-commit` subcommand with 7-step pipeline (pre-flight → migrate → patch CLAUDE.md → test → validate → commit → optional push/PR). Created `memory-claude-md-patcher.js` (idempotent AST-style CLAUDE.md patcher, two patches) and `memory-commit-orchestrator.js`. Fixed CodeQL `js/file-system-race` TOCTOU in CLAUDE.md read by replacing `existsSync+readFileSync` with try/catch on `readFileSync`. 886 tests.; **PR #998 — US-0180 Agent Model Selection:** Added `--model`/`--model-rationale` flags to `agent-start`; `agent-done` clears model field. Added inline model chip (haiku/sonnet/opus, low-saturation oklch palette) to Agent Workload dashboard widget. Added `## Model Selection` tables to all 8 specialist agent files + scenario quick-reference + Model Selection Ritual to DM_AGENT.md. New `agent-files.test.js` enforces format contract and ≤20% opus policy. Ran in parallel worktree. 883 tests.; **PR #1005 — US-0179 Memory Model Optimisation (`suggest-model`):** Extended `readEntries` with `complexity` + `headBody`. New `memory-model-suggester.js` (tokenise + word-boundary scoring + two-tier aggregation: haiku/sonnet). `renderIndex` now emits ○/◐/● badges + legend. `validateMemory` returns `warnings[]` for missing hints (non-fatal). `patchSuggestModelItem` added to patcher + chained in orchestrator. Seeded all 12 topic files with explicit hints. 940 tests."
+    },
+    {
+      "sessionNum": 43,
+      "date": "2026-05-10",
+      "summary": "**PR #995 — US-0175 Memory Token Optimisation (PR A):** Shipped all 12 tasks via subagent-driven pipeline. Created 6 lib modules (`memory-{parser,classifier,archiver,index,validator,migrator}.js`), CLI wrapper (`tools/memory.js compact/archive/migrate/validate`), `generate-plan.js` integration (calls `compactMemory` + conditional `archiveStaleMemory`), Settings tab Memory card, CI validate step, migrate-config schema migration. 1683 tests passing. Resolved 3 CodeQL `js/file-system-race` TOCTOU alerts by replacing `statSync+readFileSync` with atomic `openSync+fstatSync+readSync` via `readFileSafe()` helper. PR rebased on develop to resolve ID_REGISTRY conflict before merge.; **Roadmap additions:**;   - US-0178 — Automated PR B migration commit (`migrate-commit` subcommand)"
+    },
     {
       "sessionNum": 42,
       "date": "2026-05-09",
@@ -15716,19 +15808,17 @@
       "sessionNum": 40,
       "date": "2026-05-05",
       "summary": "**BUG-0253** — investigated About modal auto-close every 5 seconds; confirmed duplicate of already-fixed BUG-0104 (meta-refresh removed in prior session). Marked Fixed. PR #986 merged.; **Branch cleanup** — deleted all merged local and remote feature/bugfix branches from Session 39.; **v2.2.0 release** — cut `release/2.2.0` branch from develop, bumped to 2.2.0, PR #988 merged into main, GitHub release tagged and published."
-    },
-    {
-      "sessionNum": 39,
-      "date": "2026-05-04",
-      "summary": "**PR #532** (Dependabot ESLint 10.3.0) — merged to main; **US-0170** (4-digit ID regex cap removed) — PR #535 merged to develop; 6 parser files + render-tabs + generate-dashboard updated to `\\d+`; **US-0171** (GitHub sync engine) — PR #537 merged; `github-client.js`, `sync-bugs.js`, `sync-github.js` created; `parseBugs` now reads `GH Issue:` field; block-scoped `writeBugIssueNumber`; state-map fallback in `classifyBugChanges`. Follow-up PR #979 (sync-bugs fixes) also merged."
-    },
-    {
-      "sessionNum": 38,
-      "date": "2026-05-04",
-      "summary": "**Resumed from Session 37 — housekeeping:**; ; Synced develop ↔ main (merged main into develop to pick up v2.1.0 version bump)"
     }
   ],
   "lessons": [
+    {
+      "id": "L-0057",
+      "title": "CodeQL TOCTOU (`js/file-system-race`) fires on `statSync+readFileSync` — use fd for atomic stat+read",
+      "rule": "Any code that calls `fs.statSync(fp)` followed by `fs.readFileSync(fp)` as separate operations will fail CodeQL's `js/file-system-race` rule (and the PR will not merge). The window between the two calls is a real TOCTOU race in web/server contexts. Fix: open the file once to get a file descriptor, then use `fs.fstatSync(fd)` and `fs.readSync(fd, ...)` on the same fd. Pattern:\n\n```js\nfunction readFileSafe(fp) {\n  const fd = fs.openSync(fp, 'r');\n  try {\n    const stat = fs.fstatSync(fd);\n    const buf = Buffer.allocUnsafe(stat.size);\n    fs.readSync(fd, buf, 0, stat.size, 0);\n    return { content: buf.toString('utf8'), mtimeMs: stat.mtimeMs };\n  } finally {\n    fs.closeSync(fd);\n  }\n}\n```\n\nSimilarly, replace `fs.existsSync(p)` followed by `fs.readFileSync(p)` with a `try { content = fs.readFileSync(p) } catch { content = '' }` pattern — the catch replaces the existsSync check atomically.\n_Learned during US-0175 PR A — 3 high-severity CodeQL alerts in `memory-archiver.js`, `memory.js`, and `memory-migrator.js` blocked the merge until all three patterns were fixed._",
+      "context": "",
+      "date": "2026-05-10",
+      "bugIds": []
+    },
     {
       "id": "L-0056",
       "title": "Trend chart spikiness is usually snapshot density, not data quality",
@@ -16225,12 +16315,20 @@
         "BUG-0183",
         "BUG-0184"
       ]
+    },
+    {
+      "id": "L-0058",
+      "title": "Cherry-pick story commits onto clean branch; don't rebase a branch built on top of a squash-to-be-merged branch",
+      "rule": "",
+      "context": "",
+      "date": "2026-05-11",
+      "bugIds": []
     }
   ],
-  "generatedAt": "2026-05-10T19:33:49.753Z",
-  "commitSha": "da76e11",
-  "buildNumber": "740",
-  "branch": "feature/US-0175-memory-token-optimisation",
+  "generatedAt": "2026-05-11T16:41:35.469Z",
+  "commitSha": "5fafedd",
+  "buildNumber": "732",
+  "branch": "develop",
   "sessionTimeline": [
     {
       "date": "2026-03-09",
@@ -16968,9 +17066,9 @@
   "deltaSpend": 83.63,
   "projectName": "PlanVisualizer",
   "tagline": "Self-documenting project dashboards for Agentic coding platforms.",
-  "version": "2.2.2",
+  "version": "2.3.0",
   "appName": "plan-visualizer",
-  "appVersion": "2.2.2",
+  "appVersion": "2.3.0",
   "githubUrl": "https://github.com/ksyed0/PlanVisualizer",
   "agents": {
     "Conductor": {
@@ -17038,11 +17136,11 @@
     }
   },
   "budget": {
-    "totalBudget": 1168.5742939999998,
+    "totalBudget": 1189.270568,
     "totalSpent": 1133.1037999999999,
-    "totalProjected": 98038.12958000001,
-    "percentUsed": 97,
-    "burnRate": 26.81399122222222,
+    "totalProjected": 98058.825854,
+    "percentUsed": 95,
+    "burnRate": 33.33867857142857,
     "daysRemaining": 1,
     "projectedExhaustion": 1,
     "thresholds": [
@@ -17060,197 +17158,205 @@
       {
         "id": "EPIC-0001",
         "title": "Core Parsing Engine",
-        "budget": 28.081592,
-        "spent": 28.081592,
+        "budget": 27.659784000000002,
+        "spent": 27.659784000000002,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0002",
         "title": "HTML Dashboard Renderer",
-        "budget": 9.320648,
-        "spent": 9.320648,
+        "budget": 9.215196,
+        "spent": 9.215196,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0003",
         "title": "Installation and Distribution",
-        "budget": 22.773444,
-        "spent": 22.773444,
+        "budget": 22.457088,
+        "spent": 22.457088,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0004",
         "title": "CI/CD Pipeline",
-        "budget": 103.96316,
-        "spent": 103.96316,
+        "budget": 103.69953000000001,
+        "spent": 103.69953000000001,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0005",
         "title": "Project Self-Documentation",
-        "budget": 15.128296,
-        "spent": 15.128296,
+        "budget": 14.917392,
+        "spent": 14.917392,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0006",
         "title": "Dashboard UX & Quality Improvements",
-        "budget": 58.233360000000005,
-        "spent": 58.233360000000005,
+        "budget": 57.44247000000001,
+        "spent": 57.44247000000001,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0007",
         "title": "Dashboard Visual Design Overhaul",
-        "budget": 101.75131199999998,
-        "spent": 101.75131199999998,
+        "budget": 101.06587400000001,
+        "spent": 101.06587400000001,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0008",
         "title": "Trend Analysis & Historical Tracking",
-        "budget": 24.886592000000004,
-        "spent": 24.886592000000004,
+        "budget": 24.464784000000005,
+        "spent": 24.464784000000005,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0009",
         "title": "Budget Forecasting",
-        "budget": 18.664944000000002,
-        "spent": 18.664944000000002,
+        "budget": 18.348588000000003,
+        "spent": 18.348588000000003,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0011",
         "title": "Search",
-        "budget": 33.235928,
-        "spent": 33.235928,
+        "budget": 32.972298,
+        "spent": 32.972298,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0013",
         "title": "Agentic SDLC Dashboard",
-        "budget": 127.866616,
-        "spent": 127.866616,
+        "budget": 127.49753400000002,
+        "spent": 127.49753400000002,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0015",
         "title": "UI Review and Redesign",
-        "budget": 65.23926800000001,
-        "spent": 65.23926800000001,
+        "budget": 64.448378,
+        "spent": 64.448378,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0016",
         "title": "Agentic Dashboard Mission Control Redesign",
-        "budget": 46.66236000000001,
-        "spent": 46.66236000000001,
+        "budget": 45.87147000000001,
+        "spent": 45.87147000000001,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0017",
         "title": "Agentic Dashboard Effectiveness Review",
-        "budget": 3.110824,
-        "spent": 3.110824,
+        "budget": 3.058098,
+        "spent": 3.058098,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0019",
         "title": "Dashboard Cycle History",
-        "budget": 31.108240000000006,
-        "spent": 31.108240000000006,
+        "budget": 30.580980000000007,
+        "spent": 30.580980000000007,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0024",
         "title": "Backlog Closure",
-        "budget": 3.110824,
-        "spent": 3.110824,
+        "budget": 3.058098,
+        "spent": 3.058098,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0025",
         "title": "GitHub Issues Sync",
-        "budget": 9.332472,
-        "spent": 9.332472,
+        "budget": 9.174294,
+        "spent": 9.174294,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0020",
         "title": "Cross-Dashboard Redesign",
-        "budget": 40.440712000000005,
-        "spent": 40.440712000000005,
+        "budget": 39.75527400000001,
+        "spent": 39.75527400000001,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0023",
         "title": "Dashboard Quality & Reliability",
-        "budget": 9.332472,
-        "spent": 9.332472,
+        "budget": 9.174294,
+        "spent": 9.174294,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0010",
         "title": "Risk Analytics",
-        "budget": 105.82433800000001,
-        "spent": 102.290344,
-        "remaining": 3.533994000000007,
+        "budget": 105.507982,
+        "spent": 101.973988,
+        "remaining": 3.5339939999999928,
         "percentUsed": 97
       },
       {
         "id": "EPIC-0014",
         "title": "Follow-Up Changes",
-        "budget": 177.14876,
-        "spent": 168.56762,
-        "remaining": 8.581140000000005,
-        "percentUsed": 95
+        "budget": 188.524368,
+        "spent": 171.362088,
+        "remaining": 17.16228000000001,
+        "percentUsed": 91
       },
       {
         "id": "EPIC-0012",
         "title": "Stakeholder View",
-        "budget": 24.858024,
-        "spent": 18.664944000000002,
+        "budget": 24.541668,
+        "spent": 18.348588000000003,
         "remaining": 6.193079999999998,
         "percentUsed": 75
       },
       {
+        "id": "EPIC-0027",
+        "title": "Data Store Architecture Assessment",
+        "budget": 6.592092,
+        "spent": 3.058098,
+        "remaining": 3.533994,
+        "percentUsed": 46
+      },
+      {
         "id": "EPIC-0026",
         "title": "Memory Token Optimisation",
-        "budget": 29.605576,
-        "spent": 12.443296,
-        "remaining": 17.16228,
-        "percentUsed": 42
+        "budget": 41.033910000000006,
+        "spent": 15.290490000000002,
+        "remaining": 25.743420000000004,
+        "percentUsed": 37
       }
     ],
     "hasBudget": true
   },
   "completion": {
-    "likelyDate": "May 15",
-    "rangeStart": "May 14",
-    "rangeEnd": "May 16",
+    "likelyDate": "May 18",
+    "rangeStart": "May 17",
+    "rangeEnd": "May 20",
     "velocityWeeks": 10,
-    "storiesPerWeek": 16.9,
-    "pointsPerWeek": 30.5
+    "storiesPerWeek": 16.7,
+    "pointsPerWeek": 30.1
   },
   "trends": {
     "dates": [
@@ -17278,76 +17384,35 @@
       "2026-03-23T17:48:06.133Z",
       "2026-03-24T17:48:06.133Z",
       "2026-03-25T17:48:06.133Z",
-      "2026-03-26T00:45:25.207Z",
       "2026-03-26T17:48:06.133Z",
-      "2026-03-27T00:45:25.207Z",
       "2026-03-27T17:48:06.133Z",
-      "2026-03-28T00:45:25.207Z",
       "2026-03-28T17:48:06.133Z",
-      "2026-03-29T00:45:25.207Z",
       "2026-03-29T17:48:06.133Z",
-      "2026-03-30T00:45:25.207Z",
       "2026-03-30T17:48:06.133Z",
-      "2026-03-31T00:45:25.207Z",
       "2026-03-31T17:48:06.133Z",
-      "2026-04-01T00:45:25.207Z",
       "2026-04-01T17:48:06.128Z",
-      "2026-04-02T00:45:25.207Z",
-      "2026-04-03T00:45:25.207Z",
-      "2026-04-04T00:45:25.207Z",
-      "2026-04-05T00:45:25.207Z",
-      "2026-04-06T00:45:25.207Z",
-      "2026-04-07T00:45:25.207Z",
       "2026-04-07T21:16:24.528Z",
       "2026-04-07T21:49:17.670Z",
       "2026-04-07T22:49:18.652Z",
-      "2026-04-08T00:45:25.207Z",
       "2026-04-08T20:45:14.078Z",
       "2026-04-08T22:19:45.209Z",
       "2026-04-08T22:32:28.296Z",
-      "2026-04-09T00:45:25.207Z",
       "2026-04-09T03:09:23.326Z",
       "2026-04-09T13:23:30.015Z",
       "2026-04-09T13:50:20.608Z",
       "2026-04-09T14:17:19.644Z",
       "2026-04-09T18:30:18.767Z",
-      "2026-04-10T00:45:25.207Z",
       "2026-04-10T15:45:22.749Z",
-      "2026-04-11T00:45:25.207Z",
-      "2026-04-12T00:45:25.207Z",
-      "2026-04-13T00:45:25.207Z",
       "2026-04-13T21:42:34.530Z",
       "2026-04-13T22:16:06.447Z",
       "2026-04-13T22:28:35.776Z",
-      "2026-04-14T00:45:25.207Z",
       "2026-04-14T16:43:35.687Z",
       "2026-04-14T17:20:06.454Z",
       "2026-04-14T19:30:11.739Z",
       "2026-04-14T19:46:24.241Z",
       "2026-04-14T20:41:46.666Z",
-      "2026-04-15T00:45:25.207Z",
-      "2026-04-16T00:45:25.207Z",
-      "2026-04-17T00:45:25.207Z",
-      "2026-04-18T00:45:25.207Z",
-      "2026-04-19T00:45:25.207Z",
-      "2026-04-20T00:45:25.207Z",
-      "2026-04-21T00:45:25.207Z",
-      "2026-04-22T00:45:25.207Z",
-      "2026-04-23T00:45:25.207Z",
-      "2026-04-24T00:45:25.207Z",
-      "2026-04-25T00:45:25.199Z",
-      "2026-04-27T02:48:01.592Z",
-      "2026-04-28T17:46:33.480Z",
-      "2026-04-28T18:40:29.421Z",
-      "2026-04-28T21:02:39.740Z",
-      "2026-04-28T22:00:09.951Z",
-      "2026-04-28T23:03:20.152Z",
-      "2026-04-29T03:09:53.828Z",
-      "2026-04-29T12:41:45.660Z",
-      "2026-05-07T17:34:42.267Z",
-      "2026-05-10T14:00:04.185Z",
-      "2026-05-10T16:47:41.472Z",
-      "2026-05-10T19:33:49.842Z"
+      "2026-05-11T15:30:33.651Z",
+      "2026-05-11T16:41:35.548Z"
     ],
     "doneCounts": [
       2,
@@ -17374,74 +17439,33 @@
       37,
       39,
       41,
-      5,
       43,
-      9,
       44,
-      14,
       46,
-      19,
       48,
-      24,
       49,
-      28,
       51,
-      33,
       52,
-      38,
-      43,
-      47,
-      52,
-      57,
-      62,
       52,
       52,
       56,
-      66,
       69,
       70,
       70,
-      71,
       76,
       76,
       76,
       76,
       76,
       76,
-      76,
-      80,
-      85,
-      90,
       70,
       76,
       76,
-      95,
       76,
       76,
       78,
       79,
       81,
-      99,
-      104,
-      109,
-      114,
-      118,
-      123,
-      128,
-      133,
-      137,
-      142,
-      142,
-      150,
-      153,
-      153,
-      155,
-      155,
-      155,
-      155,
-      155,
-      165,
-      166,
       167,
       167
     ],
@@ -17470,76 +17494,35 @@
       81,
       81,
       81,
-      158,
       81,
-      158,
       81,
-      158,
       81,
-      158,
       81,
-      158,
       81,
-      158,
       81,
-      158,
-      82,
-      158,
-      158,
-      158,
-      158,
-      158,
-      158,
       82,
       82,
       82,
-      158,
+      82,
       82,
       84,
       84,
-      158,
       90,
       90,
       90,
       90,
       90,
-      158,
       90,
-      158,
-      158,
-      158,
       84,
       90,
       90,
-      158,
       90,
       104,
       104,
       104,
       105,
-      158,
-      158,
-      158,
-      158,
-      158,
-      158,
-      158,
-      158,
-      158,
-      158,
-      148,
-      161,
-      161,
-      161,
-      161,
-      161,
-      161,
-      161,
-      164,
-      169,
-      173,
-      173,
-      174
+      177,
+      177
     ],
     "aiCosts": [
       3.4542266666666666,
@@ -17566,74 +17549,33 @@
       75.99298666666667,
       79.44721333333334,
       82.90144000000001,
-      82.90144000000001,
-      86.35566666666668,
       86.35566666666668,
       89.80989333333333,
-      89.80989333333333,
       93.26412,
-      93.26412,
-      96.71834666666668,
       96.71834666666668,
       100.17257333333333,
-      116.00613999999999,
-      116.00613999999999,
-      135.34049666666664,
-      135.34049666666664,
-      154.67485333333332,
-      174.00920999999997,
-      193.34356666666662,
-      212.6779233333333,
-      232.01227999999998,
-      251.34663666666663,
-      251.34663666666663,
-      251.34663666666663,
-      251.34663666666663,
-      270.6809933333333,
-      270.6809933333333,
-      270.6809933333333,
-      270.6809933333333,
-      290.01534999999996,
-      290.01534999999996,
-      290.01534999999996,
-      290.01534999999996,
-      290.01534999999996,
-      290.01534999999996,
-      309.34970666666663,
-      309.34970666666663,
-      328.68406333333326,
-      348.01841999999994,
-      367.3527766666666,
-      367.3527766666666,
-      367.3527766666666,
-      367.3527766666666,
-      386.68713333333324,
-      386.68713333333324,
-      386.68713333333324,
-      386.68713333333324,
-      386.68713333333324,
-      386.68713333333324,
-      406.0214899999999,
-      425.3558466666666,
-      444.6902033333333,
-      464.02455999999995,
-      483.35891666666663,
-      502.69327333333325,
-      522.0276299999999,
-      541.3619866666666,
-      560.6963433333333,
-      580.0306999999999,
-      725.7097999999999,
-      737.7475,
-      737.7475,
-      737.7475,
-      737.7475,
-      737.7475,
-      737.7475,
-      737.7475,
-      737.7475,
-      1133.1037999999999,
-      1133.1037999999999,
+      103.6268,
+      105.3219,
+      110.09280000000001,
+      115.0615,
+      115.0615,
+      133.26190000000003,
+      146.1409,
+      146.1409,
+      146.1409,
+      172.14640000000003,
+      182.865,
+      184.887,
+      195.09810000000002,
+      195.7607,
+      195.7607,
+      195.7607,
+      195.7607,
+      195.7607,
+      195.7607,
+      209.7601,
+      220.21260000000004,
+      237.96510000000004,
       1133.1037999999999,
       1133.1037999999999
     ],
@@ -17662,76 +17604,35 @@
       81.5,
       83.7,
       85.8,
-      17.5,
       87.9,
-      23.5,
       88.9,
-      29.3,
       90.9,
-      34.1,
       92.9,
-      38.3,
       93.8,
-      41.4,
       95.7,
-      44.9,
       73.85,
-      48.2,
-      51.3,
-      53.6,
-      56.4,
-      59,
-      61.6,
       93.17,
       93.17,
       93.02,
-      63.5,
-      93.02,
-      93.02,
-      93.02,
-      65.9,
       93.02,
       93.02,
       93.02,
       93.02,
       93.02,
-      68.2,
       93.02,
-      69.9,
-      72.1,
-      74.2,
+      93.02,
+      93.02,
+      93.02,
       93.02,
       93.06,
       93.09,
-      76.2,
       93.09,
       93.09,
       93.09,
       93.09,
       93.09,
-      77.8,
-      79.8,
-      81.6,
-      83.5,
-      85,
-      86.7,
-      88.5,
-      90.2,
-      91.5,
-      93.2,
-      95.56,
-      95.27,
-      95.49,
-      95.59,
-      95.6,
-      95.6,
-      95.6,
-      95.81,
-      95.81,
-      92.6,
-      91.01,
-      91.01,
-      1.78
+      1.78,
+      89.79
     ],
     "velocity": [
       8,
@@ -17758,74 +17659,33 @@
       67.5,
       69.5,
       71.5,
-      13,
       73,
-      24,
       73.5,
-      33,
       74.5,
-      38,
       80.5,
-      49,
       83.5,
-      59,
       85.5,
-      64,
       86.5,
-      69,
-      73.5,
-      76,
-      86.5,
-      93.5,
-      98.5,
       86.5,
       86.5,
       92.5,
-      104.5,
       107.5,
       108.5,
       108.5,
-      113.5,
       126.5,
       126.5,
       126.5,
       126.5,
       126.5,
-      120.5,
       126.5,
-      128.5,
-      136.5,
-      149.5,
       108.5,
       126.5,
       126.5,
-      154,
       126.5,
       126.5,
       128.5,
       129.5,
       131.5,
-      157.5,
-      168.5,
-      176,
-      189,
-      192,
-      200.5,
-      215.5,
-      224,
-      234,
-      241,
-      241,
-      259,
-      274,
-      274,
-      280,
-      280,
-      280,
-      280,
-      280,
-      299,
-      300,
       301,
       301
     ],
@@ -17854,119 +17714,37 @@
       62,
       59,
       56,
-      185,
       53,
-      185,
       51,
-      185,
       48,
-      185,
       46,
-      185,
       44,
-      185,
       42,
-      185,
       2,
-      185,
-      185,
-      185,
-      185,
-      185,
-      185,
       68,
       68,
       68,
-      185,
       68,
       69,
       76,
-      185,
       76,
       2,
       2,
       1,
       0,
-      185,
       0,
-      185,
-      185,
-      185,
       76,
       76,
       2,
-      185,
       2,
       5,
       4,
       4,
       4,
-      179,
-      169,
-      160,
-      152,
-      149,
-      142,
-      135,
-      129,
-      124,
-      118,
-      11,
-      11,
-      17,
-      17,
-      11,
-      11,
-      11,
-      11,
-      22,
-      0,
-      4,
       4,
       4
     ],
     "atRisk": [
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
       0,
       0,
       0,
@@ -18046,74 +17824,33 @@
       8137184,
       8591496,
       9044700,
-      11404510,
       9673057,
-      16546896,
       10082564,
-      26451471,
       10891284,
-      33964840,
       11174853,
-      45030202,
       11342684,
-      54661467,
       11796996,
-      62180112,
       9607394,
-      69693481,
-      77216282,
-      83283790,
-      93588402,
-      102294736,
-      109807339,
       9807879,
       10244060,
       9649371,
-      117026538,
       11072199,
       11843912,
       11843912,
-      126931113,
       9649371,
       13482592,
       13847506,
       13912797,
       14344104,
-      135637447,
       14352514,
-      144043569,
-      153973880,
-      165457475,
       12920967,
       13016906,
       13070200,
-      172984826,
       13827355,
       13837834,
       14435987,
       14542668,
       14664034,
-      179017886,
-      190115426,
-      199250954,
-      210732242,
-      216778170,
-      225889817,
-      238562672,
-      248479613,
-      258078745,
-      266790355,
-      45008948,
-      45461616,
-      39245282,
-      35637993,
-      35637993,
-      35637993,
-      35637993,
-      35637993,
-      38849420,
-      73384240,
-      73384240,
       73384240,
       73384240
     ],
@@ -18142,74 +17879,33 @@
       8137184,
       8591496,
       9044700,
-      11404510,
       9673057,
-      16546896,
       10082564,
-      26451471,
       10891284,
-      33964840,
       11174853,
-      45030202,
       11342684,
-      54661467,
       11796996,
-      62180112,
       1820375,
-      69693481,
-      77216282,
-      83283790,
-      93588402,
-      102294736,
-      109807339,
       1868165,
       1889062,
       1824122,
-      117026538,
       2007688,
       2082267,
       2082267,
-      126931113,
       1824122,
       2250122,
       2325547,
       2344903,
       2412871,
-      135637447,
       2417871,
-      144043569,
-      153973880,
-      165457475,
       2188795,
       2212879,
       2237221,
-      172984826,
       2275427,
       2283413,
       2471082,
       2547272,
       2631208,
-      179017886,
-      190115426,
-      199250954,
-      210732242,
-      216778170,
-      225889817,
-      238562672,
-      248479613,
-      258078745,
-      266790355,
-      7447271,
-      7509869,
-      6302122,
-      5659845,
-      5659845,
-      5659845,
-      5659845,
-      5659845,
-      6070911,
-      10692483,
-      10692483,
       10692483,
       10692483
     ],
@@ -18238,75 +17934,34 @@
       1.4906976744186045,
       1.5097560975609756,
       1.5307692307692309,
-      1.6506578947368422,
       1.5108108108108107,
-      1.6371621621621621,
       1.5083333333333335,
-      1.6174825174825174,
       1.508823529411765,
-      1.615942028985507,
       1.5093750000000001,
-      1.6165413533834585,
       1.4967741935483874,
-      1.6217054263565889,
       1.4965517241379311,
-      1.6056451612903218,
       1.4448275862068964,
-      1.6033613445378148,
-      1.6254385964912277,
-      1.6218181818181816,
-      1.6180952380952385,
-      1.6260000000000003,
-      1.6147368421052632,
       1.4551724137931035,
       1.4551724137931035,
       1.464,
-      1.6164835164835167,
       1.4583333333333333,
       1.4923076923076921,
       1.4923076923076921,
-      1.6290697674418608,
       1.4923076923076921,
       1.4692307692307691,
       1.4692307692307691,
       1.4692307692307691,
       1.4692307692307691,
-      1.6259259259259258,
       1.4692307692307691,
-      1.6428571428571426,
-      1.6444444444444442,
-      1.6716417910447758,
       1.4923076923076921,
       1.4923076923076921,
       1.4692307692307691,
-      1.651612903225807,
       1.4692307692307691,
       1.6703703703703698,
       1.6399999999999997,
       1.6249999999999998,
       1.6130434782608694,
-      1.6258620689655177,
-      1.5924528301886796,
-      1.5458333333333334,
-      1.502325581395349,
-      1.4820512820512821,
-      1.514705882352941,
-      1.5862068965517242,
-      1.5958333333333332,
-      1.65,
-      1.56,
-      1.6600000000000001,
-      1.5,
-      1.6714285714285715,
-      1.6714285714285715,
-      1.6600000000000001,
-      1.6600000000000001,
-      1.6600000000000001,
-      1.6600000000000001,
-      1.7500000000000002,
-      1.6333333333333335,
       1.3666666666666665,
-      1.42,
       1.3666666666666665
     ],
     "velocityByWeek": {
@@ -18318,33 +17973,27 @@
         "2026-W14",
         "2026-W15",
         "2026-W16",
-        "2026-W17",
-        "2026-W18",
-        "2026-W19"
+        "2026-W20"
       ],
       "points": [
         31,
         22,
         14,
         13.5,
-        13,
-        56,
-        51,
-        58.5,
-        21,
-        21
+        6,
+        40,
+        5,
+        169.5
       ],
       "rollingAvg": [
         31,
         26.5,
         22.3,
         20.1,
-        15.6,
-        24.1,
-        33.4,
-        44.6,
-        46.6,
-        37.9
+        13.9,
+        18.4,
+        16.1,
+        55.1
       ]
     }
   }

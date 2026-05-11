@@ -1714,7 +1714,7 @@ function renderCostsTab(data, options = {}) {
         <tbody>${epicRows}</tbody>
       </table>
       <div class="mt-4">
-        <button ${csvDownload} class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm font-medium">Export Budget CSV</button>
+        <button ${csvDownload} class="chip info" style="cursor:pointer;font-size:12px;padding:6px 14px">Export Budget CSV</button>
       </div>
     </div>`;
   }
@@ -3128,6 +3128,7 @@ function renderStakeholderTab(data) {
 
   return `
   <div id="tab-stakeholder" class="p-6 hidden tab-fill" role="tabpanel" aria-labelledby="tab-btn-stakeholder">
+    ${_renderStatusHero(data)}
     ${_renderFullStatusHero(data)}
     ${_renderDecisionWidgets(data)}
     <div class="sh-milestone-section">
