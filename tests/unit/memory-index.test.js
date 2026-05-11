@@ -106,3 +106,53 @@ describe('compactMemory and readEntries (filesystem)', () => {
     expect(content).not.toContain('[Old]');
   });
 });
+
+describe('readEntries — complexity + headBody', () => {
+  let tmpdir;
+  beforeEach(() => {
+    tmpdir = fs.mkdtempSync(path.join(os.tmpdir(), 'memidx-c-'));
+    fs.mkdirSync(path.join(tmpdir, 'docs/memory/topics'), { recursive: true });
+  });
+  afterEach(() => fs.rmSync(tmpdir, { recursive: true, force: true }));
+
+  test('parses complexity hint (low/medium/high)', () => {
+    fs.writeFileSync(path.join(tmpdir, 'docs/memory/topics/a.md'), '# A\n\n<!-- complexity: high -->\n\nbody\n');
+    const entries = readEntries(tmpdir);
+    expect(entries[0].complexity).toBe('high');
+  });
+
+  test('complexity hint is case-insensitive and whitespace-tolerant', () => {
+    fs.writeFileSync(path.join(tmpdir, 'docs/memory/topics/b.md'), '# B\n\n<!--complexity:Low-->\n\nbody\n');
+    const entries = readEntries(tmpdir);
+    expect(entries[0].complexity).toBe('low');
+  });
+
+  test('returns complexity null when no hint present', () => {
+    fs.writeFileSync(path.join(tmpdir, 'docs/memory/topics/c.md'), '# C\n\nbody only\n');
+    const entries = readEntries(tmpdir);
+    expect(entries[0].complexity).toBeNull();
+  });
+
+  test('returns headBody (first 5 content lines after H1, skips HTML comment lines)', () => {
+    fs.writeFileSync(
+      path.join(tmpdir, 'docs/memory/topics/d.md'),
+      '# D\n\n<!-- complexity: low -->\n\nline 1\nline 2\nline 3\nline 4\nline 5\nline 6 (excluded)\n',
+    );
+    const entries = readEntries(tmpdir);
+    const lines = entries[0].headBody.split('\n');
+    expect(lines).toHaveLength(5);
+    expect(lines[0]).toBe('line 1');
+    expect(lines[4]).toBe('line 5');
+    expect(entries[0].headBody).not.toContain('complexity'); // HTML comment line skipped
+    expect(entries[0].headBody).not.toContain('line 6');
+  });
+
+  test('treats empty (whitespace-only) lines as non-content', () => {
+    fs.writeFileSync(path.join(tmpdir, 'docs/memory/topics/e.md'), '# E\n\nline 1\n\n   \nline 2\nline 3\n');
+    const entries = readEntries(tmpdir);
+    const lines = entries[0].headBody.split('\n');
+    expect(lines.filter((l) => l.trim()).length).toBeLessThanOrEqual(5);
+    expect(entries[0].headBody).toContain('line 1');
+    expect(entries[0].headBody).toContain('line 2');
+  });
+});
