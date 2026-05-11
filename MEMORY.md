@@ -8,18 +8,18 @@ Persistent semantic knowledge base. Topic files in `docs/memory/`. Updated autom
 
 ## Topics
 
-- [Active Dependencies](docs/memory/topics/active-dependencies.md)
-- [AGENTS.md](docs/memory/topics/agents-md.md)
-- [At-Risk Signals](docs/memory/topics/at-risk-signals.md)
-- [Cost Attribution](docs/memory/topics/cost-attribution.md)
-- [Coverage Thresholds](docs/memory/topics/coverage-thresholds.md)
-- [Git Branching Strategy](docs/memory/topics/git-branching-strategy.md)
-- [Key File Paths](docs/memory/topics/key-file-paths.md)
-- [Parser Contracts](docs/memory/topics/parser-contracts.md)
-- [Project Identity](docs/memory/topics/project-identity.md)
-- [Release Plan Format Rules](docs/memory/topics/release-plan-format-rules.md)
-- [Retry / Transient Error Parameters](docs/memory/topics/retry-transient-error-parameters.md)
-- [Technology](docs/memory/topics/technology.md)
+- ○ [Active Dependencies](docs/memory/topics/active-dependencies.md)
+- ○ [AGENTS.md](docs/memory/topics/agents-md.md)
+- ◐ [At-Risk Signals](docs/memory/topics/at-risk-signals.md)
+- ◐ [Cost Attribution](docs/memory/topics/cost-attribution.md)
+- ○ [Coverage Thresholds](docs/memory/topics/coverage-thresholds.md)
+- ◐ [Git Branching Strategy](docs/memory/topics/git-branching-strategy.md)
+- ○ [Key File Paths](docs/memory/topics/key-file-paths.md)
+- ● [Parser Contracts](docs/memory/topics/parser-contracts.md)
+- ○ [Project Identity](docs/memory/topics/project-identity.md)
+- ● [Release Plan Format Rules](docs/memory/topics/release-plan-format-rules.md)
+- ○ [Retry / Transient Error Parameters](docs/memory/topics/retry-transient-error-parameters.md)
+- ○ [Technology](docs/memory/topics/technology.md)
 
 ## Sessions
 

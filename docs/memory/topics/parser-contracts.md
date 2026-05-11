@@ -1,5 +1,7 @@
 # Parser Contracts
 
+<!-- complexity: high -->
+
 All parsers: `(markdown: string) → Array` — never throw, empty string input returns `[]`.
 
 | Module                  | Input                 | Key output fields                                                                                                                |
