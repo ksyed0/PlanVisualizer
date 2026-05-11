@@ -1,7 +1,7 @@
 // jest.config.js
 module.exports = {
   testEnvironment: 'node',
-  testMatch: ['**/tests/unit/**/*.test.js'],
+  testMatch: ['**/tests/unit/**/*.test.js', '**/tests/integration/**/*.test.js'],
   collectCoverageFrom: ['tools/lib/**/*.js'],
   coverageReporters: ['text', 'lcov', 'json-summary'],
   coverageThreshold: {
