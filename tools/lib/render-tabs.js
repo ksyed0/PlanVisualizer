@@ -1719,19 +1719,65 @@ function renderCostsTab(data, options = {}) {
     </div>`;
   }
 
-  // ── Column view: stories table ──────────────────────────────────────────
+  // ── Pre-compute bugs per epic (needed inside epicBlocks) ───────────────
+  const _storyEpicMap = {};
+  data.stories.forEach((s) => {
+    _storyEpicMap[s.id] = s.epicId;
+  });
+  const _bugsByEpic = {};
+  data.bugs.forEach((b) => {
+    const ep = _storyEpicMap[normalizeStoryRef(b.relatedStory)] || '_ungrouped';
+    if (!_bugsByEpic[ep]) _bugsByEpic[ep] = [];
+    _bugsByEpic[ep].push(b);
+  });
+
+  // ── Column view: stories + bugs per epic ────────────────────────────────
   const epicBlocks = data.epics
     .map((epic, epicIdx) => {
       const accent = EPIC_ACCENT_COLORS[epicIdx % EPIC_ACCENT_COLORS.length];
       const epicStories = data.stories.filter((s) => s.epicId === epic.id);
-      const epicProjected = epicStories.reduce(
-        (s, st) => s + ((data.costs[st.id] && data.costs[st.id].projectedUsd) || 0),
-        0,
-      );
-      const epicAI = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).costUsd || 0), 0);
-      const epicIn = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).inputTokens || 0), 0);
-      const epicOut = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).outputTokens || 0), 0);
+      const epicBugs = _bugsByEpic[epic.id] || [];
+      const epicProjected =
+        epicStories.reduce((s, st) => s + ((data.costs[st.id] && data.costs[st.id].projectedUsd) || 0), 0) +
+        epicBugs.reduce(
+          (s, b) => s + ((data.costs._bugs && data.costs._bugs[b.id] && data.costs._bugs[b.id].projectedUsd) || 0),
+          0,
+        );
+      const epicAI =
+        epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).costUsd || 0), 0) +
+        epicBugs.reduce(
+          (s, b) => s + ((data.costs._bugs && data.costs._bugs[b.id] && data.costs._bugs[b.id].costUsd) || 0),
+          0,
+        );
+      const epicIn =
+        epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).inputTokens || 0), 0) +
+        epicBugs.reduce(
+          (s, b) =>
+            s +
+            (data.costs._bugs && data.costs._bugs[b.id] && !data.costs._bugs[b.id].isEstimated
+              ? data.costs._bugs[b.id].inputTokens || 0
+              : 0),
+          0,
+        );
+      const epicOut =
+        epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).outputTokens || 0), 0) +
+        epicBugs.reduce(
+          (s, b) =>
+            s +
+            (data.costs._bugs && data.costs._bugs[b.id] && !data.costs._bugs[b.id].isEstimated
+              ? data.costs._bugs[b.id].outputTokens || 0
+              : 0),
+          0,
+        );
       const ceid = `costs-ep-${jsEsc(epic.id)}`;
+      const storyCount = epicStories.length;
+      const bugCount = epicBugs.length;
+      const countLabel = [
+        storyCount ? `${storyCount} stor${storyCount !== 1 ? 'ies' : 'y'}` : '',
+        bugCount ? `${bugCount} bug${bugCount !== 1 ? 's' : ''}` : '',
+      ]
+        .filter(Boolean)
+        .join(' · ');
       const storyRows = epicStories
         .map((story) => {
           const projected = (data.costs[story.id] && data.costs[story.id].projectedUsd) || 0;
@@ -1749,6 +1795,27 @@ function renderCostsTab(data, options = {}) {
       </tr>`;
         })
         .join('');
+      const bugRows = epicBugs.length
+        ? `<tr><td colspan="7" class="px-3 py-1" style="background:var(--clr-surface);font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-mute)">Bug Fixes</td></tr>` +
+          epicBugs
+            .map((bug) => {
+              const bc = (data.costs._bugs && data.costs._bugs[bug.id]) || {
+                costUsd: 0,
+                inputTokens: 0,
+                outputTokens: 0,
+              };
+              return `<tr class="border-t border-slate-100 dark:border-slate-700" style="opacity:.85">
+        <td class="px-3 py-2 pl-8 font-mono text-xs text-slate-500 whitespace-nowrap">${esc(bug.id)}</td>
+        <td class="px-3 py-2 text-sm dark:text-slate-200">${esc(bug.title)}</td>
+        <td class="px-3 py-2 text-center">${badge(bug.severity)}</td>
+        <td class="px-3 py-2 text-center">${badge(bug.status)}</td>
+        <td class="px-3 py-2 text-right text-sm dark:text-slate-200">${bc.projectedUsd > 0 ? usd(bc.projectedUsd) : '—'}</td>
+        <td class="px-3 py-2 text-right text-sm text-teal-700 dark:text-teal-400">${usd(bc.costUsd || 0)}</td>
+        <td class="px-3 py-2 text-right text-xs text-slate-500 tokens-col">${bc.isEstimated ? '—' : `${fmtNum(bc.inputTokens || 0)} / ${fmtNum(bc.outputTokens || 0)}`}</td>
+      </tr>`;
+            })
+            .join('')
+        : '';
       return `<tbody>
     <tr class="border-t-2 border-slate-300 dark:border-slate-600 cursor-pointer select-none anim-stagger" style="--i:${Math.min(epicIdx, 19)};background:${accent.bg}" onclick="toggleSection('${ceid}','${ceid}-arrow')">
       <td colspan="4" class="px-3 py-2" style="border-left:4px solid ${accent.border}">
@@ -1756,13 +1823,13 @@ function renderCostsTab(data, options = {}) {
         <span class="font-mono text-xs font-bold" style="color:${accent.border}">${epic.id}</span>
         <span class="text-sm font-semibold ml-2 text-slate-700 dark:text-slate-200">${esc(epic.title)}</span>
         <span class="ml-2">${badge(epic.status)}</span>
-        <span style="font-size:10px;color:var(--text-mute);margin-left:8px">click to expand stories</span>
+        <span style="font-size:10px;color:var(--text-mute);margin-left:8px">${countLabel} · click to expand</span>
       </td>
       <td class="px-3 py-2 text-right text-sm font-medium dark:text-slate-200">${usd(epicProjected)}</td>
       <td class="px-3 py-2 text-right text-sm font-medium text-teal-700 dark:text-teal-400">${usd(epicAI)}</td>
       <td class="px-3 py-2 text-right text-xs text-slate-500 tokens-col">${fmtNum(epicIn)} / ${fmtNum(epicOut)}</td>
     </tr>
-    </tbody><tbody id="${ceid}" class="hidden">${storyRows}</tbody>`;
+    </tbody><tbody id="${ceid}" class="hidden">${storyRows}${bugRows}</tbody>`;
     })
     .join('');
 
@@ -1972,31 +2039,10 @@ function renderCostsTab(data, options = {}) {
     })
     .join('');
 
+  // Bug costs are now shown inside each epic expansion above.
+  // Keep a compact summary note only.
   const bugFixColumnSection = data.bugs.length
-    ? `
-    <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mt-4 mb-2 flex-shrink-0">Bug Fix Costs</h3>
-    <div class="scroll-table">
-    <table class="w-full text-left text-sm border-collapse">
-      <thead class="text-xs uppercase">
-        <tr>
-          <th class="px-3 py-2">Bug</th><th class="px-3 py-2">Title</th><th class="px-3 py-2 text-center">Severity</th>
-          <th class="px-3 py-2 text-center">Status</th><th class="px-3 py-2">Story</th>
-          <th class="px-3 py-2">Fix Branch</th><th class="px-3 py-2 text-right">Projected</th>
-          <th class="px-3 py-2 text-right">AI Cost</th>
-          <th class="px-3 py-2 text-right tokens-col">Tokens (in/out)</th>
-        </tr>
-      </thead>
-      ${bugColGroups}
-      <tfoot class="bg-slate-50 dark:bg-slate-700 font-semibold border-t-2 border-slate-300 dark:border-slate-600">
-        <tr>
-          <td colspan="6" class="px-3 py-2 text-right text-sm dark:text-slate-200">Totals</td>
-          <td class="px-3 py-2 text-right text-sm dark:text-slate-200">${usd(bugTotalProjected)}</td>
-          <td class="px-3 py-2 text-right text-sm text-teal-700 dark:text-teal-400">${usd(bugTotalAI)}</td>
-          <td class="px-3 py-2 text-right text-xs text-slate-500 tokens-col">${fmtNum(bugTotalIn)} / ${fmtNum(bugTotalOut)}</td>
-        </tr>
-      </tfoot>
-    </table>
-    </div>`
+    ? `<p style="font-size:11px;color:var(--text-mute);margin-top:8px">Bug fix costs are included in each epic's row totals above. Bug total: projected ${usd(bugTotalProjected)} · AI ${usd(bugTotalAI)}.</p>`
     : '';
 
   const bugFixCardSection = data.bugs.length
