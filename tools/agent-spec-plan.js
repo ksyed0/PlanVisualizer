@@ -4,6 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 const State = require('./lib/agent-spec-plan-state');
+const Flags = require('./lib/agent-spec-plan-flags');
 
 const ROOT = path.join(__dirname, '..');
 const SDLC_PATH = path.join(ROOT, 'docs/sdlc-status.json');
@@ -244,6 +245,112 @@ function dispatch(opts, ctx = {}) {
           ),
         );
         return 0;
+
+      case 'plan-start':
+        newOrch = State.planStart(orch, { author: opts.author });
+        applyOrchestration(story, newOrch);
+        writeSdlc(sdlcPath, data);
+        return 0;
+
+      case 'plan-spec-gap':
+        if (!opts.reason) {
+          console.error('--reason required');
+          return 1;
+        }
+        newOrch = State.planSpecGap(orch, { reason: opts.reason });
+        applyOrchestration(story, newOrch);
+        writeSdlc(sdlcPath, data);
+        console.warn(
+          `[agent-spec-plan] Spec gap reported by plan author. Spec phase reopened for ${opts.story}: ${opts.reason}`,
+        );
+        return 0;
+
+      case 'plan-review-result':
+        newOrch = State.planReviewResult(orch, { verdict: opts.verdict });
+        applyOrchestration(story, newOrch);
+        writeSdlc(sdlcPath, data);
+        if (story.planPhase.state === 'escalated') {
+          console.error(`[agent-spec-plan] Iteration cap reached for plan phase. Story escalated.`);
+          return 1;
+        }
+        return 0;
+
+      case 'plan-await-approval':
+        newOrch = State.planAwaitApproval(orch);
+        applyOrchestration(story, newOrch);
+        writeSdlc(sdlcPath, data);
+        return 2;
+
+      case 'escalate':
+        if (!opts.phase) {
+          console.error('--phase required (spec|plan)');
+          return 1;
+        }
+        if (opts.phase === 'spec') story.specPhase.state = 'escalated';
+        else if (opts.phase === 'plan') story.planPhase.state = 'escalated';
+        else {
+          console.error(`Unknown phase '${opts.phase}'`);
+          return 1;
+        }
+        writeSdlc(sdlcPath, data);
+        return 0;
+
+      case 'show-pending': {
+        const log = ctx.log || console.log;
+        const stories = data.stories || {};
+        const pending = [];
+        for (const [id, st] of Object.entries(stories)) {
+          if (!st.specPhase) continue;
+          if (st.specPhase.state === 'awaiting_ac_approval') pending.push({ id, gate: 'ac' });
+          if (st.specPhase.state === 'awaiting_spec_approval') pending.push({ id, gate: 'spec' });
+          if (st.planPhase && st.planPhase.state === 'awaiting_plan_approval') pending.push({ id, gate: 'plan' });
+        }
+        if (pending.length === 0) log('[agent-spec-plan] No pending approvals.');
+        else pending.forEach((p) => log(`  ${p.id} — awaiting ${p.gate} approval`));
+        return 0;
+      }
+
+      case 'list': {
+        const log = ctx.log || console.log;
+        const stories = data.stories || {};
+        const rows = [];
+        for (const [id, st] of Object.entries(stories)) {
+          if (!st.specPhase) continue;
+          const overall = State.deriveOverall(st.specPhase.state, st.planPhase.state);
+          if (!opts.state || overall === opts.state) {
+            rows.push(`  ${id} — ${overall} (spec=${st.specPhase.state}, plan=${st.planPhase.state})`);
+          }
+        }
+        if (rows.length === 0) log('[agent-spec-plan] No matching stories.');
+        else rows.forEach((r) => log(r));
+        return 0;
+      }
+
+      case 'apply-pending': {
+        const dir = opts.dir || path.join(ROOT, 'docs/pending-approvals');
+        const flags = Flags.scanPendingDir(dir);
+        for (const flag of flags) {
+          if (!flag.ok) {
+            console.warn(`[agent-spec-plan] Skipping malformed flag '${flag.name}': ${flag.reason}`);
+            continue;
+          }
+          const p = flag.payload;
+          const subOpts = { cmd: p.action, story: p.story, gate: p.gate, reason: p.reason };
+          const code = dispatch(subOpts, { sdlcPath });
+          if (code === 0) {
+            try {
+              fs.unlinkSync(flag.filePath);
+            } catch (e) {
+              console.warn(`[agent-spec-plan] Could not delete '${flag.name}': ${e.message}`);
+            }
+          } else {
+            console.warn(
+              `[agent-spec-plan] Skipping '${flag.name}': state transition failed (exit code ${code}). Flag left in place.`,
+            );
+          }
+        }
+        return 0;
+      }
 
       default:
         console.error(`[agent-spec-plan] Unknown command '${cmd}'`);

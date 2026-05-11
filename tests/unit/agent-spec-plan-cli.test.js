@@ -127,3 +127,105 @@ describe('dispatch — spec phase', () => {
     expect(data.stories['US-0181'].specPhase.state).toBe('escalated');
   });
 });
+
+describe('dispatch — plan phase + helpers', () => {
+  let tmpdir, sdlcPath, pendingDir;
+  beforeEach(() => {
+    tmpdir = fs.mkdtempSync(path.join(os.tmpdir(), 'agt-cli-'));
+    sdlcPath = path.join(tmpdir, 'sdlc-status.json');
+    pendingDir = path.join(tmpdir, 'pending');
+    fs.mkdirSync(pendingDir, { recursive: true });
+    fs.writeFileSync(sdlcPath, JSON.stringify({ stories: { 'US-0181': { status: 'Planned' } } }));
+  });
+  afterEach(() => fs.rmSync(tmpdir, { recursive: true, force: true }));
+
+  function fullSpecApproval() {
+    dispatch({ cmd: 'spec-start', story: 'US-0181' }, { sdlcPath });
+    dispatch({ cmd: 'spec-await-ac', story: 'US-0181' }, { sdlcPath });
+    dispatch({ cmd: 'approve', story: 'US-0181', gate: 'ac' }, { sdlcPath });
+    dispatch({ cmd: 'spec-review-result', story: 'US-0181', verdict: 'APPROVED' }, { sdlcPath });
+    dispatch({ cmd: 'spec-await-final', story: 'US-0181' }, { sdlcPath });
+    dispatch({ cmd: 'approve', story: 'US-0181', gate: 'spec' }, { sdlcPath });
+  }
+
+  test('plan-start requires spec approved', () => {
+    expect(dispatch({ cmd: 'plan-start', story: 'US-0181', author: 'Keystone' }, { sdlcPath })).toBe(1);
+  });
+
+  test('plan-start works after spec approved', () => {
+    fullSpecApproval();
+    expect(dispatch({ cmd: 'plan-start', story: 'US-0181', author: 'Keystone' }, { sdlcPath })).toBe(0);
+    const data = JSON.parse(fs.readFileSync(sdlcPath, 'utf8'));
+    expect(data.stories['US-0181'].planPhase.author).toBe('Keystone');
+  });
+
+  test('plan-spec-gap reopens spec phase', () => {
+    fullSpecApproval();
+    dispatch({ cmd: 'plan-start', story: 'US-0181', author: 'Keystone' }, { sdlcPath });
+    expect(dispatch({ cmd: 'plan-spec-gap', story: 'US-0181', reason: 'AC missing X' }, { sdlcPath })).toBe(0);
+    const data = JSON.parse(fs.readFileSync(sdlcPath, 'utf8'));
+    expect(data.stories['US-0181'].specPhase.state).toBe('in_progress');
+    expect(data.stories['US-0181'].planPhase.state).toBe('pending');
+  });
+
+  test('full happy path reaches ready_for_dispatch', () => {
+    fullSpecApproval();
+    dispatch({ cmd: 'plan-start', story: 'US-0181', author: 'Keystone' }, { sdlcPath });
+    dispatch({ cmd: 'plan-review-result', story: 'US-0181', verdict: 'APPROVED' }, { sdlcPath });
+    expect(dispatch({ cmd: 'plan-await-approval', story: 'US-0181' }, { sdlcPath })).toBe(2);
+    expect(dispatch({ cmd: 'approve', story: 'US-0181', gate: 'plan' }, { sdlcPath })).toBe(0);
+    const data = JSON.parse(fs.readFileSync(sdlcPath, 'utf8'));
+    expect(data.stories['US-0181'].planPhase.state).toBe('approved');
+  });
+
+  test('escalate forces escalated state', () => {
+    fullSpecApproval();
+    dispatch({ cmd: 'plan-start', story: 'US-0181', author: 'Keystone' }, { sdlcPath });
+    expect(dispatch({ cmd: 'escalate', story: 'US-0181', phase: 'plan' }, { sdlcPath })).toBe(0);
+    const data = JSON.parse(fs.readFileSync(sdlcPath, 'utf8'));
+    expect(data.stories['US-0181'].planPhase.state).toBe('escalated');
+  });
+
+  test('show-pending lists stories with open gates', () => {
+    dispatch({ cmd: 'spec-start', story: 'US-0181' }, { sdlcPath });
+    dispatch({ cmd: 'spec-await-ac', story: 'US-0181' }, { sdlcPath });
+    const log = [];
+    const exitCode = dispatch({ cmd: 'show-pending' }, { sdlcPath, log: (m) => log.push(m) });
+    expect(exitCode).toBe(0);
+    expect(log.join('\n')).toMatch(/US-0181/);
+    expect(log.join('\n')).toMatch(/ac/);
+  });
+
+  test('list filters by --state', () => {
+    fullSpecApproval();
+    const log = [];
+    dispatch({ cmd: 'list', state: 'plan' }, { sdlcPath, log: (m) => log.push(m) });
+    expect(log.join('\n')).toContain('US-0181');
+  });
+
+  test('apply-pending applies valid flag and deletes it', () => {
+    dispatch({ cmd: 'spec-start', story: 'US-0181' }, { sdlcPath });
+    dispatch({ cmd: 'spec-await-ac', story: 'US-0181' }, { sdlcPath });
+    const flagPath = path.join(pendingDir, 'approve-US-0181-ac.flag');
+    fs.writeFileSync(
+      flagPath,
+      JSON.stringify({
+        story: 'US-0181',
+        gate: 'ac',
+        action: 'approve',
+        timestamp: '2026-05-11T12:00:00Z',
+      }),
+    );
+    expect(dispatch({ cmd: 'apply-pending', dir: pendingDir }, { sdlcPath })).toBe(0);
+    expect(fs.existsSync(flagPath)).toBe(false);
+    const data = JSON.parse(fs.readFileSync(sdlcPath, 'utf8'));
+    expect(data.stories['US-0181'].specPhase.acApprovedAt).toBeTruthy();
+  });
+
+  test('apply-pending leaves malformed flag in place', () => {
+    const flagPath = path.join(pendingDir, 'approve-US-0181-ac.flag');
+    fs.writeFileSync(flagPath, 'not json');
+    dispatch({ cmd: 'apply-pending', dir: pendingDir }, { sdlcPath });
+    expect(fs.existsSync(flagPath)).toBe(true);
+  });
+});
