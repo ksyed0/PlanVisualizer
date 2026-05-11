@@ -104,8 +104,15 @@ function runMigrateCommit(opts) {
   }
 
   // 7. Stage + commit
-  const stagePaths = ['docs/memory/', 'MEMORY.md', 'CLAUDE.md', 'docs/LESSONS.md', 'docs/ID_REGISTRY.md'];
-  execFileSync('git', ['-C', root, 'add', ...stagePaths], { stdio: 'ignore' });
+  const stagePaths = ['docs/memory/', 'MEMORY.md', 'docs/LESSONS.md', 'docs/ID_REGISTRY.md'];
+  if (fs.existsSync(claudePath)) stagePaths.push('CLAUDE.md');
+
+  try {
+    execFileSync('git', ['-C', root, 'add', ...stagePaths], { stdio: 'pipe' });
+  } catch (e) {
+    console.error('[migrate-commit] Abort: git add failed:', e.stderr ? e.stderr.toString() : e.message);
+    return 1;
+  }
 
   const tf = migrateResult.topicFiles || [];
   const topicCount = tf.filter((f) => f.category === 'topics').length;
@@ -138,7 +145,7 @@ function runMigrateCommit(opts) {
     execFileSync('git', ['-C', root, 'commit', '-m', commitMsg], { stdio: 'pipe' });
     console.log('[migrate-commit] Committed migration.');
   } catch (e) {
-    console.error('[migrate-commit] Abort: commit failed.');
+    console.error('[migrate-commit] Abort: commit failed.', e.stderr ? e.stderr.toString().trim() : e.message);
     return 1;
   }
 
