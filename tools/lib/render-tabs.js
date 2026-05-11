@@ -2836,6 +2836,7 @@ function renderStatusTab(data) {
   <div id="tab-status" class="p-6" role="tabpanel" aria-labelledby="tab-btn-status">
 
     ${_renderFullStatusHero(data)}
+    ${renderPendingApprovalsWidget(data)}
 
     ${(() => {
       const dep = data.githubStatus && data.githubStatus.deployment;
@@ -3381,6 +3382,87 @@ function renderSettingsTab({ githubConfig, githubTokenSet, syncState, memoryConf
   </div>`;
 }
 
+function renderPendingApprovalsWidget(data) {
+  const stories = (data && data.stories) || {};
+  const pending = [];
+  for (const [id, st] of Object.entries(stories)) {
+    if (!st.specPhase) continue;
+    if (st.specPhase.state === 'awaiting_ac_approval') pending.push({ id, gate: 'ac', gateLabel: 'AC' });
+    if (st.specPhase.state === 'awaiting_spec_approval') pending.push({ id, gate: 'spec', gateLabel: 'Spec' });
+    if (st.planPhase && st.planPhase.state === 'awaiting_plan_approval')
+      pending.push({ id, gate: 'plan', gateLabel: 'Plan' });
+  }
+
+  if (pending.length === 0) {
+    return `<div class="card pv-pending-approvals" style="margin-bottom:16px">
+  <div class="card-head"><h3 style="text-transform:uppercase;letter-spacing:.08em;font-size:11px;font-weight:700">Pending Approvals</h3></div>
+  <div class="card-body" style="padding:12px;font-size:12px;color:var(--text-mute)">No pending approvals.</div>
+</div>`;
+  }
+
+  const rows = pending
+    .map(
+      (p) => `
+    <div class="pv-pending-row" style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <span class="font-mono" style="font-size:12px;color:var(--text)">${esc(p.id)}</span>
+      <span class="chip warn" style="font-size:9px">${p.gateLabel} review</span>
+      <button class="chip ok" style="cursor:pointer;font-size:10px"
+        data-action="approve" data-story="${esc(p.id)}" data-gate="${p.gate}"
+        onclick="pvDownloadFlag(this)" id="approve-${esc(p.id)}-${p.gate}">Approve</button>
+      <button class="chip risk" style="cursor:pointer;font-size:10px"
+        data-action="reject" data-story="${esc(p.id)}" data-gate="${p.gate}"
+        onclick="pvShowRejectForm(this)">Reject</button>
+      <textarea class="pv-reject-reason" data-reason-for="${esc(p.id)}-${p.gate}"
+        style="display:none;font-size:11px;padding:4px;border:1px solid var(--border);border-radius:4px;background:var(--clr-input-bg);color:var(--clr-input-text);flex:1"
+        placeholder="Rejection reason..." rows="2"></textarea>
+    </div>`,
+    )
+    .join('');
+
+  return `<div class="card pv-pending-approvals" style="margin-bottom:16px">
+  <div class="card-head"><h3 style="text-transform:uppercase;letter-spacing:.08em;font-size:11px;font-weight:700">Pending Approvals</h3></div>
+  <div class="card-body" style="padding:12px">${rows}</div>
+</div>
+<script>
+function pvDownloadFlag(btn) {
+  var story  = btn.getAttribute('data-story');
+  var gate   = btn.getAttribute('data-gate');
+  var action = btn.getAttribute('data-action');
+  var reason = '';
+  if (action === 'reject') {
+    var area = document.querySelector('[data-reason-for="' + story + '-' + gate + '"]');
+    if (area) reason = area.value || '';
+    if (!reason) { alert('Please enter a rejection reason.'); return; }
+  }
+  var payload = { story: story, gate: gate, action: action, timestamp: new Date().toISOString() };
+  if (reason) payload.reason = reason;
+  var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = action + '-' + story + '-' + gate + '.flag';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  alert('Flag downloaded. Move it to docs/pending-approvals/ and run: npm run plan');
+}
+function pvShowRejectForm(btn) {
+  var story = btn.getAttribute('data-story');
+  var gate  = btn.getAttribute('data-gate');
+  var area  = document.querySelector('[data-reason-for="' + story + '-' + gate + '"]');
+  if (area) {
+    if (area.style.display === 'none') {
+      area.style.display = '';
+      area.focus();
+      btn.textContent = 'Confirm Reject';
+      btn.setAttribute('onclick', 'pvDownloadFlag(this)');
+    }
+  }
+}
+</script>`;
+}
+
 module.exports = {
   renderHierarchyTab,
   renderKanbanTab,
@@ -3394,4 +3476,5 @@ module.exports = {
   renderRecentActivity,
   renderStakeholderTab,
   renderSettingsTab,
+  renderPendingApprovalsWidget,
 };
