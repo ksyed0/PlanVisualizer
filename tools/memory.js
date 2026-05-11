@@ -148,11 +148,18 @@ function dispatch({ cmd, dry, force, days, push, pr, noTest }) {
     const result = validateMemory({ root: ROOT });
     if (result.ok) {
       console.log('[memory] OK — MEMORY.md is in sync with docs/memory/.');
-      return 0;
+    } else {
+      console.error('[memory] DRIFT — MEMORY.md does not match docs/memory/:');
+      console.error(result.diff);
     }
-    console.error('[memory] DRIFT — MEMORY.md does not match docs/memory/:');
-    console.error(result.diff);
-    return 1;
+    if (result.warnings && result.warnings.length > 0) {
+      console.error(`[memory] Warning: ${result.warnings.length} topic files missing complexity hints:`);
+      for (const w of result.warnings) {
+        console.error(`  - ${w.replace('topic file missing complexity hint: ', '')}`);
+      }
+      console.error('  Add `<!-- complexity: low|medium|high -->` on the line after the H1 title.');
+    }
+    return result.ok ? 0 : 1;
   }
 
   if (cmd === 'migrate-commit') {
