@@ -112,6 +112,71 @@ Before spawning any sub-agent:
 
 **Fallback rule:** If no row in the target agent's table matches the task, default to `sonnet`. Record `--model-rationale "no table match"` so adherence can be measured over time.
 
+## Pre-Dispatch Spec & Plan Orchestration
+
+Before any specialist agent is dispatched to implement a story, the spec and plan phases must complete. A story enters dispatch only when `planPhase.state === "approved"`.
+
+This section specifies WHO to spawn and WHEN. For HOW to spawn (worktree isolation, model selection ritual, log via `agent-start`/`agent-done`), see §How to Spawn Sub-Agents.
+
+### Spec phase sequence
+
+1. `node tools/agent-spec-plan.js spec-start --story <id>`
+2. Spawn Compass → ACs + scope (Compass uses superpowers:brainstorming skill if available, else manual dialogue per `PO_AGENT.md#Spec-Brainstorming-Protocol`).
+3. `spec-await-ac --story <id>` → halts at exit 2 → user approves AC checkpoint via `approve --gate ac` (CLI) or dashboard widget download.
+4. If `uiSurface === true`: spawn Palette (design tokens), then Pixel (interactive mockup at `docs/superpowers/mockups/<story>/index.html`).
+5. Spawn Keystone for `## Technical Design` section.
+6. Spawn Lens for spec review. Lens emits structured findings (see §Lens findings format).
+7. `spec-review-result --verdict APPROVED|REQUEST_CHANGES --findings-file <path>`. On REQUEST_CHANGES, route findings by `@persona` primary tag and re-engage owner. Loop until APPROVED or iteration cap reached (default 3).
+8. `spec-await-final --story <id>` → user approves final spec.
+9. Spec phase complete (`specPhase.state === "approved"`).
+
+### Plan phase sequence
+
+1. `plan-start --story <id> --author Keystone`
+2. Spawn Keystone (plan author). Keystone uses superpowers:writing-plans skill if available, else manual protocol per `ARCHITECT_AGENT.md#Plan-Writing-Protocol`. Keystone runs the self-review checklist before handoff.
+3. If Keystone discovers a spec issue, call `plan-spec-gap --story <id> --reason "..."` → spec phase reopens.
+4. Spawn Lens for plan review.
+5. `plan-review-result --verdict ... --findings-file ...`. Loop on REQUEST_CHANGES (cap 3) routing findings.
+6. `plan-await-approval --story <id>` → user approves plan.
+7. Story state = `ready_for_dispatch` (derived). US-0182+ takes over from here.
+
+### Tiered fallback
+
+- **With superpowers installed:** Compass invokes `superpowers:brainstorming` skill; Keystone invokes `superpowers:writing-plans` skill; Lens follows `requesting-code-review` patterns.
+- **Without superpowers:** agents follow manual protocols documented in their respective `_AGENT.md` files. The CLI tool and state machine work identically either way.
+
+### Lens findings format
+
+Lens emits findings as markdown bullets tagged with `@persona`:
+
+```
+## Findings
+- @compass: AC-007 missing edge case for empty list
+- @palette: contrast ratio of orange chip is 3.2:1 (needs >= 4.5:1)
+- @pixel: form field has no error state in mockup
+- @keystone: technical design omits retry policy for transient failures
+- @compass @keystone: cross-cutting concern requiring both ACs and design update
+```
+
+**Canonical persona tags (lowercase):** `@compass`, `@palette`, `@pixel`, `@keystone`, `@lens`, `@forge`, `@sentinel`, `@circuit`, `@plan-author` (synonym for current plan owner).
+
+**Routing rule:** First tag = primary owner (receives finding for fix). Additional tags = CC'd (informed via log entry, not directed to fix).
+
+### Iteration cap
+
+Default 3 per phase (configurable in `plan-visualizer.config.json` → `orchestration.iterationCap.{spec,plan}`). When `reviewIterations === reviewIterationCap`, the CLI auto-transitions state to `escalated`. DM_AGENT writes a `## ESCALATION` block to `progress.md` with current findings and stops orchestration. Human resolution required.
+
+### User approval gates
+
+Three gates per story: **AC**, **Spec**, **Plan**. Each can be approved via:
+
+- **CLI fast-path:** `node tools/agent-spec-plan.js approve --story US-XXXX --gate ac|spec|plan`
+- **Dashboard widget:** Status tab → Pending Approvals widget → click Approve → download `approve-US-XXXX-<gate>.flag` → move to `docs/pending-approvals/` → next `npm run plan` flushes pending approvals.
+
+Both paths are equivalent. CLI is faster for terminal users; dashboard is the remote/visual-review path.
+
+---
+
 ## Orchestration Playbook
 
 Read the release plan and project-specific timeline from `project.md` references to determine:
