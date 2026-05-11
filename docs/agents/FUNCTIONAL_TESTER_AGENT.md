@@ -109,3 +109,10 @@ After test execution, update each AC's checkbox in `docs/RELEASE_PLAN.md` based 
 - Bug IDs are permanent — never reuse, even if closed
 - Update ID_REGISTRY.md BEFORE writing the bug entry
 - All cross-references use full IDs (e.g., TC-XXXX, BUG-XXXX, US-XXXX)
+
+## Model Selection
+
+| Task type                                                  | Model  | Rationale                            |
+| ---------------------------------------------------------- | ------ | ------------------------------------ |
+| Manual test execution, regression run, snapshot verify     | haiku  | Pattern application — runbook-driven |
+| Test case writing, edge case identification, test strategy | sonnet | Integration judgment about coverage  |

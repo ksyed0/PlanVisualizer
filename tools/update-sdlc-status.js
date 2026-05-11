@@ -74,9 +74,9 @@ function nowISO() {
   return new Date().toISOString();
 }
 
-function appendLog(data, agent, message) {
+function appendLog(data, agent, message, extra) {
   data.log = data.log || [];
-  data.log.push({ time: nowISO(), agent: agent || 'Conductor', message });
+  data.log.push({ time: nowISO(), agent: agent || 'Conductor', message, ...extra });
   // Keep log bounded at last 200 entries
   if (data.log.length > 200) data.log = data.log.slice(-200);
   return data;
@@ -139,9 +139,15 @@ function resetSession(data, storiesTotal) {
 const HANDLERS = {
   'agent-start': (data, opts) => {
     requireAgent(opts);
+    const VALID_MODELS = ['haiku', 'sonnet', 'opus'];
+    const model = opts.model || 'sonnet';
+    if (!VALID_MODELS.includes(model)) {
+      throw new Error(`[update-sdlc-status] --model must be one of: ${VALID_MODELS.join(', ')}. Got: ${model}`);
+    }
     const agent = ensureAgent(data, opts.agent);
     agent.status = 'active';
     agent.currentTask = opts.task || `Working on ${opts.story || 'task'}`;
+    agent.model = model;
     if (opts.story) {
       const story = ensureStory(data, opts.story);
       story.assignedAgent = opts.agent;
@@ -150,7 +156,9 @@ const HANDLERS = {
         story.startedAt = nowISO();
       }
     }
-    appendLog(data, opts.agent, `started ${opts.story ? opts.story + ': ' : ''}${opts.task || 'task'}`);
+    const logExtra = { model };
+    if (opts['model-rationale']) logExtra.modelRationale = opts['model-rationale'];
+    appendLog(data, opts.agent, `started ${opts.story ? opts.story + ': ' : ''}${opts.task || 'task'}`, logExtra);
     return data;
   },
 
@@ -159,6 +167,7 @@ const HANDLERS = {
     const agent = ensureAgent(data, opts.agent);
     agent.status = 'idle';
     agent.currentTask = null;
+    agent.model = null;
     agent.tasksCompleted = (agent.tasksCompleted || 0) + 1;
     data.metrics = data.metrics || {};
     data.metrics.tasksCompleted = (data.metrics.tasksCompleted || 0) + 1;

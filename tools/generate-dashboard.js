@@ -1922,6 +1922,10 @@ function generateHTML(status) {
   .mc-active-name { font-size: 17px; font-weight: 700; color: oklch(93% 0.10 70); line-height: 1; }
   .mc-active-role { font-size: 10px; color: oklch(70% 0.15 50); margin-top: 3px; }
   .mc-active-badge { background: oklch(72% 0.19 38); color: oklch(0% 0 0); font-size: 9px; font-weight: 800; letter-spacing: .1em; padding: 3px 11px; border-radius: 20px; flex-shrink: 0; margin-top: 2px; }
+  .mc-agent-model-chip { font-size: 9px; padding: 1px 6px; border-radius: 8px; margin-left: 4px; display: inline-block; font-weight: 600; }
+  .mc-agent-model-chip.haiku { background: oklch(72% 0.17 145 / 10%); color: oklch(60% 0.08 145); }
+  .mc-agent-model-chip.sonnet { background: oklch(55% 0.19 264 / 10%); color: oklch(60% 0.08 260); }
+  .mc-agent-model-chip.opus { background: oklch(55% 0.22 290 / 10%); color: oklch(60% 0.1 290); }
   .mc-active-story { background: oklch(0% 0 0 / .35); border-radius: 6px; padding: 7px 10px; font-size: 10px; margin-bottom: 6px; }
   .mc-active-story-id { color: oklch(83% 0.15 70); font-weight: 700; margin-right: 6px; }
   .mc-active-story-desc { color: oklch(70% 0.15 50); }
@@ -2348,6 +2352,10 @@ ${(() => {
       const startedAt = (agent && agent.startedAt) || '';
       const storyId = (task.match(/US-\d{4}/) || [])[0] || '';
       const onerror = `this.src='${imgBase}/optimized/${esc(avatar)}-160.png'`;
+      const modelChip =
+        agent.model && ['haiku', 'sonnet', 'opus'].includes(agent.model)
+          ? `<span class="mc-agent-model-chip ${agent.model}">${agent.model}</span>`
+          : '';
       return `<div class="mc-active-card agent-card is-active active" id="agent-${esc(name)}" data-agent-name="${esc(name)}" data-agent="${esc(name)}" data-agent-status="active" style="--agent-color:${color};">
   <div class="mc-active-portrait-banner">
     <img src="${imgBase}/${esc(avatar)}.png" alt="${esc(name)}" onerror="${esc(onerror)}">
@@ -2359,7 +2367,7 @@ ${(() => {
         <div class="mc-active-name">${esc(name)}</div>
         <div class="mc-active-role">${esc(role)}</div>
       </div>
-      <span class="mc-active-badge">ACTIVE</span>
+      <span class="mc-active-badge">ACTIVE</span>${modelChip}
     </div>
     ${task ? `<div class="mc-active-story"><span class="mc-active-story-id">${esc(storyId)}</span><span class="mc-active-story-desc">${esc(task)}</span></div>` : ''}
     <div class="mc-active-meta">

@@ -88,3 +88,10 @@ The DM agent will assign you specific stories and screens. Your general responsi
 - Use virtualized lists for scrollable content (not ScrollView with map)
 - Images use proper resize modes
 - Follow AGENTS.md git workflow: feature branches, atomic commits, tests pass before push
+
+## Model Selection
+
+| Task type                                                                        | Model  | Rationale            |
+| -------------------------------------------------------------------------------- | ------ | -------------------- |
+| Style fix, format change, pattern-following implementation (Nth tab, Nth widget) | haiku  | Pattern application  |
+| Net-new feature with non-trivial design choices, cross-cutting refactor          | sonnet | Integration judgment |
