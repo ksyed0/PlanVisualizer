@@ -68,4 +68,38 @@ function patchClaudeMd(text) {
   return { text: lines.join('\n'), changed: true };
 }
 
-module.exports = { patchClaudeMd };
+const SUGGEST_MODEL_IDEMPOTENCY_MARKER = 'npm run memory:suggest-model';
+
+const NEW_SUGGEST_MODEL_ITEM =
+  '4. Before dispatching complex work to a sub-agent, run `npm run memory:suggest-model -- --task "<brief description>"` to get a model recommendation based on topic complexity in `docs/memory/`. The recommendation is `haiku` for low-complexity work or `sonnet` for medium/high; opus is never auto-recommended.';
+
+function patchSuggestModelItem(text) {
+  if (text.includes(SUGGEST_MODEL_IDEMPOTENCY_MARKER)) {
+    return { text, changed: false };
+  }
+
+  const lines = text.split('\n');
+
+  let insertIdx = -1;
+  for (let i = 0; i < lines.length; i++) {
+    if (/^3\.\s+Memory files live/.test(lines[i])) {
+      insertIdx = i;
+      break;
+    }
+  }
+  if (insertIdx === -1) {
+    throw new Error('CLAUDE.md Mandatory Session Startup: cannot find US-0178 memory item — run US-0178 patch first');
+  }
+
+  lines.splice(insertIdx + 1, 0, NEW_SUGGEST_MODEL_ITEM);
+
+  for (let i = insertIdx + 2; i < lines.length; i++) {
+    const m = lines[i].match(/^(\d+)(\.\s+.*)/);
+    if (!m) break;
+    lines[i] = `${parseInt(m[1], 10) + 1}${m[2]}`;
+  }
+
+  return { text: lines.join('\n'), changed: true };
+}
+
+module.exports = { patchClaudeMd, patchSuggestModelItem };

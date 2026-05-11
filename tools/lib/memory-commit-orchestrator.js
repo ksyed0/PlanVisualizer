@@ -4,7 +4,7 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 const { migrateMemory } = require('./memory-migrator');
 const { validateMemory } = require('./memory-validator');
-const { patchClaudeMd } = require('./memory-claude-md-patcher');
+const { patchClaudeMd, patchSuggestModelItem } = require('./memory-claude-md-patcher');
 
 function runMigrateCommit(opts) {
   const { root, dry = false, push = false, pr = false, noTest = false, force = false } = opts;
@@ -66,19 +66,30 @@ function runMigrateCommit(opts) {
     }
   }
   if (claudeOriginal !== undefined) {
-    let patchResult;
+    let after = claudeOriginal;
+    let anyChanged = false;
     try {
-      patchResult = patchClaudeMd(claudeOriginal);
+      const r1 = patchClaudeMd(after);
+      after = r1.text;
+      if (r1.changed) anyChanged = true;
     } catch (e) {
       console.error('[migrate-commit] Abort:', e.message);
       return 1;
     }
-    claudeChanged = patchResult.changed;
-    if (!dry && patchResult.changed) {
-      fs.writeFileSync(claudePath, patchResult.text);
+    try {
+      const r2 = patchSuggestModelItem(after);
+      after = r2.text;
+      if (r2.changed) anyChanged = true;
+    } catch (e) {
+      console.error('[migrate-commit] Abort:', e.message);
+      return 1;
     }
-    if (dry && patchResult.changed) {
-      console.log('[migrate-commit] dry-run: CLAUDE.md would be patched.');
+    claudeChanged = anyChanged;
+    if (!dry && anyChanged) {
+      fs.writeFileSync(claudePath, after);
+    }
+    if (dry && anyChanged) {
+      console.log('[migrate-commit] dry-run: CLAUDE.md would be patched (US-0178 + US-0179).');
     }
   }
 
