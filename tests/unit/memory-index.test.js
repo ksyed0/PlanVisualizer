@@ -156,3 +156,51 @@ describe('readEntries — complexity + headBody', () => {
     expect(entries[0].headBody).toContain('line 2');
   });
 });
+
+describe('renderIndex — complexity badges', () => {
+  test('includes legend line below intro', () => {
+    const out = renderIndex([
+      { category: 'topics', title: 'X', file: 'x.md', date: null, complexity: 'low', headBody: '' },
+    ]);
+    expect(out).toContain('Complexity badges');
+    expect(out).toContain('○ low');
+    expect(out).toContain('◐ medium');
+    expect(out).toContain('● high');
+  });
+
+  test('topic with explicit low complexity gets ○ badge', () => {
+    const out = renderIndex([
+      { category: 'topics', title: 'Low Topic', file: 'low.md', date: null, complexity: 'low' },
+    ]);
+    expect(out).toContain('- ○ [Low Topic]');
+  });
+
+  test('topic with explicit high complexity gets ● badge', () => {
+    const out = renderIndex([
+      { category: 'topics', title: 'High Topic', file: 'high.md', date: null, complexity: 'high' },
+    ]);
+    expect(out).toContain('- ● [High Topic]');
+  });
+
+  test('topic with no complexity hint gets no badge prefix', () => {
+    const out = renderIndex([{ category: 'topics', title: 'No Hint', file: 'nh.md', date: null, complexity: null }]);
+    expect(out).toContain('- [No Hint]');
+    expect(out).not.toContain('- ○ [No Hint]');
+    expect(out).not.toContain('- ◐ [No Hint]');
+    expect(out).not.toContain('- ● [No Hint]');
+  });
+
+  test('sessions always get ◐ badge regardless of complexity', () => {
+    const out = renderIndex([
+      { category: 'sessions', title: 'Session 1', file: '2026-01-01-s1.md', date: '2026-01-01', complexity: null },
+    ]);
+    expect(out).toContain('- ◐ [Session 1]');
+  });
+
+  test('snapshots always get ◐ badge regardless of complexity', () => {
+    const out = renderIndex([
+      { category: 'snapshots', title: 'Snap 1', file: '2026-01-01-s.md', date: '2026-01-01', complexity: null },
+    ]);
+    expect(out).toContain('- ◐ [Snap 1]');
+  });
+});
