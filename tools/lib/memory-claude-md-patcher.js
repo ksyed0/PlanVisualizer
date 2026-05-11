@@ -45,7 +45,8 @@ function patchClaudeMd(text) {
   // Renumber subsequent numbered list items (+1 each).
   for (let i = insertIdx + 2; i < lines.length; i++) {
     const m = lines[i].match(/^(\d+)(\.\s+.*)/);
-    if (m) lines[i] = `${parseInt(m[1], 10) + 1}${m[2]}`;
+    if (!m) break;
+    lines[i] = `${parseInt(m[1], 10) + 1}${m[2]}`;
   }
 
   // Patch 2: Find and replace the MEMORY.md checklist checkbox.
