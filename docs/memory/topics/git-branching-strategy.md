@@ -1,5 +1,7 @@
 # Git Branching Strategy
 
+<!-- complexity: medium -->
+
 - **`main`** — production-ready only; protected (requires PR + CI pass)
 - **`develop`** — integration branch; protected (requires PR + CI pass)
 - **`feature/US-XXXX-*`** — one branch per user story; squash-merge into develop

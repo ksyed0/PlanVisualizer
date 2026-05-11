@@ -1,5 +1,7 @@
 # Key File Paths
 
+<!-- complexity: low -->
+
 | File                             | Purpose                                          |
 | -------------------------------- | ------------------------------------------------ |
 | `tools/generate-plan.js`         | Main CLI, orchestrates everything                |

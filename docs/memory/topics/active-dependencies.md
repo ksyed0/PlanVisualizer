@@ -1,5 +1,7 @@
 # Active Dependencies
 
+<!-- complexity: low -->
+
 | Package    | Version | Purpose                   |
 | ---------- | ------- | ------------------------- |
 | jest       | 30.x    | Unit test framework       |
