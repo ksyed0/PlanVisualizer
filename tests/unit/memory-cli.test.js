@@ -9,6 +9,9 @@ describe('parseArgs', () => {
       dry: false,
       force: false,
       days: null,
+      push: false,
+      pr: false,
+      noTest: false,
     });
   });
   test('dry flag', () => {
@@ -22,5 +25,16 @@ describe('parseArgs', () => {
   });
   test('returns null cmd when no args', () => {
     expect(parseArgs(['node', 'memory.js']).cmd).toBeNull();
+  });
+  test('--push flag', () => {
+    expect(parseArgs(['node', 'memory.js', 'migrate-commit', '--push']).push).toBe(true);
+  });
+  test('--pr flag sets both pr and push', () => {
+    const r = parseArgs(['node', 'memory.js', 'migrate-commit', '--pr']);
+    expect(r.pr).toBe(true);
+    expect(r.push).toBe(true);
+  });
+  test('--no-test flag', () => {
+    expect(parseArgs(['node', 'memory.js', 'migrate-commit', '--no-test']).noTest).toBe(true);
   });
 });

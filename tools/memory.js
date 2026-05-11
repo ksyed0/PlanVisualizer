@@ -28,15 +28,23 @@ function parseArgs(argv) {
   let dry = false;
   let force = false;
   let days = null;
+  let push = false;
+  let pr = false;
+  let noTest = false;
   for (let i = 1; i < args.length; i++) {
     if (args[i] === '--dry' || args[i] === '--dry-run') dry = true;
     else if (args[i] === '--force') force = true;
+    else if (args[i] === '--push') push = true;
+    else if (args[i] === '--pr') {
+      pr = true;
+      push = true;
+    } else if (args[i] === '--no-test') noTest = true;
     else if (args[i] === '--days' && args[i + 1]) {
       days = parseInt(args[i + 1], 10);
       i++;
     }
   }
-  return { cmd, dry, force, days };
+  return { cmd, dry, force, days, push, pr, noTest };
 }
 
 function loadStaleDays() {
@@ -48,7 +56,7 @@ function loadStaleDays() {
   }
 }
 
-function dispatch({ cmd, dry, force, days }) {
+function dispatch({ cmd, dry, force, days, push, pr, noTest }) {
   if (cmd === 'compact') {
     const { compactMemory, renderIndex, readEntries } = require('./lib/memory-index');
     if (dry) {
@@ -147,7 +155,21 @@ function dispatch({ cmd, dry, force, days }) {
     return 1;
   }
 
-  console.error('Usage: node tools/memory.js {compact|archive|migrate|validate} [--dry] [--force] [--days N]');
+  if (cmd === 'migrate-commit') {
+    const { runMigrateCommit } = require('./lib/memory-commit-orchestrator');
+    return runMigrateCommit({
+      root: ROOT,
+      dry,
+      push,
+      pr,
+      noTest,
+      force,
+    });
+  }
+
+  console.error(
+    'Usage: node tools/memory.js {compact|archive|migrate|migrate-commit|validate} [--dry] [--force] [--push] [--pr] [--no-test] [--days N]',
+  );
   return 2;
 }
 
