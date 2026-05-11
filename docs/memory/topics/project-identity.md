@@ -1,5 +1,7 @@
 # Project Identity
 
+<!-- complexity: low -->
+
 - **Name:** PlanVisualizer
 - **Repo:** `ksyed0/PlanVisualizer` (public)
 - **Purpose:** Parse AGENTS.md-style markdown files and generate a static HTML project dashboard.

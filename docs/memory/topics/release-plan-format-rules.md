@@ -1,5 +1,7 @@
 # Release Plan Format Rules
 
+<!-- complexity: high -->
+
 Artifacts (EPIC/US/TASK) must be inside triple-backtick fenced code blocks. Within each block, artifacts are separated by blank lines (2+ newlines). Format:
 
 ```

@@ -31,6 +31,8 @@ function parseArgs(argv) {
   let push = false;
   let pr = false;
   let noTest = false;
+  let task = null;
+  let json = false;
   for (let i = 1; i < args.length; i++) {
     if (args[i] === '--dry' || args[i] === '--dry-run') dry = true;
     else if (args[i] === '--force') force = true;
@@ -39,12 +41,16 @@ function parseArgs(argv) {
       pr = true;
       push = true;
     } else if (args[i] === '--no-test') noTest = true;
+    else if (args[i] === '--json') json = true;
     else if (args[i] === '--days' && args[i + 1]) {
       days = parseInt(args[i + 1], 10);
       i++;
+    } else if (args[i] === '--task' && args[i + 1] !== undefined) {
+      task = args[i + 1];
+      i++;
     }
   }
-  return { cmd, dry, force, days, push, pr, noTest };
+  return { cmd, dry, force, days, push, pr, noTest, task, json };
 }
 
 function loadStaleDays() {
@@ -56,7 +62,7 @@ function loadStaleDays() {
   }
 }
 
-function dispatch({ cmd, dry, force, days, push, pr, noTest }) {
+function dispatch({ cmd, dry, force, days, push, pr, noTest, task, json }) {
   if (cmd === 'compact') {
     const { compactMemory, renderIndex, readEntries } = require('./lib/memory-index');
     if (dry) {
@@ -148,11 +154,18 @@ function dispatch({ cmd, dry, force, days, push, pr, noTest }) {
     const result = validateMemory({ root: ROOT });
     if (result.ok) {
       console.log('[memory] OK — MEMORY.md is in sync with docs/memory/.');
-      return 0;
+    } else {
+      console.error('[memory] DRIFT — MEMORY.md does not match docs/memory/:');
+      console.error(result.diff);
     }
-    console.error('[memory] DRIFT — MEMORY.md does not match docs/memory/:');
-    console.error(result.diff);
-    return 1;
+    if (result.warnings && result.warnings.length > 0) {
+      console.error(`[memory] Warning: ${result.warnings.length} topic files missing complexity hints:`);
+      for (const w of result.warnings) {
+        console.error(`  - ${w.replace('topic file missing complexity hint: ', '')}`);
+      }
+      console.error('  Add `<!-- complexity: low|medium|high -->` on the line after the H1 title.');
+    }
+    return result.ok ? 0 : 1;
   }
 
   if (cmd === 'migrate-commit') {
@@ -167,8 +180,47 @@ function dispatch({ cmd, dry, force, days, push, pr, noTest }) {
     });
   }
 
+  if (cmd === 'suggest-model') {
+    if (!task) {
+      console.error('Usage: npm run memory:suggest-model -- --task "<brief description>"');
+      console.error('       (the `--` separator is required when invoking via npm)');
+      console.error('       or: node tools/memory.js suggest-model --task "<brief description>" [--json]');
+      return 1;
+    }
+    const { readEntries } = require('./lib/memory-index');
+    const { suggestModel } = require('./lib/memory-model-suggester');
+    const entries = readEntries(ROOT);
+    if (entries.length === 0) {
+      console.error('[memory] no topic files found — run migration first (node tools/memory.js migrate)');
+      return 1;
+    }
+    let result;
+    try {
+      result = suggestModel(entries, task);
+    } catch (e) {
+      console.error(`[memory] ${e.message}`);
+      return 1;
+    }
+    if (json) {
+      process.stdout.write(JSON.stringify(result, null, 2) + '\n');
+    } else {
+      console.log(`Recommended: ${result.model}`);
+      if (result.matched.length > 0) {
+        console.log(`Matched ${result.matched.length} topics (score >= 2):`);
+        for (const m of result.matched) {
+          const tokensStr = m.matchedTokens.join(', ');
+          console.log(
+            `  - ${m.title} (${m.complexity}, ${m.complexitySource}) — score ${m.score} (matched: ${tokensStr})`,
+          );
+        }
+      }
+      console.log(`Reason: ${result.reason}`);
+    }
+    return 0;
+  }
+
   console.error(
-    'Usage: node tools/memory.js {compact|archive|migrate|migrate-commit|validate} [--dry] [--force] [--push] [--pr] [--no-test] [--days N]',
+    'Usage: node tools/memory.js {compact|archive|migrate|migrate-commit|suggest-model|validate} [--dry] [--force] [--push] [--pr] [--no-test] [--days N] [--task "<text>"] [--json]',
   );
   return 2;
 }

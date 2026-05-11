@@ -4,28 +4,30 @@
 
 Persistent semantic knowledge base. Topic files in `docs/memory/`. Updated automatically by `generate-plan.js`.
 
+**Complexity badges:** ○ low → haiku · ◐ medium → sonnet · ● high → sonnet · (no badge) unknown
+
 ## Topics
 
-- [Active Dependencies](docs/memory/topics/active-dependencies.md)
-- [AGENTS.md](docs/memory/topics/agents-md.md)
-- [At-Risk Signals](docs/memory/topics/at-risk-signals.md)
-- [Cost Attribution](docs/memory/topics/cost-attribution.md)
-- [Coverage Thresholds](docs/memory/topics/coverage-thresholds.md)
-- [Git Branching Strategy](docs/memory/topics/git-branching-strategy.md)
-- [Key File Paths](docs/memory/topics/key-file-paths.md)
-- [Parser Contracts](docs/memory/topics/parser-contracts.md)
-- [Project Identity](docs/memory/topics/project-identity.md)
-- [Release Plan Format Rules](docs/memory/topics/release-plan-format-rules.md)
-- [Retry / Transient Error Parameters](docs/memory/topics/retry-transient-error-parameters.md)
-- [Technology](docs/memory/topics/technology.md)
+- ○ [Active Dependencies](docs/memory/topics/active-dependencies.md)
+- ○ [AGENTS.md](docs/memory/topics/agents-md.md)
+- ◐ [At-Risk Signals](docs/memory/topics/at-risk-signals.md)
+- ◐ [Cost Attribution](docs/memory/topics/cost-attribution.md)
+- ○ [Coverage Thresholds](docs/memory/topics/coverage-thresholds.md)
+- ◐ [Git Branching Strategy](docs/memory/topics/git-branching-strategy.md)
+- ○ [Key File Paths](docs/memory/topics/key-file-paths.md)
+- ● [Parser Contracts](docs/memory/topics/parser-contracts.md)
+- ○ [Project Identity](docs/memory/topics/project-identity.md)
+- ● [Release Plan Format Rules](docs/memory/topics/release-plan-format-rules.md)
+- ○ [Retry / Transient Error Parameters](docs/memory/topics/retry-transient-error-parameters.md)
+- ○ [Technology](docs/memory/topics/technology.md)
 
 ## Sessions
 
-- [Plugin Install Integration + Dashboard Fixes (Session 42, 2026-05-09/10)](docs/memory/sessions/2026-05-10-plugin-install-integration-dashboard-fixes.md) · 2026-05-10
-- [US-0175 Memory Token Optimisation — PR A Tooling (Session 43, 2026-05-10)](docs/memory/sessions/2026-05-10-us-0175-memory-token-optimisation-pr-a-tooling.md) · 2026-05-10
-- [GitHub Status Monitoring (Session 41, 2026-05-08)](docs/memory/sessions/2026-05-08-github-status-monitoring.md) · 2026-05-08
-- [Session 18 learnings (2026-04-15/16) — EPIC-0016 Agentic Dashboard Mission Control](docs/memory/sessions/2026-04-16-session-18-learnings-epic-0016-agentic-dashboard.md) · 2026-04-16
+- ◐ [Plugin Install Integration + Dashboard Fixes (Session 42, 2026-05-09/10)](docs/memory/sessions/2026-05-10-plugin-install-integration-dashboard-fixes.md) · 2026-05-10
+- ◐ [US-0175 Memory Token Optimisation — PR A Tooling (Session 43, 2026-05-10)](docs/memory/sessions/2026-05-10-us-0175-memory-token-optimisation-pr-a-tooling.md) · 2026-05-10
+- ◐ [GitHub Status Monitoring (Session 41, 2026-05-08)](docs/memory/sessions/2026-05-08-github-status-monitoring.md) · 2026-05-08
+- ◐ [Session 18 learnings (2026-04-15/16) — EPIC-0016 Agentic Dashboard Mission Control](docs/memory/sessions/2026-04-16-session-18-learnings-epic-0016-agentic-dashboard.md) · 2026-04-16
 
 ## Snapshots
 
-- [Project Completion Status (as of 2026-05-05 Session 40)](docs/memory/snapshots/2026-05-05-project-completion-status.md) · 2026-05-05
+- ◐ [Project Completion Status (as of 2026-05-05 Session 40)](docs/memory/snapshots/2026-05-05-project-completion-status.md) · 2026-05-05
