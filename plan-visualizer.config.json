@@ -49,5 +49,12 @@
   "memory": {
     "staleDays": 90,
     "autoArchive": false
+  },
+  "orchestration": {
+    "iterationCap": {
+      "spec": 3,
+      "plan": 3
+    },
+    "pendingApprovalsDir": "docs/pending-approvals"
   }
 }

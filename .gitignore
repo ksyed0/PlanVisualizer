@@ -10,3 +10,7 @@ docs/sdlc-status.json
 .playwright-mcp/
 us0097-*.png
 .worktrees/
+
+# Ephemeral approval flag files dropped by the dashboard widget (US-0181)
+docs/pending-approvals/
+!docs/pending-approvals/.gitkeep

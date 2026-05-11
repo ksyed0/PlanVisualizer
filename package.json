@@ -25,7 +25,13 @@
     "memory:migrate": "node tools/memory.js migrate",
     "memory:migrate-commit": "node tools/memory.js migrate-commit",
     "memory:suggest-model": "node tools/memory.js suggest-model",
-    "memory:validate": "node tools/memory.js validate"
+    "memory:validate": "node tools/memory.js validate",
+    "agent:approve": "node tools/agent-spec-plan.js approve",
+    "agent:reject": "node tools/agent-spec-plan.js reject",
+    "agent:pending": "node tools/agent-spec-plan.js show-pending",
+    "agent:apply": "node tools/agent-spec-plan.js apply-pending",
+    "agent:list": "node tools/agent-spec-plan.js list",
+    "agent:status": "node tools/agent-spec-plan.js status"
   },
   "lint-staged": {
     "*.{js,json,md,yml,yaml}": "prettier --write",
