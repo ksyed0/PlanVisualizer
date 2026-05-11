@@ -233,6 +233,123 @@ function specReject(orchestration, opts) {
   };
 }
 
+/** plan-start: requires spec approved; planPhase pending → in_progress */
+function planStart(orchestration, opts = {}) {
+  if (orchestration.specPhase.state !== 'approved') {
+    throw new Error(`Cannot plan-start: spec not approved (specPhase='${orchestration.specPhase.state}')`);
+  }
+  if (orchestration.planPhase.state !== 'pending') {
+    throw new Error(`Cannot plan-start: planPhase is '${orchestration.planPhase.state}', expected 'pending'`);
+  }
+  const o = _enterPhase(orchestration, 'plan');
+  return {
+    ...o,
+    planPhase: {
+      ...o.planPhase,
+      state: 'in_progress',
+      author: opts.author || null,
+      planPath: opts.planPath || null,
+    },
+  };
+}
+
+/** plan-spec-gap: plan in_progress → spec reopens, plan resets */
+function planSpecGap(orchestration, opts) {
+  if (orchestration.planPhase.state !== 'in_progress') {
+    throw new Error(`Cannot plan-spec-gap: planPhase is '${orchestration.planPhase.state}', expected 'in_progress'`);
+  }
+  return {
+    ...orchestration,
+    specPhase: {
+      ...orchestration.specPhase,
+      state: 'in_progress',
+      specApprovedAt: null,
+      _lastSpecGapReason: opts.reason || 'no reason given',
+    },
+    planPhase: {
+      ...orchestration.planPhase,
+      state: 'pending',
+      planPath: null,
+    },
+  };
+}
+
+/** plan-review-result --verdict APPROVED|REQUEST_CHANGES */
+function planReviewResult(orchestration, opts) {
+  if (opts.verdict !== 'APPROVED' && opts.verdict !== 'REQUEST_CHANGES') {
+    throw new Error(`Unknown verdict '${opts.verdict}'; expected APPROVED or REQUEST_CHANGES`);
+  }
+  let next = {
+    ...orchestration,
+    planPhase: {
+      ...orchestration.planPhase,
+      state: 'review',
+      lastReviewVerdict: opts.verdict,
+    },
+  };
+  if (opts.verdict === 'REQUEST_CHANGES') {
+    const newIter = next.planPhase.reviewIterations + 1;
+    next = {
+      ...next,
+      planPhase: { ...next.planPhase, reviewIterations: newIter },
+    };
+    if (newIter >= next.planPhase.reviewIterationCap) {
+      next = { ...next, planPhase: { ...next.planPhase, state: 'escalated' } };
+    }
+  }
+  return next;
+}
+
+/** plan-await-approval: review → awaiting_plan_approval (only after APPROVED) */
+function planAwaitApproval(orchestration) {
+  if (orchestration.planPhase.state !== 'review') {
+    throw new Error(`Cannot plan-await-approval: planPhase is '${orchestration.planPhase.state}', expected 'review'`);
+  }
+  if (orchestration.planPhase.lastReviewVerdict !== 'APPROVED') {
+    throw new Error('Cannot plan-await-approval: Lens has not approved the plan');
+  }
+  return {
+    ...orchestration,
+    planPhase: { ...orchestration.planPhase, state: 'awaiting_plan_approval' },
+  };
+}
+
+/** approve --gate plan */
+function planApprove(orchestration) {
+  if (orchestration.planPhase.state !== 'awaiting_plan_approval') {
+    throw new Error(
+      `Cannot approve plan: planPhase is '${orchestration.planPhase.state}', expected 'awaiting_plan_approval'`,
+    );
+  }
+  const o = _exitPhase(orchestration, 'plan');
+  return {
+    ...o,
+    planPhase: {
+      ...o.planPhase,
+      state: 'approved',
+      planApprovedAt: nowISO(),
+    },
+  };
+}
+
+/** reject --gate plan */
+function planReject(orchestration, opts) {
+  if (orchestration.planPhase.state !== 'awaiting_plan_approval') {
+    throw new Error(
+      `Cannot reject plan: planPhase is '${orchestration.planPhase.state}', expected 'awaiting_plan_approval'`,
+    );
+  }
+  return {
+    ...orchestration,
+    planPhase: {
+      ...orchestration.planPhase,
+      state: 'in_progress',
+      planApprovedAt: null,
+      _lastRejectReason: opts.reason || 'no reason given',
+    },
+  };
+}
+
 module.exports = {
   SPEC_STATES,
   PLAN_STATES,
@@ -247,4 +364,10 @@ module.exports = {
   specAwaitFinal,
   specApprove,
   specReject,
+  planStart,
+  planSpecGap,
+  planReviewResult,
+  planAwaitApproval,
+  planApprove,
+  planReject,
 };

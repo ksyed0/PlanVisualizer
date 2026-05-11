@@ -215,3 +215,107 @@ describe('specAwaitFinal + specApprove + specReject', () => {
     expect(s.specPhase.specApprovedAt).toBeNull();
   });
 });
+
+const {
+  planStart,
+  planSpecGap,
+  planReviewResult,
+  planAwaitApproval,
+  planApprove,
+  planReject,
+} = require('../../tools/lib/agent-spec-plan-state');
+
+function approvedSpec() {
+  let s = specStart(initStory(), {});
+  s = specAwaitAc(s);
+  s = acApprove(s);
+  s = specReviewResult(s, { verdict: 'APPROVED' });
+  s = specAwaitFinal(s);
+  return specApprove(s);
+}
+
+describe('planStart', () => {
+  test('transitions plan pending → in_progress, records author + phase history', () => {
+    const s = planStart(approvedSpec(), { author: 'Keystone', planPath: 'docs/plans/x.md' });
+    expect(s.planPhase.state).toBe('in_progress');
+    expect(s.planPhase.author).toBe('Keystone');
+    expect(s.planPhase.planPath).toBe('docs/plans/x.md');
+    const planHist = s.phaseHistory.find((p) => p.phase === 'plan');
+    expect(planHist).toBeTruthy();
+  });
+
+  test('throws if spec not approved', () => {
+    expect(() => planStart(initStory(), { author: 'Keystone' })).toThrow(/spec not approved/i);
+  });
+});
+
+describe('planSpecGap', () => {
+  test('reopens spec to in_progress and resets plan to pending', () => {
+    let s = planStart(approvedSpec(), { author: 'Keystone' });
+    s = planSpecGap(s, { reason: 'AC misses error case' });
+    expect(s.specPhase.state).toBe('in_progress');
+    expect(s.planPhase.state).toBe('pending');
+    expect(s.specPhase.specApprovedAt).toBeNull();
+  });
+
+  test('throws if plan not in_progress', () => {
+    expect(() => planSpecGap(approvedSpec(), { reason: 'x' })).toThrow(/cannot plan-spec-gap/i);
+  });
+});
+
+describe('planReviewResult', () => {
+  test('APPROVED transitions in_progress → review with verdict recorded', () => {
+    let s = planStart(approvedSpec(), { author: 'Keystone' });
+    s = planReviewResult(s, { verdict: 'APPROVED' });
+    expect(s.planPhase.state).toBe('review');
+    expect(s.planPhase.lastReviewVerdict).toBe('APPROVED');
+  });
+
+  test('REQUEST_CHANGES increments iterations', () => {
+    let s = planStart(approvedSpec(), { author: 'Keystone' });
+    s = planReviewResult(s, { verdict: 'REQUEST_CHANGES' });
+    expect(s.planPhase.reviewIterations).toBe(1);
+  });
+
+  test('REQUEST_CHANGES at cap auto-escalates', () => {
+    let s = planStart(approvedSpec(), { author: 'Keystone' });
+    s.planPhase.reviewIterationCap = 2;
+    s = planReviewResult(s, { verdict: 'REQUEST_CHANGES' });
+    s = planReviewResult(s, { verdict: 'REQUEST_CHANGES' });
+    expect(s.planPhase.state).toBe('escalated');
+  });
+});
+
+describe('planAwaitApproval + planApprove + planReject', () => {
+  test('planAwaitApproval requires APPROVED verdict', () => {
+    let s = planStart(approvedSpec(), { author: 'Keystone' });
+    s = planReviewResult(s, { verdict: 'REQUEST_CHANGES' });
+    expect(() => planAwaitApproval(s)).toThrow(/has not approved/i);
+  });
+
+  test('planAwaitApproval transitions review → awaiting_plan_approval', () => {
+    let s = planStart(approvedSpec(), { author: 'Keystone' });
+    s = planReviewResult(s, { verdict: 'APPROVED' });
+    s = planAwaitApproval(s);
+    expect(s.planPhase.state).toBe('awaiting_plan_approval');
+  });
+
+  test('planApprove transitions to approved, records timestamp, closes phase history', () => {
+    let s = planAwaitApproval(
+      planReviewResult(planStart(approvedSpec(), { author: 'Keystone' }), { verdict: 'APPROVED' }),
+    );
+    s = planApprove(s);
+    expect(s.planPhase.state).toBe('approved');
+    expect(s.planPhase.planApprovedAt).toMatch(/\d{4}-\d{2}-\d{2}T/);
+    expect(deriveOverall(s.specPhase.state, s.planPhase.state)).toBe('ready_for_dispatch');
+  });
+
+  test('planReject returns awaiting_plan_approval → in_progress', () => {
+    let s = planAwaitApproval(
+      planReviewResult(planStart(approvedSpec(), { author: 'Keystone' }), { verdict: 'APPROVED' }),
+    );
+    s = planReject(s, { reason: 'tasks too large' });
+    expect(s.planPhase.state).toBe('in_progress');
+    expect(s.planPhase.planApprovedAt).toBeNull();
+  });
+});
