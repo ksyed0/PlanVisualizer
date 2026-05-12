@@ -136,9 +136,15 @@ fi
 # ── 0.5. Create required directory structure ────────────────────────────────
 echo "[install] Creating directory structure ..."
 mkdir -p "${TARGET}/docs/coverage"
+mkdir -p "${TARGET}/docs/pending-approvals"
 mkdir -p "${TARGET}/.claude"
 mkdir -p "${TARGET}/scripts"
 mkdir -p "${TARGET}/orchestrator"
+
+# Add .gitkeep for pending-approvals (so the empty dir is tracked but flag files aren't)
+if [ ! -f "${TARGET}/docs/pending-approvals/.gitkeep" ]; then
+  touch "${TARGET}/docs/pending-approvals/.gitkeep"
+fi
 
 # ── 1. Copy tool files ──────────────────────────────────────────────────────
 echo "[install] Copying tools/ ..."
@@ -265,9 +271,18 @@ pkg.scripts['plan:migrate-config:dry'] = pkg.scripts['plan:migrate-config:dry'] 
 pkg.scripts['memory:compact'] = pkg.scripts['memory:compact'] || 'node tools/memory.js compact';
 pkg.scripts['memory:archive'] = pkg.scripts['memory:archive'] || 'node tools/memory.js archive';
 pkg.scripts['memory:migrate'] = pkg.scripts['memory:migrate'] || 'node tools/memory.js migrate';
+pkg.scripts['memory:migrate-commit'] = pkg.scripts['memory:migrate-commit'] || 'node tools/memory.js migrate-commit';
+pkg.scripts['memory:suggest-model'] = pkg.scripts['memory:suggest-model'] || 'node tools/memory.js suggest-model';
 pkg.scripts['memory:validate'] = pkg.scripts['memory:validate'] || 'node tools/memory.js validate';
+// US-0181 orchestration scripts
+pkg.scripts['agent:approve'] = pkg.scripts['agent:approve'] || 'node tools/agent-spec-plan.js approve';
+pkg.scripts['agent:reject'] = pkg.scripts['agent:reject'] || 'node tools/agent-spec-plan.js reject';
+pkg.scripts['agent:pending'] = pkg.scripts['agent:pending'] || 'node tools/agent-spec-plan.js show-pending';
+pkg.scripts['agent:apply'] = pkg.scripts['agent:apply'] || 'node tools/agent-spec-plan.js apply-pending';
+pkg.scripts['agent:list'] = pkg.scripts['agent:list'] || 'node tools/agent-spec-plan.js list';
+pkg.scripts['agent:status'] = pkg.scripts['agent:status'] || 'node tools/agent-spec-plan.js status';
 fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n', 'utf8');
-console.log('[install] Scripts added: plan:test, plan:test:coverage, plan:generate, plan:cleanup, plan:cleanup:dry, plan:migrate-config, plan:migrate-config:dry');
+console.log('[install] Scripts added: plan:* (5), memory:* (6), agent:* (6)');
 JS
 else
   echo "[install] Warning: no package.json found at ${TARGET} — skipping script merge."
