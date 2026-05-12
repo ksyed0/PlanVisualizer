@@ -253,6 +253,14 @@ fi
 
 # ── 3. Merge npm scripts into target package.json ────────────────────────────
 TARGET_PKG="${TARGET}/package.json"
+if [ ! -f "$TARGET_PKG" ]; then
+  echo "[install] No package.json found in ${TARGET} — bootstrapping with 'npm init -y' ..."
+  (cd "$TARGET" && npm init -y >/dev/null 2>&1) || {
+    echo "[install] ERROR: 'npm init -y' failed. Please run it manually in ${TARGET}, then re-run install.sh." >&2
+    exit 1
+  }
+  echo "[install] package.json created."
+fi
 if [ -f "$TARGET_PKG" ]; then
   echo "[install] Merging npm scripts into ${TARGET_PKG} ..."
   # Use node to merge scripts — avoids jq dependency
@@ -301,8 +309,6 @@ for (const [name, version] of Object.entries(requiredDevDeps)) {
 fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n', 'utf8');
 console.log('[install] Scripts added: plan:* (5), memory:* (6), agent:* (6); devDependencies merged');
 JS
-else
-  echo "[install] Warning: no package.json found at ${TARGET} — skipping script merge."
 fi
 
 # ── 4. Create config file if absent ─────────────────────────────────────────
