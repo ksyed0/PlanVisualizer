@@ -69,6 +69,10 @@ describe('migrate-config: plan-visualizer.config.json', () => {
           defaultLabels: ['planvisualizer'],
         },
         memory: { staleDays: 90, autoArchive: false },
+        orchestration: {
+          iterationCap: { spec: 3, plan: 3 },
+          pendingApprovalsDir: 'docs/pending-approvals',
+        },
       }),
     );
 
@@ -111,6 +115,10 @@ describe('migrate-config: plan-visualizer.config.json', () => {
           defaultLabels: ['pv', 'auto'],
         },
         memory: { staleDays: 90, autoArchive: false },
+        orchestration: {
+          iterationCap: { spec: 3, plan: 3 },
+          pendingApprovalsDir: 'docs/pending-approvals',
+        },
       }),
     );
 
