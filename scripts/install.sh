@@ -13,6 +13,22 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 TARGET="${1:-$(pwd)}"
 
+# ── Bootstrap: when run via `bash <(curl ...)` REPO_ROOT resolves to /dev,
+#    which doesn't contain the source tree. Detect that case and clone the
+#    repo to a temp dir, then re-execute from the clone.
+if [ ! -d "${REPO_ROOT}/tools" ] || [ ! -d "${REPO_ROOT}/docs/agents" ]; then
+  echo "[install] Source tree not found at ${REPO_ROOT} — bootstrapping clone..."
+  BRANCH="${PLAN_VISUALIZER_BRANCH:-develop}"
+  CLONE_DIR="$(mktemp -d -t pv-install-XXXXXX)"
+  echo "[install] Cloning ksyed0/PlanVisualizer ($BRANCH) into $CLONE_DIR ..."
+  if ! git clone --depth 1 --branch "$BRANCH" https://github.com/ksyed0/PlanVisualizer.git "$CLONE_DIR" >/dev/null 2>&1; then
+    echo "[install] ERROR: git clone failed. Check network / branch name '$BRANCH'." >&2
+    exit 1
+  fi
+  echo "[install] Bootstrap clone complete. Re-executing installer from clone..."
+  exec bash "$CLONE_DIR/scripts/install.sh" "$TARGET"
+fi
+
 echo "[install] Installing PlanVisualizer into: $TARGET"
 
 # ── 0. Check superpowers plugin ─────────────────────────────────────────────
