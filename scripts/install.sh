@@ -281,8 +281,25 @@ pkg.scripts['agent:pending'] = pkg.scripts['agent:pending'] || 'node tools/agent
 pkg.scripts['agent:apply'] = pkg.scripts['agent:apply'] || 'node tools/agent-spec-plan.js apply-pending';
 pkg.scripts['agent:list'] = pkg.scripts['agent:list'] || 'node tools/agent-spec-plan.js list';
 pkg.scripts['agent:status'] = pkg.scripts['agent:status'] || 'node tools/agent-spec-plan.js status';
+
+// Required dev dependencies — these match PlanVisualizer's own package.json
+// so the same tool versions are used. Existing pins are preserved.
+pkg.devDependencies = pkg.devDependencies || {};
+const requiredDevDeps = {
+  '@eslint/js': '10.0.1',
+  'chart.js': '^4.5.1',
+  'eslint': '10.2.1',
+  'husky': '^9.1.7',
+  'jest': '^30.3.0',
+  'lint-staged': '^16.4.0',
+  'prettier': '^3.8.3',
+};
+for (const [name, version] of Object.entries(requiredDevDeps)) {
+  if (!pkg.devDependencies[name]) pkg.devDependencies[name] = version;
+}
+
 fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n', 'utf8');
-console.log('[install] Scripts added: plan:* (5), memory:* (6), agent:* (6)');
+console.log('[install] Scripts added: plan:* (5), memory:* (6), agent:* (6); devDependencies merged');
 JS
 else
   echo "[install] Warning: no package.json found at ${TARGET} — skipping script merge."
@@ -475,6 +492,9 @@ echo ""
 echo "[install] Done. Next steps:"
 echo "  1. Edit plan-visualizer.config.json with your project name and file paths."
 echo "  2. Edit agents.config.json to define your agent roster (if using the Agentic Dashboard)."
-echo "  3. Run: npm install   (to install jest dev dependency)"
+echo "  3. Run: npm install   (REQUIRED — installs chart.js, jest, eslint, prettier, etc.)"
 echo "  4. Run: npm run plan:test   (confirm all suites pass)"
 echo "  5. Run: node tools/generate-plan.js   (generates docs/plan-status.html)"
+echo ""
+echo "[install] Tip: chart.js is required at runtime by tools/lib/render-html.js."
+echo "[install]      If 'generate-plan' errors with ENOENT on chart.umd.min.js, run 'npm install'."
