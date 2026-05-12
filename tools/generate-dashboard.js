@@ -2714,6 +2714,90 @@ ${
   </div>`;
   })()}
 
+  <!-- PENDING APPROVALS sidebar widget — US-0181 (EPIC-0028) -->
+  ${(() => {
+    const sdlcStories = (status && status.stories) || {};
+    const pending = [];
+    for (const [id, st] of Object.entries(sdlcStories)) {
+      if (!st || !st.specPhase) continue;
+      if (st.specPhase.state === 'awaiting_ac_approval') pending.push({ id, gate: 'ac', label: 'AC' });
+      if (st.specPhase.state === 'awaiting_spec_approval') pending.push({ id, gate: 'spec', label: 'Spec' });
+      if (st.planPhase && st.planPhase.state === 'awaiting_plan_approval')
+        pending.push({ id, gate: 'plan', label: 'Plan' });
+    }
+    if (pending.length === 0) {
+      return `<div class="mc-sidebar-panel">
+    <div class="mc-sidebar-title">PENDING APPROVALS</div>
+    <div style="font-size:11px;color:var(--mc-muted);font-style:italic">No open gates.</div>
+  </div>`;
+    }
+    const rows = pending
+      .map(
+        (p) => `
+    <div class="mc-pending-row" data-story="${esc(p.id)}" data-gate="${p.gate}" style="display:flex;flex-direction:column;gap:4px;padding:6px 0;border-bottom:1px solid var(--mc-border)">
+      <div style="display:flex;align-items:center;gap:6px">
+        <span style="font-family:var(--font-mono);font-size:11px;color:var(--text)">${esc(p.id)}</span>
+        <span style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--warn)">${p.label} REVIEW</span>
+      </div>
+      <div style="display:flex;gap:4px">
+        <button class="mc-pending-btn-approve"
+          data-action="approve" data-story="${esc(p.id)}" data-gate="${p.gate}"
+          onclick="pvDownloadFlag(this)"
+          style="cursor:pointer;font-size:10px;padding:2px 8px;border-radius:3px;border:1px solid var(--ok);background:transparent;color:var(--ok);font-weight:600">Approve</button>
+        <button class="mc-pending-btn-reject"
+          data-action="reject" data-story="${esc(p.id)}" data-gate="${p.gate}"
+          onclick="pvShowRejectForm(this)"
+          style="cursor:pointer;font-size:10px;padding:2px 8px;border-radius:3px;border:1px solid var(--risk);background:transparent;color:var(--risk);font-weight:600">Reject</button>
+      </div>
+      <textarea class="mc-pending-reason" data-reason-for="${esc(p.id)}-${p.gate}"
+        style="display:none;font-size:10px;padding:3px;border:1px solid var(--mc-border);border-radius:3px;background:var(--mc-bg);color:var(--text);width:100%"
+        placeholder="Rejection reason..." rows="2"></textarea>
+    </div>`,
+      )
+      .join('');
+    return `<div class="mc-sidebar-panel">
+    <div class="mc-sidebar-title">PENDING APPROVALS</div>
+    <div style="font-size:10px;color:var(--mc-muted);margin-bottom:4px">${pending.length} gate${pending.length !== 1 ? 's' : ''} open</div>
+    ${rows}
+  </div>
+  <script>
+  function pvDownloadFlag(btn) {
+    var story  = btn.getAttribute('data-story');
+    var gate   = btn.getAttribute('data-gate');
+    var action = btn.getAttribute('data-action');
+    var reason = '';
+    if (action === 'reject') {
+      var area = document.querySelector('[data-reason-for="' + story + '-' + gate + '"]');
+      if (area) reason = area.value || '';
+      if (!reason) { alert('Please enter a rejection reason.'); return; }
+    }
+    var payload = { story: story, gate: gate, action: action, timestamp: new Date().toISOString() };
+    if (reason) payload.reason = reason;
+    var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = action + '-' + story + '-' + gate + '.flag';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    alert('Flag downloaded. Move it to docs/pending-approvals/ and run: npm run agent:apply');
+  }
+  function pvShowRejectForm(btn) {
+    var story = btn.getAttribute('data-story');
+    var gate  = btn.getAttribute('data-gate');
+    var area  = document.querySelector('[data-reason-for="' + story + '-' + gate + '"]');
+    if (area && area.style.display === 'none') {
+      area.style.display = '';
+      area.focus();
+      btn.textContent = 'Confirm Reject';
+      btn.setAttribute('onclick', 'pvDownloadFlag(this)');
+    }
+  }
+  </script>`;
+  })()}
+
   <!-- EVENT LOG panel -->
   <div class="mc-sidebar-panel">
     <div class="mc-evtlog-title">LAST 10 EVENTS · AUTO-SCROLL</div>
