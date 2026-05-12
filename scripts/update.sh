@@ -137,6 +137,12 @@ else
   fi
 fi
 
+# ── 0.5. Ensure US-0181 orchestration directories exist ─────────────────────
+mkdir -p "${TARGET}/docs/pending-approvals"
+if [ ! -f "${TARGET}/docs/pending-approvals/.gitkeep" ]; then
+  touch "${TARGET}/docs/pending-approvals/.gitkeep"
+fi
+
 # ── 1. Re-copy tool files (non-destructive to user data) ────────────────────
 echo "[update] Updating tools/ ..."
 cp -r "${REPO_ROOT}/tools" "${TARGET}/"
@@ -284,7 +290,15 @@ const toAdd = {
   'memory:compact':          'node tools/memory.js compact',
   'memory:archive':          'node tools/memory.js archive',
   'memory:migrate':          'node tools/memory.js migrate',
+  'memory:migrate-commit':   'node tools/memory.js migrate-commit',
+  'memory:suggest-model':    'node tools/memory.js suggest-model',
   'memory:validate':         'node tools/memory.js validate',
+  'agent:approve':           'node tools/agent-spec-plan.js approve',
+  'agent:reject':            'node tools/agent-spec-plan.js reject',
+  'agent:pending':           'node tools/agent-spec-plan.js show-pending',
+  'agent:apply':             'node tools/agent-spec-plan.js apply-pending',
+  'agent:list':              'node tools/agent-spec-plan.js list',
+  'agent:status':            'node tools/agent-spec-plan.js status',
 };
 let added = 0;
 for (const [k, v] of Object.entries(toAdd)) {
