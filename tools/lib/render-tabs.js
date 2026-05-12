@@ -3383,10 +3383,14 @@ function renderSettingsTab({ githubConfig, githubTokenSet, syncState, memoryConf
 }
 
 function renderPendingApprovalsWidget(data) {
-  const stories = (data && data.stories) || {};
+  // Stories may arrive as an array (from parseReleasePlan) or an object
+  // (sdlc-status.json shape). Normalize to an array of {id, ...} records.
+  const raw = (data && data.stories) || [];
+  const storiesList = Array.isArray(raw) ? raw : Object.entries(raw).map(([id, st]) => ({ id, ...st }));
   const pending = [];
-  for (const [id, st] of Object.entries(stories)) {
-    if (!st.specPhase) continue;
+  for (const st of storiesList) {
+    const id = st.id;
+    if (!id || !st.specPhase) continue;
     if (st.specPhase.state === 'awaiting_ac_approval') pending.push({ id, gate: 'ac', gateLabel: 'AC' });
     if (st.specPhase.state === 'awaiting_spec_approval') pending.push({ id, gate: 'spec', gateLabel: 'Spec' });
     if (st.planPhase && st.planPhase.state === 'awaiting_plan_approval')

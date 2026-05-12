@@ -85,4 +85,24 @@ describe('renderPendingApprovalsWidget', () => {
     );
     expect(html).toContain('No pending approvals');
   });
+
+  test('handles stories supplied as an array (from parseReleasePlan)', () => {
+    // parseReleasePlan returns stories as an array of {id, ...} records.
+    // generate-plan.js merges specPhase from sdlc-status.json onto each.
+    const html = renderPendingApprovalsWidget({
+      stories: [
+        {
+          id: 'US-0001',
+          title: 'Test',
+          status: 'In Progress',
+          specPhase: { state: 'awaiting_ac_approval' },
+          planPhase: { state: 'pending' },
+        },
+        { id: 'US-0002', title: 'Other', status: 'Planned' },
+      ],
+    });
+    expect(html).toContain('US-0001');
+    expect(html).toContain('AC');
+    expect(html).not.toContain('US-0002');
+  });
 });

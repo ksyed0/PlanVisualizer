@@ -203,6 +203,24 @@ async function main() {
   console.log('[generate-plan] Reading source files...');
 
   const { epics, stories, tasks } = parseReleasePlan(readFile(config.docs.releasePlan));
+
+  // US-0181: merge orchestration state (specPhase/planPhase) from sdlc-status.json
+  // into each story so the Pending Approvals widget can read it.
+  try {
+    const sdlcPath = path.join(ROOT, 'docs/sdlc-status.json');
+    if (fs.existsSync(sdlcPath)) {
+      const sdlc = JSON.parse(fs.readFileSync(sdlcPath, 'utf8'));
+      const sdlcStories = sdlc.stories || {};
+      for (const story of stories) {
+        const o = sdlcStories[story.id];
+        if (o && o.specPhase) story.specPhase = o.specPhase;
+        if (o && o.planPhase) story.planPhase = o.planPhase;
+        if (o && o.phaseHistory) story.phaseHistory = o.phaseHistory;
+      }
+    }
+  } catch (e) {
+    console.warn(`[generate-plan] could not merge orchestration state: ${e.message}`);
+  }
   const testCases = parseTestCases(readFile(config.docs.testCases));
   const bugs = parseBugs(readFile(config.docs.bugs));
   const costRows = parseCostLog(readFile(config.docs.costLog));
