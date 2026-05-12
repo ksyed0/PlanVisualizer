@@ -304,11 +304,29 @@ let added = 0;
 for (const [k, v] of Object.entries(toAdd)) {
   if (!pkg.scripts[k]) { pkg.scripts[k] = v; added++; }
 }
-if (added > 0) {
+
+// Required dev dependencies — match PlanVisualizer's own package.json.
+pkg.devDependencies = pkg.devDependencies || {};
+const requiredDevDeps = {
+  '@eslint/js': '10.0.1',
+  'chart.js': '^4.5.1',
+  'eslint': '10.2.1',
+  'husky': '^9.1.7',
+  'jest': '^30.3.0',
+  'lint-staged': '^16.4.0',
+  'prettier': '^3.8.3',
+};
+let depsAdded = 0;
+for (const [name, version] of Object.entries(requiredDevDeps)) {
+  if (!pkg.devDependencies[name]) { pkg.devDependencies[name] = version; depsAdded++; }
+}
+
+if (added > 0 || depsAdded > 0) {
   fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n', 'utf8');
-  console.log('[update] Added ' + added + ' new npm scripts to package.json');
+  if (added > 0) console.log('[update] Added ' + added + ' new npm scripts to package.json');
+  if (depsAdded > 0) console.log('[update] Added ' + depsAdded + ' missing devDependencies — run `npm install` to install them');
 } else {
-  console.log('[update] npm scripts already up to date — skipping.');
+  console.log('[update] npm scripts and devDependencies already up to date — skipping.');
 }
 JS
 fi
