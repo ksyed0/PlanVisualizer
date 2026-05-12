@@ -2836,7 +2836,6 @@ function renderStatusTab(data) {
   <div id="tab-status" class="p-6" role="tabpanel" aria-labelledby="tab-btn-status">
 
     ${_renderFullStatusHero(data)}
-    ${renderPendingApprovalsWidget(data)}
 
     ${(() => {
       const dep = data.githubStatus && data.githubStatus.deployment;
