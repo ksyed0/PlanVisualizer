@@ -20,12 +20,19 @@ if [ ! -d "${REPO_ROOT}/tools" ] || [ ! -d "${REPO_ROOT}/docs/agents" ]; then
   echo "[install] Source tree not found at ${REPO_ROOT} — bootstrapping clone..."
   BRANCH="${PLAN_VISUALIZER_BRANCH:-develop}"
   CLONE_DIR="$(mktemp -d -t pv-install-XXXXXX)"
-  echo "[install] Cloning ksyed0/PlanVisualizer ($BRANCH) into $CLONE_DIR ..."
-  if ! git clone --depth 1 --branch "$BRANCH" https://github.com/ksyed0/PlanVisualizer.git "$CLONE_DIR" >/dev/null 2>&1; then
+  echo "[install] Cloning ksyed0/PlanVisualizer branch '$BRANCH' into $CLONE_DIR ..."
+  echo "[install] (this may take a few seconds — git output below)"
+  echo ""
+  # --progress forces git to show progress even when stderr isn't a TTY
+  if ! git clone --depth 1 --branch "$BRANCH" --progress https://github.com/ksyed0/PlanVisualizer.git "$CLONE_DIR"; then
+    echo ""
     echo "[install] ERROR: git clone failed. Check network / branch name '$BRANCH'." >&2
     exit 1
   fi
-  echo "[install] Bootstrap clone complete. Re-executing installer from clone..."
+  echo ""
+  echo "[install] Bootstrap clone complete ($(du -sh "$CLONE_DIR" 2>/dev/null | cut -f1) total)."
+  echo "[install] Re-executing installer from clone with TARGET=$TARGET ..."
+  echo ""
   exec bash "$CLONE_DIR/scripts/install.sh" "$TARGET"
 fi
 
