@@ -19,6 +19,21 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 TARGET="${1:-$(pwd)}"
 
+# ── Bootstrap: when run via `bash <(curl ...)` REPO_ROOT resolves to /dev.
+#    Detect that case and clone the repo to a temp dir, then re-execute.
+if [ ! -d "${REPO_ROOT}/tools" ] || [ ! -d "${REPO_ROOT}/docs/agents" ]; then
+  echo "[update] Source tree not found at ${REPO_ROOT} — bootstrapping clone..."
+  BRANCH="${PLAN_VISUALIZER_BRANCH:-develop}"
+  CLONE_DIR="$(mktemp -d -t pv-update-XXXXXX)"
+  echo "[update] Cloning ksyed0/PlanVisualizer ($BRANCH) into $CLONE_DIR ..."
+  if ! git clone --depth 1 --branch "$BRANCH" https://github.com/ksyed0/PlanVisualizer.git "$CLONE_DIR" >/dev/null 2>&1; then
+    echo "[update] ERROR: git clone failed. Check network / branch name '$BRANCH'." >&2
+    exit 1
+  fi
+  echo "[update] Bootstrap clone complete. Re-executing updater from clone..."
+  exec bash "$CLONE_DIR/scripts/update.sh" "$TARGET"
+fi
+
 echo "[update] Updating PlanVisualizer in: $TARGET"
 echo "[update] Source version: $(node -e "console.log(require('${REPO_ROOT}/package.json').version)" 2>/dev/null || echo 'unknown')"
 
