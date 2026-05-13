@@ -112,6 +112,25 @@ function applyOrchestration(story, newO) {
   story.phaseHistory = newO.phaseHistory;
 }
 
+// Read-only commands that don't need a dashboard regen after running.
+const READ_ONLY_CMDS = new Set(['status', 'list', 'show-pending']);
+
+/**
+ * Silently regenerate the Agentic Dashboard after a state-mutating command.
+ * Errors are swallowed — regen failure must never block the orchestration CLI.
+ */
+function regenDashboard(ctx = {}) {
+  if (ctx.skipRegen) return; // test isolation: tests pass { skipRegen: true }
+  try {
+    const dashboardScript = path.join(ROOT, 'tools/generate-dashboard.js');
+    if (fs.existsSync(dashboardScript)) {
+      require('./generate-dashboard');
+    }
+  } catch {
+    // silent — regen is best-effort
+  }
+}
+
 function dispatch(opts, ctx = {}) {
   const sdlcPath = ctx.sdlcPath || SDLC_PATH;
   let data;
@@ -368,7 +387,11 @@ function main() {
     console.error('Usage: node tools/agent-spec-plan.js <command> [options]');
     return 1;
   }
-  return dispatch(opts);
+  const code = dispatch(opts);
+  // Auto-regen the Agentic Dashboard after any state-mutating command.
+  // Read-only commands (status/list/show-pending) skip this.
+  if (!READ_ONLY_CMDS.has(opts.cmd)) regenDashboard();
+  return code;
 }
 
 module.exports = { parseArgs, dispatch, main };
