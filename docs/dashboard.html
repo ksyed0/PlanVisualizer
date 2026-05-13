@@ -1709,7 +1709,7 @@
       <button class="pv-seg pv-seg-active" aria-pressed="true">Pipeline</button>
     </div>
     <div class="pv-chrome-spacer"></div>
-    <span id="gen-time" data-iso="2026-05-11T02:27:29.997Z" style="font-size:11px;color:var(--text-mute);white-space:nowrap"></span>
+    <span id="gen-time" data-iso="2026-05-13T14:20:45.728Z" style="font-size:11px;color:var(--text-mute);white-space:nowrap"></span>
     <span class="mode-badge mode-live" aria-label="Mode: Live" tabindex="0">
     <span class="pip" aria-hidden="true"></span>LIVE
   </span>
@@ -1804,7 +1804,7 @@
     <!-- QUEUE (stories in progress/planned) -->
     <div class="mc-stat-tile">
       <div class="mc-stat-label">QUEUE</div>
-      <div class="mc-stat-value" id="mc-stat-queue">7</div>
+      <div class="mc-stat-value" id="mc-stat-queue">10</div>
       <div class="mc-stat-sub">stories remaining</div>
     </div>
     <!-- REVIEWS -->
@@ -1827,7 +1827,7 @@
     <!-- COVERAGE -->
     <div class="mc-stat-tile">
       <div class="mc-stat-label">COVERAGE</div>
-      <div class="mc-stat-value red" id="mc-stat-coverage">1.61%</div>
+      <div class="mc-stat-value green" id="mc-stat-coverage">87.8%</div>
       <div class="mc-stat-sub">statements</div>
     </div>
     <!-- AI SPEND -->
@@ -2047,7 +2047,7 @@
   <span id="metric-phasesComplete">0 / 6</span>
   <span id="metric-phasesCompleteNum">0</span>
   <span id="metric-phasesTotalNum">6</span>
-  <span id="metric-storiesDone">167 / 174</span>
+  <span id="metric-storiesDone">167 / 177</span>
   <span id="metric-tasksDone">54 / 54</span>
   <span id="metric-testsPassed">0</span>
   <span id="metric-testsFailed">0</span>
@@ -2056,13 +2056,13 @@
   <span id="metric-bugsFixed">212</span>
   <span id="metric-reviewsApproved">0</span>
   <span id="metric-reviewsBlocked">0</span>
-  <span id="metric-coveragePercent">1.61%</span>
-  <b id="stamp-phase-progress">22:27</b>
-  <b id="stamp-quality">22:27</b>
-  <b id="stamp-reviews">22:27</b>
+  <span id="metric-coveragePercent">87.8%</span>
+  <b id="stamp-phase-progress">10:20</b>
+  <b id="stamp-quality">10:20</b>
+  <b id="stamp-reviews">10:20</b>
   <!-- Doughnut for patchDOM coverage -->
-  <div id="metric-coverageDoughnut" data-coverage="1.61" data-tone="red">
-    <circle id="metric-coverageDoughnutFill" class="d-fill red" stroke-dashoffset="98.39"></circle>
+  <div id="metric-coverageDoughnut" data-coverage="87.8" data-tone="green">
+    <circle id="metric-coverageDoughnutFill" class="d-fill green" stroke-dashoffset="12.20"></circle>
   </div>
   <!-- Sparkline for patchDOM -->
   <div id="metric-phasesSparkline">
@@ -2075,7 +2075,7 @@
   </div>
   <!-- Progress bars -->
   <div class="progress-bar"><div id="metric-phasesBar" class="progress-fill blue" style="width:0%"></div></div>
-  <div class="progress-bar"><div id="metric-storiesBar" class="progress-fill green" style="width:96%"></div></div>
+  <div class="progress-bar"><div id="metric-storiesBar" class="progress-fill green" style="width:94%"></div></div>
   <div class="progress-bar"><div id="metric-tasksBar" class="progress-fill red" style="width:100%"></div></div>
 </div>
 
@@ -2148,9 +2148,15 @@
   <!-- MEMORY sidebar widget — US-0176 (EPIC-0026) -->
   <div class="mc-sidebar-panel">
     <div class="mc-sidebar-title">MEMORY</div>
-    <div style="font-size:11px;color:var(--mc-muted);margin-bottom:4px"><span style="color:var(--ok)">●</span> 2,566 observations</div>
+    <div style="font-size:11px;color:var(--mc-muted);margin-bottom:4px"><span style="color:var(--ok)">●</span> 3,171 observations</div>
     <div style="font-size:10px;color:var(--mc-dim);margin-bottom:4px">127.0.0.1:37701</div>
     <a href="http://127.0.0.1:37701" target="_blank" rel="noopener" style="font-size:11px;color:var(--info)">view live →</a>
+  </div>
+
+  <!-- PENDING APPROVALS sidebar widget — US-0181 (EPIC-0028) -->
+  <div class="mc-sidebar-panel">
+    <div class="mc-sidebar-title">PENDING APPROVALS</div>
+    <div style="font-size:11px;color:var(--mc-muted);font-style:italic">No open gates.</div>
   </div>
 
   <!-- EVENT LOG panel -->
@@ -2185,7 +2191,7 @@
   <div class="mc-sidebar-panel">
     <div class="mc-sidebar-title">QUALITY</div>
     <div style="display:flex;align-items:center;gap:12px;font-size:12px;">
-      <span style="font-family:var(--font-display),monospace;font-size:28px;color:var(--risk);">1.61%</span>
+      <span style="font-family:var(--font-display),monospace;font-size:28px;color:var(--ok);">87.8%</span>
       <div>
         <div style="color:var(--mc-muted);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;">Coverage</div>
         <div id="card-quality" style="margin-top:4px;font-size:11px;color:var(--mc-muted);">
@@ -2318,15 +2324,15 @@
         <div>
           <p class="pv-about-supertitle">This Project</p>
           <div class="pv-about-meta-row"><span class="pv-about-meta-label">Name: </span><span class="pv-about-meta-value">plan-visualizer</span></div>
-          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Version: </span><span class="pv-about-meta-value">v2.2.4</span></div>
-          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Branch: </span><span class="pv-about-meta-value">feature/US-0180-agent-model-selection-clean</span></div>
-          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Build: </span><span class="pv-about-meta-value">r734 5926a19</span></div>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Version: </span><span class="pv-about-meta-value">v2.3.5</span></div>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Branch: </span><span class="pv-about-meta-value">fix/US-0181-move-widget-to-agentic-dashboard</span></div>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Build: </span><span class="pv-about-meta-value">r745 3d5072c</span></div>
         </div>
         <div>
           <p class="pv-about-supertitle">Dashboard Tool</p>
           <div class="pv-about-meta-row"><span class="pv-about-meta-label">View: </span><span class="pv-about-meta-value">Agentic SDLC Dashboard</span></div>
-          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Generated by: </span><span class="pv-about-meta-value">plan-visualizer v2.2.4</span></div>
-          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Generated at: </span><span id="about-gen-time" data-iso="May 10, 2026, 10:27 PM" class="pv-about-meta-value"></span></div>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Generated by: </span><span class="pv-about-meta-value">plan-visualizer v2.3.5</span></div>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Generated at: </span><span id="about-gen-time" data-iso="May 13, 2026, 10:20 AM" class="pv-about-meta-value"></span></div>
         </div>
       </div>
     </div>
@@ -2334,7 +2340,7 @@
 </div>
 
 <div class="footer">
-  Claude Code Agentic AI SDLC | Last refreshed: May 10, 2026, 10:27 PM
+  Claude Code Agentic AI SDLC | Last refreshed: May 13, 2026, 10:20 AM
 </div>
 
 <script>

@@ -120,24 +120,34 @@ This section specifies WHO to spawn and WHEN. For HOW to spawn (worktree isolati
 
 ### Spec phase sequence
 
-1. `node tools/agent-spec-plan.js spec-start --story <id>`
+DM_AGENT runs all CLI commands. The user only responds to verbal-cue prompts at gates.
+
+1. Run `node tools/agent-spec-plan.js spec-start --story <id>`
 2. Spawn Compass → ACs + scope (Compass uses superpowers:brainstorming skill if available, else manual dialogue per `PO_AGENT.md#Spec-Brainstorming-Protocol`).
-3. `spec-await-ac --story <id>` → halts at exit 2 → user approves AC checkpoint via `approve --gate ac` (CLI) or dashboard widget download.
-4. If `uiSurface === true`: spawn Palette (design tokens), then Pixel (interactive mockup at `docs/superpowers/mockups/<story>/index.html`).
+3. Run `spec-await-ac --story <id>`. Then pause and ask the user:
+   > "AC gate open for \<id\>. Compass has written acceptance criteria to \<specPath\>. Reply **approve** to continue, or **reject: \<reason\>** to send back."
+   > When user replies, DM_AGENT runs `approve --gate ac` or `reject --gate ac --reason "..."`. Dashboard auto-updates.
+4. If `uiSurface === true`: spawn Palette (design tokens), then Pixel (interactive mockup).
 5. Spawn Keystone for `## Technical Design` section.
 6. Spawn Lens for spec review. Lens emits structured findings (see §Lens findings format).
-7. `spec-review-result --verdict APPROVED|REQUEST_CHANGES --findings-file <path>`. On REQUEST_CHANGES, route findings by `@persona` primary tag and re-engage owner. Loop until APPROVED or iteration cap reached (default 3).
-8. `spec-await-final --story <id>` → user approves final spec.
+7. Run `spec-review-result --verdict APPROVED|REQUEST_CHANGES --findings-file <path>`. On REQUEST_CHANGES, route findings by `@persona` primary tag and re-engage owner. Loop until APPROVED or iteration cap reached (default 3).
+8. Run `spec-await-final --story <id>`. Then pause and ask the user:
+   > "Spec gate open for \<id\>. Full spec written and Lens-approved at \<specPath\>. Reply **approve** to proceed to plan phase, or **reject: \<reason\>** to revise."
+   > When user replies, run `approve --gate spec` or `reject --gate spec`.
 9. Spec phase complete (`specPhase.state === "approved"`).
 
 ### Plan phase sequence
 
-1. `plan-start --story <id> --author Keystone`
+DM_AGENT runs all CLI commands. The user only responds to verbal-cue prompts at gates.
+
+1. Run `plan-start --story <id> --author Keystone`
 2. Spawn Keystone (plan author). Keystone uses superpowers:writing-plans skill if available, else manual protocol per `ARCHITECT_AGENT.md#Plan-Writing-Protocol`. Keystone runs the self-review checklist before handoff.
-3. If Keystone discovers a spec issue, call `plan-spec-gap --story <id> --reason "..."` → spec phase reopens.
+3. If Keystone discovers a spec issue, run `plan-spec-gap --story <id> --reason "..."` → spec phase reopens.
 4. Spawn Lens for plan review.
-5. `plan-review-result --verdict ... --findings-file ...`. Loop on REQUEST_CHANGES (cap 3) routing findings.
-6. `plan-await-approval --story <id>` → user approves plan.
+5. Run `plan-review-result --verdict ... --findings-file ...`. Loop on REQUEST_CHANGES (cap 3) routing findings.
+6. Run `plan-await-approval --story <id>`. Then pause and ask the user:
+   > "Plan gate open for \<id\>. Keystone has written the implementation plan to \<planPath\>, Lens-approved. Reply **approve** to begin dispatch, or **reject: \<reason\>** to revise."
+   > When user replies, run `approve --gate plan` or `reject --gate plan`.
 7. Story state = `ready_for_dispatch` (derived). US-0182+ takes over from here.
 
 ### Tiered fallback
@@ -168,12 +178,24 @@ Default 3 per phase (configurable in `plan-visualizer.config.json` → `orchestr
 
 ### User approval gates
 
-Three gates per story: **AC**, **Spec**, **Plan**. Each can be approved via:
+Three gates per story: **AC**, **Spec**, **Plan**.
 
-- **CLI fast-path:** `node tools/agent-spec-plan.js approve --story US-XXXX --gate ac|spec|plan`
-- **Dashboard widget:** Status tab → Pending Approvals widget → click Approve → download `approve-US-XXXX-<gate>.flag` → move to `docs/pending-approvals/` → next `npm run plan` flushes pending approvals.
+**The user does not run CLI commands.** When a gate opens, DM_AGENT pauses and asks the user with a short verbal cue:
 
-Both paths are equivalent. CLI is faster for terminal users; dashboard is the remote/visual-review path.
+```
+AC gate open for US-XXXX.
+Compass has written acceptance criteria to docs/superpowers/specs/<date>-us-xxxx-design.md.
+Reply 'approve' to continue, or 'reject: <reason>' to send back to Compass.
+```
+
+When the user replies, DM_AGENT runs the CLI command on their behalf:
+
+- **User says `approve`** → DM_AGENT runs `node tools/agent-spec-plan.js approve --story US-XXXX --gate ac`
+- **User says `reject: <reason>`** → DM_AGENT runs `node tools/agent-spec-plan.js reject --story US-XXXX --gate ac --reason "<reason>"`
+
+The Agentic Dashboard (`docs/dashboard.html`) sidebar will show the open gate automatically after the CLI command runs — no manual regen needed.
+
+**Dashboard path (for visual review):** If the user wants to review artifacts in the browser before approving, they can click Approve in the Pending Approvals sidebar → download the flag file → drop it in `docs/pending-approvals/` → DM_AGENT will pick it up on the next `apply-pending` call.
 
 ---
 

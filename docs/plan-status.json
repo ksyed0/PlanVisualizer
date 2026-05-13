@@ -16325,10 +16325,10 @@
       "bugIds": []
     }
   ],
-  "generatedAt": "2026-05-11T21:59:46.467Z",
-  "commitSha": "8fcb09c",
-  "buildNumber": "749",
-  "branch": "feature/US-0181-pre-dispatch-orchestration",
+  "generatedAt": "2026-05-13T14:20:45.186Z",
+  "commitSha": "3d5072c",
+  "buildNumber": "745",
+  "branch": "fix/US-0181-move-widget-to-agentic-dashboard",
   "sessionTimeline": [
     {
       "date": "2026-03-09",
@@ -17066,9 +17066,9 @@
   "deltaSpend": 83.63,
   "projectName": "PlanVisualizer",
   "tagline": "Self-documenting project dashboards for Agentic coding platforms.",
-  "version": "2.3.0",
+  "version": "2.3.5",
   "appName": "plan-visualizer",
-  "appVersion": "2.3.0",
+  "appVersion": "2.3.5",
   "githubUrl": "https://github.com/ksyed0/PlanVisualizer",
   "agents": {
     "Conductor": {
@@ -17140,7 +17140,7 @@
     "totalSpent": 1133.1037999999999,
     "totalProjected": 98058.825854,
     "percentUsed": 95,
-    "burnRate": 32.18906896551724,
+    "burnRate": 31.116099999999996,
     "daysRemaining": 1,
     "projectedExhaustion": 1,
     "thresholds": [
@@ -17351,12 +17351,12 @@
     "hasBudget": true
   },
   "completion": {
-    "likelyDate": "May 18",
-    "rangeStart": "May 17",
-    "rangeEnd": "May 20",
+    "likelyDate": "May 20",
+    "rangeStart": "May 19",
+    "rangeEnd": "May 22",
     "velocityWeeks": 10,
-    "storiesPerWeek": 16.7,
-    "pointsPerWeek": 30
+    "storiesPerWeek": 16.3,
+    "pointsPerWeek": 29.3
   },
   "trends": {
     "dates": [
@@ -17414,7 +17414,8 @@
       "2026-05-11T15:30:33.651Z",
       "2026-05-11T16:53:38.588Z",
       "2026-05-11T17:16:19.063Z",
-      "2026-05-11T21:59:46.558Z"
+      "2026-05-11T21:59:46.558Z",
+      "2026-05-13T14:20:45.273Z"
     ],
     "doneCounts": [
       2,
@@ -17468,6 +17469,7 @@
       78,
       79,
       81,
+      167,
       167,
       167,
       167,
@@ -17528,6 +17530,7 @@
       177,
       177,
       177,
+      177,
       177
     ],
     "aiCosts": [
@@ -17582,6 +17585,7 @@
       209.7601,
       220.21260000000004,
       237.96510000000004,
+      1133.1037999999999,
       1133.1037999999999,
       1133.1037999999999,
       1133.1037999999999,
@@ -17642,6 +17646,7 @@
       1.78,
       89.79,
       89.79,
+      89.79,
       89.79
     ],
     "velocity": [
@@ -17696,6 +17701,7 @@
       128.5,
       129.5,
       131.5,
+      301,
       301,
       301,
       301,
@@ -17756,9 +17762,11 @@
       4,
       4,
       4,
+      4,
       4
     ],
     "atRisk": [
+      0,
       0,
       0,
       0,
@@ -17870,6 +17878,7 @@
       73384240,
       73384240,
       73384240,
+      73384240,
       73384240
     ],
     "outputTokens": [
@@ -17927,6 +17936,7 @@
       10692483,
       10692483,
       10692483,
+      10692483,
       10692483
     ],
     "avgRisk": [
@@ -17981,6 +17991,7 @@
       1.6399999999999997,
       1.6249999999999998,
       1.6130434782608694,
+      1.3666666666666665,
       1.3666666666666665,
       1.3666666666666665,
       1.3666666666666665,
