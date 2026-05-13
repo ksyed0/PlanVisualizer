@@ -289,6 +289,8 @@ pkg.scripts['agent:pending'] = pkg.scripts['agent:pending'] || 'node tools/agent
 pkg.scripts['agent:apply'] = pkg.scripts['agent:apply'] || 'node tools/agent-spec-plan.js apply-pending';
 pkg.scripts['agent:list'] = pkg.scripts['agent:list'] || 'node tools/agent-spec-plan.js list';
 pkg.scripts['agent:status'] = pkg.scripts['agent:status'] || 'node tools/agent-spec-plan.js status';
+// Dashboard live-reload during orchestration sessions
+pkg.scripts['dashboard:watch'] = pkg.scripts['dashboard:watch'] || 'node tools/watch-dashboard.js';
 
 // Required dev dependencies — these match PlanVisualizer's own package.json
 // so the same tool versions are used. Existing pins are preserved.
