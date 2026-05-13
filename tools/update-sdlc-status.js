@@ -449,12 +449,36 @@ async function main() {
     process.exit(1);
   }
 
+  // Commands that mutate agent/story state and should trigger a dashboard regen
+  const REGEN_CMDS = new Set([
+    'agent-start',
+    'agent-done',
+    'story-start',
+    'story-complete',
+    'cycle-complete',
+    'cycle-fail',
+    'phase-advance',
+    'phase-complete',
+    'phase-blocked',
+  ]);
+
   try {
     await atomicReadModifyWriteJson(STATUS_PATH, (data) => handler(data, opts));
     console.log(`[update-sdlc-status] ${cmd} ${JSON.stringify(opts)}`);
   } catch (err) {
     console.error(`[update-sdlc-status] failed:`, err.message);
     process.exit(1);
+  }
+
+  // Auto-regen the Agentic Dashboard so agent-start/done appear live.
+  // Best-effort — failure never blocks the status update.
+  if (REGEN_CMDS.has(cmd)) {
+    try {
+      const dashScript = path.join(__dirname, 'generate-dashboard.js');
+      if (fs.existsSync(dashScript)) require('./generate-dashboard');
+    } catch {
+      /* silent */
+    }
   }
 }
 

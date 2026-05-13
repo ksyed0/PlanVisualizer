@@ -9,7 +9,6 @@
     "generate": "node tools/generate-plan.js",
     "generate:watch": "node tools/generate-plan.js --watch",
     "dashboard": "node tools/generate-dashboard.js",
-    "dashboard:watch": "node tools/generate-dashboard.js --watch",
     "init:status": "node tools/init-sdlc-status.js",
     "build": "npm run generate && npm run init:status && npm run dashboard",
     "format": "prettier --write .",
@@ -31,7 +30,8 @@
     "agent:pending": "node tools/agent-spec-plan.js show-pending",
     "agent:apply": "node tools/agent-spec-plan.js apply-pending",
     "agent:list": "node tools/agent-spec-plan.js list",
-    "agent:status": "node tools/agent-spec-plan.js status"
+    "agent:status": "node tools/agent-spec-plan.js status",
+    "dashboard:watch": "node tools/watch-dashboard.js"
   },
   "lint-staged": {
     "*.{js,json,md,yml,yaml}": "prettier --write",
