@@ -299,6 +299,7 @@ const toAdd = {
   'agent:apply':             'node tools/agent-spec-plan.js apply-pending',
   'agent:list':              'node tools/agent-spec-plan.js list',
   'agent:status':            'node tools/agent-spec-plan.js status',
+  'dashboard:watch':         'node tools/watch-dashboard.js',
 };
 let added = 0;
 for (const [k, v] of Object.entries(toAdd)) {
