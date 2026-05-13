@@ -496,6 +496,7 @@ function generateHTML(status) {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="refresh" content="5">
 <title>${DASH_META.title} — SDLC Live Dashboard</title>
 <style>
   ${generateDashboardCssTokens()}
