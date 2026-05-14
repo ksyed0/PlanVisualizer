@@ -229,3 +229,36 @@ describe('dispatch — plan phase + helpers', () => {
     expect(fs.existsSync(flagPath)).toBe(true);
   });
 });
+
+describe('dispatch — plan-update', () => {
+  let tmpdir, sdlcPath;
+  beforeEach(() => {
+    tmpdir = fs.mkdtempSync(path.join(os.tmpdir(), 'agt-plan-upd-'));
+    sdlcPath = path.join(tmpdir, 'sdlc-status.json');
+    fs.writeFileSync(sdlcPath, JSON.stringify({ stories: { 'US-0183': { status: 'Planned' } } }));
+  });
+  afterEach(() => fs.rmSync(tmpdir, { recursive: true, force: true }));
+
+  test('plan-update sets planPath on planPhase', () => {
+    // Set up spec + plan phase
+    dispatch({ cmd: 'spec-start', story: 'US-0183' }, { sdlcPath });
+    dispatch({ cmd: 'spec-await-ac', story: 'US-0183' }, { sdlcPath });
+    dispatch({ cmd: 'approve', story: 'US-0183', gate: 'ac' }, { sdlcPath });
+    dispatch({ cmd: 'spec-review-result', story: 'US-0183', verdict: 'APPROVED' }, { sdlcPath });
+    dispatch({ cmd: 'spec-await-final', story: 'US-0183' }, { sdlcPath });
+    dispatch({ cmd: 'approve', story: 'US-0183', gate: 'spec' }, { sdlcPath });
+    dispatch({ cmd: 'plan-start', story: 'US-0183', author: 'Keystone' }, { sdlcPath });
+    const code = dispatch(
+      {
+        cmd: 'plan-update',
+        story: 'US-0183',
+        field: 'planPath',
+        value: 'docs/superpowers/plans/2026-05-14-us-0183.md',
+      },
+      { sdlcPath },
+    );
+    expect(code).toBe(0);
+    const data = JSON.parse(fs.readFileSync(sdlcPath, 'utf8'));
+    expect(data.stories['US-0183'].planPhase.planPath).toBe('docs/superpowers/plans/2026-05-14-us-0183.md');
+  });
+});
