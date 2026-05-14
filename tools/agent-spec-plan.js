@@ -150,6 +150,7 @@ function dispatch(opts, ctx = {}) {
     'spec-await-final',
     'spec-review-result',
     'plan-start',
+    'plan-update',
     'plan-spec-gap',
     'plan-review-result',
     'plan-await-approval',
@@ -267,6 +268,16 @@ function dispatch(opts, ctx = {}) {
 
       case 'plan-start':
         newOrch = State.planStart(orch, { author: opts.author });
+        applyOrchestration(story, newOrch);
+        writeSdlc(sdlcPath, data);
+        return 0;
+
+      case 'plan-update':
+        if (!opts.field) {
+          console.error('--field required');
+          return 1;
+        }
+        newOrch = State.planUpdate(orch, { field: opts.field, value: opts.value });
         applyOrchestration(story, newOrch);
         writeSdlc(sdlcPath, data);
         return 0;

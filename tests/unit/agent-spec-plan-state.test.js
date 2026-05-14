@@ -218,6 +218,7 @@ describe('specAwaitFinal + specApprove + specReject', () => {
 
 const {
   planStart,
+  planUpdate,
   planSpecGap,
   planReviewResult,
   planAwaitApproval,
@@ -317,5 +318,49 @@ describe('planAwaitApproval + planApprove + planReject', () => {
     s = planReject(s, { reason: 'tasks too large' });
     expect(s.planPhase.state).toBe('in_progress');
     expect(s.planPhase.planApprovedAt).toBeNull();
+  });
+});
+
+describe('planUpdate', () => {
+  test('sets planPath on planPhase', () => {
+    const s = planStart(approvedSpec(), { author: 'Keystone' });
+    const u = planUpdate(s, { field: 'planPath', value: 'docs/plans/x.md' });
+    expect(u.planPhase.planPath).toBe('docs/plans/x.md');
+  });
+
+  test('rejects unknown plan field', () => {
+    const s = planStart(approvedSpec(), { author: 'Keystone' });
+    expect(() => planUpdate(s, { field: 'badField', value: 'x' })).toThrow(/unknown plan field/i);
+  });
+});
+
+describe('specApprove / planApprove — idempotency', () => {
+  function approvedSpecSetup() {
+    let s = specStart(initStory(), {});
+    s = specAwaitAc(s);
+    s = acApprove(s);
+    s = specReviewResult(s, { verdict: 'APPROVED' });
+    s = specAwaitFinal(s);
+    return specApprove(s);
+  }
+
+  test('specApprove on already-approved state returns unchanged orchestration, no error', () => {
+    let s = approvedSpecSetup();
+    const before = s.specPhase.specApprovedAt;
+    s = specApprove(s); // second call — should not throw
+    expect(s.specPhase.state).toBe('approved');
+    expect(s.specPhase.specApprovedAt).toBe(before); // timestamp unchanged
+  });
+
+  test('planApprove on already-approved state returns unchanged orchestration, no error', () => {
+    let s = approvedSpecSetup();
+    s = planStart(s, { author: 'Keystone' });
+    s = planReviewResult(s, { verdict: 'APPROVED' });
+    s = planAwaitApproval(s);
+    s = planApprove(s);
+    const before = s.planPhase.planApprovedAt;
+    s = planApprove(s); // second call
+    expect(s.planPhase.state).toBe('approved');
+    expect(s.planPhase.planApprovedAt).toBe(before);
   });
 });

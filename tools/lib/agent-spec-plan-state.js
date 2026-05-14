@@ -57,6 +57,7 @@ function deriveOverall(specState, planState) {
 }
 
 const VALID_SPEC_UPDATE_FIELDS = ['specPath', 'mockupPath', 'uiSurface'];
+const VALID_PLAN_UPDATE_FIELDS = ['planPath'];
 
 function nowISO() {
   return new Date().toISOString();
@@ -108,6 +109,17 @@ function specUpdate(orchestration, opts) {
   return {
     ...orchestration,
     specPhase: { ...orchestration.specPhase, [opts.field]: value },
+  };
+}
+
+/** plan-update: update a planPhase field */
+function planUpdate(orchestration, opts) {
+  if (!VALID_PLAN_UPDATE_FIELDS.includes(opts.field)) {
+    throw new Error(`Unknown plan field '${opts.field}'; valid: ${VALID_PLAN_UPDATE_FIELDS.join(', ')}`);
+  }
+  return {
+    ...orchestration,
+    planPhase: { ...orchestration.planPhase, [opts.field]: opts.value },
   };
 }
 
@@ -199,6 +211,8 @@ function specAwaitFinal(orchestration) {
 
 /** approve --gate spec */
 function specApprove(orchestration) {
+  // Idempotent: if already approved, return unchanged
+  if (orchestration.specPhase.state === 'approved') return orchestration;
   if (orchestration.specPhase.state !== 'awaiting_spec_approval') {
     throw new Error(
       `Cannot approve spec: specPhase is '${orchestration.specPhase.state}', expected 'awaiting_spec_approval'`,
@@ -316,6 +330,8 @@ function planAwaitApproval(orchestration) {
 
 /** approve --gate plan */
 function planApprove(orchestration) {
+  // Idempotent: if already approved, return unchanged
+  if (orchestration.planPhase.state === 'approved') return orchestration;
   if (orchestration.planPhase.state !== 'awaiting_plan_approval') {
     throw new Error(
       `Cannot approve plan: planPhase is '${orchestration.planPhase.state}', expected 'awaiting_plan_approval'`,
@@ -353,6 +369,7 @@ function planReject(orchestration, opts) {
 module.exports = {
   SPEC_STATES,
   PLAN_STATES,
+  VALID_PLAN_UPDATE_FIELDS,
   initStory,
   deriveOverall,
   specStart,
@@ -365,6 +382,7 @@ module.exports = {
   specApprove,
   specReject,
   planStart,
+  planUpdate,
   planSpecGap,
   planReviewResult,
   planAwaitApproval,

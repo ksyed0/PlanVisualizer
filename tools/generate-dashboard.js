@@ -3836,6 +3836,76 @@ function patchDOM(status) {
 
   // --- US-0181: Pending Approvals sidebar panel —————————————————————————
   patchPendingApprovals(status);
+
+  // --- US-0183: Per-task progress on active story cards
+  patchTaskList(status);
+}
+
+// US-0183: Show live task progress (state + description) below each active agent card.
+// Groups sdlc-status.tasks by story, finds the active story for each agent, renders inline.
+function patchTaskList(status) {
+  if (!status || !status.tasks) return;
+
+  // Group tasks by story
+  var tasksByStory = {};
+  Object.keys(status.tasks).forEach(function (id) {
+    var t = status.tasks[id];
+    if (!t || !t.story) return;
+    if (!tasksByStory[t.story]) tasksByStory[t.story] = [];
+    tasksByStory[t.story].push(t);
+  });
+
+  // For each active agent card, find their current story and render tasks
+  var agents = (status && status.agents) || {};
+  Object.keys(agents).forEach(function (name) {
+    var agent = agents[name];
+    if (!agent || agent.status !== 'active' || !agent.currentStory) return;
+    var story = agent.currentStory;
+    var tasks = tasksByStory[story];
+    if (!tasks || tasks.length === 0) return;
+
+    // Find task list container on the agent's card
+    var card = document.querySelector('[data-agent="' + name + '"]');
+    if (!card) return;
+
+    var containerId = 'mc-tasks-' + name.replace(/[^a-zA-Z0-9]/g, '-');
+    var container = document.getElementById(containerId);
+    if (!container) {
+      container = document.createElement('div');
+      container.id = containerId;
+      container.style.cssText = 'margin-top:6px;font-size:10px;padding:0 14px 8px;';
+      card.appendChild(container);
+    }
+
+    var html = tasks.slice(-5).map(function (t) {
+      var color =
+        t.state === 'done'
+          ? 'var(--ok)'
+          : t.state === 'blocked' || t.state === 'escalated'
+            ? 'var(--risk)'
+            : t.state === 'done_with_concerns'
+              ? 'var(--warn)'
+              : 'var(--text-mute)';
+      var label = t.state.replace(/_/g, ' ').toUpperCase();
+      var desc = t.description
+        ? t.description.slice(0, 55) + (t.description.length > 55 ? '…' : '')
+        : '';
+      return (
+        '<div style="display:flex;gap:6px;align-items:baseline;margin-bottom:2px">' +
+        '<span style="color:' +
+        color +
+        ';font-weight:700;min-width:80px">' +
+        label +
+        '</span>' +
+        '<span style="color:var(--text-dim)">' +
+        desc +
+        '</span>' +
+        '</div>'
+      );
+    }).join('');
+
+    container.innerHTML = html;
+  });
 }
 
 // Rebuild the Pending Approvals panel content from the latest sdlc-status.stories.
