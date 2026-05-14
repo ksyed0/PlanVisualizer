@@ -40,10 +40,48 @@ function startTask(data, task) {
   data.tasks[task.id] = task;
 }
 
+function _requireTask(data, taskId) {
+  if (!data.tasks || !data.tasks[taskId]) {
+    throw new Error(`Task '${taskId}' not found in sdlc-status.json`);
+  }
+  return data.tasks[taskId];
+}
+
+function _requireInProgress(task, operation) {
+  if (task.state !== 'in_progress') {
+    throw new Error(`Cannot mark ${operation}: task '${task.id}' is in state '${task.state}', expected 'in_progress'`);
+  }
+}
+
+function markDone(data, taskId) {
+  const t = _requireTask(data, taskId);
+  _requireInProgress(t, 'done');
+  t.state = 'done';
+  t.completedAt = nowISO();
+}
+
+function markConcerns(data, taskId, note) {
+  const t = _requireTask(data, taskId);
+  _requireInProgress(t, 'concerns');
+  t.state = 'done_with_concerns';
+  t.concerns = note || '';
+  t.completedAt = nowISO();
+}
+
+function markNeedsContext(data, taskId, missing) {
+  const t = _requireTask(data, taskId);
+  _requireInProgress(t, 'needs-context');
+  t.state = 'needs_context';
+  t.blockedReason = missing || '';
+}
+
 module.exports = {
   TASK_STATES,
   BLOCKED_ROUTING_RULES,
   ESCALATION_CAP,
   initTask,
   startTask,
+  markDone,
+  markConcerns,
+  markNeedsContext,
 };

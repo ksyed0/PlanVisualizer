@@ -51,3 +51,62 @@ describe('startTask', () => {
     expect(data.tasks[t.id]).toBe(t);
   });
 });
+
+const { markDone, markConcerns, markNeedsContext } = require('../../tools/lib/agent-lifecycle-state');
+
+function freshTask() {
+  const data = {};
+  const t = initTask({ story: 'US-0183', agent: 'Forge', model: 'sonnet', description: 'test task' });
+  startTask(data, t);
+  return { data, t };
+}
+
+describe('markDone', () => {
+  test('transitions in_progress → done, records completedAt', () => {
+    const { data, t } = freshTask();
+    markDone(data, t.id);
+    expect(data.tasks[t.id].state).toBe('done');
+    expect(data.tasks[t.id].completedAt).toMatch(/\d{4}-\d{2}-\d{2}T/);
+  });
+
+  test('throws when task not found', () => {
+    expect(() => markDone({}, 'task-nonexistent')).toThrow(/not found/i);
+  });
+
+  test('throws when state is not in_progress', () => {
+    const { data, t } = freshTask();
+    markDone(data, t.id);
+    expect(() => markDone(data, t.id)).toThrow(/cannot mark done.*'done'/i);
+  });
+});
+
+describe('markConcerns', () => {
+  test('transitions in_progress → done_with_concerns, records note', () => {
+    const { data, t } = freshTask();
+    markConcerns(data, t.id, 'logic may fail on empty input');
+    expect(data.tasks[t.id].state).toBe('done_with_concerns');
+    expect(data.tasks[t.id].concerns).toBe('logic may fail on empty input');
+    expect(data.tasks[t.id].completedAt).toMatch(/\d{4}-\d{2}-\d{2}T/);
+  });
+
+  test('throws when state is not in_progress', () => {
+    const { data, t } = freshTask();
+    markDone(data, t.id);
+    expect(() => markConcerns(data, t.id, 'note')).toThrow(/cannot mark concerns.*'done'/i);
+  });
+});
+
+describe('markNeedsContext', () => {
+  test('transitions in_progress → needs_context, records missing info', () => {
+    const { data, t } = freshTask();
+    markNeedsContext(data, t.id, 'need the config file path');
+    expect(data.tasks[t.id].state).toBe('needs_context');
+    expect(data.tasks[t.id].blockedReason).toBe('need the config file path');
+  });
+
+  test('throws when state is not in_progress', () => {
+    const { data, t } = freshTask();
+    markNeedsContext(data, t.id, 'x');
+    expect(() => markNeedsContext(data, t.id, 'y')).toThrow(/cannot mark needs-context.*'needs_context'/i);
+  });
+});
