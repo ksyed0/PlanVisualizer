@@ -116,3 +116,76 @@ describe('dispatch — start + terminal commands', () => {
     expect(data.tasks[taskId].state).toBe('needs_context');
   });
 });
+
+describe('dispatch — blocked + resolve + list + status', () => {
+  let tmpdir, sdlcPath;
+  function startedTask() {
+    const stdout = [];
+    dispatch(
+      { cmd: 'start', story: 'US-0183', agent: 'Forge', model: 'sonnet', task: 'impl' },
+      { sdlcPath, skipRegen: true, stdout: (s) => stdout.push(s) },
+    );
+    return stdout[0];
+  }
+  beforeEach(() => {
+    tmpdir = fs.mkdtempSync(path.join(os.tmpdir(), 'alc-'));
+    sdlcPath = path.join(tmpdir, 'sdlc-status.json');
+    fs.writeFileSync(sdlcPath, JSON.stringify({ stories: { 'US-0183': { status: 'InProgress' } } }));
+  });
+  afterEach(() => fs.rmSync(tmpdir, { recursive: true, force: true }));
+
+  test('blocked: transitions to blocked, prints routing suggestion to stdout', () => {
+    const taskId = startedTask();
+    const stdout = [];
+    const code = dispatch(
+      { cmd: 'blocked', taskId, reason: 'cannot find config' },
+      { sdlcPath, skipRegen: true, stdout: (s) => stdout.push(s) },
+    );
+    expect(code).toBe(0);
+    expect(stdout.join('')).toContain('MORE_CONTEXT');
+    const data = JSON.parse(fs.readFileSync(sdlcPath, 'utf8'));
+    expect(data.tasks[taskId].state).toBe('blocked');
+  });
+
+  test('blocked: exits 1 after escalation cap', () => {
+    const taskId = startedTask();
+    for (let i = 0; i < 2; i++) {
+      dispatch({ cmd: 'blocked', taskId, reason: 'reason' }, { sdlcPath, skipRegen: true, stdout: () => {} });
+      dispatch({ cmd: 'resolve', taskId, action: 'MORE_CONTEXT', note: 'try' }, { sdlcPath, skipRegen: true });
+    }
+    dispatch({ cmd: 'blocked', taskId, reason: 'final' }, { sdlcPath, skipRegen: true, stdout: () => {} });
+    const code = dispatch({ cmd: 'resolve', taskId, action: 'MORE_CONTEXT', note: 'x' }, { sdlcPath, skipRegen: true });
+    expect(code).toBe(1);
+    const data = JSON.parse(fs.readFileSync(sdlcPath, 'utf8'));
+    expect(data.tasks[taskId].state).toBe('escalated');
+  });
+
+  test('resolve: transitions blocked → in_progress', () => {
+    const taskId = startedTask();
+    dispatch({ cmd: 'blocked', taskId, reason: 'missing schema' }, { sdlcPath, skipRegen: true, stdout: () => {} });
+    expect(
+      dispatch({ cmd: 'resolve', taskId, action: 'MORE_CONTEXT', note: 'added schema' }, { sdlcPath, skipRegen: true }),
+    ).toBe(0);
+    const data = JSON.parse(fs.readFileSync(sdlcPath, 'utf8'));
+    expect(data.tasks[taskId].state).toBe('in_progress');
+    expect(data.tasks[taskId].blockedResolutions).toHaveLength(1);
+  });
+
+  test('list: prints task rows for story', () => {
+    startedTask();
+    const stdout = [];
+    expect(
+      dispatch({ cmd: 'list', story: 'US-0183' }, { sdlcPath, skipRegen: true, stdout: (s) => stdout.push(s) }),
+    ).toBe(0);
+    expect(stdout.join('\n')).toMatch(/in_progress/);
+  });
+
+  test('status: prints task JSON', () => {
+    const taskId = startedTask();
+    const stdout = [];
+    expect(dispatch({ cmd: 'status', taskId }, { sdlcPath, skipRegen: true, stdout: (s) => stdout.push(s) })).toBe(0);
+    const parsed = JSON.parse(stdout.join(''));
+    expect(parsed.id).toBe(taskId);
+    expect(parsed.state).toBe('in_progress');
+  });
+});
