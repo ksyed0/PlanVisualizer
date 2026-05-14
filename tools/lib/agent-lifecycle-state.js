@@ -75,6 +75,43 @@ function markNeedsContext(data, taskId, missing) {
   t.blockedReason = missing || '';
 }
 
+function routeBlockedReason(reason) {
+  const r = (reason || '').toLowerCase();
+  for (const rule of BLOCKED_ROUTING_RULES) {
+    if (rule.patterns.some((p) => r.includes(p))) return rule.suggestion;
+  }
+  return 'UPGRADE_MODEL';
+}
+
+function markBlocked(data, taskId, reason) {
+  const t = _requireTask(data, taskId);
+  _requireInProgress(t, 'blocked');
+  t.state = 'blocked';
+  t.blockedReason = reason || '';
+  return routeBlockedReason(reason);
+}
+
+function resolveBlocked(data, taskId, opts) {
+  const t = _requireTask(data, taskId);
+  if (t.state !== 'blocked') {
+    throw new Error(`Cannot resolve blocked: task '${taskId}' is in state '${t.state}', expected 'blocked'`);
+  }
+  // Check if cap already exhausted
+  if (t.blockedResolutions.length >= ESCALATION_CAP) {
+    t.state = 'escalated';
+    throw new Error(`Task '${taskId}' has reached escalation cap (${ESCALATION_CAP} resolutions). Forced escalated.`);
+  }
+  t.blockedResolutions.push({
+    attempt: t.blockedResolutions.length + 1,
+    action: opts.action || 'UPGRADE_MODEL',
+    note: opts.note || '',
+    resolvedAt: nowISO(),
+  });
+  t.retryCount += 1;
+  t.state = 'in_progress';
+  t.blockedReason = null;
+}
+
 module.exports = {
   TASK_STATES,
   BLOCKED_ROUTING_RULES,
@@ -84,4 +121,7 @@ module.exports = {
   markDone,
   markConcerns,
   markNeedsContext,
+  markBlocked,
+  resolveBlocked,
+  routeBlockedReason,
 };
