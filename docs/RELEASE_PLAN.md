@@ -3464,3 +3464,55 @@ Acceptance Criteria:
 - [x] AC-0599: dispatch tag added to appendEventLog tone-map with a distinct evt-dispatch CSS class, making conductor dispatch events visually distinct from story-start events
 - [x] AC-0600: _dispatchCount persists across page loads (initialized from localStorage or computed from status.log)
 ```
+
+## Epic — EPIC-0028: Agentic Orchestration Engine
+
+```
+EPIC-0028: Agentic Orchestration Engine
+Description: Close the quality and isolation gaps between the superpowers subagent-driven-development pipeline and the PlanVisualizer DM_AGENT workflow. Four stories: pre-dispatch spec/plan orchestration (done), per-task lifecycle protocol, review gate engine, and context curator.
+Release Target: v2.4.0
+Status: In Progress
+Dependencies: EPIC-0014, EPIC-0026
+```
+
+## User Stories — EPIC-0028: Agentic Orchestration Engine
+
+```
+US-0182 (EPIC-0028): As the Conductor, I want the pre-dispatch orchestration engine to drive every story through spec → plan → ready_for_dispatch with Compass/Keystone/Lens review loops and user approval gates, so that specialist agents only start implementation on a reviewed, approved plan.
+Priority: High (P1)
+Estimate: XL
+Status: Done
+Branch: feature/US-0181-pre-dispatch-orchestration
+Spec: docs/superpowers/specs/2026-05-11-us-0181-pre-dispatch-spec-plan-orchestration-design.md
+Plan: docs/superpowers/plans/2026-05-11-us-0181-pre-dispatch-spec-plan-orchestration.md
+Acceptance Criteria:
+
+- [x] AC-0700: spec-start/spec-await-ac/spec-await-final/plan-start/plan-await-approval CLI commands transition state correctly
+- [x] AC-0701: Iteration cap (default 3) auto-escalates to escalated state when exceeded
+- [x] AC-0702: Pending Approvals widget appears in Agentic Dashboard sidebar and updates via patchDOM without page reload
+- [x] AC-0703: Flag-file approval path (download → docs/pending-approvals/ → apply-pending) works end-to-end
+- [x] AC-0704: DM_AGENT verbal-cue gate prompts replace manual CLI instructions for users
+- [x] AC-0705: agent-start/agent-done in update-sdlc-status.js auto-regen the Agentic Dashboard
+```
+
+```
+US-0183 (EPIC-0028): As the Conductor, I want a per-task lifecycle state machine so each specialist agent's work within a story is tracked at task granularity with DONE/DONE_WITH_CONCERNS/NEEDS_CONTEXT/BLOCKED status transitions and smart BLOCKED routing, so that the orchestrator can detect stalls and escalate rather than silently failing.
+Priority: High (P1)
+Estimate: L
+Status: Planned
+Branch: feature/US-0183-task-lifecycle-protocol
+Dependencies: US-0182 (EPIC-0028)
+Additional scope from US-0182 test run:
+- plan-update CLI command (set planPath after plan-start)
+- specApprove() idempotency guard (double-approve should no-op, not error)
+- Verbal-cue fallback cleanup (DM_AGENT should run approve CLI on user's behalf, not show CLI commands)
+Acceptance Criteria:
+
+- [ ] AC-0710: tools/agent-lifecycle.js exports start/status/done/blocked commands tracked in sdlc-status.json tasks[] object
+- [ ] AC-0711: DONE/DONE_WITH_CONCERNS/NEEDS_CONTEXT/BLOCKED state transitions validated; illegal transitions exit 1 with informative message
+- [ ] AC-0712: BLOCKED smart routing inspects reason text and emits one of: MORE_CONTEXT / UPGRADE_MODEL / SPLIT_TASK / ESCALATE_HUMAN
+- [ ] AC-0713: After 2 failed BLOCKED resolution attempts, forced human escalation with progress.md BLOCKED entry
+- [ ] AC-0714: DM_AGENT.md updated with per-task dispatch ritual referencing agent-lifecycle.js
+- [ ] AC-0715: plan-update --story X --field planPath --value ... command added to agent-spec-plan.js
+- [ ] AC-0716: specApprove() is idempotent (second call on already-approved spec returns 0, no state change)
+```
