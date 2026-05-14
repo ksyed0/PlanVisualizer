@@ -369,6 +369,7 @@ function planReject(orchestration, opts) {
 module.exports = {
   SPEC_STATES,
   PLAN_STATES,
+  VALID_PLAN_UPDATE_FIELDS,
   initStory,
   deriveOverall,
   specStart,
