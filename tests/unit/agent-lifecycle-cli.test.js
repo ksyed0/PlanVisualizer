@@ -44,3 +44,75 @@ describe('parseArgs', () => {
     );
   });
 });
+
+const fs = require('fs');
+const path = require('path');
+const os = require('os');
+const { dispatch } = require('../../tools/agent-lifecycle');
+
+describe('dispatch — start + terminal commands', () => {
+  let tmpdir, sdlcPath;
+  beforeEach(() => {
+    tmpdir = fs.mkdtempSync(path.join(os.tmpdir(), 'alc-'));
+    sdlcPath = path.join(tmpdir, 'sdlc-status.json');
+    fs.writeFileSync(sdlcPath, JSON.stringify({ stories: { 'US-0183': { status: 'InProgress' } } }));
+  });
+  afterEach(() => fs.rmSync(tmpdir, { recursive: true, force: true }));
+
+  test('start: creates task, prints UUID to stdout only', () => {
+    const stdout = [];
+    const code = dispatch(
+      { cmd: 'start', story: 'US-0183', agent: 'Forge', model: 'sonnet', task: 'implement x' },
+      { sdlcPath, skipRegen: true, stdout: (s) => stdout.push(s) },
+    );
+    expect(code).toBe(0);
+    expect(stdout).toHaveLength(1);
+    expect(stdout[0]).toMatch(/^task-[0-9a-f-]{36}$/);
+    const data = JSON.parse(fs.readFileSync(sdlcPath, 'utf8'));
+    expect(data.tasks[stdout[0]].state).toBe('in_progress');
+    expect(data.tasks[stdout[0]].agent).toBe('Forge');
+  });
+
+  test('start: exits 1 when --story missing', () => {
+    expect(dispatch({ cmd: 'start', agent: 'Forge', model: 'sonnet', task: 'x' }, { sdlcPath, skipRegen: true })).toBe(
+      1,
+    );
+  });
+
+  test('done: transitions in_progress → done', () => {
+    const stdout = [];
+    dispatch(
+      { cmd: 'start', story: 'US-0183', agent: 'Forge', model: 'sonnet', task: 'x' },
+      { sdlcPath, skipRegen: true, stdout: (s) => stdout.push(s) },
+    );
+    const taskId = stdout[0];
+    expect(dispatch({ cmd: 'done', taskId }, { sdlcPath, skipRegen: true })).toBe(0);
+    const data = JSON.parse(fs.readFileSync(sdlcPath, 'utf8'));
+    expect(data.tasks[taskId].state).toBe('done');
+  });
+
+  test('concerns: transitions to done_with_concerns', () => {
+    const stdout = [];
+    dispatch(
+      { cmd: 'start', story: 'US-0183', agent: 'Forge', model: 'sonnet', task: 'x' },
+      { sdlcPath, skipRegen: true, stdout: (s) => stdout.push(s) },
+    );
+    const taskId = stdout[0];
+    expect(dispatch({ cmd: 'concerns', taskId, note: 'edge case' }, { sdlcPath, skipRegen: true })).toBe(0);
+    const data = JSON.parse(fs.readFileSync(sdlcPath, 'utf8'));
+    expect(data.tasks[taskId].state).toBe('done_with_concerns');
+    expect(data.tasks[taskId].concerns).toBe('edge case');
+  });
+
+  test('needs-context: transitions to needs_context', () => {
+    const stdout = [];
+    dispatch(
+      { cmd: 'start', story: 'US-0183', agent: 'Forge', model: 'sonnet', task: 'x' },
+      { sdlcPath, skipRegen: true, stdout: (s) => stdout.push(s) },
+    );
+    const taskId = stdout[0];
+    expect(dispatch({ cmd: 'needs-context', taskId, missing: 'config path' }, { sdlcPath, skipRegen: true })).toBe(0);
+    const data = JSON.parse(fs.readFileSync(sdlcPath, 'utf8'));
+    expect(data.tasks[taskId].state).toBe('needs_context');
+  });
+});

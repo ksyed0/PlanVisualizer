@@ -62,6 +62,149 @@ function parseArgs(argv) {
   return out;
 }
 
+function readSdlc(sdlcPath) {
+  return JSON.parse(fs.readFileSync(sdlcPath, 'utf8'));
+}
+
+function writeSdlc(sdlcPath, data) {
+  fs.writeFileSync(sdlcPath, JSON.stringify(data, null, 2) + '\n');
+}
+
+function regenDashboard(ctx) {
+  if (ctx && ctx.skipRegen) return;
+  try {
+    const script = path.join(ROOT, 'tools/generate-dashboard.js');
+    if (fs.existsSync(script)) require('./generate-dashboard');
+  } catch {
+    /* silent */
+  }
+}
+
+function dispatch(opts, ctx = {}) {
+  const sdlcPath = ctx.sdlcPath || SDLC_PATH;
+  const stdout = ctx.stdout || ((s) => process.stdout.write(s + '\n'));
+  const cmd = opts.cmd;
+  let data;
+  try {
+    data = readSdlc(sdlcPath);
+  } catch (e) {
+    console.error(`[agent-lifecycle] cannot read ${sdlcPath}: ${e.message}`);
+    return 1;
+  }
+  try {
+    switch (cmd) {
+      case 'start': {
+        if (!opts.story) {
+          console.error('--story required');
+          return 1;
+        }
+        if (!opts.agent) {
+          console.error('--agent required');
+          return 1;
+        }
+        const task = LifeState.initTask({
+          story: opts.story,
+          agent: opts.agent,
+          model: opts.model,
+          description: opts.task || '',
+        });
+        LifeState.startTask(data, task);
+        writeSdlc(sdlcPath, data);
+        stdout(task.id);
+        regenDashboard(ctx);
+        return 0;
+      }
+      case 'done': {
+        if (!opts.taskId) {
+          console.error('--task-id required');
+          return 1;
+        }
+        LifeState.markDone(data, opts.taskId);
+        writeSdlc(sdlcPath, data);
+        regenDashboard(ctx);
+        return 0;
+      }
+      case 'concerns': {
+        if (!opts.taskId) {
+          console.error('--task-id required');
+          return 1;
+        }
+        LifeState.markConcerns(data, opts.taskId, opts.note || '');
+        writeSdlc(sdlcPath, data);
+        regenDashboard(ctx);
+        return 0;
+      }
+      case 'needs-context': {
+        if (!opts.taskId) {
+          console.error('--task-id required');
+          return 1;
+        }
+        LifeState.markNeedsContext(data, opts.taskId, opts.missing || '');
+        writeSdlc(sdlcPath, data);
+        regenDashboard(ctx);
+        return 0;
+      }
+      case 'blocked': {
+        if (!opts.taskId) {
+          console.error('--task-id required');
+          return 1;
+        }
+        const suggestion = LifeState.markBlocked(data, opts.taskId, opts.reason || '');
+        writeSdlc(sdlcPath, data);
+        stdout(suggestion);
+        regenDashboard(ctx);
+        return 0;
+      }
+      case 'resolve': {
+        if (!opts.taskId) {
+          console.error('--task-id required');
+          return 1;
+        }
+        try {
+          LifeState.resolveBlocked(data, opts.taskId, { action: opts.action, note: opts.note });
+          writeSdlc(sdlcPath, data);
+          regenDashboard(ctx);
+          return 0;
+        } catch (e) {
+          writeSdlc(sdlcPath, data);
+          console.error(`[agent-lifecycle] ${e.message}`);
+          return 1;
+        }
+      }
+      case 'list': {
+        const tasks = data.tasks || {};
+        const rows = Object.values(tasks).filter((t) => {
+          if (opts.story && t.story !== opts.story) return false;
+          if (opts.state && t.state !== opts.state) return false;
+          return true;
+        });
+        if (rows.length === 0) stdout('[agent-lifecycle] No matching tasks.');
+        else rows.forEach((t) => stdout(`  ${t.id}  ${t.story || '—'}  ${t.agent}  ${t.state}  "${t.description}"`));
+        return 0;
+      }
+      case 'status': {
+        if (!opts.taskId) {
+          console.error('--task-id required');
+          return 1;
+        }
+        const t = (data.tasks || {})[opts.taskId];
+        if (!t) {
+          console.error(`[agent-lifecycle] task '${opts.taskId}' not found`);
+          return 1;
+        }
+        stdout(JSON.stringify(t, null, 2));
+        return 0;
+      }
+      default:
+        console.error(`[agent-lifecycle] unknown command '${cmd}'`);
+        return 1;
+    }
+  } catch (e) {
+    console.error(`[agent-lifecycle] ${e.message}`);
+    return 1;
+  }
+}
+
 function main() {
   const opts = parseArgs(process.argv);
   if (!opts.cmd) {
@@ -69,10 +212,9 @@ function main() {
     console.error('Commands: start, done, concerns, needs-context, blocked, resolve, list, status');
     return 1;
   }
-  console.error(`[agent-lifecycle] dispatch not yet implemented for '${opts.cmd}'`);
-  return 1;
+  return dispatch(opts);
 }
 
-module.exports = { parseArgs, main };
+module.exports = { parseArgs, dispatch, main };
 
 if (require.main === module) process.exit(main());
