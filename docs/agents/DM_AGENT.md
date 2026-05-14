@@ -112,6 +112,39 @@ Before spawning any sub-agent:
 
 **Fallback rule:** If no row in the target agent's table matches the task, default to `sonnet`. Record `--model-rationale "no table match"` so adherence can be measured over time.
 
+### Per-Task Dispatch Ritual
+
+For each task a specialist agent works within a story:
+
+1. **Record task start and capture the UUID:**
+
+   ```bash
+   TASK_ID=$(node tools/agent-lifecycle.js start \
+     --story <id> --agent <name> --model <tier> --task "<description>")
+   ```
+
+   The UUID is printed to stdout only — capture it via `$()`.
+
+2. **Agent works the task** (inline or as a sub-subagent with `isolation: "worktree"`).
+
+3. **Agent reports status** — Conductor calls the matching command:
+
+   | Agent says                 | Conductor runs                                                                      |
+   | -------------------------- | ----------------------------------------------------------------------------------- |
+   | Task complete, no issues   | `node tools/agent-lifecycle.js done --task-id $TASK_ID`                             |
+   | Complete but has a doubt   | `node tools/agent-lifecycle.js concerns --task-id $TASK_ID --note "<doubt>"`        |
+   | Needs specific information | `node tools/agent-lifecycle.js needs-context --task-id $TASK_ID --missing "<what>"` |
+   | Stuck, cannot proceed      | `node tools/agent-lifecycle.js blocked --task-id $TASK_ID --reason "<why>"`         |
+
+4. **On BLOCKED:** read the routing suggestion from stdout (MORE_CONTEXT / SPLIT_TASK / UPGRADE_MODEL / ESCALATE_HUMAN) and act accordingly:
+
+   ```bash
+   node tools/agent-lifecycle.js resolve --task-id $TASK_ID \
+     --action MORE_CONTEXT --note "<what you provided>"
+   ```
+
+5. **On escalation cap exhausted** (exit 1 from `resolve`): halt the story, write `## TASK BLOCKED` to `progress.md`, surface to user.
+
 ## Pre-Dispatch Spec & Plan Orchestration
 
 Before any specialist agent is dispatched to implement a story, the spec and plan phases must complete. A story enters dispatch only when `planPhase.state === "approved"`.
@@ -196,6 +229,8 @@ When the user replies, DM_AGENT runs the CLI command on their behalf:
 The Agentic Dashboard (`docs/dashboard.html`) sidebar will show the open gate automatically after the CLI command runs — no manual regen needed.
 
 **Dashboard path (for visual review):** If the user wants to review artifacts in the browser before approving, they can click Approve in the Pending Approvals sidebar → download the flag file → drop it in `docs/pending-approvals/` → DM_AGENT will pick it up on the next `apply-pending` call.
+
+**Protocol violation rule:** If DM_AGENT's reply to the user at a gate prompt shows CLI command text (e.g., `npm run agent:approve ...`), this is a protocol violation. The agent must run the command on the user's behalf after the user says `approve` or `reject: <reason>`. The verbal-cue prompt ends with the response options — no CLI instructions to the user.
 
 ---
 
