@@ -22,6 +22,8 @@ describe('initTask', () => {
     expect(t.completedAt).toBeNull();
     expect(t.retryCount).toBe(0);
     expect(typeof t.startedAt).toBe('string');
+    expect(t.planTaskIndex).toBeNull();
+    expect(t.summary).toBeNull();
   });
 
   test('generates unique IDs on each call', () => {
@@ -185,5 +187,61 @@ describe('resolveBlocked', () => {
     expect(() => resolveBlocked(data, t.id, { action: 'MORE_CONTEXT', note: 'x' })).toThrow(
       /cannot resolve.*'in_progress'/i,
     );
+  });
+});
+
+describe('initTask — US-0184 schema additions', () => {
+  test('defaults planTaskIndex to null when not provided', () => {
+    const t = initTask({ story: 'US-0184', agent: 'Forge', model: 'sonnet', description: 'x' });
+    expect(t.planTaskIndex).toBeNull();
+  });
+
+  test('stores planTaskIndex when provided', () => {
+    const t = initTask({ story: 'US-0184', agent: 'Forge', model: 'sonnet', description: 'x', planTaskIndex: 3 });
+    expect(t.planTaskIndex).toBe(3);
+  });
+
+  test('stores planTaskIndex: 0 correctly (not dropped to null)', () => {
+    const t = initTask({ story: 'US-0184', agent: 'Forge', model: 'sonnet', description: 'x', planTaskIndex: 0 });
+    expect(t.planTaskIndex).toBe(0);
+  });
+
+  test('drops planTaskIndex: NaN to null', () => {
+    const t = initTask({ story: 'US-0184', agent: 'Forge', model: 'sonnet', description: 'x', planTaskIndex: NaN });
+    expect(t.planTaskIndex).toBeNull();
+  });
+
+  test('defaults summary to null', () => {
+    const t = initTask({ story: 'US-0184', agent: 'Forge', model: 'sonnet', description: 'x' });
+    expect(t.summary).toBeNull();
+  });
+});
+
+describe('markDone — US-0184 summary support', () => {
+  const { markDone } = require('../../tools/lib/agent-lifecycle-state');
+  function freshTaskWithId() {
+    const data = {};
+    const t = initTask({ story: 'US-0184', agent: 'Forge', model: 'sonnet', description: 'x' });
+    startTask(data, t);
+    return { data, taskId: t.id };
+  }
+
+  test('markDone stores summary when provided', () => {
+    const { data, taskId } = freshTaskWithId();
+    markDone(data, taskId, 'shipped foo');
+    expect(data.tasks[taskId].summary).toBe('shipped foo');
+    expect(data.tasks[taskId].state).toBe('done');
+  });
+
+  test('markDone leaves summary null when not provided', () => {
+    const { data, taskId } = freshTaskWithId();
+    markDone(data, taskId);
+    expect(data.tasks[taskId].summary).toBeNull();
+  });
+
+  test('markDone leaves summary null for whitespace-only string', () => {
+    const { data, taskId } = freshTaskWithId();
+    markDone(data, taskId, '   ');
+    expect(data.tasks[taskId].summary).toBeNull();
   });
 });

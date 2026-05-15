@@ -32,6 +32,9 @@ function initTask(opts) {
     startedAt: nowISO(),
     completedAt: null,
     retryCount: 0,
+    planTaskIndex:
+      typeof opts.planTaskIndex === 'number' && Number.isFinite(opts.planTaskIndex) ? opts.planTaskIndex : null,
+    summary: null,
   };
 }
 
@@ -53,11 +56,14 @@ function _requireInProgress(task, operation) {
   }
 }
 
-function markDone(data, taskId) {
+function markDone(data, taskId, summary) {
   const t = _requireTask(data, taskId);
   _requireInProgress(t, 'done');
   t.state = 'done';
   t.completedAt = nowISO();
+  if (typeof summary === 'string' && summary.trim().length > 0) {
+    t.summary = summary;
+  }
 }
 
 function markConcerns(data, taskId, note) {
