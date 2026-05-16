@@ -189,3 +189,59 @@ describe('dispatch — blocked + resolve + list + status', () => {
     expect(parsed.state).toBe('in_progress');
   });
 });
+
+describe('agent-lifecycle CLI — US-0184 flags', () => {
+  const { parseArgs, dispatch } = require('../../tools/agent-lifecycle');
+  const fs = require('fs');
+  const path = require('path');
+  const os = require('os');
+
+  function tmpSdlcWith(initial) {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'agent-lifecycle-'));
+    const p = path.join(dir, 'sdlc-status.json');
+    fs.writeFileSync(p, JSON.stringify(initial, null, 2));
+    return p;
+  }
+
+  test('parseArgs picks up --plan-task-index as a number', () => {
+    const opts = parseArgs(['node', 'cli', 'start', '--plan-task-index', '4']);
+    expect(opts.planTaskIndex).toBe(4);
+  });
+
+  test('parseArgs picks up --summary as a string', () => {
+    const opts = parseArgs(['node', 'cli', 'done', '--summary', 'shipped foo']);
+    expect(opts.summary).toBe('shipped foo');
+  });
+
+  test('start writes planTaskIndex to the task record', () => {
+    const sdlcPath = tmpSdlcWith({ tasks: {} });
+    const out = [];
+    const rc = dispatch(
+      { cmd: 'start', story: 'US-0184', agent: 'Forge', task: 'do x', planTaskIndex: 3 },
+      { sdlcPath, stdout: (s) => out.push(s), skipRegen: true },
+    );
+    expect(rc).toBe(0);
+    const data = JSON.parse(fs.readFileSync(sdlcPath, 'utf8'));
+    const t = Object.values(data.tasks)[0];
+    expect(t.planTaskIndex).toBe(3);
+    expect(out[0]).toBe(t.id);
+  });
+
+  test('done writes summary to the task record', () => {
+    const sdlcPath = tmpSdlcWith({ tasks: {} });
+    dispatch(
+      { cmd: 'start', story: 'US-0184', agent: 'Forge', task: 'do x' },
+      { sdlcPath, stdout: () => {}, skipRegen: true },
+    );
+    const data1 = JSON.parse(fs.readFileSync(sdlcPath, 'utf8'));
+    const taskId = Object.keys(data1.tasks)[0];
+
+    const rc = dispatch(
+      { cmd: 'done', taskId, summary: 'shipped foo' },
+      { sdlcPath, stdout: () => {}, skipRegen: true },
+    );
+    expect(rc).toBe(0);
+    const data2 = JSON.parse(fs.readFileSync(sdlcPath, 'utf8'));
+    expect(data2.tasks[taskId].summary).toBe('shipped foo');
+  });
+});

@@ -23,6 +23,8 @@ function parseArgs(argv) {
     reason: null,
     action: null,
     state: null,
+    planTaskIndex: null,
+    summary: null,
   };
   for (let i = 1; i < args.length; i++) {
     const a = args[i];
@@ -56,6 +58,13 @@ function parseArgs(argv) {
       i++;
     } else if (a === '--state' && next) {
       out.state = next;
+      i++;
+    } else if (a === '--plan-task-index' && next !== undefined) {
+      const n = parseInt(next, 10);
+      out.planTaskIndex = Number.isNaN(n) ? null : n;
+      i++;
+    } else if (a === '--summary' && next !== undefined) {
+      out.summary = next;
       i++;
     }
   }
@@ -107,6 +116,7 @@ function dispatch(opts, ctx = {}) {
           agent: opts.agent,
           model: opts.model,
           description: opts.task || '',
+          planTaskIndex: opts.planTaskIndex,
         });
         LifeState.startTask(data, task);
         writeSdlc(sdlcPath, data);
@@ -119,7 +129,7 @@ function dispatch(opts, ctx = {}) {
           console.error('--task-id required');
           return 1;
         }
-        LifeState.markDone(data, opts.taskId);
+        LifeState.markDone(data, opts.taskId, opts.summary || undefined);
         writeSdlc(sdlcPath, data);
         regenDashboard(ctx);
         return 0;

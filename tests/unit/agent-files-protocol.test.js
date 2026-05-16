@@ -55,3 +55,22 @@ describe('agent-files protocol contract', () => {
     expect(text).toContain('@plan-author');
   });
 });
+
+describe('DM_AGENT.md — US-0184 updates to Per-Task Dispatch Ritual', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const content = fs.readFileSync(path.join(__dirname, '../../docs/agents/DM_AGENT.md'), 'utf8');
+
+  test('start command example includes --plan-task-index flag', () => {
+    expect(content).toMatch(/--plan-task-index/);
+  });
+
+  test('step 1b context-generation block uses agent-context.js generate', () => {
+    expect(content).toMatch(/node tools\/agent-context\.js generate/);
+    expect(content).toMatch(/CONTEXT=\$\(node tools\/agent-context\.js/);
+  });
+
+  test('done command row includes --summary flag', () => {
+    expect(content).toMatch(/agent-lifecycle\.js done[^\n]*--summary/);
+  });
+});

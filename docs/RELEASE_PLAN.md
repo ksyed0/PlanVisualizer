@@ -3516,3 +3516,25 @@ Acceptance Criteria:
 - [ ] AC-0715: plan-update --story X --field planPath --value ... command added to agent-spec-plan.js
 - [ ] AC-0716: specApprove() is idempotent (second call on already-approved spec returns 0, no state change)
 ```
+
+```
+US-0184 (EPIC-0028): As the Conductor, I want a context curator CLI that assembles structured markdown context payloads (task, acceptance criteria, plan excerpt, prior-work summaries, agent-tagged lessons) for sub-agent dispatches, so that specialist agents start with exactly the context they need instead of burning tokens discovering it.
+Priority: High (P1)
+Estimate: L
+Status: Planned
+Branch: feature/US-0184-context-curator
+Dependencies: US-0182 (EPIC-0028), US-0183 (EPIC-0028)
+Spec: docs/superpowers/specs/2026-05-14-us-0184-context-curator-design.md
+Plan: docs/superpowers/plans/2026-05-14-us-0184-context-curator.md
+Bundled schema patches from US-0183:
+- --plan-task-index on agent-lifecycle.js start (optional, stored on task record)
+- --summary on agent-lifecycle.js done (optional, rendered in prior-work section)
+Acceptance Criteria:
+
+- [ ] AC-0720: tools/agent-context.js generate --story X --agent Y --task-id Z writes a markdown payload to stdout and exits 0 on the happy path
+- [ ] AC-0721: Payload includes "Your task" plus (when content available) "Story acceptance criteria", "Plan excerpt", "Prior work on this story", "Relevant lessons for <Agent>" — empty sections are suppressed entirely
+- [ ] AC-0722: --plan-task-index and --summary added as optional CLI flags to agent-lifecycle.js; corresponding task fields default to null and persist when provided
+- [ ] AC-0723: LESSONS.md @agent: tagging convention is documented; every existing L-XXXX entry receives a canonical tag; validateLessonsTags() returns zero untagged and zero invalid agent names
+- [ ] AC-0724: DM_AGENT.md §Per-Task Dispatch Ritual is updated with --plan-task-index capture, new step 1b context generation, and --summary on the done row
+- [ ] AC-0725: Coverage gate (>=80% statements) remains green; all new test files meet the per-file targets in spec §10
+```

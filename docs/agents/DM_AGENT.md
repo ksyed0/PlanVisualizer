@@ -120,21 +120,33 @@ For each task a specialist agent works within a story:
 
    ```bash
    TASK_ID=$(node tools/agent-lifecycle.js start \
-     --story <id> --agent <name> --model <tier> --task "<description>")
+     --story <id> --agent <name> --model <tier> \
+     --task "<description>" \
+     --plan-task-index <N>)
    ```
 
    The UUID is printed to stdout only — capture it via `$()`.
+
+1b. **Generate context payload and inject into the dispatch message:**
+
+    ```bash
+    CONTEXT=$(node tools/agent-context.js generate \
+      --story <id> --agent <name> --task-id $TASK_ID)
+    ```
+
+    Include `$CONTEXT` verbatim at the top of the sub-agent dispatch message,
+    before any per-dispatch overrides.
 
 2. **Agent works the task** (inline or as a sub-subagent with `isolation: "worktree"`).
 
 3. **Agent reports status** — Conductor calls the matching command:
 
-   | Agent says                 | Conductor runs                                                                      |
-   | -------------------------- | ----------------------------------------------------------------------------------- |
-   | Task complete, no issues   | `node tools/agent-lifecycle.js done --task-id $TASK_ID`                             |
-   | Complete but has a doubt   | `node tools/agent-lifecycle.js concerns --task-id $TASK_ID --note "<doubt>"`        |
-   | Needs specific information | `node tools/agent-lifecycle.js needs-context --task-id $TASK_ID --missing "<what>"` |
-   | Stuck, cannot proceed      | `node tools/agent-lifecycle.js blocked --task-id $TASK_ID --reason "<why>"`         |
+   | Agent says                 | Conductor runs                                                                         |
+   | -------------------------- | -------------------------------------------------------------------------------------- |
+   | Task complete, no issues   | `node tools/agent-lifecycle.js done --task-id $TASK_ID --summary "<one-line handoff>"` |
+   | Complete but has a doubt   | `node tools/agent-lifecycle.js concerns --task-id $TASK_ID --note "<doubt>"`           |
+   | Needs specific information | `node tools/agent-lifecycle.js needs-context --task-id $TASK_ID --missing "<what>"`    |
+   | Stuck, cannot proceed      | `node tools/agent-lifecycle.js blocked --task-id $TASK_ID --reason "<why>"`            |
 
 4. **On BLOCKED:** read the routing suggestion from stdout (MORE_CONTEXT / SPLIT_TASK / UPGRADE_MODEL / ESCALATE_HUMAN) and act accordingly:
 
