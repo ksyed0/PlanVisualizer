@@ -4,6 +4,36 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
+## L-0063 — `typeof x === 'number'` does not exclude `NaN` — use `Number.isFinite()` for integer guards
+
+@agent: Forge
+
+**Rule:** `typeof NaN === 'number'` is `true` in JavaScript. Any guard that checks `typeof opts.x === 'number'` to validate a numeric field will silently accept `NaN`. For plan-task indices and other integer fields where `NaN` is an invalid sentinel, always add `Number.isFinite()`: `typeof x === 'number' && Number.isFinite(x)`. Similarly, `Number.isInteger(x)` is the correct guard when only whole numbers are valid (rejects both `NaN` and floats). Test with `planTaskIndex: NaN` explicitly.
+_Caught by code review of Task 1 of US-0184 (agent-lifecycle-state.js initTask). The original plan code used `typeof opts.planTaskIndex === 'number'` which would have stored `NaN` in the JSON, silently coercing to `null` on serialization._
+**Date:** 2026-05-15
+
+---
+
+## L-0064 — `Array.prototype.sort()` mutates in place — use `[...arr].sort()` in pure functions
+
+@agent: Forge
+
+**Rule:** `Array.prototype.sort()` sorts the original array in-place and returns a reference to it. In pure functions (especially assembler modules where the caller may hold a reference to the input array), calling `.sort()` directly silently mutates the caller's data. Always use `[...arr].sort(compareFn)` or `arr.slice().sort(compareFn)` to sort a copy. This is especially important in context-assembler modules where `priorTasks` is sorted by `planTaskIndex` — the mutation would reorder the caller's array.
+_Caught by code review of Tasks 3–7 of US-0184 (agent-context-assembler.js \_renderPriorTasks)._
+**Date:** 2026-05-15
+
+---
+
+## L-0065 — Squash-merged feature branches do not appear in `git branch --merged` — cross-reference GitHub PR state instead
+
+@agent: Conductor
+
+**Rule:** `git branch --merged <base>` only finds branches whose tip commits exist in the base branch's history. Squash merges create a new single commit that is NOT the tip of the feature branch, so the feature branch tip is never an ancestor of the base. This means all squash-merged feature branches show as "not merged" in git. To correctly identify stale branches for cleanup, cross-reference with GitHub PR state using `gh pr list --state all --json headRefName,state` and look for `MERGED` or `CLOSED` PRs, not `git branch --merged`.
+_Applied during Session 46 branch cleanup — 11 stale local branches identified by PR state, not by git ancestry._
+**Date:** 2026-05-15
+
+---
+
 ## L-0057 — CodeQL TOCTOU (`js/file-system-race`) fires on `statSync+readFileSync` — use fd for atomic stat+read
 
 @agent: Forge

@@ -3499,8 +3499,9 @@ Acceptance Criteria:
 US-0183 (EPIC-0028): As the Conductor, I want a per-task lifecycle state machine so each specialist agent's work within a story is tracked at task granularity with DONE/DONE_WITH_CONCERNS/NEEDS_CONTEXT/BLOCKED status transitions and smart BLOCKED routing, so that the orchestrator can detect stalls and escalate rather than silently failing.
 Priority: High (P1)
 Estimate: L
-Status: Planned
+Status: Done
 Branch: feature/US-0183-task-lifecycle-protocol
+PR: #1037 (merged to develop, Session 45)
 Dependencies: US-0182 (EPIC-0028)
 Additional scope from US-0182 test run:
 - plan-update CLI command (set planPath after plan-start)
@@ -3508,21 +3509,22 @@ Additional scope from US-0182 test run:
 - Verbal-cue fallback cleanup (DM_AGENT should run approve CLI on user's behalf, not show CLI commands)
 Acceptance Criteria:
 
-- [ ] AC-0710: tools/agent-lifecycle.js exports start/status/done/blocked commands tracked in sdlc-status.json tasks[] object
-- [ ] AC-0711: DONE/DONE_WITH_CONCERNS/NEEDS_CONTEXT/BLOCKED state transitions validated; illegal transitions exit 1 with informative message
-- [ ] AC-0712: BLOCKED smart routing inspects reason text and emits one of: MORE_CONTEXT / UPGRADE_MODEL / SPLIT_TASK / ESCALATE_HUMAN
-- [ ] AC-0713: After 2 failed BLOCKED resolution attempts, forced human escalation with progress.md BLOCKED entry
-- [ ] AC-0714: DM_AGENT.md updated with per-task dispatch ritual referencing agent-lifecycle.js
-- [ ] AC-0715: plan-update --story X --field planPath --value ... command added to agent-spec-plan.js
-- [ ] AC-0716: specApprove() is idempotent (second call on already-approved spec returns 0, no state change)
+- [x] AC-0710: tools/agent-lifecycle.js exports start/status/done/blocked commands tracked in sdlc-status.json tasks[] object
+- [x] AC-0711: DONE/DONE_WITH_CONCERNS/NEEDS_CONTEXT/BLOCKED state transitions validated; illegal transitions exit 1 with informative message
+- [x] AC-0712: BLOCKED smart routing inspects reason text and emits one of: MORE_CONTEXT / UPGRADE_MODEL / SPLIT_TASK / ESCALATE_HUMAN
+- [x] AC-0713: After 2 failed BLOCKED resolution attempts, forced human escalation with progress.md BLOCKED entry
+- [x] AC-0714: DM_AGENT.md updated with per-task dispatch ritual referencing agent-lifecycle.js
+- [x] AC-0715: plan-update --story X --field planPath --value ... command added to agent-spec-plan.js
+- [x] AC-0716: specApprove() is idempotent (second call on already-approved spec returns 0, no state change)
 ```
 
 ```
 US-0184 (EPIC-0028): As the Conductor, I want a context curator CLI that assembles structured markdown context payloads (task, acceptance criteria, plan excerpt, prior-work summaries, agent-tagged lessons) for sub-agent dispatches, so that specialist agents start with exactly the context they need instead of burning tokens discovering it.
 Priority: High (P1)
 Estimate: L
-Status: Planned
-Branch: feature/US-0184-context-curator
+Status: Done
+Branch: claude/trusting-zhukovsky-cb5402
+PR: #1039 (merged to develop, Session 46)
 Dependencies: US-0182 (EPIC-0028), US-0183 (EPIC-0028)
 Spec: docs/superpowers/specs/2026-05-14-us-0184-context-curator-design.md
 Plan: docs/superpowers/plans/2026-05-14-us-0184-context-curator.md
@@ -3531,10 +3533,10 @@ Bundled schema patches from US-0183:
 - --summary on agent-lifecycle.js done (optional, rendered in prior-work section)
 Acceptance Criteria:
 
-- [ ] AC-0720: tools/agent-context.js generate --story X --agent Y --task-id Z writes a markdown payload to stdout and exits 0 on the happy path
-- [ ] AC-0721: Payload includes "Your task" plus (when content available) "Story acceptance criteria", "Plan excerpt", "Prior work on this story", "Relevant lessons for <Agent>" — empty sections are suppressed entirely
-- [ ] AC-0722: --plan-task-index and --summary added as optional CLI flags to agent-lifecycle.js; corresponding task fields default to null and persist when provided
-- [ ] AC-0723: LESSONS.md @agent: tagging convention is documented; every existing L-XXXX entry receives a canonical tag; validateLessonsTags() returns zero untagged and zero invalid agent names
-- [ ] AC-0724: DM_AGENT.md §Per-Task Dispatch Ritual is updated with --plan-task-index capture, new step 1b context generation, and --summary on the done row
-- [ ] AC-0725: Coverage gate (>=80% statements) remains green; all new test files meet the per-file targets in spec §10
+- [x] AC-0720: tools/agent-context.js generate --story X --agent Y --task-id Z writes a markdown payload to stdout and exits 0 on the happy path
+- [x] AC-0721: Payload includes "Your task" plus (when content available) "Story acceptance criteria", "Plan excerpt", "Prior work on this story", "Relevant lessons for <Agent>" — empty sections are suppressed entirely
+- [x] AC-0722: --plan-task-index and --summary added as optional CLI flags to agent-lifecycle.js; corresponding task fields default to null and persist when provided
+- [x] AC-0723: LESSONS.md @agent: tagging convention is documented; every existing L-XXXX entry receives a canonical tag; validateLessonsTags() returns zero untagged and zero invalid agent names
+- [x] AC-0724: DM_AGENT.md §Per-Task Dispatch Ritual is updated with --plan-task-index capture, new step 1b context generation, and --summary on the done row
+- [x] AC-0725: Coverage gate (>=80% statements) remains green; all new test files meet the per-file targets in spec §10
 ```
