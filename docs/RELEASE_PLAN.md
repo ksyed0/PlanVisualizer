@@ -3469,9 +3469,9 @@ Acceptance Criteria:
 
 ```
 EPIC-0028: Agentic Orchestration Engine
-Description: Close the quality and isolation gaps between the superpowers subagent-driven-development pipeline and the PlanVisualizer DM_AGENT workflow. Four stories: pre-dispatch spec/plan orchestration (done), per-task lifecycle protocol (done), context curator (done), and Conductor dispatch protocol with per-task review gates (US-0185, in progress). US-0182 + US-0183 + US-0184 all shipped — US-0185 is the final story that closes the self-hosting loop.
+Description: Close the quality and isolation gaps between the superpowers subagent-driven-development pipeline and the PlanVisualizer DM_AGENT workflow. All four stories shipped: US-0182 pre-dispatch orchestration, US-0183 task lifecycle protocol, US-0184 context curator, US-0185 Conductor dispatch protocol with per-task review gates. EPIC-0028 complete as of Session 47 (2026-05-17).
 Release Target: v2.4.0
-Status: In Progress
+Status: Done
 Dependencies: EPIC-0014, EPIC-0026
 ```
 
@@ -3545,24 +3545,17 @@ Acceptance Criteria:
 US-0185 (EPIC-0028): As the Conductor, I want automatic per-task Lens review gates after each specialist agent dispatch completes, so that spec compliance and code quality are verified before the next task begins and the pipeline can self-regulate without human intervention between tasks.
 Priority: High (P1)
 Estimate: XL
-Status: In Progress
-Branch: claude/trusting-zhukovsky-cb5402
+Status: Done
+Branch: chore/us-0185-spec
+PR: #1048 (merged to develop, Session 47)
 Dependencies: US-0182 (EPIC-0028), US-0183 (EPIC-0028), US-0184 (EPIC-0028)
 Spec: docs/superpowers/specs/2026-05-15-us-0185-conductor-dispatch-protocol-design.md
 Plan: docs/superpowers/plans/2026-05-17-us-0185-conductor-dispatch-protocol.md
-Scope:
-- Automatic Lens spec-compliance dispatch after each task done/done_with_concerns transition
-- Spec compliance verdict (APPROVED | REQUEST_CHANGES) stored on the task record
-- On REQUEST_CHANGES: route Lens findings to Forge via needs-context, retry loop up to spec iteration cap (default 3)
-- Automatic code quality reviewer dispatch after spec compliance passes
-- Code quality findings stored; block next task until resolved or escalated
-- sdlc-status.json task schema extended with specReview and codeReview objects
-- DM_AGENT.md §Per-Task Dispatch Ritual updated with full review-gate loop
 Acceptance Criteria:
 
-- [ ] AC-0726: After each task reaches done/done_with_concerns, Conductor auto-dispatches Lens for spec compliance; verdict (APPROVED | REQUEST_CHANGES) is stored on the task record under specReview
-- [ ] AC-0727: On REQUEST_CHANGES, Conductor routes Lens findings back to Forge via needs-context transition and re-dispatches; loop retries until APPROVED or spec iteration cap exhausted, at which point task is escalated
-- [ ] AC-0728: After spec compliance passes (APPROVED), Conductor auto-dispatches a code quality reviewer; code quality verdict stored under codeReview on the task record; next task blocked until code quality resolves or is escalated
-- [ ] AC-0729: sdlc-status.json task schema gains specReview: { verdict, findings, iterations } and codeReview: { verdict, findings } fields; both default to null on task start
-- [ ] AC-0730: DM_AGENT.md §Per-Task Dispatch Ritual updated with the full review-gate loop using the Conductor persona name; existing three edits from US-0184 preserved
+- [x] AC-0726: After each task reaches done/done_with_concerns, Conductor auto-dispatches Lens for spec compliance; verdict stored on task.taskReview.specVerdict; stdout token contract (READY_FOR_SPEC → PROCEED_TO_QUALITY → TASK_CLEARED)
+- [x] AC-0727: On REQUEST_CHANGES, Conductor routes findings to Forge via forge-retry; loop retries until APPROVED or iterationCap.taskReview (default 2) exhausted; escalates on cap
+- [x] AC-0728: After spec compliance passes, Conductor auto-dispatches Lens code quality reviewer; verdict stored on task.taskReview.qualityVerdict; quality retry preserves spec verdict
+- [x] AC-0729: sdlc-status.json task schema extended with taskReview: { status, baseSha, headSha, specVerdict, specFindings, qualityVerdict, qualityFindings, forgeRetries, lastRetryTriggeredBy, startedAt, completedAt }; [sha:<commit>] convention added to agent-lifecycle.js done
+- [x] AC-0730: DM_AGENT.md §Per-Task Dispatch Ritual updated with 6 edits (BASE_SHA capture, steps 3b/3c/3d review gate loop, automated BLOCKED routing for MORE_CONTEXT/UPGRADE_MODEL); Conductor persona used throughout
 ```

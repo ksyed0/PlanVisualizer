@@ -4,6 +4,26 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
+## L-0066 — `npm audit` does not need `npm ci` — running it wastes a full install per PR
+
+@agent: Circuit
+
+**Rule:** `npm audit --audit-level=high` only reads `package-lock.json` and queries the npm registry; it does not need `node_modules` to be installed. Running `npm ci` (and the associated `cache: 'npm'` config) before `npm audit` in CI wastes the time and runner cost of a full dependency install. Remove both `actions/setup-node` cache config and `npm ci` from any CI job whose sole purpose is to run `npm audit`. Node.js itself must still be available (`actions/setup-node` without cache is fine), but the install step is unnecessary.
+_Identified during US-0186 CI optimisation (Session 47). Removed `npm ci` from the Dependency Audit job in `.github/workflows/ci.yml`._
+**Date:** 2026-05-17
+
+---
+
+## L-0067 — CI check lists in AGENTS.md and CLAUDE.md drift silently as new jobs are added
+
+@agent: Conductor
+
+**Rule:** When a new CI job is added (e.g. Secret Scanning, CodeQL), the human-readable CI check lists in `AGENTS.md` (§CI Pipeline table) and `CLAUDE.md` (branch-protection line) are rarely updated at the same time. This causes agents and humans to expect fewer checks than actually run — leading to confusion when a PR shows more status checks than documented. **Fix:** Whenever a CI job is added, removed, or renamed, update both `AGENTS.md §CI Pipeline` and `CLAUDE.md §Git Branching` in the same commit. Treat these as code, not documentation.
+_Discovered in Session 47: AGENTS.md listed 6 jobs; actual CI had 8 checks (Secret Scanning and CodeQL were missing). CLAUDE.md listed only 3 of 8 checks. Both corrected alongside the US-0186 CI optimisation._
+**Date:** 2026-05-17
+
+---
+
 ## L-0063 — `typeof x === 'number'` does not exclude `NaN` — use `Number.isFinite()` for integer guards
 
 @agent: Forge

@@ -4,6 +4,31 @@ Log every change that must propagate to other platforms, modules, or installatio
 
 ---
 
+## 2026-05-17 — Session 47 (US-0185 + US-0186)
+
+**AGENTS.md §CI Pipeline table updated (cross-platform)**
+
+- **What changed:** The "CI Pipeline" table was updated from 6 jobs to 8 checks. Added Secret Scanning (trufflehog) and CodeQL (Analyze JavaScript) rows. Added note that CodeQL is skipped on docs-only PRs (`*.md`, `docs/**`). Dependency Audit row updated to note "no install needed".
+- **Files:** `AGENTS.md` (§CI Pipeline), `CLAUDE.md` (§Git Branching Quick Reference — branch-protection line)
+- **Platforms/modules affected:** All AI agents reading `AGENTS.md` for CI guidance
+- **PR:** #1048
+
+**`.github/workflows/ci.yml` — CodeQL SAST job removed**
+
+- **What changed:** Removed `codeql` job (duplicate of codeql.yml). Removed `npm ci` from Dependency Audit job.
+- **Files:** `.github/workflows/ci.yml`, `.github/workflows/codeql.yml`
+- **Platforms/modules affected:** All PRs to main/develop
+- **PR:** #1046
+
+**`tools/agent-lifecycle.js done` — `[sha:<commit>]` token now required**
+
+- **What changed:** `markDone` now requires `--summary` to end with `[sha:<7-40 hex>]` or `[sha:none]`. Any agent dispatch workflow calling `agent-lifecycle.js done` must be updated.
+- **Files:** `tools/lib/agent-lifecycle-state.js`, `tools/agent-lifecycle.js`, `docs/agents/BE_DEV_AGENT.md`, `docs/agents/FE_DEV_AGENT.md`, `docs/agents/DM_AGENT.md`
+- **Platforms/modules affected:** Any agent calling `agent-lifecycle.js done` (Forge, any Conductor dispatch script)
+- **PR:** #1048
+
+---
+
 ## 2026-04-19 — docs/dashboard.html committed to repo (removed from .gitignore)
 
 **Files changed:** `.gitignore`, `docs/dashboard.html` (now tracked)
