@@ -123,7 +123,7 @@ function migratePlanVisualizerConfig(filePath) {
   // v2.3.0: orchestration block (US-0181 Pre-Dispatch Spec & Plan Orchestration)
   if (!cfg.orchestration || typeof cfg.orchestration !== 'object') {
     cfg.orchestration = {
-      iterationCap: { spec: 3, plan: 3 },
+      iterationCap: { spec: 3, plan: 3, taskReview: 2 },
       pendingApprovalsDir: 'docs/pending-approvals',
     };
     additions.push('added orchestration block');
@@ -139,6 +139,10 @@ function migratePlanVisualizerConfig(filePath) {
       if (typeof cfg.orchestration.iterationCap.plan !== 'number') {
         cfg.orchestration.iterationCap.plan = 3;
         additions.push('added orchestration.iterationCap.plan');
+      }
+      if (typeof cfg.orchestration.iterationCap.taskReview !== 'number') {
+        cfg.orchestration.iterationCap.taskReview = 2;
+        additions.push('added orchestration.iterationCap.taskReview');
       }
     }
     if (typeof cfg.orchestration.pendingApprovalsDir !== 'string') {
