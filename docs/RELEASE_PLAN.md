@@ -3464,3 +3464,98 @@ Acceptance Criteria:
 - [x] AC-0599: dispatch tag added to appendEventLog tone-map with a distinct evt-dispatch CSS class, making conductor dispatch events visually distinct from story-start events
 - [x] AC-0600: _dispatchCount persists across page loads (initialized from localStorage or computed from status.log)
 ```
+
+## Epic — EPIC-0028: Agentic Orchestration Engine
+
+```
+EPIC-0028: Agentic Orchestration Engine
+Description: Close the quality and isolation gaps between the superpowers subagent-driven-development pipeline and the PlanVisualizer DM_AGENT workflow. All four stories shipped: US-0182 pre-dispatch orchestration, US-0183 task lifecycle protocol, US-0184 context curator, US-0185 Conductor dispatch protocol with per-task review gates. EPIC-0028 complete as of Session 47 (2026-05-17).
+Release Target: v2.4.0
+Status: Done
+Dependencies: EPIC-0014, EPIC-0026
+```
+
+## User Stories — EPIC-0028: Agentic Orchestration Engine
+
+```
+US-0182 (EPIC-0028): As the Conductor, I want the pre-dispatch orchestration engine to drive every story through spec → plan → ready_for_dispatch with Compass/Keystone/Lens review loops and user approval gates, so that specialist agents only start implementation on a reviewed, approved plan.
+Priority: High (P1)
+Estimate: XL
+Status: Done
+Branch: feature/US-0181-pre-dispatch-orchestration
+Spec: docs/superpowers/specs/2026-05-11-us-0181-pre-dispatch-spec-plan-orchestration-design.md
+Plan: docs/superpowers/plans/2026-05-11-us-0181-pre-dispatch-spec-plan-orchestration.md
+Acceptance Criteria:
+
+- [x] AC-0700: spec-start/spec-await-ac/spec-await-final/plan-start/plan-await-approval CLI commands transition state correctly
+- [x] AC-0701: Iteration cap (default 3) auto-escalates to escalated state when exceeded
+- [x] AC-0702: Pending Approvals widget appears in Agentic Dashboard sidebar and updates via patchDOM without page reload
+- [x] AC-0703: Flag-file approval path (download → docs/pending-approvals/ → apply-pending) works end-to-end
+- [x] AC-0704: DM_AGENT verbal-cue gate prompts replace manual CLI instructions for users
+- [x] AC-0705: agent-start/agent-done in update-sdlc-status.js auto-regen the Agentic Dashboard
+```
+
+```
+US-0183 (EPIC-0028): As the Conductor, I want a per-task lifecycle state machine so each specialist agent's work within a story is tracked at task granularity with DONE/DONE_WITH_CONCERNS/NEEDS_CONTEXT/BLOCKED status transitions and smart BLOCKED routing, so that the orchestrator can detect stalls and escalate rather than silently failing.
+Priority: High (P1)
+Estimate: L
+Status: Done
+Branch: feature/US-0183-task-lifecycle-protocol
+PR: #1037 (merged to develop, Session 45)
+Dependencies: US-0182 (EPIC-0028)
+Additional scope from US-0182 test run:
+- plan-update CLI command (set planPath after plan-start)
+- specApprove() idempotency guard (double-approve should no-op, not error)
+- Verbal-cue fallback cleanup (DM_AGENT should run approve CLI on user's behalf, not show CLI commands)
+Acceptance Criteria:
+
+- [x] AC-0710: tools/agent-lifecycle.js exports start/status/done/blocked commands tracked in sdlc-status.json tasks[] object
+- [x] AC-0711: DONE/DONE_WITH_CONCERNS/NEEDS_CONTEXT/BLOCKED state transitions validated; illegal transitions exit 1 with informative message
+- [x] AC-0712: BLOCKED smart routing inspects reason text and emits one of: MORE_CONTEXT / UPGRADE_MODEL / SPLIT_TASK / ESCALATE_HUMAN
+- [x] AC-0713: After 2 failed BLOCKED resolution attempts, forced human escalation with progress.md BLOCKED entry
+- [x] AC-0714: DM_AGENT.md updated with per-task dispatch ritual referencing agent-lifecycle.js
+- [x] AC-0715: plan-update --story X --field planPath --value ... command added to agent-spec-plan.js
+- [x] AC-0716: specApprove() is idempotent (second call on already-approved spec returns 0, no state change)
+```
+
+```
+US-0184 (EPIC-0028): As the Conductor, I want a context curator CLI that assembles structured markdown context payloads (task, acceptance criteria, plan excerpt, prior-work summaries, agent-tagged lessons) for sub-agent dispatches, so that specialist agents start with exactly the context they need instead of burning tokens discovering it.
+Priority: High (P1)
+Estimate: L
+Status: Done
+Branch: claude/trusting-zhukovsky-cb5402
+PR: #1039 (merged to develop, Session 46)
+Dependencies: US-0182 (EPIC-0028), US-0183 (EPIC-0028)
+Spec: docs/superpowers/specs/2026-05-14-us-0184-context-curator-design.md
+Plan: docs/superpowers/plans/2026-05-14-us-0184-context-curator.md
+Bundled schema patches from US-0183:
+- --plan-task-index on agent-lifecycle.js start (optional, stored on task record)
+- --summary on agent-lifecycle.js done (optional, rendered in prior-work section)
+Acceptance Criteria:
+
+- [x] AC-0720: tools/agent-context.js generate --story X --agent Y --task-id Z writes a markdown payload to stdout and exits 0 on the happy path
+- [x] AC-0721: Payload includes "Your task" plus (when content available) "Story acceptance criteria", "Plan excerpt", "Prior work on this story", "Relevant lessons for <Agent>" — empty sections are suppressed entirely
+- [x] AC-0722: --plan-task-index and --summary added as optional CLI flags to agent-lifecycle.js; corresponding task fields default to null and persist when provided
+- [x] AC-0723: LESSONS.md @agent: tagging convention is documented; every existing L-XXXX entry receives a canonical tag; validateLessonsTags() returns zero untagged and zero invalid agent names
+- [x] AC-0724: DM_AGENT.md §Per-Task Dispatch Ritual is updated with --plan-task-index capture, new step 1b context generation, and --summary on the done row
+- [x] AC-0725: Coverage gate (>=80% statements) remains green; all new test files meet the per-file targets in spec §10
+```
+
+```
+US-0185 (EPIC-0028): As the Conductor, I want automatic per-task Lens review gates after each specialist agent dispatch completes, so that spec compliance and code quality are verified before the next task begins and the pipeline can self-regulate without human intervention between tasks.
+Priority: High (P1)
+Estimate: XL
+Status: Done
+Branch: chore/us-0185-spec
+PR: #1048 (merged to develop, Session 47)
+Dependencies: US-0182 (EPIC-0028), US-0183 (EPIC-0028), US-0184 (EPIC-0028)
+Spec: docs/superpowers/specs/2026-05-15-us-0185-conductor-dispatch-protocol-design.md
+Plan: docs/superpowers/plans/2026-05-17-us-0185-conductor-dispatch-protocol.md
+Acceptance Criteria:
+
+- [x] AC-0726: After each task reaches done/done_with_concerns, Conductor auto-dispatches Lens for spec compliance; verdict stored on task.taskReview.specVerdict; stdout token contract (READY_FOR_SPEC → PROCEED_TO_QUALITY → TASK_CLEARED)
+- [x] AC-0727: On REQUEST_CHANGES, Conductor routes findings to Forge via forge-retry; loop retries until APPROVED or iterationCap.taskReview (default 2) exhausted; escalates on cap
+- [x] AC-0728: After spec compliance passes, Conductor auto-dispatches Lens code quality reviewer; verdict stored on task.taskReview.qualityVerdict; quality retry preserves spec verdict
+- [x] AC-0729: sdlc-status.json task schema extended with taskReview: { status, baseSha, headSha, specVerdict, specFindings, qualityVerdict, qualityFindings, forgeRetries, lastRetryTriggeredBy, startedAt, completedAt }; [sha:<commit>] convention added to agent-lifecycle.js done
+- [x] AC-0730: DM_AGENT.md §Per-Task Dispatch Ritual updated with 6 edits (BASE_SHA capture, steps 3b/3c/3d review gate loop, automated BLOCKED routing for MORE_CONTEXT/UPGRADE_MODEL); Conductor persona used throughout
+```

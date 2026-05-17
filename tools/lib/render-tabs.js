@@ -1714,24 +1714,70 @@ function renderCostsTab(data, options = {}) {
         <tbody>${epicRows}</tbody>
       </table>
       <div class="mt-4">
-        <button ${csvDownload} class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm font-medium">Export Budget CSV</button>
+        <button ${csvDownload} class="chip info" style="cursor:pointer;font-size:12px;padding:6px 14px">Export Budget CSV</button>
       </div>
     </div>`;
   }
 
-  // ── Column view: stories table ──────────────────────────────────────────
+  // ── Pre-compute bugs per epic (needed inside epicBlocks) ───────────────
+  const _storyEpicMap = {};
+  data.stories.forEach((s) => {
+    _storyEpicMap[s.id] = s.epicId;
+  });
+  const _bugsByEpic = {};
+  data.bugs.forEach((b) => {
+    const ep = _storyEpicMap[normalizeStoryRef(b.relatedStory)] || '_ungrouped';
+    if (!_bugsByEpic[ep]) _bugsByEpic[ep] = [];
+    _bugsByEpic[ep].push(b);
+  });
+
+  // ── Column view: stories + bugs per epic ────────────────────────────────
   const epicBlocks = data.epics
     .map((epic, epicIdx) => {
       const accent = EPIC_ACCENT_COLORS[epicIdx % EPIC_ACCENT_COLORS.length];
       const epicStories = data.stories.filter((s) => s.epicId === epic.id);
-      const epicProjected = epicStories.reduce(
-        (s, st) => s + ((data.costs[st.id] && data.costs[st.id].projectedUsd) || 0),
-        0,
-      );
-      const epicAI = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).costUsd || 0), 0);
-      const epicIn = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).inputTokens || 0), 0);
-      const epicOut = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).outputTokens || 0), 0);
+      const epicBugs = _bugsByEpic[epic.id] || [];
+      const epicProjected =
+        epicStories.reduce((s, st) => s + ((data.costs[st.id] && data.costs[st.id].projectedUsd) || 0), 0) +
+        epicBugs.reduce(
+          (s, b) => s + ((data.costs._bugs && data.costs._bugs[b.id] && data.costs._bugs[b.id].projectedUsd) || 0),
+          0,
+        );
+      const epicAI =
+        epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).costUsd || 0), 0) +
+        epicBugs.reduce(
+          (s, b) => s + ((data.costs._bugs && data.costs._bugs[b.id] && data.costs._bugs[b.id].costUsd) || 0),
+          0,
+        );
+      const epicIn =
+        epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).inputTokens || 0), 0) +
+        epicBugs.reduce(
+          (s, b) =>
+            s +
+            (data.costs._bugs && data.costs._bugs[b.id] && !data.costs._bugs[b.id].isEstimated
+              ? data.costs._bugs[b.id].inputTokens || 0
+              : 0),
+          0,
+        );
+      const epicOut =
+        epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).outputTokens || 0), 0) +
+        epicBugs.reduce(
+          (s, b) =>
+            s +
+            (data.costs._bugs && data.costs._bugs[b.id] && !data.costs._bugs[b.id].isEstimated
+              ? data.costs._bugs[b.id].outputTokens || 0
+              : 0),
+          0,
+        );
       const ceid = `costs-ep-${jsEsc(epic.id)}`;
+      const storyCount = epicStories.length;
+      const bugCount = epicBugs.length;
+      const countLabel = [
+        storyCount ? `${storyCount} stor${storyCount !== 1 ? 'ies' : 'y'}` : '',
+        bugCount ? `${bugCount} bug${bugCount !== 1 ? 's' : ''}` : '',
+      ]
+        .filter(Boolean)
+        .join(' · ');
       const storyRows = epicStories
         .map((story) => {
           const projected = (data.costs[story.id] && data.costs[story.id].projectedUsd) || 0;
@@ -1749,6 +1795,44 @@ function renderCostsTab(data, options = {}) {
       </tr>`;
         })
         .join('');
+      const bugRows = epicBugs.length
+        ? `<tr><td colspan="7" class="px-3 py-1" style="background:var(--clr-surface);font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-mute)">Bug Fixes</td></tr>` +
+          epicBugs
+            .map((bug) => {
+              const bc = (data.costs._bugs && data.costs._bugs[bug.id]) || {
+                costUsd: 0,
+                inputTokens: 0,
+                outputTokens: 0,
+              };
+              return `<tr class="border-t border-slate-100 dark:border-slate-700" style="opacity:.85">
+        <td class="px-3 py-2 pl-8 font-mono text-xs text-slate-500 whitespace-nowrap">${esc(bug.id)}</td>
+        <td class="px-3 py-2 text-sm dark:text-slate-200">${esc(bug.title)}</td>
+        <td class="px-3 py-2 text-center">${badge(bug.severity)}</td>
+        <td class="px-3 py-2 text-center">${badge(bug.status)}</td>
+        <td class="px-3 py-2 text-right text-sm dark:text-slate-200">${bc.projectedUsd > 0 ? usd(bc.projectedUsd) : '—'}</td>
+        <td class="px-3 py-2 text-right text-sm text-teal-700 dark:text-teal-400">${usd(bc.costUsd || 0)}</td>
+        <td class="px-3 py-2 text-right text-xs text-slate-500 tokens-col">${bc.isEstimated ? '—' : `${fmtNum(bc.inputTokens || 0)} / ${fmtNum(bc.outputTokens || 0)}`}</td>
+      </tr>`;
+            })
+            .join('')
+        : '';
+      // Per-section totals for breakdown display
+      const _storiesProj = epicStories.reduce(
+        (s, st) => s + ((data.costs[st.id] && data.costs[st.id].projectedUsd) || 0),
+        0,
+      );
+      const _bugsProj = epicBugs.reduce(
+        (s, b) => s + ((data.costs._bugs && data.costs._bugs[b.id] && data.costs._bugs[b.id].projectedUsd) || 0),
+        0,
+      );
+      const _storiesAI = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).costUsd || 0), 0);
+      const _bugsAI = epicBugs.reduce(
+        (s, b) => s + ((data.costs._bugs && data.costs._bugs[b.id] && data.costs._bugs[b.id].costUsd) || 0),
+        0,
+      );
+      const breakdownNote = epicBugs.length
+        ? `<span style="font-size:10px;color:var(--text-mute);margin-left:6px">stories ${usd(_storiesProj)} · bugs ${usd(_bugsProj)}</span>`
+        : '';
       return `<tbody>
     <tr class="border-t-2 border-slate-300 dark:border-slate-600 cursor-pointer select-none anim-stagger" style="--i:${Math.min(epicIdx, 19)};background:${accent.bg}" onclick="toggleSection('${ceid}','${ceid}-arrow')">
       <td colspan="4" class="px-3 py-2" style="border-left:4px solid ${accent.border}">
@@ -1756,12 +1840,13 @@ function renderCostsTab(data, options = {}) {
         <span class="font-mono text-xs font-bold" style="color:${accent.border}">${epic.id}</span>
         <span class="text-sm font-semibold ml-2 text-slate-700 dark:text-slate-200">${esc(epic.title)}</span>
         <span class="ml-2">${badge(epic.status)}</span>
+        <span style="font-size:10px;color:var(--text-mute);margin-left:8px">${countLabel} · click to expand</span>
       </td>
-      <td class="px-3 py-2 text-right text-sm font-medium dark:text-slate-200">${usd(epicProjected)}</td>
+      <td class="px-3 py-2 text-right text-sm font-medium dark:text-slate-200">${usd(epicProjected)}${breakdownNote}</td>
       <td class="px-3 py-2 text-right text-sm font-medium text-teal-700 dark:text-teal-400">${usd(epicAI)}</td>
       <td class="px-3 py-2 text-right text-xs text-slate-500 tokens-col">${fmtNum(epicIn)} / ${fmtNum(epicOut)}</td>
     </tr>
-    </tbody><tbody id="${ceid}" class="hidden">${storyRows}</tbody>`;
+    </tbody><tbody id="${ceid}" class="hidden">${storyRows}${bugRows}</tbody>`;
     })
     .join('');
 
@@ -1864,7 +1949,8 @@ function renderCostsTab(data, options = {}) {
   const epicCardBlocks = data.epics
     .map((epic) => {
       const epicStories = data.stories.filter((s) => s.epicId === epic.id);
-      if (!epicStories.length) return '';
+      const epicBugs = _bugsByEpic[epic.id] || [];
+      if (!epicStories.length && !epicBugs.length) return '';
       const storyCards = epicStories
         .map((story) => {
           const ai = data.costs[story.id] || {};
@@ -1877,24 +1963,56 @@ function renderCostsTab(data, options = {}) {
         </div>
         <p class="text-sm font-medium dark:text-slate-200">${esc(story.title)}</p>
         <div class="cost-detail-grid text-xs mt-1">
-          <div>
-            <span class="text-slate-500 block">Projected</span>
-            <span class="font-mono dark:text-slate-200">${usd(projected)}</span>
-          </div>
-          <div>
-            <span class="text-slate-500 block">AI Actual</span>
-            <span class="font-mono text-teal-700 dark:text-teal-400">${usd(ai.costUsd || 0)}</span>
-          </div>
-          <div class="tokens-col col-span-2">
-            <span class="text-slate-500 block">Tokens (in / out)</span>
-            <span class="font-mono text-slate-500">${fmtNum(ai.inputTokens || 0)} / ${fmtNum(ai.outputTokens || 0)}</span>
-          </div>
+          <div><span class="text-slate-500 block">Projected</span><span class="font-mono dark:text-slate-200">${usd(projected)}</span></div>
+          <div><span class="text-slate-500 block">AI Actual</span><span class="font-mono text-teal-700 dark:text-teal-400">${usd(ai.costUsd || 0)}</span></div>
+          <div class="tokens-col col-span-2"><span class="text-slate-500 block">Tokens (in / out)</span><span class="font-mono text-slate-500">${fmtNum(ai.inputTokens || 0)} / ${fmtNum(ai.outputTokens || 0)}</span></div>
         </div>
       </div>`;
         })
         .join('');
-      const epicProjTotal = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).projectedUsd || 0), 0);
-      const epicAITotal = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).costUsd || 0), 0);
+      const bugCards = epicBugs.length
+        ? `<div style="grid-column:1/-1;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-mute);padding:4px 0 2px">Bug Fixes (${epicBugs.length})</div>` +
+          epicBugs
+            .map((bug) => {
+              const bc = (data.costs._bugs && data.costs._bugs[bug.id]) || {};
+              return `<div class="card-elev rounded-lg p-4 flex flex-col gap-2" style="opacity:.85;border-left:3px solid var(--warn)">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="font-mono text-xs text-slate-500 whitespace-nowrap">${esc(bug.id)}</span>
+          ${badge(bug.severity)}
+          ${badge(bug.status)}
+        </div>
+        <p class="text-sm font-medium dark:text-slate-200">${esc(bug.title)}</p>
+        <div class="cost-detail-grid text-xs mt-1">
+          <div><span class="text-slate-500 block">Projected</span><span class="font-mono dark:text-slate-200">${bc.projectedUsd ? usd(bc.projectedUsd) : '—'}</span></div>
+          <div><span class="text-slate-500 block">AI Actual</span><span class="font-mono text-teal-700 dark:text-teal-400">${usd(bc.costUsd || 0)}</span></div>
+          <div class="tokens-col col-span-2"><span class="text-slate-500 block">Tokens (in / out)</span><span class="font-mono text-slate-500">${bc.isEstimated ? '—' : `${fmtNum(bc.inputTokens || 0)} / ${fmtNum(bc.outputTokens || 0)}`}</span></div>
+        </div>
+      </div>`;
+            })
+            .join('')
+        : '';
+      const epicStoriesProj = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).projectedUsd || 0), 0);
+      const epicStoriesAI = epicStories.reduce((s, st) => s + ((data.costs[st.id] || {}).costUsd || 0), 0);
+      const epicBugsProj = epicBugs.reduce(
+        (s, b) => s + ((data.costs._bugs && data.costs._bugs[b.id] && data.costs._bugs[b.id].projectedUsd) || 0),
+        0,
+      );
+      const epicBugsAI = epicBugs.reduce(
+        (s, b) => s + ((data.costs._bugs && data.costs._bugs[b.id] && data.costs._bugs[b.id].costUsd) || 0),
+        0,
+      );
+      const epicProjTotal = epicStoriesProj + epicBugsProj;
+      const epicAITotal = epicStoriesAI + epicBugsAI;
+      const breakdownHtml =
+        epicBugsProj > 0
+          ? `<span style="font-size:10px;color:var(--text-mute)"> (stories ${usd(epicStoriesProj)} · bugs ${usd(epicBugsProj)})</span>`
+          : '';
+      const countLabel = [
+        epicStories.length ? `${epicStories.length} stor${epicStories.length !== 1 ? 'ies' : 'y'}` : '',
+        epicBugs.length ? `${epicBugs.length} bug${epicBugs.length !== 1 ? 's' : ''}` : '',
+      ]
+        .filter(Boolean)
+        .join(' · ');
       const cceid = `costs-card-ep-${jsEsc(epic.id)}`;
       const accent2 = EPIC_ACCENT_COLORS[data.epics.indexOf(epic) % EPIC_ACCENT_COLORS.length];
       return `<div class="mb-6 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden" style="border-left:4px solid ${accent2.border}">
@@ -1903,10 +2021,11 @@ function renderCostsTab(data, options = {}) {
         <span class="font-mono text-xs font-bold" style="color:${accent2.border}">${epic.id}</span>
         <span class="text-sm font-semibold text-slate-700 dark:text-slate-200">${esc(epic.title)}</span>
         ${badge(epic.status)}
-        <span class="ml-auto text-xs text-slate-500">Proj ${usd(epicProjTotal)} · AI ${usd(epicAITotal)}</span>
+        <span style="font-size:10px;color:var(--text-mute);margin-left:4px">${countLabel}</span>
+        <span class="ml-auto text-xs text-slate-500">Proj ${usd(epicProjTotal)} · AI ${usd(epicAITotal)}${breakdownHtml}</span>
       </div>
       <div id="${cceid}" class="p-3 hidden">
-        <div class="story-card-grid">${storyCards}</div>
+        <div class="story-card-grid">${storyCards}${bugCards}</div>
       </div>
     </div>`;
     })
@@ -1971,38 +2090,14 @@ function renderCostsTab(data, options = {}) {
     })
     .join('');
 
+  // Bug costs are now shown inside each epic expansion above.
+  // Keep a compact summary note only.
   const bugFixColumnSection = data.bugs.length
-    ? `
-    <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mt-4 mb-2 flex-shrink-0">Bug Fix Costs</h3>
-    <div class="scroll-table">
-    <table class="w-full text-left text-sm border-collapse">
-      <thead class="text-xs uppercase">
-        <tr>
-          <th class="px-3 py-2">Bug</th><th class="px-3 py-2">Title</th><th class="px-3 py-2 text-center">Severity</th>
-          <th class="px-3 py-2 text-center">Status</th><th class="px-3 py-2">Story</th>
-          <th class="px-3 py-2">Fix Branch</th><th class="px-3 py-2 text-right">Projected</th>
-          <th class="px-3 py-2 text-right">AI Cost</th>
-          <th class="px-3 py-2 text-right tokens-col">Tokens (in/out)</th>
-        </tr>
-      </thead>
-      ${bugColGroups}
-      <tfoot class="bg-slate-50 dark:bg-slate-700 font-semibold border-t-2 border-slate-300 dark:border-slate-600">
-        <tr>
-          <td colspan="6" class="px-3 py-2 text-right text-sm dark:text-slate-200">Totals</td>
-          <td class="px-3 py-2 text-right text-sm dark:text-slate-200">${usd(bugTotalProjected)}</td>
-          <td class="px-3 py-2 text-right text-sm text-teal-700 dark:text-teal-400">${usd(bugTotalAI)}</td>
-          <td class="px-3 py-2 text-right text-xs text-slate-500 tokens-col">${fmtNum(bugTotalIn)} / ${fmtNum(bugTotalOut)}</td>
-        </tr>
-      </tfoot>
-    </table>
-    </div>`
+    ? `<p style="font-size:11px;color:var(--text-mute);margin-top:8px">Bug fix costs are included in each epic's row totals above. Bug total: projected ${usd(bugTotalProjected)} · AI ${usd(bugTotalAI)}.</p>`
     : '';
 
-  const bugFixCardSection = data.bugs.length
-    ? `
-    <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-200 mt-6 mb-3">Bug Fix Costs</h3>
-    ${bugCardEpicBlocks}`
-    : '';
+  // Bug cards are now inline within each epic block above.
+  const bugFixCardSection = '';
 
   return `
   <div id="tab-costs" class="p-6 hidden" role="tabpanel" aria-labelledby="tab-btn-costs">
@@ -3127,7 +3222,8 @@ function renderStakeholderTab(data) {
     .join('');
 
   return `
-  <div id="tab-stakeholder" class="p-6 hidden tab-fill" role="tabpanel" aria-labelledby="tab-btn-stakeholder">
+  <div id="tab-stakeholder" class="p-6 hidden" role="tabpanel" aria-labelledby="tab-btn-stakeholder">
+    ${_renderStatusHero(data)}
     ${_renderFullStatusHero(data)}
     ${_renderDecisionWidgets(data)}
     <div class="sh-milestone-section">
@@ -3161,8 +3257,8 @@ function renderSettingsTab({ githubConfig, githubTokenSet, syncState, memoryConf
   const defaultLabels = esc((cfg.defaultLabels || ['planvisualizer']).join(', '));
 
   const tokenStatus = githubTokenSet
-    ? `<span style="color:var(--ok)">&#x2713; Set</span>`
-    : `<span style="color:var(--risk)">&#x2717; Not set &mdash; export GITHUB_TOKEN before running generate-plan</span>`;
+    ? `<span style="color:var(--ok)">&#x2713; Set — GitHub sync is authorised</span>`
+    : `<span style="color:var(--text-mute)">&#x2717; Not set &mdash; only needed if you want to sync bugs/stories to GitHub Issues. Set it with: <code style="font-size:11px;background:var(--clr-surface);padding:1px 4px;border-radius:3px">export GITHUB_TOKEN=&lt;your-token&gt;</code> in your shell before running <code style="font-size:11px;background:var(--clr-surface);padding:1px 4px;border-radius:3px">node tools/generate-plan.js</code></span>`;
 
   let syncSummary = '<span style="opacity:.5">&mdash;</span>';
   let errorBanner = '';
@@ -3181,7 +3277,12 @@ function renderSettingsTab({ githubConfig, githubTokenSet, syncState, memoryConf
 
   return `
   <div id="tab-settings" class="p-6 hidden" role="tabpanel" aria-labelledby="tab-btn-settings">
-    <h2 class="display-title mb-6">Settings</h2>
+    <h2 class="display-title mb-2">Settings</h2>
+    <p style="font-size:12px;color:var(--text-mute);margin-bottom:16px">
+      Changes are <strong>auto-saved to browser storage</strong> as you type.
+      To make them permanent, click <strong>Copy config JSON</strong> and paste the result into <code style="font-size:11px;background:var(--clr-surface);padding:1px 4px;border-radius:3px">plan-visualizer.config.json</code> at your project root.
+    </p>
+    <div id="settings-save-indicator" style="display:none;margin-bottom:12px;font-size:11px;color:var(--ok)">&#x2713; Saved to browser storage</div>
     ${errorBanner}
     <div class="card-elev rounded-lg p-6 mb-6" style="max-width:640px">
       <h3 class="font-semibold text-sm uppercase tracking-widest mb-4" style="opacity:.6">GitHub Issues Sync</h3>
@@ -3257,6 +3358,8 @@ function renderSettingsTab({ githubConfig, githubTokenSet, syncState, memoryConf
         labelMap:     _ghDefaults.labelMap || { Critical:'critical', High:'high', Medium:'medium', Low:'low' },
       };
       localStorage.setItem('pv-github-config', JSON.stringify(cfg));
+      var ind = document.getElementById('settings-save-indicator');
+      if (ind) { ind.style.display = 'block'; clearTimeout(ind._t); ind._t = setTimeout(function(){ ind.style.display='none'; }, 2000); }
     }
     function copyGithubConfig() {
       var stored = localStorage.getItem('pv-github-config');
@@ -3278,6 +3381,91 @@ function renderSettingsTab({ githubConfig, githubTokenSet, syncState, memoryConf
   </div>`;
 }
 
+function renderPendingApprovalsWidget(data) {
+  // Stories may arrive as an array (from parseReleasePlan) or an object
+  // (sdlc-status.json shape). Normalize to an array of {id, ...} records.
+  const raw = (data && data.stories) || [];
+  const storiesList = Array.isArray(raw) ? raw : Object.entries(raw).map(([id, st]) => ({ id, ...st }));
+  const pending = [];
+  for (const st of storiesList) {
+    const id = st.id;
+    if (!id || !st.specPhase) continue;
+    if (st.specPhase.state === 'awaiting_ac_approval') pending.push({ id, gate: 'ac', gateLabel: 'AC' });
+    if (st.specPhase.state === 'awaiting_spec_approval') pending.push({ id, gate: 'spec', gateLabel: 'Spec' });
+    if (st.planPhase && st.planPhase.state === 'awaiting_plan_approval')
+      pending.push({ id, gate: 'plan', gateLabel: 'Plan' });
+  }
+
+  if (pending.length === 0) {
+    return `<div class="card pv-pending-approvals" style="margin-bottom:16px">
+  <div class="card-head"><h3 style="text-transform:uppercase;letter-spacing:.08em;font-size:11px;font-weight:700">Pending Approvals</h3></div>
+  <div class="card-body" style="padding:12px;font-size:12px;color:var(--text-mute)">No pending approvals.</div>
+</div>`;
+  }
+
+  const rows = pending
+    .map(
+      (p) => `
+    <div class="pv-pending-row" style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <span class="font-mono" style="font-size:12px;color:var(--text)">${esc(p.id)}</span>
+      <span class="chip warn" style="font-size:9px">${p.gateLabel} review</span>
+      <button class="chip ok" style="cursor:pointer;font-size:10px"
+        data-action="approve" data-story="${esc(p.id)}" data-gate="${p.gate}"
+        onclick="pvDownloadFlag(this)" id="approve-${esc(p.id)}-${p.gate}">Approve</button>
+      <button class="chip risk" style="cursor:pointer;font-size:10px"
+        data-action="reject" data-story="${esc(p.id)}" data-gate="${p.gate}"
+        onclick="pvShowRejectForm(this)">Reject</button>
+      <textarea class="pv-reject-reason" data-reason-for="${esc(p.id)}-${p.gate}"
+        style="display:none;font-size:11px;padding:4px;border:1px solid var(--border);border-radius:4px;background:var(--clr-input-bg);color:var(--clr-input-text);flex:1"
+        placeholder="Rejection reason..." rows="2"></textarea>
+    </div>`,
+    )
+    .join('');
+
+  return `<div class="card pv-pending-approvals" style="margin-bottom:16px">
+  <div class="card-head"><h3 style="text-transform:uppercase;letter-spacing:.08em;font-size:11px;font-weight:700">Pending Approvals</h3></div>
+  <div class="card-body" style="padding:12px">${rows}</div>
+</div>
+<script>
+function pvDownloadFlag(btn) {
+  var story  = btn.getAttribute('data-story');
+  var gate   = btn.getAttribute('data-gate');
+  var action = btn.getAttribute('data-action');
+  var reason = '';
+  if (action === 'reject') {
+    var area = document.querySelector('[data-reason-for="' + story + '-' + gate + '"]');
+    if (area) reason = area.value || '';
+    if (!reason) { alert('Please enter a rejection reason.'); return; }
+  }
+  var payload = { story: story, gate: gate, action: action, timestamp: new Date().toISOString() };
+  if (reason) payload.reason = reason;
+  var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = action + '-' + story + '-' + gate + '.flag';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  alert('Flag downloaded. Move it to docs/pending-approvals/ and run: npm run plan');
+}
+function pvShowRejectForm(btn) {
+  var story = btn.getAttribute('data-story');
+  var gate  = btn.getAttribute('data-gate');
+  var area  = document.querySelector('[data-reason-for="' + story + '-' + gate + '"]');
+  if (area) {
+    if (area.style.display === 'none') {
+      area.style.display = '';
+      area.focus();
+      btn.textContent = 'Confirm Reject';
+      btn.setAttribute('onclick', 'pvDownloadFlag(this)');
+    }
+  }
+}
+</script>`;
+}
+
 module.exports = {
   renderHierarchyTab,
   renderKanbanTab,
@@ -3291,4 +3479,5 @@ module.exports = {
   renderRecentActivity,
   renderStakeholderTab,
   renderSettingsTab,
+  renderPendingApprovalsWidget,
 };

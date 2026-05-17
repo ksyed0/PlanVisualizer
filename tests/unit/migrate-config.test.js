@@ -54,7 +54,7 @@ describe('migrate-config: plan-visualizer.config.json', () => {
   test('idempotent: second run reports no changes when all fields present', () => {
     const dir = tmpDir();
     const file = path.join(dir, 'plan-visualizer.config.json');
-    // Fully-migrated config — all v2.2.0 fields already present
+    // Fully-migrated config — all v2.3.x fields already present
     fs.writeFileSync(
       file,
       JSON.stringify({
@@ -69,6 +69,10 @@ describe('migrate-config: plan-visualizer.config.json', () => {
           defaultLabels: ['planvisualizer'],
         },
         memory: { staleDays: 90, autoArchive: false },
+        orchestration: {
+          iterationCap: { spec: 3, plan: 3, taskReview: 2 },
+          pendingApprovalsDir: 'docs/pending-approvals',
+        },
       }),
     );
 
@@ -111,6 +115,10 @@ describe('migrate-config: plan-visualizer.config.json', () => {
           defaultLabels: ['pv', 'auto'],
         },
         memory: { staleDays: 90, autoArchive: false },
+        orchestration: {
+          iterationCap: { spec: 3, plan: 3, taskReview: 2 },
+          pendingApprovalsDir: 'docs/pending-approvals',
+        },
       }),
     );
 
@@ -137,6 +145,67 @@ describe('migrate-config: plan-visualizer.config.json', () => {
     fs.writeFileSync(file, '{ not valid json');
     const result = migratePlanVisualizerConfig(file);
     expect(result.changed).toBe(false);
+  });
+});
+
+describe('migrate-config: iterationCap.taskReview', () => {
+  test('migrate adds iterationCap.taskReview default 2 when missing', () => {
+    const dir = tmpDir();
+    const file = path.join(dir, 'plan-visualizer.config.json');
+    fs.writeFileSync(
+      file,
+      JSON.stringify({
+        docs: { lessons: 'docs/LESSONS.md' },
+        costs: { tshirtHours: { XS: 2, S: 4, M: 8, L: 16, XL: 32 } },
+        github: {
+          enabled: false,
+          repo: 'owner/repo',
+          syncBugs: true,
+          syncStories: false,
+          labelMap: { Critical: 'critical', High: 'high', Medium: 'medium', Low: 'low' },
+          defaultLabels: ['planvisualizer'],
+        },
+        memory: { staleDays: 90, autoArchive: false },
+        orchestration: {
+          iterationCap: { spec: 3, plan: 3 }, // no taskReview
+          pendingApprovalsDir: 'docs/pending-approvals',
+        },
+      }),
+    );
+
+    const result = migratePlanVisualizerConfig(file);
+    const after = JSON.parse(fs.readFileSync(file, 'utf8'));
+    expect(after.orchestration.iterationCap.taskReview).toBe(2);
+    expect(result.additions.join(' ')).toMatch(/iterationCap\.taskReview/);
+  });
+
+  test('migrate preserves existing iterationCap.taskReview', () => {
+    const dir = tmpDir();
+    const file = path.join(dir, 'plan-visualizer.config.json');
+    fs.writeFileSync(
+      file,
+      JSON.stringify({
+        docs: { lessons: 'docs/LESSONS.md' },
+        costs: { tshirtHours: { XS: 2, S: 4, M: 8, L: 16, XL: 32 } },
+        github: {
+          enabled: false,
+          repo: 'owner/repo',
+          syncBugs: true,
+          syncStories: false,
+          labelMap: { Critical: 'critical', High: 'high', Medium: 'medium', Low: 'low' },
+          defaultLabels: ['planvisualizer'],
+        },
+        memory: { staleDays: 90, autoArchive: false },
+        orchestration: {
+          iterationCap: { spec: 3, plan: 3, taskReview: 5 },
+          pendingApprovalsDir: 'docs/pending-approvals',
+        },
+      }),
+    );
+
+    migratePlanVisualizerConfig(file);
+    const after = JSON.parse(fs.readFileSync(file, 'utf8'));
+    expect(after.orchestration.iterationCap.taskReview).toBe(5);
   });
 });
 

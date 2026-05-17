@@ -13,6 +13,29 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 TARGET="${1:-$(pwd)}"
 
+# ── Bootstrap: when run via `bash <(curl ...)` REPO_ROOT resolves to /dev,
+#    which doesn't contain the source tree. Detect that case and clone the
+#    repo to a temp dir, then re-execute from the clone.
+if [ ! -d "${REPO_ROOT}/tools" ] || [ ! -d "${REPO_ROOT}/docs/agents" ]; then
+  echo "[install] Source tree not found at ${REPO_ROOT} — bootstrapping clone..."
+  BRANCH="${PLAN_VISUALIZER_BRANCH:-develop}"
+  CLONE_DIR="$(mktemp -d -t pv-install-XXXXXX)"
+  echo "[install] Cloning ksyed0/PlanVisualizer branch '$BRANCH' into $CLONE_DIR ..."
+  echo "[install] (this may take a few seconds — git output below)"
+  echo ""
+  # --progress forces git to show progress even when stderr isn't a TTY
+  if ! git clone --depth 1 --branch "$BRANCH" --progress https://github.com/ksyed0/PlanVisualizer.git "$CLONE_DIR"; then
+    echo ""
+    echo "[install] ERROR: git clone failed. Check network / branch name '$BRANCH'." >&2
+    exit 1
+  fi
+  echo ""
+  echo "[install] Bootstrap clone complete ($(du -sh "$CLONE_DIR" 2>/dev/null | cut -f1) total)."
+  echo "[install] Re-executing installer from clone with TARGET=$TARGET ..."
+  echo ""
+  exec bash "$CLONE_DIR/scripts/install.sh" "$TARGET"
+fi
+
 echo "[install] Installing PlanVisualizer into: $TARGET"
 
 # ── 0. Check superpowers plugin ─────────────────────────────────────────────
@@ -113,9 +136,15 @@ fi
 # ── 0.5. Create required directory structure ────────────────────────────────
 echo "[install] Creating directory structure ..."
 mkdir -p "${TARGET}/docs/coverage"
+mkdir -p "${TARGET}/docs/pending-approvals"
 mkdir -p "${TARGET}/.claude"
 mkdir -p "${TARGET}/scripts"
 mkdir -p "${TARGET}/orchestrator"
+
+# Add .gitkeep for pending-approvals (so the empty dir is tracked but flag files aren't)
+if [ ! -f "${TARGET}/docs/pending-approvals/.gitkeep" ]; then
+  touch "${TARGET}/docs/pending-approvals/.gitkeep"
+fi
 
 # ── 1. Copy tool files ──────────────────────────────────────────────────────
 echo "[install] Copying tools/ ..."
@@ -224,6 +253,14 @@ fi
 
 # ── 3. Merge npm scripts into target package.json ────────────────────────────
 TARGET_PKG="${TARGET}/package.json"
+if [ ! -f "$TARGET_PKG" ]; then
+  echo "[install] No package.json found in ${TARGET} — bootstrapping with 'npm init -y' ..."
+  (cd "$TARGET" && npm init -y >/dev/null 2>&1) || {
+    echo "[install] ERROR: 'npm init -y' failed. Please run it manually in ${TARGET}, then re-run install.sh." >&2
+    exit 1
+  }
+  echo "[install] package.json created."
+fi
 if [ -f "$TARGET_PKG" ]; then
   echo "[install] Merging npm scripts into ${TARGET_PKG} ..."
   # Use node to merge scripts — avoids jq dependency
@@ -242,12 +279,38 @@ pkg.scripts['plan:migrate-config:dry'] = pkg.scripts['plan:migrate-config:dry'] 
 pkg.scripts['memory:compact'] = pkg.scripts['memory:compact'] || 'node tools/memory.js compact';
 pkg.scripts['memory:archive'] = pkg.scripts['memory:archive'] || 'node tools/memory.js archive';
 pkg.scripts['memory:migrate'] = pkg.scripts['memory:migrate'] || 'node tools/memory.js migrate';
+pkg.scripts['memory:migrate-commit'] = pkg.scripts['memory:migrate-commit'] || 'node tools/memory.js migrate-commit';
+pkg.scripts['memory:suggest-model'] = pkg.scripts['memory:suggest-model'] || 'node tools/memory.js suggest-model';
 pkg.scripts['memory:validate'] = pkg.scripts['memory:validate'] || 'node tools/memory.js validate';
+// US-0181 orchestration scripts
+pkg.scripts['agent:approve'] = pkg.scripts['agent:approve'] || 'node tools/agent-spec-plan.js approve';
+pkg.scripts['agent:reject'] = pkg.scripts['agent:reject'] || 'node tools/agent-spec-plan.js reject';
+pkg.scripts['agent:pending'] = pkg.scripts['agent:pending'] || 'node tools/agent-spec-plan.js show-pending';
+pkg.scripts['agent:apply'] = pkg.scripts['agent:apply'] || 'node tools/agent-spec-plan.js apply-pending';
+pkg.scripts['agent:list'] = pkg.scripts['agent:list'] || 'node tools/agent-spec-plan.js list';
+pkg.scripts['agent:status'] = pkg.scripts['agent:status'] || 'node tools/agent-spec-plan.js status';
+// Dashboard live-reload during orchestration sessions
+pkg.scripts['dashboard:watch'] = pkg.scripts['dashboard:watch'] || 'node tools/watch-dashboard.js';
+
+// Required dev dependencies — these match PlanVisualizer's own package.json
+// so the same tool versions are used. Existing pins are preserved.
+pkg.devDependencies = pkg.devDependencies || {};
+const requiredDevDeps = {
+  '@eslint/js': '10.0.1',
+  'chart.js': '^4.5.1',
+  'eslint': '10.2.1',
+  'husky': '^9.1.7',
+  'jest': '^30.3.0',
+  'lint-staged': '^16.4.0',
+  'prettier': '^3.8.3',
+};
+for (const [name, version] of Object.entries(requiredDevDeps)) {
+  if (!pkg.devDependencies[name]) pkg.devDependencies[name] = version;
+}
+
 fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n', 'utf8');
-console.log('[install] Scripts added: plan:test, plan:test:coverage, plan:generate, plan:cleanup, plan:cleanup:dry, plan:migrate-config, plan:migrate-config:dry');
+console.log('[install] Scripts added: plan:* (5), memory:* (6), agent:* (6); devDependencies merged');
 JS
-else
-  echo "[install] Warning: no package.json found at ${TARGET} — skipping script merge."
 fi
 
 # ── 4. Create config file if absent ─────────────────────────────────────────
@@ -437,6 +500,9 @@ echo ""
 echo "[install] Done. Next steps:"
 echo "  1. Edit plan-visualizer.config.json with your project name and file paths."
 echo "  2. Edit agents.config.json to define your agent roster (if using the Agentic Dashboard)."
-echo "  3. Run: npm install   (to install jest dev dependency)"
+echo "  3. Run: npm install   (REQUIRED — installs chart.js, jest, eslint, prettier, etc.)"
 echo "  4. Run: npm run plan:test   (confirm all suites pass)"
 echo "  5. Run: node tools/generate-plan.js   (generates docs/plan-status.html)"
+echo ""
+echo "[install] Tip: chart.js is required at runtime by tools/lib/render-html.js."
+echo "[install]      If 'generate-plan' errors with ENOENT on chart.umd.min.js, run 'npm install'."

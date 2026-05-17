@@ -120,6 +120,37 @@ function migratePlanVisualizerConfig(filePath) {
     }
   }
 
+  // v2.3.0: orchestration block (US-0181 Pre-Dispatch Spec & Plan Orchestration)
+  if (!cfg.orchestration || typeof cfg.orchestration !== 'object') {
+    cfg.orchestration = {
+      iterationCap: { spec: 3, plan: 3, taskReview: 2 },
+      pendingApprovalsDir: 'docs/pending-approvals',
+    };
+    additions.push('added orchestration block');
+  } else {
+    if (!cfg.orchestration.iterationCap || typeof cfg.orchestration.iterationCap !== 'object') {
+      cfg.orchestration.iterationCap = { spec: 3, plan: 3 };
+      additions.push('added orchestration.iterationCap');
+    } else {
+      if (typeof cfg.orchestration.iterationCap.spec !== 'number') {
+        cfg.orchestration.iterationCap.spec = 3;
+        additions.push('added orchestration.iterationCap.spec');
+      }
+      if (typeof cfg.orchestration.iterationCap.plan !== 'number') {
+        cfg.orchestration.iterationCap.plan = 3;
+        additions.push('added orchestration.iterationCap.plan');
+      }
+      if (typeof cfg.orchestration.iterationCap.taskReview !== 'number') {
+        cfg.orchestration.iterationCap.taskReview = 2;
+        additions.push('added orchestration.iterationCap.taskReview');
+      }
+    }
+    if (typeof cfg.orchestration.pendingApprovalsDir !== 'string') {
+      cfg.orchestration.pendingApprovalsDir = 'docs/pending-approvals';
+      additions.push('added orchestration.pendingApprovalsDir');
+    }
+  }
+
   const changed = additions.length > 0;
   if (changed && !DRY_RUN) {
     fs.writeFileSync(filePath, JSON.stringify(cfg, null, 2) + '\n', 'utf8');

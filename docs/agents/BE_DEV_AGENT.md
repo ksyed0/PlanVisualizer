@@ -81,6 +81,32 @@ The DM agent will assign you specific stories and tasks from the release plan. Y
 - All dates must be ISO 8601 strings
 - Follow AGENTS.md git workflow: feature branches, atomic commits, tests pass before push
 
+## Commit SHA Reporting
+
+When you complete a task and call `agent-lifecycle.js done`, your `--summary` argument must end with a `[sha:<commit>]` token. This lets the Conductor capture the commit SHA your work produced without needing to know your worktree path.
+
+Format: `[sha:<7-40 hex chars>]` for tasks that produced a commit, or `[sha:none]` for tasks that produced no commit (e.g., review-only, design discussion, "verify and report").
+
+Examples:
+
+```bash
+# Normal case: task produced a commit
+node tools/agent-lifecycle.js done --task-id $TASK_ID \
+  --summary "Implemented parseTaskBlock() with 3 tests [sha:abc1234]"
+
+# Review-only or design-only task: no commit produced
+node tools/agent-lifecycle.js done --task-id $TASK_ID \
+  --summary "Reviewed design doc, no code changes [sha:none]"
+```
+
+If the `[sha:...]` token is missing, `agent-lifecycle.js done` exits 1 with a clear error message. You must retry the command with the corrected format.
+
+This convention applies to `done` and `done_with_concerns` only. It does not apply to `needs-context` or `blocked` (you are not reporting completion in those cases).
+
+On a retry following a Lens review `REQUEST_CHANGES`: you do NOT call `agent-lifecycle.js done` again (the task is already in `done` state). Instead, make your fix commits and report back to the Conductor in your response text, ending that response with the same `[sha:<new-commit>]` token. The Conductor parses the token from your response.
+
+---
+
 ## Model Selection
 
 | Task type                                                | Model  | Rationale                                          |

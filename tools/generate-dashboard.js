@@ -2714,6 +2714,49 @@ ${
   </div>`;
   })()}
 
+  <!-- PENDING APPROVALS sidebar widget — US-0181 (EPIC-0028) -->
+  <!-- Shell rendered once; patchDOM() updates #mc-pending-approvals-body on every 5s tick -->
+  <div id="mc-pending-approvals-panel" class="mc-sidebar-panel">
+    <div class="mc-sidebar-title">PENDING APPROVALS</div>
+    <div id="mc-pending-approvals-body" style="font-size:11px;color:var(--mc-muted);font-style:italic">No open gates.</div>
+  </div>
+  <script>
+  function pvDownloadFlag(btn) {
+    var story  = btn.getAttribute('data-story');
+    var gate   = btn.getAttribute('data-gate');
+    var action = btn.getAttribute('data-action');
+    var reason = '';
+    if (action === 'reject') {
+      var area = document.querySelector('[data-reason-for="' + story + '-' + gate + '"]');
+      if (area) reason = area.value || '';
+      if (!reason) { alert('Please enter a rejection reason.'); return; }
+    }
+    var payload = { story: story, gate: gate, action: action, timestamp: new Date().toISOString() };
+    if (reason) payload.reason = reason;
+    var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = action + '-' + story + '-' + gate + '.flag';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    alert('Flag downloaded. Move it to docs/pending-approvals/ and run: npm run agent:apply');
+  }
+  function pvShowRejectForm(btn) {
+    var story = btn.getAttribute('data-story');
+    var gate  = btn.getAttribute('data-gate');
+    var area  = document.querySelector('[data-reason-for="' + story + '-' + gate + '"]');
+    if (area && area.style.display === 'none') {
+      area.style.display = '';
+      area.focus();
+      btn.textContent = 'Confirm Reject';
+      btn.setAttribute('onclick', 'pvDownloadFlag(this)');
+    }
+  }
+  </script>
+
   <!-- EVENT LOG panel -->
   <div class="mc-sidebar-panel">
     <div class="mc-evtlog-title">LAST 10 EVENTS · AUTO-SCROLL</div>
@@ -3790,6 +3833,116 @@ function patchDOM(status) {
       _applyTailIfOn();
     }
   }
+
+  // --- US-0181: Pending Approvals sidebar panel —————————————————————————
+  patchPendingApprovals(status);
+
+  // --- US-0183: Per-task progress on active story cards
+  patchTaskList(status);
+}
+
+// US-0183: Show live task progress (state + description) below each active agent card.
+// Groups sdlc-status.tasks by story, finds the active story for each agent, renders inline.
+function patchTaskList(status) {
+  if (!status || !status.tasks) return;
+
+  // Group tasks by story
+  var tasksByStory = {};
+  Object.keys(status.tasks).forEach(function (id) {
+    var t = status.tasks[id];
+    if (!t || !t.story) return;
+    if (!tasksByStory[t.story]) tasksByStory[t.story] = [];
+    tasksByStory[t.story].push(t);
+  });
+
+  // For each active agent card, find their current story and render tasks
+  var agents = (status && status.agents) || {};
+  Object.keys(agents).forEach(function (name) {
+    var agent = agents[name];
+    if (!agent || agent.status !== 'active' || !agent.currentStory) return;
+    var story = agent.currentStory;
+    var tasks = tasksByStory[story];
+    if (!tasks || tasks.length === 0) return;
+
+    // Find task list container on the agent's card
+    var card = document.querySelector('[data-agent="' + name + '"]');
+    if (!card) return;
+
+    var containerId = 'mc-tasks-' + name.replace(/[^a-zA-Z0-9]/g, '-');
+    var container = document.getElementById(containerId);
+    if (!container) {
+      container = document.createElement('div');
+      container.id = containerId;
+      container.style.cssText = 'margin-top:6px;font-size:10px;padding:0 14px 8px;';
+      card.appendChild(container);
+    }
+
+    var html = tasks.slice(-5).map(function (t) {
+      var color =
+        t.state === 'done'
+          ? 'var(--ok)'
+          : t.state === 'blocked' || t.state === 'escalated'
+            ? 'var(--risk)'
+            : t.state === 'done_with_concerns'
+              ? 'var(--warn)'
+              : 'var(--text-mute)';
+      var label = t.state.replace(/_/g, ' ').toUpperCase();
+      var desc = t.description
+        ? t.description.slice(0, 55) + (t.description.length > 55 ? '…' : '')
+        : '';
+      return (
+        '<div style="display:flex;gap:6px;align-items:baseline;margin-bottom:2px">' +
+        '<span style="color:' +
+        color +
+        ';font-weight:700;min-width:80px">' +
+        label +
+        '</span>' +
+        '<span style="color:var(--text-dim)">' +
+        desc +
+        '</span>' +
+        '</div>'
+      );
+    }).join('');
+
+    container.innerHTML = html;
+  });
+}
+
+// Rebuild the Pending Approvals panel content from the latest sdlc-status.stories.
+// Called inside patchDOM() on every 5s refreshState() tick — no page reload.
+function patchPendingApprovals(status) {
+  var body = document.getElementById('mc-pending-approvals-body');
+  if (!body) return;
+  var stories = (status && status.stories) || {};
+  var pending = [];
+  Object.keys(stories).forEach(function(id) {
+    var st = stories[id];
+    if (!st || !st.specPhase) return;
+    if (st.specPhase.state === 'awaiting_ac_approval')
+      pending.push({ id: id, gate: 'ac', label: 'AC' });
+    if (st.specPhase.state === 'awaiting_spec_approval')
+      pending.push({ id: id, gate: 'spec', label: 'Spec' });
+    if (st.planPhase && st.planPhase.state === 'awaiting_plan_approval')
+      pending.push({ id: id, gate: 'plan', label: 'Plan' });
+  });
+  if (pending.length === 0) {
+    body.innerHTML = '<span style="font-size:11px;color:var(--mc-muted);font-style:italic">No open gates.</span>';
+    return;
+  }
+  body.innerHTML = pending.map(function(p) {
+    var eid = p.id.replace(/[^a-zA-Z0-9]/g, '-');
+    return '<div class="mc-pending-row" style="display:flex;flex-direction:column;gap:4px;padding:6px 0;border-bottom:1px solid var(--mc-border)">' +
+      '<div style="display:flex;align-items:center;gap:6px">' +
+        '<span style="font-family:var(--font-mono);font-size:11px;color:var(--text)">' + p.id + '</span>' +
+        '<span style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--warn)">' + p.label + ' REVIEW</span>' +
+      '</div>' +
+      '<div style="display:flex;gap:4px">' +
+        '<button data-action="approve" data-story="' + p.id + '" data-gate="' + p.gate + '" onclick="pvDownloadFlag(this)" style="cursor:pointer;font-size:10px;padding:2px 8px;border-radius:3px;border:1px solid var(--ok);background:transparent;color:var(--ok);font-weight:600">Approve</button>' +
+        '<button data-action="reject"  data-story="' + p.id + '" data-gate="' + p.gate + '" onclick="pvShowRejectForm(this)" style="cursor:pointer;font-size:10px;padding:2px 8px;border-radius:3px;border:1px solid var(--risk);background:transparent;color:var(--risk);font-weight:600">Reject</button>' +
+      '</div>' +
+      '<textarea data-reason-for="' + eid + '-' + p.gate + '" style="display:none;font-size:10px;padding:3px;border:1px solid var(--mc-border);border-radius:3px;background:var(--mc-bg);color:var(--text);width:100%" placeholder="Rejection reason..." rows="2"></textarea>' +
+    '</div>';
+  }).join('');
 }
 
 function _formatElapsed(ms) {

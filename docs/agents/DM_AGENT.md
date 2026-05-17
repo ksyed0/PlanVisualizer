@@ -112,6 +112,258 @@ Before spawning any sub-agent:
 
 **Fallback rule:** If no row in the target agent's table matches the task, default to `sonnet`. Record `--model-rationale "no table match"` so adherence can be measured over time.
 
+### Per-Task Dispatch Ritual
+
+For each task a specialist agent works within a story:
+
+1. **Record task start and capture the UUID:**
+
+   ```bash
+   BASE_SHA=$(git rev-parse HEAD)
+   TASK_ID=$(node tools/agent-lifecycle.js start \
+     --story <id> --agent <name> --model <tier> \
+     --task "<description>" \
+     --plan-task-index <N>)
+   ```
+
+   The UUID is printed to stdout only — capture it via `$()`.
+
+1b. **Generate context payload and inject into the dispatch message:**
+
+    ```bash
+    CONTEXT=$(node tools/agent-context.js generate \
+      --story <id> --agent <name> --task-id $TASK_ID)
+    ```
+
+    Include `$CONTEXT` verbatim at the top of the sub-agent dispatch message,
+    before any per-dispatch overrides.
+
+2. **Agent works the task** (inline or as a sub-subagent with `isolation: "worktree"`).
+
+3. **Agent reports status** — Conductor calls the matching command:
+
+   | Agent says                 | Conductor runs                                                                         |
+   | -------------------------- | -------------------------------------------------------------------------------------- |
+   | Task complete, no issues   | `node tools/agent-lifecycle.js done --task-id $TASK_ID --summary "<one-line handoff>"` |
+   | Complete but has a doubt   | `node tools/agent-lifecycle.js concerns --task-id $TASK_ID --note "<doubt>"`           |
+   | Needs specific information | `node tools/agent-lifecycle.js needs-context --task-id $TASK_ID --missing "<what>"`    |
+   | Stuck, cannot proceed      | `node tools/agent-lifecycle.js blocked --task-id $TASK_ID --reason "<why>"`            |
+
+3b. **Start review after `done` or `done_with_concerns`** (skip for `needs-context` or `blocked`):
+
+    ```bash
+    HEAD_SHA=$(node tools/agent-lifecycle.js status --task-id $TASK_ID | jq -r .headSha)
+
+    NEXT=$(node tools/agent-task-review.js start \
+      --task-id $TASK_ID --base-sha $BASE_SHA --head-sha $HEAD_SHA)
+
+    case "$NEXT" in
+      SKIP_REVIEW)      # no commit produced; move to next task
+        continue
+        ;;
+      READY_FOR_SPEC)   # proceed to step 3c
+        ;;
+    esac
+    ```
+
+3c. **Lens spec compliance review** — Conductor dispatches Lens with the task description, story acceptance criteria, plan task block, and the diff `git diff $BASE_SHA..$HEAD_SHA`. Lens reports `APPROVED` or `REQUEST_CHANGES` with findings.
+
+    ```bash
+    NEXT=$(node tools/agent-task-review.js spec-verdict \
+      --task-id $TASK_ID --verdict APPROVED)
+    # or, on REQUEST_CHANGES:
+    NEXT=$(node tools/agent-task-review.js spec-verdict \
+      --task-id $TASK_ID --verdict REQUEST_CHANGES --findings "$LENS_FINDINGS")
+
+    case "$NEXT" in
+      PROCEED_TO_QUALITY)
+        ;; # → step 3d
+      RETRY_FORGE)
+        # Redispatch Forge with findings spliced into the context payload.
+        # Forge produces a new commit; capture NEW_HEAD from Forge's response
+        # text which must end with [sha:<new-commit>] (same convention as --summary).
+        node tools/agent-task-review.js forge-retry \
+          --task-id $TASK_ID --triggered-by spec --new-head-sha "$NEW_HEAD"
+        # Loop back to step 3c with the new diff range.
+        ;;
+      ESCALATE)
+        # Write ## TASK REVIEW BLOCKED — spec compliance cap exhausted to progress.md
+        # Halt the story.
+        ;;
+    esac
+    ```
+
+3d. **Lens code quality review** — Conductor dispatches Lens with the diff and code-quality criteria. On `RETRY_FORGE` from this phase, `forge-retry --triggered-by quality` preserves the spec verdict and only re-runs quality on the next iteration.
+
+    ```bash
+    NEXT=$(node tools/agent-task-review.js quality-verdict \
+      --task-id $TASK_ID --verdict APPROVED)
+    # or, on REQUEST_CHANGES:
+    NEXT=$(node tools/agent-task-review.js quality-verdict \
+      --task-id $TASK_ID --verdict REQUEST_CHANGES --findings "$LENS_FINDINGS")
+
+    case "$NEXT" in
+      TASK_CLEARED)
+        ;; # → move to next task in the plan
+      RETRY_FORGE)
+        node tools/agent-task-review.js forge-retry \
+          --task-id $TASK_ID --triggered-by quality --new-head-sha "$NEW_HEAD"
+        # Loop back to step 3d (skips 3c — spec verdict preserved).
+        ;;
+      ESCALATE)
+        # Write ## TASK REVIEW BLOCKED — code quality cap exhausted to progress.md
+        # Halt the story.
+        ;;
+    esac
+    ```
+
+4. **On BLOCKED** — automated routing handles `MORE_CONTEXT` and `UPGRADE_MODEL`; `SPLIT_TASK` and `ESCALATE_HUMAN` halt and surface to the user.
+
+   ```bash
+   ROUTING=$(node tools/agent-lifecycle.js blocked --task-id $TASK_ID --reason "$REASON")
+
+   case "$ROUTING" in
+     MORE_CONTEXT)
+       CONTEXT=$(node tools/agent-context.js generate \
+         --story <id> --agent Forge --task-id $TASK_ID)
+       SPLICED_MESSAGE="$CONTEXT
+
+   ---
+
+   ### Previous attempt was blocked
+
+   Your previous attempt at this task was blocked. You reported:
+
+   > $REASON
+
+   Address that specifically. If you cannot proceed because of the same issue, mark the task \`needs-context\` rather than \`blocked\` again."
+
+       node tools/agent-lifecycle.js resolve --task-id $TASK_ID --action MORE_CONTEXT --note "$REASON"
+       # Redispatch Forge with $SPLICED_MESSAGE as the prompt prefix. Same model.
+       ;;
+
+     UPGRADE_MODEL)
+       CURRENT_MODEL=$(node tools/agent-lifecycle.js status --task-id $TASK_ID | jq -r .model)
+       case "$CURRENT_MODEL" in
+         haiku)  NEXT_TIER=sonnet ;;
+         sonnet) NEXT_TIER=opus ;;
+         opus)
+           echo "## TASK BLOCKED — at max model tier (opus)" >> progress.md
+           echo "Reason: $REASON" >> progress.md
+           exit 1
+           ;;
+       esac
+       node tools/agent-lifecycle.js resolve --task-id $TASK_ID --action UPGRADE_MODEL --note "previous tier: $CURRENT_MODEL"
+       # Redispatch Forge with $NEXT_TIER model.
+       ;;
+
+     SPLIT_TASK)
+       echo "## TASK BLOCKED — split required" >> progress.md
+       echo "Reason: $REASON" >> progress.md
+       echo "Task: $TASK_DESC" >> progress.md
+       # Surface to user with verbal cue.
+       exit 1
+       ;;
+
+     ESCALATE_HUMAN)
+       echo "## TASK BLOCKED — $REASON" >> progress.md
+       # Surface to user verbally.
+       exit 1
+       ;;
+   esac
+   ```
+
+5. **On any escalation** (`agent-lifecycle.js resolve` exit 1, or `agent-task-review.js spec-verdict`/`quality-verdict` stdout = `ESCALATE`): halt the story, write `## TASK BLOCKED — <reason>` or `## TASK REVIEW BLOCKED — <phase> cap exhausted` to `progress.md`, surface to user verbally.
+
+## Pre-Dispatch Spec & Plan Orchestration
+
+Before any specialist agent is dispatched to implement a story, the spec and plan phases must complete. A story enters dispatch only when `planPhase.state === "approved"`.
+
+This section specifies WHO to spawn and WHEN. For HOW to spawn (worktree isolation, model selection ritual, log via `agent-start`/`agent-done`), see §How to Spawn Sub-Agents.
+
+### Spec phase sequence
+
+DM_AGENT runs all CLI commands. The user only responds to verbal-cue prompts at gates.
+
+1. Run `node tools/agent-spec-plan.js spec-start --story <id>`
+2. Spawn Compass → ACs + scope (Compass uses superpowers:brainstorming skill if available, else manual dialogue per `PO_AGENT.md#Spec-Brainstorming-Protocol`).
+3. Run `spec-await-ac --story <id>`. Then pause and ask the user:
+   > "AC gate open for \<id\>. Compass has written acceptance criteria to \<specPath\>. Reply **approve** to continue, or **reject: \<reason\>** to send back."
+   > When user replies, DM_AGENT runs `approve --gate ac` or `reject --gate ac --reason "..."`. Dashboard auto-updates.
+4. If `uiSurface === true`: spawn Palette (design tokens), then Pixel (interactive mockup).
+5. Spawn Keystone for `## Technical Design` section.
+6. Spawn Lens for spec review. Lens emits structured findings (see §Lens findings format).
+7. Run `spec-review-result --verdict APPROVED|REQUEST_CHANGES --findings-file <path>`. On REQUEST_CHANGES, route findings by `@persona` primary tag and re-engage owner. Loop until APPROVED or iteration cap reached (default 3).
+8. Run `spec-await-final --story <id>`. Then pause and ask the user:
+   > "Spec gate open for \<id\>. Full spec written and Lens-approved at \<specPath\>. Reply **approve** to proceed to plan phase, or **reject: \<reason\>** to revise."
+   > When user replies, run `approve --gate spec` or `reject --gate spec`.
+9. Spec phase complete (`specPhase.state === "approved"`).
+
+### Plan phase sequence
+
+DM_AGENT runs all CLI commands. The user only responds to verbal-cue prompts at gates.
+
+1. Run `plan-start --story <id> --author Keystone`
+2. Spawn Keystone (plan author). Keystone uses superpowers:writing-plans skill if available, else manual protocol per `ARCHITECT_AGENT.md#Plan-Writing-Protocol`. Keystone runs the self-review checklist before handoff.
+3. If Keystone discovers a spec issue, run `plan-spec-gap --story <id> --reason "..."` → spec phase reopens.
+4. Spawn Lens for plan review.
+5. Run `plan-review-result --verdict ... --findings-file ...`. Loop on REQUEST_CHANGES (cap 3) routing findings.
+6. Run `plan-await-approval --story <id>`. Then pause and ask the user:
+   > "Plan gate open for \<id\>. Keystone has written the implementation plan to \<planPath\>, Lens-approved. Reply **approve** to begin dispatch, or **reject: \<reason\>** to revise."
+   > When user replies, run `approve --gate plan` or `reject --gate plan`.
+7. Story state = `ready_for_dispatch` (derived). US-0182+ takes over from here.
+
+### Tiered fallback
+
+- **With superpowers installed:** Compass invokes `superpowers:brainstorming` skill; Keystone invokes `superpowers:writing-plans` skill; Lens follows `requesting-code-review` patterns.
+- **Without superpowers:** agents follow manual protocols documented in their respective `_AGENT.md` files. The CLI tool and state machine work identically either way.
+
+### Lens findings format
+
+Lens emits findings as markdown bullets tagged with `@persona`:
+
+```
+## Findings
+- @compass: AC-007 missing edge case for empty list
+- @palette: contrast ratio of orange chip is 3.2:1 (needs >= 4.5:1)
+- @pixel: form field has no error state in mockup
+- @keystone: technical design omits retry policy for transient failures
+- @compass @keystone: cross-cutting concern requiring both ACs and design update
+```
+
+**Canonical persona tags (lowercase):** `@compass`, `@palette`, `@pixel`, `@keystone`, `@lens`, `@forge`, `@sentinel`, `@circuit`, `@plan-author` (synonym for current plan owner).
+
+**Routing rule:** First tag = primary owner (receives finding for fix). Additional tags = CC'd (informed via log entry, not directed to fix).
+
+### Iteration cap
+
+Default 3 per phase (configurable in `plan-visualizer.config.json` → `orchestration.iterationCap.{spec,plan}`). When `reviewIterations === reviewIterationCap`, the CLI auto-transitions state to `escalated`. DM_AGENT writes a `## ESCALATION` block to `progress.md` with current findings and stops orchestration. Human resolution required.
+
+### User approval gates
+
+Three gates per story: **AC**, **Spec**, **Plan**.
+
+**The user does not run CLI commands.** When a gate opens, DM_AGENT pauses and asks the user with a short verbal cue:
+
+```
+AC gate open for US-XXXX.
+Compass has written acceptance criteria to docs/superpowers/specs/<date>-us-xxxx-design.md.
+Reply 'approve' to continue, or 'reject: <reason>' to send back to Compass.
+```
+
+When the user replies, DM_AGENT runs the CLI command on their behalf:
+
+- **User says `approve`** → DM_AGENT runs `node tools/agent-spec-plan.js approve --story US-XXXX --gate ac`
+- **User says `reject: <reason>`** → DM_AGENT runs `node tools/agent-spec-plan.js reject --story US-XXXX --gate ac --reason "<reason>"`
+
+The Agentic Dashboard (`docs/dashboard.html`) sidebar will show the open gate automatically after the CLI command runs — no manual regen needed.
+
+**Dashboard path (for visual review):** If the user wants to review artifacts in the browser before approving, they can click Approve in the Pending Approvals sidebar → download the flag file → drop it in `docs/pending-approvals/` → DM_AGENT will pick it up on the next `apply-pending` call.
+
+**Protocol violation rule:** If DM_AGENT's reply to the user at a gate prompt shows CLI command text (e.g., `npm run agent:approve ...`), this is a protocol violation. The agent must run the command on the user's behalf after the user says `approve` or `reject: <reason>`. The verbal-cue prompt ends with the response options — no CLI instructions to the user.
+
+---
+
 ## Orchestration Playbook
 
 Read the release plan and project-specific timeline from `project.md` references to determine:

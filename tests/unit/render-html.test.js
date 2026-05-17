@@ -815,16 +815,17 @@ describe('renderHtml — multi-epic bug grouping sort (BUG-0093)', () => {
     expect(pos2).toBeLessThan(posU);
   });
 
-  it('renders costs tab bug section with multiple epic groups in ascending order', () => {
+  it('renders costs tab with bugs inline inside epic expansion rows', () => {
     const html = renderHtml(multiEpicData);
-    expect(html).toContain('bug-costs-ep-EPIC-0001');
-    expect(html).toContain('bug-costs-ep-EPIC-0002');
-    expect(html).toContain('bug-costs-ep--ungrouped');
-    const pos1 = html.indexOf('bug-costs-ep-EPIC-0001');
-    const pos2 = html.indexOf('bug-costs-ep-EPIC-0002');
-    const posU = html.indexOf('bug-costs-ep--ungrouped');
-    expect(pos1).toBeLessThan(pos2);
-    expect(pos2).toBeLessThan(posU);
+    // Bugs are now shown inside each epic's collapsed section (not a separate table)
+    // EPIC-0001 has US-0001 stories + BUG-0001 bugs, EPIC-0002 has US-0002 + BUG-0002
+    expect(html).toContain('costs-ep-EPIC-0001');
+    expect(html).toContain('costs-ep-EPIC-0002');
+    // Bug rows appear within the epic tbody blocks
+    expect(html).toContain('BUG-0001');
+    expect(html).toContain('BUG-0002');
+    // Bug section summary note is present
+    expect(html).toContain('Bug fix costs are included in each epic');
   });
 });
 

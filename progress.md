@@ -4,6 +4,88 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 47 — 2026-05-17 (US-0185 Conductor Dispatch Protocol + US-0186 CI Optimisation)
+
+### What Was Done
+
+- **US-0185 Brainstorm:** Full `superpowers:brainstorming` cycle (8 clarifying questions, 3 approaches, 7 design sections + honest critique rounds). Key design decisions: two sequential Lens dispatches (spec compliance → code quality); `[sha:<commit>]` convention for Forge `--summary` handoff; separate `orchestration.iterationCap.taskReview` default 2; `SPLIT_TASK` escalates to human (Keystone auto-split deferred); `retryTriggeredBy` tracking so quality retries skip spec re-review; stdout token contract (exit 0 + stdout token, never exit codes for flow control).
+- **Spec written:** `docs/superpowers/specs/2026-05-15-us-0185-conductor-dispatch-protocol-design.md` (597 lines, 13 sections; committed `8962e9b`).
+- **Plan written:** `docs/superpowers/plans/2026-05-17-us-0185-conductor-dispatch-protocol.md` — 14 TDD tasks (committed `c566cac`).
+- **US-0185 Implementation:** Executed all 14 plan tasks via `superpowers:subagent-driven-development` (1157 → 1233 tests):
+  - Tasks 1–2: `[sha:...]` parser in `markDone` + CLI rejection of missing/malformed summary
+  - Task 3: `orchestration.iterationCap.taskReview: 2` config + migration (fixed existing idempotency test fixtures that had the new key missing)
+  - Tasks 4–7: `tools/lib/agent-task-review-state.js` pure state machine (initTaskReview, setSpecVerdict, setQualityVerdict, forgeRetry)
+  - Tasks 8–10: `tools/agent-task-review.js` CLI wrapper with all 5 commands; stdout token contract
+  - Task 11: Integration flow test (5 scenarios)
+  - Task 12: DM_AGENT.md §Per-Task Dispatch Ritual — 6 edits (BASE_SHA capture, steps 3b/3c/3d, automated BLOCKED routing)
+  - Task 13: BE_DEV_AGENT.md + FE_DEV_AGENT.md §Commit SHA Reporting
+  - Task 14: RELEASE_PLAN.md status update
+- **PR #1048 (US-0185) — merged to develop** (rebased twice to pick up version bump and CI optimisation; all CI green).
+- **US-0186 CI Optimisation** — 3 targeted workflow changes (no brainstorm needed, designed during US-0185 session):
+  - Removed duplicate `CodeQL SAST` job from ci.yml (redundant with codeql.yml's `security-extended` scan)
+  - Added `paths-ignore: ['**/*.md', 'docs/**']` to codeql.yml — docs-only PRs skip the ~90s CodeQL scan
+  - Removed `npm ci` from Dependency Audit job (`npm audit` only reads package-lock.json)
+  - **PR #1046 — merged to develop** (~25s wall time savings on docs PRs)
+- **CLAUDE.md + AGENTS.md updated** — CI check list corrected from 3 (CLAUDE.md) / 6 (AGENTS.md) checks to the actual 8, with docs-only CodeQL skip exception documented.
+
+### Test Results
+
+- **1233 tests, 59 suites — all pass** (develop post US-0185 + US-0186 merge)
+- Statement coverage: 88.9% ✅ (gate: ≥80%)
+- CodeQL: ✅ no new alerts (confirmed on both PRs)
+
+### Errors or Blockers
+
+- PR #1048 needed two rebases: first to pick up the version bump from a prior PR; second to pick up the US-0186 CI optimisation. Both resolved cleanly.
+- Migration idempotency fixtures in `tests/unit/migrate-config.test.js` had `iterationCap: { spec: 3, plan: 3 }` without the new `taskReview` key — migration code correctly detected the missing key and set `changed: true`, breaking the "idempotent: second run reports no changes" test. Subagent caught and fixed by adding `taskReview: 2` to the fixture objects.
+
+### What's Next
+
+- Cut **v2.4.0 release** to main — EPIC-0028 is complete (US-0182 + US-0183 + US-0184 + US-0185 all shipped)
+- **Dashboard review-gate visualization** (US-0186 or later) — show `SPEC ✓ QUALITY ✓ / SPEC ⟳ (retry 1/2)` on Agentic Dashboard task cards (deferred from US-0185 scope)
+
+---
+
+## Session 46 — 2026-05-15 (US-0184 Context Curator)
+
+### What Was Done
+
+- **Branch cleanup:** Deleted 11 stale local branches (gone remotes from Sessions 44–45) and 8 remote branches; closed 3 stale open PRs (#1036 chore/us-0183-plan, #1003 and #1002 stale version bumps). Pruned `chore/version-bump-1a68c11` and `chore/version-bump-8210599` remote branches.
+- **US-0184 Brainstorm:** Ran full `superpowers:brainstorming` skill cycle — 5 clarifying questions, 3 approaches, 7 design sections, spec self-review (1 ambiguity fixed), user review gate. Design decisions: pre-formatted markdown to stdout; plan-doc-based file path discovery; `--summary` extension to `agent-lifecycle.js done`; `@agent:` tagging in LESSONS.md; Approach 2 (CLI + pure assembler). Key late addition: story ACs included in every payload.
+- **Conductor persona:** Established that DM_AGENT's persona name is **Conductor** (consistent with existing DM_AGENT.md body text and Lens findings tag convention `@conductor`). Updated canonical agent names list and all design docs accordingly.
+- **Spec written:** `docs/superpowers/specs/2026-05-14-us-0184-context-curator-design.md` (committed 0af6109).
+- **Plan written:** `docs/superpowers/plans/2026-05-14-us-0184-context-curator.md` — 12 TDD tasks (committed 5ae5828).
+- **US-0184 Implementation:** Executed all 12 plan tasks via `superpowers:subagent-driven-development` on branch `claude/trusting-zhukovsky-cb5402`:
+  - Task 1: `planTaskIndex` + `summary` fields in `agent-lifecycle-state.js` (with `Number.isFinite()` guard and `trim()` for whitespace-only summaries — both caught by code review)
+  - Task 2: `--plan-task-index` + `--summary` CLI flags wired through `agent-lifecycle.js`
+  - Tasks 3–7: `tools/lib/agent-context-assembler.js` — pure module with `parseStoryACs`, `parsePlanBlock`, `filterLessons`, `validateLessonsTags`, `assemble`. Fixes from review: `Number.isInteger()` guard on parsePlanBlock, `[...arr].sort()` non-mutating sort, explicit `=== null && === undefined` guards (ESLint `eqeqeq`)
+  - Task 8: `tools/agent-context.js` — CLI wrapper; `readFileOrNull` with try/catch avoids CodeQL TOCTOU
+  - Task 9: Integration test `tests/integration/agent-context-flow.test.js` — full start→done→start→generate flow
+  - Task 10: LESSONS.md `@agent:` migration — all 62 entries tagged with canonical agent names
+  - Task 11: DM_AGENT.md §Per-Task Dispatch Ritual updated (3 edits: `--plan-task-index` on start, step 1b context generation, `--summary` on done)
+  - Task 12: RELEASE_PLAN.md US-0184 entry + ID_REGISTRY.md AC-0726 bump
+- **PR #1039 opened, CI green (all 10 checks), squash-merged to develop** (rebased onto develop first to pull in Session 45's AI_COST_LOG commit).
+- **Session docs updated** (this entry).
+
+### Test Results
+
+- **1157 tests, 56 suites — all pass** (develop post US-0184 merge)
+- Statement coverage: 88.7% ✅ (gate: ≥80%)
+- CodeQL SAST: ✅ no new alerts
+
+### Errors or Blockers
+
+- PR initially failed merge check ("head branch not up to date") — caused by Session 45's `chore: sync AI_COST_LOG` commit on `origin/develop` after our branch forked. Fixed by `git rebase origin/develop`, tests verified (1157 pass), force-pushed, CI re-ran and passed.
+- Code review of Task 1 caught `NaN` slipping through `typeof x === 'number'` guard (L-0063) — fixed with `Number.isFinite()`.
+- Code review of Tasks 3–7 caught in-place `.sort()` mutation (L-0065) and `planTaskIndex != null` ESLint `eqeqeq` violation — both fixed inline before amending commit.
+
+### What's Next
+
+- **US-0185** — Full Conductor dispatch protocol upgrade (per-task Lens review gates, BLOCKED smart-routing loops). This is the final EPIC-0028 story and closes the self-hosting loop.
+- Cut v2.4.0 release to main once US-0185 ships (all 4 EPIC-0028 stories complete).
+
+---
+
 ## Session 44 — 2026-05-10/11 (US-0178 migrate-commit + US-0179 suggest-model + US-0180 agent model selection)
 
 ### What Was Done

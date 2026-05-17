@@ -29,6 +29,15 @@ const { fetchGitHubStatus } = require('./lib/fetch-github-status');
 const { compactMemory } = require('./lib/memory-index');
 const { archiveStaleMemory } = require('./lib/memory-archiver');
 
+function applyPendingApprovals() {
+  try {
+    const { dispatch } = require('./agent-spec-plan');
+    dispatch({ cmd: 'apply-pending' }, {});
+  } catch (e) {
+    console.warn(`[generate-plan] apply-pending skipped: ${e.message}`);
+  }
+}
+
 const TOKEN_RATES = { input: 3, output: 15 };
 
 const ROOT = path.join(__dirname, '..');
@@ -63,7 +72,17 @@ function loadConfig() {
   if (!fs.existsSync(cfgPath)) return DEFAULTS;
   try {
     const raw = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
-    const KNOWN_KEYS = ['project', 'docs', 'coverage', 'progress', 'costs', 'budget'];
+    const KNOWN_KEYS = [
+      'project',
+      'docs',
+      'coverage',
+      'progress',
+      'costs',
+      'budget',
+      'github',
+      'memory',
+      'orchestration',
+    ];
     Object.keys(raw).forEach((k) => {
       if (!KNOWN_KEYS.includes(k)) console.warn(`[generate-plan] Unknown config key: "${k}" — ignored`);
     });
@@ -178,6 +197,7 @@ function computeCompletion(stories, trends) {
 }
 
 async function main() {
+  applyPendingApprovals();
   const config = loadConfig();
   try {
     compactMemory({ root: ROOT });
@@ -193,6 +213,24 @@ async function main() {
   console.log('[generate-plan] Reading source files...');
 
   const { epics, stories, tasks } = parseReleasePlan(readFile(config.docs.releasePlan));
+
+  // US-0181: merge orchestration state (specPhase/planPhase) from sdlc-status.json
+  // into each story so the Pending Approvals widget can read it.
+  try {
+    const sdlcPath = path.join(ROOT, 'docs/sdlc-status.json');
+    if (fs.existsSync(sdlcPath)) {
+      const sdlc = JSON.parse(fs.readFileSync(sdlcPath, 'utf8'));
+      const sdlcStories = sdlc.stories || {};
+      for (const story of stories) {
+        const o = sdlcStories[story.id];
+        if (o && o.specPhase) story.specPhase = o.specPhase;
+        if (o && o.planPhase) story.planPhase = o.planPhase;
+        if (o && o.phaseHistory) story.phaseHistory = o.phaseHistory;
+      }
+    }
+  } catch (e) {
+    console.warn(`[generate-plan] could not merge orchestration state: ${e.message}`);
+  }
   const testCases = parseTestCases(readFile(config.docs.testCases));
   const bugs = parseBugs(readFile(config.docs.bugs));
   const costRows = parseCostLog(readFile(config.docs.costLog));

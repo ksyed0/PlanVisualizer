@@ -19,6 +19,27 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 TARGET="${1:-$(pwd)}"
 
+# ── Bootstrap: when run via `bash <(curl ...)` REPO_ROOT resolves to /dev.
+#    Detect that case and clone the repo to a temp dir, then re-execute.
+if [ ! -d "${REPO_ROOT}/tools" ] || [ ! -d "${REPO_ROOT}/docs/agents" ]; then
+  echo "[update] Source tree not found at ${REPO_ROOT} — bootstrapping clone..."
+  BRANCH="${PLAN_VISUALIZER_BRANCH:-develop}"
+  CLONE_DIR="$(mktemp -d -t pv-update-XXXXXX)"
+  echo "[update] Cloning ksyed0/PlanVisualizer branch '$BRANCH' into $CLONE_DIR ..."
+  echo "[update] (this may take a few seconds — git output below)"
+  echo ""
+  if ! git clone --depth 1 --branch "$BRANCH" --progress https://github.com/ksyed0/PlanVisualizer.git "$CLONE_DIR"; then
+    echo ""
+    echo "[update] ERROR: git clone failed. Check network / branch name '$BRANCH'." >&2
+    exit 1
+  fi
+  echo ""
+  echo "[update] Bootstrap clone complete ($(du -sh "$CLONE_DIR" 2>/dev/null | cut -f1) total)."
+  echo "[update] Re-executing updater from clone with TARGET=$TARGET ..."
+  echo ""
+  exec bash "$CLONE_DIR/scripts/update.sh" "$TARGET"
+fi
+
 echo "[update] Updating PlanVisualizer in: $TARGET"
 echo "[update] Source version: $(node -e "console.log(require('${REPO_ROOT}/package.json').version)" 2>/dev/null || echo 'unknown')"
 
@@ -114,6 +135,12 @@ else
     echo "[update] Skipping. Install with: npx claude-mem install"
     echo ""
   fi
+fi
+
+# ── 0.5. Ensure US-0181 orchestration directories exist ─────────────────────
+mkdir -p "${TARGET}/docs/pending-approvals"
+if [ ! -f "${TARGET}/docs/pending-approvals/.gitkeep" ]; then
+  touch "${TARGET}/docs/pending-approvals/.gitkeep"
 fi
 
 # ── 1. Re-copy tool files (non-destructive to user data) ────────────────────
@@ -263,17 +290,44 @@ const toAdd = {
   'memory:compact':          'node tools/memory.js compact',
   'memory:archive':          'node tools/memory.js archive',
   'memory:migrate':          'node tools/memory.js migrate',
+  'memory:migrate-commit':   'node tools/memory.js migrate-commit',
+  'memory:suggest-model':    'node tools/memory.js suggest-model',
   'memory:validate':         'node tools/memory.js validate',
+  'agent:approve':           'node tools/agent-spec-plan.js approve',
+  'agent:reject':            'node tools/agent-spec-plan.js reject',
+  'agent:pending':           'node tools/agent-spec-plan.js show-pending',
+  'agent:apply':             'node tools/agent-spec-plan.js apply-pending',
+  'agent:list':              'node tools/agent-spec-plan.js list',
+  'agent:status':            'node tools/agent-spec-plan.js status',
+  'dashboard:watch':         'node tools/watch-dashboard.js',
 };
 let added = 0;
 for (const [k, v] of Object.entries(toAdd)) {
   if (!pkg.scripts[k]) { pkg.scripts[k] = v; added++; }
 }
-if (added > 0) {
+
+// Required dev dependencies — match PlanVisualizer's own package.json.
+pkg.devDependencies = pkg.devDependencies || {};
+const requiredDevDeps = {
+  '@eslint/js': '10.0.1',
+  'chart.js': '^4.5.1',
+  'eslint': '10.2.1',
+  'husky': '^9.1.7',
+  'jest': '^30.3.0',
+  'lint-staged': '^16.4.0',
+  'prettier': '^3.8.3',
+};
+let depsAdded = 0;
+for (const [name, version] of Object.entries(requiredDevDeps)) {
+  if (!pkg.devDependencies[name]) { pkg.devDependencies[name] = version; depsAdded++; }
+}
+
+if (added > 0 || depsAdded > 0) {
   fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n', 'utf8');
-  console.log('[update] Added ' + added + ' new npm scripts to package.json');
+  if (added > 0) console.log('[update] Added ' + added + ' new npm scripts to package.json');
+  if (depsAdded > 0) console.log('[update] Added ' + depsAdded + ' missing devDependencies — run `npm install` to install them');
 } else {
-  console.log('[update] npm scripts already up to date — skipping.');
+  console.log('[update] npm scripts and devDependencies already up to date — skipping.');
 }
 JS
 fi
