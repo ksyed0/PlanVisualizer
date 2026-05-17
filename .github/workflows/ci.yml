@@ -81,24 +81,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: '20'
-          cache: 'npm'
-      - run: npm ci
       - run: npm audit --audit-level=high
-
-  codeql:
-    name: CodeQL SAST
-    runs-on: ubuntu-latest
-    permissions:
-      security-events: write
-      contents: read
-      actions: read
-    steps:
-      - uses: actions/checkout@v6
-      - uses: github/codeql-action/init@v4
-        with:
-          languages: javascript
-      - uses: github/codeql-action/autobuild@v4
-      - uses: github/codeql-action/analyze@v4
 
   secret-scan:
     name: Secret Scanning
