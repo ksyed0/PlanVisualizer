@@ -118,3 +118,30 @@ describe('DM_AGENT.md — US-0185 review gate + automated BLOCKED routing', () =
     expect(content).toMatch(/ESCALATE_HUMAN\)[\s\S]+progress\.md/);
   });
 });
+
+describe('Forge agent files — US-0185 §Commit SHA Reporting', () => {
+  const fs = require('fs');
+  const path = require('path');
+
+  for (const file of ['BE_DEV_AGENT.md', 'FE_DEV_AGENT.md']) {
+    describe(file, () => {
+      const content = fs.readFileSync(path.join(__dirname, '../../docs/agents/', file), 'utf8');
+
+      test('contains §Commit SHA Reporting section', () => {
+        expect(content).toMatch(/## Commit SHA Reporting/);
+      });
+
+      test('documents [sha:<commit>] token format', () => {
+        expect(content).toMatch(/\[sha:.*<commit>.*\]/);
+      });
+
+      test('documents [sha:none] for no-commit tasks', () => {
+        expect(content).toMatch(/\[sha:none\]/);
+      });
+
+      test('states that done and done_with_concerns require the token', () => {
+        expect(content).toMatch(/done.*and.*done_with_concerns/);
+      });
+    });
+  }
+});
