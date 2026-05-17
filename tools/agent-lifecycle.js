@@ -92,6 +92,7 @@ function regenDashboard(ctx) {
 function dispatch(opts, ctx = {}) {
   const sdlcPath = ctx.sdlcPath || SDLC_PATH;
   const stdout = ctx.stdout || ((s) => process.stdout.write(s + '\n'));
+  const stderr = ctx.stderr || ((s) => console.error(s));
   const cmd = opts.cmd;
   let data;
   try {
@@ -129,7 +130,18 @@ function dispatch(opts, ctx = {}) {
           console.error('--task-id required');
           return 1;
         }
-        LifeState.markDone(data, opts.taskId, opts.summary || undefined);
+        if (typeof opts.summary !== 'string' || opts.summary.trim().length === 0) {
+          stderr(
+            '[agent-lifecycle] done: --summary required ending with [sha:<commit>] token; see BE_DEV_AGENT.md §Commit SHA Reporting',
+          );
+          return 1;
+        }
+        try {
+          LifeState.markDone(data, opts.taskId, opts.summary);
+        } catch (e) {
+          stderr(`[agent-lifecycle] ${e.message}`);
+          return 1;
+        }
         writeSdlc(sdlcPath, data);
         regenDashboard(ctx);
         return 0;

@@ -35,6 +35,7 @@ function initTask(opts) {
     planTaskIndex:
       typeof opts.planTaskIndex === 'number' && Number.isFinite(opts.planTaskIndex) ? opts.planTaskIndex : null,
     summary: null,
+    headSha: null,
   };
 }
 
@@ -56,14 +57,28 @@ function _requireInProgress(task, operation) {
   }
 }
 
+const SHA_TOKEN_RE = /\s*\[sha:([0-9a-f]{7,40}|none)\]$/i;
+
 function markDone(data, taskId, summary) {
   const t = _requireTask(data, taskId);
   _requireInProgress(t, 'done');
+  if (typeof summary !== 'string' || summary.trim().length === 0) {
+    throw new Error(
+      'done: --summary required ending with [sha:<commit>] token; see BE_DEV_AGENT.md §Commit SHA Reporting',
+    );
+  }
+  const match = summary.match(SHA_TOKEN_RE);
+  if (!match) {
+    throw new Error(
+      'done: --summary must end with [sha:<7-40 hex chars>] or [sha:none] token; see BE_DEV_AGENT.md §Commit SHA Reporting',
+    );
+  }
+  const sha = match[1].toLowerCase();
+  const cleanSummary = summary.slice(0, match.index).trimEnd();
   t.state = 'done';
   t.completedAt = nowISO();
-  if (typeof summary === 'string' && summary.trim().length > 0) {
-    t.summary = summary;
-  }
+  t.summary = cleanSummary;
+  t.headSha = sha;
 }
 
 function markConcerns(data, taskId, note) {

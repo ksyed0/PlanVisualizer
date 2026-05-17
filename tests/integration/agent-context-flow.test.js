@@ -35,7 +35,7 @@ test('start → done(summary) → start → generate yields prior-work containin
   const data1 = JSON.parse(fs.readFileSync(sdlcPath, 'utf8'));
   const task1Id = Object.keys(data1.tasks)[0];
   Lifecycle.dispatch(
-    { cmd: 'done', taskId: task1Id, summary: 'Implemented first thing' },
+    { cmd: 'done', taskId: task1Id, summary: 'Implemented first thing [sha:abc1234]' },
     { sdlcPath, stdout: () => {}, skipRegen: true },
   );
 

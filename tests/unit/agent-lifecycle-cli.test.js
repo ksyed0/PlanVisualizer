@@ -86,7 +86,7 @@ describe('dispatch — start + terminal commands', () => {
       { sdlcPath, skipRegen: true, stdout: (s) => stdout.push(s) },
     );
     const taskId = stdout[0];
-    expect(dispatch({ cmd: 'done', taskId }, { sdlcPath, skipRegen: true })).toBe(0);
+    expect(dispatch({ cmd: 'done', taskId, summary: 'done [sha:abc1234]' }, { sdlcPath, skipRegen: true })).toBe(0);
     const data = JSON.parse(fs.readFileSync(sdlcPath, 'utf8'));
     expect(data.tasks[taskId].state).toBe('done');
   });
@@ -237,11 +237,76 @@ describe('agent-lifecycle CLI — US-0184 flags', () => {
     const taskId = Object.keys(data1.tasks)[0];
 
     const rc = dispatch(
-      { cmd: 'done', taskId, summary: 'shipped foo' },
+      { cmd: 'done', taskId, summary: 'shipped foo [sha:abc1234]' },
       { sdlcPath, stdout: () => {}, skipRegen: true },
     );
     expect(rc).toBe(0);
     const data2 = JSON.parse(fs.readFileSync(sdlcPath, 'utf8'));
     expect(data2.tasks[taskId].summary).toBe('shipped foo');
+  });
+});
+
+describe('agent-lifecycle CLI — US-0185 [sha:...] convention', () => {
+  const { dispatch } = require('../../tools/agent-lifecycle');
+  const fs = require('fs');
+  const path = require('path');
+  const os = require('os');
+
+  function tmpSdlcWithTask() {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'agent-lifecycle-us0185-'));
+    const sdlcPath = path.join(dir, 'sdlc-status.json');
+    fs.writeFileSync(sdlcPath, JSON.stringify({ tasks: {} }));
+    const out = [];
+    dispatch(
+      { cmd: 'start', story: 'US-0185', agent: 'Forge', task: 'do x' },
+      { sdlcPath, stdout: (s) => out.push(s), skipRegen: true },
+    );
+    const taskId = out[0];
+    return { sdlcPath, taskId };
+  }
+
+  test('done with valid [sha:abc1234] summary writes headSha and strips token', () => {
+    const { sdlcPath, taskId } = tmpSdlcWithTask();
+    const rc = dispatch(
+      { cmd: 'done', taskId, summary: 'Implemented parseFoo [sha:abc1234]' },
+      { sdlcPath, stdout: () => {}, skipRegen: true },
+    );
+    expect(rc).toBe(0);
+    const data = JSON.parse(fs.readFileSync(sdlcPath, 'utf8'));
+    expect(data.tasks[taskId].headSha).toBe('abc1234');
+    expect(data.tasks[taskId].summary).toBe('Implemented parseFoo');
+  });
+
+  test('done with [sha:none] writes headSha = "none"', () => {
+    const { sdlcPath, taskId } = tmpSdlcWithTask();
+    const rc = dispatch(
+      { cmd: 'done', taskId, summary: 'Reviewed only [sha:none]' },
+      { sdlcPath, stdout: () => {}, skipRegen: true },
+    );
+    expect(rc).toBe(0);
+    const data = JSON.parse(fs.readFileSync(sdlcPath, 'utf8'));
+    expect(data.tasks[taskId].headSha).toBe('none');
+  });
+
+  test('done without --summary exits 1 with helpful stderr', () => {
+    const { sdlcPath, taskId } = tmpSdlcWithTask();
+    const errs = [];
+    const rc = dispatch(
+      { cmd: 'done', taskId },
+      { sdlcPath, stdout: () => {}, stderr: (s) => errs.push(s), skipRegen: true },
+    );
+    expect(rc).toBe(1);
+    expect(errs.join(' ')).toMatch(/--summary required.*\[sha:/);
+  });
+
+  test('done with summary lacking [sha:...] token exits 1', () => {
+    const { sdlcPath, taskId } = tmpSdlcWithTask();
+    const errs = [];
+    const rc = dispatch(
+      { cmd: 'done', taskId, summary: 'No sha token here' },
+      { sdlcPath, stdout: () => {}, stderr: (s) => errs.push(s), skipRegen: true },
+    );
+    expect(rc).toBe(1);
+    expect(errs.join(' ')).toMatch(/\[sha:.*\] token/);
   });
 });
