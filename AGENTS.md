@@ -398,18 +398,20 @@ In the agentic SDLC, **Conductor (Delivery Manager)** owns the PR lifecycle. Ind
 - **REQUEST CHANGES** — Missing error states, hardcoded values, test coverage gaps, minor architecture deviations, naming issues, accessibility gaps, scope mismatches. Dev agent can fix.
 - **APPROVE** — All blockers resolved, no majors remain, tests pass, architecture followed, design system compliant.
 
-**CI Pipeline (6 Jobs):**
+**CI Pipeline (8 Checks):**
 
 All PRs to `main` and `develop` must pass these checks before merge:
 
-| Job             | Command                                       | Purpose                                      |
-| --------------- | --------------------------------------------- | -------------------------------------------- |
-| Lint            | `npx eslint .`                                | Code quality (tools/, orchestrator/, tests/) |
-| Test & Coverage | `npm run test:coverage`                       | Unit tests + 80% coverage threshold          |
-| Build           | `npm run build`                               | Full pipeline (avatars → plan → dashboard)   |
-| Orchestrator    | `node orchestrator/spawn.js --list-platforms` | Smoke test spawn abstraction + adapters      |
-| Format          | `npm run format:check`                        | Prettier formatting consistency              |
-| Audit           | `npm audit --audit-level=high`                | Dependency vulnerability scan                |
+| Check                   | Command / Tool                                | Purpose                                                                 |
+| ----------------------- | --------------------------------------------- | ----------------------------------------------------------------------- |
+| Lint                    | `npx eslint .`                                | Code quality (tools/, orchestrator/, tests/)                            |
+| Prettier Format Check   | `npm run format:check`                        | Prettier formatting consistency                                         |
+| Test & Coverage Gate    | `npm run test:coverage`                       | Unit tests + 80% coverage threshold                                     |
+| Build                   | `npm run build`                               | Full pipeline (avatars → plan → dashboard)                              |
+| Orchestrator Validation | `node orchestrator/spawn.js --list-platforms` | Smoke test spawn abstraction + adapters                                 |
+| Dependency Audit        | `npm audit --audit-level=high`                | Dependency vulnerability scan (no install needed)                       |
+| Secret Scanning         | `trufflehog` (full history)                   | Detect leaked credentials or secrets                                    |
+| Analyze JavaScript      | CodeQL `security-extended` queries            | Static security analysis — skipped on docs-only PRs (`*.md`, `docs/**`) |
 
 > **Rule:** If it isn’t in version control, it doesn’t exist. If it isn’t on a branch, it isn’t safe.
 

@@ -44,7 +44,7 @@ release/X.Y.Z                 → merge into main via PR
 hotfix/BUG-XXXX-short-name    → branch from main, merge into main + develop
 ```
 
-Both `main` and `develop` are **protected** — CI (Lint + Test & Coverage Gate + Dependency Audit) must pass.
+Both `main` and `develop` are **protected** — all 8 CI checks must pass: Lint, Prettier Format Check, Test & Coverage Gate, Build, Orchestrator Validation, Dependency Audit, Secret Scanning, and CodeQL (Analyze JavaScript). **Exception:** CodeQL is skipped on docs-only PRs (changes limited to `*.md` / `docs/**`).
 
 ---
 
