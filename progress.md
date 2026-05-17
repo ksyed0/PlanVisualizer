@@ -4,6 +4,48 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 47 — 2026-05-17 (US-0185 Conductor Dispatch Protocol + US-0186 CI Optimisation)
+
+### What Was Done
+
+- **US-0185 Brainstorm:** Full `superpowers:brainstorming` cycle (8 clarifying questions, 3 approaches, 7 design sections + honest critique rounds). Key design decisions: two sequential Lens dispatches (spec compliance → code quality); `[sha:<commit>]` convention for Forge `--summary` handoff; separate `orchestration.iterationCap.taskReview` default 2; `SPLIT_TASK` escalates to human (Keystone auto-split deferred); `retryTriggeredBy` tracking so quality retries skip spec re-review; stdout token contract (exit 0 + stdout token, never exit codes for flow control).
+- **Spec written:** `docs/superpowers/specs/2026-05-15-us-0185-conductor-dispatch-protocol-design.md` (597 lines, 13 sections; committed `8962e9b`).
+- **Plan written:** `docs/superpowers/plans/2026-05-17-us-0185-conductor-dispatch-protocol.md` — 14 TDD tasks (committed `c566cac`).
+- **US-0185 Implementation:** Executed all 14 plan tasks via `superpowers:subagent-driven-development` (1157 → 1233 tests):
+  - Tasks 1–2: `[sha:...]` parser in `markDone` + CLI rejection of missing/malformed summary
+  - Task 3: `orchestration.iterationCap.taskReview: 2` config + migration (fixed existing idempotency test fixtures that had the new key missing)
+  - Tasks 4–7: `tools/lib/agent-task-review-state.js` pure state machine (initTaskReview, setSpecVerdict, setQualityVerdict, forgeRetry)
+  - Tasks 8–10: `tools/agent-task-review.js` CLI wrapper with all 5 commands; stdout token contract
+  - Task 11: Integration flow test (5 scenarios)
+  - Task 12: DM_AGENT.md §Per-Task Dispatch Ritual — 6 edits (BASE_SHA capture, steps 3b/3c/3d, automated BLOCKED routing)
+  - Task 13: BE_DEV_AGENT.md + FE_DEV_AGENT.md §Commit SHA Reporting
+  - Task 14: RELEASE_PLAN.md status update
+- **PR #1048 (US-0185) — merged to develop** (rebased twice to pick up version bump and CI optimisation; all CI green).
+- **US-0186 CI Optimisation** — 3 targeted workflow changes (no brainstorm needed, designed during US-0185 session):
+  - Removed duplicate `CodeQL SAST` job from ci.yml (redundant with codeql.yml's `security-extended` scan)
+  - Added `paths-ignore: ['**/*.md', 'docs/**']` to codeql.yml — docs-only PRs skip the ~90s CodeQL scan
+  - Removed `npm ci` from Dependency Audit job (`npm audit` only reads package-lock.json)
+  - **PR #1046 — merged to develop** (~25s wall time savings on docs PRs)
+- **CLAUDE.md + AGENTS.md updated** — CI check list corrected from 3 (CLAUDE.md) / 6 (AGENTS.md) checks to the actual 8, with docs-only CodeQL skip exception documented.
+
+### Test Results
+
+- **1233 tests, 59 suites — all pass** (develop post US-0185 + US-0186 merge)
+- Statement coverage: 88.9% ✅ (gate: ≥80%)
+- CodeQL: ✅ no new alerts (confirmed on both PRs)
+
+### Errors or Blockers
+
+- PR #1048 needed two rebases: first to pick up the version bump from a prior PR; second to pick up the US-0186 CI optimisation. Both resolved cleanly.
+- Migration idempotency fixtures in `tests/unit/migrate-config.test.js` had `iterationCap: { spec: 3, plan: 3 }` without the new `taskReview` key — migration code correctly detected the missing key and set `changed: true`, breaking the "idempotent: second run reports no changes" test. Subagent caught and fixed by adding `taskReview: 2` to the fixture objects.
+
+### What's Next
+
+- Cut **v2.4.0 release** to main — EPIC-0028 is complete (US-0182 + US-0183 + US-0184 + US-0185 all shipped)
+- **Dashboard review-gate visualization** (US-0186 or later) — show `SPEC ✓ QUALITY ✓ / SPEC ⟳ (retry 1/2)` on Agentic Dashboard task cards (deferred from US-0185 scope)
+
+---
+
 ## Session 46 — 2026-05-15 (US-0184 Context Curator)
 
 ### What Was Done
