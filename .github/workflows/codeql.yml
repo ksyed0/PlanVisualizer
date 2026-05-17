@@ -4,6 +4,10 @@ on:
   push:
     branches: [main]
   pull_request:
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - '.github/*.md'
   schedule:
     - cron: '0 8 * * 1'
 
