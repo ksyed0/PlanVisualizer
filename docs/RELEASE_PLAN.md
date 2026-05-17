@@ -3545,11 +3545,11 @@ Acceptance Criteria:
 US-0185 (EPIC-0028): As the Conductor, I want automatic per-task Lens review gates after each specialist agent dispatch completes, so that spec compliance and code quality are verified before the next task begins and the pipeline can self-regulate without human intervention between tasks.
 Priority: High (P1)
 Estimate: XL
-Status: Planned
-Branch: feature/US-0185-conductor-dispatch-protocol
+Status: In Progress
+Branch: claude/trusting-zhukovsky-cb5402
 Dependencies: US-0182 (EPIC-0028), US-0183 (EPIC-0028), US-0184 (EPIC-0028)
-Spec: TBD (brainstorm next session)
-Plan: TBD
+Spec: docs/superpowers/specs/2026-05-15-us-0185-conductor-dispatch-protocol-design.md
+Plan: docs/superpowers/plans/2026-05-17-us-0185-conductor-dispatch-protocol.md
 Scope:
 - Automatic Lens spec-compliance dispatch after each task done/done_with_concerns transition
 - Spec compliance verdict (APPROVED | REQUEST_CHANGES) stored on the task record
