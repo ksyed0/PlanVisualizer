@@ -24,6 +24,7 @@ describe('initTask', () => {
     expect(typeof t.startedAt).toBe('string');
     expect(t.planTaskIndex).toBeNull();
     expect(t.summary).toBeNull();
+    expect(t.headSha).toBeNull();
   });
 
   test('generates unique IDs on each call', () => {
@@ -66,19 +67,19 @@ function freshTask() {
 describe('markDone', () => {
   test('transitions in_progress → done, records completedAt', () => {
     const { data, t } = freshTask();
-    markDone(data, t.id);
+    markDone(data, t.id, 'task completed [sha:abc1234]');
     expect(data.tasks[t.id].state).toBe('done');
     expect(data.tasks[t.id].completedAt).toMatch(/\d{4}-\d{2}-\d{2}T/);
   });
 
   test('throws when task not found', () => {
-    expect(() => markDone({}, 'task-nonexistent')).toThrow(/not found/i);
+    expect(() => markDone({}, 'task-nonexistent', 'summary [sha:abc1234]')).toThrow(/not found/i);
   });
 
   test('throws when state is not in_progress', () => {
     const { data, t } = freshTask();
-    markDone(data, t.id);
-    expect(() => markDone(data, t.id)).toThrow(/cannot mark done.*'done'/i);
+    markDone(data, t.id, 'done [sha:abc1234]');
+    expect(() => markDone(data, t.id, 'retry [sha:abc1234]')).toThrow(/cannot mark done.*'done'/i);
   });
 });
 
@@ -93,7 +94,7 @@ describe('markConcerns', () => {
 
   test('throws when state is not in_progress', () => {
     const { data, t } = freshTask();
-    markDone(data, t.id);
+    markDone(data, t.id, 'done [sha:abc1234]');
     expect(() => markConcerns(data, t.id, 'note')).toThrow(/cannot mark concerns.*'done'/i);
   });
 });
@@ -150,7 +151,7 @@ describe('markBlocked', () => {
 
   test('throws when state is not in_progress', () => {
     const { data, t } = freshTask();
-    markDone(data, t.id);
+    markDone(data, t.id, 'done [sha:abc1234]');
     expect(() => markBlocked(data, t.id, 'reason')).toThrow(/cannot mark blocked.*'done'/i);
   });
 });
@@ -217,31 +218,64 @@ describe('initTask — US-0184 schema additions', () => {
   });
 });
 
-describe('markDone — US-0184 summary support', () => {
+describe('markDone — US-0185 [sha:...] convention', () => {
   const { markDone } = require('../../tools/lib/agent-lifecycle-state');
   function freshTaskWithId() {
     const data = {};
-    const t = initTask({ story: 'US-0184', agent: 'Forge', model: 'sonnet', description: 'x' });
+    const t = initTask({ story: 'US-0185', agent: 'Forge', model: 'sonnet', description: 'x' });
     startTask(data, t);
     return { data, taskId: t.id };
   }
 
-  test('markDone stores summary when provided', () => {
+  test('markDone extracts [sha:<hex>] from summary and stores on task.headSha', () => {
     const { data, taskId } = freshTaskWithId();
-    markDone(data, taskId, 'shipped foo');
-    expect(data.tasks[taskId].summary).toBe('shipped foo');
+    markDone(data, taskId, 'Implemented parseFoo [sha:abc1234]');
+    expect(data.tasks[taskId].summary).toBe('Implemented parseFoo');
+    expect(data.tasks[taskId].headSha).toBe('abc1234');
     expect(data.tasks[taskId].state).toBe('done');
   });
 
-  test('markDone leaves summary null when not provided', () => {
+  test('markDone accepts [sha:none] for no-commit tasks', () => {
     const { data, taskId } = freshTaskWithId();
-    markDone(data, taskId);
-    expect(data.tasks[taskId].summary).toBeNull();
+    markDone(data, taskId, 'Reviewed doc, no code changes [sha:none]');
+    expect(data.tasks[taskId].summary).toBe('Reviewed doc, no code changes');
+    expect(data.tasks[taskId].headSha).toBe('none');
   });
 
-  test('markDone leaves summary null for whitespace-only string', () => {
+  test('markDone strips trailing whitespace when stripping [sha:...]', () => {
     const { data, taskId } = freshTaskWithId();
-    markDone(data, taskId, '   ');
-    expect(data.tasks[taskId].summary).toBeNull();
+    markDone(data, taskId, 'Did the thing   [sha:abc1234]');
+    expect(data.tasks[taskId].summary).toBe('Did the thing');
+  });
+
+  test('markDone accepts 40-char full SHA', () => {
+    const { data, taskId } = freshTaskWithId();
+    markDone(data, taskId, 'Did it [sha:abc1234567890abcdef1234567890abcdef12345]');
+    expect(data.tasks[taskId].headSha).toBe('abc1234567890abcdef1234567890abcdef12345');
+  });
+
+  test('markDone throws when summary is missing', () => {
+    const { data, taskId } = freshTaskWithId();
+    expect(() => markDone(data, taskId)).toThrow(/summary required.*\[sha:/);
+  });
+
+  test('markDone throws when summary lacks [sha:...] token', () => {
+    const { data, taskId } = freshTaskWithId();
+    expect(() => markDone(data, taskId, 'Did the thing')).toThrow(/\[sha:.*\] token/);
+  });
+
+  test('markDone throws when [sha:...] token is not at the end', () => {
+    const { data, taskId } = freshTaskWithId();
+    expect(() => markDone(data, taskId, 'Did [sha:abc1234] more text')).toThrow(/\[sha:.*\] token/);
+  });
+
+  test('markDone throws when SHA hex is malformed', () => {
+    const { data, taskId } = freshTaskWithId();
+    expect(() => markDone(data, taskId, 'Did it [sha:ZZZ]')).toThrow(/\[sha:.*\] token/);
+  });
+
+  test('markDone throws when SHA is too short (<7 chars)', () => {
+    const { data, taskId } = freshTaskWithId();
+    expect(() => markDone(data, taskId, 'Did it [sha:abc]')).toThrow(/\[sha:.*\] token/);
   });
 });

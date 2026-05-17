@@ -29,7 +29,7 @@ describe('agent-lifecycle — full flow integration', () => {
     ).toBe(0);
     const taskId = stdout[0];
     expect(taskId).toMatch(/^task-/);
-    expect(dispatch({ cmd: 'done', taskId }, { sdlcPath, skipRegen: true })).toBe(0);
+    expect(dispatch({ cmd: 'done', taskId, summary: 'done [sha:abc1234]' }, { sdlcPath, skipRegen: true })).toBe(0);
     const data = JSON.parse(fs.readFileSync(sdlcPath, 'utf8'));
     expect(data.tasks[taskId].state).toBe('done');
   });
@@ -44,7 +44,7 @@ describe('agent-lifecycle — full flow integration', () => {
     const taskId = stdout[0];
     dispatch({ cmd: 'blocked', taskId, reason: 'cannot find schema' }, { sdlcPath, skipRegen: true, stdout: () => {} });
     dispatch({ cmd: 'resolve', taskId, action: 'MORE_CONTEXT', note: 'added schema' }, { sdlcPath, skipRegen: true });
-    dispatch({ cmd: 'done', taskId }, { sdlcPath, skipRegen: true });
+    dispatch({ cmd: 'done', taskId, summary: 'done [sha:abc1234]' }, { sdlcPath, skipRegen: true });
     const data = JSON.parse(fs.readFileSync(sdlcPath, 'utf8'));
     expect(data.tasks[taskId].state).toBe('done');
     expect(data.tasks[taskId].retryCount).toBe(1);

@@ -86,7 +86,7 @@ describe('dispatch — start + terminal commands', () => {
       { sdlcPath, skipRegen: true, stdout: (s) => stdout.push(s) },
     );
     const taskId = stdout[0];
-    expect(dispatch({ cmd: 'done', taskId }, { sdlcPath, skipRegen: true })).toBe(0);
+    expect(dispatch({ cmd: 'done', taskId, summary: 'done [sha:abc1234]' }, { sdlcPath, skipRegen: true })).toBe(0);
     const data = JSON.parse(fs.readFileSync(sdlcPath, 'utf8'));
     expect(data.tasks[taskId].state).toBe('done');
   });
@@ -237,7 +237,7 @@ describe('agent-lifecycle CLI — US-0184 flags', () => {
     const taskId = Object.keys(data1.tasks)[0];
 
     const rc = dispatch(
-      { cmd: 'done', taskId, summary: 'shipped foo' },
+      { cmd: 'done', taskId, summary: 'shipped foo [sha:abc1234]' },
       { sdlcPath, stdout: () => {}, skipRegen: true },
     );
     expect(rc).toBe(0);
