@@ -74,3 +74,47 @@ describe('DM_AGENT.md — US-0184 updates to Per-Task Dispatch Ritual', () => {
     expect(content).toMatch(/agent-lifecycle\.js done[^\n]*--summary/);
   });
 });
+
+describe('DM_AGENT.md — US-0185 review gate + automated BLOCKED routing', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const content = fs.readFileSync(path.join(__dirname, '../../docs/agents/DM_AGENT.md'), 'utf8');
+
+  test('captures BASE_SHA before TASK_ID assignment', () => {
+    expect(content).toMatch(
+      /BASE_SHA=\$\(git rev-parse HEAD\)\s*\n\s*TASK_ID=\$\(node tools\/agent-lifecycle\.js start/,
+    );
+  });
+
+  test('step 3b uses agent-task-review.js start', () => {
+    expect(content).toMatch(/node tools\/agent-task-review\.js start/);
+  });
+
+  test('handles SKIP_REVIEW token branch', () => {
+    expect(content).toMatch(/SKIP_REVIEW/);
+  });
+
+  test('step 3c dispatches Lens for spec compliance and uses spec-verdict', () => {
+    expect(content).toMatch(/agent-task-review\.js spec-verdict/);
+    expect(content).toMatch(/PROCEED_TO_QUALITY/);
+  });
+
+  test('step 3d uses quality-verdict and TASK_CLEARED branch', () => {
+    expect(content).toMatch(/agent-task-review\.js quality-verdict/);
+    expect(content).toMatch(/TASK_CLEARED/);
+  });
+
+  test('forge-retry is called with --triggered-by', () => {
+    expect(content).toMatch(/agent-task-review\.js forge-retry[\s\S]+--triggered-by/);
+  });
+
+  test('automated BLOCKED routing handles MORE_CONTEXT and UPGRADE_MODEL', () => {
+    expect(content).toMatch(/MORE_CONTEXT[\s\S]+UPGRADE_MODEL/);
+    expect(content).toMatch(/haiku|sonnet|opus/);
+  });
+
+  test('SPLIT_TASK and ESCALATE_HUMAN both halt and surface', () => {
+    expect(content).toMatch(/SPLIT_TASK\)[\s\S]+progress\.md/);
+    expect(content).toMatch(/ESCALATE_HUMAN\)[\s\S]+progress\.md/);
+  });
+});

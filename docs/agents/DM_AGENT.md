@@ -119,6 +119,7 @@ For each task a specialist agent works within a story:
 1. **Record task start and capture the UUID:**
 
    ```bash
+   BASE_SHA=$(git rev-parse HEAD)
    TASK_ID=$(node tools/agent-lifecycle.js start \
      --story <id> --agent <name> --model <tier> \
      --task "<description>" \
@@ -148,14 +149,131 @@ For each task a specialist agent works within a story:
    | Needs specific information | `node tools/agent-lifecycle.js needs-context --task-id $TASK_ID --missing "<what>"`    |
    | Stuck, cannot proceed      | `node tools/agent-lifecycle.js blocked --task-id $TASK_ID --reason "<why>"`            |
 
-4. **On BLOCKED:** read the routing suggestion from stdout (MORE_CONTEXT / SPLIT_TASK / UPGRADE_MODEL / ESCALATE_HUMAN) and act accordingly:
+3b. **Start review after `done` or `done_with_concerns`** (skip for `needs-context` or `blocked`):
+
+    ```bash
+    HEAD_SHA=$(node tools/agent-lifecycle.js status --task-id $TASK_ID | jq -r .headSha)
+
+    NEXT=$(node tools/agent-task-review.js start \
+      --task-id $TASK_ID --base-sha $BASE_SHA --head-sha $HEAD_SHA)
+
+    case "$NEXT" in
+      SKIP_REVIEW)      # no commit produced; move to next task
+        continue
+        ;;
+      READY_FOR_SPEC)   # proceed to step 3c
+        ;;
+    esac
+    ```
+
+3c. **Lens spec compliance review** — Conductor dispatches Lens with the task description, story acceptance criteria, plan task block, and the diff `git diff $BASE_SHA..$HEAD_SHA`. Lens reports `APPROVED` or `REQUEST_CHANGES` with findings.
+
+    ```bash
+    NEXT=$(node tools/agent-task-review.js spec-verdict \
+      --task-id $TASK_ID --verdict APPROVED)
+    # or, on REQUEST_CHANGES:
+    NEXT=$(node tools/agent-task-review.js spec-verdict \
+      --task-id $TASK_ID --verdict REQUEST_CHANGES --findings "$LENS_FINDINGS")
+
+    case "$NEXT" in
+      PROCEED_TO_QUALITY)
+        ;; # → step 3d
+      RETRY_FORGE)
+        # Redispatch Forge with findings spliced into the context payload.
+        # Forge produces a new commit; capture NEW_HEAD from Forge's response
+        # text which must end with [sha:<new-commit>] (same convention as --summary).
+        node tools/agent-task-review.js forge-retry \
+          --task-id $TASK_ID --triggered-by spec --new-head-sha "$NEW_HEAD"
+        # Loop back to step 3c with the new diff range.
+        ;;
+      ESCALATE)
+        # Write ## TASK REVIEW BLOCKED — spec compliance cap exhausted to progress.md
+        # Halt the story.
+        ;;
+    esac
+    ```
+
+3d. **Lens code quality review** — Conductor dispatches Lens with the diff and code-quality criteria. On `RETRY_FORGE` from this phase, `forge-retry --triggered-by quality` preserves the spec verdict and only re-runs quality on the next iteration.
+
+    ```bash
+    NEXT=$(node tools/agent-task-review.js quality-verdict \
+      --task-id $TASK_ID --verdict APPROVED)
+    # or, on REQUEST_CHANGES:
+    NEXT=$(node tools/agent-task-review.js quality-verdict \
+      --task-id $TASK_ID --verdict REQUEST_CHANGES --findings "$LENS_FINDINGS")
+
+    case "$NEXT" in
+      TASK_CLEARED)
+        ;; # → move to next task in the plan
+      RETRY_FORGE)
+        node tools/agent-task-review.js forge-retry \
+          --task-id $TASK_ID --triggered-by quality --new-head-sha "$NEW_HEAD"
+        # Loop back to step 3d (skips 3c — spec verdict preserved).
+        ;;
+      ESCALATE)
+        # Write ## TASK REVIEW BLOCKED — code quality cap exhausted to progress.md
+        # Halt the story.
+        ;;
+    esac
+    ```
+
+4. **On BLOCKED** — automated routing handles `MORE_CONTEXT` and `UPGRADE_MODEL`; `SPLIT_TASK` and `ESCALATE_HUMAN` halt and surface to the user.
 
    ```bash
-   node tools/agent-lifecycle.js resolve --task-id $TASK_ID \
-     --action MORE_CONTEXT --note "<what you provided>"
+   ROUTING=$(node tools/agent-lifecycle.js blocked --task-id $TASK_ID --reason "$REASON")
+
+   case "$ROUTING" in
+     MORE_CONTEXT)
+       CONTEXT=$(node tools/agent-context.js generate \
+         --story <id> --agent Forge --task-id $TASK_ID)
+       SPLICED_MESSAGE="$CONTEXT
+
+   ---
+
+   ### Previous attempt was blocked
+
+   Your previous attempt at this task was blocked. You reported:
+
+   > $REASON
+
+   Address that specifically. If you cannot proceed because of the same issue, mark the task \`needs-context\` rather than \`blocked\` again."
+
+       node tools/agent-lifecycle.js resolve --task-id $TASK_ID --action MORE_CONTEXT --note "$REASON"
+       # Redispatch Forge with $SPLICED_MESSAGE as the prompt prefix. Same model.
+       ;;
+
+     UPGRADE_MODEL)
+       CURRENT_MODEL=$(node tools/agent-lifecycle.js status --task-id $TASK_ID | jq -r .model)
+       case "$CURRENT_MODEL" in
+         haiku)  NEXT_TIER=sonnet ;;
+         sonnet) NEXT_TIER=opus ;;
+         opus)
+           echo "## TASK BLOCKED — at max model tier (opus)" >> progress.md
+           echo "Reason: $REASON" >> progress.md
+           exit 1
+           ;;
+       esac
+       node tools/agent-lifecycle.js resolve --task-id $TASK_ID --action UPGRADE_MODEL --note "previous tier: $CURRENT_MODEL"
+       # Redispatch Forge with $NEXT_TIER model.
+       ;;
+
+     SPLIT_TASK)
+       echo "## TASK BLOCKED — split required" >> progress.md
+       echo "Reason: $REASON" >> progress.md
+       echo "Task: $TASK_DESC" >> progress.md
+       # Surface to user with verbal cue.
+       exit 1
+       ;;
+
+     ESCALATE_HUMAN)
+       echo "## TASK BLOCKED — $REASON" >> progress.md
+       # Surface to user verbally.
+       exit 1
+       ;;
+   esac
    ```
 
-5. **On escalation cap exhausted** (exit 1 from `resolve`): halt the story, write `## TASK BLOCKED` to `progress.md`, surface to user.
+5. **On any escalation** (`agent-lifecycle.js resolve` exit 1, or `agent-task-review.js spec-verdict`/`quality-verdict` stdout = `ESCALATE`): halt the story, write `## TASK BLOCKED — <reason>` or `## TASK REVIEW BLOCKED — <phase> cap exhausted` to `progress.md`, surface to user verbally.
 
 ## Pre-Dispatch Spec & Plan Orchestration
 
