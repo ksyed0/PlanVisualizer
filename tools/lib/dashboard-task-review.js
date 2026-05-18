@@ -91,4 +91,38 @@ function renderReviewChipsM(ds) {
   return chips.join(' ');
 }
 
-module.exports = { deriveDisplayState, renderReviewIconS, renderReviewChipsM };
+function _iconCls(icon) {
+  if (icon === '✓') return 'ok';
+  if (icon === '⟳') return 'review';
+  if (icon === '✗') return 'risk';
+  return '';
+}
+
+function renderReviewLineL(ds) {
+  if (!ds || ds.skipped) return '';
+  var parts = [];
+
+  if (ds.specIcon) {
+    parts.push('<span class="' + _iconCls(ds.specIcon) + '">Spec ' + ds.specIcon + '</span>');
+  }
+  if (ds.qualityIcon) {
+    parts.push('<span class="' + _iconCls(ds.qualityIcon) + '">Quality ' + ds.qualityIcon + '</span>');
+  }
+  if (ds.escalated) {
+    parts.push('<span class="risk">escalated</span>');
+  } else if (ds.retryCount) {
+    parts.push('<span class="warn">retry ' + ds.retryCount + '/' + ds.retryCap + '</span>');
+  }
+
+  if (parts.length === 0) return '';
+  return '<div class="pv-rev-line">' + parts.join(' · ') + '</div>';
+}
+
+module.exports = {
+  deriveDisplayState,
+  renderReviewIconS,
+  renderReviewChipsM,
+  renderReviewLineL,
+  _chip,
+  _iconCls,
+};

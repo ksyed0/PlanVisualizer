@@ -286,3 +286,117 @@ describe('renderReviewChipsM', () => {
     expect(html.match(/title="[^"]+"/g).length).toBe(2);
   });
 });
+
+describe('renderReviewLineL', () => {
+  const { renderReviewLineL } = require('../../tools/lib/dashboard-task-review');
+
+  test('returns empty string when ds is null', () => {
+    expect(renderReviewLineL(null)).toBe('');
+  });
+
+  test('returns empty string when ds.skipped', () => {
+    expect(renderReviewLineL({ skipped: true })).toBe('');
+  });
+
+  test('both APPROVED → "Spec ✓ · Quality ✓"', () => {
+    const html = renderReviewLineL({
+      skipped: false,
+      specIcon: '✓',
+      qualityIcon: '✓',
+      retryCount: null,
+      retryCap: 2,
+      escalated: false,
+      overall: '✓',
+    });
+    expect(html).toContain('pv-rev-line');
+    expect(html).toContain('Spec ✓');
+    expect(html).toContain('Quality ✓');
+  });
+
+  test('spec approved + quality reviewing → "Spec ✓ · Quality ⟳"', () => {
+    const html = renderReviewLineL({
+      skipped: false,
+      specIcon: '✓',
+      qualityIcon: '⟳',
+      retryCount: null,
+      retryCap: 2,
+      escalated: false,
+      overall: '⟳',
+    });
+    expect(html).toContain('Spec ✓');
+    expect(html).toContain('Quality ⟳');
+  });
+
+  test('spec failed + retry → "Spec ✗ · retry 1/2"', () => {
+    const html = renderReviewLineL({
+      skipped: false,
+      specIcon: '✗',
+      qualityIcon: null,
+      retryCount: 1,
+      retryCap: 2,
+      escalated: false,
+      overall: '✗',
+    });
+    expect(html).toContain('Spec ✗');
+    expect(html).toContain('retry 1/2');
+    expect(html).not.toContain('escalated');
+  });
+
+  test('spec escalated → "Spec ✗ · escalated"', () => {
+    const html = renderReviewLineL({
+      skipped: false,
+      specIcon: '✗',
+      qualityIcon: null,
+      retryCount: null,
+      retryCap: 2,
+      escalated: true,
+      overall: '✗',
+    });
+    expect(html).toContain('Spec ✗');
+    expect(html).toContain('escalated');
+    expect(html).not.toContain('retry');
+  });
+
+  test('quality escalated → "Spec ✓ · Quality ✗ · escalated"', () => {
+    const html = renderReviewLineL({
+      skipped: false,
+      specIcon: '✓',
+      qualityIcon: '✗',
+      retryCount: null,
+      retryCap: 2,
+      escalated: true,
+      overall: '✗',
+    });
+    expect(html).toContain('Spec ✓');
+    expect(html).toContain('Quality ✗');
+    expect(html).toContain('escalated');
+  });
+
+  test('initial spec_reviewing (no retries) → "Spec ⟳" (no retry text)', () => {
+    const html = renderReviewLineL({
+      skipped: false,
+      specIcon: '⟳',
+      qualityIcon: null,
+      retryCount: null,
+      retryCap: 2,
+      escalated: false,
+      overall: '⟳',
+    });
+    expect(html).toContain('Spec ⟳');
+    expect(html).not.toContain('retry');
+  });
+
+  test('post-retry spec_reviewing (forgeRetries=1) → "Spec ⟳ · retry 1/2"', () => {
+    const html = renderReviewLineL({
+      skipped: false,
+      specIcon: '⟳',
+      qualityIcon: null,
+      retryCount: 1,
+      retryCap: 2,
+      escalated: false,
+      overall: '⟳',
+    });
+    expect(html).toContain('Spec ⟳');
+    expect(html).toContain('retry 1/2');
+  });
+});
