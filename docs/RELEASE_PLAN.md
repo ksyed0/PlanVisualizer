@@ -3559,3 +3559,34 @@ Acceptance Criteria:
 - [x] AC-0729: sdlc-status.json task schema extended with taskReview: { status, baseSha, headSha, specVerdict, specFindings, qualityVerdict, qualityFindings, forgeRetries, lastRetryTriggeredBy, startedAt, completedAt }; [sha:<commit>] convention added to agent-lifecycle.js done
 - [x] AC-0730: DM_AGENT.md §Per-Task Dispatch Ritual updated with 6 edits (BASE_SHA capture, steps 3b/3c/3d review gate loop, automated BLOCKED routing for MORE_CONTEXT/UPGRADE_MODEL); Conductor persona used throughout
 ```
+
+## Epic — EPIC-0029: Agentic Pipeline UX
+
+```
+EPIC-0029: Agentic Pipeline UX
+Description: Surface the agentic pipeline's runtime behaviour (US-0182 spec/plan gates, US-0183 task lifecycle, US-0184 context, US-0185 review gates) on the Agentic Dashboard so operators can observe and intervene. First story: US-0186 review-gate visualization.
+Release Target: v2.5.0
+Status: In Progress
+Dependencies: EPIC-0028
+```
+
+## User Stories — EPIC-0029: Agentic Pipeline UX
+
+```
+US-0186 (EPIC-0029): As an operator, I want the per-task review gate state (US-0185) visible on the Agentic Dashboard so I can see at a glance which tasks have cleared review, which are mid-retry, and which have escalated — without leaving the dashboard.
+Priority: High (P1)
+Estimate: S
+Status: In Progress
+Branch: chore/us-0186-spec
+Dependencies: US-0185 (EPIC-0028)
+Spec: docs/superpowers/specs/2026-05-17-us-0186-dashboard-review-gate-visualization-design.md
+Plan: docs/superpowers/plans/2026-05-17-us-0186-dashboard-review-gate-visualization.md
+Acceptance Criteria:
+
+- [ ] AC-0731: Agentic Dashboard topbar has an S/M/L density pill in `mc-topbar-right`; default is L on first load; selection persists across reloads via `localStorage['pv-task-density']`
+- [ ] AC-0732: Each `done` / `done_with_concerns` task row on an active agent card displays review-gate status in the format defined by the selected density mode (icon-only S / chips M / second-line L)
+- [ ] AC-0733: `deriveDisplayState(taskReview)` returns the correct struct for all 9 documented state combinations; returns `null` for pre-US-0185 tasks; returns `{ skipped: true }` when `headSha === 'none'`
+- [ ] AC-0734: All chips, lines, and icons use theme tokens (`--ok`, `--warn`, `--risk`, `--live-accent`) — no hex literals introduced in the review-gate CSS block (per L-0064)
+- [ ] AC-0735: `⟳` icon animates continuously via `@keyframes pv-rev-spin`; new chips/lines/icons fade in via `@keyframes pv-rev-appear` (200ms); density toggle button background transitions over 150ms; all animations disabled when `prefers-reduced-motion: reduce` is set
+- [ ] AC-0736: All chips and icons carry `title=` attributes describing the state; `window.pvTaskReviewCap` is emitted as a JS literal in the generated HTML from `plan-visualizer.config.json → orchestration.iterationCap.taskReview` (default 2)
+```

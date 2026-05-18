@@ -1013,3 +1013,60 @@ describe('agent workload — model chip', () => {
     expect(html).not.toMatch(/<span class="mc-agent-model-chip/);
   });
 });
+
+// --- US-0186: Dashboard Review-Gate Visualization ---
+describe('US-0186 review-gate visualization', () => {
+  const CFG_PATH = path.join(ROOT, 'agents.config.json');
+  let originalConfig;
+
+  beforeEach(() => {
+    originalConfig = fs.readFileSync(CFG_PATH, 'utf8');
+    jest.resetModules();
+  });
+
+  afterEach(() => {
+    fs.writeFileSync(CFG_PATH, originalConfig);
+    jest.resetModules();
+  });
+
+  function renderWithConfig(orchestrationBlock) {
+    const cfg = JSON.parse(originalConfig);
+    if (orchestrationBlock === undefined) {
+      delete cfg.orchestration;
+    } else {
+      cfg.orchestration = orchestrationBlock;
+    }
+    fs.writeFileSync(CFG_PATH, JSON.stringify(cfg, null, 2));
+    jest.resetModules();
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    return generateHTML(makeHealthyFixture());
+  }
+
+  test('emits window.pvTaskReviewCap literal from config (3)', () => {
+    const html = renderWithConfig({ iterationCap: { spec: 3, plan: 3, taskReview: 3 } });
+    expect(html).toMatch(/window\.pvTaskReviewCap\s*=\s*3/);
+  });
+
+  test('emits window.pvTaskReviewCap default 2 when config missing taskReview key', () => {
+    const html = renderWithConfig({ iterationCap: { spec: 3, plan: 3 } });
+    expect(html).toMatch(/window\.pvTaskReviewCap\s*=\s*2/);
+  });
+
+  test('embeds deriveDisplayState and render function sources in script block', () => {
+    const html = renderWithConfig({ iterationCap: { taskReview: 2 } });
+    expect(html).toContain('function deriveDisplayState(');
+    expect(html).toContain('function renderReviewIconS(');
+    expect(html).toContain('function renderReviewChipsM(');
+    expect(html).toContain('function renderReviewLineL(');
+  });
+});
+
+describe('US-0186 patchTaskList review-gate integration', () => {
+  test('patchTaskList source references deriveDisplayState and reads window.pvTaskDensity', () => {
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    const html = generateHTML(makeHealthyFixture());
+    expect(html).toMatch(/function patchTaskList\(/);
+    expect(html).toMatch(/deriveDisplayState\(/);
+    expect(html).toMatch(/window\.pvTaskDensity/);
+  });
+});
