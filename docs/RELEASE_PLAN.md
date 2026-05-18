@@ -3576,17 +3576,18 @@ Dependencies: EPIC-0028
 US-0186 (EPIC-0029): As an operator, I want the per-task review gate state (US-0185) visible on the Agentic Dashboard so I can see at a glance which tasks have cleared review, which are mid-retry, and which have escalated — without leaving the dashboard.
 Priority: High (P1)
 Estimate: S
-Status: In Progress
+Status: Done
 Branch: chore/us-0186-spec
+PR: #1055 (merged to develop, Session 48)
 Dependencies: US-0185 (EPIC-0028)
 Spec: docs/superpowers/specs/2026-05-17-us-0186-dashboard-review-gate-visualization-design.md
 Plan: docs/superpowers/plans/2026-05-17-us-0186-dashboard-review-gate-visualization.md
 Acceptance Criteria:
 
-- [ ] AC-0731: Agentic Dashboard topbar has an S/M/L density pill in `mc-topbar-right`; default is L on first load; selection persists across reloads via `localStorage['pv-task-density']`
-- [ ] AC-0732: Each `done` / `done_with_concerns` task row on an active agent card displays review-gate status in the format defined by the selected density mode (icon-only S / chips M / second-line L)
-- [ ] AC-0733: `deriveDisplayState(taskReview)` returns the correct struct for all 9 documented state combinations; returns `null` for pre-US-0185 tasks; returns `{ skipped: true }` when `headSha === 'none'`
-- [ ] AC-0734: All chips, lines, and icons use theme tokens (`--ok`, `--warn`, `--risk`, `--live-accent`) — no hex literals introduced in the review-gate CSS block (per L-0064)
-- [ ] AC-0735: `⟳` icon animates continuously via `@keyframes pv-rev-spin`; new chips/lines/icons fade in via `@keyframes pv-rev-appear` (200ms); density toggle button background transitions over 150ms; all animations disabled when `prefers-reduced-motion: reduce` is set
-- [ ] AC-0736: All chips and icons carry `title=` attributes describing the state; `window.pvTaskReviewCap` is emitted as a JS literal in the generated HTML from `plan-visualizer.config.json → orchestration.iterationCap.taskReview` (default 2)
+- [x] AC-0731: Agentic Dashboard topbar has an S/M/L density pill in `mc-topbar-right`; default is L on first load; selection persists across reloads via `localStorage['pv-task-density']`
+- [x] AC-0732: Each `done` / `done_with_concerns` task row on an active agent card displays review-gate status in the format defined by the selected density mode (icon-only S / chips M / second-line L)
+- [x] AC-0733: `deriveDisplayState(taskReview)` returns the correct struct for all 9 documented state combinations; returns `null` for pre-US-0185 tasks; returns `{ skipped: true }` when `headSha === 'none'`
+- [x] AC-0734: All chips, lines, and icons use theme tokens (`--ok`, `--warn`, `--risk`, `--live-accent`) — no hex literals introduced in the review-gate CSS block (per L-0064)
+- [x] AC-0735: `⟳` icon animates continuously via `@keyframes pv-rev-spin`; new chips/lines/icons fade in via `@keyframes pv-rev-appear` (200ms); density toggle button background transitions over 150ms; all animations disabled when `prefers-reduced-motion: reduce` is set
+- [x] AC-0736: All chips and icons carry `title=` attributes describing the state; `window.pvTaskReviewCap` is emitted as a JS literal in the generated HTML from `plan-visualizer.config.json → orchestration.iterationCap.taskReview` (default 2)
 ```
