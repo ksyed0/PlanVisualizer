@@ -148,3 +148,38 @@ describe('deriveDisplayState', () => {
     delete globalThis.pvTaskReviewCap;
   });
 });
+
+describe('renderReviewIconS', () => {
+  const { renderReviewIconS } = require('../../tools/lib/dashboard-task-review');
+
+  test('returns empty string when ds is null', () => {
+    expect(renderReviewIconS(null)).toBe('');
+  });
+
+  test('returns empty string when ds.skipped', () => {
+    expect(renderReviewIconS({ skipped: true })).toBe('');
+  });
+
+  test('returns empty string when overall is null', () => {
+    expect(renderReviewIconS({ skipped: false, overall: null })).toBe('');
+  });
+
+  test('cleared (overall=✓) renders ok-class span with title', () => {
+    const html = renderReviewIconS({ skipped: false, overall: '✓' });
+    expect(html).toContain('class="pv-rev-icon ok"');
+    expect(html).toContain('>✓<');
+    expect(html).toContain('title=');
+  });
+
+  test('reviewing (overall=⟳) renders review-class span', () => {
+    const html = renderReviewIconS({ skipped: false, overall: '⟳' });
+    expect(html).toContain('class="pv-rev-icon review"');
+    expect(html).toContain('>⟳<');
+  });
+
+  test('failed/escalated (overall=✗) renders risk-class span', () => {
+    const html = renderReviewIconS({ skipped: false, overall: '✗' });
+    expect(html).toContain('class="pv-rev-icon risk"');
+    expect(html).toContain('>✗<');
+  });
+});

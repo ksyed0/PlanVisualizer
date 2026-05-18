@@ -49,4 +49,21 @@ function deriveDisplayState(taskReview) {
   };
 }
 
-module.exports = { deriveDisplayState };
+function renderReviewIconS(ds) {
+  if (!ds || ds.skipped || !ds.overall) return '';
+  var cls;
+  var title;
+  if (ds.overall === '✓') {
+    cls = 'ok';
+    title = 'Review cleared';
+  } else if (ds.overall === '⟳') {
+    cls = 'review';
+    title = 'Review in progress';
+  } else {
+    cls = 'risk';
+    title = 'Review needs changes or escalated';
+  }
+  return '<span class="pv-rev-icon ' + cls + '" title="' + title + '">' + ds.overall + '</span>';
+}
+
+module.exports = { deriveDisplayState, renderReviewIconS };
