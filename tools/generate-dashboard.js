@@ -2162,6 +2162,61 @@ function generateHTML(status) {
   /* Collapsed sections inside existing HTML we keep inline */
   .mc-legacy-section { margin-bottom: 14px; }
   /* ===== END MISSION CONTROL REDESIGN ===== */
+
+  /* US-0186: Review-gate visualization */
+  .pv-rev-chip {
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 9px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .pv-rev-chip.ok     { background: color-mix(in oklab, var(--ok)          18%, transparent); color: var(--ok); }
+  .pv-rev-chip.warn   { background: color-mix(in oklab, var(--warn)        18%, transparent); color: var(--warn); }
+  .pv-rev-chip.risk   { background: color-mix(in oklab, var(--risk)        18%, transparent); color: var(--risk); }
+  .pv-rev-chip.review { background: color-mix(in oklab, var(--live-accent) 18%, transparent); color: var(--live-accent); }
+
+  .pv-rev-line {
+    padding-left: 80px;
+    font-size: 9.5px;
+    margin-top: 1px;
+  }
+  .pv-rev-line .ok     { color: var(--ok); }
+  .pv-rev-line .warn   { color: var(--warn); }
+  .pv-rev-line .risk   { color: var(--risk); }
+  .pv-rev-line .review { color: var(--live-accent); }
+  .pv-rev-line span + span::before { content: ' · '; color: var(--text-mute); }
+
+  .pv-rev-icon {
+    font-weight: 700;
+    margin-left: auto;
+  }
+  .pv-rev-icon.ok     { color: var(--ok); }
+  .pv-rev-icon.warn   { color: var(--warn); }
+  .pv-rev-icon.risk   { color: var(--risk); }
+  .pv-rev-icon.review { color: var(--live-accent); }
+
+  .pv-density-toggle {
+    display: flex;
+    gap: 2px;
+    background: var(--bg-card-inner);
+    border-radius: 4px;
+    padding: 2px;
+  }
+  .pv-density-toggle button {
+    padding: 2px 8px;
+    border: 0;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    border-radius: 3px;
+  }
+  .pv-density-toggle button.active {
+    background: var(--live-accent);
+    color: var(--text-inverse, #fff);
+  }
 </style>
 </head>
 <body>

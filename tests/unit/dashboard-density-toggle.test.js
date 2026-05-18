@@ -94,3 +94,31 @@ describe('Density toggle pill HTML', () => {
     expect(out).toMatch(/saved === 'S'[\s\S]+saved === 'M'[\s\S]+saved === 'L'/);
   });
 });
+
+describe('Review-gate CSS', () => {
+  test('contains .pv-rev-chip styles using theme tokens', () => {
+    const out = html();
+    expect(out).toContain('.pv-rev-chip');
+    expect(out).toMatch(/\.pv-rev-chip\.ok/);
+    expect(out).toMatch(/\.pv-rev-chip\.warn/);
+    expect(out).toMatch(/\.pv-rev-chip\.risk/);
+    expect(out).toMatch(/\.pv-rev-chip\.review/);
+    expect(out).toContain('var(--ok)');
+    expect(out).toContain('var(--warn)');
+    expect(out).toContain('var(--risk)');
+    expect(out).toContain('var(--live-accent)');
+  });
+
+  test('contains .pv-rev-line and .pv-rev-icon styles', () => {
+    const out = html();
+    expect(out).toContain('.pv-rev-line');
+    expect(out).toContain('.pv-rev-icon');
+  });
+
+  test('contains .pv-density-toggle styles', () => {
+    const out = html();
+    expect(out).toContain('.pv-density-toggle');
+    expect(out).toContain('.pv-density-toggle button');
+    expect(out).toContain('.pv-density-toggle button.active');
+  });
+});
