@@ -1,0 +1,52 @@
+'use strict';
+
+function deriveDisplayState(taskReview) {
+  if (!taskReview) return null;
+  if (taskReview.headSha === 'none') return { skipped: true };
+
+  var status = taskReview.status;
+  var specV = taskReview.specVerdict;
+  var qualV = taskReview.qualityVerdict;
+  var retries = taskReview.forgeRetries || 0;
+
+  var specIcon = null;
+  if (specV === 'APPROVED') specIcon = '✓';
+  else if (specV === 'REQUEST_CHANGES') specIcon = '✗';
+  else if (status === 'spec_reviewing') specIcon = '⟳';
+
+  var qualityIcon = null;
+  if (qualV === 'APPROVED') qualityIcon = '✓';
+  else if (qualV === 'REQUEST_CHANGES') qualityIcon = '✗';
+  else if (status === 'quality_reviewing') qualityIcon = '⟳';
+
+  var retryCount = null;
+  if (status === 'forge_retry') {
+    retryCount = retries + 1;
+  } else if (retries > 0 && (status === 'spec_reviewing' || status === 'quality_reviewing')) {
+    retryCount = retries;
+  }
+
+  var escalated = status === 'escalated';
+
+  var overall = null;
+  if (specIcon === '✓' && qualityIcon === '✓') overall = '✓';
+  else if (specIcon === '✗' || qualityIcon === '✗') overall = '✗';
+  else if (specIcon === '⟳' || qualityIcon === '⟳') overall = '⟳';
+
+  var cap =
+    typeof globalThis !== 'undefined' && typeof globalThis.pvTaskReviewCap === 'number'
+      ? globalThis.pvTaskReviewCap
+      : 2;
+
+  return {
+    skipped: false,
+    specIcon: specIcon,
+    qualityIcon: qualityIcon,
+    retryCount: retryCount,
+    retryCap: cap,
+    escalated: escalated,
+    overall: overall,
+  };
+}
+
+module.exports = { deriveDisplayState };
