@@ -2195,6 +2195,11 @@ ${(() => {
     <span class="mc-topbar-clock" id="mc-topbar-clock">00:00:00</span>
   </div>
   <div class="mc-topbar-right">
+    <div class="pv-density-toggle" role="radiogroup" aria-label="Task review density">
+      <button data-density="S" onclick="setTaskDensity('S')" title="Compact — single outcome icon per task">S</button>
+      <button data-density="M" onclick="setTaskDensity('M')" title="Medium — phase chips per task">M</button>
+      <button data-density="L" onclick="setTaskDensity('L')" title="Large — phase status on a second line">L</button>
+    </div>
     <span class="mc-live-badge" title="Live — refreshing every 5s"><span class="mc-live-dot" aria-hidden="true"></span>LIVE</span>
   </div>
 </div>`;
@@ -3945,6 +3950,35 @@ function patchTaskList(status) {
   });
 }
 
+// US-0186: Task review density toggle. Persists choice in localStorage so the
+// dashboard remembers user preference across reloads. setTaskDensity also
+// re-renders the task list using the cached _pvLastStatus so the change is
+// immediate without waiting for the next 5s refresh tick.
+function setTaskDensity(d) {
+  if (d !== 'S' && d !== 'M' && d !== 'L') return;
+  window.pvTaskDensity = d;
+  try {
+    localStorage.setItem('pv-task-density', d);
+  } catch (e) {
+    /* private mode — ignore */
+  }
+  document.querySelectorAll('.pv-density-toggle button').forEach(function (b) {
+    b.classList.toggle('active', b.dataset.density === d);
+  });
+  if (window._pvLastStatus) patchTaskList(window._pvLastStatus);
+}
+
+function initTaskDensity() {
+  var saved;
+  try {
+    saved = localStorage.getItem('pv-task-density');
+  } catch (e) {}
+  var d = saved === 'S' || saved === 'M' || saved === 'L' ? saved : 'L';
+  setTaskDensity(d);
+}
+
+document.addEventListener('DOMContentLoaded', initTaskDensity);
+
 // Rebuild the Pending Approvals panel content from the latest sdlc-status.stories.
 // Called inside patchDOM() on every 5s refreshState() tick — no page reload.
 function patchPendingApprovals(status) {
@@ -4010,6 +4044,8 @@ async function refreshState() {
     var res = await fetch('./sdlc-status.json', { cache: 'no-store' });
     if (!res || !res.ok) throw new Error('HTTP ' + (res ? res.status : 'no response'));
     var newStatus = await res.json();
+    // US-0186: cache last status so setTaskDensity() can re-render without refetch.
+    window._pvLastStatus = newStatus;
     patchDOM(newStatus);
     patchCycleCounter(newStatus);
     runAlertCheck(newStatus);
