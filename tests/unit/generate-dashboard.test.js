@@ -1060,3 +1060,13 @@ describe('US-0186 review-gate visualization', () => {
     expect(html).toContain('function renderReviewLineL(');
   });
 });
+
+describe('US-0186 patchTaskList review-gate integration', () => {
+  test('patchTaskList source references deriveDisplayState and reads window.pvTaskDensity', () => {
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    const html = generateHTML(makeHealthyFixture());
+    expect(html).toMatch(/function patchTaskList\(/);
+    expect(html).toMatch(/deriveDisplayState\(/);
+    expect(html).toMatch(/window\.pvTaskDensity/);
+  });
+});

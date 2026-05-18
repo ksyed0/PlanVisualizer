@@ -3903,32 +3903,43 @@ function patchTaskList(status) {
       card.appendChild(container);
     }
 
-    var html = tasks.slice(-5).map(function (t) {
-      var color =
-        t.state === 'done'
-          ? 'var(--ok)'
-          : t.state === 'blocked' || t.state === 'escalated'
-            ? 'var(--risk)'
-            : t.state === 'done_with_concerns'
-              ? 'var(--warn)'
-              : 'var(--text-mute)';
-      var label = t.state.replace(/_/g, ' ').toUpperCase();
-      var desc = t.description
-        ? t.description.slice(0, 55) + (t.description.length > 55 ? '…' : '')
-        : '';
-      return (
-        '<div style="display:flex;gap:6px;align-items:baseline;margin-bottom:2px">' +
-        '<span style="color:' +
-        color +
-        ';font-weight:700;min-width:80px">' +
-        label +
-        '</span>' +
-        '<span style="color:var(--text-dim)">' +
-        desc +
-        '</span>' +
-        '</div>'
-      );
-    }).join('');
+    var html = tasks
+      .slice(-5)
+      .map(function (t) {
+        var color =
+          t.state === 'done'
+            ? 'var(--ok)'
+            : t.state === 'blocked' || t.state === 'escalated'
+              ? 'var(--risk)'
+              : t.state === 'done_with_concerns'
+                ? 'var(--warn)'
+                : 'var(--text-mute)';
+        var label = t.state.replace(/_/g, ' ').toUpperCase();
+        var desc = t.description
+          ? t.description.slice(0, 55) + (t.description.length > 55 ? '…' : '')
+          : '';
+
+        // US-0186: derive review-gate display and pick renderer based on density.
+        var density = window.pvTaskDensity || 'L';
+        var ds = deriveDisplayState(t.taskReview);
+        var reviewHtml = '';
+        if (ds && !ds.skipped) {
+          if (density === 'S') reviewHtml = renderReviewIconS(ds);
+          else if (density === 'M') reviewHtml = renderReviewChipsM(ds);
+          else reviewHtml = renderReviewLineL(ds);
+        }
+
+        var rowHead =
+          '<div style="display:flex;gap:6px;align-items:baseline;margin-bottom:2px">' +
+          '<span style="color:' + color + ';font-weight:700;min-width:80px">' + label + '</span>' +
+          '<span style="color:var(--text-dim);flex:1">' + desc + '</span>' +
+          (density === 'S' || density === 'M' ? reviewHtml : '') +
+          '</div>';
+
+        var rowTail = density === 'L' ? reviewHtml : '';
+        return rowHead + rowTail;
+      })
+      .join('');
 
     container.innerHTML = html;
   });
