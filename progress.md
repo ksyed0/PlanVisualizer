@@ -4,6 +4,41 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 48 — 2026-05-17/18 (v2.4.0 release + US-0186 Dashboard Review-Gate Visualization)
+
+### What Was Done
+
+- **v2.4.0 release cut to main** — `release/2.4.0` branch → PR #1052 → merged to main with regular merge (preserves develop history). GitHub release tag `v2.4.0` created with detailed notes (EPIC-0028 complete, all 4 stories shipped). Dashboard live at https://ksyed0.github.io/PlanVisualizer/.
+- **`develop ← main` sync** — merged main into develop to bring the version bump (2.3.20 → 2.4.0) back into develop. Resolved package.json version conflict (kept 2.4.0). Standard post-release housekeeping.
+- **Dependabot grouping** — replaced the partial `eslint`-only group with a single `npm-dev-dependencies` group covering all devDependency minor/patch updates (PR #1053). Going forward, one combined PR per Monday instead of three. `open-pull-requests-limit` lowered 5 → 3. Closed 3 stale Dependabot PRs (#999, #1000, #1001) that predated the new grouping.
+- **US-0186 Dashboard Review-Gate Visualization** — first story of new EPIC-0029 (Agentic Pipeline UX). Brainstormed via visual companion (3 mockup screens, S/M/L density mode comparison + placement options + animation discussion). Spec at `docs/superpowers/specs/2026-05-17-us-0186-dashboard-review-gate-visualization-design.md`. Plan at `docs/superpowers/plans/2026-05-17-us-0186-dashboard-review-gate-visualization.md` (11 TDD tasks).
+- **US-0186 Implementation:** Executed all 11 plan tasks via `superpowers:subagent-driven-development` (1233 → 1294 tests):
+  - Tasks 1–4: `tools/lib/dashboard-task-review.js` — pure helpers `deriveDisplayState`, `renderReviewIconS`, `renderReviewChipsM`, `renderReviewLineL`. 35 unit tests covering 12+ state combinations.
+  - Tasks 5–9: integration into `tools/generate-dashboard.js` — helper source injected via `fn.toString()` (single source of truth between Node tests and browser), `window.pvTaskReviewCap` literal from config, S/M/L density toggle pill in `mc-topbar-right`, `setTaskDensity`/`initTaskDensity` with localStorage, `_pvLastStatus` cache for immediate re-render, theme-token-driven CSS (no hex literals — L-0064), transition animations (`⟳` spin + chip fade-in + density button transition), `prefers-reduced-motion` honored.
+  - Task 10: Integration smoke test with fixture taskReview states.
+  - Task 11: RELEASE_PLAN.md adds EPIC-0029 + US-0186 with 6 ACs; ID_REGISTRY.md bumped.
+- **PR #1055 (US-0186) — merged to develop**. All 8 CI checks green; ~1m21s wall time (down from ~3min pre-US-0186 CI optimisation — paid off immediately).
+
+### Test Results
+
+- **1294 tests, 62 suites — all pass** (develop post US-0186 merge)
+- Statement coverage: ≥80% ✅ (gate green)
+- CodeQL: ✅ no new alerts
+
+### Errors or Blockers
+
+- The Task 5–9 subagent had to adapt to real `tools/generate-dashboard.js` structure: it exposes `generateHTML(status)` not `renderDashboardHtml`, config loads from `agents.config.json` into top-level `AGENT_CONFIG` constant, no central `init` function. Adapted cleanly. Also found that `--text-inverse` is not a defined theme token; fell back to `var(--text)`.
+- AC-0498 hex-literal regression test caught `var(--text-inverse, #fff)` fallback; replaced with token-only.
+- US-0186 numbering note: the earlier "CI optimisation" PR #1046 was occasionally referred to as "US-0186" in conversation, but was never formally assigned. The official US-0186 is the Dashboard Review-Gate Visualization story (EPIC-0029).
+
+### What's Next
+
+- **Dogfood the pipeline** — now that the dashboard view is live, run the next story through the EPIC-0028 pipeline end-to-end and watch the review-gate state on the dashboard in real time. First real self-hosting test.
+- **EPIC-0029 backlog** — only US-0186 exists so far. Future candidates: BLOCKED routing visibility (which suggestion fired, retry count), lifecycle timeline view, model-tier escalation traces.
+- **v2.5.0** — once EPIC-0029 has 2–3 stories shipped.
+
+---
+
 ## Session 47 — 2026-05-17 (US-0185 Conductor Dispatch Protocol + US-0186 CI Optimisation)
 
 ### What Was Done

@@ -4,6 +4,16 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
+## L-0068 — `fn.toString()` source injection: single source of truth between Node tests and browser-embedded JS
+
+@agent: Forge
+
+**Rule:** When you need the same JavaScript to run both server-side (for unit tests) and in the generated dashboard's `<script>` block (for the browser), use `fn.toString()` to inject the function source — don't define the function twice and don't reach for a bundler. Pattern: declare functions with `function` keyword (not arrow functions or methods, which produce different `toString()` output) in a CommonJS module that exports them. The generator reads `module.fn.toString()` for each function and concatenates them into the inline `<script>` block. Internal helpers used by the exported functions must also be exported (even if prefixed `_` to signal internal use) so the generator can include their source. This gives full Node testability with zero browser-side duplication. Trade-off: helpers cannot reference outer-scope variables from the module (only what's in the generated `<script>` runtime), so write them as pure functions taking all inputs as parameters.
+_Implemented in US-0186 for `tools/lib/dashboard-task-review.js`. The four exported functions plus two internal helpers (`_chip`, `_iconCls`) are injected via `fn.toString()` into the generated dashboard HTML; the same source runs in Jest (CommonJS) and the browser._
+**Date:** 2026-05-18
+
+---
+
 ## L-0066 — `npm audit` does not need `npm ci` — running it wastes a full install per PR
 
 @agent: Circuit
