@@ -695,6 +695,31 @@ Post-rollback:
 
 ---
 
+## 🤖 Orchestration Engine (EPIC-0028 / EPIC-0029)
+
+PlanVisualizer ships an opt-in **Agentic Orchestration Engine** that runs alongside the human-driven workflow. See `docs/architecture/AGENTIC_PIPELINE.md` for the full reference (9 mermaid diagrams covering state machines, dispatch flow, and review gates).
+
+**Core principle:** every story goes through a **pre-dispatch spec/plan gate**; every dispatched task goes through a **per-task lifecycle**; every task completion goes through a **two-phase review gate** before being marked done.
+
+### CLI Tools
+
+| Tool                             | Story   | Purpose                                                                                                                                                                   |
+| -------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tools/agent-spec-plan.js`       | US-0182 | Conductor produces spec + plan + acceptance checks for a story; PO approves/rejects via `agent:approve` / `agent:reject` before code is written.                          |
+| `tools/agent-task-lifecycle.js`  | US-0183 | Tracks each dispatched task through `in_progress` → `done` / `done_with_concerns` / `needs_context` / `blocked`. State persists in `sdlc-status.json`.                    |
+| `tools/agent-context-curator.js` | US-0184 | Assembles a per-task context bundle (spec excerpts, related code, lessons, prior decisions) so agents start scoped, not cold.                                             |
+| `tools/agent-task-review.js`     | US-0185 | Two-phase Lens review (`spec_reviewing` → `quality_reviewing` → `forge_retry` → `approved` / `escalated`); auto-routes `MORE_CONTEXT` / `UPGRADE_MODEL` BLOCKED outcomes. |
+
+All four are surfaced as 21 `agent:*` npm script aliases registered automatically by `install.sh` / `update.sh`. The agentic dashboard (US-0186) renders review-gate state at S / M / L density (toggle in topbar; persists to `localStorage`; respects `prefers-reduced-motion`).
+
+### When to use it
+
+- Use the orchestration engine when running a Claude Code or other agent autonomously on a story; it provides spec gates, context curation, and review gates that prevent silent failures.
+- Bypass it (work directly) when a human is driving — the engine is opt-in and never required.
+- The engine reads/writes `agents.config.json` (`orchestration.iterationCap.{spec,plan,taskReview}`) and never touches business markdown files.
+
+---
+
 ## 📂 File & Deliverable Structure
 
 | **Location**           | **Purpose**                                                                                               |
