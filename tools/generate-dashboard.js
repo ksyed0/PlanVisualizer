@@ -26,6 +26,19 @@ const { renderChrome, SHELL_CHROME_CSS } = require('./lib/render-shell');
 const { renderAboutModal } = require('./lib/render-html');
 const { HANDLERS: sdlcHandlers } = require('./update-sdlc-status');
 const { atomicReadModifyWriteJson: atomicRMW } = require('../orchestrator/atomic-write');
+const TaskReview = require('./lib/dashboard-task-review');
+
+// US-0186: Helpers embedded into the generated dashboard so the same review-gate
+// rendering code runs in the browser. fn.toString() emits the source verbatim;
+// the inline <script> block evaluates these as ordinary function declarations.
+const REVIEW_HELPERS_SOURCE = [
+  TaskReview._chip.toString(),
+  TaskReview._iconCls.toString(),
+  TaskReview.deriveDisplayState.toString(),
+  TaskReview.renderReviewIconS.toString(),
+  TaskReview.renderReviewChipsM.toString(),
+  TaskReview.renderReviewLineL.toString(),
+].join('\n\n');
 
 const ROOT = path.resolve(__dirname, '..');
 
@@ -2860,6 +2873,19 @@ ${renderAboutModal({
 </div>
 
 <script>
+// US-0186: Review-gate cap literal and helper sources, injected from server-side config
+// so the same render code path runs both in tests (Node) and in the live dashboard.
+window.pvTaskReviewCap = ${
+    AGENT_CONFIG &&
+    AGENT_CONFIG.orchestration &&
+    AGENT_CONFIG.orchestration.iterationCap &&
+    typeof AGENT_CONFIG.orchestration.iterationCap.taskReview === 'number'
+      ? AGENT_CONFIG.orchestration.iterationCap.taskReview
+      : 2
+  };
+
+${REVIEW_HELPERS_SOURCE}
+
 // pvSetTheme / openAbout — aliases expected by renderChrome() (shared chrome from render-shell.js)
 // BUG-0250: write to canonical 'pv-theme' key (shared with plan-status dashboard) so
 // theme preference syncs across both dashboards. Mirror to legacy 'dashboard-theme'
