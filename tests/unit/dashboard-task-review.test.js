@@ -183,3 +183,106 @@ describe('renderReviewIconS', () => {
     expect(html).toContain('>✗<');
   });
 });
+
+describe('renderReviewChipsM', () => {
+  const { renderReviewChipsM } = require('../../tools/lib/dashboard-task-review');
+
+  test('returns empty string when ds is null', () => {
+    expect(renderReviewChipsM(null)).toBe('');
+  });
+
+  test('returns empty string when ds.skipped', () => {
+    expect(renderReviewChipsM({ skipped: true })).toBe('');
+  });
+
+  test('both APPROVED → two ok chips', () => {
+    const html = renderReviewChipsM({
+      skipped: false,
+      specIcon: '✓',
+      qualityIcon: '✓',
+      retryCount: null,
+      retryCap: 2,
+      escalated: false,
+      overall: '✓',
+    });
+    expect(html).toContain('pv-rev-chip ok');
+    expect(html.match(/pv-rev-chip ok/g).length).toBe(2);
+    expect(html).toContain('SPEC ✓');
+    expect(html).toContain('QUAL ✓');
+  });
+
+  test('spec approved + quality reviewing → ok + review chips', () => {
+    const html = renderReviewChipsM({
+      skipped: false,
+      specIcon: '✓',
+      qualityIcon: '⟳',
+      retryCount: null,
+      retryCap: 2,
+      escalated: false,
+      overall: '⟳',
+    });
+    expect(html).toContain('pv-rev-chip ok');
+    expect(html).toContain('pv-rev-chip review');
+    expect(html).toContain('SPEC ✓');
+    expect(html).toContain('QUAL ⟳');
+  });
+
+  test('spec failed + retry → risk + warn retry chip', () => {
+    const html = renderReviewChipsM({
+      skipped: false,
+      specIcon: '✗',
+      qualityIcon: null,
+      retryCount: 1,
+      retryCap: 2,
+      escalated: false,
+      overall: '✗',
+    });
+    expect(html).toContain('pv-rev-chip risk');
+    expect(html).toContain('SPEC ✗');
+    expect(html).toContain('pv-rev-chip warn');
+    expect(html).toContain('RETRY 1/2');
+  });
+
+  test('spec escalated → risk + ESCALATED chip', () => {
+    const html = renderReviewChipsM({
+      skipped: false,
+      specIcon: '✗',
+      qualityIcon: null,
+      retryCount: null,
+      retryCap: 2,
+      escalated: true,
+      overall: '✗',
+    });
+    expect(html).toContain('SPEC ✗');
+    expect(html).toContain('ESCALATED');
+    expect(html).not.toContain('RETRY');
+  });
+
+  test('quality failed + retry → ok + risk + warn retry chip', () => {
+    const html = renderReviewChipsM({
+      skipped: false,
+      specIcon: '✓',
+      qualityIcon: '✗',
+      retryCount: 1,
+      retryCap: 2,
+      escalated: false,
+      overall: '✗',
+    });
+    expect(html).toContain('SPEC ✓');
+    expect(html).toContain('QUAL ✗');
+    expect(html).toContain('RETRY 1/2');
+  });
+
+  test('every chip has a title attribute', () => {
+    const html = renderReviewChipsM({
+      skipped: false,
+      specIcon: '✓',
+      qualityIcon: '⟳',
+      retryCount: null,
+      retryCap: 2,
+      escalated: false,
+      overall: '⟳',
+    });
+    expect(html.match(/title="[^"]+"/g).length).toBe(2);
+  });
+});

@@ -66,4 +66,29 @@ function renderReviewIconS(ds) {
   return '<span class="pv-rev-icon ' + cls + '" title="' + title + '">' + ds.overall + '</span>';
 }
 
-module.exports = { deriveDisplayState, renderReviewIconS };
+function _chip(cls, label, title) {
+  return '<span class="pv-rev-chip ' + cls + '" title="' + title + '">' + label + '</span>';
+}
+
+function renderReviewChipsM(ds) {
+  if (!ds || ds.skipped) return '';
+  var chips = [];
+
+  if (ds.specIcon === '✓') chips.push(_chip('ok', 'SPEC ✓', 'Spec compliance review: approved'));
+  else if (ds.specIcon === '⟳') chips.push(_chip('review', 'SPEC ⟳', 'Spec compliance review in progress'));
+  else if (ds.specIcon === '✗') chips.push(_chip('risk', 'SPEC ✗', 'Spec compliance review: changes requested'));
+
+  if (ds.qualityIcon === '✓') chips.push(_chip('ok', 'QUAL ✓', 'Code quality review: approved'));
+  else if (ds.qualityIcon === '⟳') chips.push(_chip('review', 'QUAL ⟳', 'Code quality review in progress'));
+  else if (ds.qualityIcon === '✗') chips.push(_chip('risk', 'QUAL ✗', 'Code quality review: changes requested'));
+
+  if (ds.escalated) {
+    chips.push(_chip('risk', 'ESCALATED', 'Review cap exhausted — manual review required'));
+  } else if (ds.retryCount) {
+    chips.push(_chip('warn', 'RETRY ' + ds.retryCount + '/' + ds.retryCap, 'Forge retry in progress'));
+  }
+
+  return chips.join(' ');
+}
+
+module.exports = { deriveDisplayState, renderReviewIconS, renderReviewChipsM };
