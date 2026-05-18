@@ -2215,7 +2215,45 @@ function generateHTML(status) {
   }
   .pv-density-toggle button.active {
     background: var(--live-accent);
-    color: var(--text-inverse, #fff);
+    color: var(--text);
+  }
+
+  /* US-0186: Animations */
+  @keyframes pv-rev-spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+  @keyframes pv-rev-appear {
+    from { opacity: 0; transform: translateY(-1px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .pv-rev-icon.review {
+    display: inline-block;
+    animation: pv-rev-spin 1.4s linear infinite, pv-rev-appear 200ms ease-out;
+  }
+  .pv-rev-chip.review {
+    animation: pv-rev-appear 200ms ease-out;
+  }
+  .pv-rev-chip,
+  .pv-rev-line,
+  .pv-rev-icon {
+    animation: pv-rev-appear 200ms ease-out;
+  }
+  .pv-density-toggle button {
+    transition: background-color 150ms ease, color 150ms ease;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pv-rev-icon.review,
+    .pv-rev-chip.review,
+    .pv-rev-chip,
+    .pv-rev-line,
+    .pv-rev-icon {
+      animation: none;
+    }
+    .pv-density-toggle button {
+      transition: none;
+    }
   }
 </style>
 </head>

@@ -122,3 +122,36 @@ describe('Review-gate CSS', () => {
     expect(out).toContain('.pv-density-toggle button.active');
   });
 });
+
+describe('Transition animations', () => {
+  test('emits @keyframes pv-rev-spin', () => {
+    expect(html()).toMatch(/@keyframes\s+pv-rev-spin\s*\{/);
+  });
+
+  test('emits @keyframes pv-rev-appear', () => {
+    expect(html()).toMatch(/@keyframes\s+pv-rev-appear\s*\{/);
+  });
+
+  test('pv-rev-icon.review gets the spin animation', () => {
+    const out = html();
+    expect(out).toMatch(/\.pv-rev-icon\.review[^}]*animation:[^;]*pv-rev-spin/);
+  });
+
+  test('chips/lines/icons get the appear animation', () => {
+    const out = html();
+    expect(out).toMatch(/animation:[^;]*pv-rev-appear/);
+  });
+
+  test('pv-density-toggle buttons have background-color transition', () => {
+    const out = html();
+    expect(out).toMatch(/\.pv-density-toggle button[^}]*transition:[^;]*background-color/);
+  });
+
+  test('prefers-reduced-motion disables animations', () => {
+    const out = html();
+    expect(out).toMatch(/@media\s*\(prefers-reduced-motion:\s*reduce\)/);
+    const m = out.match(/@media\s*\(prefers-reduced-motion:\s*reduce\)\s*\{([\s\S]*?)\n\s{0,4}\}\s*\n\s*<\/style>/);
+    expect(m).toBeTruthy();
+    expect(m[1]).toMatch(/animation:\s*none/);
+  });
+});
