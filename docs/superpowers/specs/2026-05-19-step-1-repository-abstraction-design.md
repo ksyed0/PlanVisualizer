@@ -12,7 +12,7 @@
 **Goal:** introduce a repository / data-access boundary between PlanVisualizer's tools and its storage, with three concrete deliverables:
 
 1. **Markdown remains authoritative** for human-edited entities (Epic, Story, AC, Task, Bug, Lesson, TestCase, IdRegistry).
-2. **SQLite becomes authoritative** for tool-emitted state (sdlc-status records, agent lifecycle events). The legacy `docs/sdlc-status.json` becomes a build artifact mirrored from SQLite, preserving the live-dashboard behaviour.
+2. **SQLite becomes authoritative** for tool-emitted state (sdlc-status records, agent lifecycle events). `docs/sdlc-status.json` becomes a mirror written by the repo on every event (preserving the live-dashboard behaviour) and also regenerable from SQL on full dashboard build.
 3. **A derived SQLite index** of markdown-authoritative entities, used for fast queries and tiered referential-integrity validation.
 
 Plus a **migration framework** and `pv:*` commands that make this safely upgradable for existing users.
@@ -51,7 +51,8 @@ A two-layer repository pattern sits between tools and the existing parsers in `t
         │  reads via   │  write-through    in Phase F)
         │  existing    │  on same-process
         │  parsers     │  writes; refresh()
-        ▼              │  on session start
+        ▼              │  on getInstance()
+                       │  + dispatch start
    docs/*.md ──────────┘
    docs/sdlc-status.json ◄── mirrored from SQLite on each event for
                               live-dashboard parity; also regenerated
