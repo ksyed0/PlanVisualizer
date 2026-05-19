@@ -69,7 +69,7 @@ A two-layer repository pattern sits between tools and the existing parsers in `t
 
 - `repo.refresh()` runs on session start (mtime-incremental against `meta_sources` table).
 - Within a single writing process, writes are reflected immediately in the index (no own-stale-read possible).
-- Across processes, an `fs.watch` on `docs/` triggers incremental rebuild during live sessions.
+- Across processes, an `fs.watch` on `docs/` triggers incremental rebuild during live sessions. (Caveat: `fs.watch` semantics differ across platforms — macOS uses FSEvents, Linux uses inotify, Windows uses ReadDirectoryChangesW. NFS, SMB, and some FUSE-backed filesystems may not deliver events at all. The fall-back is the session-start `refresh()` plus the within-process write-through; live `fs.watch` is an optimisation, not a correctness requirement.)
 - ID allocation and task claim semantics **always bypass the index** — they read markdown under a write lock to avoid stale-read corruption.
 - Validation errors block writes; warnings log to `.cache/repo-warnings.jsonl`; reports surface via `npm run plan:lint`.
 
@@ -78,6 +78,10 @@ A two-layer repository pattern sits between tools and the existing parsers in `t
 ## Section 2 — Schema, Components & API
 
 ### 2.1 Entity model (SQLite tables)
+
+**JSON-column rule.** Normalise where SQL referential integrity is the goal (dependencies, agent tags, bug↔story refs — all get join tables below). Use JSON columns where the data is genuinely heterogeneous and SQL can't usefully enforce anything (event payloads with varying kinds, taskReview optional substructure, programme block state). The distinction is enforced consistently throughout the schema below.
+
+**Staleness detection rule.** `meta_sources(mtime, size, hash)` is checked as two-tier: `mtime + size` is the fast first pass (cheap stat, but unreliable across NFS, Docker volumes, and some FUSE mounts); if either differs, recompute `hash` (BLAKE3 or similar — content-addressed, authoritative). `hash` is the source of truth for "needs rebuild"; `mtime + size` is only an optimisation to avoid hashing unchanged files.
 
 ```sql
 -- Core planning entities (markdown-authoritative, mirrored to SQLite)
@@ -142,7 +146,9 @@ tools/lib/repository/
     lesson-repo.js
     test-case-repo.js
     id-registry-repo.js          # bypasses index for allocate()
-    sdlc-status-repo.js          # SQLite-authoritative; JSON mirror via export
+    sdlc-task-repo.js            # SQLite-authoritative; mirrors to JSON on write
+    sdlc-event-repo.js           # SQLite-authoritative; mirrors to JSON on write
+    sdlc-programme-repo.js       # SQLite-authoritative; mirrors to JSON on write
     cost-row-repo.js             # read-only
     coverage-repo.js             # read-only
   migrations/                    # SQLite schema migrations
@@ -158,56 +164,61 @@ tools/lib/repository/
 
 Sync (matches all current tools; uses `better-sqlite3`'s sync API). Per-entity. Function-update for mutations so the repo re-reads under lock and applies the diff atomically.
 
+**Return-value contract for mutations.** `update(id, fn)` and `create(entity)` return the persisted entity after validation, serialisation, and index mirror. Validation-error-tier failures throw synchronously (no partial write). Warning-tier failures complete the write and append to `.cache/repo-warnings.jsonl`. `transaction(fn)` returns `void`; throw inside the callback to roll back.
+
 ```js
 const repo = Repository.getInstance();
 
 // Reads — fast path through index after refresh()
 const story = repo.stories.get('US-0187');
-const planned = repo.stories.list({ epicId: 'EPIC-0030', status: ['Planned','In Progress'] });
+const planned = repo.stories.list({ epicId: 'EPIC-0030', status: ['Planned', 'In Progress'] });
 
-// Writes — function-update under lock, AST-preserving serializer
-repo.stories.update('US-0187', (s) => {
+// Writes — function-update under lock, AST-preserving serializer.
+// Returns the persisted entity; throws on validation-error tier.
+const updated = repo.stories.update('US-0187', (s) => {
   s.status = 'In Progress';
   s.branch = 'feature/US-0187-registry';
 });
 
-// Multi-entity transactions
+// Multi-entity transactions. Throw to roll back all SQLite + markdown writes.
 repo.transaction((tx) => {
-  const acIds = tx.idRegistry.allocate('AC', 5);   // ['AC-0853'..'AC-0857']
-  tx.stories.create({ id: 'US-0215', epicId: 'EPIC-0036', title: ..., status: 'Planned' });
-  tx.acs.createMany(acIds.map((id, i) => ({ id, storyId: 'US-0215', text: ..., position: i })));
+  const acIds = tx.idRegistry.allocate('AC', 5); // ['AC-0853'..'AC-0857']
+  tx.stories.create({ id: 'US-0215', epicId: 'EPIC-0036', title: '...', status: 'Planned' });
+  tx.acs.createMany(acIds.map((id, i) => ({ id, storyId: 'US-0215', text: '...', position: i })));
 });
 
-// ID allocation outside a transaction — still goes through markdown under lock
-const next = repo.idRegistry.allocate('AC');       // 'AC-0853'
+// ID allocation outside a transaction — still goes through markdown under
+// a write lock (bypasses the index for freshness).
+const next = repo.idRegistry.allocate('AC'); // 'AC-0853'
 
-// Read-only entities
-const costs = repo.costs.list({ storyId: 'US-0187' });   // may be one session stale
+// Read-only entities — may be up to one session stale by design.
+const costs = repo.costs.list({ storyId: 'US-0187' });
 
-// Cache control
+// Cache control — mtime+size first-pass, hash on suspicion of change.
 const result = repo.refresh();
 // → { sources: ['RELEASE_PLAN.md', 'BUGS.md'], entitiesAffected: ['stories','acs','bugs'] }
 
-// SdlcStatus — SQLite-authoritative, with JSON mirror written on each event
-repo.sdlcStatus.recordEvent({ kind: 'agent-start', storyId: 'US-0187', agent: 'Forge', ... });
-// internally: INSERT INTO sdlc_events ...; then export JSON to docs/sdlc-status.json
+// SdlcStatus — SQLite-authoritative, with JSON mirror written on each event.
+repo.sdlcEvents.record({ kind: 'agent-start', storyId: 'US-0187', agent: 'Forge' });
+// internally: INSERT INTO sdlc_events ...; then write docs/sdlc-status.json mirror.
 ```
 
 ### 2.4 Key design choices
 
-| Choice                                                                       | Reason                                                                                                                                              |
-| ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`better-sqlite3`** (primary)                                               | Synchronous matches all current tools; prebuilds for darwin/linux/win; fastest Node option                                                          |
-| **`node:sqlite` fallback**                                                   | Native build fails on niche platforms; Node 22+ built-in (via `--experimental-sqlite` until Node 24). Detected at install; documented manual switch |
-| **`--no-index` legacy mode**                                                 | Final fallback if neither binding is available; runs parse-on-every-read; degraded performance, full functionality                                  |
-| **WAL mode**                                                                 | Concurrent readers + one writer; required for the agent-mesh access pattern                                                                         |
-| **AST-preserving markdown writes**                                           | Prose between fenced blocks is preserved verbatim; only the targeted block is rewritten                                                             |
-| **Singleton via `getInstance()`**                                            | Prevents two in-process caches from drifting                                                                                                        |
-| **Source provenance columns** (`source_file`, `source_line`) on every entity | Validation errors point at exact markdown locations; survives the Step 1.5 partition layout change                                                  |
-| **Normalised join tables** for dependencies, agent tags, bug↔story refs      | SQL catches orphan refs at write time; honours the integrity goal                                                                                   |
-| **Function-update mutation API**                                             | Repo re-reads from markdown inside the lock before applying the diff — eliminates the lost-write-on-stale-read pattern                              |
-| **Multi-entity transactions in Step 1 scope**                                | Story creation is _always_ multi-entity; deferring this would leave every new-story call with a partial-failure window                              |
-| **Validation tiers** — errors (block), warnings (log), reports (`plan:lint`) | Catches real corruption (duplicate IDs, invalid enums) without blocking legacy data                                                                 |
+| Choice                                                                       | Reason                                                                                                                                                                                                                                                                                                                                            |
+| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`better-sqlite3`** (primary)                                               | Synchronous matches all current tools; prebuilds for darwin/linux/win; fastest Node option                                                                                                                                                                                                                                                        |
+| **`node:sqlite` fallback**                                                   | Native build fails on niche platforms; Node 22+ built-in (via `--experimental-sqlite` until Node 24). Detected at install; documented manual switch                                                                                                                                                                                               |
+| **`--no-index` legacy mode**                                                 | Final fallback if neither binding is available; runs parse-on-every-read; degraded performance, full functionality                                                                                                                                                                                                                                |
+| **WAL mode**                                                                 | Concurrent readers + one writer; required for the agent-mesh access pattern                                                                                                                                                                                                                                                                       |
+| **AST-preserving markdown writes**                                           | Prose between fenced blocks is preserved verbatim; only the targeted block is rewritten                                                                                                                                                                                                                                                           |
+| **Singleton via `getInstance()`**                                            | Prevents two in-process caches from drifting                                                                                                                                                                                                                                                                                                      |
+| **Source provenance columns** (`source_file`, `source_line`) on every entity | Validation errors point at exact markdown locations; survives the Step 1.5 partition layout change                                                                                                                                                                                                                                                |
+| **Normalised join tables** for dependencies, agent tags, bug↔story refs      | SQL catches orphan refs at write time; honours the integrity goal                                                                                                                                                                                                                                                                                 |
+| **Function-update mutation API**                                             | Repo re-reads from markdown inside the lock before applying the diff — eliminates the lost-write-on-stale-read pattern                                                                                                                                                                                                                            |
+| **Multi-entity transactions in Step 1 scope**                                | Story creation is _always_ multi-entity; deferring this would leave every new-story call with a partial-failure window                                                                                                                                                                                                                            |
+| **Validation tiers** — errors (block), warnings (log), reports (`plan:lint`) | Catches real corruption (duplicate IDs, invalid enums) without blocking legacy data                                                                                                                                                                                                                                                               |
+| **SQLite (vs in-memory, JSON file, Redis, LevelDB)**                         | Durability across sessions; real SQL query language for dashboard + lint queries; zero-install (no server); cross-platform single-file portability; transactional. Alternatives ruled out: in-memory loses state on restart; JSON-file has no query language; Redis adds a server (violates "no server" non-goal); LevelDB lacks SQL and is niche |
 
 ---
 
@@ -215,16 +226,18 @@ repo.sdlcStatus.recordEvent({ kind: 'agent-start', storyId: 'US-0187', agent: 'F
 
 Six phases, each independently shippable. **No file is in mixed-mode at any point** — a file is either fully repo-managed or fully not.
 
-| Phase                                             | What ships                                                                                                                                                                                                                                                                 | Hard gate                                                                                                                                            | T-shirt |
-| ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| **A — Foundation**                                | `tools/lib/repository/` skeleton, base class, both datastores, migration framework (`tools/lib/migrations/`), `meta_*` tables, `.cache/` setup, AST parser, round-trip test harness, `pv:check-upgrade` / `pv:doctor` (read-only), better-sqlite3 smoke test on dev matrix | Every existing markdown source round-trips idempotent-on-second-pass (byte-identical after Migration 001 normalisation in E)                         | M       |
-| **B — Indexer as spectator**                      | `tools/generate-plan.js` _also_ emits the index after build; warnings channel writes to `.cache/repo-warnings.jsonl`; `npm run plan:lint` reports; tier classification PR (which rules are errors vs warnings vs reports)                                                  | Full session produces index consistent with markdown; warnings rate < 10/session on real data                                                        | S       |
-| **C — First read consumer**                       | Dashboard rendering reads from `repo.stories.list(...)`, etc., instead of re-parsing files                                                                                                                                                                                 | Snapshot test: rendered dashboard byte-identical to pre-migration output                                                                             | M       |
-| **D — SdlcStatus cutover (SQLite-authoritative)** | `agent-lifecycle.js`, `update-sdlc-status.js`, `agent-task-review.js`, `agent-spec-plan.js` migrate. SQLite is authoritative; `docs/sdlc-status.json` is mirrored on every event for live-dashboard parity. **Migration 002** ingests existing JSON on first run           | All existing integration tests pass; no tool writes JSON directly; dashboard live-update parity holds                                                | XL      |
-| **E — Planning writers**                          | All tools that mutate `RELEASE_PLAN.md` / `BUGS.md` / `LESSONS.md` / `TEST_CASES.md` / `ID_REGISTRY.md` migrate. **Migration 001** (normalisation) runs as a pre-Phase-E one-shot; user reviews diff explicitly                                                            | Round-trip + prose-preservation tests pass against the current production files (post-001); no markdown-write-via-fs outside `tools/lib/repository/` | XL      |
-| **F — Lock-down + strict validation**             | `file-lock.js` moves to `internal/` with a deprecation shim at the old path. CI check forbids `fs.write*` against managed files outside the repo. Validation switches errors-tier from log-and-pass to fail-on-error                                                       | CI green on a clean main; orphan-ref count == 0                                                                                                      | M       |
+**Effort baseline assumption.** Estimates below are _working days through the agent pipeline at typical observed velocity_ (reference: US-0184 Context Curator — parser, assembler, CLI, schema, integration test, lessons tagging — shipped in PR #1039 within ~2 working days). They are **not** human-developer weeks. Calendar time is roughly 1.5×–2× working days once review cycles and surprises are factored in.
 
-**Total realistic effort: ~14–19 weeks single-developer, or ~7-9 sprints with the agent pipeline** (including Section 4 upgrade work which is woven through Phases A, D, E).
+| Phase                                             | What ships                                                                                                                                                                                                                                                                 | Hard gate                                                                                                                                            | Working days |
+| ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| **A — Foundation**                                | `tools/lib/repository/` skeleton, base class, both datastores, migration framework (`tools/lib/migrations/`), `meta_*` tables, `.cache/` setup, AST parser, round-trip test harness, `pv:check-upgrade` / `pv:doctor` (read-only), better-sqlite3 smoke test on dev matrix | Every existing markdown source round-trips idempotent-on-second-pass (byte-identical after Migration 001 normalisation in E)                         | **3–5**      |
+| **B — Indexer as spectator**                      | `tools/generate-plan.js` _also_ emits the index after build; warnings channel writes to `.cache/repo-warnings.jsonl`; `npm run plan:lint` reports; tier classification PR (which rules are errors vs warnings vs reports)                                                  | Full session produces index consistent with markdown; warnings rate < 10/session on real data                                                        | **1–2**      |
+| **C — First read consumer**                       | Dashboard rendering reads from `repo.stories.list(...)`, etc., instead of re-parsing files                                                                                                                                                                                 | Snapshot test: rendered dashboard byte-identical to pre-migration output                                                                             | **2–3**      |
+| **D — SdlcStatus cutover (SQLite-authoritative)** | `agent-lifecycle.js`, `update-sdlc-status.js`, `agent-task-review.js`, `agent-spec-plan.js` migrate. SQLite is authoritative; `docs/sdlc-status.json` is mirrored on every event for live-dashboard parity. **Migration 002** ingests existing JSON on first run           | All existing integration tests pass; no tool writes JSON directly; dashboard live-update parity holds                                                | **5–8**      |
+| **E — Planning writers**                          | All tools that mutate `RELEASE_PLAN.md` / `BUGS.md` / `LESSONS.md` / `TEST_CASES.md` / `ID_REGISTRY.md` migrate. **Migration 001** (normalisation) runs as a pre-Phase-E one-shot; user reviews diff explicitly                                                            | Round-trip + prose-preservation tests pass against the current production files (post-001); no markdown-write-via-fs outside `tools/lib/repository/` | **5–8**      |
+| **F — Lock-down + strict validation**             | `file-lock.js` moves to `internal/` with a deprecation shim at the old path. CI check forbids `fs.write*` against managed files outside the repo. Validation switches errors-tier from log-and-pass to fail-on-error                                                       | CI green on a clean main; orphan-ref count == 0                                                                                                      | **1–2**      |
+
+**Total realistic effort: ~17–28 working days through the agent pipeline = ~3–6 weeks calendar** (including Section 4 upgrade work which is woven through Phases A, D, E). Smooth path is closer to 3 weeks; with normal surprises (round-trip drift, dashboard parity issues, schema edge cases) closer to 6.
 
 ### 3.1 Two cutover moments worth drawing
 
@@ -235,11 +248,11 @@ BEFORE Phase D:                      AFTER Phase D:
 agent dispatch                       agent dispatch
    │                                    │
    ▼                                    ▼
-fs.write(sdlc-status.json)           repo.sdlcStatus.recordEvent(...)
+fs.write(sdlc-status.json)           repo.sdlcEvents.record(...)
 ~50–200ms                               │
 one file lock                           ├─► INSERT INTO sdlc_events (microseconds)
 full rewrite                            └─► fs.write(sdlc-status.json) mirror
-                                            (live-dashboard parity, smaller payload)
+                                            (live-dashboard parity)
 ```
 
 **Phase E — Story creation flow:**
@@ -256,7 +269,8 @@ serialise 4k lines, write              const ids = tx.idRegistry.allocate('AC', 
                                      });
                                      AST-preserving serializer rewrites only
                                      the affected block; surrounding prose
-                                     unchanged. Single multi-file lock.
+                                     unchanged. Transaction holds locks on
+                                     all touched files until commit.
 ```
 
 ### 3.2 Migration-period risks (and mitigations)
@@ -293,17 +307,18 @@ PlanVisualizer is installed into other projects via `scripts/install.sh` and `sc
 
 ### 4.1 Upgrade scenarios that must work
 
-| ID     | Scenario                                          | Resolution path                                                                                                                                                                                       |
-| ------ | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **S1** | Fresh install on a new project                    | `pv:upgrade` is a no-op against an empty `docs/`; index builds clean                                                                                                                                  |
-| **S2** | Upgrade v2.4.x → v2.5                             | Migration 001 (normalisation) takes a backup, runs the AST serializer pass, user reviews the diff                                                                                                     |
-| **S3** | Upgrade v2.5 (Phase D) → v2.5.x (Phase E)         | Migration 001 runs at this point if not earlier; idempotent                                                                                                                                           |
-| **S4** | Upgrade across Step 1 → Step 1.5 (partition)      | Migration 003 is _opt-in_ (`pv:upgrade --partition`); explicit warning; backup + `MIGRATION.md` produced                                                                                              |
-| **S5** | Mixed-version team (one dev on v2.4, one on v2.5) | `.pv-state.json` mismatch logs WARNING on every tool invocation; v2.4 dev's tools still work (legacy parser is permissive); v2.5 dev's index goes stale on cross-version edits, caught by `refresh()` |
-| **S6** | Downgrade v2.5 → v2.4                             | `.cache/` deleted; markdown still parses with v2.4's legacy parser (post-Migration-001 markdown is a strict subset of what v2.4 accepted)                                                             |
-| **S7** | Skipping versions (v2.3 → v2.6)                   | All applicable migrations run in order; pre-flight in `pv:check-upgrade` lists them                                                                                                                   |
-| **S8** | Platform without better-sqlite3 prebuilds         | Install detects, falls back to `node:sqlite` (Node 22+) or `--no-index` legacy mode; documented `npm rebuild` recovery                                                                                |
-| **S9** | User hand-edited `sdlc-status.json` (rare)        | Migration 002 ingests; unknown fields surface as warnings, not silent drop                                                                                                                            |
+| ID      | Scenario                                            | Resolution path                                                                                                                                                                                                                                                                                                                                 |
+| ------- | --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **S1**  | Fresh install on a new project                      | `pv:upgrade` is a no-op against an empty `docs/`; index builds clean                                                                                                                                                                                                                                                                            |
+| **S2**  | Upgrade v2.4.x → v2.5                               | Migration 001 (normalisation) takes a backup, runs the AST serializer pass, user reviews the diff                                                                                                                                                                                                                                               |
+| **S3**  | Upgrade v2.5 (Phase D) → v2.5.x (Phase E)           | Migration 001 runs at this point if not earlier; idempotent                                                                                                                                                                                                                                                                                     |
+| **S4**  | Upgrade across Step 1 → Step 1.5 (partition)        | Migration 003 is _opt-in_ (`pv:upgrade --partition`); explicit warning; backup + `MIGRATION.md` produced                                                                                                                                                                                                                                        |
+| **S5**  | Mixed-version team (one dev on v2.4, one on v2.5)   | `.pv-state.json` mismatch logs WARNING on every tool invocation; v2.4 dev's tools still work (legacy parser is permissive); v2.5 dev's index goes stale on cross-version edits, caught by `refresh()`                                                                                                                                           |
+| **S6**  | Downgrade v2.5 → v2.4                               | `.cache/` deleted; markdown still parses with v2.4's legacy parser (post-Migration-001 markdown is a strict subset of what v2.4 accepted)                                                                                                                                                                                                       |
+| **S7**  | Skipping versions (v2.3 → v2.6)                     | All applicable migrations run in order; pre-flight in `pv:check-upgrade` lists them                                                                                                                                                                                                                                                             |
+| **S8**  | Platform without better-sqlite3 prebuilds           | Install detects, falls back to `node:sqlite` (Node 22+) or `--no-index` legacy mode; documented `npm rebuild` recovery                                                                                                                                                                                                                          |
+| **S9**  | User hand-edited `sdlc-status.json` (rare)          | Migration 002 ingests; unknown fields surface as warnings, not silent drop                                                                                                                                                                                                                                                                      |
+| **S10** | User pulled new code but forgot to run `pv:upgrade` | Every tool invocation compares `package.json#version` against `.pv-state.json#planvisualizerVersion`. Mismatch logs a loud WARNING and a one-line instruction (`run npm run pv:upgrade`). Tools still execute — they don't refuse — but the user can't miss the message. `--force` flag available for known-intentional mismatch (e.g. testing) |
 
 ### 4.2 Migration framework (`tools/lib/migrations/`)
 
@@ -327,7 +342,7 @@ Each migration:
 - Logs each step to `progress.md` as structured rows.
 - Has a `rollback()` function where mechanically possible; explicitly one-way migrations are flagged.
 
-State persisted at `docs/.pv-state.json` (project-local, gitignored):
+State persisted at `docs/.pv-state.json` — **committed to git** so team members share migration history (one dev applies Migration 001 → next dev pulls and knows the markdown is post-normalisation). Only the backup directory (`docs/.pv-backup/`) is gitignored, since backups are local recovery artefacts.
 
 ```json
 {
@@ -434,7 +449,7 @@ When Step 1 ships, the following exist:
 - [ ] `tools/lib/repository/` populated per §2.2
 - [ ] `tools/lib/migrations/` populated per §4.2
 - [ ] `.cache/` gitignored
-- [ ] `docs/.pv-state.json` gitignored
+- [ ] `docs/.pv-state.json` **committed** (shared team migration history)
 - [ ] `docs/.pv-backup/` gitignored
 - [ ] `package.json` adds `better-sqlite3` (with `node:sqlite` and `--no-index` fallbacks documented)
 - [ ] `npm run pv:check-upgrade`, `pv:upgrade`, `pv:rollback`, `pv:doctor` scripts

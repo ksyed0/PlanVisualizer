@@ -77,6 +77,7 @@ Four steps. Each is independently shippable; each opens the door for the next wi
 - A migration framework (`tools/lib/migrations/`) with `pv:check-upgrade` / `pv:upgrade` / `pv:rollback` / `pv:doctor` commands handles existing-user upgrades.
 - Spec: [`docs/superpowers/specs/2026-05-19-step-1-repository-abstraction-design.md`](../superpowers/specs/2026-05-19-step-1-repository-abstraction-design.md).
 - Status: brainstormed, awaiting `writing-plans` → implementation plan.
+- Indicative effort: ~17–28 working days through the agent pipeline (~3–6 weeks calendar). Detailed sizing in the spec.
 - Out of scope: identity, server, network, partition of `RELEASE_PLAN.md` into per-epic files.
 
 ### Step 1.5 — Partition (storage layout change behind the repo)
