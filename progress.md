@@ -4,6 +4,32 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 49 — 2026-05-18 (Documentation catch-up for EPIC-0028 / EPIC-0029)
+
+### What Was Done
+
+- **Architecture refresh (PR #1059, merged earlier in session):** created `docs/architecture/AGENTIC_PIPELINE.md` (13 sections, 9 mermaid diagrams — flowcharts, state machines, sequence + class diagrams) as the authoritative reference for EPIC-0028 + EPIC-0029. Bumped `ARCHITECTURE.md` v1.5 → v1.6 (scope note + top-level system diagram) and `DESIGN.md` v1.3 → v1.4 (vision expanded to include orchestration engine).
+- **Doc audit + catch-up (PR #1060, merged this session):** identified 9 stale docs out of sync with EPIC-0028 work, then landed both waves of fixes:
+  - **Wave 1 — README + installers:** README gains a "What's New in v2.4.0 — Agentic Orchestration Engine" section listing all of EPIC-0028/0029 + 21 `agent:*` npm script aliases + pointer to `AGENTIC_PIPELINE.md`. `scripts/install.sh` and `scripts/update.sh` register the 15 missing aliases (8 lifecycle, 1 context curator, 5 review gate) so target projects pick them up automatically. Renamed US-0181 comments → US-0182 to match canonical epic naming.
+  - **Wave 2 — CHANGELOG + AGENTS + persona files:** `CHANGELOG.md` gains v2.1.0, v2.2.0, v2.3.0, v2.4.0 entries (was stuck at 2.0.0 + 1.5.0 — 4 versions worth of drift). `AGENTS.md` gains a §Orchestration Engine section with CLI tool table and opt-in guidance. `PROJECT.md`, `CLAUDE.md`, `plan_visualizer.md` each receive a pointer line to `AGENTIC_PIPELINE.md`. Persona files updated: `PO_AGENT.md` (US-0182 pre-dispatch approval), `DM_AGENT.md` (Role para names the engine), `CODE_REVIEWER_AGENT.md` (Role para covers US-0185 two-phase review gate state machine), `ARCHITECT_AGENT.md` (US-0182 spec/plan authoring).
+- **PR #1060 — merged to develop.** All 8 CI checks green (CodeQL skipped per docs-only convention). Required one `gh pr update-branch` mid-flight (Dependabot bumps had landed on develop). Auto-merge completed at 16:57Z.
+
+### Test Results
+
+- No application code changed this session — docs only.
+- CI for PR #1060 (and the preceding PR #1059): all 7 required + Analyze JavaScript green; Prettier auto-fixed README wrapping during pre-commit hook.
+
+### Errors or Blockers
+
+- None. Mid-session compaction happened once during the update.sh edit (resumed cleanly from the summary).
+
+### What's Next
+
+- **Dogfood EPIC-0028 on the next real story.** All documentation describing the engine is now consistent with the implementation, so a fresh developer (or agent) reading any entry point — README, AGENTS.md, CLAUDE.md, persona files, AGENTIC_PIPELINE.md — gets a coherent picture.
+- **EPIC-0029 next stories** (BLOCKED routing visibility, lifecycle timeline view, model-tier escalation traces) per Session 48 hand-off.
+
+---
+
 ## Session 48 — 2026-05-17/18 (v2.4.0 release + US-0186 Dashboard Review-Gate Visualization)
 
 ### What Was Done
