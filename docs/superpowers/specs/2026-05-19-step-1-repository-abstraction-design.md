@@ -53,23 +53,24 @@ A two-layer repository pattern sits between tools and the existing parsers in `t
         │  parsers     │  writes; refresh()
         ▼              │  on session start
    docs/*.md ──────────┘
-   docs/sdlc-status.json ◄── exported from SQLite as build artifact
-                              (write-through for live-dashboard parity)
+   docs/sdlc-status.json ◄── mirrored from SQLite on each event for
+                              live-dashboard parity; also regenerated
+                              on full dashboard build
 ```
 
 **Three entity classes, three datastore behaviours:**
 
-| Class                | Entities                                                                | Datastore                                       | Write path                                                                                           |
-| -------------------- | ----------------------------------------------------------------------- | ----------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| **Human-authored**   | Epic, Story, AC, Task, Bug, Lesson, TestCase, IdRegistry                | Markdown authoritative + SQLite index (derived) | Repo writes markdown (AST-preserving serializer), then mirrors to SQLite within same transaction     |
-| **Tool-emitted**     | SdlcStatus tasks, agent lifecycle events, programme block, dispatch log | SQLite authoritative                            | Repo writes SQLite row; also writes JSON mirror to `docs/sdlc-status.json` for live-dashboard parity |
-| **Append-from-hook** | CostRow (`AI_COST_LOG.md`), Coverage (JSON)                             | Markdown / JSON append, repo read-only          | Hooks/external processes write directly; repo offers `list()` only                                   |
+| Class                | Entities                                                                | Datastore                                       | Write path                                                                                                                                                                                                                                                                                                                                                                            |
+| -------------------- | ----------------------------------------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Human-authored**   | Epic, Story, AC, Task, Bug, Lesson, TestCase, IdRegistry                | Markdown authoritative + SQLite index (derived) | Two-step write under a file lock: (1) AST-preserving markdown serializer writes the file; (2) SQLite mirror is applied. `meta_status('stale', 1)` is set immediately before step (2) and cleared on success. If step (2) throws, the stale flag triggers a rebuild from markdown on the next session open. The two writes are not in a single transaction — markdown is authoritative |
+| **Tool-emitted**     | SdlcStatus tasks, agent lifecycle events, programme block, dispatch log | SQLite authoritative                            | Repo opens a SQLite transaction, writes the row, then writes the JSON mirror to `docs/sdlc-status.json` under a file lock on the mirror file. The mirror write re-queries SQL inside its lock so concurrent writes can't leave the JSON stale (see §3.2)                                                                                                                              |
+| **Append-from-hook** | CostRow (`AI_COST_LOG.md`), Coverage (JSON)                             | Markdown / JSON append, repo read-only          | Hooks/external processes write directly; repo offers `list()` only. These paths are explicitly exempt from the Phase F "no writes outside repo" CI check (see §3 allowlist)                                                                                                                                                                                                           |
 
 **Cache-coherence properties (the amended Option C from the brainstorm):**
 
-- `repo.refresh()` runs on session start (mtime-incremental against `meta_sources` table).
+- `repo.refresh()` runs automatically at **two defined moments**: (a) inside `Repository.getInstance()` the first time it's called in a process, and (b) at the start of every agent dispatch (via a small `dispatch-prelude` step in `orchestrator/spawn.js`). Both calls are cheap — mtime+size first-pass against `meta_sources`, hash-recompute only on suspicion of change. These are the **correctness guarantees** for cross-process freshness; callers can also invoke `repo.refresh()` explicitly before any read where they need to be certain.
 - Within a single writing process, writes are reflected immediately in the index (no own-stale-read possible).
-- Across processes, an `fs.watch` on `docs/` triggers incremental rebuild during live sessions. (Caveat: `fs.watch` semantics differ across platforms — macOS uses FSEvents, Linux uses inotify, Windows uses ReadDirectoryChangesW. NFS, SMB, and some FUSE-backed filesystems may not deliver events at all. The fall-back is the session-start `refresh()` plus the within-process write-through; live `fs.watch` is an optimisation, not a correctness requirement.)
+- Across processes, an `fs.watch` on `docs/` triggers incremental rebuild during live sessions. This is an **optimisation only** — it reduces the staleness window between dispatches but is not relied on for correctness. (Caveat: `fs.watch` semantics differ across platforms — macOS uses FSEvents, Linux uses inotify, Windows uses ReadDirectoryChangesW. NFS, SMB, and some FUSE-backed filesystems may not deliver events at all.)
 - ID allocation and task claim semantics **always bypass the index** — they read markdown under a write lock to avoid stale-read corruption.
 - Validation errors block writes; warnings log to `.cache/repo-warnings.jsonl`; reports surface via `npm run plan:lint`.
 
@@ -109,14 +110,16 @@ sdlc_events(id PK AUTOINCREMENT, ts, kind, story_id, agent, payload_json);
 sdlc_programme(key PK, value_json);  -- programme conductor state (post-EPIC-0031)
 
 -- Read-only (append-from-hook)
-cost_rows(ts, session_id, tokens_in, tokens_out, model, story_id, source_file);
-coverage(snapshot_at, statements_pct, branches_pct, functions_pct, lines_pct);
+cost_rows(id PK AUTOINCREMENT, ts, session_id, tokens_in, tokens_out, model, story_id, source_file);
+coverage(snapshot_at PK, statements_pct, branches_pct, functions_pct, lines_pct);
 
 -- Meta (cache coherence + observability)
 meta_sources(path PK, mtime, size, hash, last_indexed);
 meta_status(key PK, value);
    -- 'schema_version', 'stale', 'refreshing', 'committing', 'built_at'
 warnings(id PK AUTOINCREMENT, ts, level, entity_id, source_file, message);
+   -- Retention: default 30 days; pv:doctor warns if rows exceed 10k.
+   -- Trimmed on each pv:doctor run; manual prune via pv:doctor --prune-warnings.
 ```
 
 Indexes on FK columns and on commonly-queried fields (`stories(epic_id, status)`, `acs(story_id)`, `sdlc_events(story_id, ts)`, etc.).
@@ -165,6 +168,13 @@ tools/lib/repository/
 Sync (matches all current tools; uses `better-sqlite3`'s sync API). Per-entity. Function-update for mutations so the repo re-reads under lock and applies the diff atomically.
 
 **Return-value contract for mutations.** `update(id, fn)` and `create(entity)` return the persisted entity after validation, serialisation, and index mirror. Validation-error-tier failures throw synchronously (no partial write). Warning-tier failures complete the write and append to `.cache/repo-warnings.jsonl`. `transaction(fn)` returns `void`; throw inside the callback to roll back.
+
+**Transaction semantics (locking, ordering, visibility).**
+
+- **Lock acquisition order.** All file locks within a transaction are acquired in lexicographic path order. Two transactions touching the same files will queue, not deadlock.
+- **Markdown writes are batched until commit.** Inside a transaction, `tx.x.update(...)` / `tx.x.create(...)` stages the change in memory. Markdown files are flushed in lock-acquisition order at commit. If the callback throws, SQLite is rolled back and no markdown writes have been issued.
+- **ID allocation is reserved-but-not-committed inside transactions.** `tx.idRegistry.allocate('AC', 5)` reserves IDs inside the transaction's view but does not write `ID_REGISTRY.md` until commit. Other processes calling `repo.idRegistry.allocate()` block on the ID_REGISTRY file lock and will not see the reservation until commit. Crash during the transaction releases the lock and the reservation never lands.
+- **Outside-transaction `repo.idRegistry.allocate()`** still reads/writes `ID_REGISTRY.md` under a write lock and commits immediately.
 
 ```js
 const repo = Repository.getInstance();
@@ -235,7 +245,27 @@ Six phases, each independently shippable. **No file is in mixed-mode at any poin
 | **C — First read consumer**                       | Dashboard rendering reads from `repo.stories.list(...)`, etc., instead of re-parsing files                                                                                                                                                                                 | Snapshot test: rendered dashboard byte-identical to pre-migration output                                                                             | **2–3**      |
 | **D — SdlcStatus cutover (SQLite-authoritative)** | `agent-lifecycle.js`, `update-sdlc-status.js`, `agent-task-review.js`, `agent-spec-plan.js` migrate. SQLite is authoritative; `docs/sdlc-status.json` is mirrored on every event for live-dashboard parity. **Migration 002** ingests existing JSON on first run           | All existing integration tests pass; no tool writes JSON directly; dashboard live-update parity holds                                                | **5–8**      |
 | **E — Planning writers**                          | All tools that mutate `RELEASE_PLAN.md` / `BUGS.md` / `LESSONS.md` / `TEST_CASES.md` / `ID_REGISTRY.md` migrate. **Migration 001** (normalisation) runs as a pre-Phase-E one-shot; user reviews diff explicitly                                                            | Round-trip + prose-preservation tests pass against the current production files (post-001); no markdown-write-via-fs outside `tools/lib/repository/` | **5–8**      |
-| **F — Lock-down + strict validation**             | `file-lock.js` moves to `internal/` with a deprecation shim at the old path. CI check forbids `fs.write*` against managed files outside the repo. Validation switches errors-tier from log-and-pass to fail-on-error                                                       | CI green on a clean main; orphan-ref count == 0                                                                                                      | **1–2**      |
+| **F — Lock-down + strict validation**             | `file-lock.js` moves to `internal/` with a deprecation shim at the old path. CI check forbids `fs.write*` against **managed paths** (see allowlist below) outside `tools/lib/repository/`. Validation switches errors-tier from log-and-pass to fail-on-error              | CI green on a clean main; orphan-ref count == 0                                                                                                      | **1–2**      |
+
+**Managed-path allowlist (the CI rule's positive scope).** The Phase F CI check is scoped to _managed paths only_ — everything else is implicitly exempt. Managed paths:
+
+- `docs/RELEASE_PLAN.md`
+- `docs/BUGS.md`
+- `docs/LESSONS.md`
+- `docs/TEST_CASES.md`
+- `docs/ID_REGISTRY.md`
+- `docs/sdlc-status.json` (allowed inside `sdlc-*-repo.js` only; that's where the mirror writes happen)
+
+**Explicit exemptions (not managed; tools may write directly):**
+
+- `docs/AI_COST_LOG.md` — append-from-hook
+- `docs/memory/**` — out of scope for Step 1; `tools/memory.js` continues to write directly
+- `docs/superpowers/specs/**` and `docs/superpowers/plans/**` — agent-authored prose; not in the entity model
+- `docs/coverage/**` — generated by Jest, not by repo
+- Bootstrap paths (`scripts/install.sh`, `scripts/update.sh`, `tools/init-sdlc-status.js`) — scaffolding runs before the repo exists; explicitly allowlisted
+- `progress.md`, `PROMPT_LOG.md`, `MIGRATION_LOG.md` — session-log files, append-only by various tools
+
+The CI rule's job is to enforce that **managed paths** are written _only_ through the repository, not to police every filesystem write in the project.
 
 **Total realistic effort: ~17–28 working days through the agent pipeline = ~3–6 weeks calendar** (including Section 4 upgrade work which is woven through Phases A, D, E). Smooth path is closer to 3 weeks; with normal surprises (round-trip drift, dashboard parity issues, schema edge cases) closer to 6.
 
@@ -275,16 +305,18 @@ serialise 4k lines, write              const ids = tx.idRegistry.allocate('AC', 
 
 ### 3.2 Migration-period risks (and mitigations)
 
-| Risk                                                 | Window               | Mitigation                                                                                                                                    |
-| ---------------------------------------------------- | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| Mixed-mode writers race on a file                    | Phases C–E           | Hard gate: file enters repo management only when _all_ its writers migrate together in one PR                                                 |
-| Round-trip serializer drift discovered in production | Phase E first commit | Run Phase E serializer against a _copy_ of production markdown first; require byte-identical re-serialise (post-Migration 001) before cutover |
-| SdlcStatus schema misses a nested field              | Phase D              | Snapshot fixtures from real sessions; assert JSON-mirror output matches pre-migration JSON                                                    |
-| Agents started during a refresh see partial state    | Phases B+            | `meta_status('refreshing', pid)` flag with timeout-and-retake                                                                                 |
-| Schema migration deploys before code does in dev     | Phases A+            | `meta_status.schema_version` checked on open; mismatch triggers full rebuild from markdown — cache is disposable                              |
-| WAL files (`-wal`, `-shm`) outlive crashes           | Phases A+            | `.cache/` cleanup script must not `rm` mid-session; auto-recovery on next open handles it                                                     |
-| Two-process `refresh()` race                         | Phases B+            | `meta_status('refreshing', pid)` + `fs.watch` during live sessions; refresh is single-threaded per process                                    |
-| AI_COST_LOG hook bypasses repo by design             | Always               | `plan:lint` exempts this file from the "no writes outside repo" check explicitly                                                              |
+| Risk                                                                                    | Window               | Mitigation                                                                                                                                                                                                                                                                               |
+| --------------------------------------------------------------------------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Mixed-mode writers race on a file                                                       | Phases C–E           | Hard gate: file enters repo management only when _all_ its writers migrate together in one PR                                                                                                                                                                                            |
+| Round-trip serializer drift discovered in production                                    | Phase E first commit | Run Phase E serializer against a _copy_ of production markdown first; require byte-identical re-serialise (post-Migration 001) before cutover                                                                                                                                            |
+| SdlcStatus schema misses a nested field                                                 | Phase D              | Snapshot fixtures from real sessions; assert JSON-mirror output matches pre-migration JSON                                                                                                                                                                                               |
+| Agents started during a refresh see partial state                                       | Phases B+            | `meta_status('refreshing', pid)` flag with timeout-and-retake                                                                                                                                                                                                                            |
+| Schema migration deploys before code does in dev                                        | Phases A+            | `meta_status.schema_version` checked on open; mismatch triggers full rebuild from markdown — cache is disposable                                                                                                                                                                         |
+| WAL files (`-wal`, `-shm`) outlive crashes                                              | Phases A+            | `.cache/` cleanup script must not `rm` mid-session; auto-recovery on next open handles it                                                                                                                                                                                                |
+| Two-process `refresh()` race                                                            | Phases B+            | `meta_status('refreshing', pid)` + `fs.watch` during live sessions; refresh is single-threaded per process                                                                                                                                                                               |
+| AI_COST_LOG hook bypasses repo by design                                                | Always               | `plan:lint` exempts this file from the "no writes outside repo" check explicitly                                                                                                                                                                                                         |
+| Two processes write SQL events concurrently; JSON mirror could briefly reflect only one | Phase D+             | Mirror writes hold a file lock on `docs/sdlc-status.json`; inside the lock, the writer re-queries SQL for the latest state before serialising. Net: mirror eventually reflects all committed events; the brief window where only one event is visible is bounded by lock duration (~5ms) |
+| Multi-file transactions could deadlock if lock order is undefined                       | Phases D, E          | Locks acquired in lexicographic path order, always (see §2.3 Transaction semantics)                                                                                                                                                                                                      |
 
 ### 3.3 Step 1.5 hand-off (what partition looks like after F)
 
@@ -342,16 +374,28 @@ Each migration:
 - Logs each step to `progress.md` as structured rows.
 - Has a `rollback()` function where mechanically possible; explicitly one-way migrations are flagged.
 
-State persisted at `docs/.pv-state.json` — **committed to git** so team members share migration history (one dev applies Migration 001 → next dev pulls and knows the markdown is post-normalisation). Only the backup directory (`docs/.pv-backup/`) is gitignored, since backups are local recovery artefacts.
+State is split across two files to avoid merge-conflict noise on shared pulls:
+
+**`docs/.pv-state.json`** — **committed to git** so team members share migration history (one dev applies Migration 001 → next dev pulls and knows the markdown is post-normalisation):
 
 ```json
 {
   "planvisualizerVersion": "2.5.0",
-  "appliedMigrations": ["001-normalise-fenced-blocks", "002-ingest-sdlc-status"],
+  "appliedMigrations": ["001-normalise-fenced-blocks", "002-ingest-sdlc-status"]
+}
+```
+
+**`docs/.pv-state.local.json`** — **gitignored**; machine-local metadata that would otherwise produce one-line diffs on every upgrade run:
+
+```json
+{
   "lastUpgradeAt": "2026-05-19T14:00:00Z",
+  "lastUpgradeBy": "ksyed0",
   "backupsDir": "docs/.pv-backup/"
 }
 ```
+
+`docs/.pv-backup/` is gitignored (local recovery artefacts only).
 
 ### 4.3 User-facing commands
 
@@ -449,13 +493,14 @@ When Step 1 ships, the following exist:
 - [ ] `tools/lib/repository/` populated per §2.2
 - [ ] `tools/lib/migrations/` populated per §4.2
 - [ ] `.cache/` gitignored
-- [ ] `docs/.pv-state.json` **committed** (shared team migration history)
+- [ ] `docs/.pv-state.json` **committed** (shared team migration history: `planvisualizerVersion`, `appliedMigrations`)
+- [ ] `docs/.pv-state.local.json` gitignored (machine-local: `lastUpgradeAt`, `lastUpgradeBy`)
 - [ ] `docs/.pv-backup/` gitignored
 - [ ] `package.json` adds `better-sqlite3` (with `node:sqlite` and `--no-index` fallbacks documented)
 - [ ] `npm run pv:check-upgrade`, `pv:upgrade`, `pv:rollback`, `pv:doctor` scripts
 - [ ] `npm run plan:lint` script
 - [ ] `npm run plan:index` script (manual rebuild)
-- [ ] All ~10 storage-touching tools migrated to use the repository
+- [ ] All planning-data and lifecycle-event tools migrated to use the repository (~7 tools: `agent-spec-plan.js`, `agent-task-review.js`, `agent-context.js`, `agent-lifecycle.js`, `generate-plan.js`, `sync-github.js`, `update-sdlc-status.js`). Bootstrap (`init-sdlc-status.js`, `scripts/install.sh`), cost-hook (`capture-cost.js`), and memory (`tools/memory.js`) are explicitly exempt and listed in the CI allowlist
 - [ ] `scripts/update.sh` amended to run `pv:check-upgrade`
 - [ ] AGENTS.md and CLAUDE.md updated with the new persistence rules (no `fs.write*` against managed files)
 - [ ] Round-trip and integration tests at ≥80% coverage per project standard
