@@ -3670,14 +3670,14 @@ Acceptance Criteria:
 US-0221 (EPIC-0036): As any repository caller, I want a MarkdownDatastore that owns reading and (later in Phase E) writing managed markdown files, so that AST operations and source-meta lookups are encapsulated.
 Priority: High (P1)
 Estimate: S
-Status: Planned
+Status: Done
 Plan Task: A.7
 Dependencies: US-0217 (EPIC-0036), US-0218 (EPIC-0036)
 Acceptance Criteria:
 
-- [ ] AC-0875: MarkdownDatastore.readAst(rel) returns the parsed AST for a managed path
-- [ ] AC-0876: sourceMeta(rel) returns { mtime, size, hash:sha256 } for staleness detection
-- [ ] AC-0877: writeAst(rel, ast) writes through the file lock and an atomic rename via .tmp
+- [x] AC-0875: MarkdownDatastore.readAst(rel) returns the parsed AST for a managed path
+- [x] AC-0876: sourceMeta(rel) returns { mtime, size, hash:sha256 } for staleness detection
+- [x] AC-0877: writeAst(rel, ast) writes through the file lock and an atomic rename via .tmp
 ```
 
 ```
