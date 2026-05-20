@@ -3776,7 +3776,7 @@ Phase B of Step 1. Per-file indexers populate the SQLite index from markdown; `g
 EPIC-0037: Step 1 Persistence — Indexer as Spectator (Phase B)
 Description: Build per-source indexers (release-plan, bugs, lessons, test-cases, id-registry, sdlc-status), wire them into generate-plan.js, implement cross-entity referential checks, and ship npm run plan:lint. Hard gate: a full session produces an index consistent with markdown, with warnings rate < 10/session on current production data.
 Release Target: v2.5.0
-Status: In Progress
+Status: Done
 Dependencies: EPIC-0036
 ```
 
@@ -3837,7 +3837,7 @@ Acceptance Criteria:
 
 - [x] AC-0902: tools/plan-lint.js outputs counts per tier and lists each violation with one-line summary
 - [x] AC-0903: exit code is 1 only if errors-tier is non-empty; warnings/reports do not fail the build at Phase B
-- [ ] AC-0904: Phase B hard gate verified — warnings on current production data < 10
+- [x] AC-0904: Phase B hard gate verified — warnings on current production data < 10
 ```
 
 ## Epic — EPIC-0038: Step 1 Persistence — First Read Consumer (Phase C)
