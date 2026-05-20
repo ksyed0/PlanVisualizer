@@ -7,7 +7,12 @@ const { pending } = require('./lib/migrations');
 function main() {
   const root = process.cwd();
   const state = readState({ root });
-  const pkgVersion = require(path.join(root, 'package.json')).version;
+  let pkgVersion = 'unknown';
+  try {
+    pkgVersion = require(path.join(root, 'package.json')).version || 'unknown';
+  } catch (err) {
+    console.warn(`⚠  Could not read package.json (${err.code || 'error'}). Continuing with installed=unknown.`);
+  }
   const todo = pending({ root });
   console.log(`PlanVisualizer state:`);
   console.log(`  installed:     ${pkgVersion}`);
