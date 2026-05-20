@@ -4,6 +4,38 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 53 — 2026-05-20 (Phase C First Read Consumer — EPIC-0038 Done)
+
+### What Was Done
+
+- **C.1 Entity read APIs (US-0230):** Shipped `tools/lib/repository/entities/base-repo.js` (BaseRepo with `get(id)`, `list(filters)`), `epic-repo.js`, `story-repo.js`, `ac-repo.js`. All three entity repos wired into `Repository.getInstance()` as `repo.epics`, `repo.stories`, `repo.acs` with list filters (`epicId`, `status`, `storyId`). camelCase column mapping enforced across all repos. Commits `6e2c88b` and `7ee3bcf`.
+- **C.2 Dashboard repo migration (US-0231, flag-guarded):** Shipped `tools/lib/dashboard-repo-reader.js` with `mergeRepoData` shim. `tools/generate-plan.js` reads epics/stories/ACs via the repository under `PV_DASHBOARD_VIA_REPO=1`; default remains OFF (legacy path). Second `indexAll` call gated to flag-off path to avoid double indexing. Commits `d09f43a` and `baec131`.
+- **Hard gate verified:** Parity diff between legacy and repo paths = timestamps only. Zero semantic diff on production data.
+- **EPIC-0038 marked Done.** AC-0911 (flag flip to default-on) intentionally deferred to Phase C.5.
+
+### Test Results
+
+- **8 new Phase C tests, full suite 1352 passed**
+  - `tests/unit/repository/entities-read.test.js` — 4 tests, all pass
+  - `tests/integration/dashboard-parity.test.js` — 4 tests, all pass
+- **Coverage: 87.68%** (≥80% gate ✅)
+
+### Errors / Blockers
+
+- **AC-0911 deferred:** Flag default flip to `PV_DASHBOARD_VIA_REPO=1` is intentionally NOT done. Default remains OFF. AC-0911 text annotated "(deferred to Phase C.5)".
+- **3 Phase-D-blocking issues surfaced** (encoded as L-0075..L-0079 in LESSONS.md):
+  - Indexer prose-node gap: ~26 stories + ~5 epics in prose AST nodes never entered SQLite; parity shim hides this.
+  - `Retired` status CHECK constraint: US-0049 silently dropped by `INSERT OR IGNORE`. Phase D schema needs `Retired`.
+  - `priority` field shape divergence: legacy normalizes `"High (P0)"` → `"P0"`; repo stores raw string. Phase D must canonicalize at write time.
+- **Develop auto-version-bump:** CI bumped develop `package.json` from 2.4.7 → 2.4.8 during branch work; required rebase before PR open (encoded as L-0079).
+- **Snapshot side-effects:** Parity diff required two warm-up legacy runs before comparing; cold runs produced false timestamp+trend diffs (encoded as L-0078).
+
+### PR
+
+- PR: TODO — to be opened after this docs commit (branch: `claude/phase-c-entities` → `develop`)
+
+---
+
 ## Session 49 — 2026-05-18 (Documentation catch-up for EPIC-0028 / EPIC-0029)
 
 ### What Was Done

@@ -4,6 +4,66 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
+## L-0075 — Indexer prose-node gap: fenced-only scan silently misses entities in prose AST nodes @agent:Forge @agent:Keystone
+
+**Context:** Session 53. Phase C (EPIC-0038). The Phase B `release-plan-indexer` only scans AST nodes where `kind === 'fenced'`. Approximately 26 stories and 5 epics in production `docs/RELEASE_PLAN.md` live in prose nodes (not inside fenced code blocks) and were never inserted into the SQLite index. The Phase C parity shim hid this by falling back to the legacy parse path when a repo query returned nothing. Encoding: ~31 entities are missing from the DB. A future "delete legacy path" change in Phase D would surface them as missing data.
+
+**Rule:** When writing indexers that scan markdown AST nodes, always check whether the document has entities in _both_ fenced and prose node types. Never assume all entities in a document are inside fenced blocks. Either widen the indexer to handle prose nodes (preferred) or enforce fenced-only placement as a `plan:lint` error so documents are kept consistent. A parity shim that falls back to legacy will hide indexer coverage gaps indefinitely — add an explicit "entities only in legacy, not in repo" count to the parity gate output so gaps surface during verification rather than only when the legacy path is deleted.
+
+**Prevention:** Phase D must either widen the indexer to scan prose nodes or add a `plan:lint` error for entities outside fenced blocks before promoting the repo path to authoritative.
+
+**Date:** 2026-05-20
+
+---
+
+## L-0076 — Schema CHECK constraint rejects `Retired` status — `INSERT OR IGNORE` silently drops valid entities @agent:Forge @agent:Keystone
+
+**Context:** Session 53. Phase C (EPIC-0038). US-0049 has `Status: Retired` and lives in a fenced block (indexer-visible), but was silently dropped during indexing because the schema's CHECK constraint only allows `To Do | Planned | In Progress | Blocked | Done`. `INSERT OR IGNORE` swallowed the constraint violation without any warning; the dropped row was discovered only via parity analysis.
+
+**Rule:** Before finalizing a schema migration, enumerate all status values that appear in production data (e.g. `grep -h "^Status:" docs/RELEASE_PLAN.md | sort -u`) and confirm each one is in the schema's CHECK constraint. Add any missing values to the constraint in the same migration. Additionally, replace `INSERT OR IGNORE` with explicit conflict handling and a warning channel so silent drops surface during `npm run plan:index` and `npm run plan:lint` — a silently dropped row is worse than an abort because it produces invisible data loss.
+
+**Prevention:** Phase D schema migration must add `Retired` (and audit for other in-the-wild statuses). Add a "rejected rows" counter to the indexer output and a `plan:lint` warning if `rejected_rows > 0`.
+
+**Date:** 2026-05-20
+
+---
+
+## L-0077 — `priority` field shape divergence: normalize at write time in the indexer, never at read time @agent:Forge @agent:Keystone
+
+**Context:** Session 53. Phase C (EPIC-0038). The legacy parse path normalizes `"High (P0)"` → `"P0"` inside `tools/lib/parse-release-plan.js`. The Phase B indexer stores the raw string `"High (P0)"`. The Phase C dashboard-repo-reader shim sidestepped this by preferring the legacy value for the `priority` field. If Phase D deletes the legacy path, consumers will receive `"High (P0)"` instead of the expected `"P0"`, breaking any code that pattern-matches or sorts on priority tier.
+
+**Rule:** Normalize fields at write time inside the indexer — never at read time in a shim or consumer. When two code paths for the same data produce different shapes for the same logical value, the database is the canonical store and normalization must happen before the row is inserted. The read API must return a single stable shape regardless of which code path populated the row. A read-time shim that "prefers legacy" will be silently deleted along with the legacy path in a future PR, leaving the normalization gap undetected until a consumer breaks.
+
+**Prevention:** Phase D must add normalization of `"High (P0)"` → `"P0"` (and all priority variants) inside the indexer's write path, verified by a unit test that inserts a raw-format priority and asserts the stored value is normalized.
+
+**Date:** 2026-05-20
+
+---
+
+## L-0078 — Snapshot side-effects: stabilize state before parity diffs; cold runs don't compare cleanly @agent:Forge @agent:Keystone
+
+**Context:** Session 53. Phase C (EPIC-0038). `tools/generate-plan.js` writes a new snapshot to `.history/` on each run; the snapshot feeds the next run's trend computation. A parity diff that runs the legacy path once then the repo path once compares outputs where the second run has a different snapshot baseline than the first, producing a false trend-embed diff that obscures the real semantic comparison.
+
+**Rule:** When verifying byte-identical (or semantically-identical) output across two independent code paths, first stabilize all side-effecting state: run the reference path twice in a row, discard the first output, then capture the second as the baseline. Only then switch to the alternative path and compare. If the paths share the same side-effecting state (same `.history/` directory, same snapshot files), both runs will see the same baseline and any remaining diff is a true semantic difference between the paths. Document this warm-up requirement explicitly in the parity test so future maintainers don't remove it.
+
+**Prevention:** The `tests/integration/dashboard-parity.test.js` warm-up run must be preserved. Add a comment in the test explaining _why_ two legacy runs are needed before the comparison.
+
+**Date:** 2026-05-20
+
+---
+
+## L-0079 — Develop auto-version-bump CI: plan rebase before opening PR, not after @agent:Conductor @agent:Forge
+
+**Context:** Session 53. Phase C (EPIC-0038). Between branch creation and PR open (approximately 45 minutes of work), the auto-version-bump CI job on develop bumped `package.json` from 2.4.7 → 2.4.8 (PR #1073). When the feature branch PR was opened, the version conflict appeared as a merge conflict on a single line, requiring a rebase. The conflict is trivially resolvable (accept develop's version), but it adds a friction step at the moment of PR creation.
+
+**Rule:** When working on a branch that takes more than ~30 minutes, anticipate that develop's auto-version-bump CI will fire at least once during that window. Before opening the PR, explicitly run `git fetch origin && git rebase origin/develop` to pick up the version bump. Doing the rebase _before_ PR creation means the PR opens clean with no conflicts and CI starts immediately. Doing it _after_ PR creation forces a force-push and restarts CI. The rebase is trivially fast (one line in package.json) — the cost of not doing it is CI restart latency and a noisy PR history.
+
+**Prevention:** Add to the pre-PR checklist: "fetch + rebase origin/develop even if you think you're up to date".
+
+**Date:** 2026-05-20
+
+---
+
 ## L-0068 — `fn.toString()` source injection: single source of truth between Node tests and browser-embedded JS
 
 @agent: Forge

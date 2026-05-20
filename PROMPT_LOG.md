@@ -889,6 +889,17 @@ _(Bug sweep session — see progress.md Session 16 entry. Was primarily spent fi
 | 2   | 2026-05-20T16:30:00Z | Continue from where you left off. (resume after session interruption post Phase A hard gate)                                                                                   |
 | 3   | 2026-05-20T16:35:00Z | are you stalled                                                                                                                                                                |
 
+## Session 53 — 2026-05-20
+
+| #   | Timestamp            | Prompt                                                                                                                     |
+| --- | -------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| 1   | 2026-05-20T20:00:00Z | clean up unused branches then [followed by full context summary of Phase C plan]                                           |
+| 2   | 2026-05-20T20:10:00Z | whats next                                                                                                                 |
+| 3   | 2026-05-20T20:15:00Z | monitor the CI for pr 1072, fix any issues, merge when it is green, then proceed with Phase C using the instructions above |
+| 4   | 2026-05-20T21:30:00Z | yes [to discard the phase-b-indexers worktree]                                                                             |
+
+---
+
 ## Session 52 — 2026-05-20
 
 | #   | Timestamp            | Prompt                                                                                                                                                               |
