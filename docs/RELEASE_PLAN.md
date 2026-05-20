@@ -3612,10 +3612,10 @@ Status: Planned
 Plan Task: A.3
 Acceptance Criteria:
 
-- [ ] AC-0860: tools/lib/repository/ast/parser.js exports parseMarkdown(src) returning [{kind:'prose'|'fenced', ...}]
-- [ ] AC-0861: nodes preserve exact whitespace; concatenating .raw / .text reproduces input byte-identical
-- [ ] AC-0862: handles edge cases — no fenced blocks, file starting with a fenced block, trailing newline preservation
-- [ ] AC-0863: jest fixture exists at tests/fixtures/repository/sample-release-plan.md and the round-trip test asserts on real prose interstitials
+- [x] AC-0860: tools/lib/repository/ast/parser.js exports parseMarkdown(src) returning [{kind:'prose'|'fenced', ...}]
+- [x] AC-0861: nodes preserve exact whitespace; concatenating .raw / .text reproduces input byte-identical
+- [x] AC-0862: handles edge cases — no fenced blocks, file starting with a fenced block, trailing newline preservation
+- [x] AC-0863: jest fixture exists at tests/fixtures/repository/sample-release-plan.md and the round-trip test asserts on real prose interstitials
 ```
 
 ```
