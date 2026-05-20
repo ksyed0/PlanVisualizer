@@ -3591,3 +3591,635 @@ Acceptance Criteria:
 - [x] AC-0735: `⟳` icon animates continuously via `@keyframes pv-rev-spin`; new chips/lines/icons fade in via `@keyframes pv-rev-appear` (200ms); density toggle button background transitions over 150ms; all animations disabled when `prefers-reduced-motion: reduce` is set
 - [x] AC-0736: All chips and icons carry `title=` attributes describing the state; `window.pvTaskReviewCap` is emitted as a JS literal in the generated HTML from `plan-visualizer.config.json → orchestration.iterationCap.taskReview` (default 2)
 ```
+
+## Epic — EPIC-0036: Step 1 Persistence — Repository Foundation (Phase A)
+
+Phase A of the open-core persistence Step 1, per `docs/superpowers/specs/2026-05-19-step-1-repository-abstraction-design.md` § 3 and `docs/superpowers/plans/2026-05-19-step-1-repository-abstraction.md` Phase A. Establishes the repository abstraction skeleton, AST parser/serializer, SQLite datastore with fallback chain, migration framework, and read-only `pv:*` commands. No tool migrations yet — this is the library layer.
+
+```
+EPIC-0036: Step 1 Persistence — Repository Foundation (Phase A)
+Description: Stand up tools/lib/repository/ with file-lock wrapper, AST parser+serializer, IndexDatastore (better-sqlite3 → node:sqlite → --no-index fallback), schema migrations, MarkdownDatastore, validation/warnings/refresh, Repository singleton, project-state migration framework, and read-only pv:check-upgrade + pv:doctor. Hard gate: every existing markdown source round-trips idempotent-on-second-pass; better-sqlite3 smoke passes on dev matrix; Repository.getInstance opens cleanly.
+Release Target: v2.5.0
+Status: Done
+Dependencies: EPIC-0028
+Spec: docs/superpowers/specs/2026-05-19-step-1-repository-abstraction-design.md
+Plan: docs/superpowers/plans/2026-05-19-step-1-repository-abstraction.md
+```
+
+## User Stories — EPIC-0036: Repository Foundation (Phase A)
+
+```
+US-0215 (EPIC-0036): As the Repository owner, I want better-sqlite3 + proper-lockfile added as dependencies with corresponding npm scripts wired in, so that the rest of Phase A has its toolchain available.
+Priority: High (P1)
+Estimate: S
+Status: Done
+Plan Task: A.1
+Branch: claude/trusting-ptolemy-a305f1
+PR: (pending — session-50 branch)
+Acceptance Criteria:
+
+- [x] AC-0853: package.json declares dependencies on better-sqlite3 ^11.5.0 and proper-lockfile ^4.1.2, engines.node >= 22.0.0
+- [x] AC-0854: npm scripts plan:index, plan:lint, pv:check-upgrade, pv:upgrade, pv:rollback, pv:doctor are registered
+- [x] AC-0855: .gitignore covers .cache/, docs/.pv-state.local.json, docs/.pv-backup/
+```
+
+```
+US-0216 (EPIC-0036): As any repository caller, I want a cross-platform file-lock wrapper with withFileLock(file, fn) and acquireMany(files) helpers, so that single-file and multi-file lock acquisition happens consistently and lexicographically.
+Priority: High (P1)
+Estimate: S
+Status: Done
+Plan Task: A.2
+Related Bug: BUG-0259
+Branch: claude/trusting-ptolemy-a305f1
+Acceptance Criteria:
+
+- [x] AC-0856: tools/lib/repository/file-lock.js exports withFileLock(file, fn) using proper-lockfile with 30s stale timeout
+- [x] AC-0857: acquireMany(files) sorts paths lexicographically before acquisition; release callbacks reverse the order on cleanup
+- [x] AC-0858: locks are released even when fn throws (try/finally semantics covered by unit test)
+- [x] AC-0859: jest unit test exercises concurrent-write serialisation and add/add scenarios
+```
+
+```
+US-0217 (EPIC-0036): As the markdown layer, I want an AST parser that splits markdown into an ordered sequence of prose and fenced-block nodes, so that writes to a single block preserve all surrounding prose byte-identically.
+Priority: High (P1)
+Estimate: M
+Status: Done
+Plan Task: A.3
+Branch: claude/trusting-ptolemy-a305f1
+Acceptance Criteria:
+
+- [x] AC-0860: tools/lib/repository/ast/parser.js exports parseMarkdown(src) returning [{kind:'prose'|'fenced', ...}]
+- [x] AC-0861: nodes preserve exact whitespace; concatenating .raw / .text reproduces input byte-identical
+- [x] AC-0862: handles edge cases — no fenced blocks, file starting with a fenced block, trailing newline preservation
+- [x] AC-0863: jest fixture exists at tests/fixtures/repository/sample-release-plan.md and the round-trip test asserts on real prose interstitials
+```
+
+```
+US-0218 (EPIC-0036): As the markdown layer, I want a serializer that converts the AST back to markdown plus a round-trip test harness running against every managed production file, so that any parser/serializer drift fails CI before Phase E ships.
+Priority: High (P1)
+Estimate: M
+Status: Done
+Plan Task: A.4
+Branch: claude/trusting-ptolemy-a305f1
+Dependencies: US-0217 (EPIC-0036)
+Acceptance Criteria:
+
+- [x] AC-0864: serializer exports serializeAst, replaceBlock(ast, idx, newBody), insertBlock(ast, beforeIdx, body)
+- [x] AC-0865: replaceBlock rewrites only the targeted fenced block; surrounding prose remains byte-identical
+- [x] AC-0866: round-trip harness at tests/integration/repository/round-trip.test.js iterates over docs/RELEASE_PLAN.md, BUGS.md, LESSONS.md, TEST_CASES.md, ID_REGISTRY.md
+- [x] AC-0867: every existing production file passes idempotent-on-second-pass round-trip (Phase A hard gate)
+```
+
+```
+US-0219 (EPIC-0036): As any repository caller, I want an IndexDatastore that prefers better-sqlite3, falls back to node:sqlite (Node 22+), and finally degrades to a --no-index legacy mode, so that PlanVisualizer keeps working on platforms without native build support.
+Priority: High (P1)
+Estimate: M
+Status: Done
+Plan Task: A.5
+Acceptance Criteria:
+
+- [x] AC-0868: openIndexDatastore({path}) auto-detects in order: better-sqlite3 → node:sqlite → no-index
+- [x] AC-0869: WAL mode enabled on open (journal_mode pragma returns 'wal')
+- [x] AC-0870: --no-index mode (or PV_NO_INDEX=1) returns a no-op datastore that doesn't throw on exec/prepare
+- [x] AC-0871: PRAGMA foreign_keys = ON, synchronous = NORMAL applied at open time
+```
+
+```
+US-0220 (EPIC-0036): As the indexer, I want SQLite schema migrations 001 + 002 with a meta_status('schema_version') gate, so that the schema evolves predictably across upgrades.
+Priority: High (P1)
+Estimate: M
+Status: Done
+Plan Task: A.6
+Dependencies: US-0219 (EPIC-0036)
+Acceptance Criteria:
+
+- [x] AC-0872: migrations/001_initial_schema.sql creates epics, stories, acs, planning_tasks, bugs, lessons, test_cases, id_registry, sdlc_tasks, sdlc_events, sdlc_programme, cost_rows, coverage, meta_sources, meta_status, warnings
+- [x] AC-0873: migrations/002_normalised_refs.sql creates story_dependencies, epic_dependencies, lesson_agents, bug_stories with proper FKs and ON DELETE CASCADE
+- [x] AC-0874: applySchemaMigrations is idempotent — running twice does not fail and leaves schema_version unchanged
+```
+
+```
+US-0221 (EPIC-0036): As any repository caller, I want a MarkdownDatastore that owns reading and (later in Phase E) writing managed markdown files, so that AST operations and source-meta lookups are encapsulated.
+Priority: High (P1)
+Estimate: S
+Status: Done
+Plan Task: A.7
+Dependencies: US-0217 (EPIC-0036), US-0218 (EPIC-0036)
+Acceptance Criteria:
+
+- [x] AC-0875: MarkdownDatastore.readAst(rel) returns the parsed AST for a managed path
+- [x] AC-0876: sourceMeta(rel) returns { mtime, size, hash:sha256 } for staleness detection
+- [x] AC-0877: writeAst(rel, ast) writes through the file lock and an atomic rename via .tmp
+```
+
+```
+US-0222 (EPIC-0036): As any repository caller, I want validation tiers, a warnings channel, and a mtime+hash refresh function, so that referential integrity failures are surfaced consistently and the index stays in sync with markdown.
+Priority: High (P1)
+Estimate: M
+Status: Done
+Plan Task: A.8
+Acceptance Criteria:
+
+- [x] AC-0878: validation.js exports TIER (error/warning/report), RULES map, classify(violation), and a ValidationError class
+- [x] AC-0879: WarningsChannel appends one JSON row per violation to .cache/repo-warnings.jsonl
+- [x] AC-0880: refresh({datastores, sources}) uses mtime+size first-pass, recomputes hash only on suspicion of change
+- [x] AC-0881: refresh returns { sources: [...], entitiesAffected: [...] } and is safe to call repeatedly
+```
+
+```
+US-0223 (EPIC-0036): As any caller, I want Repository.getInstance() as a singleton that auto-refreshes on first call and at every agent-dispatch start, so that cross-process freshness is guaranteed without manual orchestration.
+Priority: High (P1)
+Estimate: S
+Status: Done
+Plan Task: A.9
+Dependencies: US-0219 (EPIC-0036), US-0220 (EPIC-0036), US-0221 (EPIC-0036), US-0222 (EPIC-0036)
+Acceptance Criteria:
+
+- [x] AC-0882: Repository.getInstance({root}) returns the same instance across calls; Repository._reset() releases for tests
+- [x] AC-0883: getInstance auto-runs refresh() once at construction; subsequent dispatch-prelude calls reuse the cheap mtime+size pass
+- [x] AC-0884: orchestrator/spawn.js (if present) calls Repository.getInstance().refresh() at the top of every dispatch
+```
+
+```
+US-0224 (EPIC-0036): As an upgrade orchestrator, I want a project-state migration framework with pv-state read/write, backup snapshots, and a migration runner, so that future migrations (001, 002, 003) plug in declaratively.
+Priority: High (P1)
+Estimate: M
+Status: Done
+Plan Task: A.10
+Acceptance Criteria:
+
+- [x] AC-0885: tools/lib/migrations/pv-state.js distinguishes committed state (docs/.pv-state.json with planvisualizerVersion + appliedMigrations) from local state (docs/.pv-state.local.json with lastUpgradeAt + lastUpgradeBy)
+- [x] AC-0886: backup.js snapshot({root, label, files}) copies files into docs/.pv-backup/<label>/ preserving relative paths
+- [x] AC-0887: backup.js restore({root, label}) reverses the snapshot; throws on missing label
+- [x] AC-0888: migrations/index.js exports pending({root}) and run({root, dryRun, actor}); idempotent and writes pv-state on success
+```
+
+```
+US-0225 (EPIC-0036): As a user upgrading PlanVisualizer, I want read-only pv:check-upgrade and pv:doctor commands plus a better-sqlite3 install smoke check, so that I can introspect upgrade state and diagnose issues without risk.
+Priority: Medium (P2)
+Estimate: S
+Status: Done
+Plan Task: A.11
+Dependencies: US-0224 (EPIC-0036), US-0223 (EPIC-0036)
+Acceptance Criteria:
+
+- [x] AC-0889: npm run pv:check-upgrade prints installed version, project-state version, applied migrations, pending migrations, and warns on mismatch without failing
+- [x] AC-0890: npm run pv:doctor prints repo mode (better-sqlite3 / node:sqlite / no-index), warnings file path, total warnings, count-by-code
+- [x] AC-0891: better-sqlite3 in-memory smoke test passes on darwin-arm64, darwin-x64, linux-x64; fallback to node:sqlite verified on a CI matrix entry
+```
+
+## Epic — EPIC-0037: Step 1 Persistence — Indexer as Spectator (Phase B)
+
+Phase B of Step 1. Per-file indexers populate the SQLite index from markdown; `generate-plan.js` emits the index alongside HTML/JSON; cross-entity validators run; `plan:lint` reports tiered violations. No tool migrations yet — the index just shadows the truth.
+
+```
+EPIC-0037: Step 1 Persistence — Indexer as Spectator (Phase B)
+Description: Build per-source indexers (release-plan, bugs, lessons, test-cases, id-registry, sdlc-status), wire them into generate-plan.js, implement cross-entity referential checks, and ship npm run plan:lint. Hard gate: a full session produces an index consistent with markdown, with warnings rate < 10/session on current production data.
+Release Target: v2.5.0
+Status: To Do
+Dependencies: EPIC-0036
+```
+
+## User Stories — EPIC-0037: Indexer as Spectator (Phase B)
+
+```
+US-0226 (EPIC-0037): As the indexer, I want six per-source indexer functions that populate the SQLite tables from markdown/JSON, so that the index can be rebuilt from any clean checkout.
+Priority: High (P1)
+Estimate: L
+Status: To Do
+Plan Task: B.1
+Dependencies: US-0220 (EPIC-0036), US-0221 (EPIC-0036)
+Acceptance Criteria:
+
+- [ ] AC-0892: indexers/release-plan-indexer.js ingests epics, stories, ACs with source_file/source_line provenance
+- [ ] AC-0893: indexers/bugs-indexer.js, lessons-indexer.js, test-cases-indexer.js, id-registry-indexer.js, sdlc-status-indexer.js each ingest their respective sources
+- [ ] AC-0894: indexers/index.js exports indexAll({index, markdown, warningsChannel}) returning {counts, warnings}
+- [ ] AC-0895: indexing an empty/missing source emits zero counts and zero warnings (no throw)
+```
+
+```
+US-0227 (EPIC-0037): As the build pipeline, I want generate-plan.js to emit the SQLite index alongside the existing HTML/JSON outputs, so that the index always reflects the latest markdown after every build.
+Priority: High (P1)
+Estimate: S
+Status: To Do
+Plan Task: B.2
+Dependencies: US-0226 (EPIC-0037)
+Acceptance Criteria:
+
+- [ ] AC-0896: tools/generate-plan.js calls indexAll(...) after writing HTML/JSON and logs the counts
+- [ ] AC-0897: tools/plan-index.js exists as a standalone CLI mapped to npm run plan:index for manual rebuilds
+- [ ] AC-0898: failure in the index emit step does not abort the HTML build (best-effort during Phase B)
+```
+
+```
+US-0228 (EPIC-0037): As the validation layer, I want a cross-entity validator that runs after every indexAll pass, so that orphan ACs, dangling dependencies, and id-registry drift surface automatically.
+Priority: High (P1)
+Estimate: S
+Status: To Do
+Plan Task: B.3
+Related Bug: BUG-0258
+Dependencies: US-0226 (EPIC-0037)
+Acceptance Criteria:
+
+- [ ] AC-0899: validators/cross-entity.js detects dangling story/epic dependencies via LEFT JOIN
+- [ ] AC-0900: it detects id-registry drift (next_id ≤ max actual ID) per sequence
+- [ ] AC-0901: detects orphan ACs (acs.story_id with no matching story)
+```
+
+```
+US-0229 (EPIC-0037): As a maintainer, I want npm run plan:lint to print tiered violations (errors / warnings / reports) and exit non-zero only on errors, so that data-quality regressions get caught in CI without blocking local development.
+Priority: Medium (P2)
+Estimate: S
+Status: To Do
+Plan Task: B.4
+Dependencies: US-0228 (EPIC-0037)
+Acceptance Criteria:
+
+- [ ] AC-0902: tools/plan-lint.js outputs counts per tier and lists each violation with one-line summary
+- [ ] AC-0903: exit code is 1 only if errors-tier is non-empty; warnings/reports do not fail the build at Phase B
+- [ ] AC-0904: Phase B hard gate verified — warnings on current production data < 10
+```
+
+## Epic — EPIC-0038: Step 1 Persistence — First Read Consumer (Phase C)
+
+Phase C of Step 1. Migrates the dashboard's read path from re-parsing markdown to querying the repo, behind a feature flag, with a byte-identical parity test as the gate.
+
+```
+EPIC-0038: Step 1 Persistence — First Read Consumer (Phase C)
+Description: Implement base + entity read APIs (stories, epics, ACs), then migrate dashboard rendering to read via the repository instead of re-parsing markdown. Feature-flagged with PV_DASHBOARD_VIA_REPO=1; flag flipped to default once snapshot parity holds.
+Release Target: v2.5.0
+Status: To Do
+Dependencies: EPIC-0037
+```
+
+## User Stories — EPIC-0038: First Read Consumer (Phase C)
+
+```
+US-0230 (EPIC-0038): As any consumer, I want repository read APIs (repo.stories, repo.epics, repo.acs) with list filters, so that downstream tools don't need to re-parse markdown for the same data.
+Priority: High (P1)
+Estimate: M
+Status: To Do
+Plan Task: C.1
+Dependencies: US-0226 (EPIC-0037)
+Acceptance Criteria:
+
+- [ ] AC-0905: tools/lib/repository/entities/base-repo.js exports a BaseRepo class with get(id), list(), and a root path for write APIs (Phase E)
+- [ ] AC-0906: story-repo.js, epic-repo.js, ac-repo.js wire into Repository as repo.stories, repo.epics, repo.acs with list filters (epicId, status, storyId)
+- [ ] AC-0907: column→property mapping (e.g. epic_id → epicId, pr_number → prNumber) is consistent across entity repos
+```
+
+```
+US-0231 (EPIC-0038): As the dashboard consumer, I want generate-plan.js to read epics/stories/ACs through the repository under a PV_DASHBOARD_VIA_REPO=1 flag, so that we can validate parity before deleting the legacy parse path.
+Priority: High (P1)
+Estimate: M
+Status: To Do
+Plan Task: C.2
+Dependencies: US-0230 (EPIC-0038)
+Acceptance Criteria:
+
+- [ ] AC-0908: PV_DASHBOARD_VIA_REPO=1 path uses repo.stories.list() / repo.epics.list() / repo.acs.list() to feed renderHtml
+- [ ] AC-0909: mergeRepoData shim overlays repo-sourced structural data on legacy computed fields (costs, snapshots) without breaking renderHtml's contract
+- [ ] AC-0910: snapshot test runs both paths and diffs docs/plan-status.html — zero meaningful semantic diff
+- [ ] AC-0911: flag default flipped to PV_DASHBOARD_VIA_REPO=1 with PV_DASHBOARD_VIA_REPO=0 left as a fallback escape hatch
+```
+
+## Epic — EPIC-0039: Step 1 Persistence — SdlcStatus Cutover (Phase D)
+
+Phase D of Step 1 — the biggest phase. Promotes SQLite to authoritative for tool-emitted state. `sdlc-status.json` becomes a per-event mirror written by the repo. Four lifecycle writers migrate in a single coordinated PR.
+
+```
+EPIC-0039: Step 1 Persistence — SdlcStatus Cutover (Phase D)
+Description: SdlcStatus moves from JSON-file-authoritative to SQLite-authoritative with a per-event JSON mirror (file-locked, SQL-requeried) for live-dashboard parity. Migration 002 ingests existing JSON. agent-lifecycle.js, update-sdlc-status.js, agent-task-review.js, agent-spec-plan.js all migrate to write through the repo in one PR. pv:upgrade and pv:rollback become write-capable.
+Release Target: v2.5.0
+Status: To Do
+Dependencies: EPIC-0038
+```
+
+## User Stories — EPIC-0039: SdlcStatus Cutover (Phase D)
+
+```
+US-0232 (EPIC-0039): As a tool writing lifecycle state, I want SdlcEventRepo, SdlcTaskRepo, and SdlcProgrammeRepo with a re-query-inside-lock JSON mirror, so that concurrent writes don't leave docs/sdlc-status.json out of sync with SQL.
+Priority: High (P1)
+Estimate: L
+Status: To Do
+Plan Task: D.1
+Dependencies: US-0223 (EPIC-0036)
+Acceptance Criteria:
+
+- [ ] AC-0912: sdlc-event-repo.js exposes record(event) + list({storyId, since}); record inserts SQL row then writes JSON mirror
+- [ ] AC-0913: sdlc-task-repo.js exposes upsert(task) with FIELD_MAP for camelCase ↔ snake_case, preserves unset fields on partial updates
+- [ ] AC-0914: sdlc-programme-repo.js exposes set/get/all with JSON value column
+- [ ] AC-0915: SdlcMirror.write() holds a file lock on docs/sdlc-status.json and re-queries SQL inside the lock; concurrent record() calls preserve all events
+```
+
+```
+US-0233 (EPIC-0039): As an upgrading user, I want Migration 002 to ingest existing docs/sdlc-status.json into SQLite once, so that no in-flight lifecycle state is lost during the cutover.
+Priority: High (P1)
+Estimate: M
+Status: To Do
+Plan Task: D.2
+Dependencies: US-0232 (EPIC-0039), US-0224 (EPIC-0036)
+Acceptance Criteria:
+
+- [ ] AC-0916: migrations/002-ingest-sdlc-status.js up({root}) reads docs/sdlc-status.json, upserts tasks, records events, sets programme entries
+- [ ] AC-0917: idempotent — second run hashes the source JSON and is a no-op when hash matches meta_status('migration_002_hash')
+- [ ] AC-0918: missing source file results in {skipped:'no-file'}, not an error
+```
+
+```
+US-0234 (EPIC-0039): As the Conductor, I want tools/agent-lifecycle.js to write task lifecycle state through the repository, so that lifecycle events benefit from SQLite-row-level concurrency.
+Priority: High (P1)
+Estimate: M
+Status: To Do
+Plan Task: D.3
+Dependencies: US-0232 (EPIC-0039)
+Acceptance Criteria:
+
+- [ ] AC-0919: tools/agent-lifecycle.js no longer fs.write{File,FileSync}'s docs/sdlc-status.json directly
+- [ ] AC-0920: start command upserts the task and records an agent-start event in one transaction
+- [ ] AC-0921: done command upserts (status, completedAt, summary, headSha) and records agent-done; existing tests pass unchanged
+```
+
+```
+US-0235 (EPIC-0039): As the Conductor, I want tools/update-sdlc-status.js to write through the repository for every event kind, so that dashboard live-update parity is preserved post-cutover.
+Priority: High (P1)
+Estimate: M
+Status: To Do
+Plan Task: D.4
+Dependencies: US-0232 (EPIC-0039)
+Acceptance Criteria:
+
+- [ ] AC-0922: every existing event-kind path (agent-start, agent-done, dispatch, programme-conductor-dispatch, programme-shadow-merge) uses repo.sdlcEvents.record or repo.sdlcTasks.upsert
+- [ ] AC-0923: integration tests in tests/integration/dashboard-task-review-flow.test.js pass without modification
+- [ ] AC-0924: docs/sdlc-status.json mirror is byte-equivalent to legacy output for a fixture event stream
+```
+
+```
+US-0236 (EPIC-0039): As the Conductor, I want tools/agent-task-review.js to persist taskReview substructure via the repository, so that the JSON column round-trips cleanly through SQLite.
+Priority: High (P1)
+Estimate: M
+Status: To Do
+Plan Task: D.5
+Dependencies: US-0232 (EPIC-0039)
+Acceptance Criteria:
+
+- [ ] AC-0925: spec verdict + spec findings persist via repo.sdlcTasks.upsert({id, taskReview: {...}})
+- [ ] AC-0926: quality verdict + quality findings persist on the same task, preserving spec verdict
+- [ ] AC-0927: existing tests covering the review-gate state machine pass without changes
+```
+
+```
+US-0237 (EPIC-0039): As the Conductor, I want tools/agent-spec-plan.js to write spec/plan state transitions via the repository, so that no tool bypasses SQLite for sdlc-status.json after the cutover.
+Priority: High (P1)
+Estimate: M
+Status: To Do
+Plan Task: D.6
+Dependencies: US-0232 (EPIC-0039)
+Acceptance Criteria:
+
+- [ ] AC-0928: spec-start, spec-await-ac, spec-await-final, plan-start, plan-await-approval, plan-update commands all use repo.sdlcTasks.upsert
+- [ ] AC-0929: specApprove() idempotency guard (BUG handled in US-0183) preserved
+- [ ] AC-0930: grep -rn "fs.writeFileSync.*sdlc-status.json" tools/ returns nothing
+```
+
+```
+US-0238 (EPIC-0039): As the dashboard owner, I want a live-dashboard parity test that proves concurrent record() calls don't lose events, so that the file-locked re-query-inside-lock pattern is verified end-to-end.
+Priority: High (P1)
+Estimate: S
+Status: To Do
+Plan Task: D.7
+Dependencies: US-0232 (EPIC-0039)
+Acceptance Criteria:
+
+- [ ] AC-0931: tests/integration/repository/live-dashboard-parity.test.js replays a fixture event stream and asserts mirror byte-shape
+- [ ] AC-0932: 3 concurrent record() calls all land in the mirror (log.length == 5 after 2 sequential + 3 concurrent)
+- [ ] AC-0933: Phase D hard gate verified — npm test passes; grep returns no JSON-direct writers
+```
+
+```
+US-0239 (EPIC-0039): As a user upgrading, I want write-capable pv:upgrade and pv:rollback commands, so that Migration 002 (and future migrations) can actually be applied with backup/restore safety.
+Priority: High (P1)
+Estimate: M
+Status: To Do
+Plan Task: D.8
+Dependencies: US-0233 (EPIC-0039), US-0224 (EPIC-0036)
+Acceptance Criteria:
+
+- [ ] AC-0934: pv:upgrade refuses to run on a dirty working tree unless --force; lists pending migrations and applies them in order
+- [ ] AC-0935: pv:rollback with --to <label> restores docs/.pv-backup/<label>/; without --to lists available backups
+- [ ] AC-0936: each migration snapshots its touched files into docs/.pv-backup/pre-<id>/ before mutating
+- [ ] AC-0937: CI fixture run upgrades a v2.4-shaped fixture project end-to-end without data loss
+```
+
+## Epic — EPIC-0040: Step 1 Persistence — Planning Writers (Phase E)
+
+Phase E of Step 1. The biggest payload of code: write APIs for human-authored entities with AST prose preservation, ID allocator under file lock, multi-entity transactions, Migration 001 normalisation, and migration of all remaining planning writers.
+
+```
+EPIC-0040: Step 1 Persistence — Planning Writers (Phase E)
+Description: Write APIs for stories, epics, ACs, bugs, lessons, test_cases, id_registry land with AST-preserving serializers. ID allocator bypasses the index and writes ID_REGISTRY.md under a file lock. repo.transaction((tx) => ...) lands with lexicographic lock acquisition + batched markdown writes at commit. Migration 001 normalises fenced blocks one-shot; user reviews the diff. agent-context.js, generate-plan.js (writer paths), and sync-github.js migrate in one PR. Final round-trip gate on post-Migration-001 production files.
+Release Target: v2.5.0
+Status: To Do
+Dependencies: EPIC-0039
+```
+
+## User Stories — EPIC-0040: Planning Writers (Phase E)
+
+```
+US-0240 (EPIC-0040): As any planning writer, I want update/create APIs on stories, epics, ACs, bugs, lessons, test_cases, planning_tasks with AST-preserving serializers, so that mutations replace exactly the targeted fenced block.
+Priority: High (P1)
+Estimate: XL
+Status: To Do
+Plan Task: E.1
+Dependencies: US-0230 (EPIC-0038), US-0218 (EPIC-0036)
+Acceptance Criteria:
+
+- [ ] AC-0938: story-repo.update(id, fn) reads under file lock, applies fn to a draft, validates, AST-replaces, and mirrors to SQL
+- [ ] AC-0939: same pattern implemented for epic-repo, ac-repo, bug-repo, lesson-repo, test-case-repo, task-repo
+- [ ] AC-0940: serializers/{entity}-serializer.js emits the canonical fenced-block body matching current production file formatting
+- [ ] AC-0941: ValidationError thrown on invalid Status enum, duplicate ID, or malformed block (error-tier per validation.js)
+- [ ] AC-0942: surrounding prose remains byte-identical after any update (regression test against fixture)
+```
+
+```
+US-0241 (EPIC-0040): As a story creator, I want repo.idRegistry.allocate(sequence, count) that bypasses the index and reads/writes ID_REGISTRY.md under a file lock, so that allocations never collide across concurrent writers.
+Priority: High (P1)
+Estimate: M
+Status: To Do
+Plan Task: E.2
+Related Bug: BUG-0258
+Acceptance Criteria:
+
+- [ ] AC-0943: id-allocator.js reads ID_REGISTRY.md inside withFileLock, bumps next_id by count, returns the allocated IDs
+- [ ] AC-0944: bumps last_assigned to the highest allocated ID; rewrites the registry table row in place preserving column alignment
+- [ ] AC-0945: count=1 returns a string; count>1 returns an array of contiguous IDs
+```
+
+```
+US-0242 (EPIC-0040): As any multi-entity writer, I want repo.transaction((tx) => ...) that batches markdown writes until commit in lexicographic lock order, so that story+ACs+ID-registry mutations are atomic.
+Priority: High (P1)
+Estimate: L
+Status: To Do
+Plan Task: E.3
+Dependencies: US-0240 (EPIC-0040), US-0241 (EPIC-0040)
+Acceptance Criteria:
+
+- [ ] AC-0946: transaction(fn) opens a SQLite BEGIN, runs fn against a proxy, acquires file locks in lexicographic path order, flushes pending markdown writes, COMMITs
+- [ ] AC-0947: throw inside fn rolls back SQLite and discards staged markdown writes (no files modified)
+- [ ] AC-0948: tx.idRegistry.allocate inside a transaction reserves IDs but doesn't write ID_REGISTRY.md until commit; another process blocks on the lock
+- [ ] AC-0949: each entity repo implements an *InTransaction variant that stages into ctx.pendingWrites
+```
+
+```
+US-0243 (EPIC-0040): As an upgrading user, I want Migration 001 to normalise all managed markdown via two-pass AST round-trip, so that Phase E writes start from a canonical baseline.
+Priority: High (P1)
+Estimate: M
+Status: To Do
+Plan Task: E.4
+Dependencies: US-0218 (EPIC-0036)
+Acceptance Criteria:
+
+- [ ] AC-0950: migrations/001-normalise-fenced-blocks.js applies parse→serialise→parse→serialise to RELEASE_PLAN.md, BUGS.md, LESSONS.md, TEST_CASES.md, ID_REGISTRY.md
+- [ ] AC-0951: writes back only when result differs from input; second run is a no-op
+- [ ] AC-0952: user reviews the diff against /tmp/docs-pre-norm before committing; explicit human approval gate
+```
+
+```
+US-0244 (EPIC-0040): As the context curator, I want tools/agent-context.js to write any managed-path mutations through the repository, so that the Phase F CI rule passes.
+Priority: Medium (P2)
+Estimate: S
+Status: To Do
+Plan Task: E.5
+Dependencies: US-0240 (EPIC-0040)
+Acceptance Criteria:
+
+- [ ] AC-0953: tools/agent-context.js any task-summary update uses repo.sdlcTasks.upsert
+- [ ] AC-0954: tests/integration/agent-context-flow.test.js passes
+- [ ] AC-0955: grep -n "fs.write\|fs.append" tools/agent-context.js shows only writes to exempt paths
+```
+
+```
+US-0245 (EPIC-0040): As the dashboard builder, I want tools/generate-plan.js writer paths (status patching, story-row updates) to go through the repository, so that the build never bypasses the abstraction.
+Priority: High (P1)
+Estimate: M
+Status: To Do
+Plan Task: E.6
+Dependencies: US-0240 (EPIC-0040)
+Acceptance Criteria:
+
+- [ ] AC-0956: any patchDOM-driven status writes use repo.stories.update
+- [ ] AC-0957: npm run plan:generate && npm run plan:lint reports zero errors
+- [ ] AC-0958: legacy markdown writes removed from generate-plan.js (or routed via repo)
+```
+
+```
+US-0246 (EPIC-0040): As the GitHub sync, I want tools/sync-github.js to update story PR numbers via the repository, so that GitHub-driven writes participate in the same lock + index pipeline.
+Priority: Medium (P2)
+Estimate: S
+Status: To Do
+Plan Task: E.7
+Dependencies: US-0240 (EPIC-0040)
+Acceptance Criteria:
+
+- [ ] AC-0959: any RELEASE_PLAN.md mutation in sync-github.js becomes repo.stories.update(id, s => { s.prNumber = N; })
+- [ ] AC-0960: existing sync-github integration tests pass
+- [ ] AC-0961: grep -n "fs.write" tools/sync-github.js shows only writes to exempt paths
+```
+
+```
+US-0247 (EPIC-0040): As the maintainer, I want the round-trip harness re-run against post-Migration-001 production files as the Phase E gate, so that prose-preservation regressions surface before Phase F.
+Priority: High (P1)
+Estimate: S
+Status: To Do
+Plan Task: E.8
+Dependencies: US-0243 (EPIC-0040)
+Acceptance Criteria:
+
+- [ ] AC-0962: tests/integration/repository/round-trip.test.js asserts byte-identical (not just idempotent) after Migration 001 has run
+- [ ] AC-0963: Phase E hard gate verified — no fs.write outside the repo (per allowlist), round-trip byte-identical, plan:lint zero errors
+```
+
+## Epic — EPIC-0041: Step 1 Persistence — Lock-Down (Phase F)
+
+Phase F closes Step 1. file-lock moves under `internal/`, deprecation shim at the old path. CI rule + script forbid direct writes to managed paths. Mixed-version warning fires at every getInstance. Validation switches from log-and-pass to fail-on-error.
+
+```
+EPIC-0041: Step 1 Persistence — Lock-Down (Phase F)
+Description: Final lock-down. file-lock.js moves to tools/lib/repository/internal/ with a deprecation shim at the original path. A custom ESLint rule + shell script enforce that managed paths are only written through the repository (with an exemption allowlist for bootstrap/cost-hook/memory). Mixed-version warning compares package.json#version against docs/.pv-state.json. Validation errors-tier becomes a hard fail. scripts/update.sh prints pv:check-upgrade output. Upgrade guide lands.
+Release Target: v2.5.0
+Status: To Do
+Dependencies: EPIC-0040
+```
+
+## User Stories — EPIC-0041: Lock-Down (Phase F)
+
+```
+US-0248 (EPIC-0041): As the repository maintainer, I want file-lock.js moved to tools/lib/repository/internal/ with a deprecation shim at the legacy path, so that direct importers get a one-time warning without breakage.
+Priority: Medium (P2)
+Estimate: S
+Status: To Do
+Plan Task: F.1
+Dependencies: US-0216 (EPIC-0036)
+Acceptance Criteria:
+
+- [ ] AC-0964: tools/lib/repository/internal/file-lock.js is the canonical location; all repo-internal imports updated
+- [ ] AC-0965: tools/lib/file-lock.js exists as a one-line require re-export with console.warn deprecation (suppressible via PV_SUPPRESS_FILE_LOCK_DEPRECATION)
+- [ ] AC-0966: both import paths still work in node -e smoke checks
+```
+
+```
+US-0249 (EPIC-0041): As the CI pipeline, I want a managed-path lint rule + a shell-script check that forbids fs.write* against managed paths outside tools/lib/repository/, with an explicit exemption allowlist.
+Priority: High (P1)
+Estimate: M
+Status: To Do
+Plan Task: F.2
+Dependencies: US-0247 (EPIC-0040)
+Acceptance Criteria:
+
+- [ ] AC-0967: tools/lib/repository/ci/no-managed-write.js exports an ESLint rule for managed paths (RELEASE_PLAN.md, BUGS.md, LESSONS.md, TEST_CASES.md, ID_REGISTRY.md, sdlc-status.json)
+- [ ] AC-0968: tools/check-no-managed-write.sh is a backup shell check usable on platforms where the ESLint plugin isn't loaded
+- [ ] AC-0969: exemption list includes tools/lib/repository/, tools/lib/migrations/, tools/init-sdlc-status.js, tools/capture-cost.js, tools/memory.js, scripts/install.sh, scripts/update.sh
+- [ ] AC-0970: GitHub Actions CI runs npm run lint:managed-paths and fails on violations
+```
+
+```
+US-0250 (EPIC-0041): As any tool caller, I want Repository.getInstance() to log a loud WARNING when package.json#version ≠ docs/.pv-state.json#planvisualizerVersion, so that S10 (user forgot pv:upgrade) is visible.
+Priority: Medium (P2)
+Estimate: S
+Status: To Do
+Plan Task: F.3
+Dependencies: US-0223 (EPIC-0036)
+Acceptance Criteria:
+
+- [ ] AC-0971: tools/lib/repository/version-check.js compares both versions and returns the mismatch message
+- [ ] AC-0972: Repository.getInstance calls checkVersionMismatch on construction (not on every refresh)
+- [ ] AC-0973: PV_FORCE_MISMATCH=1 suppresses the warning for known-intentional mismatches (e.g. development against an unbumped state)
+```
+
+```
+US-0251 (EPIC-0041): As the maintainer, I want validation errors-tier promoted to fail-on-error and warnings retention enforced via pv:doctor --prune-warnings, so that data quality regressions can't be silently ignored after Step 1 ships.
+Priority: Medium (P2)
+Estimate: S
+Status: To Do
+Plan Task: F.4
+Dependencies: US-0240 (EPIC-0040)
+Acceptance Criteria:
+
+- [ ] AC-0974: every TIER.ERROR violation throws ValidationError (no remaining log-and-pass branches)
+- [ ] AC-0975: pv:doctor --prune-warnings deletes warnings rows older than 30 days; reports the count deleted
+- [ ] AC-0976: pv:doctor flags 'warnings table exceeds 10k threshold' when count > 10000
+```
+
+```
+US-0252 (EPIC-0041): As an upgrading user, I want scripts/update.sh to run pv:check-upgrade automatically and a docs/repository-upgrade-guide.md to exist, so that the upgrade path is discoverable.
+Priority: Medium (P2)
+Estimate: S
+Status: To Do
+Plan Task: F.5
+Dependencies: US-0225 (EPIC-0036), US-0239 (EPIC-0039)
+Acceptance Criteria:
+
+- [ ] AC-0977: scripts/update.sh post-install hook runs npm run --silent pv:check-upgrade and prints the upgrade instruction
+- [ ] AC-0978: docs/repository-upgrade-guide.md exists with steps for v2.4 → v2.5 (check, upgrade, review, commit, doctor, rollback)
+- [ ] AC-0979: AGENTS.md and CLAUDE.md gain a persistence-rules section pointing at the managed-path allowlist and the repository API
+```

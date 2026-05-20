@@ -14,3 +14,8 @@ us0097-*.png
 # Ephemeral approval flag files dropped by the dashboard widget (US-0181)
 docs/pending-approvals/
 !docs/pending-approvals/.gitkeep
+
+# Step 1 repository abstraction
+.cache/
+docs/.pv-state.local.json
+docs/.pv-backup/

@@ -1759,3 +1759,77 @@ This session had three major arcs: **emergency fixes** (dashboards out of date),
 ### Errors or Blockers
 
 - None
+
+---
+
+## Session 50 — 2026-05-19 / 2026-05-20
+
+### What was done
+
+**Planning & architecture (major design session):**
+
+- Branch and worktree cleanup: deleted 10 squash-merged local branches; preserved 5 unmerged branches; removed locked worktree (contents verified in develop); `feature/US-0180` work confirmed fully in develop.
+- Deploy avatar: generated optimized images (64/160/320px) via `tools/resize-agent-images.py`; added `"deploy"` to AGENTS list.
+- Full persistence strategy brainstorm: Option B open-core selected; Step 1–4 roadmap documented in `docs/architecture/persistence-and-multi-user-strategy.md`. Step 1 spec written with 4 review passes (22 amendments total) at `docs/superpowers/specs/2026-05-19-step-1-repository-abstraction-design.md`.
+- Implementation plan written (38 tasks, 6 phases) at `docs/superpowers/plans/2026-05-19-step-1-repository-abstraction.md`.
+- Enterprise Agentic SDLC spec v2 committed. EPIC-0030..0035 (28 stories, 122 ACs) added to RELEASE_PLAN.md.
+- Step 1 work scheduled as EPIC-0036..0041 in RELEASE_PLAN.md (38 stories, 127 ACs). Filed BUG-0258 (ID_REGISTRY drift), BUG-0259 (file-lock missing).
+
+**Step 1 Phase A — 4 of 11 tasks shipped (subagent-driven loop):**
+
+- US-0215/A.1: deps + scripts + .gitignore. Fixed BUG-0260 (CI Node 20 vs engines.node ≥22 — bumped 8 workflow occurrences to Node 22).
+- US-0216/A.2: `tools/lib/repository/file-lock.js` — `withFileLock` + `acquireMany`. Closed BUG-0259.
+- US-0217/A.3: `tools/lib/repository/ast/parser.js` — character-offset AST parser (plan reference was buggy; implementer rewrote correctly). Byte-identical on all 5 production files.
+- US-0218/A.4: `tools/lib/repository/ast/serializer.js` + round-trip integration harness. **Phase A main hard gate achieved.** 14 new tests, all passing.
+
+Branch: `claude/trusting-ptolemy-a305f1`, HEAD: `53e529b`
+
+### Test Results
+
+- Existing suite: 1233 tests green (unchanged)
+- New: 14 repository tests passing (unit + integration)
+- Phase A hard gate (round-trip idempotent on 5 production files): PASSED
+
+### Errors or Blockers
+
+- BUG-0260 found and fixed same session
+- BUG-0259 found and fixed same session
+- Context limit reached after Task A.4; Phase A tasks A.5–A.11 deferred to Session 51
+
+---
+
+## Session 51 — 2026-05-20
+
+### What was done
+
+**Step 1 Phase A — remaining 7 tasks shipped (A.5–A.11), completing EPIC-0036:**
+
+- **US-0219/A.5:** `tools/lib/repository/index-datastore.js` — `openIndexDatastore` with three-tier fallback: better-sqlite3 → node:sqlite (Node 22+) → no-index noop. WAL + `synchronous=NORMAL` + `foreign_keys=ON`. `PV_NO_INDEX=1` env escape hatch. 4 unit tests. Fix-up: preserve fallback errors in console.warn; move ds.close to afterEach.
+- **US-0220/A.6:** `tools/lib/repository/migrations/001_initial_schema.sql` (15 tables, 4 indexes) + `002_normalised_refs.sql` (4 join tables with FK+CASCADE) + `tools/lib/repository/schema.js` (`applySchemaMigrations`, `getSchemaVersion`, `listMigrations`). Idempotent migration runner. 2 unit tests. Fix-up: wrap migration errors with filename context; db handle cleanup.
+- **US-0221/A.7:** `tools/lib/repository/markdown-datastore.js` — `MarkdownDatastore` class with `readAst`, `sourceMeta` (sha256+mtime+size), `writeAst` (atomic via .tmp rename + withFileLock). 3 tests.
+- **US-0222/A.8:** `tools/lib/repository/validation.js` (TIER/RULES/classify/ValidationError), `tools/lib/repository/warnings-channel.js` (JSONL append+readAll, tolerates malformed lines), `tools/lib/repository/refresh.js` (mtime+size first-pass, hash-on-suspicion staleness detection). 8 tests after fix-ups.
+- **US-0223/A.9:** `tools/lib/repository/index.js` — `Repository.getInstance()` singleton. Composes all prior modules. `_reset()` for test isolation. MANAGED_SOURCES list. Auto-refresh on first `getInstance`. Dispatch-prelude hook wired into `orchestrator/spawn.js` (try/catch guarded). 3 tests.
+- **US-0224/A.10:** `tools/lib/migrations/pv-state.js` (committed `.pv-state.json` vs local `.pv-state.local.json`), `tools/lib/migrations/backup.js` (snapshot/listBackups/restore), `tools/lib/migrations/index.js` (listMigrations/pending/run). 9 tests.
+- **US-0225/A.11:** `tools/pv-check-upgrade.js` + `tools/pv-doctor.js` CLI scripts. Graceful package.json miss; deterministic SQLite handle close. 2 integration tests + better-sqlite3 smoke (OK).
+
+**Phase A hard gate:** PASSED — all 5 production markdown files round-trip idempotently; better-sqlite3 smoke OK; pv:check-upgrade + pv:doctor run cleanly; Repository.getInstance opens/refreshes/closes without error.
+
+**EPIC-0036 status:** Done.
+
+Branch: `claude/trusting-ptolemy-a305f1`, HEAD: `eb58ef3`
+
+### Test Results
+
+- Full suite: 1278 tests total — 1277 passed, 1 pre-existing flaky failure (atomic-write concurrency race, unrelated to Phase A)
+- New tests this session: ~44 (unit + integration across A.5–A.11)
+- Phase A hard gate: PASSED
+
+### Errors or Blockers
+
+- Worktree `trusting-ptolemy-a305f1` had been pruned at session start; recreated from branch (`git worktree add`). Branch was intact.
+- Pre-existing flaky test `atomic-write › serializes concurrent modifications` fails intermittently (~1/4 runs); not introduced by this session.
+
+### What's Next
+
+- Phase B (EPIC-0037): Wire indexers into generate-plan.js as read-only spectators; `plan:lint` CLI; per-entity indexer functions for epics/stories/ACs.
+- The `MarkdownDatastore.sourceMeta()` double-read race and path-traversal guard should be addressed in Phase E (write path) per L-0067 / NIT noted in A.7 review.
