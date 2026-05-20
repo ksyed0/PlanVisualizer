@@ -3726,14 +3726,14 @@ Acceptance Criteria:
 US-0225 (EPIC-0036): As a user upgrading PlanVisualizer, I want read-only pv:check-upgrade and pv:doctor commands plus a better-sqlite3 install smoke check, so that I can introspect upgrade state and diagnose issues without risk.
 Priority: Medium (P2)
 Estimate: S
-Status: Planned
+Status: Done
 Plan Task: A.11
 Dependencies: US-0224 (EPIC-0036), US-0223 (EPIC-0036)
 Acceptance Criteria:
 
-- [ ] AC-0889: npm run pv:check-upgrade prints installed version, project-state version, applied migrations, pending migrations, and warns on mismatch without failing
-- [ ] AC-0890: npm run pv:doctor prints repo mode (better-sqlite3 / node:sqlite / no-index), warnings file path, total warnings, count-by-code
-- [ ] AC-0891: better-sqlite3 in-memory smoke test passes on darwin-arm64, darwin-x64, linux-x64; fallback to node:sqlite verified on a CI matrix entry
+- [x] AC-0889: npm run pv:check-upgrade prints installed version, project-state version, applied migrations, pending migrations, and warns on mismatch without failing
+- [x] AC-0890: npm run pv:doctor prints repo mode (better-sqlite3 / node:sqlite / no-index), warnings file path, total warnings, count-by-code
+- [x] AC-0891: better-sqlite3 in-memory smoke test passes on darwin-arm64, darwin-x64, linux-x64; fallback to node:sqlite verified on a CI matrix entry
 ```
 
 ## Epic — EPIC-0037: Step 1 Persistence — Indexer as Spectator (Phase B)
