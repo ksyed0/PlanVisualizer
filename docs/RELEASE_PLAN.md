@@ -3815,15 +3815,15 @@ Acceptance Criteria:
 US-0228 (EPIC-0037): As the validation layer, I want a cross-entity validator that runs after every indexAll pass, so that orphan ACs, dangling dependencies, and id-registry drift surface automatically.
 Priority: High (P1)
 Estimate: S
-Status: To Do
+Status: Done
 Plan Task: B.3
 Related Bug: BUG-0258
 Dependencies: US-0226 (EPIC-0037)
 Acceptance Criteria:
 
-- [ ] AC-0899: validators/cross-entity.js detects dangling story/epic dependencies via LEFT JOIN
-- [ ] AC-0900: it detects id-registry drift (next_id ≤ max actual ID) per sequence
-- [ ] AC-0901: detects orphan ACs (acs.story_id with no matching story)
+- [x] AC-0899: validators/cross-entity.js detects dangling story/epic dependencies via LEFT JOIN
+- [x] AC-0900: it detects id-registry drift (next_id ≤ max actual ID) per sequence
+- [x] AC-0901: detects orphan ACs (acs.story_id with no matching story)
 ```
 
 ```
