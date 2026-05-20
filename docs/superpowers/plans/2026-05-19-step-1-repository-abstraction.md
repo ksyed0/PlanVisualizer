@@ -10,6 +10,51 @@
 
 **Spec:** [`docs/superpowers/specs/2026-05-19-step-1-repository-abstraction-design.md`](../specs/2026-05-19-step-1-repository-abstraction-design.md)
 
+**Backlog scheduled:** Scheduled into `docs/RELEASE_PLAN.md` on 2026-05-19. Each task maps to one user story; completing a task's steps drives that story's ACs to `[x]`.
+
+| Task | Story   | Epic      | Closes             |
+| ---- | ------- | --------- | ------------------ |
+| A.1  | US-0215 | EPIC-0036 |                    |
+| A.2  | US-0216 | EPIC-0036 | BUG-0259           |
+| A.3  | US-0217 | EPIC-0036 |                    |
+| A.4  | US-0218 | EPIC-0036 |                    |
+| A.5  | US-0219 | EPIC-0036 |                    |
+| A.6  | US-0220 | EPIC-0036 |                    |
+| A.7  | US-0221 | EPIC-0036 |                    |
+| A.8  | US-0222 | EPIC-0036 |                    |
+| A.9  | US-0223 | EPIC-0036 |                    |
+| A.10 | US-0224 | EPIC-0036 |                    |
+| A.11 | US-0225 | EPIC-0036 |                    |
+| B.1  | US-0226 | EPIC-0037 |                    |
+| B.2  | US-0227 | EPIC-0037 |                    |
+| B.3  | US-0228 | EPIC-0037 | addresses BUG-0258 |
+| B.4  | US-0229 | EPIC-0037 |                    |
+| C.1  | US-0230 | EPIC-0038 |                    |
+| C.2  | US-0231 | EPIC-0038 |                    |
+| D.1  | US-0232 | EPIC-0039 |                    |
+| D.2  | US-0233 | EPIC-0039 |                    |
+| D.3  | US-0234 | EPIC-0039 |                    |
+| D.4  | US-0235 | EPIC-0039 |                    |
+| D.5  | US-0236 | EPIC-0039 |                    |
+| D.6  | US-0237 | EPIC-0039 |                    |
+| D.7  | US-0238 | EPIC-0039 |                    |
+| D.8  | US-0239 | EPIC-0039 |                    |
+| E.1  | US-0240 | EPIC-0040 |                    |
+| E.2  | US-0241 | EPIC-0040 | BUG-0258           |
+| E.3  | US-0242 | EPIC-0040 |                    |
+| E.4  | US-0243 | EPIC-0040 |                    |
+| E.5  | US-0244 | EPIC-0040 |                    |
+| E.6  | US-0245 | EPIC-0040 |                    |
+| E.7  | US-0246 | EPIC-0040 |                    |
+| E.8  | US-0247 | EPIC-0040 |                    |
+| F.1  | US-0248 | EPIC-0041 |                    |
+| F.2  | US-0249 | EPIC-0041 |                    |
+| F.3  | US-0250 | EPIC-0041 |                    |
+| F.4  | US-0251 | EPIC-0041 |                    |
+| F.5  | US-0252 | EPIC-0041 |                    |
+
+**Related bugs:** [BUG-0258](../../BUGS.md) (ID_REGISTRY drift), [BUG-0259](../../BUGS.md) (file-lock.js referenced but missing).
+
 ---
 
 ## File Structure

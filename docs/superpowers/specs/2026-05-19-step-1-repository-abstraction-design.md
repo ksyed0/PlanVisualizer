@@ -1,8 +1,22 @@
 # Step 1 — Repository Abstraction with Indexed SQLite + Upgrade Tooling
 
 **Classification:** Design Spec
-**Status:** Brainstormed 2026-05-19. Awaiting `writing-plans` → implementation plan → scheduling.
+**Status:** Brainstormed 2026-05-19. Scheduled into backlog as EPIC-0036 through EPIC-0041 in `docs/RELEASE_PLAN.md`.
 **Strategy doc:** [`docs/architecture/persistence-and-multi-user-strategy.md`](../../architecture/persistence-and-multi-user-strategy.md)
+**Implementation plan:** [`docs/superpowers/plans/2026-05-19-step-1-repository-abstraction.md`](../plans/2026-05-19-step-1-repository-abstraction.md)
+**Backlog mapping:**
+
+| Phase | Epic      | Story IDs                                                                                         |
+| ----- | --------- | ------------------------------------------------------------------------------------------------- |
+| A     | EPIC-0036 | US-0215, US-0216, US-0217, US-0218, US-0219, US-0220, US-0221, US-0222, US-0223, US-0224, US-0225 |
+| B     | EPIC-0037 | US-0226, US-0227, US-0228, US-0229                                                                |
+| C     | EPIC-0038 | US-0230, US-0231                                                                                  |
+| D     | EPIC-0039 | US-0232, US-0233, US-0234, US-0235, US-0236, US-0237, US-0238, US-0239                            |
+| E     | EPIC-0040 | US-0240, US-0241, US-0242, US-0243, US-0244, US-0245, US-0246, US-0247                            |
+| F     | EPIC-0041 | US-0248, US-0249, US-0250, US-0251, US-0252                                                       |
+
+**Related bugs:** [BUG-0258](../../BUGS.md) (ID_REGISTRY drift — addressed by US-0215 / closed by EPIC-0041), [BUG-0259](../../BUGS.md) (file-lock.js referenced but missing — addressed by US-0216).
+
 **Scope marker:** Single user, single machine. No identity, no server, no network. Upgrade tooling for existing PlanVisualizer-using projects is _included_ in this step.
 
 ---

@@ -3948,3 +3948,37 @@ Steps to Reproduce:
     Lesson Encoded: No
 
 ---
+
+BUG-0258: ID_REGISTRY drifts silently from actual artefact IDs in use
+Severity: Medium
+Related Story: US-0215 (EPIC-0036)
+Steps to Reproduce:
+
+1.  Inspect docs/ID_REGISTRY.md "Next Available ID" for any sequence
+2.  Compare against the max actual ID for that sequence across docs/RELEASE_PLAN.md, BUGS.md, etc.
+    Expected: Registry next-id is strictly greater than max-in-use across all source files.
+    Actual: Drift happens whenever a commit references a new ID (e.g. "feat(EPIC-0029): ...") before the registry is bumped. Discovered 2026-05-19 — EPIC-0029 referenced in commit history while ID_REGISTRY.md still listed EPIC-0029 as next-available. Resynced in commit ddb4a36 alongside the EPIC-0030..0035 plan addition, but the underlying problem (no enforcement at write time) is unaddressed.
+    Status: Open
+    GH Issue:
+    Fix Branch:
+    Notes: Root cause is that markdown is the source of truth but no tool validates referential integrity at write time. Closed by EPIC-0036 (Step 1 Repository Foundation) — the indexed SQLite layer emits an 'id-registry-drift' warning at write time, and EPIC-0041 promotes it to a hard error. Logged primarily as evidence that the EPIC-0036 work is justified.
+    Lesson Encoded: No
+
+---
+
+BUG-0259: tools/lib/file-lock.js referenced in CLAUDE.md + enterprise-agentic-sdlc spec but does not exist
+Severity: Low
+Related Story: US-0216 (EPIC-0036)
+Steps to Reproduce:
+
+1.  ls tools/lib/file-lock.js
+2.  grep -rn "file-lock\\|atomic-write\\|git-safe" CLAUDE.md docs/architecture/enterprise-agentic-sdlc-spec-v2.md
+    Expected: If the files are referenced, they exist in the codebase.
+    Actual: Both CLAUDE.md and the enterprise-agentic-sdlc spec reference `tools/lib/file-lock.js`, `atomic-write.js`, and `git-safe.js` as existing concurrency primitives. Discovered 2026-05-19 during plan authoring: the files do not exist. Past parallel-write safety has relied on ad-hoc atomic-rename-via-tmp patterns inside individual tools, not a shared primitive.
+    Status: Open
+    GH Issue:
+    Fix Branch:
+    Notes: Closed by US-0216 (Phase A Task A.2) which introduces `tools/lib/repository/file-lock.js` as a `proper-lockfile` wrapper with lexicographic acquireMany. The spec text and CLAUDE.md references will be corrected as part of EPIC-0036.
+    Lesson Encoded: No
+
+---

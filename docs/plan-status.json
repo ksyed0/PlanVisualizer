@@ -283,6 +283,91 @@
       "dependencies": [
         "EPIC-0022"
       ]
+    },
+    {
+      "id": "EPIC-0028",
+      "title": "Agentic Orchestration Engine",
+      "description": "Close the quality and isolation gaps between the superpowers subagent-driven-development pipeline and the PlanVisualizer DM_AGENT workflow. All four stories shipped: US-0182 pre-dispatch orchestration, US-0183 task lifecycle protocol, US-0184 context curator, US-0185 Conductor dispatch protocol with per-task review gates. EPIC-0028 complete as of Session 47 (2026-05-17).",
+      "releaseTarget": "v2.4.0",
+      "status": "Done",
+      "startDate": null,
+      "doneDate": null,
+      "dependencies": [
+        "EPIC-0014",
+        "EPIC-0026"
+      ]
+    },
+    {
+      "id": "EPIC-0036",
+      "title": "Step 1 Persistence — Repository Foundation (Phase A)",
+      "description": "Stand up tools/lib/repository/ with file-lock wrapper, AST parser+serializer, IndexDatastore (better-sqlite3 → node:sqlite → --no-index fallback), schema migrations, MarkdownDatastore, validation/warnings/refresh, Repository singleton, project-state migration framework, and read-only pv:check-upgrade + pv:doctor. Hard gate: every existing markdown source round-trips idempotent-on-second-pass; better-sqlite3 smoke passes on dev matrix; Repository.getInstance opens cleanly.",
+      "releaseTarget": "v2.5.0",
+      "status": "Planned",
+      "startDate": null,
+      "doneDate": null,
+      "dependencies": [
+        "EPIC-0028"
+      ]
+    },
+    {
+      "id": "EPIC-0037",
+      "title": "Step 1 Persistence — Indexer as Spectator (Phase B)",
+      "description": "Build per-source indexers (release-plan, bugs, lessons, test-cases, id-registry, sdlc-status), wire them into generate-plan.js, implement cross-entity referential checks, and ship npm run plan:lint. Hard gate: a full session produces an index consistent with markdown, with warnings rate < 10/session on current production data.",
+      "releaseTarget": "v2.5.0",
+      "status": "To Do",
+      "startDate": null,
+      "doneDate": null,
+      "dependencies": [
+        "EPIC-0036"
+      ]
+    },
+    {
+      "id": "EPIC-0038",
+      "title": "Step 1 Persistence — First Read Consumer (Phase C)",
+      "description": "Implement base + entity read APIs (stories, epics, ACs), then migrate dashboard rendering to read via the repository instead of re-parsing markdown. Feature-flagged with PV_DASHBOARD_VIA_REPO=1; flag flipped to default once snapshot parity holds.",
+      "releaseTarget": "v2.5.0",
+      "status": "To Do",
+      "startDate": null,
+      "doneDate": null,
+      "dependencies": [
+        "EPIC-0037"
+      ]
+    },
+    {
+      "id": "EPIC-0039",
+      "title": "Step 1 Persistence — SdlcStatus Cutover (Phase D)",
+      "description": "SdlcStatus moves from JSON-file-authoritative to SQLite-authoritative with a per-event JSON mirror (file-locked, SQL-requeried) for live-dashboard parity. Migration 002 ingests existing JSON. agent-lifecycle.js, update-sdlc-status.js, agent-task-review.js, agent-spec-plan.js all migrate to write through the repo in one PR. pv:upgrade and pv:rollback become write-capable.",
+      "releaseTarget": "v2.5.0",
+      "status": "To Do",
+      "startDate": null,
+      "doneDate": null,
+      "dependencies": [
+        "EPIC-0038"
+      ]
+    },
+    {
+      "id": "EPIC-0040",
+      "title": "Step 1 Persistence — Planning Writers (Phase E)",
+      "description": "Write APIs for stories, epics, ACs, bugs, lessons, test_cases, id_registry land with AST-preserving serializers. ID allocator bypasses the index and writes ID_REGISTRY.md under a file lock. repo.transaction((tx) => ...) lands with lexicographic lock acquisition + batched markdown writes at commit. Migration 001 normalises fenced blocks one-shot; user reviews the diff. agent-context.js, generate-plan.js (writer paths), and sync-github.js migrate in one PR. Final round-trip gate on post-Migration-001 production files.",
+      "releaseTarget": "v2.5.0",
+      "status": "To Do",
+      "startDate": null,
+      "doneDate": null,
+      "dependencies": [
+        "EPIC-0039"
+      ]
+    },
+    {
+      "id": "EPIC-0041",
+      "title": "Step 1 Persistence — Lock-Down (Phase F)",
+      "description": "Final lock-down. file-lock.js moves to tools/lib/repository/internal/ with a deprecation shim at the original path. A custom ESLint rule + shell script enforce that managed paths are only written through the repository (with an exemption allowlist for bootstrap/cost-hook/memory). Mixed-version warning compares package.json#version against docs/.pv-state.json. Validation errors-tier becomes a hard fail. scripts/update.sh prints pv:check-upgrade output. Upgrade guide lands.",
+      "releaseTarget": "v2.5.0",
+      "status": "To Do",
+      "startDate": null,
+      "doneDate": null,
+      "dependencies": [
+        "EPIC-0040"
+      ]
     }
   ],
   "stories": [
@@ -5129,6 +5214,550 @@
       "branch": "bugfix/BUG-0245-0246-0247-dashboard-fixes",
       "acs": [],
       "dependencies": []
+    },
+    {
+      "id": "US-0182",
+      "epicId": "EPIC-0028",
+      "title": "As the Conductor, I want the pre-dispatch orchestration engine to drive every story through spec → plan → ready_for_dispatch with Compass/Keystone/Lens review loops and user approval gates, so that specialist agents only start implementation on a reviewed, approved plan.",
+      "priority": "P1",
+      "estimate": "XL",
+      "status": "Done",
+      "branch": "feature/US-0181-pre-dispatch-orchestration",
+      "acs": [],
+      "dependencies": []
+    },
+    {
+      "id": "US-0183",
+      "epicId": "EPIC-0028",
+      "title": "As the Conductor, I want a per-task lifecycle state machine so each specialist agent's work within a story is tracked at task granularity with DONE/DONE_WITH_CONCERNS/NEEDS_CONTEXT/BLOCKED status transitions and smart BLOCKED routing, so that the orchestrator can detect stalls and escalate rather than silently failing.",
+      "priority": "P1",
+      "estimate": "L",
+      "status": "Done",
+      "branch": "feature/US-0183-task-lifecycle-protocol",
+      "acs": [],
+      "dependencies": [
+        "US-0182 (EPIC-0028)"
+      ]
+    },
+    {
+      "id": "US-0184",
+      "epicId": "EPIC-0028",
+      "title": "As the Conductor, I want a context curator CLI that assembles structured markdown context payloads (task, acceptance criteria, plan excerpt, prior-work summaries, agent-tagged lessons) for sub-agent dispatches, so that specialist agents start with exactly the context they need instead of burning tokens discovering it.",
+      "priority": "P1",
+      "estimate": "L",
+      "status": "Done",
+      "branch": "claude/trusting-zhukovsky-cb5402",
+      "acs": [],
+      "dependencies": [
+        "US-0182 (EPIC-0028)",
+        "US-0183 (EPIC-0028)"
+      ]
+    },
+    {
+      "id": "US-0185",
+      "epicId": "EPIC-0028",
+      "title": "As the Conductor, I want automatic per-task Lens review gates after each specialist agent dispatch completes, so that spec compliance and code quality are verified before the next task begins and the pipeline can self-regulate without human intervention between tasks.",
+      "priority": "P1",
+      "estimate": "XL",
+      "status": "Done",
+      "branch": "chore/us-0185-spec",
+      "acs": [],
+      "dependencies": [
+        "US-0182 (EPIC-0028)",
+        "US-0183 (EPIC-0028)",
+        "US-0184 (EPIC-0028)"
+      ]
+    },
+    {
+      "id": "US-0215",
+      "epicId": "EPIC-0036",
+      "title": "As the Repository owner, I want better-sqlite3 + proper-lockfile added as dependencies with corresponding npm scripts wired in, so that the rest of Phase A has its toolchain available.",
+      "priority": "P1",
+      "estimate": "S",
+      "status": "Planned",
+      "branch": "",
+      "acs": [],
+      "dependencies": []
+    },
+    {
+      "id": "US-0216",
+      "epicId": "EPIC-0036",
+      "title": "As any repository caller, I want a cross-platform file-lock wrapper with withFileLock(file, fn) and acquireMany(files) helpers, so that single-file and multi-file lock acquisition happens consistently and lexicographically.",
+      "priority": "P1",
+      "estimate": "S",
+      "status": "Planned",
+      "branch": "",
+      "acs": [],
+      "dependencies": []
+    },
+    {
+      "id": "US-0217",
+      "epicId": "EPIC-0036",
+      "title": "As the markdown layer, I want an AST parser that splits markdown into an ordered sequence of prose and fenced-block nodes, so that writes to a single block preserve all surrounding prose byte-identically.",
+      "priority": "P1",
+      "estimate": "M",
+      "status": "Planned",
+      "branch": "",
+      "acs": [],
+      "dependencies": []
+    },
+    {
+      "id": "US-0218",
+      "epicId": "EPIC-0036",
+      "title": "As the markdown layer, I want a serializer that converts the AST back to markdown plus a round-trip test harness running against every managed production file, so that any parser/serializer drift fails CI before Phase E ships.",
+      "priority": "P1",
+      "estimate": "M",
+      "status": "Planned",
+      "branch": "",
+      "acs": [],
+      "dependencies": [
+        "US-0217 (EPIC-0036)"
+      ]
+    },
+    {
+      "id": "US-0219",
+      "epicId": "EPIC-0036",
+      "title": "As any repository caller, I want an IndexDatastore that prefers better-sqlite3, falls back to node:sqlite (Node 22+), and finally degrades to a --no-index legacy mode, so that PlanVisualizer keeps working on platforms without native build support.",
+      "priority": "P1",
+      "estimate": "M",
+      "status": "Planned",
+      "branch": "",
+      "acs": [],
+      "dependencies": []
+    },
+    {
+      "id": "US-0220",
+      "epicId": "EPIC-0036",
+      "title": "As the indexer, I want SQLite schema migrations 001 + 002 with a meta_status('schema_version') gate, so that the schema evolves predictably across upgrades.",
+      "priority": "P1",
+      "estimate": "M",
+      "status": "Planned",
+      "branch": "",
+      "acs": [],
+      "dependencies": [
+        "US-0219 (EPIC-0036)"
+      ]
+    },
+    {
+      "id": "US-0221",
+      "epicId": "EPIC-0036",
+      "title": "As any repository caller, I want a MarkdownDatastore that owns reading and (later in Phase E) writing managed markdown files, so that AST operations and source-meta lookups are encapsulated.",
+      "priority": "P1",
+      "estimate": "S",
+      "status": "Planned",
+      "branch": "",
+      "acs": [],
+      "dependencies": [
+        "US-0217 (EPIC-0036)",
+        "US-0218 (EPIC-0036)"
+      ]
+    },
+    {
+      "id": "US-0222",
+      "epicId": "EPIC-0036",
+      "title": "As any repository caller, I want validation tiers, a warnings channel, and a mtime+hash refresh function, so that referential integrity failures are surfaced consistently and the index stays in sync with markdown.",
+      "priority": "P1",
+      "estimate": "M",
+      "status": "Planned",
+      "branch": "",
+      "acs": [],
+      "dependencies": []
+    },
+    {
+      "id": "US-0223",
+      "epicId": "EPIC-0036",
+      "title": "As any caller, I want Repository.getInstance() as a singleton that auto-refreshes on first call and at every agent-dispatch start, so that cross-process freshness is guaranteed without manual orchestration.",
+      "priority": "P1",
+      "estimate": "S",
+      "status": "Planned",
+      "branch": "",
+      "acs": [],
+      "dependencies": [
+        "US-0219 (EPIC-0036)",
+        "US-0220 (EPIC-0036)",
+        "US-0221 (EPIC-0036)",
+        "US-0222 (EPIC-0036)"
+      ]
+    },
+    {
+      "id": "US-0224",
+      "epicId": "EPIC-0036",
+      "title": "As an upgrade orchestrator, I want a project-state migration framework with pv-state read/write, backup snapshots, and a migration runner, so that future migrations (001, 002, 003) plug in declaratively.",
+      "priority": "P1",
+      "estimate": "M",
+      "status": "Planned",
+      "branch": "",
+      "acs": [],
+      "dependencies": []
+    },
+    {
+      "id": "US-0225",
+      "epicId": "EPIC-0036",
+      "title": "As a user upgrading PlanVisualizer, I want read-only pv:check-upgrade and pv:doctor commands plus a better-sqlite3 install smoke check, so that I can introspect upgrade state and diagnose issues without risk.",
+      "priority": "P2",
+      "estimate": "S",
+      "status": "Planned",
+      "branch": "",
+      "acs": [],
+      "dependencies": [
+        "US-0224 (EPIC-0036)",
+        "US-0223 (EPIC-0036)"
+      ]
+    },
+    {
+      "id": "US-0226",
+      "epicId": "EPIC-0037",
+      "title": "As the indexer, I want six per-source indexer functions that populate the SQLite tables from markdown/JSON, so that the index can be rebuilt from any clean checkout.",
+      "priority": "P1",
+      "estimate": "L",
+      "status": "To Do",
+      "branch": "",
+      "acs": [],
+      "dependencies": [
+        "US-0220 (EPIC-0036)",
+        "US-0221 (EPIC-0036)"
+      ]
+    },
+    {
+      "id": "US-0227",
+      "epicId": "EPIC-0037",
+      "title": "As the build pipeline, I want generate-plan.js to emit the SQLite index alongside the existing HTML/JSON outputs, so that the index always reflects the latest markdown after every build.",
+      "priority": "P1",
+      "estimate": "S",
+      "status": "To Do",
+      "branch": "",
+      "acs": [],
+      "dependencies": [
+        "US-0226 (EPIC-0037)"
+      ]
+    },
+    {
+      "id": "US-0228",
+      "epicId": "EPIC-0037",
+      "title": "As the validation layer, I want a cross-entity validator that runs after every indexAll pass, so that orphan ACs, dangling dependencies, and id-registry drift surface automatically.",
+      "priority": "P1",
+      "estimate": "S",
+      "status": "To Do",
+      "branch": "",
+      "acs": [],
+      "dependencies": [
+        "US-0226 (EPIC-0037)"
+      ]
+    },
+    {
+      "id": "US-0229",
+      "epicId": "EPIC-0037",
+      "title": "As a maintainer, I want npm run plan:lint to print tiered violations (errors / warnings / reports) and exit non-zero only on errors, so that data-quality regressions get caught in CI without blocking local development.",
+      "priority": "P2",
+      "estimate": "S",
+      "status": "To Do",
+      "branch": "",
+      "acs": [],
+      "dependencies": [
+        "US-0228 (EPIC-0037)"
+      ]
+    },
+    {
+      "id": "US-0230",
+      "epicId": "EPIC-0038",
+      "title": "As any consumer, I want repository read APIs (repo.stories, repo.epics, repo.acs) with list filters, so that downstream tools don't need to re-parse markdown for the same data.",
+      "priority": "P1",
+      "estimate": "M",
+      "status": "To Do",
+      "branch": "",
+      "acs": [],
+      "dependencies": [
+        "US-0226 (EPIC-0037)"
+      ]
+    },
+    {
+      "id": "US-0231",
+      "epicId": "EPIC-0038",
+      "title": "As the dashboard consumer, I want generate-plan.js to read epics/stories/ACs through the repository under a PV_DASHBOARD_VIA_REPO=1 flag, so that we can validate parity before deleting the legacy parse path.",
+      "priority": "P1",
+      "estimate": "M",
+      "status": "To Do",
+      "branch": "",
+      "acs": [],
+      "dependencies": [
+        "US-0230 (EPIC-0038)"
+      ]
+    },
+    {
+      "id": "US-0232",
+      "epicId": "EPIC-0039",
+      "title": "As a tool writing lifecycle state, I want SdlcEventRepo, SdlcTaskRepo, and SdlcProgrammeRepo with a re-query-inside-lock JSON mirror, so that concurrent writes don't leave docs/sdlc-status.json out of sync with SQL.",
+      "priority": "P1",
+      "estimate": "L",
+      "status": "To Do",
+      "branch": "",
+      "acs": [],
+      "dependencies": [
+        "US-0223 (EPIC-0036)"
+      ]
+    },
+    {
+      "id": "US-0233",
+      "epicId": "EPIC-0039",
+      "title": "As an upgrading user, I want Migration 002 to ingest existing docs/sdlc-status.json into SQLite once, so that no in-flight lifecycle state is lost during the cutover.",
+      "priority": "P1",
+      "estimate": "M",
+      "status": "To Do",
+      "branch": "",
+      "acs": [],
+      "dependencies": [
+        "US-0232 (EPIC-0039)",
+        "US-0224 (EPIC-0036)"
+      ]
+    },
+    {
+      "id": "US-0234",
+      "epicId": "EPIC-0039",
+      "title": "As the Conductor, I want tools/agent-lifecycle.js to write task lifecycle state through the repository, so that lifecycle events benefit from SQLite-row-level concurrency.",
+      "priority": "P1",
+      "estimate": "M",
+      "status": "To Do",
+      "branch": "",
+      "acs": [],
+      "dependencies": [
+        "US-0232 (EPIC-0039)"
+      ]
+    },
+    {
+      "id": "US-0235",
+      "epicId": "EPIC-0039",
+      "title": "As the Conductor, I want tools/update-sdlc-status.js to write through the repository for every event kind, so that dashboard live-update parity is preserved post-cutover.",
+      "priority": "P1",
+      "estimate": "M",
+      "status": "To Do",
+      "branch": "",
+      "acs": [],
+      "dependencies": [
+        "US-0232 (EPIC-0039)"
+      ]
+    },
+    {
+      "id": "US-0236",
+      "epicId": "EPIC-0039",
+      "title": "As the Conductor, I want tools/agent-task-review.js to persist taskReview substructure via the repository, so that the JSON column round-trips cleanly through SQLite.",
+      "priority": "P1",
+      "estimate": "M",
+      "status": "To Do",
+      "branch": "",
+      "acs": [],
+      "dependencies": [
+        "US-0232 (EPIC-0039)"
+      ]
+    },
+    {
+      "id": "US-0237",
+      "epicId": "EPIC-0039",
+      "title": "As the Conductor, I want tools/agent-spec-plan.js to write spec/plan state transitions via the repository, so that no tool bypasses SQLite for sdlc-status.json after the cutover.",
+      "priority": "P1",
+      "estimate": "M",
+      "status": "To Do",
+      "branch": "",
+      "acs": [],
+      "dependencies": [
+        "US-0232 (EPIC-0039)"
+      ]
+    },
+    {
+      "id": "US-0238",
+      "epicId": "EPIC-0039",
+      "title": "As the dashboard owner, I want a live-dashboard parity test that proves concurrent record() calls don't lose events, so that the file-locked re-query-inside-lock pattern is verified end-to-end.",
+      "priority": "P1",
+      "estimate": "S",
+      "status": "To Do",
+      "branch": "",
+      "acs": [],
+      "dependencies": [
+        "US-0232 (EPIC-0039)"
+      ]
+    },
+    {
+      "id": "US-0239",
+      "epicId": "EPIC-0039",
+      "title": "As a user upgrading, I want write-capable pv:upgrade and pv:rollback commands, so that Migration 002 (and future migrations) can actually be applied with backup/restore safety.",
+      "priority": "P1",
+      "estimate": "M",
+      "status": "To Do",
+      "branch": "",
+      "acs": [],
+      "dependencies": [
+        "US-0233 (EPIC-0039)",
+        "US-0224 (EPIC-0036)"
+      ]
+    },
+    {
+      "id": "US-0240",
+      "epicId": "EPIC-0040",
+      "title": "As any planning writer, I want update/create APIs on stories, epics, ACs, bugs, lessons, test_cases, planning_tasks with AST-preserving serializers, so that mutations replace exactly the targeted fenced block.",
+      "priority": "P1",
+      "estimate": "XL",
+      "status": "To Do",
+      "branch": "",
+      "acs": [],
+      "dependencies": [
+        "US-0230 (EPIC-0038)",
+        "US-0218 (EPIC-0036)"
+      ]
+    },
+    {
+      "id": "US-0241",
+      "epicId": "EPIC-0040",
+      "title": "As a story creator, I want repo.idRegistry.allocate(sequence, count) that bypasses the index and reads/writes ID_REGISTRY.md under a file lock, so that allocations never collide across concurrent writers.",
+      "priority": "P1",
+      "estimate": "M",
+      "status": "To Do",
+      "branch": "",
+      "acs": [],
+      "dependencies": []
+    },
+    {
+      "id": "US-0242",
+      "epicId": "EPIC-0040",
+      "title": "As any multi-entity writer, I want repo.transaction((tx) => ...) that batches markdown writes until commit in lexicographic lock order, so that story+ACs+ID-registry mutations are atomic.",
+      "priority": "P1",
+      "estimate": "L",
+      "status": "To Do",
+      "branch": "",
+      "acs": [],
+      "dependencies": [
+        "US-0240 (EPIC-0040)",
+        "US-0241 (EPIC-0040)"
+      ]
+    },
+    {
+      "id": "US-0243",
+      "epicId": "EPIC-0040",
+      "title": "As an upgrading user, I want Migration 001 to normalise all managed markdown via two-pass AST round-trip, so that Phase E writes start from a canonical baseline.",
+      "priority": "P1",
+      "estimate": "M",
+      "status": "To Do",
+      "branch": "",
+      "acs": [],
+      "dependencies": [
+        "US-0218 (EPIC-0036)"
+      ]
+    },
+    {
+      "id": "US-0244",
+      "epicId": "EPIC-0040",
+      "title": "As the context curator, I want tools/agent-context.js to write any managed-path mutations through the repository, so that the Phase F CI rule passes.",
+      "priority": "P2",
+      "estimate": "S",
+      "status": "To Do",
+      "branch": "",
+      "acs": [],
+      "dependencies": [
+        "US-0240 (EPIC-0040)"
+      ]
+    },
+    {
+      "id": "US-0245",
+      "epicId": "EPIC-0040",
+      "title": "As the dashboard builder, I want tools/generate-plan.js writer paths (status patching, story-row updates) to go through the repository, so that the build never bypasses the abstraction.",
+      "priority": "P1",
+      "estimate": "M",
+      "status": "To Do",
+      "branch": "",
+      "acs": [],
+      "dependencies": [
+        "US-0240 (EPIC-0040)"
+      ]
+    },
+    {
+      "id": "US-0246",
+      "epicId": "EPIC-0040",
+      "title": "As the GitHub sync, I want tools/sync-github.js to update story PR numbers via the repository, so that GitHub-driven writes participate in the same lock + index pipeline.",
+      "priority": "P2",
+      "estimate": "S",
+      "status": "To Do",
+      "branch": "",
+      "acs": [],
+      "dependencies": [
+        "US-0240 (EPIC-0040)"
+      ]
+    },
+    {
+      "id": "US-0247",
+      "epicId": "EPIC-0040",
+      "title": "As the maintainer, I want the round-trip harness re-run against post-Migration-001 production files as the Phase E gate, so that prose-preservation regressions surface before Phase F.",
+      "priority": "P1",
+      "estimate": "S",
+      "status": "To Do",
+      "branch": "",
+      "acs": [],
+      "dependencies": [
+        "US-0243 (EPIC-0040)"
+      ]
+    },
+    {
+      "id": "US-0248",
+      "epicId": "EPIC-0041",
+      "title": "As the repository maintainer, I want file-lock.js moved to tools/lib/repository/internal/ with a deprecation shim at the legacy path, so that direct importers get a one-time warning without breakage.",
+      "priority": "P2",
+      "estimate": "S",
+      "status": "To Do",
+      "branch": "",
+      "acs": [],
+      "dependencies": [
+        "US-0216 (EPIC-0036)"
+      ]
+    },
+    {
+      "id": "US-0249",
+      "epicId": "EPIC-0041",
+      "title": "As the CI pipeline, I want a managed-path lint rule + a shell-script check that forbids fs.write* against managed paths outside tools/lib/repository/, with an explicit exemption allowlist.",
+      "priority": "P1",
+      "estimate": "M",
+      "status": "To Do",
+      "branch": "",
+      "acs": [],
+      "dependencies": [
+        "US-0247 (EPIC-0040)"
+      ]
+    },
+    {
+      "id": "US-0250",
+      "epicId": "EPIC-0041",
+      "title": "As any tool caller, I want Repository.getInstance() to log a loud WARNING when package.json#version ≠ docs/.pv-state.json#planvisualizerVersion, so that S10 (user forgot pv:upgrade) is visible.",
+      "priority": "P2",
+      "estimate": "S",
+      "status": "To Do",
+      "branch": "",
+      "acs": [],
+      "dependencies": [
+        "US-0223 (EPIC-0036)"
+      ]
+    },
+    {
+      "id": "US-0251",
+      "epicId": "EPIC-0041",
+      "title": "As the maintainer, I want validation errors-tier promoted to fail-on-error and warnings retention enforced via pv:doctor --prune-warnings, so that data quality regressions can't be silently ignored after Step 1 ships.",
+      "priority": "P2",
+      "estimate": "S",
+      "status": "To Do",
+      "branch": "",
+      "acs": [],
+      "dependencies": [
+        "US-0240 (EPIC-0040)"
+      ]
+    },
+    {
+      "id": "US-0252",
+      "epicId": "EPIC-0041",
+      "title": "As an upgrading user, I want scripts/update.sh to run pv:check-upgrade automatically and a docs/repository-upgrade-guide.md to exist, so that the upgrade path is discoverable.",
+      "priority": "P2",
+      "estimate": "S",
+      "status": "To Do",
+      "branch": "",
+      "acs": [],
+      "dependencies": [
+        "US-0225 (EPIC-0036)",
+        "US-0239 (EPIC-0039)"
+      ]
     }
   ],
   "tasks": [
@@ -11683,1068 +12312,1344 @@
       "lessonEncoded": "No",
       "estimatedCostUsd": 0,
       "ghIssueNumber": null
+    },
+    {
+      "id": "BUG-0258",
+      "title": "ID_REGISTRY drifts silently from actual artefact IDs in use",
+      "severity": "Medium",
+      "relatedStory": "US-0215 (EPIC-0036)",
+      "relatedTask": "",
+      "status": "Open",
+      "fixBranch": "",
+      "lessonEncoded": "No",
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": null
+    },
+    {
+      "id": "BUG-0259",
+      "title": "tools/lib/file-lock.js referenced in CLAUDE.md + enterprise-agentic-sdlc spec but does not exist",
+      "severity": "Low",
+      "relatedStory": "US-0216 (EPIC-0036)",
+      "relatedTask": "",
+      "status": "Open",
+      "fixBranch": "",
+      "lessonEncoded": "No",
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": null
     }
   ],
   "costs": {
     "US-0001": {
       "projectedUsd": 1600,
-      "costUsd": 3.671598,
+      "costUsd": 3.085113,
       "inputTokens": 90000,
       "outputTokens": 22000
     },
     "US-0002": {
       "projectedUsd": 800,
-      "costUsd": 3.503598,
+      "costUsd": 2.917113,
       "inputTokens": 65000,
       "outputTokens": 16000
     },
     "US-0003": {
       "projectedUsd": 400,
-      "costUsd": 3.427098,
+      "costUsd": 2.840613,
       "inputTokens": 55000,
       "outputTokens": 13000
     },
     "US-0004": {
       "projectedUsd": 800,
-      "costUsd": 3.458598,
+      "costUsd": 2.872113,
       "inputTokens": 60000,
       "outputTokens": 14000
     },
     "US-0005": {
       "projectedUsd": 400,
-      "costUsd": 3.350598,
+      "costUsd": 2.764113,
       "inputTokens": 45000,
       "outputTokens": 10000
     },
     "US-0006": {
       "projectedUsd": 400,
-      "costUsd": 3.427098,
+      "costUsd": 2.840613,
       "inputTokens": 55000,
       "outputTokens": 13000
     },
     "US-0007": {
       "projectedUsd": 400,
-      "costUsd": 3.410598,
+      "costUsd": 2.824113,
       "inputTokens": 55000,
       "outputTokens": 12000
     },
     "US-0008": {
       "projectedUsd": 400,
-      "costUsd": 3.410598,
+      "costUsd": 2.824113,
       "inputTokens": 55000,
       "outputTokens": 12000
     },
     "US-0009": {
       "projectedUsd": 3200,
-      "costUsd": 4.607598,
+      "costUsd": 4.021113,
       "inputTokens": 220000,
       "outputTokens": 55500
     },
     "US-0010": {
       "projectedUsd": 800,
-      "costUsd": 4.607598,
+      "costUsd": 4.021113,
       "inputTokens": 220000,
       "outputTokens": 55500
     },
     "US-0011": {
       "projectedUsd": 800,
-      "costUsd": 3.505098,
+      "costUsd": 2.918613,
       "inputTokens": 65000,
       "outputTokens": 16000
     },
     "US-0012": {
       "projectedUsd": 400,
-      "costUsd": 3.427098,
+      "costUsd": 2.840613,
       "inputTokens": 55000,
       "outputTokens": 13000
     },
     "US-0013": {
       "projectedUsd": 400,
-      "costUsd": 3.395598,
+      "costUsd": 2.809113,
       "inputTokens": 50000,
       "outputTokens": 12000
     },
     "US-0029": {
       "projectedUsd": 400,
-      "costUsd": 4.576098,
+      "costUsd": 3.989613,
       "inputTokens": 220000,
       "outputTokens": 55000
     },
     "US-0030": {
       "projectedUsd": 400,
-      "costUsd": 4.495098,
+      "costUsd": 3.908613,
       "inputTokens": 210000,
       "outputTokens": 52000
     },
     "US-0082": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0014": {
       "projectedUsd": 400,
-      "costUsd": 20.739906,
+      "costUsd": 20.153421,
       "inputTokens": 1298990,
       "outputTokens": 163277
     },
     "US-0015": {
       "projectedUsd": 400,
-      "costUsd": 20.739906,
+      "costUsd": 20.153421,
       "inputTokens": 1298990,
       "outputTokens": 163277
     },
     "US-0016": {
       "projectedUsd": 400,
-      "costUsd": 20.739906,
+      "costUsd": 20.153421,
       "inputTokens": 1298990,
       "outputTokens": 163277
     },
     "US-0017": {
       "projectedUsd": 800,
-      "costUsd": 20.739906,
+      "costUsd": 20.153421,
       "inputTokens": 1298990,
       "outputTokens": 163277
     },
     "US-0018": {
       "projectedUsd": 400,
-      "costUsd": 20.739906,
+      "costUsd": 20.153421,
       "inputTokens": 1298990,
       "outputTokens": 163277
     },
     "US-0083": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0019": {
       "projectedUsd": 800,
-      "costUsd": 3.595098,
+      "costUsd": 3.008613,
       "inputTokens": 75000,
       "outputTokens": 20000
     },
     "US-0020": {
       "projectedUsd": 800,
-      "costUsd": 3.641598,
+      "costUsd": 3.055113,
       "inputTokens": 80000,
       "outputTokens": 22000
     },
     "US-0021": {
       "projectedUsd": 800,
-      "costUsd": 3.655098,
+      "costUsd": 3.068613,
       "inputTokens": 70000,
       "outputTokens": 25000
     },
     "US-0022": {
       "projectedUsd": 800,
-      "costUsd": 4.025598,
+      "costUsd": 3.439113,
       "inputTokens": 140000,
       "outputTokens": 35000
     },
     "US-0023": {
       "projectedUsd": 800,
-      "costUsd": 4.046598,
+      "costUsd": 3.460113,
       "inputTokens": 135000,
       "outputTokens": 37500
     },
     "US-0024": {
       "projectedUsd": 400,
-      "costUsd": 4.046598,
+      "costUsd": 3.460113,
       "inputTokens": 135000,
       "outputTokens": 37500
     },
     "US-0025": {
       "projectedUsd": 400,
-      "costUsd": 4.190098,
+      "costUsd": 3.603613,
       "inputTokens": 160000,
       "outputTokens": 41667
     },
     "US-0026": {
       "projectedUsd": 400,
-      "costUsd": 4.190098,
+      "costUsd": 3.603613,
       "inputTokens": 160000,
       "outputTokens": 41667
     },
     "US-0028": {
       "projectedUsd": 400,
-      "costUsd": 5.315598,
+      "costUsd": 4.729113,
       "inputTokens": 330000,
       "outputTokens": 82000
     },
     "US-0027": {
       "projectedUsd": 400,
-      "costUsd": 4.190098,
+      "costUsd": 3.603613,
       "inputTokens": 160000,
       "outputTokens": 41667
     },
     "US-0031": {
       "projectedUsd": 400,
-      "costUsd": 6.998598,
+      "costUsd": 6.412113,
       "inputTokens": 570000,
       "outputTokens": 143000
     },
     "US-0032": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0033": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0034": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0035": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0036": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0037": {
       "projectedUsd": 200,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0038": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0039": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0040": {
       "projectedUsd": 400,
-      "costUsd": 3.419973,
+      "costUsd": 2.833488,
       "inputTokens": 50000,
       "outputTokens": 13250
     },
     "US-0041": {
       "projectedUsd": 400,
-      "costUsd": 3.419973,
+      "costUsd": 2.833488,
       "inputTokens": 50000,
       "outputTokens": 13250
     },
     "US-0042": {
       "projectedUsd": 400,
-      "costUsd": 3.419973,
+      "costUsd": 2.833488,
       "inputTokens": 50000,
       "outputTokens": 13250
     },
     "US-0043": {
       "projectedUsd": 200,
-      "costUsd": 3.419973,
+      "costUsd": 2.833488,
       "inputTokens": 50000,
       "outputTokens": 13250
     },
     "US-0044": {
       "projectedUsd": 200,
-      "costUsd": 3.419973,
+      "costUsd": 2.833488,
       "inputTokens": 50000,
       "outputTokens": 13250
     },
     "US-0045": {
       "projectedUsd": 200,
-      "costUsd": 3.419973,
+      "costUsd": 2.833488,
       "inputTokens": 50000,
       "outputTokens": 13250
     },
     "US-0046": {
       "projectedUsd": 200,
-      "costUsd": 3.419973,
+      "costUsd": 2.833488,
       "inputTokens": 50000,
       "outputTokens": 13250
     },
     "US-0047": {
       "projectedUsd": 400,
-      "costUsd": 3.419973,
+      "costUsd": 2.833488,
       "inputTokens": 50000,
       "outputTokens": 13250
     },
     "US-0048": {
       "projectedUsd": 1600,
-      "costUsd": 14.741218,
+      "costUsd": 14.154733,
       "inputTokens": 713670,
       "outputTokens": 68062
     },
     "US-0049": {
       "projectedUsd": 2.659086,
-      "costUsd": 14.741218,
+      "costUsd": 14.154733,
       "inputTokens": 713670,
       "outputTokens": 68062
     },
     "US-0050": {
       "projectedUsd": 800,
-      "costUsd": 14.741218,
+      "costUsd": 14.154733,
       "inputTokens": 713670,
       "outputTokens": 68062
     },
     "US-0051": {
       "projectedUsd": 400,
-      "costUsd": 14.741218,
+      "costUsd": 14.154733,
       "inputTokens": 713670,
       "outputTokens": 68062
     },
     "US-0052": {
       "projectedUsd": 400,
-      "costUsd": 14.741218,
+      "costUsd": 14.154733,
       "inputTokens": 713670,
       "outputTokens": 68062
     },
     "US-0053": {
       "projectedUsd": 800,
-      "costUsd": 3.424698,
+      "costUsd": 2.838213,
       "inputTokens": 55887,
       "outputTokens": 2644
     },
     "US-0054": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0055": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0056": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0057": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0058": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0079": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0080": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0084": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0059": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0060": {
       "projectedUsd": 800,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0061": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0062": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0063": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0081": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0064": {
       "projectedUsd": 800,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0065": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0066": {
       "projectedUsd": 800,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0067": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0068": {
-      "projectedUsd": 3.533994,
-      "costUsd": 3.058098,
+      "projectedUsd": 3.029148,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0169": {
       "projectedUsd": 800,
-      "costUsd": 86.683498,
+      "costUsd": 86.097013,
       "inputTokens": 7805769,
       "outputTokens": 445569
     },
     "US-0069": {
       "projectedUsd": 800,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0070": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0071": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0072": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0073": {
       "projectedUsd": 800,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0074": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0075": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0076": {
       "projectedUsd": 800,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0077": {
-      "projectedUsd": 3.533994,
-      "costUsd": 3.058098,
+      "projectedUsd": 3.029148,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0078": {
       "projectedUsd": 2.659086,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0170": {
       "projectedUsd": 200,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0171": {
       "projectedUsd": 1600,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0172": {
       "projectedUsd": 800,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0173": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0175": {
       "projectedUsd": 8.58114,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0176": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0177": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0178": {
       "projectedUsd": 8.58114,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0179": {
       "projectedUsd": 8.58114,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0181": {
-      "projectedUsd": 3.533994,
-      "costUsd": 3.058098,
+      "projectedUsd": 3.029148,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0085": {
       "projectedUsd": 200,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0086": {
       "projectedUsd": 400,
-      "costUsd": 20.739906,
+      "costUsd": 20.153421,
       "inputTokens": 1298990,
       "outputTokens": 163277
     },
     "US-0087": {
       "projectedUsd": 200,
-      "costUsd": 20.739906,
+      "costUsd": 20.153421,
       "inputTokens": 1298990,
       "outputTokens": 163277
     },
     "US-0088": {
       "projectedUsd": 800,
-      "costUsd": 20.739906,
+      "costUsd": 20.153421,
       "inputTokens": 1298990,
       "outputTokens": 163277
     },
     "US-0089": {
       "projectedUsd": 800,
-      "costUsd": 20.739906,
+      "costUsd": 20.153421,
       "inputTokens": 1298990,
       "outputTokens": 163277
     },
     "US-0090": {
       "projectedUsd": 800,
-      "costUsd": 20.739906,
+      "costUsd": 20.153421,
       "inputTokens": 1298990,
       "outputTokens": 163277
     },
     "US-0091": {
       "projectedUsd": 1600,
-      "costUsd": 20.739906,
+      "costUsd": 20.153421,
       "inputTokens": 1298990,
       "outputTokens": 163277
     },
     "US-0092": {
       "projectedUsd": 400,
-      "costUsd": 20.739906,
+      "costUsd": 20.153421,
       "inputTokens": 1298990,
       "outputTokens": 163277
     },
     "US-0093": {
       "projectedUsd": 800,
-      "costUsd": 20.739906,
+      "costUsd": 20.153421,
       "inputTokens": 1298990,
       "outputTokens": 163277
     },
     "US-0108": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0109": {
       "projectedUsd": 200,
-      "costUsd": 155.704998,
+      "costUsd": 155.118513,
       "inputTokens": 3937957,
       "outputTokens": 737215
     },
     "US-0174": {
       "projectedUsd": 8.58114,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0180": {
       "projectedUsd": 8.58114,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0094": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0095": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0096": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0097": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0098": {
       "projectedUsd": 200,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0099": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0100": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0101": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0102": {
       "projectedUsd": 800,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0103": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0104": {
       "projectedUsd": 800,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0105": {
       "projectedUsd": 800,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0106": {
       "projectedUsd": 400,
-      "costUsd": 3.953198,
+      "costUsd": 3.366713,
       "inputTokens": 92003,
       "outputTokens": 14272
     },
     "US-0107": {
       "projectedUsd": 200,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0110": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0111": {
       "projectedUsd": 1600,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0112": {
       "projectedUsd": 200,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0113": {
       "projectedUsd": 200,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0114": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0115": {
       "projectedUsd": 1600,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0118": {
       "projectedUsd": 800,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0119": {
       "projectedUsd": 800,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0120": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0121": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0122": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0123": {
       "projectedUsd": 200,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0124": {
       "projectedUsd": 200,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0125": {
       "projectedUsd": 200,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0148": {
       "projectedUsd": 1600,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0126": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0116": {
       "projectedUsd": 800,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0117": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0127": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0128": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0129": {
       "projectedUsd": 800,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0130": {
       "projectedUsd": 800,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0131": {
       "projectedUsd": 800,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0132": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0133": {
       "projectedUsd": 1600,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0134": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0135": {
       "projectedUsd": 800,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0136": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0137": {
       "projectedUsd": 800,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0138": {
       "projectedUsd": 200,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0139": {
       "projectedUsd": 800,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0140": {
       "projectedUsd": 800,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0141": {
       "projectedUsd": 800,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0142": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0143": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0144": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0145": {
       "projectedUsd": 800,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0146": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0147": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0149": {
       "projectedUsd": 800,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0150": {
       "projectedUsd": 800,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0151": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0152": {
       "projectedUsd": 1600,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0153": {
       "projectedUsd": 800,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0154": {
       "projectedUsd": 1600,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0155": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0156": {
       "projectedUsd": 800,
-      "costUsd": 41.511998,
+      "costUsd": 40.925513,
       "inputTokens": 2876600,
       "outputTokens": 545597
     },
     "US-0157": {
       "projectedUsd": 1600,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0158": {
       "projectedUsd": 800,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0159": {
       "projectedUsd": 1600,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0160": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0161": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0164": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0165": {
       "projectedUsd": 200,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0166": {
       "projectedUsd": 400,
-      "costUsd": 3.058098,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0182": {
+      "projectedUsd": 3200,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0183": {
+      "projectedUsd": 1600,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0184": {
+      "projectedUsd": 1600,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0185": {
+      "projectedUsd": 3200,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0215": {
+      "projectedUsd": 2.659086,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0216": {
+      "projectedUsd": 2.659086,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0217": {
+      "projectedUsd": 8.58114,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0218": {
+      "projectedUsd": 8.58114,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0219": {
+      "projectedUsd": 8.58114,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0220": {
+      "projectedUsd": 8.58114,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0221": {
+      "projectedUsd": 2.659086,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0222": {
+      "projectedUsd": 8.58114,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0223": {
+      "projectedUsd": 2.659086,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0224": {
+      "projectedUsd": 8.58114,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0225": {
+      "projectedUsd": 2.659086,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0226": {
+      "projectedUsd": 3.029148,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0227": {
+      "projectedUsd": 2.659086,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0228": {
+      "projectedUsd": 2.659086,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0229": {
+      "projectedUsd": 2.659086,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0230": {
+      "projectedUsd": 8.58114,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0231": {
+      "projectedUsd": 8.58114,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0232": {
+      "projectedUsd": 3.029148,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0233": {
+      "projectedUsd": 8.58114,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0234": {
+      "projectedUsd": 8.58114,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0235": {
+      "projectedUsd": 8.58114,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0236": {
+      "projectedUsd": 8.58114,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0237": {
+      "projectedUsd": 8.58114,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0238": {
+      "projectedUsd": 2.659086,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0239": {
+      "projectedUsd": 8.58114,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0240": {
+      "projectedUsd": 1.6529939999999999,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0241": {
+      "projectedUsd": 8.58114,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0242": {
+      "projectedUsd": 3.029148,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0243": {
+      "projectedUsd": 8.58114,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0244": {
+      "projectedUsd": 2.659086,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0245": {
+      "projectedUsd": 8.58114,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0246": {
+      "projectedUsd": 2.659086,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0247": {
+      "projectedUsd": 2.659086,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0248": {
+      "projectedUsd": 2.659086,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0249": {
+      "projectedUsd": 8.58114,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0250": {
+      "projectedUsd": 2.659086,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0251": {
+      "projectedUsd": 2.659086,
+      "costUsd": 2.471613,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0252": {
+      "projectedUsd": 2.659086,
+      "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
@@ -14522,6 +15427,22 @@
         "isEstimated": false,
         "projectedUsd": 400
       },
+      "BUG-0258": {
+        "costUsd": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "sessions": 0,
+        "isEstimated": false,
+        "projectedUsd": 400
+      },
+      "BUG-0259": {
+        "costUsd": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "sessions": 0,
+        "isEstimated": false,
+        "projectedUsd": 400
+      },
       "_totals": {
         "costUsd": 403.077301,
         "inputTokens": 29067040,
@@ -15768,6 +16689,300 @@
       "failedTCNoBug": false,
       "openCriticalBug": false,
       "isAtRisk": false
+    },
+    "US-0182": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0183": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0184": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0185": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0215": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0216": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0217": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0218": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0219": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0220": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0221": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0222": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0223": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0224": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0225": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0226": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0227": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0228": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0229": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0230": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0231": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0232": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0233": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0234": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0235": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0236": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0237": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0238": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0239": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0240": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0241": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0242": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0243": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0244": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0245": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0246": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0247": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0248": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0249": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0250": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0251": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0252": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
     }
   },
   "risk": {
@@ -15775,15 +16990,25 @@
     "byEpic": {}
   },
   "coverage": {
-    "lines": 89.79,
-    "statements": 87.8,
-    "functions": 89.09,
-    "branches": 77.33,
-    "overall": 89.79,
-    "meetsTarget": true,
-    "available": true
+    "lines": 0,
+    "statements": 0,
+    "functions": 0,
+    "branches": 0,
+    "overall": 0,
+    "meetsTarget": false,
+    "available": false
   },
   "recentActivity": [
+    {
+      "sessionNum": 47,
+      "date": "2026-05-17",
+      "summary": "**US-0185 Brainstorm:** Full `superpowers:brainstorming` cycle (8 clarifying questions, 3 approaches, 7 design sections + honest critique rounds). Key design decisions: two sequential Lens dispatches (spec compliance → code quality); `[sha:<commit>]` convention for Forge `--summary` handoff; separate `orchestration.iterationCap.taskReview` default 2; `SPLIT_TASK` escalates to human (Keystone auto-split deferred); `retryTriggeredBy` tracking so quality retries skip spec re-review; stdout token contract (exit 0 + stdout token, never exit codes for flow control).; **Spec written:** `docs/superpowers/specs/2026-05-15-us-0185-conductor-dispatch-protocol-design.md` (597 lines, 13 sections; committed `8962e9b`).; **Plan written:** `docs/superpowers/plans/2026-05-17-us-0185-conductor-dispatch-protocol.md` — 14 TDD tasks (committed `c566cac`)."
+    },
+    {
+      "sessionNum": 46,
+      "date": "2026-05-15",
+      "summary": "**Branch cleanup:** Deleted 11 stale local branches (gone remotes from Sessions 44–45) and 8 remote branches; closed 3 stale open PRs (#1036 chore/us-0183-plan, #1003 and #1002 stale version bumps). Pruned `chore/version-bump-1a68c11` and `chore/version-bump-8210599` remote branches.; **US-0184 Brainstorm:** Ran full `superpowers:brainstorming` skill cycle — 5 clarifying questions, 3 approaches, 7 design sections, spec self-review (1 ambiguity fixed), user review gate. Design decisions: pre-formatted markdown to stdout; plan-doc-based file path discovery; `--summary` extension to `agent-lifecycle.js done`; `@agent:` tagging in LESSONS.md; Approach 2 (CLI + pure assembler). Key late addition: story ACs included in every payload.; **Conductor persona:** Established that DM_AGENT's persona name is **Conductor** (consistent with existing DM_AGENT.md body text and Lens findings tag convention `@conductor`). Updated canonical agent names list and all design docs accordingly."
+    },
     {
       "sessionNum": 44,
       "date": "2026-05-10",
@@ -15798,19 +17023,49 @@
       "sessionNum": 42,
       "date": "2026-05-09",
       "summary": "**PR #991 merged:** plugin install integration — superpowers version-check + claude-mem install/update prompts in `scripts/install.sh` and `scripts/update.sh`, plus README \"Optional Plugins\" section. 9 commits, all CI green.; **US-0177 retro-logged** under EPIC-0026 documenting the merged plugin install work (`Done`, 5 ACs all checked).; **EPIC-0026 broadened** from \"Memory Token Optimisation\" to cover both token cost reduction AND claude-mem dashboard integration tracks."
-    },
-    {
-      "sessionNum": 41,
-      "date": "2026-05-08",
-      "summary": "**Branch cleanup:** Removed stale `claude/eager-clarke-c29d17` worktree (Session 38 artifact, all merged).; **Dev server detection:** Auto-detected project servers from `package.json`, wrote `.claude/launch.json` with `plan-status` (port 4323), `generate:watch`, `dashboard:watch`. Started `plan-status` server via `preview_start`; resolved port conflict with FableSoft Astro dev server on 4321.; **Bug fix — body margin gap (BUG discovered live):** Added `margin: 0` to the `body` CSS rule in `render-html.js`. Browser's default `margin: 8px` was never reset, causing an 8px gap above the sticky topbar. Verified live in preview."
-    },
-    {
-      "sessionNum": 40,
-      "date": "2026-05-05",
-      "summary": "**BUG-0253** — investigated About modal auto-close every 5 seconds; confirmed duplicate of already-fixed BUG-0104 (meta-refresh removed in prior session). Marked Fixed. PR #986 merged.; **Branch cleanup** — deleted all merged local and remote feature/bugfix branches from Session 39.; **v2.2.0 release** — cut `release/2.2.0` branch from develop, bumped to 2.2.0, PR #988 merged into main, GitHub release tagged and published."
     }
   ],
   "lessons": [
+    {
+      "id": "L-0066",
+      "title": "`npm audit` does not need `npm ci` — running it wastes a full install per PR",
+      "rule": "`npm audit --audit-level=high` only reads `package-lock.json` and queries the npm registry; it does not need `node_modules` to be installed. Running `npm ci` (and the associated `cache: 'npm'` config) before `npm audit` in CI wastes the time and runner cost of a full dependency install. Remove both `actions/setup-node` cache config and `npm ci` from any CI job whose sole purpose is to run `npm audit`. Node.js itself must still be available (`actions/setup-node` without cache is fine), but the install step is unnecessary.\n_Identified during US-0186 CI optimisation (Session 47). Removed `npm ci` from the Dependency Audit job in `.github/workflows/ci.yml`._",
+      "context": "",
+      "date": "2026-05-17",
+      "bugIds": []
+    },
+    {
+      "id": "L-0067",
+      "title": "CI check lists in AGENTS.md and CLAUDE.md drift silently as new jobs are added",
+      "rule": "When a new CI job is added (e.g. Secret Scanning, CodeQL), the human-readable CI check lists in `AGENTS.md` (§CI Pipeline table) and `CLAUDE.md` (branch-protection line) are rarely updated at the same time. This causes agents and humans to expect fewer checks than actually run — leading to confusion when a PR shows more status checks than documented. **Fix:** Whenever a CI job is added, removed, or renamed, update both `AGENTS.md §CI Pipeline` and `CLAUDE.md §Git Branching` in the same commit. Treat these as code, not documentation.\n_Discovered in Session 47: AGENTS.md listed 6 jobs; actual CI had 8 checks (Secret Scanning and CodeQL were missing). CLAUDE.md listed only 3 of 8 checks. Both corrected alongside the US-0186 CI optimisation._",
+      "context": "",
+      "date": "2026-05-17",
+      "bugIds": []
+    },
+    {
+      "id": "L-0063",
+      "title": "`typeof x === 'number'` does not exclude `NaN` — use `Number.isFinite()` for integer guards",
+      "rule": "`typeof NaN === 'number'` is `true` in JavaScript. Any guard that checks `typeof opts.x === 'number'` to validate a numeric field will silently accept `NaN`. For plan-task indices and other integer fields where `NaN` is an invalid sentinel, always add `Number.isFinite()`: `typeof x === 'number' && Number.isFinite(x)`. Similarly, `Number.isInteger(x)` is the correct guard when only whole numbers are valid (rejects both `NaN` and floats). Test with `planTaskIndex: NaN` explicitly.\n_Caught by code review of Task 1 of US-0184 (agent-lifecycle-state.js initTask). The original plan code used `typeof opts.planTaskIndex === 'number'` which would have stored `NaN` in the JSON, silently coercing to `null` on serialization._",
+      "context": "",
+      "date": "2026-05-15",
+      "bugIds": []
+    },
+    {
+      "id": "L-0064",
+      "title": "`Array.prototype.sort()` mutates in place — use `[...arr].sort()` in pure functions",
+      "rule": "`Array.prototype.sort()` sorts the original array in-place and returns a reference to it. In pure functions (especially assembler modules where the caller may hold a reference to the input array), calling `.sort()` directly silently mutates the caller's data. Always use `[...arr].sort(compareFn)` or `arr.slice().sort(compareFn)` to sort a copy. This is especially important in context-assembler modules where `priorTasks` is sorted by `planTaskIndex` — the mutation would reorder the caller's array.\n_Caught by code review of Tasks 3–7 of US-0184 (agent-context-assembler.js \\_renderPriorTasks)._",
+      "context": "",
+      "date": "2026-05-15",
+      "bugIds": []
+    },
+    {
+      "id": "L-0065",
+      "title": "Squash-merged feature branches do not appear in `git branch --merged` — cross-reference GitHub PR state instead",
+      "rule": "`git branch --merged <base>` only finds branches whose tip commits exist in the base branch's history. Squash merges create a new single commit that is NOT the tip of the feature branch, so the feature branch tip is never an ancestor of the base. This means all squash-merged feature branches show as \"not merged\" in git. To correctly identify stale branches for cleanup, cross-reference with GitHub PR state using `gh pr list --state all --json headRefName,state` and look for `MERGED` or `CLOSED` PRs, not `git branch --merged`.\n_Applied during Session 46 branch cleanup — 11 stale local branches identified by PR state, not by git ancestry._",
+      "context": "",
+      "date": "2026-05-15",
+      "bugIds": []
+    },
     {
       "id": "L-0057",
       "title": "CodeQL TOCTOU (`js/file-system-race`) fires on `statSync+readFileSync` — use fd for atomic stat+read",
@@ -16325,10 +17580,10 @@
       "bugIds": []
     }
   ],
-  "generatedAt": "2026-05-13T14:20:45.186Z",
-  "commitSha": "3d5072c",
-  "buildNumber": "745",
-  "branch": "fix/US-0181-move-widget-to-agentic-dashboard",
+  "generatedAt": "2026-05-20T00:38:33.457Z",
+  "commitSha": "304a768",
+  "buildNumber": "781",
+  "branch": "claude/trusting-ptolemy-a305f1",
   "sessionTimeline": [
     {
       "date": "2026-03-09",
@@ -17066,9 +18321,9 @@
   "deltaSpend": 83.63,
   "projectName": "PlanVisualizer",
   "tagline": "Self-documenting project dashboards for Agentic coding platforms.",
-  "version": "2.3.5",
+  "version": "2.4.0",
   "appName": "plan-visualizer",
-  "appVersion": "2.3.5",
+  "appVersion": "2.4.0",
   "githubUrl": "https://github.com/ksyed0/PlanVisualizer",
   "agents": {
     "Conductor": {
@@ -17136,13 +18391,13 @@
     }
   },
   "budget": {
-    "totalBudget": 1189.270568,
+    "totalBudget": 1395.502364,
     "totalSpent": 1133.1037999999999,
-    "totalProjected": 98058.825854,
-    "percentUsed": 95,
-    "burnRate": 31.116099999999996,
-    "daysRemaining": 1,
-    "projectedExhaustion": 1,
+    "totalProjected": 107865.05764999992,
+    "percentUsed": 81,
+    "burnRate": 0,
+    "daysRemaining": null,
+    "projectedExhaustion": null,
     "thresholds": [
       50,
       75,
@@ -17151,211 +18406,266 @@
     ],
     "crossedThresholds": [
       50,
-      75,
-      90
+      75
     ],
     "epicBudgets": [
       {
         "id": "EPIC-0001",
         "title": "Core Parsing Engine",
-        "budget": 27.659784000000002,
-        "spent": 27.659784000000002,
+        "budget": 22.967904,
+        "spent": 22.967904,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0002",
         "title": "HTML Dashboard Renderer",
-        "budget": 9.215196,
-        "spent": 9.215196,
+        "budget": 8.042226,
+        "spent": 8.042226,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0003",
         "title": "Installation and Distribution",
-        "budget": 22.457088,
-        "spent": 22.457088,
+        "budget": 18.938178,
+        "spent": 18.938178,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0004",
         "title": "CI/CD Pipeline",
-        "budget": 103.69953000000001,
-        "spent": 103.69953000000001,
+        "budget": 100.76710500000002,
+        "spent": 100.76710500000002,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0005",
         "title": "Project Self-Documentation",
-        "budget": 14.917392,
-        "spent": 14.917392,
+        "budget": 12.571452,
+        "spent": 12.571452,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0006",
         "title": "Dashboard UX & Quality Improvements",
-        "budget": 57.44247000000001,
-        "spent": 57.44247000000001,
+        "budget": 48.645194999999994,
+        "spent": 48.645194999999994,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0007",
         "title": "Dashboard Visual Design Overhaul",
-        "budget": 101.06587400000001,
-        "spent": 101.06587400000001,
+        "budget": 93.44156899999999,
+        "spent": 93.44156899999999,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0008",
         "title": "Trend Analysis & Historical Tracking",
-        "budget": 24.464784000000005,
-        "spent": 24.464784000000005,
+        "budget": 19.772904,
+        "spent": 19.772904,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0009",
         "title": "Budget Forecasting",
-        "budget": 18.348588000000003,
-        "spent": 18.348588000000003,
+        "budget": 14.829678,
+        "spent": 14.829678,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0011",
         "title": "Search",
-        "budget": 32.972298,
-        "spent": 32.972298,
+        "budget": 30.039873,
+        "spent": 30.039873,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0013",
         "title": "Agentic SDLC Dashboard",
-        "budget": 127.49753400000002,
-        "spent": 127.49753400000002,
+        "budget": 123.39213900000001,
+        "spent": 123.39213900000001,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0015",
         "title": "UI Review and Redesign",
-        "budget": 64.448378,
-        "spent": 64.448378,
+        "budget": 55.651102999999985,
+        "spent": 55.651102999999985,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0016",
         "title": "Agentic Dashboard Mission Control Redesign",
-        "budget": 45.87147000000001,
-        "spent": 45.87147000000001,
+        "budget": 37.074195,
+        "spent": 37.074195,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0017",
         "title": "Agentic Dashboard Effectiveness Review",
-        "budget": 3.058098,
-        "spent": 3.058098,
+        "budget": 2.471613,
+        "spent": 2.471613,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0019",
         "title": "Dashboard Cycle History",
-        "budget": 30.580980000000007,
-        "spent": 30.580980000000007,
+        "budget": 24.716130000000003,
+        "spent": 24.716130000000003,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0024",
         "title": "Backlog Closure",
-        "budget": 3.058098,
-        "spent": 3.058098,
+        "budget": 2.471613,
+        "spent": 2.471613,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0025",
         "title": "GitHub Issues Sync",
-        "budget": 9.174294,
-        "spent": 9.174294,
+        "budget": 7.414839000000001,
+        "spent": 7.414839000000001,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0020",
         "title": "Cross-Dashboard Redesign",
-        "budget": 39.75527400000001,
-        "spent": 39.75527400000001,
+        "budget": 32.13096900000001,
+        "spent": 32.13096900000001,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0023",
         "title": "Dashboard Quality & Reliability",
-        "budget": 9.174294,
-        "spent": 9.174294,
+        "budget": 7.414839000000001,
+        "spent": 7.414839000000001,
+        "remaining": 0,
+        "percentUsed": 100
+      },
+      {
+        "id": "EPIC-0028",
+        "title": "Agentic Orchestration Engine",
+        "budget": 9.886452,
+        "spent": 9.886452,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0010",
         "title": "Risk Analytics",
-        "budget": 105.507982,
-        "spent": 101.973988,
-        "remaining": 3.5339939999999928,
+        "budget": 101.484226,
+        "spent": 98.455078,
+        "remaining": 3.0291480000000064,
         "percentUsed": 97
       },
       {
         "id": "EPIC-0014",
         "title": "Follow-Up Changes",
-        "budget": 188.524368,
-        "spent": 171.362088,
+        "budget": 185.005458,
+        "spent": 167.843178,
         "remaining": 17.16228000000001,
         "percentUsed": 91
       },
       {
         "id": "EPIC-0012",
         "title": "Stakeholder View",
-        "budget": 24.541668,
-        "spent": 18.348588000000003,
-        "remaining": 6.193079999999998,
-        "percentUsed": 75
+        "budget": 20.517912,
+        "spent": 14.829678,
+        "remaining": 5.688234,
+        "percentUsed": 72
+      },
+      {
+        "id": "EPIC-0037",
+        "title": "Step 1 Persistence — Indexer as Spectator (Phase B)",
+        "budget": 20.892858,
+        "spent": 9.886452,
+        "remaining": 11.006406,
+        "percentUsed": 47
       },
       {
         "id": "EPIC-0027",
         "title": "Data Store Architecture Assessment",
-        "budget": 6.592092,
-        "spent": 3.058098,
-        "remaining": 3.533994,
-        "percentUsed": 46
+        "budget": 5.500761000000001,
+        "spent": 2.471613,
+        "remaining": 3.0291480000000006,
+        "percentUsed": 45
+      },
+      {
+        "id": "EPIC-0041",
+        "title": "Step 1 Persistence — Lock-Down (Phase F)",
+        "budget": 31.575549,
+        "spent": 12.358065,
+        "remaining": 19.217484,
+        "percentUsed": 39
+      },
+      {
+        "id": "EPIC-0040",
+        "title": "Step 1 Persistence — Planning Writers (Phase E)",
+        "budget": 58.175724,
+        "spent": 19.772904,
+        "remaining": 38.402820000000006,
+        "percentUsed": 34
       },
       {
         "id": "EPIC-0026",
         "title": "Memory Token Optimisation",
-        "budget": 41.033910000000006,
-        "spent": 15.290490000000002,
-        "remaining": 25.743420000000004,
-        "percentUsed": 37
+        "budget": 38.101485,
+        "spent": 12.358065,
+        "remaining": 25.743419999999997,
+        "percentUsed": 32
+      },
+      {
+        "id": "EPIC-0036",
+        "title": "Step 1 Persistence — Repository Foundation (Phase A)",
+        "budget": 91.970013,
+        "spent": 27.187743000000005,
+        "remaining": 64.78226999999998,
+        "percentUsed": 30
+      },
+      {
+        "id": "EPIC-0039",
+        "title": "Step 1 Persistence — SdlcStatus Cutover (Phase D)",
+        "budget": 76.94797799999999,
+        "spent": 19.772904,
+        "remaining": 57.175073999999995,
+        "percentUsed": 26
+      },
+      {
+        "id": "EPIC-0038",
+        "title": "Step 1 Persistence — First Read Consumer (Phase C)",
+        "budget": 22.105506,
+        "spent": 4.943226,
+        "remaining": 17.16228,
+        "percentUsed": 22
       }
     ],
     "hasBudget": true
   },
   "completion": {
-    "likelyDate": "May 20",
-    "rangeStart": "May 19",
-    "rangeEnd": "May 22",
-    "velocityWeeks": 10,
-    "storiesPerWeek": 16.3,
+    "likelyDate": "Jun 18",
+    "rangeStart": "Jun 12",
+    "rangeEnd": "Jun 24",
+    "velocityWeeks": 11,
+    "storiesPerWeek": 15.3,
     "pointsPerWeek": 29.3
   },
   "trends": {
@@ -17411,11 +18721,7 @@
       "2026-04-14T19:30:11.739Z",
       "2026-04-14T19:46:24.241Z",
       "2026-04-14T20:41:46.666Z",
-      "2026-05-11T15:30:33.651Z",
-      "2026-05-11T16:53:38.588Z",
-      "2026-05-11T17:16:19.063Z",
-      "2026-05-11T21:59:46.558Z",
-      "2026-05-13T14:20:45.273Z"
+      "2026-05-20T00:38:33.738Z"
     ],
     "doneCounts": [
       2,
@@ -17469,11 +18775,7 @@
       78,
       79,
       81,
-      167,
-      167,
-      167,
-      167,
-      167
+      171
     ],
     "totalStories": [
       81,
@@ -17527,11 +18829,7 @@
       104,
       104,
       105,
-      177,
-      177,
-      177,
-      177,
-      177
+      219
     ],
     "aiCosts": [
       3.4542266666666666,
@@ -17585,10 +18883,6 @@
       209.7601,
       220.21260000000004,
       237.96510000000004,
-      1133.1037999999999,
-      1133.1037999999999,
-      1133.1037999999999,
-      1133.1037999999999,
       1133.1037999999999
     ],
     "coverage": [
@@ -17643,11 +18937,7 @@
       93.09,
       93.09,
       93.09,
-      1.78,
-      89.79,
-      89.79,
-      89.79,
-      89.79
+      null
     ],
     "velocity": [
       8,
@@ -17701,11 +18991,7 @@
       128.5,
       129.5,
       131.5,
-      301,
-      301,
-      301,
-      301,
-      301
+      327
     ],
     "openBugs": [
       66,
@@ -17759,17 +19045,9 @@
       4,
       4,
       4,
-      4,
-      4,
-      4,
-      4,
-      4
+      6
     ],
     "atRisk": [
-      0,
-      0,
-      0,
-      0,
       0,
       0,
       0,
@@ -17875,10 +19153,6 @@
       14435987,
       14542668,
       14664034,
-      73384240,
-      73384240,
-      73384240,
-      73384240,
       73384240
     ],
     "outputTokens": [
@@ -17933,10 +19207,6 @@
       2471082,
       2547272,
       2631208,
-      10692483,
-      10692483,
-      10692483,
-      10692483,
       10692483
     ],
     "avgRisk": [
@@ -17991,11 +19261,7 @@
       1.6399999999999997,
       1.6249999999999998,
       1.6130434782608694,
-      1.3666666666666665,
-      1.3666666666666665,
-      1.3666666666666665,
-      1.3666666666666665,
-      1.3666666666666665
+      1.7489361702127657
     ],
     "velocityByWeek": {
       "labels": [
@@ -18006,7 +19272,7 @@
         "2026-W14",
         "2026-W15",
         "2026-W16",
-        "2026-W20"
+        "2026-W21"
       ],
       "points": [
         31,
@@ -18016,7 +19282,7 @@
         6,
         40,
         5,
-        169.5
+        195.5
       ],
       "rollingAvg": [
         31,
@@ -18026,7 +19292,7 @@
         13.9,
         18.4,
         16.1,
-        55.1
+        61.6
       ]
     }
   }
