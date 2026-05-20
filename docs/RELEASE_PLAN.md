@@ -3684,14 +3684,14 @@ Acceptance Criteria:
 US-0222 (EPIC-0036): As any repository caller, I want validation tiers, a warnings channel, and a mtime+hash refresh function, so that referential integrity failures are surfaced consistently and the index stays in sync with markdown.
 Priority: High (P1)
 Estimate: M
-Status: Planned
+Status: Done
 Plan Task: A.8
 Acceptance Criteria:
 
-- [ ] AC-0878: validation.js exports TIER (error/warning/report), RULES map, classify(violation), and a ValidationError class
-- [ ] AC-0879: WarningsChannel appends one JSON row per violation to .cache/repo-warnings.jsonl
-- [ ] AC-0880: refresh({datastores, sources}) uses mtime+size first-pass, recomputes hash only on suspicion of change
-- [ ] AC-0881: refresh returns { sources: [...], entitiesAffected: [...] } and is safe to call repeatedly
+- [x] AC-0878: validation.js exports TIER (error/warning/report), RULES map, classify(violation), and a ValidationError class
+- [x] AC-0879: WarningsChannel appends one JSON row per violation to .cache/repo-warnings.jsonl
+- [x] AC-0880: refresh({datastores, sources}) uses mtime+size first-pass, recomputes hash only on suspicion of change
+- [x] AC-0881: refresh returns { sources: [...], entitiesAffected: [...] } and is safe to call repeatedly
 ```
 
 ```
