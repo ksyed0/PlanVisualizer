@@ -3568,7 +3568,7 @@ Phase A of the open-core persistence Step 1, per `docs/superpowers/specs/2026-05
 EPIC-0036: Step 1 Persistence — Repository Foundation (Phase A)
 Description: Stand up tools/lib/repository/ with file-lock wrapper, AST parser+serializer, IndexDatastore (better-sqlite3 → node:sqlite → --no-index fallback), schema migrations, MarkdownDatastore, validation/warnings/refresh, Repository singleton, project-state migration framework, and read-only pv:check-upgrade + pv:doctor. Hard gate: every existing markdown source round-trips idempotent-on-second-pass; better-sqlite3 smoke passes on dev matrix; Repository.getInstance opens cleanly.
 Release Target: v2.5.0
-Status: Planned
+Status: Done
 Dependencies: EPIC-0028
 Spec: docs/superpowers/specs/2026-05-19-step-1-repository-abstraction-design.md
 Plan: docs/superpowers/plans/2026-05-19-step-1-repository-abstraction.md

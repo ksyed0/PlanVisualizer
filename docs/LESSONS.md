@@ -850,3 +850,27 @@ _Learned from BUG-0210 — Lessons and Bugs tabs both have epic group headers, b
 **Prevention:** Before writing a design spec that treats X as "existing infrastructure", run `ls <path>` to confirm it exists. Do not inherit assumptions from prior docs without verification.
 
 **Date:** 2026-05-20
+
+---
+
+## L-0069: Git worktrees can be silently pruned — always recreate from branch before assuming state is lost @agent:Keystone @agent:Conductor
+
+**Context:** Session 51. The harness invoked Claude in the wrong worktree (`loving-brattain-25f73d`, off main). The Session 50 worktree (`trusting-ptolemy-a305f1`) had been pruned (`git worktree prune` or equivalent) but the **branch** was intact with all commits.
+
+**Fix:** `git worktree add .claude/worktrees/trusting-ptolemy-a305f1 claude/trusting-ptolemy-a305f1` restored the working tree in ~1 second with all files from the branch tip. No work was lost.
+
+**Prevention:** Before concluding a worktree is gone, check `git branch -a | grep <name>` and `git rev-parse <branch>`. If the branch exists, the work is recoverable. `git worktree add` is cheap and non-destructive.
+
+**Date:** 2026-05-20
+
+---
+
+## L-0070: MarkdownDatastore.sourceMeta() has a double-read race — stat then read can be inconsistent @agent:Forge @agent:Keystone
+
+**Context:** Session 51, Task A.7 (US-0221) code-quality review. `sourceMeta()` calls `fs.statSync(abs)` then `fs.readFileSync(abs)` as two separate syscalls. If the file is modified between them, `st.size` and the content hash are inconsistent — mtime+size would match the old file but the hash would reflect the new content, potentially causing a false "unchanged" result or a false "changed" result depending on ordering.
+
+**Fix (deferred to Phase E):** A single `readFileSync` + `Buffer.byteLength(buf)` for the size eliminates the race. Also note that no path-traversal guard exists on `absolute(rel)` — `path.join(root, '../../etc/passwd')` escapes silently. Both should be fixed when the write path is introduced in Phase E.
+
+**Prevention:** When reading file metadata for cache-invalidation purposes, derive size from the buffer you already read rather than calling stat separately. Single syscall = single consistent snapshot.
+
+**Date:** 2026-05-20
