@@ -3801,14 +3801,14 @@ Acceptance Criteria:
 US-0227 (EPIC-0037): As the build pipeline, I want generate-plan.js to emit the SQLite index alongside the existing HTML/JSON outputs, so that the index always reflects the latest markdown after every build.
 Priority: High (P1)
 Estimate: S
-Status: To Do
+Status: Done
 Plan Task: B.2
 Dependencies: US-0226 (EPIC-0037)
 Acceptance Criteria:
 
-- [ ] AC-0896: tools/generate-plan.js calls indexAll(...) after writing HTML/JSON and logs the counts
-- [ ] AC-0897: tools/plan-index.js exists as a standalone CLI mapped to npm run plan:index for manual rebuilds
-- [ ] AC-0898: failure in the index emit step does not abort the HTML build (best-effort during Phase B)
+- [x] AC-0896: tools/generate-plan.js calls indexAll(...) after writing HTML/JSON and logs the counts
+- [x] AC-0897: tools/plan-index.js exists as a standalone CLI mapped to npm run plan:index for manual rebuilds
+- [x] AC-0898: failure in the index emit step does not abort the HTML build (best-effort during Phase B)
 ```
 
 ```

@@ -467,6 +467,17 @@ async function main() {
     `[generate-plan] Done. ${epics.length} epics, ${stories.length} stories, ${testCases.length} TCs, ${bugs.length} bugs, ${lessons.length} lessons.`,
   );
 
+  // Phase B: emit SQLite index alongside HTML/JSON (best-effort, never blocks the build)
+  try {
+    const { Repository } = require('./lib/repository');
+    const { indexAll } = require('./lib/repository/indexers');
+    const repo = Repository.getInstance({ root: ROOT });
+    const result = indexAll({ index: repo.index, markdown: repo.markdown, warningsChannel: repo.warningsChannel });
+    console.log('[generate-plan] index emitted:', result.counts);
+  } catch (e) {
+    console.warn('[generate-plan] index emit skipped (non-fatal):', e.message);
+  }
+
   if (config.github && config.github.enabled) {
     try {
       require('child_process').execFileSync(process.execPath, [path.join(__dirname, 'sync-github.js')], {
