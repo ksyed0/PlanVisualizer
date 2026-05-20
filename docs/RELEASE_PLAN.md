@@ -3584,9 +3584,9 @@ Status: Planned
 Plan Task: A.1
 Acceptance Criteria:
 
-- [ ] AC-0853: package.json declares dependencies on better-sqlite3 ^11.5.0 and proper-lockfile ^4.1.2, engines.node >= 22.0.0
-- [ ] AC-0854: npm scripts plan:index, plan:lint, pv:check-upgrade, pv:upgrade, pv:rollback, pv:doctor are registered
-- [ ] AC-0855: .gitignore covers .cache/, docs/.pv-state.local.json, docs/.pv-backup/
+- [x] AC-0853: package.json declares dependencies on better-sqlite3 ^11.5.0 and proper-lockfile ^4.1.2, engines.node >= 22.0.0
+- [x] AC-0854: npm scripts plan:index, plan:lint, pv:check-upgrade, pv:upgrade, pv:rollback, pv:doctor are registered
+- [x] AC-0855: .gitignore covers .cache/, docs/.pv-state.local.json, docs/.pv-backup/
 ```
 
 ```
