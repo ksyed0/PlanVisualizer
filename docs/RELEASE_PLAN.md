@@ -3598,10 +3598,10 @@ Plan Task: A.2
 Related Bug: BUG-0259
 Acceptance Criteria:
 
-- [ ] AC-0856: tools/lib/repository/file-lock.js exports withFileLock(file, fn) using proper-lockfile with 30s stale timeout
-- [ ] AC-0857: acquireMany(files) sorts paths lexicographically before acquisition; release callbacks reverse the order on cleanup
-- [ ] AC-0858: locks are released even when fn throws (try/finally semantics covered by unit test)
-- [ ] AC-0859: jest unit test exercises concurrent-write serialisation and add/add scenarios
+- [x] AC-0856: tools/lib/repository/file-lock.js exports withFileLock(file, fn) using proper-lockfile with 30s stale timeout
+- [x] AC-0857: acquireMany(files) sorts paths lexicographically before acquisition; release callbacks reverse the order on cleanup
+- [x] AC-0858: locks are released even when fn throws (try/finally semantics covered by unit test)
+- [x] AC-0859: jest unit test exercises concurrent-write serialisation and add/add scenarios
 ```
 
 ```
