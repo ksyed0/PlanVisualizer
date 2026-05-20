@@ -1698,3 +1698,39 @@ This session had three major arcs: **emergency fixes** (dashboards out of date),
 ### Errors or Blockers
 
 - None
+
+---
+
+## Session 50 — 2026-05-19 / 2026-05-20
+
+### What was done
+
+**Planning & architecture (major design session):**
+
+- Branch and worktree cleanup: deleted 10 squash-merged local branches; preserved 5 unmerged branches; removed locked worktree (contents verified in develop); `feature/US-0180` work confirmed fully in develop.
+- Deploy avatar: generated optimized images (64/160/320px) via `tools/resize-agent-images.py`; added `"deploy"` to AGENTS list.
+- Full persistence strategy brainstorm: Option B open-core selected; Step 1–4 roadmap documented in `docs/architecture/persistence-and-multi-user-strategy.md`. Step 1 spec written with 4 review passes (22 amendments total) at `docs/superpowers/specs/2026-05-19-step-1-repository-abstraction-design.md`.
+- Implementation plan written (38 tasks, 6 phases) at `docs/superpowers/plans/2026-05-19-step-1-repository-abstraction.md`.
+- Enterprise Agentic SDLC spec v2 committed. EPIC-0030..0035 (28 stories, 122 ACs) added to RELEASE_PLAN.md.
+- Step 1 work scheduled as EPIC-0036..0041 in RELEASE_PLAN.md (38 stories, 127 ACs). Filed BUG-0258 (ID_REGISTRY drift), BUG-0259 (file-lock missing).
+
+**Step 1 Phase A — 4 of 11 tasks shipped (subagent-driven loop):**
+
+- US-0215/A.1: deps + scripts + .gitignore. Fixed BUG-0260 (CI Node 20 vs engines.node ≥22 — bumped 8 workflow occurrences to Node 22).
+- US-0216/A.2: `tools/lib/repository/file-lock.js` — `withFileLock` + `acquireMany`. Closed BUG-0259.
+- US-0217/A.3: `tools/lib/repository/ast/parser.js` — character-offset AST parser (plan reference was buggy; implementer rewrote correctly). Byte-identical on all 5 production files.
+- US-0218/A.4: `tools/lib/repository/ast/serializer.js` + round-trip integration harness. **Phase A main hard gate achieved.** 14 new tests, all passing.
+
+Branch: `claude/trusting-ptolemy-a305f1`, HEAD: `53e529b`
+
+### Test Results
+
+- Existing suite: 1233 tests green (unchanged)
+- New: 14 repository tests passing (unit + integration)
+- Phase A hard gate (round-trip idempotent on 5 production files): PASSED
+
+### Errors or Blockers
+
+- BUG-0260 found and fixed same session
+- BUG-0259 found and fixed same session
+- Context limit reached after Task A.4; Phase A tasks A.5–A.11 deferred to Session 51

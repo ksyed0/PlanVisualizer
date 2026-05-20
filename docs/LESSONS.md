@@ -814,3 +814,39 @@ _Learned from BUG-0210 — Lessons and Bugs tabs both have epic group headers, b
 **Prevention:** When developing a story that depends on an unmerged story, either (a) wait for the upstream story to merge before branching, or (b) branch from develop and note the dependency explicitly. Do not chain feature branches — they will always conflict on squash-merge.
 
 **Date:** 2026-05-11
+
+---
+
+## L-0066: Plan reference code must be tested before committing @agent:Keystone @agent:Conductor
+
+**Context:** Session 50, Task A.3 (US-0217). The implementation plan for the AST parser included a full reference implementation in the plan document. When the subagent implementer ran the failing tests then wrote the given code, the code failed the `preserves trailing newline and exact prose whitespace` test — the line-based `split('\n')` approach didn't correctly handle blank-line regions. The implementer had to rewrite using character-offset tracking to produce byte-identical round-trip.
+
+**Fix:** The implementer rewrote the parser independently and all 4 tests passed.
+
+**Prevention:** Reference implementations in plan documents should themselves be validated against the spec's failing tests before being committed to the plan. Either (a) run the reference code against the test inputs locally before including it, or (b) clearly mark reference code as "illustrative — implementer should verify correctness" so the subagent doesn't follow it literally.
+
+**Date:** 2026-05-20
+
+---
+
+## L-0067: Changing engines.node requires updating all CI workflow node-version pins simultaneously @agent:Circuit @agent:Conductor
+
+**Context:** Session 50, Task A.1 (US-0215) / BUG-0260. The implementer added `"engines": {"node": ">=22.0.0"}` to package.json (correct — Task A.5 requires Node 22 for node:sqlite fallback) but didn't update the `.github/workflows/` files which all pinned `node-version: '20'`. This created an engines-vs-CI mismatch caught by the code quality reviewer.
+
+**Fix:** Bumped all 8 `node-version` occurrences across `ci.yml`, `plan-visualizer.yml`, and `version-bump.yml` to `'22'` in a follow-up commit.
+
+**Prevention:** When changing the `engines.node` constraint, immediately grep all CI workflow files for `node-version` and update them in the same PR. Treat engines and CI matrix as a single atomic change.
+
+**Date:** 2026-05-20
+
+---
+
+## L-0068: Design docs that reference primitives must verify those primitives exist @agent:Keystone @agent:Compass
+
+**Context:** Session 50, BUG-0259. Both CLAUDE.md and `enterprise-agentic-sdlc-spec-v2.md` referenced `tools/lib/file-lock.js`, `atomic-write.js`, and `git-safe.js` as existing concurrency primitives. Discovered during plan authoring that none of these files exist. Past parallel-write safety had relied on ad-hoc atomic-rename patterns inside individual tools.
+
+**Fix:** Task A.2 (US-0216) introduced `tools/lib/repository/file-lock.js` using `proper-lockfile`. The spec text is being corrected as part of EPIC-0036.
+
+**Prevention:** Before writing a design spec that treats X as "existing infrastructure", run `ls <path>` to confirm it exists. Do not inherit assumptions from prior docs without verification.
+
+**Date:** 2026-05-20

@@ -23,6 +23,7 @@ Persistent semantic knowledge base. Topic files in `docs/memory/`. Updated autom
 
 ## Sessions
 
+- ◐ [Session 50 — Persistence Strategy + Step 1 Phase A Start](docs/memory/sessions/2026-05-20-session-50-persistence-strategy-phase-a-start.md) · 2026-05-20
 - ◐ [Plugin Install Integration + Dashboard Fixes (Session 42, 2026-05-09/10)](docs/memory/sessions/2026-05-10-plugin-install-integration-dashboard-fixes.md) · 2026-05-10
 - ◐ [US-0175 Memory Token Optimisation — PR A Tooling (Session 43, 2026-05-10)](docs/memory/sessions/2026-05-10-us-0175-memory-token-optimisation-pr-a-tooling.md) · 2026-05-10
 - ◐ [GitHub Status Monitoring (Session 41, 2026-05-08)](docs/memory/sessions/2026-05-08-github-status-monitoring.md) · 2026-05-08

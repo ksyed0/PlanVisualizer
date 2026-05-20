@@ -3580,8 +3580,10 @@ Plan: docs/superpowers/plans/2026-05-19-step-1-repository-abstraction.md
 US-0215 (EPIC-0036): As the Repository owner, I want better-sqlite3 + proper-lockfile added as dependencies with corresponding npm scripts wired in, so that the rest of Phase A has its toolchain available.
 Priority: High (P1)
 Estimate: S
-Status: Planned
+Status: Done
 Plan Task: A.1
+Branch: claude/trusting-ptolemy-a305f1
+PR: (pending — session-50 branch)
 Acceptance Criteria:
 
 - [x] AC-0853: package.json declares dependencies on better-sqlite3 ^11.5.0 and proper-lockfile ^4.1.2, engines.node >= 22.0.0
@@ -3593,9 +3595,10 @@ Acceptance Criteria:
 US-0216 (EPIC-0036): As any repository caller, I want a cross-platform file-lock wrapper with withFileLock(file, fn) and acquireMany(files) helpers, so that single-file and multi-file lock acquisition happens consistently and lexicographically.
 Priority: High (P1)
 Estimate: S
-Status: Planned
+Status: Done
 Plan Task: A.2
 Related Bug: BUG-0259
+Branch: claude/trusting-ptolemy-a305f1
 Acceptance Criteria:
 
 - [x] AC-0856: tools/lib/repository/file-lock.js exports withFileLock(file, fn) using proper-lockfile with 30s stale timeout
@@ -3608,8 +3611,9 @@ Acceptance Criteria:
 US-0217 (EPIC-0036): As the markdown layer, I want an AST parser that splits markdown into an ordered sequence of prose and fenced-block nodes, so that writes to a single block preserve all surrounding prose byte-identically.
 Priority: High (P1)
 Estimate: M
-Status: Planned
+Status: Done
 Plan Task: A.3
+Branch: claude/trusting-ptolemy-a305f1
 Acceptance Criteria:
 
 - [x] AC-0860: tools/lib/repository/ast/parser.js exports parseMarkdown(src) returning [{kind:'prose'|'fenced', ...}]
@@ -3622,8 +3626,9 @@ Acceptance Criteria:
 US-0218 (EPIC-0036): As the markdown layer, I want a serializer that converts the AST back to markdown plus a round-trip test harness running against every managed production file, so that any parser/serializer drift fails CI before Phase E ships.
 Priority: High (P1)
 Estimate: M
-Status: Planned
+Status: Done
 Plan Task: A.4
+Branch: claude/trusting-ptolemy-a305f1
 Dependencies: US-0217 (EPIC-0036)
 Acceptance Criteria:
 

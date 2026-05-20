@@ -5274,8 +5274,8 @@
       "title": "As the Repository owner, I want better-sqlite3 + proper-lockfile added as dependencies with corresponding npm scripts wired in, so that the rest of Phase A has its toolchain available.",
       "priority": "P1",
       "estimate": "S",
-      "status": "Planned",
-      "branch": "",
+      "status": "Done",
+      "branch": "claude/trusting-ptolemy-a305f1",
       "acs": [],
       "dependencies": []
     },
@@ -5285,8 +5285,8 @@
       "title": "As any repository caller, I want a cross-platform file-lock wrapper with withFileLock(file, fn) and acquireMany(files) helpers, so that single-file and multi-file lock acquisition happens consistently and lexicographically.",
       "priority": "P1",
       "estimate": "S",
-      "status": "Planned",
-      "branch": "",
+      "status": "Done",
+      "branch": "claude/trusting-ptolemy-a305f1",
       "acs": [],
       "dependencies": []
     },
@@ -5296,8 +5296,8 @@
       "title": "As the markdown layer, I want an AST parser that splits markdown into an ordered sequence of prose and fenced-block nodes, so that writes to a single block preserve all surrounding prose byte-identically.",
       "priority": "P1",
       "estimate": "M",
-      "status": "Planned",
-      "branch": "",
+      "status": "Done",
+      "branch": "claude/trusting-ptolemy-a305f1",
       "acs": [],
       "dependencies": []
     },
@@ -5307,8 +5307,8 @@
       "title": "As the markdown layer, I want a serializer that converts the AST back to markdown plus a round-trip test harness running against every managed production file, so that any parser/serializer drift fails CI before Phase E ships.",
       "priority": "P1",
       "estimate": "M",
-      "status": "Planned",
-      "branch": "",
+      "status": "Done",
+      "branch": "claude/trusting-ptolemy-a305f1",
       "acs": [],
       "dependencies": [
         "US-0217 (EPIC-0036)"
@@ -12331,8 +12331,20 @@
       "severity": "Low",
       "relatedStory": "US-0216 (EPIC-0036)",
       "relatedTask": "",
-      "status": "Open",
-      "fixBranch": "",
+      "status": "Fixed",
+      "fixBranch": "claude/trusting-ptolemy-a305f1",
+      "lessonEncoded": "No",
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": null
+    },
+    {
+      "id": "BUG-0260",
+      "title": "engines.node constraint (>=22) conflicts with CI matrix (Node 20)",
+      "severity": "High",
+      "relatedStory": "US-0215 (EPIC-0036)",
+      "relatedTask": "",
+      "status": "Fixed",
+      "fixBranch": "claude/trusting-ptolemy-a305f1",
       "lessonEncoded": "No",
       "estimatedCostUsd": 0,
       "ghIssueNumber": null
@@ -12640,7 +12652,7 @@
       "outputTokens": 68062
     },
     "US-0049": {
-      "projectedUsd": 2.659086,
+      "projectedUsd": 2.602494,
       "costUsd": 14.154733,
       "inputTokens": 713670,
       "outputTokens": 68062
@@ -12844,7 +12856,7 @@
       "outputTokens": 0
     },
     "US-0078": {
-      "projectedUsd": 2.659086,
+      "projectedUsd": 2.602494,
       "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
@@ -12874,7 +12886,7 @@
       "outputTokens": 0
     },
     "US-0175": {
-      "projectedUsd": 8.58114,
+      "projectedUsd": 8.208054,
       "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
@@ -12892,13 +12904,13 @@
       "outputTokens": 0
     },
     "US-0178": {
-      "projectedUsd": 8.58114,
+      "projectedUsd": 8.208054,
       "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0179": {
-      "projectedUsd": 8.58114,
+      "projectedUsd": 8.208054,
       "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
@@ -12976,13 +12988,13 @@
       "outputTokens": 737215
     },
     "US-0174": {
-      "projectedUsd": 8.58114,
+      "projectedUsd": 8.208054,
       "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0180": {
-      "projectedUsd": 8.58114,
+      "projectedUsd": 8.208054,
       "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
@@ -13426,67 +13438,67 @@
       "outputTokens": 0
     },
     "US-0215": {
-      "projectedUsd": 2.659086,
+      "projectedUsd": 400,
       "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0216": {
-      "projectedUsd": 2.659086,
+      "projectedUsd": 400,
       "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0217": {
-      "projectedUsd": 8.58114,
+      "projectedUsd": 800,
       "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0218": {
-      "projectedUsd": 8.58114,
+      "projectedUsd": 800,
       "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0219": {
-      "projectedUsd": 8.58114,
+      "projectedUsd": 8.208054,
       "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0220": {
-      "projectedUsd": 8.58114,
+      "projectedUsd": 8.208054,
       "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0221": {
-      "projectedUsd": 2.659086,
+      "projectedUsd": 2.602494,
       "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0222": {
-      "projectedUsd": 8.58114,
+      "projectedUsd": 8.208054,
       "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0223": {
-      "projectedUsd": 2.659086,
+      "projectedUsd": 2.602494,
       "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0224": {
-      "projectedUsd": 8.58114,
+      "projectedUsd": 8.208054,
       "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0225": {
-      "projectedUsd": 2.659086,
+      "projectedUsd": 2.602494,
       "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
@@ -13498,31 +13510,31 @@
       "outputTokens": 0
     },
     "US-0227": {
-      "projectedUsd": 2.659086,
+      "projectedUsd": 2.602494,
       "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0228": {
-      "projectedUsd": 2.659086,
+      "projectedUsd": 2.602494,
       "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0229": {
-      "projectedUsd": 2.659086,
+      "projectedUsd": 2.602494,
       "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0230": {
-      "projectedUsd": 8.58114,
+      "projectedUsd": 8.208054,
       "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0231": {
-      "projectedUsd": 8.58114,
+      "projectedUsd": 8.208054,
       "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
@@ -13534,43 +13546,43 @@
       "outputTokens": 0
     },
     "US-0233": {
-      "projectedUsd": 8.58114,
+      "projectedUsd": 8.208054,
       "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0234": {
-      "projectedUsd": 8.58114,
+      "projectedUsd": 8.208054,
       "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0235": {
-      "projectedUsd": 8.58114,
+      "projectedUsd": 8.208054,
       "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0236": {
-      "projectedUsd": 8.58114,
+      "projectedUsd": 8.208054,
       "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0237": {
-      "projectedUsd": 8.58114,
+      "projectedUsd": 8.208054,
       "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0238": {
-      "projectedUsd": 2.659086,
+      "projectedUsd": 2.602494,
       "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0239": {
-      "projectedUsd": 8.58114,
+      "projectedUsd": 8.208054,
       "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
@@ -13582,7 +13594,7 @@
       "outputTokens": 0
     },
     "US-0241": {
-      "projectedUsd": 8.58114,
+      "projectedUsd": 8.208054,
       "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
@@ -13594,61 +13606,61 @@
       "outputTokens": 0
     },
     "US-0243": {
-      "projectedUsd": 8.58114,
+      "projectedUsd": 8.208054,
       "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0244": {
-      "projectedUsd": 2.659086,
+      "projectedUsd": 2.602494,
       "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0245": {
-      "projectedUsd": 8.58114,
+      "projectedUsd": 8.208054,
       "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0246": {
-      "projectedUsd": 2.659086,
+      "projectedUsd": 2.602494,
       "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0247": {
-      "projectedUsd": 2.659086,
+      "projectedUsd": 2.602494,
       "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0248": {
-      "projectedUsd": 2.659086,
+      "projectedUsd": 2.602494,
       "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0249": {
-      "projectedUsd": 8.58114,
+      "projectedUsd": 8.208054,
       "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0250": {
-      "projectedUsd": 2.659086,
+      "projectedUsd": 2.602494,
       "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0251": {
-      "projectedUsd": 2.659086,
+      "projectedUsd": 2.602494,
       "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0252": {
-      "projectedUsd": 2.659086,
+      "projectedUsd": 2.602494,
       "costUsd": 2.471613,
       "inputTokens": 0,
       "outputTokens": 0
@@ -15442,6 +15454,14 @@
         "sessions": 0,
         "isEstimated": false,
         "projectedUsd": 400
+      },
+      "BUG-0260": {
+        "costUsd": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "sessions": 0,
+        "isEstimated": false,
+        "projectedUsd": 800
       },
       "_totals": {
         "costUsd": 403.077301,
@@ -17578,11 +17598,35 @@
       "context": "",
       "date": "2026-05-11",
       "bugIds": []
+    },
+    {
+      "id": "L-0066",
+      "title": "Plan reference code must be tested before committing @agent:Keystone @agent:Conductor",
+      "rule": "",
+      "context": "",
+      "date": "2026-05-20",
+      "bugIds": []
+    },
+    {
+      "id": "L-0067",
+      "title": "Changing engines.node requires updating all CI workflow node-version pins simultaneously @agent:Circuit @agent:Conductor",
+      "rule": "",
+      "context": "",
+      "date": "2026-05-20",
+      "bugIds": []
+    },
+    {
+      "id": "L-0068",
+      "title": "Design docs that reference primitives must verify those primitives exist @agent:Keystone @agent:Compass",
+      "rule": "",
+      "context": "",
+      "date": "2026-05-20",
+      "bugIds": []
     }
   ],
-  "generatedAt": "2026-05-20T00:38:33.457Z",
-  "commitSha": "304a768",
-  "buildNumber": "781",
+  "generatedAt": "2026-05-20T15:17:02.150Z",
+  "commitSha": "53e529b",
+  "buildNumber": "793",
   "branch": "claude/trusting-ptolemy-a305f1",
   "sessionTimeline": [
     {
@@ -18391,10 +18435,10 @@
     }
   },
   "budget": {
-    "totalBudget": 1395.502364,
+    "totalBudget": 1364.338226,
     "totalSpent": 1133.1037999999999,
-    "totalProjected": 107865.05764999992,
-    "percentUsed": 81,
+    "totalProjected": 110233.83692000015,
+    "percentUsed": 83,
     "burnRate": 0,
     "daysRemaining": null,
     "projectedExhaustion": null,
@@ -18580,26 +18624,26 @@
       {
         "id": "EPIC-0014",
         "title": "Follow-Up Changes",
-        "budget": 185.005458,
+        "budget": 184.259286,
         "spent": 167.843178,
-        "remaining": 17.16228000000001,
+        "remaining": 16.41610800000001,
         "percentUsed": 91
       },
       {
         "id": "EPIC-0012",
         "title": "Stakeholder View",
-        "budget": 20.517912,
+        "budget": 20.46132,
         "spent": 14.829678,
-        "remaining": 5.688234,
+        "remaining": 5.631642000000001,
         "percentUsed": 72
       },
       {
         "id": "EPIC-0037",
         "title": "Step 1 Persistence — Indexer as Spectator (Phase B)",
-        "budget": 20.892858,
+        "budget": 20.723081999999998,
         "spent": 9.886452,
-        "remaining": 11.006406,
-        "percentUsed": 47
+        "remaining": 10.836629999999998,
+        "percentUsed": 48
       },
       {
         "id": "EPIC-0027",
@@ -18610,63 +18654,63 @@
         "percentUsed": 45
       },
       {
+        "id": "EPIC-0036",
+        "title": "Step 1 Persistence — Repository Foundation (Phase A)",
+        "budget": 67.82744100000001,
+        "spent": 27.187743000000005,
+        "remaining": 40.639698,
+        "percentUsed": 40
+      },
+      {
         "id": "EPIC-0041",
         "title": "Step 1 Persistence — Lock-Down (Phase F)",
-        "budget": 31.575549,
+        "budget": 30.976095,
         "spent": 12.358065,
-        "remaining": 19.217484,
-        "percentUsed": 39
+        "remaining": 18.61803,
+        "percentUsed": 40
       },
       {
         "id": "EPIC-0040",
         "title": "Step 1 Persistence — Planning Writers (Phase E)",
-        "budget": 58.175724,
+        "budget": 56.88669,
         "spent": 19.772904,
-        "remaining": 38.402820000000006,
-        "percentUsed": 34
+        "remaining": 37.113786000000005,
+        "percentUsed": 35
       },
       {
         "id": "EPIC-0026",
         "title": "Memory Token Optimisation",
-        "budget": 38.101485,
+        "budget": 36.982227,
         "spent": 12.358065,
-        "remaining": 25.743419999999997,
-        "percentUsed": 32
-      },
-      {
-        "id": "EPIC-0036",
-        "title": "Step 1 Persistence — Repository Foundation (Phase A)",
-        "budget": 91.970013,
-        "spent": 27.187743000000005,
-        "remaining": 64.78226999999998,
-        "percentUsed": 30
+        "remaining": 24.624162000000002,
+        "percentUsed": 33
       },
       {
         "id": "EPIC-0039",
         "title": "Step 1 Persistence — SdlcStatus Cutover (Phase D)",
-        "budget": 76.94797799999999,
+        "budget": 74.65287,
         "spent": 19.772904,
-        "remaining": 57.175073999999995,
+        "remaining": 54.879965999999996,
         "percentUsed": 26
       },
       {
         "id": "EPIC-0038",
         "title": "Step 1 Persistence — First Read Consumer (Phase C)",
-        "budget": 22.105506,
+        "budget": 21.359334,
         "spent": 4.943226,
-        "remaining": 17.16228,
-        "percentUsed": 22
+        "remaining": 16.416108,
+        "percentUsed": 23
       }
     ],
     "hasBudget": true
   },
   "completion": {
-    "likelyDate": "Jun 18",
-    "rangeStart": "Jun 12",
-    "rangeEnd": "Jun 24",
+    "likelyDate": "Jun 16",
+    "rangeStart": "Jun 11",
+    "rangeEnd": "Jun 22",
     "velocityWeeks": 11,
-    "storiesPerWeek": 15.3,
-    "pointsPerWeek": 29.3
+    "storiesPerWeek": 15.5,
+    "pointsPerWeek": 29.7
   },
   "trends": {
     "dates": [
@@ -18721,7 +18765,8 @@
       "2026-04-14T19:30:11.739Z",
       "2026-04-14T19:46:24.241Z",
       "2026-04-14T20:41:46.666Z",
-      "2026-05-20T00:38:33.738Z"
+      "2026-05-20T00:38:33.738Z",
+      "2026-05-20T15:17:02.252Z"
     ],
     "doneCounts": [
       2,
@@ -18775,7 +18820,8 @@
       78,
       79,
       81,
-      171
+      171,
+      175
     ],
     "totalStories": [
       81,
@@ -18829,6 +18875,7 @@
       104,
       104,
       105,
+      219,
       219
     ],
     "aiCosts": [
@@ -18883,6 +18930,7 @@
       209.7601,
       220.21260000000004,
       237.96510000000004,
+      1133.1037999999999,
       1133.1037999999999
     ],
     "coverage": [
@@ -18937,6 +18985,7 @@
       93.09,
       93.09,
       93.09,
+      null,
       null
     ],
     "velocity": [
@@ -18991,7 +19040,8 @@
       128.5,
       129.5,
       131.5,
-      327
+      327,
+      335
     ],
     "openBugs": [
       66,
@@ -19045,9 +19095,11 @@
       4,
       4,
       4,
-      6
+      6,
+      5
     ],
     "atRisk": [
+      0,
       0,
       0,
       0,
@@ -19153,6 +19205,7 @@
       14435987,
       14542668,
       14664034,
+      73384240,
       73384240
     ],
     "outputTokens": [
@@ -19207,6 +19260,7 @@
       2471082,
       2547272,
       2631208,
+      10692483,
       10692483
     ],
     "avgRisk": [
@@ -19261,7 +19315,8 @@
       1.6399999999999997,
       1.6249999999999998,
       1.6130434782608694,
-      1.7489361702127657
+      1.7489361702127657,
+      1.7139534883720924
     ],
     "velocityByWeek": {
       "labels": [
@@ -19282,7 +19337,7 @@
         6,
         40,
         5,
-        195.5
+        203.5
       ],
       "rollingAvg": [
         31,
@@ -19292,7 +19347,7 @@
         13.9,
         18.4,
         16.1,
-        61.6
+        63.6
       ]
     }
   }
