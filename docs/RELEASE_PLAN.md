@@ -3642,14 +3642,14 @@ Acceptance Criteria:
 US-0219 (EPIC-0036): As any repository caller, I want an IndexDatastore that prefers better-sqlite3, falls back to node:sqlite (Node 22+), and finally degrades to a --no-index legacy mode, so that PlanVisualizer keeps working on platforms without native build support.
 Priority: High (P1)
 Estimate: M
-Status: Planned
+Status: Done
 Plan Task: A.5
 Acceptance Criteria:
 
-- [ ] AC-0868: openIndexDatastore({path}) auto-detects in order: better-sqlite3 → node:sqlite → no-index
-- [ ] AC-0869: WAL mode enabled on open (journal_mode pragma returns 'wal')
-- [ ] AC-0870: --no-index mode (or PV_NO_INDEX=1) returns a no-op datastore that doesn't throw on exec/prepare
-- [ ] AC-0871: PRAGMA foreign_keys = ON, synchronous = NORMAL applied at open time
+- [x] AC-0868: openIndexDatastore({path}) auto-detects in order: better-sqlite3 → node:sqlite → no-index
+- [x] AC-0869: WAL mode enabled on open (journal_mode pragma returns 'wal')
+- [x] AC-0870: --no-index mode (or PV_NO_INDEX=1) returns a no-op datastore that doesn't throw on exec/prepare
+- [x] AC-0871: PRAGMA foreign_keys = ON, synchronous = NORMAL applied at open time
 ```
 
 ```
