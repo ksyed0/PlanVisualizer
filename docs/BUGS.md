@@ -3982,3 +3982,20 @@ Steps to Reproduce:
     Lesson Encoded: No
 
 ---
+
+BUG-0260: engines.node constraint (>=22) conflicts with CI matrix (Node 20)
+Severity: High
+Related Story: US-0215 (EPIC-0036)
+Steps to Reproduce:
+
+1.  Inspect `package.json` engines field: `"node": ">=22.0.0"`
+2.  Inspect `.github/workflows/ci.yml`: all `setup-node` steps pin `node-version: '20'`
+    Expected: The engines constraint and the CI matrix agree on the minimum supported Node version, so `npm install` on CI cannot fail the engines check and production deployments target a supported runtime.
+    Actual: CI runs Node 20, which is below the >=22 floor declared in engines. Running `npm install` (or any npm lifecycle) on CI will emit an "unsupported engine" warning; with `engine-strict=true` in `.npmrc` it becomes a hard failure. More importantly the constraint falsely advertises that Node 20 is unsupported when the project currently runs on it.
+    Status: Open
+    GH Issue:
+    Fix Branch:
+    Notes: Introduced in commit 2bafd93 (US-0215 / Task A.1). Fix is one of: (a) bump CI to node-version: '22' in ci.yml (preferred if Node 22 is the actual target), or (b) lower the engines constraint to ">=20.0.0" if Node 20 support must be kept. Node 22 is LTS (active) as of 2024-10-29 so bumping CI is the cleaner path.
+    Lesson Encoded: No
+
+---
