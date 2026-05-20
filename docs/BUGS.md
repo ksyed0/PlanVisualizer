@@ -3975,10 +3975,10 @@ Steps to Reproduce:
 2.  grep -rn "file-lock\\|atomic-write\\|git-safe" CLAUDE.md docs/architecture/enterprise-agentic-sdlc-spec-v2.md
     Expected: If the files are referenced, they exist in the codebase.
     Actual: Both CLAUDE.md and the enterprise-agentic-sdlc spec reference `tools/lib/file-lock.js`, `atomic-write.js`, and `git-safe.js` as existing concurrency primitives. Discovered 2026-05-19 during plan authoring: the files do not exist. Past parallel-write safety has relied on ad-hoc atomic-rename-via-tmp patterns inside individual tools, not a shared primitive.
-    Status: Open
+    Status: Fixed
     GH Issue:
-    Fix Branch:
-    Notes: Closed by US-0216 (Phase A Task A.2) which introduces `tools/lib/repository/file-lock.js` as a `proper-lockfile` wrapper with lexicographic acquireMany. The spec text and CLAUDE.md references will be corrected as part of EPIC-0036.
+    Fix Branch: claude/trusting-ptolemy-a305f1
+    Notes: Fixed in commit 0d720af (US-0216 / Task A.2) by introducing `tools/lib/repository/file-lock.js` as a `proper-lockfile` wrapper exposing `withFileLock(file, fn)` (30s stale timeout) and `acquireMany(files, onAcquired)` with lexicographic ordering and reverse-order release on cleanup. Unit tests in `tests/unit/repository/file-lock.test.js` cover concurrent-write serialisation, throw-safety, and lexicographic acquisition (3/3 passing). The spec text and CLAUDE.md references to `tools/lib/file-lock.js` (legacy path) will be corrected as part of EPIC-0036 Phase F (US-0248), which moves the module under `internal/` with a deprecation shim at the legacy path.
     Lesson Encoded: No
 
 ---
