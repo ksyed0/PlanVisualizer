@@ -63,11 +63,14 @@ function openIndexDatastore({ path: dbPath, mode } = {}) {
   if (mode === 'better-sqlite3') return openBetterSqlite3(dbPath);
   try {
     return openBetterSqlite3(dbPath);
-  } catch {
+  } catch (e1) {
     try {
       return openNodeSqlite(dbPath);
     } catch (e2) {
-      console.warn('[repo] SQLite unavailable, falling back to --no-index legacy mode:', e2.message);
+      console.warn(
+        '[repo] SQLite unavailable, falling back to --no-index legacy mode. ' +
+          `better-sqlite3: ${e1.message}; node:sqlite: ${e2.message}`,
+      );
       return noopDatastore();
     }
   }
