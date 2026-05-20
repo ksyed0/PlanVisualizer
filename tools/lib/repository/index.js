@@ -5,6 +5,9 @@ const { applySchemaMigrations } = require('./schema');
 const { MarkdownDatastore } = require('./markdown-datastore');
 const { WarningsChannel } = require('./warnings-channel');
 const { refresh } = require('./refresh');
+const { EpicRepo } = require('./entities/epic-repo');
+const { StoryRepo } = require('./entities/story-repo');
+const { AcRepo } = require('./entities/ac-repo');
 
 const MANAGED_SOURCES = [
   'docs/RELEASE_PLAN.md',
@@ -44,6 +47,9 @@ class Repository {
     this.markdown = new MarkdownDatastore({ root });
     this.warningsChannel = new WarningsChannel({ root });
     this._refreshCount = 0;
+    this.epics = new EpicRepo(this.index, root);
+    this.stories = new StoryRepo(this.index, root);
+    this.acs = new AcRepo(this.index, root);
   }
 
   refresh() {
