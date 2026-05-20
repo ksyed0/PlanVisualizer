@@ -1833,3 +1833,46 @@ Branch: `claude/trusting-ptolemy-a305f1`, HEAD: `eb58ef3`
 
 - Phase B (EPIC-0037): Wire indexers into generate-plan.js as read-only spectators; `plan:lint` CLI; per-entity indexer functions for epics/stories/ACs.
 - The `MarkdownDatastore.sourceMeta()` double-read race and path-traversal guard should be addressed in Phase E (write path) per L-0067 / NIT noted in A.7 review.
+
+---
+
+## Session 52 — 2026-05-20
+
+### What was done
+
+**PR #1067 conflict resolution + security fixes (Phase A merge):**
+
+- Resolved 3-way merge conflict: `docs/RELEASE_PLAN.md` (EPIC-0029 from develop inserted before EPIC-0036..0041), `docs/ID_REGISTRY.md` (kept HEAD higher IDs), `package-lock.json` (regenerated from merged package.json).
+- Fixed 3 CodeQL security alerts introduced by Phase A code:
+  - `markdown-datastore.js`: TOCTOU race in `sourceMeta()` — replaced `statSync + readFileSync` with `openSync/fstatSync/readFileSync(fd)` (single file descriptor, no race).
+  - `file-lock.test.js` (×2): Insecure predictable temp filenames — replaced `Date.now()` suffix with `mkdtempSync`.
+- Merged PR #1067 (Phase A — EPIC-0036).
+
+**Step 1 Phase B — all 4 tasks shipped (B.1–B.4), EPIC-0037 Done:**
+
+- **US-0226/B.1:** Six per-source indexers (`release-plan-indexer.js`, `bugs-indexer.js`, `lessons-indexer.js`, `test-cases-indexer.js`, `id-registry-indexer.js`, `sdlc-status-indexer.js`) + `indexers/index.js` with `indexAll`. Fixes required: child-first DELETE (FK), missing-file guards (AC-0895), two-pass indexing to prevent FK violations on missing epics, multi-entity block splitting, alt-format epic support.
+- **US-0227/B.2:** `tools/plan-index.js` standalone CLI + `generate-plan.js` hook (best-effort, non-fatal per AC-0898).
+- **US-0228/B.3:** `tools/lib/repository/validators/cross-entity.js` — `runCrossEntityChecks` detecting dangling deps, id-registry drift, orphan ACs via SQL LEFT JOIN.
+- **US-0229/B.4:** `tools/plan-lint.js` — tiered violations output; exits 1 on errors only. **Phase B hard gate: errors=0, warnings=0, reports=0** on production data.
+- Merged PR #1069 (Phase B — EPIC-0037).
+
+**Housekeeping:**
+
+- Merged PRs #1045 (BUG-0257 Fixed docs), #1059 (AGENTIC_PIPELINE.md architecture), #1070/#1071 (version bumps), #1062/#1063/#1064 (dependabot: eslint, lint-staged, codeql-action).
+- Deleted stale merged branches: `chore/us-0185-plan`, `claude/trusting-zhukovsky-cb5402`.
+
+Branch: `docs/session-52-close` (session close commit only)
+
+### Test Results
+
+- Full suite: 1345 tests passing (80 suites) — no new failures
+- Phase B hard gate: `plan:lint` errors=0, warnings=0, reports=0
+
+### Errors or Blockers
+
+- Phase B indexer required multiple fix-up rounds: FK ordering, missing-file guards, two-pass indexing for FK safety, multi-entity block parsing, alt-format epic regex.
+- CodeQL security alerts in Phase A required targeted fixes before PR #1067 could merge.
+
+### What's Next
+
+- Phase C (EPIC-0038): Entity read APIs (`repo.stories`, `repo.epics`, `repo.acs`) then migrate dashboard read path to use repo under `PV_DASHBOARD_VIA_REPO=1` flag with snapshot parity test.

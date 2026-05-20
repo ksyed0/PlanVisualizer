@@ -23,6 +23,7 @@ Persistent semantic knowledge base. Topic files in `docs/memory/`. Updated autom
 
 ## Sessions
 
+- ◐ [Session 52 — Phase B complete: indexers + plan:lint, EPIC-0037 Done, 0 warnings](docs/memory/sessions/2026-05-20-session-52-phase-b-complete.md) · 2026-05-20
 - ◐ [Session 51 — Step 1 Phase A Complete (US-0219..US-0225, EPIC-0036 Done)](docs/memory/sessions/2026-05-20-session-51-phase-a-complete.md) · 2026-05-20
 - ◐ [Session 50 — Persistence Strategy + Step 1 Phase A Start](docs/memory/sessions/2026-05-20-session-50-persistence-strategy-phase-a-start.md) · 2026-05-20
 - ◐ [Plugin Install Integration + Dashboard Fixes (Session 42, 2026-05-09/10)](docs/memory/sessions/2026-05-10-plugin-install-integration-dashboard-fixes.md) · 2026-05-10
