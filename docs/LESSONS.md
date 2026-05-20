@@ -4,7 +4,9 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
-## L-0075 — Indexer prose-node gap: fenced-only scan silently misses entities in prose AST nodes @agent:Forge @agent:Keystone
+## L-0075 — Indexer prose-node gap: fenced-only scan silently misses entities in prose AST nodes
+
+@agent: Forge, Keystone
 
 **Context:** Session 53. Phase C (EPIC-0038). The Phase B `release-plan-indexer` only scans AST nodes where `kind === 'fenced'`. Approximately 26 stories and 5 epics in production `docs/RELEASE_PLAN.md` live in prose nodes (not inside fenced code blocks) and were never inserted into the SQLite index. The Phase C parity shim hid this by falling back to the legacy parse path when a repo query returned nothing. Encoding: ~31 entities are missing from the DB. A future "delete legacy path" change in Phase D would surface them as missing data.
 
@@ -16,7 +18,9 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
-## L-0076 — Schema CHECK constraint rejects `Retired` status — `INSERT OR IGNORE` silently drops valid entities @agent:Forge @agent:Keystone
+## L-0076 — Schema CHECK constraint rejects `Retired` status — `INSERT OR IGNORE` silently drops valid entities
+
+@agent: Forge, Keystone
 
 **Context:** Session 53. Phase C (EPIC-0038). US-0049 has `Status: Retired` and lives in a fenced block (indexer-visible), but was silently dropped during indexing because the schema's CHECK constraint only allows `To Do | Planned | In Progress | Blocked | Done`. `INSERT OR IGNORE` swallowed the constraint violation without any warning; the dropped row was discovered only via parity analysis.
 
@@ -28,7 +32,9 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
-## L-0077 — `priority` field shape divergence: normalize at write time in the indexer, never at read time @agent:Forge @agent:Keystone
+## L-0077 — `priority` field shape divergence: normalize at write time in the indexer, never at read time
+
+@agent: Forge, Keystone
 
 **Context:** Session 53. Phase C (EPIC-0038). The legacy parse path normalizes `"High (P0)"` → `"P0"` inside `tools/lib/parse-release-plan.js`. The Phase B indexer stores the raw string `"High (P0)"`. The Phase C dashboard-repo-reader shim sidestepped this by preferring the legacy value for the `priority` field. If Phase D deletes the legacy path, consumers will receive `"High (P0)"` instead of the expected `"P0"`, breaking any code that pattern-matches or sorts on priority tier.
 
@@ -40,7 +46,9 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
-## L-0078 — Snapshot side-effects: stabilize state before parity diffs; cold runs don't compare cleanly @agent:Forge @agent:Keystone
+## L-0078 — Snapshot side-effects: stabilize state before parity diffs; cold runs don't compare cleanly
+
+@agent: Forge, Keystone
 
 **Context:** Session 53. Phase C (EPIC-0038). `tools/generate-plan.js` writes a new snapshot to `.history/` on each run; the snapshot feeds the next run's trend computation. A parity diff that runs the legacy path once then the repo path once compares outputs where the second run has a different snapshot baseline than the first, producing a false trend-embed diff that obscures the real semantic comparison.
 
@@ -52,7 +60,9 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
-## L-0079 — Develop auto-version-bump CI: plan rebase before opening PR, not after @agent:Conductor @agent:Forge
+## L-0079 — Develop auto-version-bump CI: plan rebase before opening PR, not after
+
+@agent: Conductor, Forge
 
 **Context:** Session 53. Phase C (EPIC-0038). Between branch creation and PR open (approximately 45 minutes of work), the auto-version-bump CI job on develop bumped `package.json` from 2.4.7 → 2.4.8 (PR #1073). When the feature branch PR was opened, the version conflict appeared as a merge conflict on a single line, requiring a rebase. The conflict is trivially resolvable (accept develop's version), but it adds a friction step at the moment of PR creation.
 
