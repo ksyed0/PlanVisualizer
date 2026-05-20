@@ -3786,15 +3786,15 @@ Dependencies: EPIC-0036
 US-0226 (EPIC-0037): As the indexer, I want six per-source indexer functions that populate the SQLite tables from markdown/JSON, so that the index can be rebuilt from any clean checkout.
 Priority: High (P1)
 Estimate: L
-Status: To Do
+Status: Done
 Plan Task: B.1
 Dependencies: US-0220 (EPIC-0036), US-0221 (EPIC-0036)
 Acceptance Criteria:
 
-- [ ] AC-0892: indexers/release-plan-indexer.js ingests epics, stories, ACs with source_file/source_line provenance
-- [ ] AC-0893: indexers/bugs-indexer.js, lessons-indexer.js, test-cases-indexer.js, id-registry-indexer.js, sdlc-status-indexer.js each ingest their respective sources
-- [ ] AC-0894: indexers/index.js exports indexAll({index, markdown, warningsChannel}) returning {counts, warnings}
-- [ ] AC-0895: indexing an empty/missing source emits zero counts and zero warnings (no throw)
+- [x] AC-0892: indexers/release-plan-indexer.js ingests epics, stories, ACs with source_file/source_line provenance
+- [x] AC-0893: indexers/bugs-indexer.js, lessons-indexer.js, test-cases-indexer.js, id-registry-indexer.js, sdlc-status-indexer.js each ingest their respective sources
+- [x] AC-0894: indexers/index.js exports indexAll({index, markdown, warningsChannel}) returning {counts, warnings}
+- [x] AC-0895: indexing an empty/missing source emits zero counts and zero warnings (no throw)
 ```
 
 ```
