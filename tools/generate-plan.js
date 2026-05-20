@@ -218,14 +218,14 @@ async function main() {
   // and safe to run before HTML/JSON emission; the unconditional move from
   // post-render (lines ~470) to pre-parse is fine. If it fails, we fall back
   // to the legacy parse only — the flag path silently degrades.
-  let _repoForDashboard = null;
+  let repoForDashboard = null;
   if (process.env.PV_DASHBOARD_VIA_REPO === '1') {
     try {
       const { Repository } = require('./lib/repository');
       const { indexAll } = require('./lib/repository/indexers');
       const repo = Repository.getInstance({ root: ROOT });
       indexAll({ index: repo.index, markdown: repo.markdown, warningsChannel: repo.warningsChannel });
-      _repoForDashboard = repo;
+      repoForDashboard = repo;
     } catch (e) {
       console.warn('[generate-plan] PV_DASHBOARD_VIA_REPO: index emit skipped (non-fatal):', e.message);
     }
@@ -233,13 +233,13 @@ async function main() {
 
   let { epics, stories, tasks } = parseReleasePlan(readFile(config.docs.releasePlan));
 
-  if (_repoForDashboard) {
+  if (repoForDashboard) {
     try {
       const { mergeRepoData } = require('./lib/dashboard-repo-reader');
       const repoData = {
-        epics: _repoForDashboard.epics.list(),
-        stories: _repoForDashboard.stories.list(),
-        acs: _repoForDashboard.acs.list(),
+        epics: repoForDashboard.epics.list(),
+        stories: repoForDashboard.stories.list(),
+        acs: repoForDashboard.acs.list(),
       };
       console.log('[generate-plan] dashboard reads via repo:', {
         epics: repoData.epics.length,
@@ -509,14 +509,17 @@ async function main() {
   );
 
   // Phase B: emit SQLite index alongside HTML/JSON (best-effort, never blocks the build)
-  try {
-    const { Repository } = require('./lib/repository');
-    const { indexAll } = require('./lib/repository/indexers');
-    const repo = Repository.getInstance({ root: ROOT });
-    const result = indexAll({ index: repo.index, markdown: repo.markdown, warningsChannel: repo.warningsChannel });
-    console.log('[generate-plan] index emitted:', result.counts);
-  } catch (e) {
-    console.warn('[generate-plan] index emit skipped (non-fatal):', e.message);
+  // Skip when PV_DASHBOARD_VIA_REPO=1 — the flag-on path already ran indexAll above.
+  if (process.env.PV_DASHBOARD_VIA_REPO !== '1') {
+    try {
+      const { Repository } = require('./lib/repository');
+      const { indexAll } = require('./lib/repository/indexers');
+      const repo = Repository.getInstance({ root: ROOT });
+      const result = indexAll({ index: repo.index, markdown: repo.markdown, warningsChannel: repo.warningsChannel });
+      console.log('[generate-plan] index emitted:', result.counts);
+    } catch (e) {
+      console.warn('[generate-plan] index emit skipped (non-fatal):', e.message);
+    }
   }
 
   if (config.github && config.github.enabled) {

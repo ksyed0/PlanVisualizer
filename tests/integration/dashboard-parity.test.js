@@ -142,6 +142,50 @@ describe('Dashboard parity: legacy vs repo-merged', () => {
     expect(merged.tasks).toBe(legacy.tasks);
   });
 
+  test('mergeRepoData keeps legacy ACs when length matches but IDs differ', () => {
+    const legacy = {
+      epics: [
+        {
+          id: 'EPIC-0001',
+          title: 'E',
+          status: 'Done',
+          description: '',
+          releaseTarget: '',
+          startDate: null,
+          doneDate: null,
+          dependencies: [],
+        },
+      ],
+      stories: [
+        {
+          id: 'US-0001',
+          epicId: 'EPIC-0001',
+          title: 'S',
+          status: 'Done',
+          priority: '',
+          estimate: '',
+          branch: '',
+          acs: [
+            { id: 'AC-0001', text: 'a', done: true },
+            { id: 'AC-0002', text: 'b', done: false },
+          ],
+          dependencies: [],
+        },
+      ],
+      tasks: [],
+    };
+    const repoData = {
+      epics: [{ id: 'EPIC-0001', title: 'E', status: 'Done', releaseTarget: null }],
+      stories: [{ id: 'US-0001', epicId: 'EPIC-0001', title: 'S', status: 'Done', estimate: '', branch: '' }],
+      acs: [
+        { id: 'AC-0001', storyId: 'US-0001', checked: 1, text: 'a', position: 0 },
+        { id: 'AC-0099', storyId: 'US-0001', checked: 0, text: 'mismatched', position: 1 },
+      ],
+    };
+    const merged = mergeRepoData(legacy, repoData);
+    expect(merged.stories[0].acs).toEqual(legacy.stories[0].acs);
+  });
+
   test('mergeRepoData reshapes repo ACs into per-story {id, text, done} when sets match', () => {
     const legacy = {
       epics: [

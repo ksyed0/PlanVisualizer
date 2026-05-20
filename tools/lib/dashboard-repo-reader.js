@@ -44,8 +44,8 @@ function mergeRepoData(legacy, repoData) {
     // we only overlay the structural fields it owns.
     return {
       ...le,
-      title: re.title || le.title,
-      status: re.status || le.status,
+      title: re.title ?? le.title,
+      status: re.status ?? le.status,
       releaseTarget: re.releaseTarget || le.releaseTarget,
     };
   });
@@ -57,9 +57,9 @@ function mergeRepoData(legacy, repoData) {
     // ("High (P0)"). Overlaying would diff the snapshot.
     const merged = {
       ...ls,
-      title: rs.title || ls.title,
-      epicId: rs.epicId || ls.epicId,
-      status: rs.status || ls.status,
+      title: rs.title ?? ls.title,
+      epicId: rs.epicId ?? ls.epicId,
+      status: rs.status ?? ls.status,
       estimate: rs.estimate || ls.estimate,
       branch: rs.branch || ls.branch,
     };
