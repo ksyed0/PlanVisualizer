@@ -34,10 +34,15 @@ function applySchemaMigrations(ds) {
   for (const m of all) {
     if (m.version <= current) continue;
     const sql = fs.readFileSync(m.file, 'utf8');
-    ds.transaction(() => {
-      ds.exec(sql);
-      setSchemaVersion(ds, m.version);
-    });
+    try {
+      ds.transaction(() => {
+        ds.exec(sql);
+        setSchemaVersion(ds, m.version);
+      });
+    } catch (err) {
+      err.message = `[schema] migration ${path.basename(m.file)} failed: ${err.message}`;
+      throw err;
+    }
   }
 }
 

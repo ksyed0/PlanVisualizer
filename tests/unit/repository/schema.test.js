@@ -8,16 +8,25 @@ const { applySchemaMigrations, getSchemaVersion } = require('../../../tools/lib/
 describe('schema migrations', () => {
   let dbPath;
   let tmpDir;
+  let ds;
   beforeEach(() => {
     tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 's-'));
     dbPath = path.join(tmpDir, 'pv.db');
   });
   afterEach(() => {
+    if (ds) {
+      try {
+        ds.close();
+      } catch {
+        /* ignore */
+      }
+      ds = undefined;
+    }
     fs.rmSync(tmpDir, { recursive: true, force: true });
   });
 
   test('applies all migrations on a fresh db', () => {
-    const ds = openIndexDatastore({ path: dbPath });
+    ds = openIndexDatastore({ path: dbPath });
     applySchemaMigrations(ds);
     expect(getSchemaVersion(ds)).toBe(2);
     const tables = ds
@@ -48,14 +57,12 @@ describe('schema migrations', () => {
         'warnings',
       ]),
     );
-    ds.close();
   });
 
   test('is idempotent — running twice does not fail', () => {
-    const ds = openIndexDatastore({ path: dbPath });
+    ds = openIndexDatastore({ path: dbPath });
     applySchemaMigrations(ds);
     applySchemaMigrations(ds);
     expect(getSchemaVersion(ds)).toBe(2);
-    ds.close();
   });
 });
