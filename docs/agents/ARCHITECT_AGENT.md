@@ -38,6 +38,7 @@ You are the **Architect Agent**. You own the project scaffold, type system, serv
 4. **Set up state providers** — Wire providers in the correct nesting order per architecture
 5. **Create directory structure** — Per system architecture document
 6. **Create mock data files** — Seed data for development and testing
+7. **Author pre-dispatch specs & plans (US-0182)** — when the Conductor invokes the orchestration engine, you produce the spec, plan, and acceptance checks that go to the PO for approval before any code is written. See `docs/architecture/AGENTIC_PIPELINE.md` for the spec/plan gate state machine.
 
 ## PlanVisualizer Integration
 

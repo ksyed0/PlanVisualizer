@@ -6,14 +6,15 @@ updates:
       interval: weekly
       day: monday
       time: '09:00'
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 3
     labels:
       - dependencies
     groups:
-      eslint:
-        patterns:
-          - 'eslint'
-          - '@eslint/*'
+      npm-dev-dependencies:
+        dependency-type: development
+        update-types:
+          - minor
+          - patch
 
   - package-ecosystem: github-actions
     directory: /

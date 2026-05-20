@@ -282,13 +282,30 @@ pkg.scripts['memory:migrate'] = pkg.scripts['memory:migrate'] || 'node tools/mem
 pkg.scripts['memory:migrate-commit'] = pkg.scripts['memory:migrate-commit'] || 'node tools/memory.js migrate-commit';
 pkg.scripts['memory:suggest-model'] = pkg.scripts['memory:suggest-model'] || 'node tools/memory.js suggest-model';
 pkg.scripts['memory:validate'] = pkg.scripts['memory:validate'] || 'node tools/memory.js validate';
-// US-0181 orchestration scripts
+// US-0182 spec/plan phase orchestration scripts
 pkg.scripts['agent:approve'] = pkg.scripts['agent:approve'] || 'node tools/agent-spec-plan.js approve';
 pkg.scripts['agent:reject'] = pkg.scripts['agent:reject'] || 'node tools/agent-spec-plan.js reject';
 pkg.scripts['agent:pending'] = pkg.scripts['agent:pending'] || 'node tools/agent-spec-plan.js show-pending';
 pkg.scripts['agent:apply'] = pkg.scripts['agent:apply'] || 'node tools/agent-spec-plan.js apply-pending';
 pkg.scripts['agent:list'] = pkg.scripts['agent:list'] || 'node tools/agent-spec-plan.js list';
 pkg.scripts['agent:status'] = pkg.scripts['agent:status'] || 'node tools/agent-spec-plan.js status';
+// US-0183 per-task lifecycle scripts
+pkg.scripts['agent:start'] = pkg.scripts['agent:start'] || 'node tools/agent-lifecycle.js start';
+pkg.scripts['agent:done'] = pkg.scripts['agent:done'] || 'node tools/agent-lifecycle.js done';
+pkg.scripts['agent:concerns'] = pkg.scripts['agent:concerns'] || 'node tools/agent-lifecycle.js concerns';
+pkg.scripts['agent:needs-context'] = pkg.scripts['agent:needs-context'] || 'node tools/agent-lifecycle.js needs-context';
+pkg.scripts['agent:blocked'] = pkg.scripts['agent:blocked'] || 'node tools/agent-lifecycle.js blocked';
+pkg.scripts['agent:resolve'] = pkg.scripts['agent:resolve'] || 'node tools/agent-lifecycle.js resolve';
+pkg.scripts['agent:tasks'] = pkg.scripts['agent:tasks'] || 'node tools/agent-lifecycle.js list';
+pkg.scripts['agent:task-status'] = pkg.scripts['agent:task-status'] || 'node tools/agent-lifecycle.js status';
+// US-0184 context curator
+pkg.scripts['agent:context'] = pkg.scripts['agent:context'] || 'node tools/agent-context.js generate';
+// US-0185 per-task review gate scripts
+pkg.scripts['agent:review-start'] = pkg.scripts['agent:review-start'] || 'node tools/agent-task-review.js start';
+pkg.scripts['agent:review-spec'] = pkg.scripts['agent:review-spec'] || 'node tools/agent-task-review.js spec-verdict';
+pkg.scripts['agent:review-quality'] = pkg.scripts['agent:review-quality'] || 'node tools/agent-task-review.js quality-verdict';
+pkg.scripts['agent:review-retry'] = pkg.scripts['agent:review-retry'] || 'node tools/agent-task-review.js forge-retry';
+pkg.scripts['agent:review-status'] = pkg.scripts['agent:review-status'] || 'node tools/agent-task-review.js status';
 // Dashboard live-reload during orchestration sessions
 pkg.scripts['dashboard:watch'] = pkg.scripts['dashboard:watch'] || 'node tools/watch-dashboard.js';
 
@@ -309,7 +326,7 @@ for (const [name, version] of Object.entries(requiredDevDeps)) {
 }
 
 fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n', 'utf8');
-console.log('[install] Scripts added: plan:* (5), memory:* (6), agent:* (6); devDependencies merged');
+console.log('[install] Scripts added: plan:* (7), memory:* (6), agent:* (21), dashboard:* (1); devDependencies merged');
 JS
 fi
 

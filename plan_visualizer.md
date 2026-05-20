@@ -17,6 +17,8 @@ This file defines the exact document formats that PlanVisualizer parses to gener
 All paths are relative to the project root and can be overridden in `plan-visualizer.config.json`.
 Files that are missing or empty produce empty sections — the generator will not fail.
 
+> **Agentic Orchestration Engine (opt-in):** in addition to the parser-driven dashboard above, PlanVisualizer ships an orchestration engine (EPIC-0028 / EPIC-0029) that reads/writes `agents.config.json` and `sdlc-status.json` — it does **not** modify any of the markdown source files above. See `docs/architecture/AGENTIC_PIPELINE.md` and the `agent:*` npm scripts.
+
 ---
 
 ## `docs/RELEASE_PLAN.md`

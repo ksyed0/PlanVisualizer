@@ -26,6 +26,19 @@ const { renderChrome, SHELL_CHROME_CSS } = require('./lib/render-shell');
 const { renderAboutModal } = require('./lib/render-html');
 const { HANDLERS: sdlcHandlers } = require('./update-sdlc-status');
 const { atomicReadModifyWriteJson: atomicRMW } = require('../orchestrator/atomic-write');
+const TaskReview = require('./lib/dashboard-task-review');
+
+// US-0186: Helpers embedded into the generated dashboard so the same review-gate
+// rendering code runs in the browser. fn.toString() emits the source verbatim;
+// the inline <script> block evaluates these as ordinary function declarations.
+const REVIEW_HELPERS_SOURCE = [
+  TaskReview._chip.toString(),
+  TaskReview._iconCls.toString(),
+  TaskReview.deriveDisplayState.toString(),
+  TaskReview.renderReviewIconS.toString(),
+  TaskReview.renderReviewChipsM.toString(),
+  TaskReview.renderReviewLineL.toString(),
+].join('\n\n');
 
 const ROOT = path.resolve(__dirname, '..');
 
@@ -2149,6 +2162,99 @@ function generateHTML(status) {
   /* Collapsed sections inside existing HTML we keep inline */
   .mc-legacy-section { margin-bottom: 14px; }
   /* ===== END MISSION CONTROL REDESIGN ===== */
+
+  /* US-0186: Review-gate visualization */
+  .pv-rev-chip {
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 9px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .pv-rev-chip.ok     { background: color-mix(in oklab, var(--ok)          18%, transparent); color: var(--ok); }
+  .pv-rev-chip.warn   { background: color-mix(in oklab, var(--warn)        18%, transparent); color: var(--warn); }
+  .pv-rev-chip.risk   { background: color-mix(in oklab, var(--risk)        18%, transparent); color: var(--risk); }
+  .pv-rev-chip.review { background: color-mix(in oklab, var(--live-accent) 18%, transparent); color: var(--live-accent); }
+
+  .pv-rev-line {
+    padding-left: 80px;
+    font-size: 9.5px;
+    margin-top: 1px;
+  }
+  .pv-rev-line .ok     { color: var(--ok); }
+  .pv-rev-line .warn   { color: var(--warn); }
+  .pv-rev-line .risk   { color: var(--risk); }
+  .pv-rev-line .review { color: var(--live-accent); }
+  .pv-rev-line span + span::before { content: ' · '; color: var(--text-mute); }
+
+  .pv-rev-icon {
+    font-weight: 700;
+    margin-left: auto;
+  }
+  .pv-rev-icon.ok     { color: var(--ok); }
+  .pv-rev-icon.warn   { color: var(--warn); }
+  .pv-rev-icon.risk   { color: var(--risk); }
+  .pv-rev-icon.review { color: var(--live-accent); }
+
+  .pv-density-toggle {
+    display: flex;
+    gap: 2px;
+    background: var(--bg-card-inner);
+    border-radius: 4px;
+    padding: 2px;
+  }
+  .pv-density-toggle button {
+    padding: 2px 8px;
+    border: 0;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    border-radius: 3px;
+  }
+  .pv-density-toggle button.active {
+    background: var(--live-accent);
+    color: var(--text);
+  }
+
+  /* US-0186: Animations */
+  @keyframes pv-rev-spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+  @keyframes pv-rev-appear {
+    from { opacity: 0; transform: translateY(-1px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .pv-rev-icon.review {
+    display: inline-block;
+    animation: pv-rev-spin 1.4s linear infinite, pv-rev-appear 200ms ease-out;
+  }
+  .pv-rev-chip.review {
+    animation: pv-rev-appear 200ms ease-out;
+  }
+  .pv-rev-chip,
+  .pv-rev-line,
+  .pv-rev-icon {
+    animation: pv-rev-appear 200ms ease-out;
+  }
+  .pv-density-toggle button {
+    transition: background-color 150ms ease, color 150ms ease;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pv-rev-icon.review,
+    .pv-rev-chip.review,
+    .pv-rev-chip,
+    .pv-rev-line,
+    .pv-rev-icon {
+      animation: none;
+    }
+    .pv-density-toggle button {
+      transition: none;
+    }
+  }
 </style>
 </head>
 <body>
@@ -2182,6 +2288,11 @@ ${(() => {
     <span class="mc-topbar-clock" id="mc-topbar-clock">00:00:00</span>
   </div>
   <div class="mc-topbar-right">
+    <div class="pv-density-toggle" role="radiogroup" aria-label="Task review density">
+      <button data-density="S" onclick="setTaskDensity('S')" title="Compact — single outcome icon per task">S</button>
+      <button data-density="M" onclick="setTaskDensity('M')" title="Medium — phase chips per task">M</button>
+      <button data-density="L" onclick="setTaskDensity('L')" title="Large — phase status on a second line">L</button>
+    </div>
     <span class="mc-live-badge" title="Live — refreshing every 5s"><span class="mc-live-dot" aria-hidden="true"></span>LIVE</span>
   </div>
 </div>`;
@@ -2860,6 +2971,19 @@ ${renderAboutModal({
 </div>
 
 <script>
+// US-0186: Review-gate cap literal and helper sources, injected from server-side config
+// so the same render code path runs both in tests (Node) and in the live dashboard.
+window.pvTaskReviewCap = ${
+    AGENT_CONFIG &&
+    AGENT_CONFIG.orchestration &&
+    AGENT_CONFIG.orchestration.iterationCap &&
+    typeof AGENT_CONFIG.orchestration.iterationCap.taskReview === 'number'
+      ? AGENT_CONFIG.orchestration.iterationCap.taskReview
+      : 2
+  };
+
+${REVIEW_HELPERS_SOURCE}
+
 // pvSetTheme / openAbout — aliases expected by renderChrome() (shared chrome from render-shell.js)
 // BUG-0250: write to canonical 'pv-theme' key (shared with plan-status dashboard) so
 // theme preference syncs across both dashboards. Mirror to legacy 'dashboard-theme'
@@ -3877,36 +4001,76 @@ function patchTaskList(status) {
       card.appendChild(container);
     }
 
-    var html = tasks.slice(-5).map(function (t) {
-      var color =
-        t.state === 'done'
-          ? 'var(--ok)'
-          : t.state === 'blocked' || t.state === 'escalated'
-            ? 'var(--risk)'
-            : t.state === 'done_with_concerns'
-              ? 'var(--warn)'
-              : 'var(--text-mute)';
-      var label = t.state.replace(/_/g, ' ').toUpperCase();
-      var desc = t.description
-        ? t.description.slice(0, 55) + (t.description.length > 55 ? '…' : '')
-        : '';
-      return (
-        '<div style="display:flex;gap:6px;align-items:baseline;margin-bottom:2px">' +
-        '<span style="color:' +
-        color +
-        ';font-weight:700;min-width:80px">' +
-        label +
-        '</span>' +
-        '<span style="color:var(--text-dim)">' +
-        desc +
-        '</span>' +
-        '</div>'
-      );
-    }).join('');
+    var html = tasks
+      .slice(-5)
+      .map(function (t) {
+        var color =
+          t.state === 'done'
+            ? 'var(--ok)'
+            : t.state === 'blocked' || t.state === 'escalated'
+              ? 'var(--risk)'
+              : t.state === 'done_with_concerns'
+                ? 'var(--warn)'
+                : 'var(--text-mute)';
+        var label = t.state.replace(/_/g, ' ').toUpperCase();
+        var desc = t.description
+          ? t.description.slice(0, 55) + (t.description.length > 55 ? '…' : '')
+          : '';
+
+        // US-0186: derive review-gate display and pick renderer based on density.
+        var density = window.pvTaskDensity || 'L';
+        var ds = deriveDisplayState(t.taskReview);
+        var reviewHtml = '';
+        if (ds && !ds.skipped) {
+          if (density === 'S') reviewHtml = renderReviewIconS(ds);
+          else if (density === 'M') reviewHtml = renderReviewChipsM(ds);
+          else reviewHtml = renderReviewLineL(ds);
+        }
+
+        var rowHead =
+          '<div style="display:flex;gap:6px;align-items:baseline;margin-bottom:2px">' +
+          '<span style="color:' + color + ';font-weight:700;min-width:80px">' + label + '</span>' +
+          '<span style="color:var(--text-dim);flex:1">' + desc + '</span>' +
+          (density === 'S' || density === 'M' ? reviewHtml : '') +
+          '</div>';
+
+        var rowTail = density === 'L' ? reviewHtml : '';
+        return rowHead + rowTail;
+      })
+      .join('');
 
     container.innerHTML = html;
   });
 }
+
+// US-0186: Task review density toggle. Persists choice in localStorage so the
+// dashboard remembers user preference across reloads. setTaskDensity also
+// re-renders the task list using the cached _pvLastStatus so the change is
+// immediate without waiting for the next 5s refresh tick.
+function setTaskDensity(d) {
+  if (d !== 'S' && d !== 'M' && d !== 'L') return;
+  window.pvTaskDensity = d;
+  try {
+    localStorage.setItem('pv-task-density', d);
+  } catch (e) {
+    /* private mode — ignore */
+  }
+  document.querySelectorAll('.pv-density-toggle button').forEach(function (b) {
+    b.classList.toggle('active', b.dataset.density === d);
+  });
+  if (window._pvLastStatus) patchTaskList(window._pvLastStatus);
+}
+
+function initTaskDensity() {
+  var saved;
+  try {
+    saved = localStorage.getItem('pv-task-density');
+  } catch (e) {}
+  var d = saved === 'S' || saved === 'M' || saved === 'L' ? saved : 'L';
+  setTaskDensity(d);
+}
+
+document.addEventListener('DOMContentLoaded', initTaskDensity);
 
 // Rebuild the Pending Approvals panel content from the latest sdlc-status.stories.
 // Called inside patchDOM() on every 5s refreshState() tick — no page reload.
@@ -3973,6 +4137,8 @@ async function refreshState() {
     var res = await fetch('./sdlc-status.json', { cache: 'no-store' });
     if (!res || !res.ok) throw new Error('HTTP ' + (res ? res.status : 'no response'));
     var newStatus = await res.json();
+    // US-0186: cache last status so setTaskDensity() can re-render without refetch.
+    window._pvLastStatus = newStatus;
     patchDOM(newStatus);
     patchCycleCounter(newStatus);
     runAlertCheck(newStatus);
