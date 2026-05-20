@@ -884,3 +884,51 @@ _Learned from BUG-0210 — Lessons and Bugs tabs both have epic group headers, b
 **Prevention:** When reading file metadata for cache-invalidation purposes, derive size from the buffer you already read rather than calling stat separately. Single syscall = single consistent snapshot.
 
 **Date:** 2026-05-20
+
+---
+
+## L-0071: CodeQL TOCTOU race — use openSync/fstatSync/readFileSync(fd) for atomic file metadata @agent:Forge @agent:Keystone
+
+**Context:** Session 52. Phase A's `markdown-datastore.js` `sourceMeta()` triggered CodeQL alert "Potential file system race condition" for using `fs.statSync(abs)` then `fs.readFileSync(abs)` as two separate syscalls.
+
+**Fix:** Open the file once with `fs.openSync(abs, 'r')`, then use `fs.fstatSync(fd)` and `fs.readFileSync(fd)` on the same file descriptor. All three operations see the same inode snapshot — no race between them. Close with `fs.closeSync(fd)` in a `finally` block.
+
+**Prevention:** Whenever you need both file content AND metadata (mtime, size) for cache-invalidation purposes, use the open-once pattern. `fs.statSync` + `fs.readFileSync` is always a TOCTOU race.
+
+**Date:** 2026-05-20
+
+---
+
+## L-0072: CodeQL "Insecure temporary file" — always use mkdtempSync for temp paths in tests @agent:Forge @agent:Keystone
+
+**Context:** Session 52. `file-lock.test.js` used `path.join(os.tmpdir(), 'lock-test-' + Date.now() + '.md')`. CodeQL flagged this as insecure — the filename is predictable and can be symlinked before the test writes it.
+
+**Fix:** Use `fs.mkdtempSync(path.join(os.tmpdir(), 'prefix-'))` to create a directory with a random OS-guaranteed-unique suffix, then put test files inside that directory. The directory path is unguessable; files inside inherit its security.
+
+**Prevention:** Never construct temp paths from timestamps, PIDs, or other predictable values. `mkdtempSync` is a one-liner and guarantees atomicity.
+
+**Date:** 2026-05-20
+
+---
+
+## L-0073: RELEASE_PLAN.md has multi-entity fenced blocks — body.match() only finds the first; use splitEntitySections() @agent:Forge @agent:Keystone
+
+**Context:** Session 52, Phase B Task B.1. The early `## Epics` section of RELEASE_PLAN.md puts all epics (EPIC-0001..0006+) inside one fenced block. `body.match(EPIC_HEAD)` returns only the first match, so EPIC-0002..0006 were never indexed, causing FK violations when their stories tried to insert.
+
+**Fix:** Added `splitEntitySections(body)` that splits a fenced block body into per-entity sub-sections by detecting entity header lines. Each sub-section is processed independently. The function is format-agnostic — single-entity blocks work as before.
+
+**Prevention:** Never assume one entity per fenced block in RELEASE_PLAN.md. Always split and iterate all entity starts within a block body before processing.
+
+**Date:** 2026-05-20
+
+---
+
+## L-0074: RELEASE_PLAN.md has alt-format epics (EPIC-XXXX\nTitle: ...) — add EPIC_HEAD_ALT regex @agent:Forge @agent:Keystone
+
+**Context:** Session 52, Phase B Task B.1. EPIC-0021 and EPIC-0022 use the format `EPIC-0021\nTitle: Test Case Audit\n...` instead of the standard `EPIC-0021: Test Case Audit`. The `EPIC_HEAD = /^EPIC-(\d+):\s*(.+)$/m` regex doesn't match the alt format.
+
+**Fix:** Added `EPIC_HEAD_ALT = /^(EPIC-(\d+))\s*$/m` and falls back to `kv.Title` for the title when only the alt-format matches.
+
+**Prevention:** When writing indexers for RELEASE_PLAN.md, always check for both `EPIC-XXXX: title` and `EPIC-XXXX\nTitle: title` variants. Older EPICs predate the standardised fenced-block format.
+
+**Date:** 2026-05-20
