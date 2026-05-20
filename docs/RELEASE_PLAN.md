@@ -3883,6 +3883,65 @@ Acceptance Criteria:
 - [ ] AC-0911: flag default flipped to PV_DASHBOARD_VIA_REPO=1 with PV_DASHBOARD_VIA_REPO=0 left as a fallback escape hatch (deferred to Phase C.5)
 ```
 
+## Epic — EPIC-0042: Step 1 Persistence — Indexer Hardening (Phase C.5)
+
+Phase C.5 of Step 1 — pre-flight for Phase D. Closes three indexer gaps surfaced by the Phase C parity gate (L-0075 prose-node scan, L-0076 silent CHECK rejections, L-0077 priority shape) so the SdlcStatus cutover starts from a complete, normalized SQLite baseline. Once all three stories land, AC-0911 (the deferred PV_DASHBOARD_VIA_REPO default flip) can be closed separately.
+
+```
+EPIC-0042: Step 1 Persistence — Indexer Hardening (Phase C.5)
+Description: Widen release-plan-indexer to scan prose AST nodes; surface CHECK-rejected rows via a rejected-rows counter and migrate the schema to accept Retired; normalize priority at indexer write time. Each story corresponds to one lesson captured in Session 53 (L-0075/L-0076/L-0077). Hard gate: parity rerun on production RELEASE_PLAN.md shows zero "in legacy, not in repo" entity drops.
+Release Target: v2.5.0
+Status: To Do
+Dependencies: EPIC-0038
+```
+
+## User Stories — EPIC-0042: Indexer Hardening (Phase C.5)
+
+```
+US-0253 (EPIC-0042): As an indexer consumer, I want release-plan-indexer.js to scan both fenced and prose AST nodes, so that ~31 entities currently in prose nodes enter SQLite and the repo path matches legacy parity without falling back.
+Priority: High (P1)
+Estimate: M
+Status: To Do
+Plan Task: C5.1
+Dependencies: US-0227 (EPIC-0037), US-0230 (EPIC-0038)
+Related Lesson: L-0075
+Acceptance Criteria:
+
+- [ ] AC-0980: release-plan-indexer.js iterates prose nodes in addition to kind === 'fenced'; production index shows >0 prose entities ingested
+- [ ] AC-0981: parity gate run with PV_DASHBOARD_VIA_REPO=1 on production docs/RELEASE_PLAN.md shows zero "in legacy, not in repo" entity drops (instrumented in dashboard-repo-reader.js)
+- [ ] AC-0982: plan:lint warns when an entity header lives in a prose node that wouldn't have been indexed pre-fix (regression guard so the gap never silently reopens)
+```
+
+```
+US-0254 (EPIC-0042): As an indexer maintainer, I want CHECK-rejected rows surfaced via a rejected-rows counter and the schema migrated to accept Retired, so that INSERT OR IGNORE never silently drops valid data.
+Priority: High (P1)
+Estimate: S
+Status: To Do
+Plan Task: C5.2
+Dependencies: US-0227 (EPIC-0037)
+Related Lesson: L-0076
+Acceptance Criteria:
+
+- [ ] AC-0983: Migration 003 extends epics.status and stories.status CHECK to include 'Retired'; existing rows unaffected
+- [ ] AC-0984: indexer surfaces a rejected_rows counter in its return value; release-plan-indexer.js logs each CHECK violation with id + reason
+- [ ] AC-0985: plan:lint emits a warning when rejected_rows > 0 so silently-dropped entities surface during normal lint runs (not just parity audits)
+```
+
+```
+US-0255 (EPIC-0042): As a future repo consumer, I want priority normalized at indexer write time, so that "High (P0)" and "P0" never coexist in the database and read APIs return a single stable shape.
+Priority: High (P1)
+Estimate: S
+Status: To Do
+Plan Task: C5.3
+Dependencies: US-0227 (EPIC-0037)
+Related Lesson: L-0077
+Acceptance Criteria:
+
+- [ ] AC-0986: release-plan-indexer.js normalizes priority strings (e.g. "High (P0)" → "P0") before insert, using the same logic as tools/lib/parse-release-plan.js
+- [ ] AC-0987: unit test inserts raw-format priority "High (P0)" and asserts stored value is "P0"; same coverage for Medium/Low variants
+- [ ] AC-0988: dashboard-repo-reader.js shim no longer needs to prefer legacy priority — story-repo returns the normalized value directly (shim simplified accordingly)
+```
+
 ## Epic — EPIC-0039: Step 1 Persistence — SdlcStatus Cutover (Phase D)
 
 Phase D of Step 1 — the biggest phase. Promotes SQLite to authoritative for tool-emitted state. `sdlc-status.json` becomes a per-event mirror written by the repo. Four lifecycle writers migrate in a single coordinated PR.
@@ -3892,7 +3951,7 @@ EPIC-0039: Step 1 Persistence — SdlcStatus Cutover (Phase D)
 Description: SdlcStatus moves from JSON-file-authoritative to SQLite-authoritative with a per-event JSON mirror (file-locked, SQL-requeried) for live-dashboard parity. Migration 002 ingests existing JSON. agent-lifecycle.js, update-sdlc-status.js, agent-task-review.js, agent-spec-plan.js all migrate to write through the repo in one PR. pv:upgrade and pv:rollback become write-capable.
 Release Target: v2.5.0
 Status: To Do
-Dependencies: EPIC-0038
+Dependencies: EPIC-0038, EPIC-0042
 ```
 
 ## User Stories — EPIC-0039: SdlcStatus Cutover (Phase D)
