@@ -3776,7 +3776,7 @@ Phase B of Step 1. Per-file indexers populate the SQLite index from markdown; `g
 EPIC-0037: Step 1 Persistence — Indexer as Spectator (Phase B)
 Description: Build per-source indexers (release-plan, bugs, lessons, test-cases, id-registry, sdlc-status), wire them into generate-plan.js, implement cross-entity referential checks, and ship npm run plan:lint. Hard gate: a full session produces an index consistent with markdown, with warnings rate < 10/session on current production data.
 Release Target: v2.5.0
-Status: To Do
+Status: Done
 Dependencies: EPIC-0036
 ```
 
@@ -3786,58 +3786,58 @@ Dependencies: EPIC-0036
 US-0226 (EPIC-0037): As the indexer, I want six per-source indexer functions that populate the SQLite tables from markdown/JSON, so that the index can be rebuilt from any clean checkout.
 Priority: High (P1)
 Estimate: L
-Status: To Do
+Status: Done
 Plan Task: B.1
 Dependencies: US-0220 (EPIC-0036), US-0221 (EPIC-0036)
 Acceptance Criteria:
 
-- [ ] AC-0892: indexers/release-plan-indexer.js ingests epics, stories, ACs with source_file/source_line provenance
-- [ ] AC-0893: indexers/bugs-indexer.js, lessons-indexer.js, test-cases-indexer.js, id-registry-indexer.js, sdlc-status-indexer.js each ingest their respective sources
-- [ ] AC-0894: indexers/index.js exports indexAll({index, markdown, warningsChannel}) returning {counts, warnings}
-- [ ] AC-0895: indexing an empty/missing source emits zero counts and zero warnings (no throw)
+- [x] AC-0892: indexers/release-plan-indexer.js ingests epics, stories, ACs with source_file/source_line provenance
+- [x] AC-0893: indexers/bugs-indexer.js, lessons-indexer.js, test-cases-indexer.js, id-registry-indexer.js, sdlc-status-indexer.js each ingest their respective sources
+- [x] AC-0894: indexers/index.js exports indexAll({index, markdown, warningsChannel}) returning {counts, warnings}
+- [x] AC-0895: indexing an empty/missing source emits zero counts and zero warnings (no throw)
 ```
 
 ```
 US-0227 (EPIC-0037): As the build pipeline, I want generate-plan.js to emit the SQLite index alongside the existing HTML/JSON outputs, so that the index always reflects the latest markdown after every build.
 Priority: High (P1)
 Estimate: S
-Status: To Do
+Status: Done
 Plan Task: B.2
 Dependencies: US-0226 (EPIC-0037)
 Acceptance Criteria:
 
-- [ ] AC-0896: tools/generate-plan.js calls indexAll(...) after writing HTML/JSON and logs the counts
-- [ ] AC-0897: tools/plan-index.js exists as a standalone CLI mapped to npm run plan:index for manual rebuilds
-- [ ] AC-0898: failure in the index emit step does not abort the HTML build (best-effort during Phase B)
+- [x] AC-0896: tools/generate-plan.js calls indexAll(...) after writing HTML/JSON and logs the counts
+- [x] AC-0897: tools/plan-index.js exists as a standalone CLI mapped to npm run plan:index for manual rebuilds
+- [x] AC-0898: failure in the index emit step does not abort the HTML build (best-effort during Phase B)
 ```
 
 ```
 US-0228 (EPIC-0037): As the validation layer, I want a cross-entity validator that runs after every indexAll pass, so that orphan ACs, dangling dependencies, and id-registry drift surface automatically.
 Priority: High (P1)
 Estimate: S
-Status: To Do
+Status: Done
 Plan Task: B.3
 Related Bug: BUG-0258
 Dependencies: US-0226 (EPIC-0037)
 Acceptance Criteria:
 
-- [ ] AC-0899: validators/cross-entity.js detects dangling story/epic dependencies via LEFT JOIN
-- [ ] AC-0900: it detects id-registry drift (next_id ≤ max actual ID) per sequence
-- [ ] AC-0901: detects orphan ACs (acs.story_id with no matching story)
+- [x] AC-0899: validators/cross-entity.js detects dangling story/epic dependencies via LEFT JOIN
+- [x] AC-0900: it detects id-registry drift (next_id ≤ max actual ID) per sequence
+- [x] AC-0901: detects orphan ACs (acs.story_id with no matching story)
 ```
 
 ```
 US-0229 (EPIC-0037): As a maintainer, I want npm run plan:lint to print tiered violations (errors / warnings / reports) and exit non-zero only on errors, so that data-quality regressions get caught in CI without blocking local development.
 Priority: Medium (P2)
 Estimate: S
-Status: To Do
+Status: Done
 Plan Task: B.4
 Dependencies: US-0228 (EPIC-0037)
 Acceptance Criteria:
 
-- [ ] AC-0902: tools/plan-lint.js outputs counts per tier and lists each violation with one-line summary
-- [ ] AC-0903: exit code is 1 only if errors-tier is non-empty; warnings/reports do not fail the build at Phase B
-- [ ] AC-0904: Phase B hard gate verified — warnings on current production data < 10
+- [x] AC-0902: tools/plan-lint.js outputs counts per tier and lists each violation with one-line summary
+- [x] AC-0903: exit code is 1 only if errors-tier is non-empty; warnings/reports do not fail the build at Phase B
+- [x] AC-0904: Phase B hard gate verified — warnings on current production data < 10
 ```
 
 ## Epic — EPIC-0038: Step 1 Persistence — First Read Consumer (Phase C)
