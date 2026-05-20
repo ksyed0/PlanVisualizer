@@ -24,6 +24,7 @@ Sessions 50–52 completed Phase A (repository foundation) and Phase B (indexer 
 ### Task C.1 (US-0230): Base entity repo + Story / Epic / AC read APIs
 
 **Files to create:**
+
 - `tools/lib/repository/entities/base-repo.js`
 - `tools/lib/repository/entities/story-repo.js`
 - `tools/lib/repository/entities/epic-repo.js`
@@ -36,6 +37,7 @@ Sessions 50–52 completed Phase A (repository foundation) and Phase B (indexer 
 ### Task C.2 (US-0231): Migrate dashboard read path
 
 **Files to modify/create:**
+
 - Modify: `tools/generate-plan.js` (add `PV_DASHBOARD_VIA_REPO=1` code path)
 - Possibly: `tools/lib/dashboard-repo-reader.js` (shim layer)
 - Test: `tests/integration/dashboard-parity.test.js` (snapshot comparison both paths)
@@ -48,6 +50,7 @@ The plan spec for C.1 and C.2 is at lines ~2564–2857 of
 ## Instructions
 
 1. Create a new worktree from `develop`:
+
    ```bash
    git worktree add .claude/worktrees/phase-c-entities -b claude/phase-c-entities origin/develop
    ```
@@ -55,18 +58,22 @@ The plan spec for C.1 and C.2 is at lines ~2564–2857 of
 2. Use `superpowers:subagent-driven-development` to execute C.1 then C.2 with the same two-stage review loop used in Phases A and B.
 
 3. **Key constraint:** Run indexers first before testing the read path:
+
    ```bash
    node tools/plan-index.js
    ```
+
    The entity repos read from SQLite — the index must be populated.
 
 4. **Phase C hard gate:** run both HTML generation paths and diff the output:
+
    ```bash
    node tools/generate-plan.js  # generates via legacy parse
    cp docs/plan-status.html docs/plan-status.html.legacy
    PV_DASHBOARD_VIA_REPO=1 node tools/generate-plan.js
    diff docs/plan-status.html docs/plan-status.html.legacy
    ```
+
    Diff must be empty (or only differ in known cosmetic fields).
 
 5. After both tasks are done and gate passes, open a PR `claude/phase-c-entities → develop`.

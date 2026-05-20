@@ -17,12 +17,12 @@ Merged Phase A (PR #1067 after conflict resolution + security fixes), shipped al
 
 ## Phase B delivered (EPIC-0037 Done)
 
-| Task | Story | Key module |
-|------|-------|------------|
-| B.1 | US-0226 | 6 indexers + `indexAll`, missing-file guards, two-pass FK-safe, multi-format support |
-| B.2 | US-0227 | `plan-index.js` CLI, `generate-plan.js` hook (non-fatal) |
-| B.3 | US-0228 | `validators/cross-entity.js` — dangling deps, orphan ACs, id-registry drift |
-| B.4 | US-0229 | `plan-lint.js`, Phase B hard gate: **0 warnings** on production data |
+| Task | Story   | Key module                                                                           |
+| ---- | ------- | ------------------------------------------------------------------------------------ |
+| B.1  | US-0226 | 6 indexers + `indexAll`, missing-file guards, two-pass FK-safe, multi-format support |
+| B.2  | US-0227 | `plan-index.js` CLI, `generate-plan.js` hook (non-fatal)                             |
+| B.3  | US-0228 | `validators/cross-entity.js` — dangling deps, orphan ACs, id-registry drift          |
+| B.4  | US-0229 | `plan-lint.js`, Phase B hard gate: **0 warnings** on production data                 |
 
 ## Key bugs fixed during Phase B
 

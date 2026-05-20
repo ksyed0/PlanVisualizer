@@ -891,12 +891,12 @@ _(Bug sweep session — see progress.md Session 16 entry. Was primarily spent fi
 
 ## Session 52 — 2026-05-20
 
-| #   | Timestamp            | Prompt                                                                                                                                                                       |
-| --- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | 2026-05-20T17:00:00Z | whats next                                                                                                                                                                   |
-| 2   | 2026-05-20T17:05:00Z | ok fix PR 1067 merge conflict                                                                                                                                                |
-| 3   | 2026-05-20T17:20:00Z | track the CI for PR 1067 and resolve any issues, once green the merge / Start Phase B                                                                                       |
-| 4   | 2026-05-20T17:30:00Z | Continue from where you left off. (CI monitoring resumed after interruption)                                                                                                 |
-| 5   | 2026-05-20T18:30:00Z | monitor the CI and fix any issues, merge when green (PR 1069 — Phase B)                                                                                                     |
-| 6   | 2026-05-20T19:00:00Z | what is next                                                                                                                                                                 |
-| 7   | 2026-05-20T19:10:00Z | merge PR 1045 and 1070 / Review PR 1059 to merge / update session docs and close the session / Cleanup any unused branches / create a prompt to proceed with phase C        |
+| #   | Timestamp            | Prompt                                                                                                                                                               |
+| --- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | 2026-05-20T17:00:00Z | whats next                                                                                                                                                           |
+| 2   | 2026-05-20T17:05:00Z | ok fix PR 1067 merge conflict                                                                                                                                        |
+| 3   | 2026-05-20T17:20:00Z | track the CI for PR 1067 and resolve any issues, once green the merge / Start Phase B                                                                                |
+| 4   | 2026-05-20T17:30:00Z | Continue from where you left off. (CI monitoring resumed after interruption)                                                                                         |
+| 5   | 2026-05-20T18:30:00Z | monitor the CI and fix any issues, merge when green (PR 1069 — Phase B)                                                                                              |
+| 6   | 2026-05-20T19:00:00Z | what is next                                                                                                                                                         |
+| 7   | 2026-05-20T19:10:00Z | merge PR 1045 and 1070 / Review PR 1059 to merge / update session docs and close the session / Cleanup any unused branches / create a prompt to proceed with phase C |

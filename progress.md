@@ -1841,6 +1841,7 @@ Branch: `claude/trusting-ptolemy-a305f1`, HEAD: `eb58ef3`
 ### What was done
 
 **PR #1067 conflict resolution + security fixes (Phase A merge):**
+
 - Resolved 3-way merge conflict: `docs/RELEASE_PLAN.md` (EPIC-0029 from develop inserted before EPIC-0036..0041), `docs/ID_REGISTRY.md` (kept HEAD higher IDs), `package-lock.json` (regenerated from merged package.json).
 - Fixed 3 CodeQL security alerts introduced by Phase A code:
   - `markdown-datastore.js`: TOCTOU race in `sourceMeta()` — replaced `statSync + readFileSync` with `openSync/fstatSync/readFileSync(fd)` (single file descriptor, no race).
@@ -1848,6 +1849,7 @@ Branch: `claude/trusting-ptolemy-a305f1`, HEAD: `eb58ef3`
 - Merged PR #1067 (Phase A — EPIC-0036).
 
 **Step 1 Phase B — all 4 tasks shipped (B.1–B.4), EPIC-0037 Done:**
+
 - **US-0226/B.1:** Six per-source indexers (`release-plan-indexer.js`, `bugs-indexer.js`, `lessons-indexer.js`, `test-cases-indexer.js`, `id-registry-indexer.js`, `sdlc-status-indexer.js`) + `indexers/index.js` with `indexAll`. Fixes required: child-first DELETE (FK), missing-file guards (AC-0895), two-pass indexing to prevent FK violations on missing epics, multi-entity block splitting, alt-format epic support.
 - **US-0227/B.2:** `tools/plan-index.js` standalone CLI + `generate-plan.js` hook (best-effort, non-fatal per AC-0898).
 - **US-0228/B.3:** `tools/lib/repository/validators/cross-entity.js` — `runCrossEntityChecks` detecting dangling deps, id-registry drift, orphan ACs via SQL LEFT JOIN.
@@ -1855,6 +1857,7 @@ Branch: `claude/trusting-ptolemy-a305f1`, HEAD: `eb58ef3`
 - Merged PR #1069 (Phase B — EPIC-0037).
 
 **Housekeeping:**
+
 - Merged PRs #1045 (BUG-0257 Fixed docs), #1059 (AGENTIC_PIPELINE.md architecture), #1070/#1071 (version bumps), #1062/#1063/#1064 (dependabot: eslint, lint-staged, codeql-action).
 - Deleted stale merged branches: `chore/us-0185-plan`, `claude/trusting-zhukovsky-cb5402`.
 
