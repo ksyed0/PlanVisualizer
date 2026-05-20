@@ -3848,7 +3848,7 @@ Phase C of Step 1. Migrates the dashboard's read path from re-parsing markdown t
 EPIC-0038: Step 1 Persistence — First Read Consumer (Phase C)
 Description: Implement base + entity read APIs (stories, epics, ACs), then migrate dashboard rendering to read via the repository instead of re-parsing markdown. Feature-flagged with PV_DASHBOARD_VIA_REPO=1; flag flipped to default once snapshot parity holds.
 Release Target: v2.5.0
-Status: To Do
+Status: Done
 Dependencies: EPIC-0037
 ```
 
@@ -3858,29 +3858,29 @@ Dependencies: EPIC-0037
 US-0230 (EPIC-0038): As any consumer, I want repository read APIs (repo.stories, repo.epics, repo.acs) with list filters, so that downstream tools don't need to re-parse markdown for the same data.
 Priority: High (P1)
 Estimate: M
-Status: To Do
+Status: Done
 Plan Task: C.1
 Dependencies: US-0226 (EPIC-0037)
 Acceptance Criteria:
 
-- [ ] AC-0905: tools/lib/repository/entities/base-repo.js exports a BaseRepo class with get(id), list(), and a root path for write APIs (Phase E)
-- [ ] AC-0906: story-repo.js, epic-repo.js, ac-repo.js wire into Repository as repo.stories, repo.epics, repo.acs with list filters (epicId, status, storyId)
-- [ ] AC-0907: column→property mapping (e.g. epic_id → epicId, pr_number → prNumber) is consistent across entity repos
+- [x] AC-0905: tools/lib/repository/entities/base-repo.js exports a BaseRepo class with get(id), list(), and a root path for write APIs (Phase E)
+- [x] AC-0906: story-repo.js, epic-repo.js, ac-repo.js wire into Repository as repo.stories, repo.epics, repo.acs with list filters (epicId, status, storyId)
+- [x] AC-0907: column→property mapping (e.g. epic_id → epicId, pr_number → prNumber) is consistent across entity repos
 ```
 
 ```
 US-0231 (EPIC-0038): As the dashboard consumer, I want generate-plan.js to read epics/stories/ACs through the repository under a PV_DASHBOARD_VIA_REPO=1 flag, so that we can validate parity before deleting the legacy parse path.
 Priority: High (P1)
 Estimate: M
-Status: To Do
+Status: Done
 Plan Task: C.2
 Dependencies: US-0230 (EPIC-0038)
 Acceptance Criteria:
 
-- [ ] AC-0908: PV_DASHBOARD_VIA_REPO=1 path uses repo.stories.list() / repo.epics.list() / repo.acs.list() to feed renderHtml
-- [ ] AC-0909: mergeRepoData shim overlays repo-sourced structural data on legacy computed fields (costs, snapshots) without breaking renderHtml's contract
-- [ ] AC-0910: snapshot test runs both paths and diffs docs/plan-status.html — zero meaningful semantic diff
-- [ ] AC-0911: flag default flipped to PV_DASHBOARD_VIA_REPO=1 with PV_DASHBOARD_VIA_REPO=0 left as a fallback escape hatch
+- [x] AC-0908: PV_DASHBOARD_VIA_REPO=1 path uses repo.stories.list() / repo.epics.list() / repo.acs.list() to feed renderHtml
+- [x] AC-0909: mergeRepoData shim overlays repo-sourced structural data on legacy computed fields (costs, snapshots) without breaking renderHtml's contract
+- [x] AC-0910: snapshot test runs both paths and diffs docs/plan-status.html — zero meaningful semantic diff
+- [ ] AC-0911: flag default flipped to PV_DASHBOARD_VIA_REPO=1 with PV_DASHBOARD_VIA_REPO=0 left as a fallback escape hatch (deferred to Phase C.5)
 ```
 
 ## Epic — EPIC-0039: Step 1 Persistence — SdlcStatus Cutover (Phase D)
