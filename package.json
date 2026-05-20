@@ -31,7 +31,20 @@
     "agent:apply": "node tools/agent-spec-plan.js apply-pending",
     "agent:list": "node tools/agent-spec-plan.js list",
     "agent:status": "node tools/agent-spec-plan.js status",
-    "dashboard:watch": "node tools/watch-dashboard.js"
+    "dashboard:watch": "node tools/watch-dashboard.js",
+    "plan:index": "node tools/plan-index.js",
+    "plan:lint": "node tools/plan-lint.js",
+    "pv:check-upgrade": "node tools/pv-check-upgrade.js",
+    "pv:upgrade": "node tools/pv-upgrade.js",
+    "pv:rollback": "node tools/pv-rollback.js",
+    "pv:doctor": "node tools/pv-doctor.js"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.5.0",
+    "proper-lockfile": "^4.1.2"
   },
   "lint-staged": {
     "*.{js,json,md,yml,yaml}": "prettier --write",
