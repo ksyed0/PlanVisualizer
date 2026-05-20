@@ -21,10 +21,16 @@ class MarkdownDatastore {
 
   sourceMeta(rel) {
     const abs = this.absolute(rel);
-    const st = fs.statSync(abs);
-    const buf = fs.readFileSync(abs);
-    const hash = crypto.createHash('sha256').update(buf).digest('hex');
-    return { mtime: Math.floor(st.mtimeMs), size: st.size, hash };
+    // Open once so stat and read operate on the same inode snapshot (eliminates TOCTOU race).
+    const fd = fs.openSync(abs, 'r');
+    try {
+      const st = fs.fstatSync(fd);
+      const buf = fs.readFileSync(fd);
+      const hash = crypto.createHash('sha256').update(buf).digest('hex');
+      return { mtime: Math.floor(st.mtimeMs), size: buf.length, hash };
+    } finally {
+      fs.closeSync(fd);
+    }
   }
 
   async writeAst(rel, ast) {

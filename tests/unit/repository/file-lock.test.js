@@ -4,17 +4,14 @@ const os = require('os');
 const { withFileLock } = require('../../../tools/lib/repository/file-lock');
 
 describe('withFileLock', () => {
-  let tmpFile;
+  let tmpDir, tmpFile;
   beforeEach(() => {
-    tmpFile = path.join(os.tmpdir(), `lock-test-${Date.now()}.md`);
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'lock-test-'));
+    tmpFile = path.join(tmpDir, 'test.md');
     fs.writeFileSync(tmpFile, 'initial');
   });
   afterEach(() => {
-    try {
-      fs.unlinkSync(tmpFile);
-    } catch {
-      /* ignore */
-    }
+    fs.rmSync(tmpDir, { recursive: true, force: true });
   });
 
   test('serializes concurrent writes', async () => {
@@ -47,13 +44,12 @@ describe('withFileLock', () => {
   });
 
   test('acquireMany locks files in lexicographic order', async () => {
-    const f2 = tmpFile + '.2';
+    const f2 = path.join(tmpDir, 'test2.md');
     fs.writeFileSync(f2, 'x');
     const { acquireMany } = require('../../../tools/lib/repository/file-lock');
     const acquired = [];
     const release = await acquireMany([f2, tmpFile], (p) => acquired.push(p));
     expect(acquired).toEqual([tmpFile, f2].sort());
     await release();
-    fs.unlinkSync(f2);
   });
 });
