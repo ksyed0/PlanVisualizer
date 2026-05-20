@@ -3712,14 +3712,14 @@ Acceptance Criteria:
 US-0224 (EPIC-0036): As an upgrade orchestrator, I want a project-state migration framework with pv-state read/write, backup snapshots, and a migration runner, so that future migrations (001, 002, 003) plug in declaratively.
 Priority: High (P1)
 Estimate: M
-Status: Planned
+Status: Done
 Plan Task: A.10
 Acceptance Criteria:
 
-- [ ] AC-0885: tools/lib/migrations/pv-state.js distinguishes committed state (docs/.pv-state.json with planvisualizerVersion + appliedMigrations) from local state (docs/.pv-state.local.json with lastUpgradeAt + lastUpgradeBy)
-- [ ] AC-0886: backup.js snapshot({root, label, files}) copies files into docs/.pv-backup/<label>/ preserving relative paths
-- [ ] AC-0887: backup.js restore({root, label}) reverses the snapshot; throws on missing label
-- [ ] AC-0888: migrations/index.js exports pending({root}) and run({root, dryRun, actor}); idempotent and writes pv-state on success
+- [x] AC-0885: tools/lib/migrations/pv-state.js distinguishes committed state (docs/.pv-state.json with planvisualizerVersion + appliedMigrations) from local state (docs/.pv-state.local.json with lastUpgradeAt + lastUpgradeBy)
+- [x] AC-0886: backup.js snapshot({root, label, files}) copies files into docs/.pv-backup/<label>/ preserving relative paths
+- [x] AC-0887: backup.js restore({root, label}) reverses the snapshot; throws on missing label
+- [x] AC-0888: migrations/index.js exports pending({root}) and run({root, dryRun, actor}); idempotent and writes pv-state on success
 ```
 
 ```
