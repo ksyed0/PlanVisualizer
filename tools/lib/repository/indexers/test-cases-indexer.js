@@ -1,8 +1,10 @@
 'use strict';
+const fs = require('fs');
 const HEAD = /^TC-(\d+)\s+\(US-(\d+)\):\s*(.+)$/m;
 const KV = /^(\w[\w\s]*?):\s*(.+)$/;
 
 function indexTestCases({ index, markdown, rel }) {
+  if (!fs.existsSync(markdown.absolute(rel))) return { counts: {}, warnings: [] };
   const ast = markdown.readAst(rel);
   let count = 0;
   index.transaction(() => {

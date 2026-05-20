@@ -1,8 +1,10 @@
 'use strict';
+const fs = require('fs');
 const BUG_HEAD = /^BUG-(\d+):\s*(.+)$/m;
 const KV = /^(\w[\w\s]*?):\s*(.+)$/;
 
 function indexBugs({ index, markdown, rel }) {
+  if (!fs.existsSync(markdown.absolute(rel))) return { counts: {}, warnings: [] };
   const ast = markdown.readAst(rel);
   const warnings = [];
   let count = 0;

@@ -1,8 +1,10 @@
 'use strict';
+const fs = require('fs');
 const HEAD = /^L-(\d+):\s*(.+)$/m;
 const AGENT_TAG = /@agent:(\w+)/g;
 
 function indexLessons({ index, markdown, rel }) {
+  if (!fs.existsSync(markdown.absolute(rel))) return { counts: {}, warnings: [] };
   const ast = markdown.readAst(rel);
   let count = 0;
   index.transaction(() => {

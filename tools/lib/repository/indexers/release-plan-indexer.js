@@ -1,4 +1,5 @@
 'use strict';
+const fs = require('fs');
 const EPIC_HEAD = /^EPIC-(\d+):\s*(.+)$/m;
 const US_HEAD = /^US-(\d+)\s+\(EPIC-(\d+)\):\s*(.+)$/m;
 const KV = /^(\w[\w\s]*?):\s*(.+)$/;
@@ -14,12 +15,13 @@ function parseKV(body) {
 }
 
 function indexReleasePlan({ index, markdown, rel }) {
+  if (!fs.existsSync(markdown.absolute(rel))) return { counts: {}, warnings: [] };
   const ast = markdown.readAst(rel);
   const warnings = [];
   const counts = { epics: 0, stories: 0, acs: 0 };
   index.transaction(() => {
     index.exec(
-      'DELETE FROM epics; DELETE FROM stories; DELETE FROM acs; DELETE FROM story_dependencies; DELETE FROM epic_dependencies;',
+      'DELETE FROM epic_dependencies; DELETE FROM story_dependencies; DELETE FROM acs; DELETE FROM planning_tasks; DELETE FROM stories; DELETE FROM epics;',
     );
     const insEpic = index.prepare(
       'INSERT INTO epics(id,title,status,release_target,source_file,source_line) VALUES(?,?,?,?,?,?)',
