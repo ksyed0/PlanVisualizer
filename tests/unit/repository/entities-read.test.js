@@ -47,4 +47,8 @@ describe('entity read APIs', () => {
     expect(acs.map((a) => a.id)).toEqual(['AC-0001']);
     expect(acs[0].checked).toBe(true);
   });
+  test('repo.stories.list accepts an array of statuses (IN clause)', () => {
+    expect(repo.stories.list({ status: ['Done', 'Planned'] }).length).toBe(1);
+    expect(repo.stories.list({ status: ['Planned', 'In Progress'] }).length).toBe(0);
+  });
 });

@@ -4,7 +4,7 @@ class BaseRepo {
     this.index = index;
     this.table = table;
     this.mapRow = mapRow;
-    this._root = root;
+    this._root = root; // reserved for future write APIs (Phase D/E) that locate the source markdown file
   }
   get(id) {
     const row = this.index.prepare(`SELECT * FROM ${this.table} WHERE id=?`).get(id);
