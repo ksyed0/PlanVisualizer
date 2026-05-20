@@ -3941,11 +3941,11 @@ Steps to Reproduce:
 2.  View any trend chart (Done, Coverage, AI Cost, Open Bugs)
     Expected: Smooth lines that reflect actual project change over time.
     Actual: Charts look spiky with flat segments followed by sudden jumps. Root cause is snapshot cadence: e.g. 12 snapshots on 2026-04-28 (clustered minutes apart), then an 8-day gap (2026-04-29 → 2026-05-07), then a 3-day gap with significant work (PR #989, PR #991). Charts plot snapshots at equal x-axis spacing so dense periods look flat and gaps render as jumps. AI Cost and Open Bugs charts also include backfill artefacts (e.g. open bugs jumping 118 → 11 in one snapshot when status filter logic changed).
-    Status: Open
-    GH Issue:
-    Fix Branch:
-    Notes: Possible fixes: (a) snapshot deduplication — collapse N snapshots within a 5-min window into one; (b) time-axis charts — use actual timestamps for x-axis rather than equal spacing; (c) post-hoc smoothing or sparse-aware rendering. Pick one or combine.
-    Lesson Encoded: No
+    Status: Fixed
+    GH Issue: #993
+    Fix Branch: bugfix/BUG-0254-0257-dashboard-ux-and-data-issues
+    Fix: `dedupeSnapshots()` added to `tools/lib/snapshot.js` collapses near-in-time snapshots within a 30-minute window (DEDUPE_WINDOW_MS). `generate-plan.js` calls it before `extractTrends()`. 150 raw snapshots reduced to 93 on this project (57 near-duplicates collapsed). BUGS.md status was stale — fix shipped in PR #993 (Session 42) but never marked here.
+    Lesson Encoded: Yes — see L-0056
 
 ---
 
