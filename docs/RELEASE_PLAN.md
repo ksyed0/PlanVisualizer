@@ -3776,7 +3776,7 @@ Phase B of Step 1. Per-file indexers populate the SQLite index from markdown; `g
 EPIC-0037: Step 1 Persistence — Indexer as Spectator (Phase B)
 Description: Build per-source indexers (release-plan, bugs, lessons, test-cases, id-registry, sdlc-status), wire them into generate-plan.js, implement cross-entity referential checks, and ship npm run plan:lint. Hard gate: a full session produces an index consistent with markdown, with warnings rate < 10/session on current production data.
 Release Target: v2.5.0
-Status: To Do
+Status: In Progress
 Dependencies: EPIC-0036
 ```
 
@@ -3830,13 +3830,13 @@ Acceptance Criteria:
 US-0229 (EPIC-0037): As a maintainer, I want npm run plan:lint to print tiered violations (errors / warnings / reports) and exit non-zero only on errors, so that data-quality regressions get caught in CI without blocking local development.
 Priority: Medium (P2)
 Estimate: S
-Status: To Do
+Status: Done
 Plan Task: B.4
 Dependencies: US-0228 (EPIC-0037)
 Acceptance Criteria:
 
-- [ ] AC-0902: tools/plan-lint.js outputs counts per tier and lists each violation with one-line summary
-- [ ] AC-0903: exit code is 1 only if errors-tier is non-empty; warnings/reports do not fail the build at Phase B
+- [x] AC-0902: tools/plan-lint.js outputs counts per tier and lists each violation with one-line summary
+- [x] AC-0903: exit code is 1 only if errors-tier is non-empty; warnings/reports do not fail the build at Phase B
 - [ ] AC-0904: Phase B hard gate verified — warnings on current production data < 10
 ```
 
