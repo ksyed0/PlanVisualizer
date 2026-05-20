@@ -3627,10 +3627,10 @@ Plan Task: A.4
 Dependencies: US-0217 (EPIC-0036)
 Acceptance Criteria:
 
-- [ ] AC-0864: serializer exports serializeAst, replaceBlock(ast, idx, newBody), insertBlock(ast, beforeIdx, body)
-- [ ] AC-0865: replaceBlock rewrites only the targeted fenced block; surrounding prose remains byte-identical
-- [ ] AC-0866: round-trip harness at tests/integration/repository/round-trip.test.js iterates over docs/RELEASE_PLAN.md, BUGS.md, LESSONS.md, TEST_CASES.md, ID_REGISTRY.md
-- [ ] AC-0867: every existing production file passes idempotent-on-second-pass round-trip (Phase A hard gate)
+- [x] AC-0864: serializer exports serializeAst, replaceBlock(ast, idx, newBody), insertBlock(ast, beforeIdx, body)
+- [x] AC-0865: replaceBlock rewrites only the targeted fenced block; surrounding prose remains byte-identical
+- [x] AC-0866: round-trip harness at tests/integration/repository/round-trip.test.js iterates over docs/RELEASE_PLAN.md, BUGS.md, LESSONS.md, TEST_CASES.md, ID_REGISTRY.md
+- [x] AC-0867: every existing production file passes idempotent-on-second-pass round-trip (Phase A hard gate)
 ```
 
 ```
