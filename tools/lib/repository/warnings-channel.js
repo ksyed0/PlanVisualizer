@@ -13,11 +13,18 @@ class WarningsChannel {
   }
   readAll() {
     if (!fs.existsSync(this.file)) return [];
-    return fs
-      .readFileSync(this.file, 'utf8')
-      .split('\n')
-      .filter(Boolean)
-      .map((l) => JSON.parse(l));
+    const out = [];
+    const lines = fs.readFileSync(this.file, 'utf8').split('\n');
+    for (let i = 0; i < lines.length; i++) {
+      const l = lines[i];
+      if (!l) continue;
+      try {
+        out.push(JSON.parse(l));
+      } catch (e) {
+        console.warn(`[warnings-channel] skipping malformed line ${i + 1}: ${e.message}`);
+      }
+    }
+    return out;
   }
 }
 module.exports = { WarningsChannel };

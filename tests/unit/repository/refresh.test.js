@@ -7,11 +7,28 @@ const { applySchemaMigrations } = require('../../../tools/lib/repository/schema'
 const { MarkdownDatastore } = require('../../../tools/lib/repository/markdown-datastore');
 const { refresh } = require('../../../tools/lib/repository/refresh');
 
+let index, root;
+
+afterEach(() => {
+  if (index) {
+    try {
+      index.close();
+    } catch {
+      /* ignore */
+    }
+    index = undefined;
+  }
+  if (root) {
+    fs.rmSync(root, { recursive: true, force: true });
+    root = undefined;
+  }
+});
+
 test('refresh detects changed files', () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'rf-'));
+  root = fs.mkdtempSync(path.join(os.tmpdir(), 'rf-'));
   fs.mkdirSync(path.join(root, 'docs'));
   fs.writeFileSync(path.join(root, 'docs', 'a.md'), 'x');
-  const index = openIndexDatastore({ path: path.join(root, '.cache', 'pv.db') });
+  index = openIndexDatastore({ path: path.join(root, '.cache', 'pv.db') });
   applySchemaMigrations(index);
   const markdown = new MarkdownDatastore({ root });
   let r = refresh({ datastores: { index, markdown }, sources: ['docs/a.md'] });
@@ -25,6 +42,4 @@ test('refresh detects changed files', () => {
   fs.utimesSync(path.join(root, 'docs', 'a.md'), Date.now() / 1000 + 5, Date.now() / 1000 + 5);
   r = refresh({ datastores: { index, markdown }, sources: ['docs/a.md'] });
   expect(r.sources).toEqual(['docs/a.md']);
-  index.close();
-  fs.rmSync(root, { recursive: true, force: true });
 });

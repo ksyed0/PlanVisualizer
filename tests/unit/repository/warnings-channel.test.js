@@ -13,3 +13,16 @@ test('append + readAll round-trip', () => {
   expect(rows.map((r) => r.code)).toEqual(['orphan-ac', 'id-registry-drift']);
   fs.rmSync(root, { recursive: true, force: true });
 });
+
+test('readAll skips malformed JSONL lines', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'wc-'));
+  const ch = new WarningsChannel({ root });
+  ch.append({ code: 'first-valid' });
+  fs.appendFileSync(ch.file, 'not valid json\n');
+  ch.append({ code: 'second-valid' });
+  const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+  const rows = ch.readAll();
+  warnSpy.mockRestore();
+  expect(rows.map((r) => r.code)).toEqual(['first-valid', 'second-valid']);
+  fs.rmSync(root, { recursive: true, force: true });
+});
