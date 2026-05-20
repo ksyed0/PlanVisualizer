@@ -3656,14 +3656,14 @@ Acceptance Criteria:
 US-0220 (EPIC-0036): As the indexer, I want SQLite schema migrations 001 + 002 with a meta_status('schema_version') gate, so that the schema evolves predictably across upgrades.
 Priority: High (P1)
 Estimate: M
-Status: Planned
+Status: Done
 Plan Task: A.6
 Dependencies: US-0219 (EPIC-0036)
 Acceptance Criteria:
 
-- [ ] AC-0872: migrations/001_initial_schema.sql creates epics, stories, acs, planning_tasks, bugs, lessons, test_cases, id_registry, sdlc_tasks, sdlc_events, sdlc_programme, cost_rows, coverage, meta_sources, meta_status, warnings
-- [ ] AC-0873: migrations/002_normalised_refs.sql creates story_dependencies, epic_dependencies, lesson_agents, bug_stories with proper FKs and ON DELETE CASCADE
-- [ ] AC-0874: applySchemaMigrations is idempotent — running twice does not fail and leaves schema_version unchanged
+- [x] AC-0872: migrations/001_initial_schema.sql creates epics, stories, acs, planning_tasks, bugs, lessons, test_cases, id_registry, sdlc_tasks, sdlc_events, sdlc_programme, cost_rows, coverage, meta_sources, meta_status, warnings
+- [x] AC-0873: migrations/002_normalised_refs.sql creates story_dependencies, epic_dependencies, lesson_agents, bug_stories with proper FKs and ON DELETE CASCADE
+- [x] AC-0874: applySchemaMigrations is idempotent — running twice does not fail and leaves schema_version unchanged
 ```
 
 ```
