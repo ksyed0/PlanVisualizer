@@ -3698,14 +3698,14 @@ Acceptance Criteria:
 US-0223 (EPIC-0036): As any caller, I want Repository.getInstance() as a singleton that auto-refreshes on first call and at every agent-dispatch start, so that cross-process freshness is guaranteed without manual orchestration.
 Priority: High (P1)
 Estimate: S
-Status: Planned
+Status: Done
 Plan Task: A.9
 Dependencies: US-0219 (EPIC-0036), US-0220 (EPIC-0036), US-0221 (EPIC-0036), US-0222 (EPIC-0036)
 Acceptance Criteria:
 
-- [ ] AC-0882: Repository.getInstance({root}) returns the same instance across calls; Repository._reset() releases for tests
-- [ ] AC-0883: getInstance auto-runs refresh() once at construction; subsequent dispatch-prelude calls reuse the cheap mtime+size pass
-- [ ] AC-0884: orchestrator/spawn.js (if present) calls Repository.getInstance().refresh() at the top of every dispatch
+- [x] AC-0882: Repository.getInstance({root}) returns the same instance across calls; Repository._reset() releases for tests
+- [x] AC-0883: getInstance auto-runs refresh() once at construction; subsequent dispatch-prelude calls reuse the cheap mtime+size pass
+- [x] AC-0884: orchestrator/spawn.js (if present) calls Repository.getInstance().refresh() at the top of every dispatch
 ```
 
 ```
