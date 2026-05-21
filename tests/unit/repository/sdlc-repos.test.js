@@ -147,6 +147,22 @@ describe('SDLC repos (US-0232)', () => {
     expect(new Set(j.log.map((r) => r.kind))).toEqual(new Set(['a', 'b', 'c', 'd', 'e']));
   });
 
+  // AC-1013 — writers throw, indexers warn.
+  // The `createTryInsert` helper (EPIC-0043) is reserved for indexer-side
+  // use; the SDLC writers must propagate SQLITE_CONSTRAINT_* errors as
+  // exceptions so callers can react. This is the canary test that asserts
+  // a forced NOT NULL constraint violation surfaces as a thrown error
+  // rather than being swallowed into a warnings channel.
+  test('SdlcEventRepo.record throws on a forced NOT NULL constraint violation (writers throw, indexers warn)', async () => {
+    await expect(
+      // `kind` is NOT NULL in sdlc_events; passing null forces a
+      // SQLITE_CONSTRAINT_NOTNULL violation at the writer.
+      repo.sdlcEvents.record({ ts: 1, kind: null, storyId: 'US-0001' }),
+    ).rejects.toThrow(/NOT ?NULL|constraint/i);
+    // No event was persisted (writer aborted before mirror.write()).
+    expect(repo.sdlcEvents.list().length).toBe(0);
+  });
+
   test('mirror is byte-identical to a fresh SQL→JSON render for the same SQL state', async () => {
     await repo.sdlcEvents.record({ ts: 1000, kind: 'agent-start', storyId: 'US-0001', agent: 'Forge' });
     await repo.sdlcTasks.upsert({

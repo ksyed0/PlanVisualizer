@@ -4290,6 +4290,7 @@ Acceptance Criteria:
 - [ ] AC-0913: sdlc-task-repo.js exposes upsert(task) with FIELD_MAP for camelCase ↔ snake_case, preserves unset fields on partial updates
 - [ ] AC-0914: sdlc-programme-repo.js exposes set/get/all with JSON value column
 - [ ] AC-0915: SdlcMirror.write() holds a file lock on docs/sdlc-status.json and re-queries SQL inside the lock; concurrent record() calls preserve all events
+- [x] AC-1013: Writers throw, indexers warn — the createTryInsert helper (shipped in EPIC-0043) is reserved for indexer-side use; all Phase D writers (SdlcEventRepo, SdlcTaskRepo, SdlcProgrammeRepo, Migration 005, and the D.3–D.6 lifecycle writers) propagate SQLITE*CONSTRAINT*\* errors as exceptions rather than swallowing them as warnings. Verified by a unit test in tests/unit/repository/sdlc-repos.test.js that asserts SdlcEventRepo.record() throws on a forced NOT NULL constraint violation.
 
 ```
 
