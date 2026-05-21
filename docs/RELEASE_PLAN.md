@@ -4298,14 +4298,14 @@ Acceptance Criteria:
 US-0233 (EPIC-0039): As an upgrading user, I want Migration 005 to ingest existing docs/sdlc-status.json into SQLite once, so that no in-flight lifecycle state is lost during the cutover.
 Priority: High (P1)
 Estimate: M
-Status: To Do
+Status: Done
 Plan Task: D.2
 Dependencies: US-0232 (EPIC-0039), US-0224 (EPIC-0036)
 Acceptance Criteria:
 
-- [ ] AC-0916: migrations/005-ingest-sdlc-status.js up({root}) reads docs/sdlc-status.json, upserts tasks, records events, sets programme entries
-- [ ] AC-0917: idempotent — second run hashes the source JSON and is a no-op when hash matches meta_status('migration_002_hash')
-- [ ] AC-0918: missing source file results in {skipped:'no-file'}, not an error
+- [x] AC-0916: migrations/005-ingest-sdlc-status.js up({root}) reads docs/sdlc-status.json, upserts tasks, records events, sets programme entries
+- [x] AC-0917: idempotent — second run hashes the source JSON and is a no-op when hash matches meta_status('migration_005_hash') (the post-ingest hash also covers the case where the file has been re-rendered to the canonical mirror format on disk)
+- [x] AC-0918: missing source file results in {skipped:'no-file'}, not an error
 
 ```
 
