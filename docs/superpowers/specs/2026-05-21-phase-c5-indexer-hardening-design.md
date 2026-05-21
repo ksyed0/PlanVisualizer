@@ -16,6 +16,20 @@ Close three silent-data-loss bugs the Phase C parity gate surfaced ([L-0075](../
 
 ---
 
+## 1a. Corrections after plan writing (added 2026-05-21)
+
+Writing the implementation plan surfaced three places where this spec's original §2/§3/§5 over-stated the scope. The infrastructure was already in place from Phase A/B/C. The plan reflects reality; this section reconciles the spec text:
+
+- **Transaction wrapping (originally listed under US-0253):** the current `release-plan-indexer.js` already wraps DELETE+INSERT in `index.transaction(() => {...})`. No new wrapping is needed. The plan reuses the existing transaction.
+- **FK validation (originally listed under US-0253):** the current indexer already builds an `epicIds` Set and emits `{code: 'dangling-dependency'}` warnings for orphan-epic story references. The code is already `dangling-dependency`, not the `FK_ORPHAN` the spec proposed. The plan reuses the existing FK check and existing warning code.
+- **`WarningsChannel.truncate()` (originally listed under US-0253):** unnecessary. `plan-lint.js` uses **in-band** warnings from the current `indexAll()` call (`indexResult.warnings`), not the persisted JSONL. Stale entries in the JSONL don't affect `plan:lint` output. The plan does not include a truncate.
+- **`rejectedRows` counter (originally listed under US-0254):** the plan uses the existing in-band `warnings` array and counts `check-rejected` entries from there. No separate counter field is added — the count is `warnings.filter(w => w.code === 'check-rejected').length` when needed.
+- **Warning shape:** the plan uses `{code: 'check-rejected', entityId, message}` (kebab-case lowercase, matching the existing `dangling-dependency` convention). The spec's earlier `'CHECK_REJECTED'` shorthand should be read as `'check-rejected'` wherever it appears below.
+
+Net effect on the work: **US-0253 is smaller than originally scoped.** The actual changes are (a) `INSERT OR IGNORE` → `INSERT` + `try/catch` (in US-0254), (b) AST extraction → `parseReleasePlan()` call, (c) `planning_tasks` INSERT (new), (d) extending `parseStoryBlock` to return `prNumber`/`specPath`/`planPath`. Everything else re-uses existing infrastructure.
+
+---
+
 ## 2. Approach summary
 
 **One PR, four logical commits:**
