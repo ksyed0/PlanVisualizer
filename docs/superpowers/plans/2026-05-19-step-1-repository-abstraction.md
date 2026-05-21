@@ -2855,6 +2855,1025 @@ git commit -m "feat(repo): dashboard reads epics/stories/acs via repository"
 
 ---
 
+## Phase C.5 — Indexer Hardening
+
+> **Design spec:** [`docs/superpowers/specs/2026-05-21-phase-c5-indexer-hardening-design.md`](../specs/2026-05-21-phase-c5-indexer-hardening-design.md). Bridges Phase C (First Read Consumer, shipped) and Phase D (SdlcStatus Cutover). Closes L-0075/L-0076/L-0077 by switching the release-plan indexer to `parseReleasePlan()` as the canonical extractor, widening the status CHECK to accept `Retired`, and routing silently-dropped CHECK violations through the existing warnings pipeline. Flips `PV_DASHBOARD_VIA_REPO` default to on (closes AC-0911).
+
+**Effort:** 1 working day. Single PR with 5 commits (4 code + 1 session-close).
+
+**Hard gate:** `tests/integration/dashboard-parity.test.js` passes with `PV_DASHBOARD_VIA_REPO` default-on; manual parity diff shows zero non-timestamp differences between flag-on (default) and explicit `=0` (legacy escape hatch). Run on production `docs/RELEASE_PLAN.md`.
+
+**State of the current indexer (verified 2026-05-21):** `tools/lib/repository/indexers/release-plan-indexer.js` already wraps DELETE+INSERT in `index.transaction(() => {})`, already implements FK validation via the `epicIds` Set, and already emits `dangling-dependency` warnings to the in-band `warnings` array (forwarded to `WarningsChannel` by the `indexAll` wrapper). Those pieces don't need to be added. What is missing: (a) `Retired` in the CHECK constraint; (b) `try/catch` around `INSERT OR IGNORE` (which currently swallows CHECK violations silently); (c) `INSERT INTO planning_tasks` (DELETE happens, INSERT never does); (d) prose-node entity coverage; (e) priority normalization at write time.
+
+### Task C5.1: Migration 003 — widen status CHECK to include `Retired` (US-0254 part 1)
+
+**Files:**
+
+- Create: `tools/lib/repository/migrations/003_widen_status_check.sql`
+- Create: `tests/unit/repository/migrations/003-widen-status-check.test.js`
+
+- [ ] **Step 1: Write the failing test**
+
+```js
+// tests/unit/repository/migrations/003-widen-status-check.test.js
+'use strict';
+const fs = require('fs');
+const path = require('path');
+const os = require('os');
+const { Repository } = require('../../../../tools/lib/repository');
+
+describe('Migration 003: widen status CHECK to include Retired', () => {
+  let root, repo;
+
+  beforeEach(() => {
+    root = fs.mkdtempSync(path.join(os.tmpdir(), 'mig003-'));
+    fs.mkdirSync(path.join(root, 'docs'));
+    fs.writeFileSync(path.join(root, 'docs', 'RELEASE_PLAN.md'), '');
+    Repository._reset();
+    repo = Repository.getInstance({ root });
+  });
+  afterEach(() => {
+    Repository._reset();
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+
+  test('epics.status accepts Retired post-migration', () => {
+    expect(() =>
+      repo.index
+        .prepare(
+          "INSERT INTO epics(id,title,status,release_target,source_file,source_line) VALUES('EPIC-9999','Retired Epic','Retired',NULL,'docs/RELEASE_PLAN.md',NULL)",
+        )
+        .run(),
+    ).not.toThrow();
+    expect(repo.index.prepare("SELECT status FROM epics WHERE id='EPIC-9999'").get().status).toBe('Retired');
+  });
+
+  test('stories.status accepts Retired post-migration', () => {
+    repo.index
+      .prepare(
+        "INSERT INTO epics(id,title,status,release_target,source_file,source_line) VALUES('EPIC-9998','Parent','Done',NULL,'docs/RELEASE_PLAN.md',NULL)",
+      )
+      .run();
+    expect(() =>
+      repo.index
+        .prepare(
+          "INSERT INTO stories(id,epic_id,title,status,priority,estimate,branch,pr_number,spec_path,plan_path,source_file,source_line) VALUES('US-9999','EPIC-9998','Retired Story','Retired',NULL,NULL,NULL,NULL,NULL,NULL,'docs/RELEASE_PLAN.md',NULL)",
+        )
+        .run(),
+    ).not.toThrow();
+  });
+
+  test('still rejects unknown status', () => {
+    expect(() =>
+      repo.index
+        .prepare(
+          "INSERT INTO epics(id,title,status,release_target,source_file,source_line) VALUES('EPIC-9997','Bad','Cancelled',NULL,'docs/RELEASE_PLAN.md',NULL)",
+        )
+        .run(),
+    ).toThrow(/CHECK constraint failed/);
+  });
+
+  test('migration is idempotent (re-running getInstance is a no-op)', () => {
+    Repository._reset();
+    const repo2 = Repository.getInstance({ root });
+    expect(repo2.index.prepare('SELECT COUNT(*) AS n FROM epics').get().n).toBe(0);
+  });
+});
+```
+
+- [ ] **Step 2: Run test to verify it fails**
+
+Run: `npx jest tests/unit/repository/migrations/003-widen-status-check.test.js 2>&1 | tail -15`
+Expected: FAIL on the first two tests with `SQLITE_CONSTRAINT_CHECK: CHECK constraint failed`.
+
+- [ ] **Step 3: Create the migration SQL**
+
+```sql
+-- tools/lib/repository/migrations/003_widen_status_check.sql
+-- Widens epics.status and stories.status CHECK constraints to allow 'Retired'.
+-- SQLite has no ALTER TABLE ... ALTER CHECK, so we rebuild the tables.
+-- See L-0076 and design spec docs/superpowers/specs/2026-05-21-phase-c5-indexer-hardening-design.md.
+
+PRAGMA foreign_keys = OFF;
+
+CREATE TABLE epics_new (
+  id TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  status TEXT NOT NULL CHECK (status IN ('To Do','Planned','In Progress','Blocked','Done','Retired')),
+  release_target TEXT,
+  source_file TEXT NOT NULL,
+  source_line INTEGER,
+  source_hash TEXT
+);
+INSERT INTO epics_new SELECT * FROM epics;
+DROP TABLE epics;
+ALTER TABLE epics_new RENAME TO epics;
+
+CREATE TABLE stories_new (
+  id TEXT PRIMARY KEY,
+  epic_id TEXT REFERENCES epics(id),
+  title TEXT NOT NULL,
+  status TEXT NOT NULL CHECK (status IN ('To Do','Planned','In Progress','Blocked','Done','Retired')),
+  priority TEXT,
+  estimate TEXT,
+  branch TEXT,
+  pr_number INTEGER,
+  spec_path TEXT,
+  plan_path TEXT,
+  source_file TEXT NOT NULL,
+  source_line INTEGER
+);
+INSERT INTO stories_new SELECT * FROM stories;
+DROP TABLE stories;
+ALTER TABLE stories_new RENAME TO stories;
+CREATE INDEX IF NOT EXISTS idx_stories_epic_status ON stories(epic_id, status);
+
+PRAGMA foreign_keys = ON;
+```
+
+- [ ] **Step 4: Run the test to verify it passes**
+
+Run: `npx jest tests/unit/repository/migrations/003-widen-status-check.test.js 2>&1 | tail -10`
+Expected: PASS — all 4 tests.
+
+- [ ] **Step 5: Run the full repository suite to confirm no regressions**
+
+Run: `npx jest tests/unit/repository/ 2>&1 | tail -5`
+Expected: PASS — all existing tests still green (37 + 4 = 41 tests).
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add tools/lib/repository/migrations/003_widen_status_check.sql tests/unit/repository/migrations/003-widen-status-check.test.js
+git commit -m "[feat] US-0254: Migration 003 — widen epics+stories status CHECK to include Retired"
+```
+
+---
+
+### Task C5.2: Indexer CHECK-rejection observability (US-0254 part 2)
+
+**Files:**
+
+- Modify: `tools/lib/repository/validation.js` (add `'check-rejected'` rule)
+- Modify: `tools/lib/repository/indexers/release-plan-indexer.js` (replace `INSERT OR IGNORE` with `INSERT` + `try/catch`)
+- Test: extend `tests/unit/repository/migrations/003-widen-status-check.test.js` with a new describe block
+
+- [ ] **Step 1: Write the failing test**
+
+Append to `tests/unit/repository/migrations/003-widen-status-check.test.js` (inside the existing file, new `describe` after the existing one):
+
+````js
+const { indexReleasePlan } = require('../../../../tools/lib/repository/indexers/release-plan-indexer');
+
+describe('release-plan-indexer surfaces CHECK rejections as warnings', () => {
+  let root, repo;
+  beforeEach(() => {
+    root = fs.mkdtempSync(path.join(os.tmpdir(), 'check-rej-'));
+    fs.mkdirSync(path.join(root, 'docs'));
+    Repository._reset();
+    repo = Repository.getInstance({ root });
+  });
+  afterEach(() => {
+    Repository._reset();
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+
+  test('story with non-canonical status produces check-rejected warning', () => {
+    const md =
+      '```\n' +
+      'EPIC-0001: Demo\n' +
+      'Status: Done\n' +
+      '```\n' +
+      '```\n' +
+      'US-0001 (EPIC-0001): A\n' +
+      'Status: Cancelled\n' +
+      '```\n';
+    fs.writeFileSync(path.join(root, 'docs', 'RELEASE_PLAN.md'), md);
+    const result = indexReleasePlan({
+      index: repo.index,
+      markdown: repo.markdown,
+      rel: 'docs/RELEASE_PLAN.md',
+    });
+    const rejected = result.warnings.filter((w) => w.code === 'check-rejected');
+    expect(rejected).toHaveLength(1);
+    expect(rejected[0].entityId).toBe('US-0001');
+    expect(rejected[0].message).toMatch(/CHECK constraint failed/);
+  });
+});
+````
+
+- [ ] **Step 2: Run the test to verify it fails**
+
+Run: `npx jest tests/unit/repository/migrations/003-widen-status-check.test.js -t "check-rejected" 2>&1 | tail -15`
+Expected: FAIL — current `INSERT OR IGNORE` swallows the CHECK violation; `rejected` array is empty.
+
+- [ ] **Step 3: Add the `check-rejected` rule to validation.js**
+
+In `tools/lib/repository/validation.js`, update the `RULES` constant by adding one line:
+
+```js
+const RULES = {
+  'duplicate-id': TIER.ERROR,
+  'invalid-status': TIER.ERROR,
+  'malformed-block': TIER.ERROR,
+  'orphan-ac': TIER.WARNING,
+  'dangling-dependency': TIER.WARNING,
+  'check-rejected': TIER.WARNING,
+  'id-registry-drift': TIER.WARNING,
+  'ac-gap': TIER.REPORT,
+  'done-without-pr': TIER.REPORT,
+  'stale-in-progress': TIER.REPORT,
+};
+```
+
+- [ ] **Step 4: Replace `INSERT OR IGNORE` with `INSERT` + `try/catch` in the indexer**
+
+In `tools/lib/repository/indexers/release-plan-indexer.js`, modify the prepared statements and INSERT loops. Replace lines 116–157 (the contents of the `index.transaction(() => {...})` callback) with:
+
+```js
+index.exec(
+  'DELETE FROM epic_dependencies; DELETE FROM story_dependencies; DELETE FROM acs; DELETE FROM planning_tasks; DELETE FROM stories; DELETE FROM epics;',
+);
+
+const insEpic = index.prepare(
+  'INSERT INTO epics(id,title,status,release_target,source_file,source_line) VALUES(?,?,?,?,?,?)',
+);
+const insStory = index.prepare(
+  'INSERT INTO stories(id,epic_id,title,status,priority,estimate,branch,pr_number,spec_path,plan_path,source_file,source_line) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',
+);
+const insAc = index.prepare('INSERT INTO acs(id,story_id,checked,text,position) VALUES(?,?,?,?,?)');
+
+const tryInsert = (fn, entityId) => {
+  try {
+    fn();
+    return true;
+  } catch (e) {
+    if (e.code === 'SQLITE_CONSTRAINT_CHECK') {
+      warnings.push({ code: 'check-rejected', entityId, message: e.message });
+      return false;
+    }
+    throw e;
+  }
+};
+
+for (const e of epics) {
+  if (tryInsert(() => insEpic.run(e.id, e.title, e.status, e.releaseTarget, e.sourceFile, e.sourceLine), e.id)) {
+    counts.epics++;
+  }
+}
+for (const s of stories) {
+  if (!epicIds.has(s.epicId)) {
+    warnings.push({
+      code: 'dangling-dependency',
+      entityId: s.id,
+      missing: s.epicId,
+      message: `Story ${s.id} references epic ${s.epicId} not found in ${rel}`,
+    });
+    continue;
+  }
+  const inserted = tryInsert(
+    () =>
+      insStory.run(
+        s.id,
+        s.epicId,
+        s.title,
+        s.status,
+        s.priority,
+        s.estimate,
+        s.branch,
+        s.prNumber,
+        s.specPath,
+        s.planPath,
+        s.sourceFile,
+        s.sourceLine,
+      ),
+    s.id,
+  );
+  if (!inserted) continue;
+  counts.stories++;
+  for (const a of s.acs) {
+    if (tryInsert(() => insAc.run(a.id, s.id, a.checked, a.text, a.position), a.id)) {
+      counts.acs++;
+    }
+  }
+}
+```
+
+The diff: drop `OR IGNORE` from all three prepared INSERTs; wrap each `.run(...)` call in `tryInsert(...)` which routes `SQLITE_CONSTRAINT_CHECK` to `warnings` and re-throws everything else.
+
+- [ ] **Step 5: Run the test to verify it passes**
+
+Run: `npx jest tests/unit/repository/migrations/003-widen-status-check.test.js 2>&1 | tail -10`
+Expected: PASS — 5 tests (4 from Task C5.1 + 1 new check-rejected test).
+
+- [ ] **Step 6: Run plan:lint and confirm CHECK rejections surface**
+
+Run: `npm run plan:lint 2>&1 | tail -10`
+Expected: `[plan:lint] errors: 0, warnings: 0, reports: 0` (production data has no rejected rows because Retired is now allowed). If any warnings line shows `check-rejected`, the production data has a bad status value — investigate.
+
+- [ ] **Step 7: Run full test suite to confirm no regressions**
+
+Run: `npx jest 2>&1 | tail -10`
+Expected: Tests pass count matches develop's baseline + 5 new (file-lock test may flake; ignore if isolated re-run passes).
+
+- [ ] **Step 8: Commit**
+
+```bash
+git add tools/lib/repository/validation.js tools/lib/repository/indexers/release-plan-indexer.js tests/unit/repository/migrations/003-widen-status-check.test.js
+git commit -m "[feat] US-0254: surface CHECK rejections as check-rejected warnings"
+```
+
+---
+
+### Task C5.3: Indexer rewrite via `parseReleasePlan()` (US-0253)
+
+**Files:**
+
+- Modify: `tools/lib/parse-release-plan.js` (extend `parseStoryBlock` to return prNumber/specPath/planPath; add top-of-file comment)
+- Modify: `tools/lib/repository/indexers/release-plan-indexer.js` (replace AST extraction + `splitEntitySections` with a `parseReleasePlan()` call; add `planning_tasks` INSERT)
+- Create: `tests/unit/repository/indexers/release-plan-indexer-rewrite.test.js`
+
+- [ ] **Step 1: Extend parseStoryBlock with prNumber/specPath/planPath**
+
+In `tools/lib/parse-release-plan.js`, modify the `parseStoryBlock` function's `return` statement (around line 93) to add three new fields. Replace:
+
+```js
+return {
+  id: header[1],
+  epicId: header[2],
+  title: header[3].trim(),
+  priority: priority,
+  estimate: get('Estimate'),
+  status: get('Status'),
+  branch: get('Branch'),
+  acs: parseACs(text),
+  dependencies: parseDeps(get('Dependencies')),
+};
+```
+
+with:
+
+```js
+const prRaw = get('PR');
+const prMatch = prRaw.match(/#(\d+)/);
+return {
+  id: header[1],
+  epicId: header[2],
+  title: header[3].trim(),
+  priority: priority,
+  estimate: get('Estimate'),
+  status: get('Status'),
+  branch: get('Branch'),
+  prNumber: prMatch ? parseInt(prMatch[1], 10) : null,
+  specPath: get('Spec') || null,
+  planPath: get('Plan') || null,
+  acs: parseACs(text),
+  dependencies: parseDeps(get('Dependencies')),
+};
+```
+
+- [ ] **Step 2: Add top-of-file comment to parse-release-plan.js**
+
+Replace the first line of `tools/lib/parse-release-plan.js` (currently `'use strict';`) with:
+
+```js
+'use strict';
+// Used by both the dashboard read path (tools/generate-plan.js) AND the
+// SQLite indexer (tools/lib/repository/indexers/release-plan-indexer.js).
+// Survives Phase E — rename and relocate to
+// tools/lib/repository/parsers/release-plan-parser.js then, but do not delete.
+```
+
+- [ ] **Step 3: Run existing parse-release-plan tests to confirm no regressions**
+
+Run: `npx jest tests/unit/parse-release-plan.test.js 2>&1 | tail -10`
+Expected: PASS. The new fields are additive — existing assertions don't reference them, so they keep passing.
+
+- [ ] **Step 4: Write the failing test (prose-node coverage + planning_tasks)**
+
+```js
+// tests/unit/repository/indexers/release-plan-indexer-rewrite.test.js
+'use strict';
+const fs = require('fs');
+const path = require('path');
+const os = require('os');
+const { Repository } = require('../../../../tools/lib/repository');
+const { indexReleasePlan } = require('../../../../tools/lib/repository/indexers/release-plan-indexer');
+
+const FIXTURE_FENCED_ONLY = `
+\`\`\`
+EPIC-0001: Fenced Epic
+Status: Done
+\`\`\`
+\`\`\`
+US-0001 (EPIC-0001): Fenced Story
+Status: Done
+Acceptance Criteria:
+
+- [x] AC-0001: one
+\`\`\`
+`;
+
+const FIXTURE_MIXED = `
+\`\`\`
+EPIC-0001: Fenced Epic
+Status: Done
+\`\`\`
+
+EPIC-0002: Prose Epic
+Status: In Progress
+
+\`\`\`
+US-0001 (EPIC-0001): Fenced Story
+Status: Done
+Acceptance Criteria:
+
+- [x] AC-0001: one
+\`\`\`
+
+US-0002 (EPIC-0002): Prose Story
+Status: To Do
+Acceptance Criteria:
+
+- [ ] AC-0002: two
+`;
+
+const FIXTURE_WITH_TASK = `
+\`\`\`
+EPIC-0001: E
+Status: Done
+\`\`\`
+\`\`\`
+US-0001 (EPIC-0001): S
+Status: Done
+\`\`\`
+\`\`\`
+TASK-0001 (US-0001): T
+Type: Implementation
+Status: Done
+\`\`\`
+`;
+
+function setup(fixture) {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'rpi-rewrite-'));
+  fs.mkdirSync(path.join(root, 'docs'));
+  fs.writeFileSync(path.join(root, 'docs', 'RELEASE_PLAN.md'), fixture);
+  Repository._reset();
+  const repo = Repository.getInstance({ root });
+  return { root, repo };
+}
+
+describe('release-plan-indexer rewrite — parseReleasePlan as canonical extractor', () => {
+  let root, repo;
+
+  afterEach(() => {
+    Repository._reset();
+    if (root) fs.rmSync(root, { recursive: true, force: true });
+  });
+
+  test('indexes fenced entities (regression guard)', () => {
+    ({ root, repo } = setup(FIXTURE_FENCED_ONLY));
+    indexReleasePlan({ index: repo.index, markdown: repo.markdown, rel: 'docs/RELEASE_PLAN.md' });
+    expect(
+      repo.index
+        .prepare('SELECT id FROM epics ORDER BY id')
+        .all()
+        .map((r) => r.id),
+    ).toEqual(['EPIC-0001']);
+    expect(
+      repo.index
+        .prepare('SELECT id FROM stories ORDER BY id')
+        .all()
+        .map((r) => r.id),
+    ).toEqual(['US-0001']);
+    expect(
+      repo.index
+        .prepare('SELECT id FROM acs ORDER BY id')
+        .all()
+        .map((r) => r.id),
+    ).toEqual(['AC-0001']);
+  });
+
+  test('indexes prose-node entities (closes L-0075)', () => {
+    ({ root, repo } = setup(FIXTURE_MIXED));
+    indexReleasePlan({ index: repo.index, markdown: repo.markdown, rel: 'docs/RELEASE_PLAN.md' });
+    const epicIds = repo.index
+      .prepare('SELECT id FROM epics ORDER BY id')
+      .all()
+      .map((r) => r.id);
+    const storyIds = repo.index
+      .prepare('SELECT id FROM stories ORDER BY id')
+      .all()
+      .map((r) => r.id);
+    expect(epicIds).toEqual(['EPIC-0001', 'EPIC-0002']);
+    expect(storyIds).toEqual(['US-0001', 'US-0002']);
+  });
+
+  test('populates planning_tasks (closes incidental empty-table bug)', () => {
+    ({ root, repo } = setup(FIXTURE_WITH_TASK));
+    indexReleasePlan({ index: repo.index, markdown: repo.markdown, rel: 'docs/RELEASE_PLAN.md' });
+    const taskIds = repo.index
+      .prepare('SELECT id FROM planning_tasks ORDER BY id')
+      .all()
+      .map((r) => r.id);
+    expect(taskIds).toEqual(['TASK-0001']);
+  });
+});
+```
+
+- [ ] **Step 5: Run the test to verify it fails**
+
+Run: `npx jest tests/unit/repository/indexers/release-plan-indexer-rewrite.test.js 2>&1 | tail -15`
+Expected: FAIL on the "prose-node entities" test (current AST-based indexer treats prose nodes as comments) AND on "planning_tasks" (current indexer DELETEs but never INSERTs).
+
+- [ ] **Step 6: Rewrite release-plan-indexer.js**
+
+Replace the entire contents of `tools/lib/repository/indexers/release-plan-indexer.js` with:
+
+```js
+'use strict';
+const fs = require('fs');
+const { parseReleasePlan } = require('../../parse-release-plan');
+
+/**
+ * Index docs/RELEASE_PLAN.md into SQLite using parseReleasePlan() as the
+ * canonical entity extractor. Phase C.5 (EPIC-0042): the previous AST-based
+ * implementation missed entities in prose nodes (L-0075) and silently dropped
+ * rows on CHECK violations (L-0076). This rewrite delegates parsing to the
+ * same regex-based extractor the dashboard read path uses, then INSERTs each
+ * entity with try/catch routing CHECK violations to the warnings channel.
+ */
+function indexReleasePlan({ index, markdown, rel }) {
+  const abs = markdown.absolute(rel);
+  if (!fs.existsSync(abs)) return { counts: {}, warnings: [] };
+  const raw = fs.readFileSync(abs, 'utf8');
+  const { epics, stories, tasks } = parseReleasePlan(raw);
+  const warnings = [];
+  const counts = { epics: 0, stories: 0, acs: 0, tasks: 0 };
+  const epicIds = new Set(epics.map((e) => e.id));
+  const storyIds = new Set(stories.map((s) => s.id));
+
+  index.transaction(() => {
+    index.exec(
+      'DELETE FROM epic_dependencies; DELETE FROM story_dependencies; DELETE FROM acs; DELETE FROM planning_tasks; DELETE FROM stories; DELETE FROM epics;',
+    );
+
+    const insEpic = index.prepare(
+      'INSERT INTO epics(id,title,status,release_target,source_file,source_line) VALUES(?,?,?,?,?,?)',
+    );
+    const insStory = index.prepare(
+      'INSERT INTO stories(id,epic_id,title,status,priority,estimate,branch,pr_number,spec_path,plan_path,source_file,source_line) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',
+    );
+    const insAc = index.prepare('INSERT INTO acs(id,story_id,checked,text,position) VALUES(?,?,?,?,?)');
+    const insTask = index.prepare('INSERT INTO planning_tasks(id,story_id,status) VALUES(?,?,?)');
+
+    const tryInsert = (fn, entityId) => {
+      try {
+        fn();
+        return true;
+      } catch (e) {
+        if (e.code === 'SQLITE_CONSTRAINT_CHECK') {
+          warnings.push({ code: 'check-rejected', entityId, message: e.message });
+          return false;
+        }
+        throw e;
+      }
+    };
+
+    for (const e of epics) {
+      if (tryInsert(() => insEpic.run(e.id, e.title, e.status || 'To Do', e.releaseTarget || null, rel, null), e.id)) {
+        counts.epics++;
+      }
+    }
+    for (const s of stories) {
+      if (!epicIds.has(s.epicId)) {
+        warnings.push({
+          code: 'dangling-dependency',
+          entityId: s.id,
+          missing: s.epicId,
+          message: `Story ${s.id} references epic ${s.epicId} not found in ${rel}`,
+        });
+        continue;
+      }
+      const inserted = tryInsert(
+        () =>
+          insStory.run(
+            s.id,
+            s.epicId,
+            s.title,
+            s.status || 'To Do',
+            s.priority || null,
+            s.estimate || null,
+            s.branch || null,
+            s.prNumber,
+            s.specPath,
+            s.planPath,
+            rel,
+            null,
+          ),
+        s.id,
+      );
+      if (!inserted) continue;
+      counts.stories++;
+      let acPos = 0;
+      for (const a of s.acs) {
+        if (tryInsert(() => insAc.run(a.id, s.id, a.done ? 1 : 0, a.text, acPos), a.id)) {
+          counts.acs++;
+          acPos++;
+        }
+      }
+    }
+    for (const t of tasks) {
+      if (!storyIds.has(t.storyId)) {
+        warnings.push({
+          code: 'dangling-dependency',
+          entityId: t.id,
+          missing: t.storyId,
+          message: `Task ${t.id} references story ${t.storyId} not found in ${rel}`,
+        });
+        continue;
+      }
+      if (tryInsert(() => insTask.run(t.id, t.storyId, t.status || null), t.id)) {
+        counts.tasks++;
+      }
+    }
+  });
+  return { counts, warnings };
+}
+
+module.exports = { indexReleasePlan };
+```
+
+The diff vs the previous version: drops `splitEntitySections`, `parseKV`, the AST walk, and all the regex constants. Body becomes a `parseReleasePlan(raw)` call followed by the existing INSERT logic adapted to parseReleasePlan's return shape. `acs[].done` (parseReleasePlan shape) → `checked` integer (DB shape). Task loop added.
+
+- [ ] **Step 7: Run the rewrite test to verify it passes**
+
+Run: `npx jest tests/unit/repository/indexers/release-plan-indexer-rewrite.test.js 2>&1 | tail -10`
+Expected: PASS — 3 tests.
+
+- [ ] **Step 8: Run the Phase C entity-read tests to confirm no breakage**
+
+Run: `npx jest tests/unit/repository/entities-read.test.js 2>&1 | tail -10`
+Expected: PASS — 4 tests (entities-read tests use indexAll, which calls the rewritten indexReleasePlan transitively via Repository fixtures).
+
+- [ ] **Step 9: Run the integration parity test**
+
+Run: `npx jest tests/integration/dashboard-parity.test.js 2>&1 | tail -10`
+Expected: PASS — the parity gate still holds. The shim's `mergeRepoData` keeps legacy as canonical for any fields the repo doesn't supply, so any post-rewrite drift on prNumber/specPath/planPath is invisible in the snapshot.
+
+- [ ] **Step 10: Manual parity diff on production data**
+
+```bash
+node tools/generate-plan.js > /dev/null && \
+  cp docs/plan-status.html /tmp/legacy.html && \
+  PV_DASHBOARD_VIA_REPO=1 node tools/generate-plan.js > /dev/null && \
+  diff /tmp/legacy.html docs/plan-status.html | grep -v "T2[0-3]:\|2026-\|gen-time\|data-iso\|dismissBudget" | wc -l
+```
+
+Expected: `0` (all diff lines reduce to timestamps). If non-zero, inspect the offending lines before continuing.
+
+- [ ] **Step 11: Run full suite**
+
+Run: `npx jest 2>&1 | tail -5`
+Expected: Tests pass count matches develop's baseline + tests added in C5.1, C5.2, and C5.3.
+
+- [ ] **Step 12: Commit**
+
+```bash
+git add tools/lib/parse-release-plan.js tools/lib/repository/indexers/release-plan-indexer.js tests/unit/repository/indexers/release-plan-indexer-rewrite.test.js
+git commit -m "[feat] US-0253: indexer rewrite via parseReleasePlan() + planning_tasks populate"
+```
+
+---
+
+### Task C5.4: Priority normalization closure + shim cleanup (US-0255)
+
+**Files:**
+
+- Modify: `tests/unit/repository/entities-read.test.js` (add priority normalization assertion)
+- Modify: `tools/lib/dashboard-repo-reader.js` (update the priority comment + add priority to story overlay)
+- Modify: `tests/integration/dashboard-parity.test.js` (update priority-related comments and assertions)
+
+- [ ] **Step 1: Write the failing test for priority normalization via the read API**
+
+In `tests/unit/repository/entities-read.test.js`, find the existing `SAMPLE` constant near the top of the file. Replace it with:
+
+```js
+const SAMPLE = `\`\`\`
+EPIC-0001: Demo
+Status: Done
+\`\`\`
+\`\`\`
+US-0001 (EPIC-0001): A
+Status: Done
+Priority: High (P0)
+Acceptance Criteria:
+
+- [x] AC-0001: one
+\`\`\`
+`;
+```
+
+Then append a new test at the end of the existing `describe` block (after the array-statuses test):
+
+```js
+test('repo.stories.get returns normalized priority (US-0255)', () => {
+  expect(repo.stories.get('US-0001').priority).toBe('P0');
+});
+```
+
+- [ ] **Step 2: Run the test to verify it passes**
+
+Run: `npx jest tests/unit/repository/entities-read.test.js 2>&1 | tail -10`
+Expected: PASS. The indexer (rewritten in C5.3) now calls parseReleasePlan, which normalizes `"High (P0)"` → `"P0"` before INSERT. The repo's read API returns the stored normalized value. If this fails, C5.3's rewrite didn't land correctly — investigate before continuing.
+
+- [ ] **Step 3: Update the shim — overlay priority from repo**
+
+In `tools/lib/dashboard-repo-reader.js`, find the `mergedStories` mapper (the comment block "Don't overlay `priority`..." around line 56). Replace those two comment lines AND the merged-object literal (lines 56–65) with:
+
+```js
+// Both legacy and repo paths normalise priority at extraction time
+// (parseReleasePlan handles "High (P0)" → "P0"). Overlaying from repo is
+// safe and keeps the structural-fields-from-repo invariant consistent.
+const merged = {
+  ...ls,
+  title: rs.title ?? ls.title,
+  epicId: rs.epicId ?? ls.epicId,
+  status: rs.status ?? ls.status,
+  priority: rs.priority || ls.priority,
+  estimate: rs.estimate || ls.estimate,
+  branch: rs.branch || ls.branch,
+};
+```
+
+- [ ] **Step 4: Update parity test — drop the semantic-gap assertion**
+
+In `tests/integration/dashboard-parity.test.js`, find the line that reads:
+
+```js
+expect(s.priority).toBe(l.priority); // legacy normalises ("P0"), repo doesn't — must come from legacy
+```
+
+Replace the trailing comment so the line reads:
+
+```js
+expect(s.priority).toBe(l.priority); // both paths normalise (post-US-0255)
+```
+
+Then find the second priority assertion further down (the mock-merge test):
+
+```js
+expect(s.priority).toBe('P1'); // legacy preserved (semantic gap)
+```
+
+Replace its trailing comment:
+
+```js
+expect(s.priority).toBe('P1'); // both paths produce 'P1' post-US-0255 — no gap
+```
+
+- [ ] **Step 5: Run the integration parity test**
+
+Run: `npx jest tests/integration/dashboard-parity.test.js 2>&1 | tail -10`
+Expected: PASS — the existing 4 parity tests still pass with the updated comments and shim overlay.
+
+- [ ] **Step 6: Run the full suite**
+
+Run: `npx jest 2>&1 | tail -5`
+Expected: Total pass count matches develop's baseline + new tests from C5.1, C5.2, C5.3, plus the 1 new entity-read priority test.
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add tests/unit/repository/entities-read.test.js tools/lib/dashboard-repo-reader.js tests/integration/dashboard-parity.test.js
+git commit -m "[refactor] US-0255: priority normalised at write time; shim overlays from repo"
+```
+
+---
+
+### Task C5.5: PV_DASHBOARD_VIA_REPO default flip (AC-0911)
+
+**Files:**
+
+- Modify: `tools/generate-plan.js` (two lines)
+- Modify: `docs/memory/sessions/2026-05-20-session-53-phase-c-complete.md` (postscript)
+
+- [ ] **Step 1: Capture the legacy baseline (manual parity diff prep)**
+
+```bash
+PV_DASHBOARD_VIA_REPO=0 node tools/generate-plan.js > /dev/null
+cp docs/plan-status.html /tmp/legacy.html
+cp docs/plan-status.json /tmp/legacy.json
+```
+
+- [ ] **Step 2: Flip the flag default in generate-plan.js**
+
+In `tools/generate-plan.js`, find the dashboard-repo branch — the line that currently reads:
+
+```js
+if (process.env.PV_DASHBOARD_VIA_REPO === '1') {
+```
+
+Replace with:
+
+```js
+if (process.env.PV_DASHBOARD_VIA_REPO !== '0') {
+```
+
+Then find the post-render indexer gate (added in Phase C.2 to avoid double-indexing) — the line that currently reads:
+
+```js
+  if (process.env.PV_DASHBOARD_VIA_REPO !== '1') {
+```
+
+Replace with:
+
+```js
+  if (process.env.PV_DASHBOARD_VIA_REPO === '0') {
+```
+
+- [ ] **Step 3: Run with default-on, capture, compare to legacy baseline**
+
+```bash
+node tools/generate-plan.js > /dev/null
+diff /tmp/legacy.html docs/plan-status.html | grep -v "T2[0-3]:\|2026-\|gen-time\|data-iso\|dismissBudget" | head -20
+diff /tmp/legacy.json docs/plan-status.json | grep -v "generatedAt\|2026-" | head -20
+```
+
+Expected: both empty (zero non-timestamp lines). If anything else surfaces, revert the flag flip and investigate before re-attempting.
+
+- [ ] **Step 4: Run the integration parity test once more**
+
+Run: `npx jest tests/integration/dashboard-parity.test.js 2>&1 | tail -5`
+Expected: PASS — confirms test fixture parity at the unit level.
+
+- [ ] **Step 5: Add the postscript to the Phase C session memory file**
+
+In `docs/memory/sessions/2026-05-20-session-53-phase-c-complete.md`, append at the end of the file (after the final line):
+
+```markdown
+---
+
+## Update — 2026-05-21 (Session 54, Phase C.5)
+
+AC-0911 closed as part of Phase C.5 (EPIC-0042). `PV_DASHBOARD_VIA_REPO` default flipped to **on**. `PV_DASHBOARD_VIA_REPO=0` remains as the legacy escape hatch.
+
+Parity verified against `docs/RELEASE_PLAN.md` on production data: zero non-timestamp differences between default (repo) and `=0` (legacy) paths. See [Session 54 memory](2026-05-21-session-54-phase-c5-complete.md) for full session detail.
+```
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add tools/generate-plan.js docs/memory/sessions/2026-05-20-session-53-phase-c-complete.md
+git commit -m "[feat] AC-0911: flip PV_DASHBOARD_VIA_REPO default to on"
+```
+
+---
+
+### Task C5.6: Session close
+
+**Files:**
+
+- Modify: `docs/RELEASE_PLAN.md` (tick ACs, mark stories Done, mark EPIC-0042 Done)
+- Modify: `docs/LESSONS.md` (update L-0075/L-0076/L-0077 "Rule" or "Prevention" sections)
+- Create: `docs/memory/sessions/2026-05-21-session-54-phase-c5-complete.md`
+- Modify: `MEMORY.md` (prepend Session 54 link)
+- Modify: `PROMPT_LOG.md` (append Session 54 block)
+- Modify: `progress.md` (append Session 54 section)
+- Modify: `docs/AI_COST_LOG.md` if locally accumulated rows are present
+- Modify: `docs/ID_REGISTRY.md` if any new IDs were assigned during the session (none expected — all stories/ACs were registered in PR #1076 / PR #1080)
+
+- [ ] **Step 1: Tick ACs and flip statuses in RELEASE_PLAN.md**
+
+In `docs/RELEASE_PLAN.md`, find EPIC-0042 and its three stories. Update:
+
+- EPIC-0042 fenced block: `Status: To Do` → `Status: Done`
+- US-0253 fenced block: `Status: To Do` → `Status: Done`
+- US-0254 fenced block: `Status: To Do` → `Status: Done`
+- US-0255 fenced block: `Status: To Do` → `Status: Done`
+- All ACs under US-0253, US-0254, US-0255 (AC-0980 through AC-0988): `- [ ]` → `- [x]`
+- AC-0911 (under US-0231 in EPIC-0038): `- [ ]` → `- [x]`; remove the "(deferred to Phase C.5)" suffix from the text
+
+- [ ] **Step 2: Update LESSONS.md prevention/rule sections**
+
+In `docs/LESSONS.md`, for each of L-0075, L-0076, L-0077, append a short postscript paragraph to their **Prevention** section (the existing text stays):
+
+For **L-0075** add:
+
+```
+**Resolution (2026-05-21, Phase C.5):** The release-plan indexer now delegates to `parseReleasePlan()`, which is permissive about fenced vs prose nodes. The dual-extraction divergence that motivated this lesson no longer exists. Future indexers should follow the same pattern — use the canonical regex parser as the source of truth, don't reimplement AST extraction.
+```
+
+For **L-0076** add:
+
+```
+**Resolution (2026-05-21, Phase C.5):** `INSERT OR IGNORE` replaced with explicit `INSERT` wrapped in `try/catch`; `SQLITE_CONSTRAINT_CHECK` violations route to the warnings channel as `code: 'check-rejected'`. Migration 003 widened the epics+stories status CHECK to include `Retired`. The bugs.status CHECK still has the same class of divergence with BUGS.md convention — captured as ENH-0003.
+```
+
+For **L-0077** add:
+
+```
+**Resolution (2026-05-21, Phase C.5):** Priority is now normalized at write time inside the indexer (via parseReleasePlan), eliminating the shape divergence. The `dashboard-repo-reader.js` shim's "don't overlay priority" workaround is gone; priority now overlays cleanly like other structural fields.
+```
+
+- [ ] **Step 3: Create the Session 54 memory file**
+
+Create `docs/memory/sessions/2026-05-21-session-54-phase-c5-complete.md` modelled on `docs/memory/sessions/2026-05-20-session-53-phase-c-complete.md`. Sections:
+
+- **Summary** — 2-3 sentences: EPIC-0042 Phase C.5 shipped; indexer now uses parseReleasePlan as canonical extractor; AC-0911 closed.
+- **What shipped** — table of commits (5: C5.1, C5.2, C5.3, C5.4, C5.5) with SHAs and files touched.
+- **Hard gate** — parity diff: zero non-timestamp differences on production data.
+- **Tests** — counts before/after.
+- **Lessons updated** — L-0075/L-0076/L-0077 "Resolution" postscripts.
+- **Deferred** — ENH-0003 (bugs/lessons CHECK divergence).
+- **Next session** — Phase D start (EPIC-0039) — see plan section in `2026-05-19-step-1-repository-abstraction.md` starting at task D.1.
+
+- [ ] **Step 4: Prepend the Session 54 link to MEMORY.md**
+
+In `MEMORY.md`, find the `## Sessions` list and prepend:
+
+```
+- ◐ [Session 54 — Phase C.5 Indexer Hardening (EPIC-0042 Done, AC-0911 closed)](docs/memory/sessions/2026-05-21-session-54-phase-c5-complete.md) · 2026-05-21
+```
+
+- [ ] **Step 5: Append the Session 54 block to PROMPT_LOG.md**
+
+Append a new Session 54 block to `PROMPT_LOG.md` with the user's prompts from this session in chronological order. Use the same format as the existing Session 53 entries.
+
+- [ ] **Step 6: Append the Session 54 entry to progress.md**
+
+Append a new Session 54 section to `progress.md`. Cover: what was done (C5.1–C5.5), parity gate result, test counts, blockers (none expected), PR URL.
+
+- [ ] **Step 7: Sync AI_COST_LOG.md if needed**
+
+```bash
+git status docs/AI_COST_LOG.md
+```
+
+If untracked changes exist: `git add docs/AI_COST_LOG.md` and include in this commit. If clean: skip.
+
+- [ ] **Step 8: Run plan:lint one final time**
+
+Run: `npm run plan:lint 2>&1 | tail -3`
+Expected: `[plan:lint] errors: 0, warnings: 0, reports: 0`. If warnings surface, investigate (most likely a typo in a status field on RELEASE_PLAN.md).
+
+- [ ] **Step 9: Commit**
+
+```bash
+git add docs/RELEASE_PLAN.md docs/LESSONS.md docs/memory/sessions/2026-05-21-session-54-phase-c5-complete.md MEMORY.md PROMPT_LOG.md progress.md docs/AI_COST_LOG.md 2>/dev/null
+git commit -m "docs: Session 54 close — Phase C.5 complete (EPIC-0042), AC-0911 closed"
+```
+
+- [ ] **Step 10: Push and open the PR**
+
+```bash
+git push -u origin <branch-name>
+gh pr create --base develop --title "feat: Phase C.5 Indexer Hardening (EPIC-0042) + AC-0911 flag flip" --body "$(cat <<'EOF'
+## Summary
+
+Closes EPIC-0042 (Phase C.5 — Indexer Hardening). Three lessons from Phase C addressed:
+
+- **L-0075** (prose-node gap) — release-plan-indexer rewritten as a `parseReleasePlan()` shim; prose entities now land in SQLite
+- **L-0076** (silent CHECK rejections) — `INSERT OR IGNORE` replaced with `INSERT` + `try/catch`; rejections route to warnings as `check-rejected`; Migration 003 adds `Retired` to the CHECK
+- **L-0077** (priority shape divergence) — priority now normalized at write time; dashboard-repo-reader shim overlays it cleanly
+
+Also: **AC-0911** closed (`PV_DASHBOARD_VIA_REPO` default flipped to on); incidental fix to populate the `planning_tasks` table (empty since Phase B).
+
+Design spec: \`docs/superpowers/specs/2026-05-21-phase-c5-indexer-hardening-design.md\`
+Implementation plan: \`docs/superpowers/plans/2026-05-19-step-1-repository-abstraction.md\` (Phase C.5 section)
+
+## Commits
+
+- C5.1: Migration 003 — widen epics+stories status CHECK to include Retired
+- C5.2: surface CHECK rejections as check-rejected warnings
+- C5.3: indexer rewrite via parseReleasePlan() + planning_tasks populate
+- C5.4: priority normalised at write time; shim overlays from repo
+- C5.5: flip PV_DASHBOARD_VIA_REPO default to on
+- C5.6: session 54 close docs
+
+## Hard gate
+
+Manual parity diff on production \`docs/RELEASE_PLAN.md\`: zero non-timestamp differences between default (repo) and \`PV_DASHBOARD_VIA_REPO=0\` (legacy escape hatch). \`tests/integration/dashboard-parity.test.js\` passes.
+
+## Out of scope
+
+- Other 5 indexers (no surfaced bugs)
+- \`parse-release-plan.js\` rename (Phase E)
+- bugs.status CHECK divergence (→ ENH-0003)
+
+## Test plan
+
+- [x] \`npm run plan:lint\` clean
+- [x] Manual parity diff zero non-timestamp lines
+- [ ] CI green
+EOF
+)"
+```
+
+Watch CI; fix any failures; merge when green.
+
+---
+
 ## Phase D — SdlcStatus Cutover (SQLite-Authoritative)
 
 > **Prerequisite added 2026-05-21:** Phase D now depends on **EPIC-0042 (Phase C.5 — Indexer Hardening)**. The Phase C parity gate surfaced three silent-data-loss bugs in the release-plan indexer (L-0075 prose-node gap, L-0076 silent CHECK rejections of `Retired` status, L-0077 priority shape divergence). C.5 closes them so D.1 starts against a complete, normalized SQLite baseline rather than a partial index whose gaps are masked by the Phase C shim's legacy fallback. **Do not begin D.1 until EPIC-0042 has merged into develop.** Design spec: [`docs/superpowers/specs/2026-05-21-phase-c5-indexer-hardening-design.md`](../specs/2026-05-21-phase-c5-indexer-hardening-design.md).
