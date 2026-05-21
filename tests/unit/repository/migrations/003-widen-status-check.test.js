@@ -61,3 +61,41 @@ describe('Migration 003: widen status CHECK to include Retired', () => {
     expect(repo2.index.prepare('SELECT COUNT(*) AS n FROM epics').get().n).toBe(0);
   });
 });
+
+const { indexReleasePlan } = require('../../../../tools/lib/repository/indexers/release-plan-indexer');
+
+describe('release-plan-indexer surfaces CHECK rejections as warnings', () => {
+  let root, repo;
+  beforeEach(() => {
+    root = fs.mkdtempSync(path.join(os.tmpdir(), 'check-rej-'));
+    fs.mkdirSync(path.join(root, 'docs'));
+    Repository._reset();
+    repo = Repository.getInstance({ root });
+  });
+  afterEach(() => {
+    Repository._reset();
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+
+  test('story with non-canonical status produces check-rejected warning', () => {
+    const md =
+      '```\n' +
+      'EPIC-0001: Demo\n' +
+      'Status: Done\n' +
+      '```\n' +
+      '```\n' +
+      'US-0001 (EPIC-0001): A\n' +
+      'Status: Cancelled\n' +
+      '```\n';
+    fs.writeFileSync(path.join(root, 'docs', 'RELEASE_PLAN.md'), md);
+    const result = indexReleasePlan({
+      index: repo.index,
+      markdown: repo.markdown,
+      rel: 'docs/RELEASE_PLAN.md',
+    });
+    const rejected = result.warnings.filter((w) => w.code === 'check-rejected');
+    expect(rejected).toHaveLength(1);
+    expect(rejected[0].entityId).toBe('US-0001');
+    expect(rejected[0].message).toMatch(/CHECK constraint failed/);
+  });
+});

@@ -114,16 +114,34 @@ function indexReleasePlan({ index, markdown, rel }) {
     );
 
     const insEpic = index.prepare(
-      'INSERT OR IGNORE INTO epics(id,title,status,release_target,source_file,source_line) VALUES(?,?,?,?,?,?)',
+      'INSERT INTO epics(id,title,status,release_target,source_file,source_line) VALUES(?,?,?,?,?,?)',
     );
     const insStory = index.prepare(
-      'INSERT OR IGNORE INTO stories(id,epic_id,title,status,priority,estimate,branch,pr_number,spec_path,plan_path,source_file,source_line) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',
+      'INSERT INTO stories(id,epic_id,title,status,priority,estimate,branch,pr_number,spec_path,plan_path,source_file,source_line) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',
     );
-    const insAc = index.prepare('INSERT OR IGNORE INTO acs(id,story_id,checked,text,position) VALUES(?,?,?,?,?)');
+    const insAc = index.prepare('INSERT INTO acs(id,story_id,checked,text,position) VALUES(?,?,?,?,?)');
+
+    const tryInsert = (fn, entityId) => {
+      try {
+        fn();
+        return true;
+      } catch (e) {
+        if (e.code === 'SQLITE_CONSTRAINT_CHECK') {
+          warnings.push({ code: 'check-rejected', entityId, message: e.message });
+          return false;
+        }
+        if (e.code === 'SQLITE_CONSTRAINT_PRIMARYKEY' || e.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+          // Preserve the original INSERT OR IGNORE behaviour for duplicate-key conflicts
+          return false;
+        }
+        throw e;
+      }
+    };
 
     for (const e of epics) {
-      insEpic.run(e.id, e.title, e.status, e.releaseTarget, e.sourceFile, e.sourceLine);
-      counts.epics++;
+      if (tryInsert(() => insEpic.run(e.id, e.title, e.status, e.releaseTarget, e.sourceFile, e.sourceLine), e.id)) {
+        counts.epics++;
+      }
     }
     for (const s of stories) {
       if (!epicIds.has(s.epicId)) {
@@ -135,24 +153,30 @@ function indexReleasePlan({ index, markdown, rel }) {
         });
         continue;
       }
-      insStory.run(
+      const inserted = tryInsert(
+        () =>
+          insStory.run(
+            s.id,
+            s.epicId,
+            s.title,
+            s.status,
+            s.priority,
+            s.estimate,
+            s.branch,
+            s.prNumber,
+            s.specPath,
+            s.planPath,
+            s.sourceFile,
+            s.sourceLine,
+          ),
         s.id,
-        s.epicId,
-        s.title,
-        s.status,
-        s.priority,
-        s.estimate,
-        s.branch,
-        s.prNumber,
-        s.specPath,
-        s.planPath,
-        s.sourceFile,
-        s.sourceLine,
       );
+      if (!inserted) continue;
       counts.stories++;
       for (const a of s.acs) {
-        insAc.run(a.id, s.id, a.checked, a.text, a.position);
-        counts.acs++;
+        if (tryInsert(() => insAc.run(a.id, s.id, a.checked, a.text, a.position), a.id)) {
+          counts.acs++;
+        }
       }
     }
   });
