@@ -73,3 +73,11 @@ Parity diff between `PV_DASHBOARD_VIA_REPO=0` (legacy) and `PV_DASHBOARD_VIA_REP
 ## Next Session: Phase D — SdlcStatus Cutover (EPIC-0039)
 
 Phase D promotes SQLite to authoritative for tool-emitted lifecycle state. `sdlc-status.json` becomes a per-event mirror. Four lifecycle writers migrate in one coordinated PR. Key stories: US-0232 (SdlcEventRepo + SdlcTaskRepo + re-query-inside-lock JSON mirror), US-0233 (agent-lifecycle.js write-through), US-0234 (update-sdlc-status.js write-through), US-0235 (agent-task-review.js + agent-spec-plan.js write-through), US-0236 (pv:upgrade / pv:rollback write-capable). Hard gate: `npm run plan:lint` 0 errors after migration 002 ingests existing JSON.
+
+---
+
+## Update — 2026-05-21 (Session 54, Phase C.5)
+
+AC-0911 closed as part of Phase C.5 (EPIC-0042). `PV_DASHBOARD_VIA_REPO` default flipped to **on**. `PV_DASHBOARD_VIA_REPO=0` remains as the legacy escape hatch.
+
+Parity verified against `docs/RELEASE_PLAN.md` on production data: zero non-timestamp differences between default (repo) and `=0` (legacy) paths. See [Session 54 memory](2026-05-21-session-54-phase-c5-complete.md) for full session detail.
