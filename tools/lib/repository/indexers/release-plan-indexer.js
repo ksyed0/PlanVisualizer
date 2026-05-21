@@ -131,7 +131,12 @@ function indexReleasePlan({ index, markdown, rel }) {
           return false;
         }
         if (e.code === 'SQLITE_CONSTRAINT_PRIMARYKEY' || e.code === 'SQLITE_CONSTRAINT_UNIQUE') {
-          // Preserve the original INSERT OR IGNORE behaviour for duplicate-key conflicts
+          // Temporary: the current AST traversal picks up the same EPIC-XXXX header
+          // when it appears in both fenced and prose sections of RELEASE_PLAN.md,
+          // producing duplicate inserts that PRIMARYKEY would reject. INSERT OR IGNORE
+          // used to swallow these. Task C5.3 routes the indexer through
+          // parseReleasePlan() (which dedups via seenEpics/seenStories), making this
+          // catch arm dead code — it should be REMOVED as part of the C5.3 rewrite.
           return false;
         }
         throw e;
