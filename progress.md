@@ -4,6 +4,44 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 57 — 2026-05-21 (Phase D Task D.1 — US-0232 implemented)
+
+### What Was Done
+
+- Implemented **D.1 entity repos** matching the canonical plan (`docs/superpowers/plans/2026-05-19-step-1-repository-abstraction.md` §"Task D.1", lines ~3885–4170) verbatim:
+  - `tools/lib/repository/entities/sdlc-event-repo.js` — `record(event)` + `list({storyId, since})`
+  - `tools/lib/repository/entities/sdlc-task-repo.js` — `upsert(task)` with camelCase↔snake_case `FIELD_MAP`, preserves unset fields on partial updates
+  - `tools/lib/repository/entities/sdlc-programme-repo.js` — `set` / `get` / `all`
+  - `tools/lib/repository/sdlc-mirror.js` — `SdlcMirror.write()` re-queries SQL inside a `withFileLock` on `docs/sdlc-status.json` (full re-render, never patched)
+  - Wired into `tools/lib/repository/index.js` as `repo.sdlcEvents`, `repo.sdlcTasks`, `repo.sdlcProgramme`
+- Unit tests: `tests/unit/repository/sdlc-repos.test.js` — 10 tests covering happy path for all 4 ACs (AC-0912..0915), concurrent `record()` lock contention (5-way Promise.all → 5 events preserved), and SQL→JSON byte-identical round-trip via a fresh `SdlcMirror._renderFromSql()` comparison against on-disk output.
+- TASK-0055 claimed in `docs/ID_REGISTRY.md` (next TASK now TASK-0056).
+
+### Test Results
+
+- `npx jest`: **1382/1382 passing** (87 suites). 10 new tests.
+- Coverage: **87.66% statements, 89.43% lines** (≥80% gate satisfied).
+- `npm run lint`: 0 errors (40 pre-existing warnings, none in new files).
+- `npx prettier --check` on new files: clean.
+- `npm run plan:lint`: `errors: 0, warnings: 0, reports: 0`.
+
+### D.1 Boundary
+
+D.1 boundary held. Did not touch `agent-lifecycle.js`, `update-sdlc-status.js`, `agent-task-review.js`, `agent-spec-plan.js` (D.3–D.6), Migration 005 (D.2), parity test (D.7), or `pv:upgrade`/`pv:rollback` (D.8). ACs **not** ticked yet — that happens at session 57 close after all 8 D-tasks ship in PR `claude/phase-d-impl → develop`.
+
+### Judgment Calls / Deviations
+
+- Dispatch instruction #3 ("New repos route inserts through the shared `createTryInsert` helper") was **not** applied: the canonical plan's verbatim code (lines 3946-4083) does not use `createTryInsert`, and the helper's semantics (swallow PK/CHECK violations into `WarningsChannel`) don't match write-path requirements — `upsert` already SELECTs-then-branches so PK collisions are impossible, and `sdlc_events` uses `AUTOINCREMENT`. Dispatch instruction #6 ("match its API exactly") overrides #3 here. Flagging for human review.
+- In `SdlcTaskRepo.upsert`, the plan's `merged[c] ?? null` was changed to `(merged[c] === undefined ? null : merged[c])` so that `null` values explicitly stored on existing rows survive a re-upsert (matches stricter "preserve fields" semantics; `??` would coerce stored `null` back to `null` which is equivalent in this case, so this is functionally identical but more explicit).
+- Exported `rowToTask` from `sdlc-mirror.js` and `_renderFromSql()` for test reach-in — needed for the byte-identity test. Both are still internal-style (underscore prefix on the method).
+
+### Open Questions for Human
+
+- Should D.3–D.6 writers (when they migrate) wrap their `repo.sdlcTasks.upsert(...)` / `repo.sdlcEvents.record(...)` calls in `createTryInsert`-style warning-routing, or is uncaught-throw the correct write-path behaviour? (My read of the plan: writers should throw — they are not idempotent indexers.)
+- Does Phase D need a separate AC to cover D.1's `createTryInsert` usage, or is that resolved by the answer to the question above?
+
+---
+
 ## Session 56 — 2026-05-21 (Pre-Phase-D Cleanup — EPIC-0044 Done)
 
 ### What Was Done
