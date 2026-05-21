@@ -406,16 +406,6 @@ Acceptance Criteria:
   - [x] AC-0043: dependabot.yml configures weekly npm updates with a 5-PR limit
   - [x] AC-0044: GitHub Actions dependencies are also monitored weekly
 Dependencies: None
-
-US-0083 (EPIC-0014): As a developer, I want all GitHub Actions steps to use Node.js 24-compatible action versions, so that no deprecation warnings appear in CI runs after June 2, 2026.
-Priority: Medium (P1)
-Estimate: S
-Status: Done
-Branch: feature/US-0083-actions-node24-upgrade
-Acceptance Criteria:
-  - [x] AC-0262: actions/checkout updated to v5 (or later) in plan-visualizer.yml
-  - [x] AC-0263: actions/setup-node updated to v5 (or later) in plan-visualizer.yml
-Dependencies: None
 ```
 
 ---
@@ -1607,36 +1597,6 @@ Acceptance Criteria:
 Dependencies: US-0073
 ```
 
-Acceptance Criteria:
-
-- [ ] AC-0154: generate-plan.js saves a snapshot JSON to docs/snapshots/YYYY-MM-DD.json on each run
-- [ ] AC-0155: Snapshot contains: timestamp, story counts by status, epic counts, costs totals, coverage metrics, bug counts, lesson counts
-- [ ] AC-0156: Config option snapshots.enabled (default: true) controls whether snapshots are saved
-- [ ] AC-0157: Config option snapshots.path (default: docs/snapshots) specifies the output directory
-- [ ] AC-0158: Snapshot file names use ISO date format (YYYY-MM-DD) and are sorted chronologically
-      Dependencies: None
-
-```
-
-```
-
-US-0055 (EPIC-0008): As a user, I want a Trends tab that shows charts of project metrics over time, so that I can visualise progress, costs, and coverage trends.
-Priority: High (P0)
-Estimate: M
-Status: Planned
-Branch:
-Acceptance Criteria:
-
-- [ ] AC-0159: A new "Trends" tab appears in the sidebar navigation after Lessons
-- [ ] AC-0160: Progress Burn-down chart shows stories completed over time (line chart)
-- [ ] AC-0161: Cost Accumulation chart shows cumulative AI spend over time (line chart)
-- [ ] AC-0162: Coverage Trend chart shows lines % and branch % over time (dual-line chart)
-- [ ] AC-0163: Bug Burn chart shows open vs closed bugs over time (stacked area chart)
-- [ ] AC-0164: Each chart includes at least 2 data points; shows message if insufficient data
-      Dependencies: US-0054
-
-```
-
 ```
 
 US-0056 (EPIC-0024): As a user, I want to filter trend charts by date range, so that I can focus on specific time periods.
@@ -2001,6 +1961,7 @@ Acceptance Criteria:
 ### Epic 13: Agentic SDLC Pipeline & Live Dashboard
 
 ```
+
 EPIC-0013: Agentic SDLC Pipeline & Live Dashboard
 Description: The orchestration framework, agent roster, multi-platform spawn helper, concurrency safety utilities, live HTML dashboard, sdlc-status schema, and plan visualizer that powered the agentic build of the CTC-Mobile-Wishlist POC and now ship as features of PlanVisualizer.
 Release Target: Tooling (internal)
@@ -2008,9 +1969,11 @@ Status: Done
 StartDate: 2026-04-13
 DoneDate: 2026-04-27
 Dependencies: None
+
 ```
 
 ```
+
 US-0088 (EPIC-0013): As a pipeline engineer, I want a documented agent roster and orchestration framework with named roles, icons, and prompt templates, so that any team member can understand and extend the agentic pipeline.
 Priority: High
 Estimate: M
@@ -2018,40 +1981,49 @@ Status: Done
 Branch: develop
 Dependencies: None
 Acceptance Criteria:
-  - [x] AC-0277: agents.config.json exists as the single source of truth, defining name, role, icon, color, and instructionFile for each agent
-  - [x] AC-0278: Nine agent roles are defined — Conductor (DM), Compass (PO), Keystone (Architect), Lens (Reviewer), Palette (UI Designer), Forge (BE Dev), Pixel (FE Dev), Sentinel (Functional Tester), Circuit (Automation Tester)
-  - [x] AC-0279: Each agent has a dedicated instruction file in docs/agents/ with mandatory startup steps, responsibilities, and tool instructions
-  - [x] AC-0280: docs/AGENT_PLAN.md documents the full 6-phase pipeline (Blueprint → Architect → Build → Integration → Test → Polish) with phase entry/exit criteria, the PR review lifecycle, BLOCK recovery protocol, and execution mode options
+
+- [x] AC-0277: agents.config.json exists as the single source of truth, defining name, role, icon, color, and instructionFile for each agent
+- [x] AC-0278: Nine agent roles are defined — Conductor (DM), Compass (PO), Keystone (Architect), Lens (Reviewer), Palette (UI Designer), Forge (BE Dev), Pixel (FE Dev), Sentinel (Functional Tester), Circuit (Automation Tester)
+- [x] AC-0279: Each agent has a dedicated instruction file in docs/agents/ with mandatory startup steps, responsibilities, and tool instructions
+- [x] AC-0280: docs/AGENT_PLAN.md documents the full 6-phase pipeline (Blueprint → Architect → Build → Integration → Test → Polish) with phase entry/exit criteria, the PR review lifecycle, BLOCK recovery protocol, and execution mode options
+
 ```
 
 ```
+
 TASK-0042 (US-0088): Create agents.config.json with 9 agent definitions and dashboard/orchestrator metadata
 Type: Dev
 Assignee: Agent
 Status: Done
 Branch: develop
 Notes: Single JSON file; agents map, dashboard branding block, orchestrator.dmAgent/reviewer/avatarGrid; loaded by spawn.js, generate-dashboard.js, process-avatars.js, and init-sdlc-status.js
+
 ```
 
 ```
+
 TASK-0043 (US-0088): Write 9 agent instruction files in docs/agents/ with roles, responsibilities, and prompt templates
 Type: Dev
 Assignee: Agent
 Status: Done
 Branch: develop
 Notes: DM_AGENT.md, PO_AGENT.md, ARCHITECT_AGENT.md, CODE_REVIEWER_AGENT.md, UI_DESIGNER_AGENT.md, BE_DEV_AGENT.md, FE_DEV_AGENT.md, FUNCTIONAL_TESTER_AGENT.md, AUTOMATION_TESTER_AGENT.md
+
 ```
 
 ```
+
 TASK-0044 (US-0088): Write docs/AGENT_PLAN.md — 6-phase pipeline, PR/review flow, BLOCK recovery, execution modes, concurrency safety rules, and config-driven setup guide
 Type: Dev
 Assignee: Agent
 Status: Done
 Branch: develop
 Notes: Covers sequential, parallel, Agent-tool delegation, and spawn helper execution modes; references all concurrency utilities
+
 ```
 
 ```
+
 US-0089 (EPIC-0013): As a pipeline engineer, I want a CLI spawn helper that generates correct launch commands for any supported AI coding platform, so that agents can be started consistently across environments without manual prompt assembly.
 Priority: High
 Estimate: M
@@ -2059,32 +2031,39 @@ Status: Done
 Branch: develop
 Dependencies: US-0088
 Acceptance Criteria:
-  - [x] AC-0281: orchestrator/spawn.js supports --list-platforms, --list-agents, --agent <name>, and --print-all flags
-  - [x] AC-0282: Seven platform adapters exist for claude-code, codex-cli, gemini-cli, aider, codemie, elitea, and opencode
-  - [x] AC-0283: spawn.js loads all agent definitions from agents.config.json — no hardcoded agent data in the script
-  - [x] AC-0284: Running --print-all outputs a complete prompt block for every agent on the detected platform
-  - [x] AC-0285: Running --agent <name> outputs a ready-to-paste launch command with the agent's instruction file path resolved
+
+- [x] AC-0281: orchestrator/spawn.js supports --list-platforms, --list-agents, --agent <name>, and --print-all flags
+- [x] AC-0282: Seven platform adapters exist for claude-code, codex-cli, gemini-cli, aider, codemie, elitea, and opencode
+- [x] AC-0283: spawn.js loads all agent definitions from agents.config.json — no hardcoded agent data in the script
+- [x] AC-0284: Running --print-all outputs a complete prompt block for every agent on the detected platform
+- [x] AC-0285: Running --agent <name> outputs a ready-to-paste launch command with the agent's instruction file path resolved
+
 ```
 
 ```
+
 TASK-0045 (US-0089): Implement orchestrator/spawn.js with CLI flag parsing and dynamic agent/platform resolution from agents.config.json
 Type: Dev
 Assignee: Agent
 Status: Done
 Branch: develop
 Notes: Reads agents.config.json; delegates to adapter modules; supports all 4 CLI flags; prints platform-specific spawn syntax
+
 ```
 
 ```
+
 TASK-0046 (US-0089): Implement 7 platform adapter modules in orchestrator/adapters/ (claude-code.js, codex-cli.js, gemini-cli.js, aider.js, codemie.js, elitea.js, opencode.js)
 Type: Dev
 Assignee: Agent
 Status: Done
 Branch: develop
 Notes: Each adapter exports formatSpawnCommand(agent, config); adapters differ in flag syntax and instruction file handling
+
 ```
 
 ```
+
 US-0090 (EPIC-0013): As a pipeline engineer, I want atomic file utilities for shared state during parallel agent execution, so that simultaneous agents cannot corrupt shared pipeline files.
 Priority: High
 Estimate: M
@@ -2092,40 +2071,49 @@ Status: Done
 Branch: develop
 Dependencies: US-0088
 Acceptance Criteria:
-  - [x] AC-0286: orchestrator/file-lock.js provides withLock() and withLockSync() using mkdir-based locking with configurable stale timeout
-  - [x] AC-0287: orchestrator/atomic-write.js provides atomicReadModifyWriteJson() for safe concurrent JSON mutation, atomicAppend() for locked log appends, and reserveId() for race-free ID allocation
-  - [x] AC-0288: orchestrator/git-safe.js provides safePush() with exponential backoff (4 retries) and checkOverlap() to detect conflicting file edits across parallel branches before merging
-  - [x] AC-0289: All shared pipeline files (sdlc-status.json, progress.md, BUGS.md, ID_REGISTRY.md, AI_COST_LOG.md) are protected by these utilities in agent instruction files
+
+- [x] AC-0286: orchestrator/file-lock.js provides withLock() and withLockSync() using mkdir-based locking with configurable stale timeout
+- [x] AC-0287: orchestrator/atomic-write.js provides atomicReadModifyWriteJson() for safe concurrent JSON mutation, atomicAppend() for locked log appends, and reserveId() for race-free ID allocation
+- [x] AC-0288: orchestrator/git-safe.js provides safePush() with exponential backoff (4 retries) and checkOverlap() to detect conflicting file edits across parallel branches before merging
+- [x] AC-0289: All shared pipeline files (sdlc-status.json, progress.md, BUGS.md, ID_REGISTRY.md, AI_COST_LOG.md) are protected by these utilities in agent instruction files
+
 ```
 
 ```
+
 TASK-0047 (US-0090): Implement orchestrator/file-lock.js — mkdir-based mutual exclusion with stale lock detection and configurable retry backoff
 Type: Dev
 Assignee: Agent
 Status: Done
 Branch: develop
 Notes: Uses fs.mkdirSync as atomic lock primitive; stale detection via mtime; exposes withLock(path, fn) and withLockSync(path, fn)
+
 ```
 
 ```
+
 TASK-0048 (US-0090): Implement orchestrator/atomic-write.js — atomicReadModifyWriteJson, atomicAppend, reserveId backed by file-lock.js
 Type: Dev
 Assignee: Agent
 Status: Done
 Branch: develop
 Notes: atomicReadModifyWriteJson parses, calls transform fn, writes back atomically; reserveId reads ID_REGISTRY, increments, writes back; atomicAppend acquires lock before fs.appendFileSync
+
 ```
 
 ```
+
 TASK-0049 (US-0090): Implement orchestrator/git-safe.js — safePush with retry/backoff and checkOverlap for parallel branch conflict detection
 Type: Dev
 Assignee: Agent
 Status: Done
 Branch: develop
 Notes: safePush wraps git push; retries on exit code 1 with pull-rebase; checkOverlap diffs two branches and reports overlapping file paths
+
 ```
 
 ```
+
 US-0091 (EPIC-0013): As a pipeline engineer, I want a self-contained HTML dashboard that visualises real-time phase progress, agent statuses, and delivery metrics, so that I can monitor the agentic build at a glance without reading JSON.
 Priority: High
 Estimate: L
@@ -2133,44 +2121,53 @@ Status: Done
 Branch: develop
 Dependencies: US-0088, US-0092
 Acceptance Criteria:
-  - [x] AC-0290: tools/generate-dashboard.js reads sdlc-status.json and agents.config.json and emits a self-contained docs/dashboard.html with no external dependencies
-  - [x] AC-0291: Dashboard displays the 6-phase pipeline as a visual flow with per-phase completion status (planned/in-progress/done/blocked)
-  - [x] AC-0292: Dashboard shows a status card per agent with icon, role, current status (idle/active/done/blocked), and active task label; icons and colours are driven by agents.config.json
-  - [x] AC-0293: Dashboard shows a metrics panel: stories done/total, tasks done/total, tests passed, code coverage percentage, and open bug count
-  - [x] AC-0294: Dashboard auto-refreshes every 30 seconds via JS interval; skips reload when a modal is open
-  - [x] AC-0295: Dashboard plays distinct audio tones and surfaces browser notifications when a phase completes, an agent transitions to blocked, or a new critical bug is opened; alert toggle persists via localStorage
-  - [x] AC-0296: All dashboard branding (title, subtitle, footer, primary colour, author, repo URL) is driven by the dashboard section of agents.config.json — no hardcoded project values in the generator
-  - [x] AC-0297: npm run dashboard runs a one-shot generation; npm run dashboard:watch re-generates on every sdlc-status.json change
+
+- [x] AC-0290: tools/generate-dashboard.js reads sdlc-status.json and agents.config.json and emits a self-contained docs/dashboard.html with no external dependencies
+- [x] AC-0291: Dashboard displays the 6-phase pipeline as a visual flow with per-phase completion status (planned/in-progress/done/blocked)
+- [x] AC-0292: Dashboard shows a status card per agent with icon, role, current status (idle/active/done/blocked), and active task label; icons and colours are driven by agents.config.json
+- [x] AC-0293: Dashboard shows a metrics panel: stories done/total, tasks done/total, tests passed, code coverage percentage, and open bug count
+- [x] AC-0294: Dashboard auto-refreshes every 30 seconds via JS interval; skips reload when a modal is open
+- [x] AC-0295: Dashboard plays distinct audio tones and surfaces browser notifications when a phase completes, an agent transitions to blocked, or a new critical bug is opened; alert toggle persists via localStorage
+- [x] AC-0296: All dashboard branding (title, subtitle, footer, primary colour, author, repo URL) is driven by the dashboard section of agents.config.json — no hardcoded project values in the generator
+- [x] AC-0297: npm run dashboard runs a one-shot generation; npm run dashboard:watch re-generates on every sdlc-status.json change
+
 ```
 
 ```
+
 TASK-0050 (US-0091): Implement tools/generate-dashboard.js — reads sdlc-status.json + agents.config.json, renders phase pipeline, agent cards, metrics panel, and alert triggers into a single self-contained HTML file
 Type: Dev
 Assignee: Agent
 Status: Done
 Branch: develop
 Notes: Generator; getDashboardMeta() reads branding from config; 30s JS-based reload (skips when modal open); all CSS/JS inlined; audio context for tone alerts
+
 ```
 
 ```
+
 TASK-0051 (US-0091): Add config-driven branding layer to generate-dashboard.js — title, subtitle, footer, primaryColor, author, authorTitle, repoUrl all sourced from agents.config.json dashboard block
 Type: Dev
 Assignee: Agent
 Status: Done
 Branch: develop
 Notes: getDashboardMeta() falls back to package.json name only when config is absent
+
 ```
 
 ```
+
 TASK-0052 (US-0091): Add audio alert and browser notification system to generated dashboard — distinct tones for phase-complete, agent-blocked, and bug-opened events
 Type: Dev
 Assignee: Agent
 Status: Done
 Branch: develop
 Notes: Web Audio API oscillator tones; Notification API with on/off toggle persisted in localStorage; event detection compares previous vs current sdlc-status.json on each poll cycle; tested via docs/alert-test.html
+
 ```
 
 ```
+
 US-0092 (EPIC-0013): As a pipeline engineer, I want a typed sdlc-status.json schema and an initialiser script, so that any new project can bootstrap a clean dashboard state from agents.config.json in a single command.
 Priority: Medium
 Estimate: S
@@ -2178,21 +2175,26 @@ Status: Done
 Branch: develop
 Dependencies: US-0088
 Acceptance Criteria:
-  - [x] AC-0298: docs/sdlc-status.json schema captures currentPhase, phases array (each with id, name, status, stories), agents map (each with status, currentTask), and metrics (storiesDone, tasksTotal, testsPassed, coveragePercent, bugsOpen)
-  - [x] AC-0299: tools/init-sdlc-status.js generates a valid sdlc-status.json from agents.config.json with all agents initialised to idle and all phases to planned
-  - [x] AC-0300: npm run init:status runs the initialiser; subsequent npm run dashboard immediately renders a blank but valid dashboard
+
+- [x] AC-0298: docs/sdlc-status.json schema captures currentPhase, phases array (each with id, name, status, stories), agents map (each with status, currentTask), and metrics (storiesDone, tasksTotal, testsPassed, coveragePercent, bugsOpen)
+- [x] AC-0299: tools/init-sdlc-status.js generates a valid sdlc-status.json from agents.config.json with all agents initialised to idle and all phases to planned
+- [x] AC-0300: npm run init:status runs the initialiser; subsequent npm run dashboard immediately renders a blank but valid dashboard
+
 ```
 
 ```
+
 TASK-0053 (US-0092): Implement tools/init-sdlc-status.js — generates docs/sdlc-status.json from agents.config.json, producing all phases planned and all agents idle
 Type: Dev
 Assignee: Agent
 Status: Done
 Branch: develop
 Notes: Reads agents.config.json; writes sdlc-status.json; idempotent — safe to re-run; does not overwrite if --no-overwrite flag is passed
+
 ```
 
 ```
+
 US-0093 (EPIC-0013): As a pipeline engineer, I want a plan visualizer that renders epic and story progress from RELEASE_PLAN.md as a navigable HTML page, so that stakeholders can track delivery status without reading raw markdown.
 Priority: Medium
 Estimate: M
@@ -2200,20 +2202,24 @@ Status: Done
 Branch: develop
 Dependencies: None
 Acceptance Criteria:
-  - [x] AC-0301: tools/generate-plan.js parses RELEASE_PLAN.md and emits a self-contained docs/plan-status.html
-  - [x] AC-0302: Plan visualizer shows all epics with story and task counts, grouped by Done / In Progress / To Do
-  - [x] AC-0303: Each story row shows its ID, title, status badge, estimate, and linked acceptance criteria completion ratio
-  - [x] AC-0304: npm run plan:generate runs a one-shot generation; npm run plan:watch re-generates on RELEASE_PLAN.md changes
-  - [x] AC-0305: plan-status.html is fully self-contained — no external CSS, JS, or font dependencies
+
+- [x] AC-0301: tools/generate-plan.js parses RELEASE_PLAN.md and emits a self-contained docs/plan-status.html
+- [x] AC-0302: Plan visualizer shows all epics with story and task counts, grouped by Done / In Progress / To Do
+- [x] AC-0303: Each story row shows its ID, title, status badge, estimate, and linked acceptance criteria completion ratio
+- [x] AC-0304: npm run plan:generate runs a one-shot generation; npm run plan:watch re-generates on RELEASE_PLAN.md changes
+- [x] AC-0305: plan-status.html is fully self-contained — no external CSS, JS, or font dependencies
+
 ```
 
 ```
+
 TASK-0054 (US-0093): Implement tools/generate-plan.js — parses RELEASE_PLAN.md fenced blocks, extracts epics/stories/tasks/ACs, and renders docs/plan-status.html with status grouping and progress bars
 Type: Dev
 Assignee: Agent
 Status: Done
 Branch: develop
 Notes: tools/lib/parse-release-plan.js handles markdown parsing; requires (EPIC-XXXX) in US headers to associate stories; stories without an epic tag are excluded from grouping
+
 ```
 
 ---
@@ -2221,6 +2227,7 @@ Notes: tools/lib/parse-release-plan.js handles markdown parsing; requires (EPIC-
 ## Epic — EPIC-0014: Follow-Up Changes
 
 ```
+
 EPIC-0014: Follow-Up Changes
 Description: Planned and in-progress work that was added after its original epic was marked Done. Collects follow-up stories to preserve the integrity of completed epics.
 Release Target: Backlog
@@ -2228,6 +2235,7 @@ Status: Done
 StartDate: 2026-04-13
 DoneDate: 2026-04-27
 Dependencies: None
+
 ```
 
 ---
@@ -2235,61 +2243,74 @@ Dependencies: None
 ## User Stories — EPIC-0014: Follow-Up Changes
 
 ```
+
 US-0083 (EPIC-0014): As a developer, I want all GitHub Actions steps to use Node.js 24-compatible action versions, so that no deprecation warnings appear in CI runs after June 2, 2026.
 Priority: Medium (P1)
 Estimate: S
 Status: Done
 Branch: feature/US-0083-actions-node24-upgrade
 Acceptance Criteria:
-  - [x] AC-0262: actions/checkout updated to v5 (or later) in plan-visualizer.yml
-  - [x] AC-0263: actions/setup-node updated to v5 (or later) in plan-visualizer.yml
-Dependencies: None
+
+- [x] AC-0262: actions/checkout updated to v5 (or later) in plan-visualizer.yml
+- [x] AC-0263: actions/setup-node updated to v5 (or later) in plan-visualizer.yml
+      Dependencies: None
+
 ```
 
 ```
+
 US-0108 (EPIC-0014): As a Conductor agent, I want a CLI tool to update docs/sdlc-status.json at each pipeline phase transition, so that the agentic dashboard stays live without manual JSON editing and without each sub-agent needing to understand the file schema.
 Priority: High (P0)
 Estimate: S
 Status: Done
 Branch: feature/US-0108-sdlc-status-updater
 Acceptance Criteria:
-  - [x] AC-0334: `tools/update-sdlc-status.js` exposes 10 commands (agent-start, agent-done, review, test-pass, test-fail, coverage, story-start, story-complete, phase, log) with --flag parsing
-  - [x] AC-0335: Uses `atomicReadModifyWriteJson` from orchestrator/atomic-write for safe concurrent updates
-  - [x] AC-0336: Canonical phase definitions (name, agents, deliverables) auto-seeded when phase handler auto-expands the phases array
-  - [x] AC-0337: Log array is trimmed to last 200 entries to prevent unbounded growth
-  - [x] AC-0338: DM_AGENT.md updated with the command table replacing the manual JSON-edit instructions
-  - [x] AC-0339: Unit tests cover all 10 command handlers (17 tests in tests/unit/update-sdlc-status.test.js)
-Dependencies: EPIC-0013
+
+- [x] AC-0334: `tools/update-sdlc-status.js` exposes 10 commands (agent-start, agent-done, review, test-pass, test-fail, coverage, story-start, story-complete, phase, log) with --flag parsing
+- [x] AC-0335: Uses `atomicReadModifyWriteJson` from orchestrator/atomic-write for safe concurrent updates
+- [x] AC-0336: Canonical phase definitions (name, agents, deliverables) auto-seeded when phase handler auto-expands the phases array
+- [x] AC-0337: Log array is trimmed to last 200 entries to prevent unbounded growth
+- [x] AC-0338: DM_AGENT.md updated with the command table replacing the manual JSON-edit instructions
+- [x] AC-0339: Unit tests cover all 10 command handlers (17 tests in tests/unit/update-sdlc-status.test.js)
+      Dependencies: EPIC-0013
+
 ```
 
 ```
+
 US-0109 (EPIC-0014): As a user switching between the Plan Visualizer and Agentic SDLC dashboards, I want both About modals to share the same layout so I can easily find project metadata in either view.
 Priority: Medium (P1)
 Estimate: XS
 Status: Done
 Branch: feature/US-0109-agentic-about-modal-parity
 Acceptance Criteria:
-  - [x] AC-0340: Agentic Dashboard About modal has "This Project" section with Name, Version, Branch, Build+commit (matches plan-status)
-  - [x] AC-0341: Agentic Dashboard About modal has "Dashboard Tool" section identifying it as "Agentic SDLC Dashboard" + showing Generated by tool name/version + Generated at timestamp
-  - [x] AC-0342: Title and subtitle use DASH_META.title/subtitle from agents.config.json (configurable per project)
-  - [x] AC-0343: Author attribution (if present in agents.config.json) renders as a centered footer line below the metadata
-Dependencies: US-0108
+
+- [x] AC-0340: Agentic Dashboard About modal has "This Project" section with Name, Version, Branch, Build+commit (matches plan-status)
+- [x] AC-0341: Agentic Dashboard About modal has "Dashboard Tool" section identifying it as "Agentic SDLC Dashboard" + showing Generated by tool name/version + Generated at timestamp
+- [x] AC-0342: Title and subtitle use DASH_META.title/subtitle from agents.config.json (configurable per project)
+- [x] AC-0343: Author attribution (if present in agents.config.json) renders as a centered footer line below the metadata
+      Dependencies: US-0108
+
 ```
 
 ```
+
 US-0174 (EPIC-0014): As a developer, I want a dedicated PR Status tab in plan-status.html showing open pull requests, CI check results, and deployment history, so that I can monitor GitHub activity in full detail without leaving the dashboard.
 Priority: Low (P3)
 Estimate: M
 Status: Planned
 Branch: feature/US-0174-pr-status-tab
 Acceptance Criteria:
-  - [ ] AC-0632: A "GitHub" tab appears in the sidebar when github.enabled = true and GITHUB_TOKEN is set
-  - [ ] AC-0633: The tab lists all open PRs with title, PR number (linked), CI check status (pass/fail/pending), review count, and age
-  - [ ] AC-0634: A deployment history section shows the last 5 deployments with environment, status, sha/tag, and timestamp
-Dependencies: US-0171, US-0172, US-0173
+
+- [ ] AC-0632: A "GitHub" tab appears in the sidebar when github.enabled = true and GITHUB_TOKEN is set
+- [ ] AC-0633: The tab lists all open PRs with title, PR number (linked), CI check status (pass/fail/pending), review count, and age
+- [ ] AC-0634: A deployment history section shows the last 5 deployments with environment, status, sha/tag, and timestamp
+      Dependencies: US-0171, US-0172, US-0173
+
 ```
 
 ```
+
 US-0180 (EPIC-0014): As the Conductor and each specialist agent in the agentic SDLC pipeline, I want to select the appropriate LLM model (haiku/sonnet/opus) based on task complexity at dispatch time, so that routine tasks use cheaper/faster models and only high-complexity decisions escalate to more capable models.
 Priority: Medium (P1)
 Estimate: M
@@ -2306,6 +2327,7 @@ Acceptance Criteria:
 ```
 
 ```
+
 EPIC-0015: UI Review and Redesign
 Description: Editorial Operations Dashboard aesthetic pass. Promotes PlanVisualizer from "generic utility dashboard" to a refined, information-dense interface with display typography, semantic badge tokens, shadow-based cards, zebra-striped tables, and per-tab polish across Hierarchy, Kanban, Traceability, Status, Trends, Costs, Bugs, and Lessons.
 Release Target: Release 1.9
@@ -2313,6 +2335,7 @@ Status: Done
 StartDate: 2026-04-13
 DoneDate: 2026-04-18
 Dependencies: EPIC-0007
+
 ```
 
 ---
@@ -2320,196 +2343,238 @@ Dependencies: EPIC-0007
 ## User Stories — EPIC-0015: UI Review and Redesign
 
 ```
+
 US-0094 (EPIC-0015): As a user, I want distinctive display typography for section headers and KPIs, so that the dashboard has a clear editorial voice and tabular numeric data aligns cleanly.
 Priority: Medium (P1)
 Estimate: S
 Status: Done
 Branch: feature/US-0094-typography-upgrade
 Acceptance Criteria:
-  - [x] AC-0306: A display face (Instrument Serif / Fraunces / Geist) is loaded via Google Fonts with font-display:swap
-  - [x] AC-0307: Tab supertitles and topbar H1 use the new display face
-  - [x] AC-0308: All numeric/monetary cells use font-variant-numeric:tabular-nums
-  - [x] AC-0309: A .display-title utility class exists and is consistently applied
-Dependencies: None
+
+- [x] AC-0306: A display face (Instrument Serif / Fraunces / Geist) is loaded via Google Fonts with font-display:swap
+- [x] AC-0307: Tab supertitles and topbar H1 use the new display face
+- [x] AC-0308: All numeric/monetary cells use font-variant-numeric:tabular-nums
+- [x] AC-0309: A .display-title utility class exists and is consistently applied
+      Dependencies: None
+
 ```
 
 ```
+
 US-0095 (EPIC-0015): As a user, I want cards to use layered shadows instead of hard 1px borders, so that the interface feels refined and depth-aware.
 Priority: Medium (P1)
 Estimate: S
 Status: Done
 Branch: feature/US-0095-shadow-cards
 Acceptance Criteria:
-  - [x] AC-0310: A --shadow-card token exists with light and dark mode variants
-  - [x] AC-0311: All chart/story/bug/lesson card containers use box-shadow instead of 1px borders
-  - [x] AC-0312: BUG-0111 (mixed bg-white/slate-800 tokens) is resolved
-Dependencies: None
+
+- [x] AC-0310: A --shadow-card token exists with light and dark mode variants
+- [x] AC-0311: All chart/story/bug/lesson card containers use box-shadow instead of 1px borders
+- [x] AC-0312: BUG-0111 (mixed bg-white/slate-800 tokens) is resolved
+      Dependencies: None
+
 ```
 
 ```
+
 US-0096 (EPIC-0015): As a user, I want zebra striping and hover highlighting on all tables, so that rows are easier to scan and track.
 Priority: Medium (P1)
 Estimate: S
 Status: Done
 Branch: feature/US-0096-zebra-tables
 Acceptance Criteria:
-  - [x] AC-0313: A --clr-row-alt token with light/dark variants exists
-  - [x] AC-0314: All .scroll-table tbody rows alternate background colour
-  - [x] AC-0315: A --clr-row-hover token drives hover-row highlighting in all tables
-Dependencies: None
+
+- [x] AC-0313: A --clr-row-alt token with light/dark variants exists
+- [x] AC-0314: All .scroll-table tbody rows alternate background colour
+- [x] AC-0315: A --clr-row-hover token drives hover-row highlighting in all tables
+      Dependencies: None
+
 ```
 
 ```
+
 US-0097 (EPIC-0015): As a user, I want status/severity/priority badges to adapt to light and dark modes, so that they render correctly regardless of theme.
 Priority: High (P0)
 Estimate: S
 Status: Done
 Branch: feature/US-0097-semantic-badges
 Acceptance Criteria:
-  - [x] AC-0316: The badge() function uses five semantic CSS variable triples (success/warn/danger/info/neutral)
-  - [x] AC-0317: A .badge-dot variant is available for dense contexts
-  - [x] AC-0318: BUG-0110 (dark-mode-only badges) is resolved
-Dependencies: None
+
+- [x] AC-0316: The badge() function uses five semantic CSS variable triples (success/warn/danger/info/neutral)
+- [x] AC-0317: A .badge-dot variant is available for dense contexts
+- [x] AC-0318: BUG-0110 (dark-mode-only badges) is resolved
+      Dependencies: None
+
 ```
 
 ```
+
 US-0098 (EPIC-0015): As a user, I want tab content to animate in with a staggered reveal, so that the interface feels alive without feeling busy.
 Priority: Medium (P2)
 Estimate: XS
 Status: Done
 Branch: feature/US-0098-staggered-reveals
 Acceptance Criteria:
-  - [x] AC-0319: Epic blocks, table rows, and chart cards animate with a fadeInUp of 240ms
-  - [x] AC-0320: Stagger delay uses --i custom property (20ms per item, first 20 items)
-  - [x] AC-0321: Animation is CSS-only (no JS library dependency)
-Dependencies: None
+
+- [x] AC-0319: Epic blocks, table rows, and chart cards animate with a fadeInUp of 240ms
+- [x] AC-0320: Stagger delay uses --i custom property (20ms per item, first 20 items)
+- [x] AC-0321: Animation is CSS-only (no JS library dependency)
+      Dependencies: None
+
 ```
 
 ```
+
 US-0099 (EPIC-0015): As a user, I want KPI numbers to be visually prominent, so that my eye lands on the most important metrics first.
 Priority: Medium (P1)
 Estimate: S
 Status: Done
 Branch: feature/US-0099-hero-numbers
 Acceptance Criteria:
-  - [x] AC-0322: A .hero-num class applies display-font sizing with clamp() and tabular figures
-  - [x] AC-0323: Budget totals, coverage %, and bug count tiles adopt .hero-num
-  - [x] AC-0324: No more than 3 hero numbers appear per tab
-Dependencies: US-0094
+
+- [x] AC-0322: A .hero-num class applies display-font sizing with clamp() and tabular figures
+- [x] AC-0323: Budget totals, coverage %, and bug count tiles adopt .hero-num
+- [x] AC-0324: No more than 3 hero numbers appear per tab
+      Dependencies: US-0094
+
 ```
 
 ```
+
 US-0100 (EPIC-0015): As a user, I want the Hierarchy tab to have stronger epic identity and AC visual structure, so that I can scan a 90+ story backlog quickly.
 Priority: Medium (P1)
 Estimate: S
 Status: Done
 Branch: feature/US-0100-hierarchy-polish
 Acceptance Criteria:
-  - [x] AC-0325: Epic headers render the ID in display face as "EPIC / XXXX" tracked-out in accent colour
-  - [x] AC-0326: Each epic header has a 2px progress rule filled to done/total ratio
-  - [x] AC-0327: AC lists have a left vertical guide line creating a tree-structure visual
-  - [x] AC-0328: Card-view story cards show a small accent dot mapping back to their epic
-Dependencies: US-0094
+
+- [x] AC-0325: Epic headers render the ID in display face as "EPIC / XXXX" tracked-out in accent colour
+- [x] AC-0326: Each epic header has a 2px progress rule filled to done/total ratio
+- [x] AC-0327: AC lists have a left vertical guide line creating a tree-structure visual
+- [x] AC-0328: Card-view story cards show a small accent dot mapping back to their epic
+      Dependencies: US-0094
+
 ```
 
 ```
+
 US-0101 (EPIC-0015): As a user, I want the Kanban board to differentiate columns and priority visually, so that WIP and high-priority work stand out at a glance.
 Priority: Medium (P1)
 Estimate: S
 Status: Done
 Branch: feature/US-0101-kanban-polish
 Acceptance Criteria:
-  - [x] AC-0329: Column headers use a subtle gradient and 2px bottom accent rule
-  - [x] AC-0330: Cards have a left priority stripe (P0=danger, P1=warn, else transparent)
-  - [x] AC-0331: The In-Progress column has a subtle CSS pulse animation
-  - [x] AC-0332: WIP count renders as a coloured pill (red if >configured threshold)
-  - [x] AC-0333: BUG-0112 (invisible hover in light mode) is resolved
-Dependencies: US-0097
+
+- [x] AC-0329: Column headers use a subtle gradient and 2px bottom accent rule
+- [x] AC-0330: Cards have a left priority stripe (P0=danger, P1=warn, else transparent)
+- [x] AC-0331: The In-Progress column has a subtle CSS pulse animation
+- [x] AC-0332: WIP count renders as a coloured pill (red if >configured threshold)
+- [x] AC-0333: BUG-0112 (invisible hover in light mode) is resolved
+      Dependencies: US-0097
+
 ```
 
 ```
+
 US-0102 (EPIC-0015): As a user, I want the Traceability matrix to be scannable at a glance, so that I can spot coverage gaps without translating P/F/N letters.
 Priority: High (P0)
 Estimate: M
 Status: Done
 Branch: feature/US-0102-traceability-redesign
 Acceptance Criteria:
-  - [x] AC-1000: Pass/Fail/Not Run are rendered as filled colour dots (8px) instead of letters
-  - [x] AC-1001: Cross-hair hover highlights the full row and TC column header on cell hover
-  - [x] AC-1002: Legend moves inline with the table caption and shows live counts
-  - [x] AC-1003: First column (story ID + title) is sticky during horizontal scroll
-Dependencies: US-0097
+
+- [x] AC-1000: Pass/Fail/Not Run are rendered as filled colour dots (8px) instead of letters
+- [x] AC-1001: Cross-hair hover highlights the full row and TC column header on cell hover
+- [x] AC-1002: Legend moves inline with the table caption and shows live counts
+- [x] AC-1003: First column (story ID + title) is sticky during horizontal scroll
+      Dependencies: US-0097
+
 ```
 
 ```
+
 US-0103 (EPIC-0015): As a user, I want the Status tab charts to read like an editorial report, so that it's clear what each chart means at a glance.
 Priority: Medium (P1)
 Estimate: S
 Status: Done
 Branch: feature/US-0103-status-editorial
 Acceptance Criteria:
-  - [x] AC-1004: Chart boxes are replaced with hairline top rule + display-face title + subtitle
-  - [x] AC-1005: Charts are grouped under "Delivery" and "Financial" supertitles
-  - [x] AC-1006: All doughnut charts have a centered hero number
-  - [x] AC-1007: Chart.js legends use Inter font family with point-style circular dots
-Dependencies: US-0094, US-0095, US-0099
+
+- [x] AC-1004: Chart boxes are replaced with hairline top rule + display-face title + subtitle
+- [x] AC-1005: Charts are grouped under "Delivery" and "Financial" supertitles
+- [x] AC-1006: All doughnut charts have a centered hero number
+- [x] AC-1007: Chart.js legends use Inter font family with point-style circular dots
+      Dependencies: US-0094, US-0095, US-0099
+
 ```
 
 ```
+
 US-0104 (EPIC-0015): As a user, I want to filter Trends by time range and see charts grouped by theme, so that I can focus on the analysis question at hand.
 Priority: Medium (P1)
 Estimate: M
 Status: Done
 Branch: feature/US-0104-trends-polish
 Acceptance Criteria:
-  - [x] AC-1008: A time-range toggle (7d / 30d / 90d / All) filters all Trends charts client-side
-  - [x] AC-1009: Charts are grouped under "Progress", "Cost & Spend", "Quality" supertitles
-  - [x] AC-0344: Line charts use stroke-gradient fills via Chart.js createLinearGradient
-  - [ ] AC-0345: Empty state shows an animated SVG placeholder instead of text-only copy
-Dependencies: US-0095
+
+- [x] AC-1008: A time-range toggle (7d / 30d / 90d / All) filters all Trends charts client-side
+- [x] AC-1009: Charts are grouped under "Progress", "Cost & Spend", "Quality" supertitles
+- [x] AC-0344: Line charts use stroke-gradient fills via Chart.js createLinearGradient
+- [ ] AC-0345: Empty state shows an animated SVG placeholder instead of text-only copy
+      Dependencies: US-0095
+
 ```
 
 ```
+
 US-0105 (EPIC-0015): As a user, I want the Costs tab to show cost trends inline and highlight big numbers, so that budget analysis is fast.
 Priority: Medium (P1)
 Estimate: M
 Status: Done
 Branch: feature/US-0105-costs-polish
 Acceptance Criteria:
-  - [x] AC-0346: Budget totals use .hero-num with delta arrows
-  - [x] AC-0347: Each story/epic row shows a 24x12 SVG sparkline of cumulative cost
-  - [x] AC-0348: Cost columns use lighter-weight $ sign and tabular figures
-  - [x] AC-0349: Progress bars use a reusable .progress-bar component with three threshold classes
-  - [ ] AC-0350: Token column is split into IN/OUT with labels, or hidden by default
-Dependencies: US-0094, US-0099
+
+- [x] AC-0346: Budget totals use .hero-num with delta arrows
+- [x] AC-0347: Each story/epic row shows a 24x12 SVG sparkline of cumulative cost
+- [x] AC-0348: Cost columns use lighter-weight $ sign and tabular figures
+- [x] AC-0349: Progress bars use a reusable .progress-bar component with three threshold classes
+- [ ] AC-0350: Token column is split into IN/OUT with labels, or hidden by default
+      Dependencies: US-0094, US-0099
+
 ```
 
 ```
+
 US-0106 (EPIC-0015): As a user, I want severity and status to be visually distinct on bug cards, so that I can triage by severity at a glance.
 Priority: Medium (P1)
 Estimate: S
 Status: Done
 Branch: feature/US-0106-bugs-severity
 Acceptance Criteria:
-  - [x] AC-0351: Severity badges use a different shape/style from status badges
-  - [x] AC-0352: Bug cards have a 4px severity stripe down the full left edge
-  - [x] AC-0353: Fix Branch field has a title attribute and copy-on-hover micro-icon
-  - [x] AC-0354: Lesson link renders as a full pill (e.g., L-0003 ↗) not a bare arrow
-  - [x] AC-0355: A compact timeline view is available as a third view mode
-Dependencies: US-0097
+
+- [x] AC-0351: Severity badges use a different shape/style from status badges
+- [x] AC-0352: Bug cards have a 4px severity stripe down the full left edge
+- [x] AC-0353: Fix Branch field has a title attribute and copy-on-hover micro-icon
+- [x] AC-0354: Lesson link renders as a full pill (e.g., L-0003 ↗) not a bare arrow
+- [x] AC-0355: A compact timeline view is available as a third view mode
+      Dependencies: US-0097
+
 ```
 
 ```
+
 US-0107 (EPIC-0015): As a user, I want Lesson cards to visually link back to their source epic and category, so that patterns are easier to discover.
 Priority: Low (P2)
 Estimate: XS
 Status: Done
 Branch: feature/US-0107-lessons-polish
 Acceptance Criteria:
-  - [x] AC-0356: Lesson cards have a left accent bar using the epic accent colour cycle
-  - [x] AC-0357: A category icon (security/performance/testing) is derived from keyword match in the rule text
-  - [x] AC-0358: Related bugs expand inline with severity dots
-Dependencies: US-0097
+
+- [x] AC-0356: Lesson cards have a left accent bar using the epic accent colour cycle
+- [x] AC-0357: A category icon (security/performance/testing) is derived from keyword match in the rule text
+- [x] AC-0358: Related bugs expand inline with severity dots
+      Dependencies: US-0097
+
 ```
 
 ---
@@ -2517,6 +2582,7 @@ Dependencies: US-0097
 ## Epic — EPIC-0016: Agentic Dashboard Mission Control Redesign
 
 ```
+
 EPIC-0016: Agentic Dashboard Mission Control Redesign
 Description: Mission Control / Broadcast Studio aesthetic pass on the Agentic SDLC Dashboard (docs/dashboard.html). Replaces the 30s location.reload() with live fetch-and-patch, wires up agent portraits, rebuilds the phase pipeline as an iterative three-tier display (current lap + lap history + telemetry), differentiates the metric cards, gives the activity log a terminal aesthetic, and tightens header/footer/alert treatments. Sibling to EPIC-0015 (shared semantic badge tokens from US-0097, distinct voice — report vs. live channel).
 Release Target: Release 1.10
@@ -2524,6 +2590,7 @@ Status: Done
 StartDate: 2026-04-13
 DoneDate: 2026-04-27
 Dependencies: EPIC-0013, EPIC-0015
+
 ```
 
 ---
@@ -2531,210 +2598,251 @@ Dependencies: EPIC-0013, EPIC-0015
 ## User Stories — EPIC-0016: Agentic Dashboard Mission Control Redesign
 
 ```
+
 US-0110 (EPIC-0016): As a user, I want the Agentic Dashboard canvas to use a darker neutral ground with subtle dot-grid texture and a distinctive display typeface, so that it reads as a live technical display rather than a generic operations panel.
 Priority: Medium (P1)
 Estimate: S
 Status: Done
 Branch: feature/US-0110-dashboard-canvas-refresh
 Acceptance Criteria:
-  - [x] AC-0359: Canvas background changes from #1a1a2e to #0b0d12 (aligns with plan-status dark canvas)
-  - [x] AC-0360: A subtle dot-grid background (radial-gradient, rgba(148,163,184,0.06), 24px spacing) is applied at the canvas level
-  - [x] AC-0361: Departure Mono and Geist are loaded via Google Fonts with font-display:swap
-  - [x] AC-0362: A .section-header utility class applies tracked-out uppercase in Geist for section labels (ACTIVE AGENT, PIPELINE, TELEMETRY)
-Dependencies: None
+
+- [x] AC-0359: Canvas background changes from #1a1a2e to #0b0d12 (aligns with plan-status dark canvas)
+- [x] AC-0360: A subtle dot-grid background (radial-gradient, rgba(148,163,184,0.06), 24px spacing) is applied at the canvas level
+- [x] AC-0361: Departure Mono and Geist are loaded via Google Fonts with font-display:swap
+- [x] AC-0362: A .section-header utility class applies tracked-out uppercase in Geist for section labels (ACTIVE AGENT, PIPELINE, TELEMETRY)
+      Dependencies: None
+
 ```
 
 ```
+
 US-0111 (EPIC-0016): As a user, I want the Agentic Dashboard to update in place without reloading the page, so that my scroll position and any open modal state are preserved across refreshes.
 Priority: High (P0)
 Estimate: L
 Status: Done
 Branch: feature/US-0111-live-fetch-and-patch
 Acceptance Criteria:
-  - [x] AC-0363: The existing alert IIFE in generate-dashboard.js is extracted into a runAlertCheck(status) function callable on every fetch tick (not just page load)
-  - [x] AC-0364: Diff logic patches only changed DOM nodes (agent statuses, phase states, metric values) instead of re-rendering the whole page
-  - [x] AC-0365: Scroll position, open modals, and filter chip state are preserved across refreshes
-  - [x] AC-0366: A "Last updated: HH:MM:SS ago" ticker renders in JetBrains Mono and updates per tick
-  - [x] AC-0367: BUG-0159 (location.reload scroll wipe) is resolved
-  - [x] AC-0434: A refreshState() function fetches docs/sdlc-status.json every 5-10 seconds, invokes the DOM diff+patch logic, and calls runAlertCheck(status) so browser notifications and audio cues continue to fire on state transitions
-Dependencies: US-0124
+
+- [x] AC-0363: The existing alert IIFE in generate-dashboard.js is extracted into a runAlertCheck(status) function callable on every fetch tick (not just page load)
+- [x] AC-0364: Diff logic patches only changed DOM nodes (agent statuses, phase states, metric values) instead of re-rendering the whole page
+- [x] AC-0365: Scroll position, open modals, and filter chip state are preserved across refreshes
+- [x] AC-0366: A "Last updated: HH:MM:SS ago" ticker renders in JetBrains Mono and updates per tick
+- [x] AC-0367: BUG-0159 (location.reload scroll wipe) is resolved
+- [x] AC-0434: A refreshState() function fetches docs/sdlc-status.json every 5-10 seconds, invokes the DOM diff+patch logic, and calls runAlertCheck(status) so browser notifications and audio cues continue to fire on state transitions
+      Dependencies: US-0124
+
 ```
 
 ```
+
 US-0112 (EPIC-0016): As a user, I want a consistent live-dot indicator beside every live-updating element, so that I can see at a glance which parts of the dashboard are actively polling and healthy.
 Priority: Medium (P1)
 Estimate: XS
 Status: Done
 Branch: feature/US-0112-live-dot-indicator
 Acceptance Criteria:
-  - [x] AC-0368: A .live-dot CSS class with .ok / .warn / .err variants exists (green, amber, red)
-  - [x] AC-0369: Live dots pulse via CSS animation on a 2-4s cycle
-  - [x] AC-0370: The component is reused across the header clock, agent spotlight, metric cards, and activity log header
-Dependencies: US-0110
+
+- [x] AC-0368: A .live-dot CSS class with .ok / .warn / .err variants exists (green, amber, red)
+- [x] AC-0369: Live dots pulse via CSS animation on a 2-4s cycle
+- [x] AC-0370: The component is reused across the header clock, agent spotlight, metric cards, and activity log header
+      Dependencies: US-0110
+
 ```
 
 ```
+
 US-0113 (EPIC-0016): As a user, I want each agent to display a size-appropriate portrait photograph in the spotlight, grid, and About modal, so that the dashboard has a distinct on-air identity for every agent and total avatar page weight stays under 200KB.
 Priority: High (P0)
 Estimate: XS
 Status: Done
 Branch: feature/US-0113-agent-portraits
 Acceptance Criteria:
-  - [x] AC-0371: Renderer reads portraits from docs/agents/images/optimized/{name}-{size}.png (size 64 for grid, 160 for spotlight, 320 for About modal) — using the PNG variants already produced by Session 17 sips preprocessing, no new build step required
-  - [x] AC-0372: agents.config.json gains an avatar field per agent (base name such as "conductor"); the renderer appends -{size}.png so paths are config-driven rather than hardcoded
-  - [x] AC-0373: Fallback chain simplifies to: optimized variant → existing headshot PNG → emoji icon
-  - [x] AC-0375: Grid avatars are 64px with a 2px agent-color ring; spotlight avatar is 160px rounded-square with a 3px ring; both use object-fit:cover and object-position:center top to handle the rectangular source aspect ratio cleanly
-  - [x] AC-0376: BUG-0163 (portraits exist but not wired up) is resolved
-Dependencies: US-0110
+
+- [x] AC-0371: Renderer reads portraits from docs/agents/images/optimized/{name}-{size}.png (size 64 for grid, 160 for spotlight, 320 for About modal) — using the PNG variants already produced by Session 17 sips preprocessing, no new build step required
+- [x] AC-0372: agents.config.json gains an avatar field per agent (base name such as "conductor"); the renderer appends -{size}.png so paths are config-driven rather than hardcoded
+- [x] AC-0373: Fallback chain simplifies to: optimized variant → existing headshot PNG → emoji icon
+- [x] AC-0375: Grid avatars are 64px with a 2px agent-color ring; spotlight avatar is 160px rounded-square with a 3px ring; both use object-fit:cover and object-position:center top to handle the rectangular source aspect ratio cleanly
+- [x] AC-0376: BUG-0163 (portraits exist but not wired up) is resolved
+      Dependencies: US-0110
+
 ```
 
 ```
+
 US-0114 (EPIC-0016): As a user, I want a three-zone header with project title on the left, live phase indicator in the center, and a UTC clock on the right, so that the dashboard reads as mission control rather than a blue-gradient web app.
 Priority: Medium (P1)
 Estimate: S
 Status: Done
 Branch: feature/US-0114-header-3-zone
 Acceptance Criteria:
-  - [x] AC-0377: The blue-to-red header gradient is removed; header uses #0b0d12 solid with a 1px bottom border
-  - [x] AC-0378: Left zone shows project title in Geist semibold 14px with a Departure Mono subtitle below
-  - [x] AC-0379: Center zone shows the current phase indicator ("PHASE 3 / BUILD") in Departure Mono tracked-out with a green live-dot
-  - [x] AC-0380: Right zone shows a UTC clock in JetBrains Mono (HH:MM:SS) plus the existing theme/alerts/about controls
-  - [x] AC-0381: When any agent/phase is BLOCKED, a 2px top-border in --clr-danger plus an incident strip appears
-  - [x] AC-0382: BUG-0162 (hardcoded dark-red gradient reading as warning) is resolved
-Dependencies: US-0110, US-0112, US-0113
+
+- [x] AC-0377: The blue-to-red header gradient is removed; header uses #0b0d12 solid with a 1px bottom border
+- [x] AC-0378: Left zone shows project title in Geist semibold 14px with a Departure Mono subtitle below
+- [x] AC-0379: Center zone shows the current phase indicator ("PHASE 3 / BUILD") in Departure Mono tracked-out with a green live-dot
+- [x] AC-0380: Right zone shows a UTC clock in JetBrains Mono (HH:MM:SS) plus the existing theme/alerts/about controls
+- [x] AC-0381: When any agent/phase is BLOCKED, a 2px top-border in --clr-danger plus an incident strip appears
+- [x] AC-0382: BUG-0162 (hardcoded dark-red gradient reading as warning) is resolved
+      Dependencies: US-0110, US-0112, US-0113
+
 ```
 
 ```
+
 US-0115 (EPIC-0016): As a user, I want the phase pipeline to show the current implementation cycle as a 6-phase timeline with phase numbers, elapsed times, and a partial-progress fill on the active phase, so that I can see exactly where the current build is and how far into the phase it has progressed.
 Priority: High (P0)
 Estimate: L
 Status: Done
 Branch: feature/US-0115-pipeline-tier-a
 Acceptance Criteria:
-  - [x] AC-0383: The six canonical pipeline phases (Blueprint, Architect, Build, Integration, Test, Polish — matching tools/update-sdlc-status.js:210-217) render as a timeline with phase number (01/02/03/04/05/06) in Departure Mono 32px above the phase name, connected by 1px rules
-  - [x] AC-0384: A cycle counter above the timeline shows "CYCLE N · IMPLEMENTING US-XXXX · elapsed HH:MM:SS" with a live-dot
-  - [x] AC-0385: The active phase shows a partial-progress fill gradient based on story-completion ratio within that phase
-  - [x] AC-0386: Completed phases render a checkmark plus elapsed-time footer in JetBrains Mono
-  - [x] AC-0387: BLOCKED state renders a rotating beacon animation (1s diagonal gradient sweep) over the stuck phase
-Dependencies: US-0110, US-0112
+
+- [x] AC-0383: The six canonical pipeline phases (Blueprint, Architect, Build, Integration, Test, Polish — matching tools/update-sdlc-status.js:210-217) render as a timeline with phase number (01/02/03/04/05/06) in Departure Mono 32px above the phase name, connected by 1px rules
+- [x] AC-0384: A cycle counter above the timeline shows "CYCLE N · IMPLEMENTING US-XXXX · elapsed HH:MM:SS" with a live-dot
+- [x] AC-0385: The active phase shows a partial-progress fill gradient based on story-completion ratio within that phase
+- [x] AC-0386: Completed phases render a checkmark plus elapsed-time footer in JetBrains Mono
+- [x] AC-0387: BLOCKED state renders a rotating beacon animation (1s diagonal gradient sweep) over the stuck phase
+      Dependencies: US-0110, US-0112
+
 ```
 
 ```
+
 US-0118 (EPIC-0016): As a user, I want the Phase Progress, Quality, and Reviews cards to be visually differentiated by scale and chart type, so that each tells its own story at a glance instead of three identical rectangles.
 Priority: Medium (P1)
 Estimate: M
 Status: Done
 Branch: feature/US-0118-metric-cards-differentiation
 Acceptance Criteria:
-  - [x] AC-0396: Phase Progress card shows a hero number in Departure Mono 56px with a sparkline below
-  - [x] AC-0397: Quality card shows a doughnut chart with a center number (coverage %) and status tint
-  - [x] AC-0398: Reviews card shows a compact list of recent reviews with agent avatar chips
-  - [x] AC-0399: Each card's lead metric uses semantic color (brand blue / green-amber-red / green-red) keyed to state
-  - [x] AC-0400: Each card footer has a hairline 1px rule with "LAST UPDATED HH:MM" in muted JetBrains Mono
-Dependencies: US-0110, US-0112
+
+- [x] AC-0396: Phase Progress card shows a hero number in Departure Mono 56px with a sparkline below
+- [x] AC-0397: Quality card shows a doughnut chart with a center number (coverage %) and status tint
+- [x] AC-0398: Reviews card shows a compact list of recent reviews with agent avatar chips
+- [x] AC-0399: Each card's lead metric uses semantic color (brand blue / green-amber-red / green-red) keyed to state
+- [x] AC-0400: Each card footer has a hairline 1px rule with "LAST UPDATED HH:MM" in muted JetBrains Mono
+      Dependencies: US-0110, US-0112
+
 ```
 
 ```
+
 US-0119 (EPIC-0016): As a user, I want the agent spotlight and agent grid to feel like a broadcast stage with photographed station cards, so that the active agent is visibly "on air" and idle agents are clearly queued up.
 Priority: High (P0)
 Estimate: M
 Status: Done
 Branch: feature/US-0119-agent-spotlight-stations
 Acceptance Criteria:
-  - [x] AC-0401: Spotlight panel is 240px tall with a 160px portrait, name in Geist Display 28px, role in small caps, current task in JetBrains Mono, and an elapsed-time ticker
-  - [x] AC-0402: Agent grid cards use a vertical layout: portrait on top (80x80 circle with 2px agent-color ring), name, role micro-copy, status pill
-  - [x] AC-0403: The active station has a 3px agent-color box-shadow glow and a pulsing green "now on air" dot
-  - [x] AC-0404: Idle stations fade to 50% opacity
-  - [x] AC-0405: Hover replaces filter:brightness(1.12) with a 4px agent-color outline glow
-  - [x] AC-0406: BUG-0161 (brightness hover invisible in light mode) is resolved
-Dependencies: US-0110, US-0112, US-0113
+
+- [x] AC-0401: Spotlight panel is 240px tall with a 160px portrait, name in Geist Display 28px, role in small caps, current task in JetBrains Mono, and an elapsed-time ticker
+- [x] AC-0402: Agent grid cards use a vertical layout: portrait on top (80x80 circle with 2px agent-color ring), name, role micro-copy, status pill
+- [x] AC-0403: The active station has a 3px agent-color box-shadow glow and a pulsing green "now on air" dot
+- [x] AC-0404: Idle stations fade to 50% opacity
+- [x] AC-0405: Hover replaces filter:brightness(1.12) with a 4px agent-color outline glow
+- [x] AC-0406: BUG-0161 (brightness hover invisible in light mode) is resolved
+      Dependencies: US-0110, US-0112, US-0113
+
 ```
 
 ```
+
 US-0120 (EPIC-0016): As a user, I want the User Stories panel to show a left status-strip on each row plus an elapsed timer on in-progress stories, so that I can triage the active backlog with a single scan.
 Priority: Medium (P2)
 Estimate: S
 Status: Done
 Branch: feature/US-0120-stories-panel-polish
 Acceptance Criteria:
-  - [x] AC-0407: Story rows gain a 3px vertical status strip on the left (Complete=green, InProgress=amber, ToDo=muted)
-  - [x] AC-0408: In-progress stories display an elapsed-time pill ("6h 23m") in JetBrains Mono
-  - [x] AC-0409: Epic headers use the Departure Mono tracked-out treatment for consistency with other sections
-  - [x] AC-0410: When a story is assigned to an agent, a color-dot plus agent initial renders in the row
-Dependencies: US-0110, US-0112
+
+- [x] AC-0407: Story rows gain a 3px vertical status strip on the left (Complete=green, InProgress=amber, ToDo=muted)
+- [x] AC-0408: In-progress stories display an elapsed-time pill ("6h 23m") in JetBrains Mono
+- [x] AC-0409: Epic headers use the Departure Mono tracked-out treatment for consistency with other sections
+- [x] AC-0410: When a story is assigned to an agent, a color-dot plus agent initial renders in the row
+      Dependencies: US-0110, US-0112
+
 ```
 
 ```
+
 US-0121 (EPIC-0016): As a user, I want the activity log to adopt a terminal aesthetic with filter chips and a tail-mode toggle, so that I can scan recent events fast and control whether the log auto-scrolls.
 Priority: Medium (P1)
 Estimate: S
 Status: Done
 Branch: feature/US-0121-activity-log-terminal
 Acceptance Criteria:
-  - [x] AC-0411: Log entries render in monospace with an agent-color left bar and format [HH:MM:SS] [AGENT] message
-  - [x] AC-0412: Timestamps use muted gray, agent tokens use agent color, message text uses primary foreground
-  - [x] AC-0413: Filter chips at the top ([All] [Errors] [Reviews] [Tests] [Bugs]) filter the log; chips toggle on click
-  - [x] AC-0414: A tail-mode toggle ("pause scroll at bottom when new entries arrive") is on by default
-  - [x] AC-0415: Empty state shows a blinking terminal-cursor with "Awaiting agent activity…"
-Dependencies: US-0110, US-0112
+
+- [x] AC-0411: Log entries render in monospace with an agent-color left bar and format [HH:MM:SS] [AGENT] message
+- [x] AC-0412: Timestamps use muted gray, agent tokens use agent color, message text uses primary foreground
+- [x] AC-0413: Filter chips at the top ([All] [Errors] [Reviews] [Tests] [Bugs]) filter the log; chips toggle on click
+- [x] AC-0414: A tail-mode toggle ("pause scroll at bottom when new entries arrive") is on by default
+- [x] AC-0415: Empty state shows a blinking terminal-cursor with "Awaiting agent activity…"
+      Dependencies: US-0110, US-0112
+
 ```
 
 ```
+
 US-0122 (EPIC-0016): As a user, I want BLOCKED states to trigger a full-viewport red border, an incident ticker, and a reused AudioContext, so that I see a clear alert state and the audio subsystem doesn't leak contexts on repeated blocks.
 Priority: High (P0)
 Estimate: S
 Status: Done
 Branch: feature/US-0122-alerts-incident-ticker
 Acceptance Criteria:
-  - [x] AC-0416: A full-viewport 4px red border pulses whenever any agent/phase is BLOCKED
-  - [x] AC-0417: An incident ticker beneath the header shows "INCIDENT HH:MM:SS · <agent> blocked on <story>" in Departure Mono red with a subtle shimmer
-  - [x] AC-0418: Existing audio/notification behavior is preserved (no regressions vs. current playBeep + browser notifications)
-  - [x] AC-0419: playBeep() reuses a single module-level AudioContext instance instead of instantiating per call
-  - [x] AC-0420: BUG-0160 (AudioContext leak) is resolved
-Dependencies: US-0111, US-0112
+
+- [x] AC-0416: A full-viewport 4px red border pulses whenever any agent/phase is BLOCKED
+- [x] AC-0417: An incident ticker beneath the header shows "INCIDENT HH:MM:SS · <agent> blocked on <story>" in Departure Mono red with a subtle shimmer
+- [x] AC-0418: Existing audio/notification behavior is preserved (no regressions vs. current playBeep + browser notifications)
+- [x] AC-0419: playBeep() reuses a single module-level AudioContext instance instead of instantiating per call
+- [x] AC-0420: BUG-0160 (AudioContext leak) is resolved
+      Dependencies: US-0111, US-0112
+
 ```
 
 ```
+
 US-0123 (EPIC-0016): As a user, I want the Agentic Dashboard About modal to use a two-column layout with mission statement, agent roster, and build info, so that it matches plan-status About parity and surfaces version/branch/commit data.
 Priority: Low (P2)
 Estimate: XS
 Status: Done
 Branch: feature/US-0123-about-modal-two-column
 Acceptance Criteria:
-  - [x] AC-0421: Left column renders the team image framed like a playbill
-  - [x] AC-0422: Right column shows mission statement, agent roster list, config links, and version info
-  - [x] AC-0423: Commit / Branch / Build lines match the plan-status About modal format (from US-0109)
-Dependencies: US-0109
+
+- [x] AC-0421: Left column renders the team image framed like a playbill
+- [x] AC-0422: Right column shows mission statement, agent roster list, config links, and version info
+- [x] AC-0423: Commit / Branch / Build lines match the plan-status About modal format (from US-0109)
+      Dependencies: US-0109
+
 ```
 
 ```
+
 US-0124 (EPIC-0016): As a developer, I want a baseline test harness for tools/generate-dashboard.js, so that every subsequent EPIC-0016 story has a regression safety net against accidental breakage of the 969-line generator.
 Priority: High (P0)
 Estimate: XS
 Status: Done
 Branch: feature/US-0124-dashboard-test-harness
 Acceptance Criteria:
-  - [x] AC-0424: tests/unit/generate-dashboard.test.js is created and imports generateHTML (or the equivalent exportable function) from tools/generate-dashboard.js
-  - [x] AC-0425: A healthy fixture status object (6 phases, 9 agents, no BLOCKED state) feeds generateHTML() and the result begins with <!DOCTYPE html> and is non-empty
-  - [x] AC-0426: The rendered HTML includes every agent name from the fixture (Conductor, Compass, Keystone, Lens, Palette, Forge, Pixel, Sentinel, Circuit)
-  - [x] AC-0427: The rendered HTML includes every canonical phase name (Blueprint, Architect, Build, Integration, Test, Polish)
-  - [x] AC-0428: When a fixture is mutated to set an agent status to "blocked", the rendered HTML contains the blocked alert markup (e.g. blocked CSS class, NEEDS REVIEW ribbon text, or equivalent incident indicator present in the current renderer)
-  - [x] AC-0429: The About modal section renders with the project name sourced from the fixture's project metadata
-Dependencies: None
+
+- [x] AC-0424: tests/unit/generate-dashboard.test.js is created and imports generateHTML (or the equivalent exportable function) from tools/generate-dashboard.js
+- [x] AC-0425: A healthy fixture status object (6 phases, 9 agents, no BLOCKED state) feeds generateHTML() and the result begins with <!DOCTYPE html> and is non-empty
+- [x] AC-0426: The rendered HTML includes every agent name from the fixture (Conductor, Compass, Keystone, Lens, Palette, Forge, Pixel, Sentinel, Circuit)
+- [x] AC-0427: The rendered HTML includes every canonical phase name (Blueprint, Architect, Build, Integration, Test, Polish)
+- [x] AC-0428: When a fixture is mutated to set an agent status to "blocked", the rendered HTML contains the blocked alert markup (e.g. blocked CSS class, NEEDS REVIEW ribbon text, or equivalent incident indicator present in the current renderer)
+- [x] AC-0429: The About modal section renders with the project name sourced from the fixture's project metadata
+      Dependencies: None
+
 ```
 
 ```
+
 US-0125 (EPIC-0016): As a developer, I want badge tokens and the badge() helper extracted from tools/lib/render-html.js into a shared tools/lib/theme.js module, so that the Plan Visualizer and Agentic SDLC dashboards share a single source of truth for semantic tones and cannot drift.
 Priority: Medium (P1)
 Estimate: XS
 Status: Done
 Branch: feature/US-0125-theme-shared-lib
 Acceptance Criteria:
-  - [x] AC-0430: tools/lib/theme.js is created and exports BADGE_TONE (the 17 label→tone map) and badge(label) (HTML-producing helper) with no change to their observable outputs
-  - [x] AC-0431: tools/lib/render-html.js imports BADGE_TONE and badge from theme.js; the previous inline definitions are removed, and all existing render-html tests continue to pass unmodified
-  - [x] AC-0432: tools/generate-dashboard.js imports the same module and uses the shared helpers wherever badges render (status pills, severity chips, review state)
-  - [x] AC-0433: A new tests/unit/theme.test.js asserts the export surface (BADGE_TONE keys, badge() output for 3 representative labels) so drift is detected at test time
-Dependencies: None
+
+- [x] AC-0430: tools/lib/theme.js is created and exports BADGE_TONE (the 17 label→tone map) and badge(label) (HTML-producing helper) with no change to their observable outputs
+- [x] AC-0431: tools/lib/render-html.js imports BADGE_TONE and badge from theme.js; the previous inline definitions are removed, and all existing render-html tests continue to pass unmodified
+- [x] AC-0432: tools/generate-dashboard.js imports the same module and uses the shared helpers wherever badges render (status pills, severity chips, review state)
+- [x] AC-0433: A new tests/unit/theme.test.js asserts the export surface (BADGE_TONE keys, badge() output for 3 representative labels) so drift is detected at test time
+      Dependencies: None
 
 US-0148 (EPIC-0016): As a user, I want the Agentic Dashboard to display a Mission Control layout with a roster row per agent, stat tile strip, pipeline phase cards, and a right-side attention + event-log panel, so that the dashboard matches the original Mission Control design intent for EPIC-0016.
 Priority: High (P0)
@@ -2742,13 +2850,15 @@ Estimate: L
 Status: Done
 Branch: feature/US-0148-mission-control-redesign
 Acceptance Criteria:
-  - [x] AC-0539: A sticky 42px topbar shows ON AIR badge, current epic/story breadcrumb, assigned agent name, elapsed HH:MM:SS, cycle number, clock, LIVE badge, and Light/Dark toggle
-  - [x] AC-0540: A Mission Control hero section shows 8 stat tiles (Phase, Active, Queue, Reviews, Blocked, Tests, Coverage, AI Spend) in a responsive row
-  - [x] AC-0541: The Pipeline section renders each phase as a horizontal card with phase name and active agent names; the active phase is visually highlighted
-  - [x] AC-0542: The Roster section renders each agent as a full-width row (colored initial circle, name + role, task/branch text, status badge) replacing the agent circle grid
-  - [x] AC-0543: A right sidebar panel contains a Needs Attention section (blocked/review/bug chips and alert items) and an Event Log (last 10 timestamped entries)
-  - [x] AC-0544: All existing dashboard tests continue to pass (1867 tests green)
-Dependencies: EPIC-0016
+
+- [x] AC-0539: A sticky 42px topbar shows ON AIR badge, current epic/story breadcrumb, assigned agent name, elapsed HH:MM:SS, cycle number, clock, LIVE badge, and Light/Dark toggle
+- [x] AC-0540: A Mission Control hero section shows 8 stat tiles (Phase, Active, Queue, Reviews, Blocked, Tests, Coverage, AI Spend) in a responsive row
+- [x] AC-0541: The Pipeline section renders each phase as a horizontal card with phase name and active agent names; the active phase is visually highlighted
+- [x] AC-0542: The Roster section renders each agent as a full-width row (colored initial circle, name + role, task/branch text, status badge) replacing the agent circle grid
+- [x] AC-0543: A right sidebar panel contains a Needs Attention section (blocked/review/bug chips and alert items) and an Event Log (last 10 timestamped entries)
+- [x] AC-0544: All existing dashboard tests continue to pass (1867 tests green)
+      Dependencies: EPIC-0016
+
 ```
 
 ---
@@ -2756,6 +2866,7 @@ Dependencies: EPIC-0016
 ## Epic — EPIC-0017: Agentic Dashboard Effectiveness Review
 
 ```
+
 EPIC-0017: Agentic Dashboard Effectiveness Review
 Description: Discovery / retrospective epic. Review the Agentic SDLC Dashboard (originally built for a hackathon demo, now extracted as a reusable component) and define what it takes to make it genuinely effective as a general-purpose agentic pipeline visualization. Output: a gap analysis and a set of implementation stories in a follow-on epic. Complements EPIC-0016 (Mission Control aesthetic redesign) by focusing on schema, data model, workflow coverage, and integration patterns — not just visual polish.
 Release Target: Release 2.0
@@ -2763,6 +2874,7 @@ Status: Done
 StartDate: 2026-04-13
 DoneDate: 2026-04-18
 Dependencies: EPIC-0013, EPIC-0016
+
 ```
 
 ---
@@ -2770,19 +2882,22 @@ Dependencies: EPIC-0013, EPIC-0016
 ## User Stories — EPIC-0017: Agentic Dashboard Effectiveness Review
 
 ```
+
 US-0126 (EPIC-0017): As a developer onboarding to PlanVisualizer, I want the install script to detect and prompt for the superpowers plugin, and as a Conductor or sub-agent, I want each agent instruction file to explicitly list which superpowers skills to invoke at which pipeline stage, so that the full DM_AGENT workflow leverages structured skill discipline without requiring me to remember which skills apply where.
 Priority: High (P0)
 Estimate: S
 Status: Done
 Branch: feature/US-0126-skills-integration
 Acceptance Criteria:
-  - [x] AC-0435: scripts/install.sh §0 detects ~/.claude/plugins/cache/claude-plugins-official/superpowers/; if absent prompts Y/N; if Y prints the slash command and exits; if N continues
-  - [x] AC-0436: All 8 docs/agents/*.md files have a ## Superpowers Skills section immediately after the opening callout block listing applicable skills and stages
-  - [x] AC-0437: The conditional note ("If not installed — skip these invocations") is present in every agent file's Skills section
-  - [x] AC-0438: docs/skills-integration.md is created with installation instructions, full agent × skill × stage table, and skill catalogue
-  - [x] AC-0439: docs/skills-integration.md skill catalogue covers all 12 skills listed in the design spec
-  - [x] AC-0440: docs/ID_REGISTRY.md AC sequence updated to AC-0441 after this story is written
-Dependencies: EPIC-0013, EPIC-0016
+
+- [x] AC-0435: scripts/install.sh §0 detects ~/.claude/plugins/cache/claude-plugins-official/superpowers/; if absent prompts Y/N; if Y prints the slash command and exits; if N continues
+- [x] AC-0436: All 8 docs/agents/\*.md files have a ## Superpowers Skills section immediately after the opening callout block listing applicable skills and stages
+- [x] AC-0437: The conditional note ("If not installed — skip these invocations") is present in every agent file's Skills section
+- [x] AC-0438: docs/skills-integration.md is created with installation instructions, full agent × skill × stage table, and skill catalogue
+- [x] AC-0439: docs/skills-integration.md skill catalogue covers all 12 skills listed in the design spec
+- [x] AC-0440: docs/ID_REGISTRY.md AC sequence updated to AC-0441 after this story is written
+      Dependencies: EPIC-0013, EPIC-0016
+
 ```
 
 ---
@@ -2790,6 +2905,7 @@ Dependencies: EPIC-0013, EPIC-0016
 ## Epic — EPIC-0019: Dashboard Cycle History
 
 ```
+
 EPIC-0019: Dashboard Cycle History
 Description: Comprehensive effectiveness improvement for the Agentic SDLC Dashboard. Covers three tracks: (A) schema generalization — replacing hackathon framing with a project config block, externalizing phase definitions, and removing hardcoded project identity from the HTML; (B) CLI completeness — epic lifecycle commands, session reset, coverage/bug/phase wiring in DM_AGENT.md; (C) new features — cycle history lap strip, aggregate telemetry, and a dashboard extraction guide for adopting projects. Supersedes the original narrow cycle-history scope.
 Release Target: Release 1.11
@@ -2797,6 +2913,7 @@ Status: Done
 StartDate: 2026-04-15
 DoneDate: 2026-04-27
 Dependencies: EPIC-0016
+
 ```
 
 ---
@@ -2804,158 +2921,188 @@ Dependencies: EPIC-0016
 ## User Stories — EPIC-0019: Dashboard Cycle History
 
 ```
+
 US-0116 (EPIC-0019): As a user, I want a lap-history strip beneath the current cycle showing the last 10 completed cycles, so that I can see operational tempo and open any past cycle for phase-timing details.
 Priority: Medium (P1)
 Estimate: M
 Status: Done
 Branch: feature/US-0116-lap-history-strip
 Acceptance Criteria:
-  - [x] AC-0388: docs/sdlc-status.json schema gains a cycles[] array: {id, implementationTarget, startedAt, endedAt, phaseTimings, outcome, incidents}; retention keeps the last 50
-  - [x] AC-0389: Tier B renders a 32px-tall horizontal strip of the last 10 cycles as mini segmented bars (one segment per phase, matching the 6-phase canonical pipeline from US-0115)
-  - [x] AC-0390: Hovering a bar shows a tooltip ("Cycle N · US-XXXX · HH:MM · Xd ago"); failed phases render red segments
-  - [x] AC-0391: Clicking a bar opens a cycle-detail popover with per-phase timings and outcome
-Dependencies: US-0115
+
+- [x] AC-0388: docs/sdlc-status.json schema gains a cycles[] array: {id, implementationTarget, startedAt, endedAt, phaseTimings, outcome, incidents}; retention keeps the last 50
+- [x] AC-0389: Tier B renders a 32px-tall horizontal strip of the last 10 cycles as mini segmented bars (one segment per phase, matching the 6-phase canonical pipeline from US-0115)
+- [x] AC-0390: Hovering a bar shows a tooltip ("Cycle N · US-XXXX · HH:MM · Xd ago"); failed phases render red segments
+- [x] AC-0391: Clicking a bar opens a cycle-detail popover with per-phase timings and outcome
+      Dependencies: US-0115
+
 ```
 
 ```
+
 US-0117 (EPIC-0019): As a user, I want a telemetry row summarizing aggregate cycle performance plus a satisfying animation when a cycle completes, so that the dashboard reinforces the "machine that keeps running" feel.
 Priority: Medium (P2)
 Estimate: S
 Status: Done
 Branch: feature/US-0117-telemetry-completion
 Acceptance Criteria:
-  - [x] AC-0392: Tier C row shows "AVG CYCLE TIME · CYCLES TODAY · INCIDENTS · SUCCESS RATE" in Departure Mono tracked-out muted text
-  - [x] AC-0393: Values are derived from cycles[] aggregation in sdlc-status.json
-  - [x] AC-0394: On cycle completion the dashboard plays a phase-6 flash, green sweep left-to-right, cycle-counter flip, and a new lap-bar push into Tier B
-  - [ ] AC-0395: A 200ms ascending audio chime plays on cycle completion (respects user's alert-mute preference) — deferred: requires alert-mute preference story
-Dependencies: US-0115, US-0116
+
+- [x] AC-0392: Tier C row shows "AVG CYCLE TIME · CYCLES TODAY · INCIDENTS · SUCCESS RATE" in Departure Mono tracked-out muted text
+- [x] AC-0393: Values are derived from cycles[] aggregation in sdlc-status.json
+- [x] AC-0394: On cycle completion the dashboard plays a phase-6 flash, green sweep left-to-right, cycle-counter flip, and a new lap-bar push into Tier B
+- [ ] AC-0395: A 200ms ascending audio chime plays on cycle completion (respects user's alert-mute preference) — deferred: requires alert-mute preference story
+      Dependencies: US-0115, US-0116
+
 ```
 
 ```
+
 US-0127 (EPIC-0019): As a project adopter, I want sdlc-status.json to use a project config block instead of hackathon, so that the schema is meaningful for any ongoing project.
 Priority: High (P0)
 Estimate: S
 Status: Done
 Branch: feature/US-0127-schema-generalization
 Acceptance Criteria:
-  - [x] AC-0441: agents.config.json gains project section with name, description, repoUrl, startDate fields
-  - [x] AC-0442: init-sdlc-status.js reads config.project and writes it as sdlc-status.json.project
-  - [x] AC-0443: sdlc-status.json no longer contains a hackathon key
-  - [x] AC-0444: update-sdlc-status.js handlers preserve data.project on every mutation
-  - [x] AC-0445: sdlc-status.json migration maps hackathon.name → project.name, hackathon.date → project.startDate
-  - [x] AC-0446: init-sdlc-status.js exports buildStatus for unit testing; unit tests cover init and mutation preservation
-Dependencies: None
+
+- [x] AC-0441: agents.config.json gains project section with name, description, repoUrl, startDate fields
+- [x] AC-0442: init-sdlc-status.js reads config.project and writes it as sdlc-status.json.project
+- [x] AC-0443: sdlc-status.json no longer contains a hackathon key
+- [x] AC-0444: update-sdlc-status.js handlers preserve data.project on every mutation
+- [x] AC-0445: sdlc-status.json migration maps hackathon.name → project.name, hackathon.date → project.startDate
+- [x] AC-0446: init-sdlc-status.js exports buildStatus for unit testing; unit tests cover init and mutation preservation
+      Dependencies: None
+
 ```
 
 ```
+
 US-0128 (EPIC-0019): As a project adopter, I want the dashboard to read its title and repo links from sdlc-status.json, so that I do not need to edit HTML to adopt it.
 Priority: High (P0)
 Estimate: S
 Status: Done
 Branch: feature/US-0128-dashboard-dynamic-identity
 Acceptance Criteria:
-  - [x] AC-0447: title tag is updated at page load from state.project.name on first successful fetch
-  - [x] AC-0448: header-title and header-subtitle elements are patched to project.name and project.description on each refreshState tick
-  - [x] AC-0449: about panel h3 and GitHub repo links read from project.name and project.repoUrl
-  - [x] AC-0450: log time field changed to ISO 8601 in update-sdlc-status.js; dashboard formats it as HH:MM for display
-  - [x] AC-0451: all hardcoded My Project and yourorg/your-project strings removed from dashboard.html
-  - [x] AC-0452: unit test covers patchDOM with mock state containing project fields
-Dependencies: US-0127
+
+- [x] AC-0447: title tag is updated at page load from state.project.name on first successful fetch
+- [x] AC-0448: header-title and header-subtitle elements are patched to project.name and project.description on each refreshState tick
+- [x] AC-0449: about panel h3 and GitHub repo links read from project.name and project.repoUrl
+- [x] AC-0450: log time field changed to ISO 8601 in update-sdlc-status.js; dashboard formats it as HH:MM for display
+- [x] AC-0451: all hardcoded My Project and yourorg/your-project strings removed from dashboard.html
+- [x] AC-0452: unit test covers patchDOM with mock state containing project fields
+      Dependencies: US-0127
+
 ```
 
 ```
+
 US-0129 (EPIC-0019): As a project adopter, I want phase names and agents to come from agents.config.json, so that my project phases appear correctly without editing update-sdlc-status.js.
 Priority: High (P0)
 Estimate: M
 Status: Done
 Branch: feature/US-0129-phase-config-externalization
 Acceptance Criteria:
-  - [x] AC-0453: agents.config.json gains a phases array with name, agents, deliverables fields per phase
-  - [x] AC-0454: init-sdlc-status.js seeds sdlc-status.json.phases from config.phases with id, status:pending, startedAt:null, completedAt:null
-  - [x] AC-0455: update-sdlc-status.js phase handler reads definitions from data.phases (already seeded) with generic fallback
-  - [x] AC-0456: PHASE_DEFS constant is removed from update-sdlc-status.js
-  - [x] AC-0457: unit tests updated to pre-seed phases before calling phase handler
-Dependencies: US-0127
+
+- [x] AC-0453: agents.config.json gains a phases array with name, agents, deliverables fields per phase
+- [x] AC-0454: init-sdlc-status.js seeds sdlc-status.json.phases from config.phases with id, status:pending, startedAt:null, completedAt:null
+- [x] AC-0455: update-sdlc-status.js phase handler reads definitions from data.phases (already seeded) with generic fallback
+- [x] AC-0456: PHASE_DEFS constant is removed from update-sdlc-status.js
+- [x] AC-0457: unit tests updated to pre-seed phases before calling phase handler
+      Dependencies: US-0127
+
 ```
 
 ```
+
 US-0130 (EPIC-0019): As a Conductor agent, I want epic-start and epic-complete CLI commands, so that the dashboard shows epic-level progress alongside story progress.
 Priority: High (P0)
 Estimate: M
 Status: Done
 Branch: feature/US-0130-epic-lifecycle-commands
 Acceptance Criteria:
-  - [x] AC-0458: epic-start creates epics[id] entry with name, status:in-progress, startedAt, completedAt:null, storiesCompleted:0, storiesTotal:N
-  - [x] AC-0459: epic-complete sets status:complete and completedAt on epics[id]
-  - [x] AC-0460: story-complete with --epic increments epics[id].storiesCompleted if epic entry exists
-  - [x] AC-0461: dashboard renders a compact epic-progress strip showing name, storiesCompleted/storiesTotal, percent bar, status
-  - [x] AC-0462: DM_AGENT.md updated with epic-start and epic-complete Conductor calls
-  - [x] AC-0463: unit tests cover epic-start, epic-complete, and story-complete epic increment
-Dependencies: US-0127
+
+- [x] AC-0458: epic-start creates epics[id] entry with name, status:in-progress, startedAt, completedAt:null, storiesCompleted:0, storiesTotal:N
+- [x] AC-0459: epic-complete sets status:complete and completedAt on epics[id]
+- [x] AC-0460: story-complete with --epic increments epics[id].storiesCompleted if epic entry exists
+- [x] AC-0461: dashboard renders a compact epic-progress strip showing name, storiesCompleted/storiesTotal, percent bar, status
+- [x] AC-0462: DM_AGENT.md updated with epic-start and epic-complete Conductor calls
+- [x] AC-0463: unit tests cover epic-start, epic-complete, and story-complete epic increment
+      Dependencies: US-0127
+
 ```
 
 ```
+
 US-0131 (EPIC-0019): As a Conductor agent, I want a session-start command and validated required flags, so that each new pipeline session begins with clean state and ghost data cannot accumulate.
 Priority: High (P0)
 Estimate: M
 Status: Done
 Branch: feature/US-0131-session-reset
 Acceptance Criteria:
-  - [x] AC-0464: session-start --stories N resets phases, stories, metrics while preserving project, agents, epics, cycles, log
-  - [x] AC-0465: agent-start and agent-done exit non-zero with --agent is required if opts.agent is undefined or the string undefined
-  - [x] AC-0466: story-start no longer modifies storiesTotal; storiesTotal is set by session-start
-  - [x] AC-0467: DM_AGENT.md updated: Conductor calls session-start before first story of each epic
-  - [x] AC-0468: unit tests cover session-start reset, flag validation, and storiesTotal initialization
-Dependencies: US-0127
+
+- [x] AC-0464: session-start --stories N resets phases, stories, metrics while preserving project, agents, epics, cycles, log
+- [x] AC-0465: agent-start and agent-done exit non-zero with --agent is required if opts.agent is undefined or the string undefined
+- [x] AC-0466: story-start no longer modifies storiesTotal; storiesTotal is set by session-start
+- [x] AC-0467: DM_AGENT.md updated: Conductor calls session-start before first story of each epic
+- [x] AC-0468: unit tests cover session-start reset, flag validation, and storiesTotal initialization
+      Dependencies: US-0127
+
 ```
 
 ```
+
 US-0132 (EPIC-0019): As a Conductor agent, I want coverage, bug, and phase transition calls in the standard pipeline checklist, so that dashboard metrics reflect real execution state.
 Priority: High (P0)
 Estimate: S
 Status: Done
 Branch: feature/US-0132-metrics-wiring
 Acceptance Criteria:
-  - [x] AC-0469: bug-open --story US-XXXX increments metrics.bugsOpen
-  - [x] AC-0470: bug-fix --story US-XXXX decrements metrics.bugsOpen (floored at 0) and increments metrics.bugsFixed
-  - [x] AC-0471: story-complete auto-idles the story assignedAgent (status:idle, currentTask:null) if agent exists
-  - [x] AC-0472: DM_AGENT.md post-phase checklist gains phase command calls at start and complete of each phase
-  - [x] AC-0473: DM_AGENT.md Test-phase exit gains coverage command call with Circuit percent
-  - [x] AC-0474: unit tests cover bug-open, bug-fix (including floor guard), and story-complete agent auto-idle
-Dependencies: US-0130, US-0131
+
+- [x] AC-0469: bug-open --story US-XXXX increments metrics.bugsOpen
+- [x] AC-0470: bug-fix --story US-XXXX decrements metrics.bugsOpen (floored at 0) and increments metrics.bugsFixed
+- [x] AC-0471: story-complete auto-idles the story assignedAgent (status:idle, currentTask:null) if agent exists
+- [x] AC-0472: DM_AGENT.md post-phase checklist gains phase command calls at start and complete of each phase
+- [x] AC-0473: DM_AGENT.md Test-phase exit gains coverage command call with Circuit percent
+- [x] AC-0474: unit tests cover bug-open, bug-fix (including floor guard), and story-complete agent auto-idle
+      Dependencies: US-0130, US-0131
+
 ```
 
 ```
+
 US-0133 (EPIC-0019): As a Conductor reviewing pipeline performance, I want completed cycle snapshots in the dashboard, so that I can see lap history, average cycle time, and trend data.
 Priority: High (P0)
 Estimate: L
 Status: Done
 Branch: feature/US-0133-cycle-history
 Acceptance Criteria:
-  - [x] AC-0475: sdlc-status.json gains a cycles:[] array at root level
-  - [x] AC-0476: cycle-complete snapshots metrics (storiesCompleted, testsPassed, coveragePercent, bugsFixed, phaseDurations) into cycles[] with id and completedAt
-  - [x] AC-0477: phaseDurations computed from phase startedAt/completedAt in seconds
-  - [x] AC-0478: cycle-complete applies the same reset as session-start via shared resetSession() function (not recursive CLI call)
-  - [x] AC-0479: dashboard renders a lap-history strip of the last 10 cycles as compact cards
-  - [x] AC-0480: dashboard renders an aggregate telemetry row (total cycles, today count, avg cycle time, success rate)
-  - [x] AC-0481: a three-note audio animation plays when cycles.length increases between refreshState ticks
-  - [x] AC-0482: DM_AGENT.md updated: Conductor calls cycle-complete after all epic stories merge
-  - [x] AC-0483: unit tests cover cycle-complete snapshot, reset side-effect, phaseDurations computation
-Dependencies: US-0131
+
+- [x] AC-0475: sdlc-status.json gains a cycles:[] array at root level
+- [x] AC-0476: cycle-complete snapshots metrics (storiesCompleted, testsPassed, coveragePercent, bugsFixed, phaseDurations) into cycles[] with id and completedAt
+- [x] AC-0477: phaseDurations computed from phase startedAt/completedAt in seconds
+- [x] AC-0478: cycle-complete applies the same reset as session-start via shared resetSession() function (not recursive CLI call)
+- [x] AC-0479: dashboard renders a lap-history strip of the last 10 cycles as compact cards
+- [x] AC-0480: dashboard renders an aggregate telemetry row (total cycles, today count, avg cycle time, success rate)
+- [x] AC-0481: a three-note audio animation plays when cycles.length increases between refreshState ticks
+- [x] AC-0482: DM_AGENT.md updated: Conductor calls cycle-complete after all epic stories merge
+- [x] AC-0483: unit tests cover cycle-complete snapshot, reset side-effect, phaseDurations computation
+      Dependencies: US-0131
+
 ```
 
 ```
+
 US-0134 (EPIC-0019): As a developer adopting PlanVisualizer's dashboard for a new project, I want a documented extraction procedure and install step, so that I can set up the dashboard without manual search-and-replace.
 Priority: Medium (P1)
 Estimate: S
 Status: Done
 Branch: feature/US-0134-extraction-guide
 Acceptance Criteria:
-  - [x] AC-0484: docs/dashboard-extraction.md documents step-by-step adoption: copy files, populate agents.config.json project and phases, run init, open dashboard, wire Conductor
-  - [x] AC-0485: scripts/install.sh §7 copies dashboard.html, update-sdlc-status.js, init-sdlc-status.js, atomic-write.js to target; prompts user before copying
-  - [x] AC-0486: install.sh §7 is skipped (with note) if docs/dashboard.html already exists in target
-  - [x] AC-0487: docs/dashboard-extraction.md is linked from README.md under a Dashboard section
-Dependencies: US-0128, US-0129
+
+- [x] AC-0484: docs/dashboard-extraction.md documents step-by-step adoption: copy files, populate agents.config.json project and phases, run init, open dashboard, wire Conductor
+- [x] AC-0485: scripts/install.sh §7 copies dashboard.html, update-sdlc-status.js, init-sdlc-status.js, atomic-write.js to target; prompts user before copying
+- [x] AC-0486: install.sh §7 is skipped (with note) if docs/dashboard.html already exists in target
+- [x] AC-0487: docs/dashboard-extraction.md is linked from README.md under a Dashboard section
+      Dependencies: US-0128, US-0129
+
 ```
 
 ```
@@ -3199,6 +3346,7 @@ Acceptance Criteria:
       Dependencies: US-0142, US-0145
 
 ```
+
 EPIC-0021
 Title: Test Case Audit
 Status: Done
@@ -3207,9 +3355,11 @@ DoneDate: 2026-04-27
 Completed: 2026-04-27
 ReleaseTarget: v1.x
 Description: Retroactive test case coverage for epics shipped without formal TCs. One story per epic; each story produces written TCs, executed results, and any defects logged.
+
 ```
 
 ```
+
 US-0149 (EPIC-0021): As a QA lead, I want formal test cases written and executed for EPIC-0008 Trend Analysis & Historical Tracking, so that the trend snapshot and extraction logic is verified against its acceptance criteria.
 Priority: High (P0)
 Estimate: M
@@ -3220,9 +3370,11 @@ Acceptance Criteria:
 - [x] AC-0545: Test cases written covering all ACs from US-0047 (snapshot), US-0048 (extraction), US-0049 (trend charts), US-0050 (multi-snapshot dedup)
 - [x] AC-0546: All written test cases executed and Pass/Fail status recorded in RELEASE_PLAN.md under each TC entry
 - [x] AC-0547: Any failures result in a logged BUG entry in docs/BUGS.md with severity and reproduction steps
+
 ```
 
 ```
+
 US-0150 (EPIC-0021): As a QA lead, I want formal test cases written and executed for EPIC-0009 Budget Forecasting, so that cost parsing, projection, and display logic is verified.
 Priority: High (P0)
 Estimate: M
@@ -3233,9 +3385,11 @@ Acceptance Criteria:
 - [x] AC-0548: Test cases written covering all ACs from EPIC-0009 stories (cost parsing, t-shirt projection, per-epic budget display)
 - [x] AC-0549: All written test cases executed and Pass/Fail status recorded
 - [x] AC-0550: Any failures result in a logged BUG entry in docs/BUGS.md
+
 ```
 
 ```
+
 US-0151 (EPIC-0021): As a QA lead, I want formal test cases written and executed for EPIC-0011 Search, so that the client-side search index and filtering logic is verified.
 Priority: Medium (P1)
 Estimate: S
@@ -3246,9 +3400,11 @@ Acceptance Criteria:
 - [x] AC-0551: Test cases written covering all ACs from EPIC-0011 stories (search index build, filter bar, result highlighting)
 - [x] AC-0552: All written test cases executed and Pass/Fail status recorded
 - [x] AC-0553: Any failures result in a logged BUG entry in docs/BUGS.md
+
 ```
 
 ```
+
 US-0152 (EPIC-0021): As a QA lead, I want formal test cases written and executed for EPIC-0013 Agentic SDLC Dashboard, so that the dashboard scaffold, sdlc-status parsing, and agent rendering are verified.
 Priority: High (P0)
 Estimate: L
@@ -3259,9 +3415,11 @@ Acceptance Criteria:
 - [x] AC-0554: Test cases written covering all ACs from EPIC-0013 stories (generate-dashboard, sdlc-status parsing, agent roster, pipeline phase cards)
 - [x] AC-0555: All written test cases executed and Pass/Fail status recorded
 - [x] AC-0556: Any failures result in a logged BUG entry in docs/BUGS.md
+
 ```
 
 ```
+
 US-0153 (EPIC-0021): As a QA lead, I want formal test cases written and executed for EPIC-0014 Follow-Up Changes, so that miscellaneous post-epic improvements are regression-tested.
 Priority: Medium (P1)
 Estimate: M
@@ -3272,9 +3430,11 @@ Acceptance Criteria:
 - [x] AC-0557: Test cases written covering all ACs from EPIC-0014 stories (CLI sdlc-status tool, About modal, Agentic dashboard parity)
 - [x] AC-0558: All written test cases executed and Pass/Fail status recorded
 - [x] AC-0559: Any failures result in a logged BUG entry in docs/BUGS.md
+
 ```
 
 ```
+
 US-0154 (EPIC-0021): As a QA lead, I want formal test cases written and executed for EPIC-0016 Agentic Dashboard Mission Control Redesign, so that the MC layout, roster, pipeline, and live bar widgets are verified.
 Priority: High (P0)
 Estimate: L
@@ -3285,9 +3445,11 @@ Acceptance Criteria:
 - [x] AC-0560: Test cases written covering all ACs from EPIC-0016 stories (MC header/roster/pipeline/live-bar redesign, US-0148 layout closure)
 - [x] AC-0561: All written test cases executed and Pass/Fail status recorded
 - [x] AC-0562: Any failures result in a logged BUG entry in docs/BUGS.md
+
 ```
 
 ```
+
 US-0155 (EPIC-0021): As a QA lead, I want formal test cases written and executed for EPIC-0017 Agentic Dashboard Effectiveness Review, so that the skills-integration doc and effectiveness audit outputs are verified.
 Priority: Medium (P1)
 Estimate: S
@@ -3298,9 +3460,11 @@ Acceptance Criteria:
 - [x] AC-0563: Test cases written covering all ACs from EPIC-0017 stories (skills integration table, superpowers adoption metrics, US-0126)
 - [x] AC-0564: All written test cases executed and Pass/Fail status recorded
 - [x] AC-0565: Any failures result in a logged BUG entry in docs/BUGS.md
+
 ```
 
 ```
+
 US-0156 (EPIC-0021): As a QA lead, I want formal test cases written and executed for EPIC-0019 Dashboard Cycle History, so that the cycle schema, CLI commands, and extraction guide are verified.
 Priority: Medium (P1)
 Estimate: M
@@ -3311,9 +3475,11 @@ Acceptance Criteria:
 - [x] AC-0566: Test cases written covering all ACs from EPIC-0019 stories (cycle-complete command, cycle history schema, sdlc-status cycle array, extraction guide)
 - [x] AC-0567: All written test cases executed and Pass/Fail status recorded
 - [x] AC-0568: Any failures result in a logged BUG entry in docs/BUGS.md
+
 ```
 
 ```
+
 US-0157 (EPIC-0021): As a QA lead, I want formal test cases written and executed for EPIC-0020 Cross-Dashboard Redesign, so that the shared theme tokens, neutral chrome, status hero, and agent workload widget are verified.
 Priority: High (P0)
 Estimate: L
@@ -3324,9 +3490,11 @@ Acceptance Criteria:
 - [x] AC-0569: Test cases written covering all ACs from EPIC-0020 stories (theme.js tokens, render-chrome.js, CSS custom properties, no hex literals, status hero density, agent workload from sdlc-status)
 - [x] AC-0570: All written test cases executed and Pass/Fail status recorded
 - [x] AC-0571: Any failures result in a logged BUG entry in docs/BUGS.md
+
 ```
 
 ```
+
 US-0158 (EPIC-0021): As a project lead, I want AI cost data correctly attributed to all stories and bugs (including those worked in worktree branches), so that the Cost Breakdown by Epic chart reflects true spend and zero-cost entries are eliminated.
 Priority: High (P0)
 Estimate: M
@@ -3334,14 +3502,16 @@ Status: Done
 Branch: feature/US-0158-ai-cost-attribution-fix
 Acceptance Criteria:
 
-- [x] AC-0572: Parse-cost-log.js branch-prefix matching is extended to recognise worktree branch patterns (claude/*, and any non-feature/* branch prefixes used by Claude Code) so sessions worked in worktrees are attributed to the correct story/epic
+- [x] AC-0572: Parse-cost-log.js branch-prefix matching is extended to recognise worktree branch patterns (claude/_, and any non-feature/_ branch prefixes used by Claude Code) so sessions worked in worktrees are attributed to the correct story/epic
 - [x] AC-0573: A one-time backfill script reads AI_COST_LOG.md entries with branch=null or unmatched branches, uses git log to identify which story was active during each session's timestamp, and writes estimated cost rows to close the data gap
 - [x] AC-0574: After backfill, no Done story or Fixed bug dated before 2026-04-24 shows $0 AI cost (excluding stories that genuinely had no Claude usage)
 - [x] AC-0575: Cost Breakdown by Epic chart shows non-zero spend for EPIC-0010, EPIC-0012, EPIC-0016, EPIC-0017, EPIC-0019, EPIC-0020, and other epics that were primarily worked in worktrees
 - [x] AC-0576: LESSONS.md updated with the worktree branch-naming gap and the fix so future sessions prevent recurrence
+
 ```
 
 ```
+
 EPIC-0022
 Title: Analytics & Charting Enhancements
 Status: Done
@@ -3349,11 +3519,13 @@ DoneDate: 2026-04-29
 StartDate: 2026-04-24
 ReleaseTarget: v2.x
 Description: New data visualisations that deepen delivery insight — velocity, throughput, and flow metrics — giving teams a clearer picture of team pace and predictability over time.
+
 ```
 
 ## User Stories — EPIC-0022: Analytics & Charting Enhancements
 
 ```
+
 US-0159 (EPIC-0022): As a project lead, I want a Velocity chart in the Trends tab showing story points (or story count) completed per sprint/week over time, so that I can see team throughput trends and forecast delivery pace.
 Priority: Medium (P1)
 Estimate: L
@@ -3365,9 +3537,11 @@ Acceptance Criteria:
 - [x] AC-0578: Chart draws data from existing parse-progress.js session logs and RELEASE_PLAN.md story completion dates; no new data-source files are required
 - [x] AC-0579: A 4-period rolling average trend line is overlaid on the bars so viewers can distinguish noise from trend
 - [x] AC-0580: Chart respects the shared semantic palette from theme.js (no hardcoded hex literals); renders correctly in both light and dark mode
+
 ```
 
 ```
+
 US-0160 (EPIC-0022): As a developer, I want the remaining Tailwind CSS utility classes in plan-status removed and replaced with the OKLCH CSS custom property system already used throughout the codebase, so that the CDN dependency is eliminated and the styling system is unified across both dashboards.
 Priority: Low (P2)
 Estimate: S
@@ -3376,13 +3550,15 @@ Branch: bugfix/BUG-0228-0230-remove-cdn-deps
 Acceptance Criteria:
 
 - [x] AC-0581: The Tailwind CDN <script> tag is removed from the plan-status HTML output; no Tailwind class strings remain in render-html.js, render-shell.js, or render-scripts.js
-- [x] AC-0582: All replaced Tailwind utility classes (budget alert banner, filter bar, search input) are implemented as named CSS classes using var(--clr-*) custom properties consistent with the OKLCH theme system in theme.js
+- [x] AC-0582: All replaced Tailwind utility classes (budget alert banner, filter bar, search input) are implemented as named CSS classes using var(--clr-\*) custom properties consistent with the OKLCH theme system in theme.js
 - [x] AC-0583: Dark mode for converted elements works via [data-theme=dark] attribute selectors, not Tailwind dark: variants
 - [x] AC-0584: Visual regression — the budget alert banner, filter bar, and search input render identically in both light and dark mode after conversion
 - [x] AC-0585: All existing tests pass; no new hex literals are introduced (AC-0498 equivalent enforced for plan-status output)
+
 ```
 
 ```
+
 US-0161 (EPIC-0022): As a user, I want the About modal on both dashboards to use a redesigned layout with a large full-width hero image at the top and a 3×3 agent roster grid, so that the modal is visually distinctive and the team is showcased prominently.
 Priority: Low (P2)
 Estimate: S
@@ -3395,11 +3571,13 @@ Acceptance Criteria:
 - [x] AC-0588: The agent roster renders as a 3×3 grid spanning the full modal width; each cell shows avatar, agent name, and role
 - [x] AC-0589: The "View on GitHub" button is removed; the GitHub repo URL appears as an inline text link in the links row, with the "Implemented by" attribution right-aligned on the same row
 - [x] AC-0590: The "Links" section label is removed; the modal contains no redundant section headings above the repo/attribution row
+
 ```
 
 ## EPIC-0023: Dashboard Quality & Reliability
 
 ```
+
 EPIC-0023: Dashboard Quality & Reliability
 Description: Fix bugs identified by Session 31 Lens code review across both the plan-status and agentic dashboards. Covers chart rendering correctness, CSS token consistency, Stakeholder tab bug-risk accuracy, and agentic dashboard live-update reliability.
 Release Target: v2.x
@@ -3407,11 +3585,13 @@ Status: Done
 StartDate: 2026-04-29
 DoneDate: 2026-04-29
 Dependencies: EPIC-0022
+
 ```
 
 ## User Stories — EPIC-0023: Dashboard Quality & Reliability
 
 ```
+
 US-0164 (EPIC-0023): As a developer, I want chart axis labels, grid lines, and legend text to use the correct theme colours in both light and dark mode, so that charts are readable without hardcoded greys.
 Priority: High (P1)
 Estimate: S
@@ -3423,9 +3603,11 @@ Acceptance Criteria:
 - [x] AC-0592: Canvas gradient color stops use rgba(r, g, b, a) comma-separated syntax, not space-separated rgb(), ensuring compatibility across all browsers
 - [x] AC-0593: pvChartColors is defined once in a shared script block (or with window.pvChartColors = window.pvChartColors || ...) — not twice as separate var declarations
 - [x] AC-0594: Switching between light and dark mode after visiting the Trends tab updates trend chart label and grid colours (updateTrendsChartTheme added, called from pvSetTheme)
+
 ```
 
 ```
+
 US-0165 (EPIC-0023): As a project lead, I want the Stakeholder tab to correctly flag epics that have open Critical/High bugs as Needs Attention, so that risk is accurately communicated to stakeholders.
 Priority: High (P1)
 Estimate: XS
@@ -3434,10 +3616,12 @@ Branch: bugfix/BUG-0239-0241-0248-stakeholder-fixes
 Acceptance Criteria:
 
 - [x] AC-0595: shEpicCompositeStatus cross-references bugs via story→epic map (using normalizeStoryRef) instead of b.epicId (which is never set)
-- [x] AC-0596: Open bug count filter in _renderStatusHero uses the same canonical denylist pattern as renderStatusTab: !/^(Fixed|Retired|Cancelled|Rejected)/i
+- [x] AC-0596: Open bug count filter in \_renderStatusHero uses the same canonical denylist pattern as renderStatusTab: !/^(Fixed|Retired|Cancelled|Rejected)/i
+
 ```
 
 ```
+
 US-0166 (EPIC-0023): As a user, I want patchDOM to preserve branch link anchors in agent task cells and correctly style InProgress stories, so that live updates do not degrade the agentic dashboard display.
 Priority: Medium (P1)
 Estimate: S
@@ -3448,22 +3632,26 @@ Acceptance Criteria:
 - [x] AC-0597: patchDOM updates agent task cell with an <a href="..."> anchor when branch is set, not raw textContent that destroys the link
 - [x] AC-0598: isInProgress check in generate-dashboard.js story renderer uses /^In[ -]?Progress$/i regex, matching both 'In Progress' (space) and 'InProgress' (camelCase from update-sdlc-status.js)
 - [x] AC-0599: dispatch tag added to appendEventLog tone-map with a distinct evt-dispatch CSS class, making conductor dispatch events visually distinct from story-start events
-- [x] AC-0600: _dispatchCount persists across page loads (initialized from localStorage or computed from status.log)
+- [x] AC-0600: \_dispatchCount persists across page loads (initialized from localStorage or computed from status.log)
+
 ```
 
 ## Epic — EPIC-0028: Agentic Orchestration Engine
 
 ```
+
 EPIC-0028: Agentic Orchestration Engine
 Description: Close the quality and isolation gaps between the superpowers subagent-driven-development pipeline and the PlanVisualizer DM_AGENT workflow. All four stories shipped: US-0182 pre-dispatch orchestration, US-0183 task lifecycle protocol, US-0184 context curator, US-0185 Conductor dispatch protocol with per-task review gates. EPIC-0028 complete as of Session 47 (2026-05-17).
 Release Target: v2.4.0
 Status: Done
 Dependencies: EPIC-0014, EPIC-0026
+
 ```
 
 ## User Stories — EPIC-0028: Agentic Orchestration Engine
 
 ```
+
 US-0182 (EPIC-0028): As the Conductor, I want the pre-dispatch orchestration engine to drive every story through spec → plan → ready_for_dispatch with Compass/Keystone/Lens review loops and user approval gates, so that specialist agents only start implementation on a reviewed, approved plan.
 Priority: High (P1)
 Estimate: XL
@@ -3479,9 +3667,11 @@ Acceptance Criteria:
 - [x] AC-0703: Flag-file approval path (download → docs/pending-approvals/ → apply-pending) works end-to-end
 - [x] AC-0704: DM_AGENT verbal-cue gate prompts replace manual CLI instructions for users
 - [x] AC-0705: agent-start/agent-done in update-sdlc-status.js auto-regen the Agentic Dashboard
+
 ```
 
 ```
+
 US-0183 (EPIC-0028): As the Conductor, I want a per-task lifecycle state machine so each specialist agent's work within a story is tracked at task granularity with DONE/DONE_WITH_CONCERNS/NEEDS_CONTEXT/BLOCKED status transitions and smart BLOCKED routing, so that the orchestrator can detect stalls and escalate rather than silently failing.
 Priority: High (P1)
 Estimate: L
@@ -3490,10 +3680,11 @@ Branch: feature/US-0183-task-lifecycle-protocol
 PR: #1037 (merged to develop, Session 45)
 Dependencies: US-0182 (EPIC-0028)
 Additional scope from US-0182 test run:
+
 - plan-update CLI command (set planPath after plan-start)
 - specApprove() idempotency guard (double-approve should no-op, not error)
 - Verbal-cue fallback cleanup (DM_AGENT should run approve CLI on user's behalf, not show CLI commands)
-Acceptance Criteria:
+  Acceptance Criteria:
 
 - [x] AC-0710: tools/agent-lifecycle.js exports start/status/done/blocked commands tracked in sdlc-status.json tasks[] object
 - [x] AC-0711: DONE/DONE_WITH_CONCERNS/NEEDS_CONTEXT/BLOCKED state transitions validated; illegal transitions exit 1 with informative message
@@ -3502,9 +3693,11 @@ Acceptance Criteria:
 - [x] AC-0714: DM_AGENT.md updated with per-task dispatch ritual referencing agent-lifecycle.js
 - [x] AC-0715: plan-update --story X --field planPath --value ... command added to agent-spec-plan.js
 - [x] AC-0716: specApprove() is idempotent (second call on already-approved spec returns 0, no state change)
+
 ```
 
 ```
+
 US-0184 (EPIC-0028): As the Conductor, I want a context curator CLI that assembles structured markdown context payloads (task, acceptance criteria, plan excerpt, prior-work summaries, agent-tagged lessons) for sub-agent dispatches, so that specialist agents start with exactly the context they need instead of burning tokens discovering it.
 Priority: High (P1)
 Estimate: L
@@ -3515,9 +3708,10 @@ Dependencies: US-0182 (EPIC-0028), US-0183 (EPIC-0028)
 Spec: docs/superpowers/specs/2026-05-14-us-0184-context-curator-design.md
 Plan: docs/superpowers/plans/2026-05-14-us-0184-context-curator.md
 Bundled schema patches from US-0183:
+
 - --plan-task-index on agent-lifecycle.js start (optional, stored on task record)
 - --summary on agent-lifecycle.js done (optional, rendered in prior-work section)
-Acceptance Criteria:
+  Acceptance Criteria:
 
 - [x] AC-0720: tools/agent-context.js generate --story X --agent Y --task-id Z writes a markdown payload to stdout and exits 0 on the happy path
 - [x] AC-0721: Payload includes "Your task" plus (when content available) "Story acceptance criteria", "Plan excerpt", "Prior work on this story", "Relevant lessons for <Agent>" — empty sections are suppressed entirely
@@ -3525,9 +3719,11 @@ Acceptance Criteria:
 - [x] AC-0723: LESSONS.md @agent: tagging convention is documented; every existing L-XXXX entry receives a canonical tag; validateLessonsTags() returns zero untagged and zero invalid agent names
 - [x] AC-0724: DM_AGENT.md §Per-Task Dispatch Ritual is updated with --plan-task-index capture, new step 1b context generation, and --summary on the done row
 - [x] AC-0725: Coverage gate (>=80% statements) remains green; all new test files meet the per-file targets in spec §10
+
 ```
 
 ```
+
 US-0185 (EPIC-0028): As the Conductor, I want automatic per-task Lens review gates after each specialist agent dispatch completes, so that spec compliance and code quality are verified before the next task begins and the pipeline can self-regulate without human intervention between tasks.
 Priority: High (P1)
 Estimate: XL
@@ -3544,21 +3740,25 @@ Acceptance Criteria:
 - [x] AC-0728: After spec compliance passes, Conductor auto-dispatches Lens code quality reviewer; verdict stored on task.taskReview.qualityVerdict; quality retry preserves spec verdict
 - [x] AC-0729: sdlc-status.json task schema extended with taskReview: { status, baseSha, headSha, specVerdict, specFindings, qualityVerdict, qualityFindings, forgeRetries, lastRetryTriggeredBy, startedAt, completedAt }; [sha:<commit>] convention added to agent-lifecycle.js done
 - [x] AC-0730: DM_AGENT.md §Per-Task Dispatch Ritual updated with 6 edits (BASE_SHA capture, steps 3b/3c/3d review gate loop, automated BLOCKED routing for MORE_CONTEXT/UPGRADE_MODEL); Conductor persona used throughout
+
 ```
 
 ## Epic — EPIC-0029: Agentic Pipeline UX
 
 ```
+
 EPIC-0029: Agentic Pipeline UX
 Description: Surface the agentic pipeline's runtime behaviour (US-0182 spec/plan gates, US-0183 task lifecycle, US-0184 context, US-0185 review gates) on the Agentic Dashboard so operators can observe and intervene. First story: US-0186 review-gate visualization.
 Release Target: v2.5.0
 Status: In Progress
 Dependencies: EPIC-0028
+
 ```
 
 ## User Stories — EPIC-0029: Agentic Pipeline UX
 
 ```
+
 US-0186 (EPIC-0029): As an operator, I want the per-task review gate state (US-0185) visible on the Agentic Dashboard so I can see at a glance which tasks have cleared review, which are mid-retry, and which have escalated — without leaving the dashboard.
 Priority: High (P1)
 Estimate: S
@@ -3576,6 +3776,7 @@ Acceptance Criteria:
 - [x] AC-0734: All chips, lines, and icons use theme tokens (`--ok`, `--warn`, `--risk`, `--live-accent`) — no hex literals introduced in the review-gate CSS block (per L-0064)
 - [x] AC-0735: `⟳` icon animates continuously via `@keyframes pv-rev-spin`; new chips/lines/icons fade in via `@keyframes pv-rev-appear` (200ms); density toggle button background transitions over 150ms; all animations disabled when `prefers-reduced-motion: reduce` is set
 - [x] AC-0736: All chips and icons carry `title=` attributes describing the state; `window.pvTaskReviewCap` is emitted as a JS literal in the generated HTML from `plan-visualizer.config.json → orchestration.iterationCap.taskReview` (default 2)
+
 ```
 
 ## Epic — EPIC-0036: Step 1 Persistence — Repository Foundation (Phase A)
@@ -3583,6 +3784,7 @@ Acceptance Criteria:
 Phase A of the open-core persistence Step 1, per `docs/superpowers/specs/2026-05-19-step-1-repository-abstraction-design.md` § 3 and `docs/superpowers/plans/2026-05-19-step-1-repository-abstraction.md` Phase A. Establishes the repository abstraction skeleton, AST parser/serializer, SQLite datastore with fallback chain, migration framework, and read-only `pv:*` commands. No tool migrations yet — this is the library layer.
 
 ```
+
 EPIC-0036: Step 1 Persistence — Repository Foundation (Phase A)
 Description: Stand up tools/lib/repository/ with file-lock wrapper, AST parser+serializer, IndexDatastore (better-sqlite3 → node:sqlite → --no-index fallback), schema migrations, MarkdownDatastore, validation/warnings/refresh, Repository singleton, project-state migration framework, and read-only pv:check-upgrade + pv:doctor. Hard gate: every existing markdown source round-trips idempotent-on-second-pass; better-sqlite3 smoke passes on dev matrix; Repository.getInstance opens cleanly.
 Release Target: v2.5.0
@@ -3590,11 +3792,13 @@ Status: Done
 Dependencies: EPIC-0028
 Spec: docs/superpowers/specs/2026-05-19-step-1-repository-abstraction-design.md
 Plan: docs/superpowers/plans/2026-05-19-step-1-repository-abstraction.md
+
 ```
 
 ## User Stories — EPIC-0036: Repository Foundation (Phase A)
 
 ```
+
 US-0215 (EPIC-0036): As the Repository owner, I want better-sqlite3 + proper-lockfile added as dependencies with corresponding npm scripts wired in, so that the rest of Phase A has its toolchain available.
 Priority: High (P1)
 Estimate: S
@@ -3607,9 +3811,11 @@ Acceptance Criteria:
 - [x] AC-0853: package.json declares dependencies on better-sqlite3 ^11.5.0 and proper-lockfile ^4.1.2, engines.node >= 22.0.0
 - [x] AC-0854: npm scripts plan:index, plan:lint, pv:check-upgrade, pv:upgrade, pv:rollback, pv:doctor are registered
 - [x] AC-0855: .gitignore covers .cache/, docs/.pv-state.local.json, docs/.pv-backup/
+
 ```
 
 ```
+
 US-0216 (EPIC-0036): As any repository caller, I want a cross-platform file-lock wrapper with withFileLock(file, fn) and acquireMany(files) helpers, so that single-file and multi-file lock acquisition happens consistently and lexicographically.
 Priority: High (P1)
 Estimate: S
@@ -3623,9 +3829,11 @@ Acceptance Criteria:
 - [x] AC-0857: acquireMany(files) sorts paths lexicographically before acquisition; release callbacks reverse the order on cleanup
 - [x] AC-0858: locks are released even when fn throws (try/finally semantics covered by unit test)
 - [x] AC-0859: jest unit test exercises concurrent-write serialisation and add/add scenarios
+
 ```
 
 ```
+
 US-0217 (EPIC-0036): As the markdown layer, I want an AST parser that splits markdown into an ordered sequence of prose and fenced-block nodes, so that writes to a single block preserve all surrounding prose byte-identically.
 Priority: High (P1)
 Estimate: M
@@ -3638,9 +3846,11 @@ Acceptance Criteria:
 - [x] AC-0861: nodes preserve exact whitespace; concatenating .raw / .text reproduces input byte-identical
 - [x] AC-0862: handles edge cases — no fenced blocks, file starting with a fenced block, trailing newline preservation
 - [x] AC-0863: jest fixture exists at tests/fixtures/repository/sample-release-plan.md and the round-trip test asserts on real prose interstitials
+
 ```
 
 ```
+
 US-0218 (EPIC-0036): As the markdown layer, I want a serializer that converts the AST back to markdown plus a round-trip test harness running against every managed production file, so that any parser/serializer drift fails CI before Phase E ships.
 Priority: High (P1)
 Estimate: M
@@ -3654,9 +3864,11 @@ Acceptance Criteria:
 - [x] AC-0865: replaceBlock rewrites only the targeted fenced block; surrounding prose remains byte-identical
 - [x] AC-0866: round-trip harness at tests/integration/repository/round-trip.test.js iterates over docs/RELEASE_PLAN.md, BUGS.md, LESSONS.md, TEST_CASES.md, ID_REGISTRY.md
 - [x] AC-0867: every existing production file passes idempotent-on-second-pass round-trip (Phase A hard gate)
+
 ```
 
 ```
+
 US-0219 (EPIC-0036): As any repository caller, I want an IndexDatastore that prefers better-sqlite3, falls back to node:sqlite (Node 22+), and finally degrades to a --no-index legacy mode, so that PlanVisualizer keeps working on platforms without native build support.
 Priority: High (P1)
 Estimate: M
@@ -3668,9 +3880,11 @@ Acceptance Criteria:
 - [x] AC-0869: WAL mode enabled on open (journal_mode pragma returns 'wal')
 - [x] AC-0870: --no-index mode (or PV_NO_INDEX=1) returns a no-op datastore that doesn't throw on exec/prepare
 - [x] AC-0871: PRAGMA foreign_keys = ON, synchronous = NORMAL applied at open time
+
 ```
 
 ```
+
 US-0220 (EPIC-0036): As the indexer, I want SQLite schema migrations 001 + 002 with a meta_status('schema_version') gate, so that the schema evolves predictably across upgrades.
 Priority: High (P1)
 Estimate: M
@@ -3682,9 +3896,11 @@ Acceptance Criteria:
 - [x] AC-0872: migrations/001_initial_schema.sql creates epics, stories, acs, planning_tasks, bugs, lessons, test_cases, id_registry, sdlc_tasks, sdlc_events, sdlc_programme, cost_rows, coverage, meta_sources, meta_status, warnings
 - [x] AC-0873: migrations/002_normalised_refs.sql creates story_dependencies, epic_dependencies, lesson_agents, bug_stories with proper FKs and ON DELETE CASCADE
 - [x] AC-0874: applySchemaMigrations is idempotent — running twice does not fail and leaves schema_version unchanged
+
 ```
 
 ```
+
 US-0221 (EPIC-0036): As any repository caller, I want a MarkdownDatastore that owns reading and (later in Phase E) writing managed markdown files, so that AST operations and source-meta lookups are encapsulated.
 Priority: High (P1)
 Estimate: S
@@ -3696,9 +3912,11 @@ Acceptance Criteria:
 - [x] AC-0875: MarkdownDatastore.readAst(rel) returns the parsed AST for a managed path
 - [x] AC-0876: sourceMeta(rel) returns { mtime, size, hash:sha256 } for staleness detection
 - [x] AC-0877: writeAst(rel, ast) writes through the file lock and an atomic rename via .tmp
+
 ```
 
 ```
+
 US-0222 (EPIC-0036): As any repository caller, I want validation tiers, a warnings channel, and a mtime+hash refresh function, so that referential integrity failures are surfaced consistently and the index stays in sync with markdown.
 Priority: High (P1)
 Estimate: M
@@ -3710,9 +3928,11 @@ Acceptance Criteria:
 - [x] AC-0879: WarningsChannel appends one JSON row per violation to .cache/repo-warnings.jsonl
 - [x] AC-0880: refresh({datastores, sources}) uses mtime+size first-pass, recomputes hash only on suspicion of change
 - [x] AC-0881: refresh returns { sources: [...], entitiesAffected: [...] } and is safe to call repeatedly
+
 ```
 
 ```
+
 US-0223 (EPIC-0036): As any caller, I want Repository.getInstance() as a singleton that auto-refreshes on first call and at every agent-dispatch start, so that cross-process freshness is guaranteed without manual orchestration.
 Priority: High (P1)
 Estimate: S
@@ -3721,12 +3941,14 @@ Plan Task: A.9
 Dependencies: US-0219 (EPIC-0036), US-0220 (EPIC-0036), US-0221 (EPIC-0036), US-0222 (EPIC-0036)
 Acceptance Criteria:
 
-- [x] AC-0882: Repository.getInstance({root}) returns the same instance across calls; Repository._reset() releases for tests
+- [x] AC-0882: Repository.getInstance({root}) returns the same instance across calls; Repository.\_reset() releases for tests
 - [x] AC-0883: getInstance auto-runs refresh() once at construction; subsequent dispatch-prelude calls reuse the cheap mtime+size pass
 - [x] AC-0884: orchestrator/spawn.js (if present) calls Repository.getInstance().refresh() at the top of every dispatch
+
 ```
 
 ```
+
 US-0224 (EPIC-0036): As an upgrade orchestrator, I want a project-state migration framework with pv-state read/write, backup snapshots, and a migration runner, so that future migrations (001, 002, 003) plug in declaratively.
 Priority: High (P1)
 Estimate: M
@@ -3738,9 +3960,11 @@ Acceptance Criteria:
 - [x] AC-0886: backup.js snapshot({root, label, files}) copies files into docs/.pv-backup/<label>/ preserving relative paths
 - [x] AC-0887: backup.js restore({root, label}) reverses the snapshot; throws on missing label
 - [x] AC-0888: migrations/index.js exports pending({root}) and run({root, dryRun, actor}); idempotent and writes pv-state on success
+
 ```
 
 ```
+
 US-0225 (EPIC-0036): As a user upgrading PlanVisualizer, I want read-only pv:check-upgrade and pv:doctor commands plus a better-sqlite3 install smoke check, so that I can introspect upgrade state and diagnose issues without risk.
 Priority: Medium (P2)
 Estimate: S
@@ -3752,6 +3976,7 @@ Acceptance Criteria:
 - [x] AC-0889: npm run pv:check-upgrade prints installed version, project-state version, applied migrations, pending migrations, and warns on mismatch without failing
 - [x] AC-0890: npm run pv:doctor prints repo mode (better-sqlite3 / node:sqlite / no-index), warnings file path, total warnings, count-by-code
 - [x] AC-0891: better-sqlite3 in-memory smoke test passes on darwin-arm64, darwin-x64, linux-x64; fallback to node:sqlite verified on a CI matrix entry
+
 ```
 
 ## Epic — EPIC-0037: Step 1 Persistence — Indexer as Spectator (Phase B)
@@ -3759,16 +3984,19 @@ Acceptance Criteria:
 Phase B of Step 1. Per-file indexers populate the SQLite index from markdown; `generate-plan.js` emits the index alongside HTML/JSON; cross-entity validators run; `plan:lint` reports tiered violations. No tool migrations yet — the index just shadows the truth.
 
 ```
+
 EPIC-0037: Step 1 Persistence — Indexer as Spectator (Phase B)
 Description: Build per-source indexers (release-plan, bugs, lessons, test-cases, id-registry, sdlc-status), wire them into generate-plan.js, implement cross-entity referential checks, and ship npm run plan:lint. Hard gate: a full session produces an index consistent with markdown, with warnings rate < 10/session on current production data.
 Release Target: v2.5.0
 Status: Done
 Dependencies: EPIC-0036
+
 ```
 
 ## User Stories — EPIC-0037: Indexer as Spectator (Phase B)
 
 ```
+
 US-0226 (EPIC-0037): As the indexer, I want six per-source indexer functions that populate the SQLite tables from markdown/JSON, so that the index can be rebuilt from any clean checkout.
 Priority: High (P1)
 Estimate: L
@@ -3781,9 +4009,11 @@ Acceptance Criteria:
 - [x] AC-0893: indexers/bugs-indexer.js, lessons-indexer.js, test-cases-indexer.js, id-registry-indexer.js, sdlc-status-indexer.js each ingest their respective sources
 - [x] AC-0894: indexers/index.js exports indexAll({index, markdown, warningsChannel}) returning {counts, warnings}
 - [x] AC-0895: indexing an empty/missing source emits zero counts and zero warnings (no throw)
+
 ```
 
 ```
+
 US-0227 (EPIC-0037): As the build pipeline, I want generate-plan.js to emit the SQLite index alongside the existing HTML/JSON outputs, so that the index always reflects the latest markdown after every build.
 Priority: High (P1)
 Estimate: S
@@ -3795,9 +4025,11 @@ Acceptance Criteria:
 - [x] AC-0896: tools/generate-plan.js calls indexAll(...) after writing HTML/JSON and logs the counts
 - [x] AC-0897: tools/plan-index.js exists as a standalone CLI mapped to npm run plan:index for manual rebuilds
 - [x] AC-0898: failure in the index emit step does not abort the HTML build (best-effort during Phase B)
+
 ```
 
 ```
+
 US-0228 (EPIC-0037): As the validation layer, I want a cross-entity validator that runs after every indexAll pass, so that orphan ACs, dangling dependencies, and id-registry drift surface automatically.
 Priority: High (P1)
 Estimate: S
@@ -3810,9 +4042,11 @@ Acceptance Criteria:
 - [x] AC-0899: validators/cross-entity.js detects dangling story/epic dependencies via LEFT JOIN
 - [x] AC-0900: it detects id-registry drift (next_id ≤ max actual ID) per sequence
 - [x] AC-0901: detects orphan ACs (acs.story_id with no matching story)
+
 ```
 
 ```
+
 US-0229 (EPIC-0037): As a maintainer, I want npm run plan:lint to print tiered violations (errors / warnings / reports) and exit non-zero only on errors, so that data-quality regressions get caught in CI without blocking local development.
 Priority: Medium (P2)
 Estimate: S
@@ -3824,6 +4058,7 @@ Acceptance Criteria:
 - [x] AC-0902: tools/plan-lint.js outputs counts per tier and lists each violation with one-line summary
 - [x] AC-0903: exit code is 1 only if errors-tier is non-empty; warnings/reports do not fail the build at Phase B
 - [x] AC-0904: Phase B hard gate verified — warnings on current production data < 10
+
 ```
 
 ## Epic — EPIC-0038: Step 1 Persistence — First Read Consumer (Phase C)
@@ -3831,16 +4066,19 @@ Acceptance Criteria:
 Phase C of Step 1. Migrates the dashboard's read path from re-parsing markdown to querying the repo, behind a feature flag, with a byte-identical parity test as the gate.
 
 ```
+
 EPIC-0038: Step 1 Persistence — First Read Consumer (Phase C)
 Description: Implement base + entity read APIs (stories, epics, ACs), then migrate dashboard rendering to read via the repository instead of re-parsing markdown. Feature-flagged with PV_DASHBOARD_VIA_REPO=1; flag flipped to default once snapshot parity holds.
 Release Target: v2.5.0
 Status: Done
 Dependencies: EPIC-0037
+
 ```
 
 ## User Stories — EPIC-0038: First Read Consumer (Phase C)
 
 ```
+
 US-0230 (EPIC-0038): As any consumer, I want repository read APIs (repo.stories, repo.epics, repo.acs) with list filters, so that downstream tools don't need to re-parse markdown for the same data.
 Priority: High (P1)
 Estimate: M
@@ -3852,9 +4090,11 @@ Acceptance Criteria:
 - [x] AC-0905: tools/lib/repository/entities/base-repo.js exports a BaseRepo class with get(id), list(), and a root path for write APIs (Phase E)
 - [x] AC-0906: story-repo.js, epic-repo.js, ac-repo.js wire into Repository as repo.stories, repo.epics, repo.acs with list filters (epicId, status, storyId)
 - [x] AC-0907: column→property mapping (e.g. epic_id → epicId, pr_number → prNumber) is consistent across entity repos
+
 ```
 
 ```
+
 US-0231 (EPIC-0038): As the dashboard consumer, I want generate-plan.js to read epics/stories/ACs through the repository under a PV_DASHBOARD_VIA_REPO=1 flag, so that we can validate parity before deleting the legacy parse path.
 Priority: High (P1)
 Estimate: M
@@ -3867,6 +4107,7 @@ Acceptance Criteria:
 - [x] AC-0909: mergeRepoData shim overlays repo-sourced structural data on legacy computed fields (costs, snapshots) without breaking renderHtml's contract
 - [x] AC-0910: snapshot test runs both paths and diffs docs/plan-status.html — zero meaningful semantic diff
 - [x] AC-0911: flag default flipped to PV_DASHBOARD_VIA_REPO=1 with PV_DASHBOARD_VIA_REPO=0 left as a fallback escape hatch
+
 ```
 
 ## Epic — EPIC-0042: Step 1 Persistence — Indexer Hardening (Phase C.5)
@@ -3874,16 +4115,19 @@ Acceptance Criteria:
 Phase C.5 of Step 1 — pre-flight for Phase D. Closes three indexer gaps surfaced by the Phase C parity gate (L-0075 prose-node scan, L-0076 silent CHECK rejections, L-0077 priority shape) so the SdlcStatus cutover starts from a complete, normalized SQLite baseline. Once all three stories land, AC-0911 (the deferred PV_DASHBOARD_VIA_REPO default flip) can be closed separately.
 
 ```
+
 EPIC-0042: Step 1 Persistence — Indexer Hardening (Phase C.5)
 Description: Widen release-plan-indexer to scan prose AST nodes; surface CHECK-rejected rows via a rejected-rows counter and migrate the schema to accept Retired; normalize priority at indexer write time. Each story corresponds to one lesson captured in Session 53 (L-0075/L-0076/L-0077). Hard gate: parity rerun on production RELEASE_PLAN.md shows zero "in legacy, not in repo" entity drops.
 Release Target: v2.5.0
 Status: Done
 Dependencies: EPIC-0038
+
 ```
 
 ## User Stories — EPIC-0042: Indexer Hardening (Phase C.5)
 
 ```
+
 US-0253 (EPIC-0042): As an indexer consumer, I want release-plan-indexer.js to scan both fenced and prose AST nodes, so that ~31 entities currently in prose nodes enter SQLite and the repo path matches legacy parity without falling back.
 Priority: High (P1)
 Estimate: M
@@ -3896,9 +4140,11 @@ Acceptance Criteria:
 - [x] AC-0980: release-plan-indexer.js iterates prose nodes in addition to kind === 'fenced'; production index shows >0 prose entities ingested
 - [x] AC-0981: parity gate run with PV_DASHBOARD_VIA_REPO=1 on production docs/RELEASE_PLAN.md shows zero "in legacy, not in repo" entity drops (instrumented in dashboard-repo-reader.js)
 - [x] AC-0982: plan:lint warns when an entity header lives in a prose node that wouldn't have been indexed pre-fix (regression guard so the gap never silently reopens)
+
 ```
 
 ```
+
 US-0254 (EPIC-0042): As an indexer maintainer, I want CHECK-rejected rows surfaced via a rejected-rows counter and the schema migrated to accept Retired, so that INSERT OR IGNORE never silently drops valid data.
 Priority: High (P1)
 Estimate: S
@@ -3911,9 +4157,11 @@ Acceptance Criteria:
 - [x] AC-0983: Migration 003 extends epics.status and stories.status CHECK to include 'Retired'; existing rows unaffected
 - [x] AC-0984: indexer surfaces a rejected_rows counter in its return value; release-plan-indexer.js logs each CHECK violation with id + reason
 - [x] AC-0985: plan:lint emits a warning when rejected_rows > 0 so silently-dropped entities surface during normal lint runs (not just parity audits)
+
 ```
 
 ```
+
 US-0255 (EPIC-0042): As a future repo consumer, I want priority normalized at indexer write time, so that "High (P0)" and "P0" never coexist in the database and read APIs return a single stable shape.
 Priority: High (P1)
 Estimate: S
@@ -3926,6 +4174,7 @@ Acceptance Criteria:
 - [x] AC-0986: release-plan-indexer.js normalizes priority strings (e.g. "High (P0)" → "P0") before insert, using the same logic as tools/lib/parse-release-plan.js
 - [x] AC-0987: unit test inserts raw-format priority "High (P0)" and asserts stored value is "P0"; same coverage for Medium/Low variants
 - [x] AC-0988: dashboard-repo-reader.js shim no longer needs to prefer legacy priority — story-repo returns the normalized value directly (shim simplified accordingly)
+
 ```
 
 ## Epic — EPIC-0043: Post-C.5 Indexer Hygiene
@@ -3933,16 +4182,19 @@ Acceptance Criteria:
 Standalone follow-up to EPIC-0042 (Phase C.5). Closes ENH-0003 (bugs/lessons table CHECK divergence + sweep all 5 remaining indexers with the shared try/catch pattern) and ENH-0004 (14 duplicate AC declarations + 3 duplicate BUG declarations in production markdown). Lands before Phase D so D contributors start with `plan:lint` returning 0/0/0.
 
 ```
+
 EPIC-0043: Post-C.5 Indexer Hygiene
 Description: Resolve duplicate-ID data drift in docs/RELEASE_PLAN.md and docs/BUGS.md. Migration 004 widens bugs.status CHECK to canonical set Open|In Progress|Fixed|Verified|WontFix|Closed. Extract the C5.2 inline tryInsert helper to tools/lib/repository/insert-helper.js. Sweep all 5 remaining indexers (bugs, lessons, test-cases, id-registry, sdlc-status) so CHECK + PRIMARYKEY/UNIQUE violations surface as warnings.
 Release Target: v2.5.0
 Status: Done
 Dependencies: EPIC-0042
+
 ```
 
 ## User Stories — EPIC-0043: Post-C.5 Indexer Hygiene
 
 ```
+
 US-0256 (EPIC-0043): As a future indexer contributor, I want all 5 remaining indexers to use a shared try/catch helper that surfaces SQLite CHECK + duplicate-ID violations as warnings, so silent data drops are never hidden again.
 Priority: High (P1)
 Estimate: M
@@ -3956,9 +4208,11 @@ Acceptance Criteria:
 - [x] AC-0990: Shared createTryInsert helper exists at tools/lib/repository/insert-helper.js with dedicated unit test (5 cases: success, CHECK rejection, PRIMARYKEY rejection, UNIQUE rejection, rethrow on unexpected error)
 - [x] AC-0991: All 6 indexers (release-plan + bugs + lessons + test-cases + id-registry + sdlc-status) wrap INSERTs via the shared helper; CHECK + PRIMARYKEY + UNIQUE violations surface as warnings
 - [x] AC-0992: docs/BUGS.md format-doc convention line lists the new canonical status set (Open | In Progress | Fixed | Verified | WontFix | Closed)
+
 ```
 
 ```
+
 US-0257 (EPIC-0043): As a maintainer, I want all duplicate ACs and BUG declarations resolved in production markdown so plan:lint returns 0/0/0 and the indexer sweep doesn't break CI on bad data.
 Priority: High (P1)
 Estimate: S
@@ -3971,6 +4225,7 @@ Acceptance Criteria:
 - [x] AC-0993: 14 duplicate AC declarations (AC-0150..0153, AC-0334..0343) resolved in docs/RELEASE_PLAN.md via diff-each-pair
 - [x] AC-0994: 3 duplicate BUG declarations (BUG-0098, BUG-0099, BUG-0100) resolved in docs/BUGS.md
 - [x] AC-0995: plan:lint returns errors: 0, warnings: 0, reports: 0 on production data
+
 ```
 
 ## Epic — EPIC-0039: Step 1 Persistence — SdlcStatus Cutover (Phase D)
@@ -3978,16 +4233,19 @@ Acceptance Criteria:
 Phase D of Step 1 — the biggest phase. Promotes SQLite to authoritative for tool-emitted state. `sdlc-status.json` becomes a per-event mirror written by the repo. Four lifecycle writers migrate in a single coordinated PR.
 
 ```
+
 EPIC-0039: Step 1 Persistence — SdlcStatus Cutover (Phase D)
 Description: SdlcStatus moves from JSON-file-authoritative to SQLite-authoritative with a per-event JSON mirror (file-locked, SQL-requeried) for live-dashboard parity. Migration 002 ingests existing JSON. agent-lifecycle.js, update-sdlc-status.js, agent-task-review.js, agent-spec-plan.js all migrate to write through the repo in one PR. pv:upgrade and pv:rollback become write-capable.
 Release Target: v2.5.0
 Status: To Do
 Dependencies: EPIC-0038, EPIC-0042
+
 ```
 
 ## User Stories — EPIC-0039: SdlcStatus Cutover (Phase D)
 
 ```
+
 US-0232 (EPIC-0039): As a tool writing lifecycle state, I want SdlcEventRepo, SdlcTaskRepo, and SdlcProgrammeRepo with a re-query-inside-lock JSON mirror, so that concurrent writes don't leave docs/sdlc-status.json out of sync with SQL.
 Priority: High (P1)
 Estimate: L
@@ -4000,9 +4258,11 @@ Acceptance Criteria:
 - [ ] AC-0913: sdlc-task-repo.js exposes upsert(task) with FIELD_MAP for camelCase ↔ snake_case, preserves unset fields on partial updates
 - [ ] AC-0914: sdlc-programme-repo.js exposes set/get/all with JSON value column
 - [ ] AC-0915: SdlcMirror.write() holds a file lock on docs/sdlc-status.json and re-queries SQL inside the lock; concurrent record() calls preserve all events
+
 ```
 
 ```
+
 US-0233 (EPIC-0039): As an upgrading user, I want Migration 002 to ingest existing docs/sdlc-status.json into SQLite once, so that no in-flight lifecycle state is lost during the cutover.
 Priority: High (P1)
 Estimate: M
@@ -4014,9 +4274,11 @@ Acceptance Criteria:
 - [ ] AC-0916: migrations/002-ingest-sdlc-status.js up({root}) reads docs/sdlc-status.json, upserts tasks, records events, sets programme entries
 - [ ] AC-0917: idempotent — second run hashes the source JSON and is a no-op when hash matches meta_status('migration_002_hash')
 - [ ] AC-0918: missing source file results in {skipped:'no-file'}, not an error
+
 ```
 
 ```
+
 US-0234 (EPIC-0039): As the Conductor, I want tools/agent-lifecycle.js to write task lifecycle state through the repository, so that lifecycle events benefit from SQLite-row-level concurrency.
 Priority: High (P1)
 Estimate: M
@@ -4028,9 +4290,11 @@ Acceptance Criteria:
 - [ ] AC-0919: tools/agent-lifecycle.js no longer fs.write{File,FileSync}'s docs/sdlc-status.json directly
 - [ ] AC-0920: start command upserts the task and records an agent-start event in one transaction
 - [ ] AC-0921: done command upserts (status, completedAt, summary, headSha) and records agent-done; existing tests pass unchanged
+
 ```
 
 ```
+
 US-0235 (EPIC-0039): As the Conductor, I want tools/update-sdlc-status.js to write through the repository for every event kind, so that dashboard live-update parity is preserved post-cutover.
 Priority: High (P1)
 Estimate: M
@@ -4042,9 +4306,11 @@ Acceptance Criteria:
 - [ ] AC-0922: every existing event-kind path (agent-start, agent-done, dispatch, programme-conductor-dispatch, programme-shadow-merge) uses repo.sdlcEvents.record or repo.sdlcTasks.upsert
 - [ ] AC-0923: integration tests in tests/integration/dashboard-task-review-flow.test.js pass without modification
 - [ ] AC-0924: docs/sdlc-status.json mirror is byte-equivalent to legacy output for a fixture event stream
+
 ```
 
 ```
+
 US-0236 (EPIC-0039): As the Conductor, I want tools/agent-task-review.js to persist taskReview substructure via the repository, so that the JSON column round-trips cleanly through SQLite.
 Priority: High (P1)
 Estimate: M
@@ -4056,9 +4322,11 @@ Acceptance Criteria:
 - [ ] AC-0925: spec verdict + spec findings persist via repo.sdlcTasks.upsert({id, taskReview: {...}})
 - [ ] AC-0926: quality verdict + quality findings persist on the same task, preserving spec verdict
 - [ ] AC-0927: existing tests covering the review-gate state machine pass without changes
+
 ```
 
 ```
+
 US-0237 (EPIC-0039): As the Conductor, I want tools/agent-spec-plan.js to write spec/plan state transitions via the repository, so that no tool bypasses SQLite for sdlc-status.json after the cutover.
 Priority: High (P1)
 Estimate: M
@@ -4069,10 +4337,12 @@ Acceptance Criteria:
 
 - [ ] AC-0928: spec-start, spec-await-ac, spec-await-final, plan-start, plan-await-approval, plan-update commands all use repo.sdlcTasks.upsert
 - [ ] AC-0929: specApprove() idempotency guard (BUG handled in US-0183) preserved
-- [ ] AC-0930: grep -rn "fs.writeFileSync.*sdlc-status.json" tools/ returns nothing
+- [ ] AC-0930: grep -rn "fs.writeFileSync.\*sdlc-status.json" tools/ returns nothing
+
 ```
 
 ```
+
 US-0238 (EPIC-0039): As the dashboard owner, I want a live-dashboard parity test that proves concurrent record() calls don't lose events, so that the file-locked re-query-inside-lock pattern is verified end-to-end.
 Priority: High (P1)
 Estimate: S
@@ -4084,9 +4354,11 @@ Acceptance Criteria:
 - [ ] AC-0931: tests/integration/repository/live-dashboard-parity.test.js replays a fixture event stream and asserts mirror byte-shape
 - [ ] AC-0932: 3 concurrent record() calls all land in the mirror (log.length == 5 after 2 sequential + 3 concurrent)
 - [ ] AC-0933: Phase D hard gate verified — npm test passes; grep returns no JSON-direct writers
+
 ```
 
 ```
+
 US-0239 (EPIC-0039): As a user upgrading, I want write-capable pv:upgrade and pv:rollback commands, so that Migration 002 (and future migrations) can actually be applied with backup/restore safety.
 Priority: High (P1)
 Estimate: M
@@ -4099,6 +4371,7 @@ Acceptance Criteria:
 - [ ] AC-0935: pv:rollback with --to <label> restores docs/.pv-backup/<label>/; without --to lists available backups
 - [ ] AC-0936: each migration snapshots its touched files into docs/.pv-backup/pre-<id>/ before mutating
 - [ ] AC-0937: CI fixture run upgrades a v2.4-shaped fixture project end-to-end without data loss
+
 ```
 
 ## Epic — EPIC-0040: Step 1 Persistence — Planning Writers (Phase E)
@@ -4106,16 +4379,19 @@ Acceptance Criteria:
 Phase E of Step 1. The biggest payload of code: write APIs for human-authored entities with AST prose preservation, ID allocator under file lock, multi-entity transactions, Migration 001 normalisation, and migration of all remaining planning writers.
 
 ```
+
 EPIC-0040: Step 1 Persistence — Planning Writers (Phase E)
 Description: Write APIs for stories, epics, ACs, bugs, lessons, test_cases, id_registry land with AST-preserving serializers. ID allocator bypasses the index and writes ID_REGISTRY.md under a file lock. repo.transaction((tx) => ...) lands with lexicographic lock acquisition + batched markdown writes at commit. Migration 001 normalises fenced blocks one-shot; user reviews the diff. agent-context.js, generate-plan.js (writer paths), and sync-github.js migrate in one PR. Final round-trip gate on post-Migration-001 production files.
 Release Target: v2.5.0
 Status: To Do
 Dependencies: EPIC-0039
+
 ```
 
 ## User Stories — EPIC-0040: Planning Writers (Phase E)
 
 ```
+
 US-0240 (EPIC-0040): As any planning writer, I want update/create APIs on stories, epics, ACs, bugs, lessons, test_cases, planning_tasks with AST-preserving serializers, so that mutations replace exactly the targeted fenced block.
 Priority: High (P1)
 Estimate: XL
@@ -4129,9 +4405,11 @@ Acceptance Criteria:
 - [ ] AC-0940: serializers/{entity}-serializer.js emits the canonical fenced-block body matching current production file formatting
 - [ ] AC-0941: ValidationError thrown on invalid Status enum, duplicate ID, or malformed block (error-tier per validation.js)
 - [ ] AC-0942: surrounding prose remains byte-identical after any update (regression test against fixture)
+
 ```
 
 ```
+
 US-0241 (EPIC-0040): As a story creator, I want repo.idRegistry.allocate(sequence, count) that bypasses the index and reads/writes ID_REGISTRY.md under a file lock, so that allocations never collide across concurrent writers.
 Priority: High (P1)
 Estimate: M
@@ -4143,9 +4421,11 @@ Acceptance Criteria:
 - [ ] AC-0943: id-allocator.js reads ID_REGISTRY.md inside withFileLock, bumps next_id by count, returns the allocated IDs
 - [ ] AC-0944: bumps last_assigned to the highest allocated ID; rewrites the registry table row in place preserving column alignment
 - [ ] AC-0945: count=1 returns a string; count>1 returns an array of contiguous IDs
+
 ```
 
 ```
+
 US-0242 (EPIC-0040): As any multi-entity writer, I want repo.transaction((tx) => ...) that batches markdown writes until commit in lexicographic lock order, so that story+ACs+ID-registry mutations are atomic.
 Priority: High (P1)
 Estimate: L
@@ -4157,10 +4437,12 @@ Acceptance Criteria:
 - [ ] AC-0946: transaction(fn) opens a SQLite BEGIN, runs fn against a proxy, acquires file locks in lexicographic path order, flushes pending markdown writes, COMMITs
 - [ ] AC-0947: throw inside fn rolls back SQLite and discards staged markdown writes (no files modified)
 - [ ] AC-0948: tx.idRegistry.allocate inside a transaction reserves IDs but doesn't write ID_REGISTRY.md until commit; another process blocks on the lock
-- [ ] AC-0949: each entity repo implements an *InTransaction variant that stages into ctx.pendingWrites
+- [ ] AC-0949: each entity repo implements an \*InTransaction variant that stages into ctx.pendingWrites
+
 ```
 
 ```
+
 US-0243 (EPIC-0040): As an upgrading user, I want Migration 001 to normalise all managed markdown via two-pass AST round-trip, so that Phase E writes start from a canonical baseline.
 Priority: High (P1)
 Estimate: M
@@ -4172,9 +4454,11 @@ Acceptance Criteria:
 - [ ] AC-0950: migrations/001-normalise-fenced-blocks.js applies parse→serialise→parse→serialise to RELEASE_PLAN.md, BUGS.md, LESSONS.md, TEST_CASES.md, ID_REGISTRY.md
 - [ ] AC-0951: writes back only when result differs from input; second run is a no-op
 - [ ] AC-0952: user reviews the diff against /tmp/docs-pre-norm before committing; explicit human approval gate
+
 ```
 
 ```
+
 US-0244 (EPIC-0040): As the context curator, I want tools/agent-context.js to write any managed-path mutations through the repository, so that the Phase F CI rule passes.
 Priority: Medium (P2)
 Estimate: S
@@ -4186,9 +4470,11 @@ Acceptance Criteria:
 - [ ] AC-0953: tools/agent-context.js any task-summary update uses repo.sdlcTasks.upsert
 - [ ] AC-0954: tests/integration/agent-context-flow.test.js passes
 - [ ] AC-0955: grep -n "fs.write\|fs.append" tools/agent-context.js shows only writes to exempt paths
+
 ```
 
 ```
+
 US-0245 (EPIC-0040): As the dashboard builder, I want tools/generate-plan.js writer paths (status patching, story-row updates) to go through the repository, so that the build never bypasses the abstraction.
 Priority: High (P1)
 Estimate: M
@@ -4200,9 +4486,11 @@ Acceptance Criteria:
 - [ ] AC-0956: any patchDOM-driven status writes use repo.stories.update
 - [ ] AC-0957: npm run plan:generate && npm run plan:lint reports zero errors
 - [ ] AC-0958: legacy markdown writes removed from generate-plan.js (or routed via repo)
+
 ```
 
 ```
+
 US-0246 (EPIC-0040): As the GitHub sync, I want tools/sync-github.js to update story PR numbers via the repository, so that GitHub-driven writes participate in the same lock + index pipeline.
 Priority: Medium (P2)
 Estimate: S
@@ -4214,9 +4502,11 @@ Acceptance Criteria:
 - [ ] AC-0959: any RELEASE_PLAN.md mutation in sync-github.js becomes repo.stories.update(id, s => { s.prNumber = N; })
 - [ ] AC-0960: existing sync-github integration tests pass
 - [ ] AC-0961: grep -n "fs.write" tools/sync-github.js shows only writes to exempt paths
+
 ```
 
 ```
+
 US-0247 (EPIC-0040): As the maintainer, I want the round-trip harness re-run against post-Migration-001 production files as the Phase E gate, so that prose-preservation regressions surface before Phase F.
 Priority: High (P1)
 Estimate: S
@@ -4227,6 +4517,7 @@ Acceptance Criteria:
 
 - [ ] AC-0962: tests/integration/repository/round-trip.test.js asserts byte-identical (not just idempotent) after Migration 001 has run
 - [ ] AC-0963: Phase E hard gate verified — no fs.write outside the repo (per allowlist), round-trip byte-identical, plan:lint zero errors
+
 ```
 
 ## Epic — EPIC-0041: Step 1 Persistence — Lock-Down (Phase F)
@@ -4234,16 +4525,19 @@ Acceptance Criteria:
 Phase F closes Step 1. file-lock moves under `internal/`, deprecation shim at the old path. CI rule + script forbid direct writes to managed paths. Mixed-version warning fires at every getInstance. Validation switches from log-and-pass to fail-on-error.
 
 ```
+
 EPIC-0041: Step 1 Persistence — Lock-Down (Phase F)
 Description: Final lock-down. file-lock.js moves to tools/lib/repository/internal/ with a deprecation shim at the original path. A custom ESLint rule + shell script enforce that managed paths are only written through the repository (with an exemption allowlist for bootstrap/cost-hook/memory). Mixed-version warning compares package.json#version against docs/.pv-state.json. Validation errors-tier becomes a hard fail. scripts/update.sh prints pv:check-upgrade output. Upgrade guide lands.
 Release Target: v2.5.0
 Status: To Do
 Dependencies: EPIC-0040
+
 ```
 
 ## User Stories — EPIC-0041: Lock-Down (Phase F)
 
 ```
+
 US-0248 (EPIC-0041): As the repository maintainer, I want file-lock.js moved to tools/lib/repository/internal/ with a deprecation shim at the legacy path, so that direct importers get a one-time warning without breakage.
 Priority: Medium (P2)
 Estimate: S
@@ -4255,10 +4549,12 @@ Acceptance Criteria:
 - [ ] AC-0964: tools/lib/repository/internal/file-lock.js is the canonical location; all repo-internal imports updated
 - [ ] AC-0965: tools/lib/file-lock.js exists as a one-line require re-export with console.warn deprecation (suppressible via PV_SUPPRESS_FILE_LOCK_DEPRECATION)
 - [ ] AC-0966: both import paths still work in node -e smoke checks
+
 ```
 
 ```
-US-0249 (EPIC-0041): As the CI pipeline, I want a managed-path lint rule + a shell-script check that forbids fs.write* against managed paths outside tools/lib/repository/, with an explicit exemption allowlist.
+
+US-0249 (EPIC-0041): As the CI pipeline, I want a managed-path lint rule + a shell-script check that forbids fs.write\* against managed paths outside tools/lib/repository/, with an explicit exemption allowlist.
 Priority: High (P1)
 Estimate: M
 Status: To Do
@@ -4270,9 +4566,11 @@ Acceptance Criteria:
 - [ ] AC-0968: tools/check-no-managed-write.sh is a backup shell check usable on platforms where the ESLint plugin isn't loaded
 - [ ] AC-0969: exemption list includes tools/lib/repository/, tools/lib/migrations/, tools/init-sdlc-status.js, tools/capture-cost.js, tools/memory.js, scripts/install.sh, scripts/update.sh
 - [ ] AC-0970: GitHub Actions CI runs npm run lint:managed-paths and fails on violations
+
 ```
 
 ```
+
 US-0250 (EPIC-0041): As any tool caller, I want Repository.getInstance() to log a loud WARNING when package.json#version ≠ docs/.pv-state.json#planvisualizerVersion, so that S10 (user forgot pv:upgrade) is visible.
 Priority: Medium (P2)
 Estimate: S
@@ -4284,9 +4582,11 @@ Acceptance Criteria:
 - [ ] AC-0971: tools/lib/repository/version-check.js compares both versions and returns the mismatch message
 - [ ] AC-0972: Repository.getInstance calls checkVersionMismatch on construction (not on every refresh)
 - [ ] AC-0973: PV_FORCE_MISMATCH=1 suppresses the warning for known-intentional mismatches (e.g. development against an unbumped state)
+
 ```
 
 ```
+
 US-0251 (EPIC-0041): As the maintainer, I want validation errors-tier promoted to fail-on-error and warnings retention enforced via pv:doctor --prune-warnings, so that data quality regressions can't be silently ignored after Step 1 ships.
 Priority: Medium (P2)
 Estimate: S
@@ -4298,9 +4598,11 @@ Acceptance Criteria:
 - [ ] AC-0974: every TIER.ERROR violation throws ValidationError (no remaining log-and-pass branches)
 - [ ] AC-0975: pv:doctor --prune-warnings deletes warnings rows older than 30 days; reports the count deleted
 - [ ] AC-0976: pv:doctor flags 'warnings table exceeds 10k threshold' when count > 10000
+
 ```
 
 ```
+
 US-0252 (EPIC-0041): As an upgrading user, I want scripts/update.sh to run pv:check-upgrade automatically and a docs/repository-upgrade-guide.md to exist, so that the upgrade path is discoverable.
 Priority: Medium (P2)
 Estimate: S
@@ -4312,4 +4614,7 @@ Acceptance Criteria:
 - [ ] AC-0977: scripts/update.sh post-install hook runs npm run --silent pv:check-upgrade and prints the upgrade instruction
 - [ ] AC-0978: docs/repository-upgrade-guide.md exists with steps for v2.4 → v2.5 (check, upgrade, review, commit, doctor, rollback)
 - [ ] AC-0979: AGENTS.md and CLAUDE.md gain a persistence-rules section pointing at the managed-path allowlist and the repository API
+
+```
+
 ```
