@@ -4235,7 +4235,7 @@ Phase D of Step 1 — the biggest phase. Promotes SQLite to authoritative for to
 ```
 
 EPIC-0039: Step 1 Persistence — SdlcStatus Cutover (Phase D)
-Description: SdlcStatus moves from JSON-file-authoritative to SQLite-authoritative with a per-event JSON mirror (file-locked, SQL-requeried) for live-dashboard parity. Migration 002 ingests existing JSON. agent-lifecycle.js, update-sdlc-status.js, agent-task-review.js, agent-spec-plan.js all migrate to write through the repo in one PR. pv:upgrade and pv:rollback become write-capable.
+Description: SdlcStatus moves from JSON-file-authoritative to SQLite-authoritative with a per-event JSON mirror (file-locked, SQL-requeried) for live-dashboard parity. Migration 005 ingests existing JSON. agent-lifecycle.js, update-sdlc-status.js, agent-task-review.js, agent-spec-plan.js all migrate to write through the repo in one PR. pv:upgrade and pv:rollback become write-capable.
 Release Target: v2.5.0
 Status: To Do
 Dependencies: EPIC-0038, EPIC-0042
@@ -4263,7 +4263,7 @@ Acceptance Criteria:
 
 ```
 
-US-0233 (EPIC-0039): As an upgrading user, I want Migration 002 to ingest existing docs/sdlc-status.json into SQLite once, so that no in-flight lifecycle state is lost during the cutover.
+US-0233 (EPIC-0039): As an upgrading user, I want Migration 005 to ingest existing docs/sdlc-status.json into SQLite once, so that no in-flight lifecycle state is lost during the cutover.
 Priority: High (P1)
 Estimate: M
 Status: To Do
@@ -4271,7 +4271,7 @@ Plan Task: D.2
 Dependencies: US-0232 (EPIC-0039), US-0224 (EPIC-0036)
 Acceptance Criteria:
 
-- [ ] AC-0916: migrations/002-ingest-sdlc-status.js up({root}) reads docs/sdlc-status.json, upserts tasks, records events, sets programme entries
+- [ ] AC-0916: migrations/005-ingest-sdlc-status.js up({root}) reads docs/sdlc-status.json, upserts tasks, records events, sets programme entries
 - [ ] AC-0917: idempotent — second run hashes the source JSON and is a no-op when hash matches meta_status('migration_002_hash')
 - [ ] AC-0918: missing source file results in {skipped:'no-file'}, not an error
 
@@ -4359,7 +4359,7 @@ Acceptance Criteria:
 
 ```
 
-US-0239 (EPIC-0039): As a user upgrading, I want write-capable pv:upgrade and pv:rollback commands, so that Migration 002 (and future migrations) can actually be applied with backup/restore safety.
+US-0239 (EPIC-0039): As a user upgrading, I want write-capable pv:upgrade and pv:rollback commands, so that Migration 005 (and future migrations) can actually be applied with backup/restore safety.
 Priority: High (P1)
 Estimate: M
 Status: To Do
