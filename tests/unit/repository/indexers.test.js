@@ -23,7 +23,6 @@ Priority: High (P1)
 Status: Done
 Branch: feature/US-0001-x
 Acceptance Criteria:
-
 - [x] AC-0001: One thing
 - [ ] AC-0002: Another thing
 \`\`\`
@@ -46,7 +45,7 @@ describe('release-plan-indexer', () => {
 
   test('ingests epics, stories, and ACs', () => {
     const result = indexReleasePlan({ index, markdown: md, rel: 'docs/RELEASE_PLAN.md' });
-    expect(result.counts).toEqual({ epics: 1, stories: 1, acs: 2 });
+    expect(result.counts).toEqual({ epics: 1, stories: 1, acs: 2, tasks: 0 });
     const epic = index.prepare('SELECT * FROM epics WHERE id=?').get('EPIC-0001');
     expect(epic.status).toBe('Done');
     const story = index.prepare('SELECT * FROM stories WHERE id=?').get('US-0001');

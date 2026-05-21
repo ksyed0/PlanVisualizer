@@ -1,4 +1,8 @@
 'use strict';
+// Used by both the dashboard read path (tools/generate-plan.js) AND the
+// SQLite indexer (tools/lib/repository/indexers/release-plan-indexer.js).
+// Survives Phase E — rename and relocate to
+// tools/lib/repository/parsers/release-plan-parser.js then, but do not delete.
 
 /**
  * Extracts all fenced code blocks (``` ... ```) from markdown text.
@@ -41,17 +45,23 @@ function parseDeps(val) {
  * Parse a single epic block into an object.
  */
 function parseEpicBlock(text) {
+  // Two header formats accepted:
+  //   "EPIC-XXXX: Title here"                       (colon-title)
+  //   "EPIC-XXXX\nTitle: Title here\n..."           (alt: id-on-own-line + Title: key)
   const idTitle = text.match(/^(EPIC-\d+):\s*(.+)/m);
-  if (!idTitle) return null;
+  const idAlt = !idTitle && text.match(/^(EPIC-\d+)\s*$/m);
+  if (!idTitle && !idAlt) return null;
   const get = (key) => {
     const m = text.match(new RegExp(`^${key}:[ \\t]*(.*)`, 'm'));
     return m ? m[1].trim() : '';
   };
+  const id = idTitle ? idTitle[1] : idAlt[1];
+  const title = idTitle ? idTitle[2].trim() : get('Title') || 'Unknown';
   return {
-    id: idTitle[1],
-    title: idTitle[2].trim(),
+    id,
+    title,
     description: get('Description'),
-    releaseTarget: get('Release Target'),
+    releaseTarget: get('Release Target') || get('ReleaseTarget'),
     status: get('Status'),
     startDate: get('StartDate') || null,
     doneDate: get('DoneDate') || null,
@@ -90,6 +100,8 @@ function parseStoryBlock(text) {
     const levelMatch = priorityRaw.match(/^(High|Medium|Low)/i);
     if (levelMatch) priority = levelMatch[1];
   }
+  const prRaw = get('PR');
+  const prMatch = prRaw.match(/#(\d+)/);
   return {
     id: header[1],
     epicId: header[2],
@@ -98,6 +110,9 @@ function parseStoryBlock(text) {
     estimate: get('Estimate'),
     status: get('Status'),
     branch: get('Branch'),
+    prNumber: prMatch ? parseInt(prMatch[1], 10) : null,
+    specPath: get('Spec') || null,
+    planPath: get('Plan') || null,
     acs: parseACs(text),
     dependencies: parseDeps(get('Dependencies')),
   };
@@ -147,7 +162,7 @@ function parseReleasePlan(markdown) {
   for (const chunk of chunks) {
     const trimmed = chunk.trim();
     if (!trimmed) continue;
-    if (/^EPIC-\d+:/.test(trimmed)) {
+    if (/^EPIC-\d+(:|$)/m.test(trimmed)) {
       const e = parseEpicBlock(trimmed);
       if (e && !seenEpics.has(e.id)) {
         seenEpics.add(e.id);

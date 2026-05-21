@@ -11,8 +11,8 @@ Status: Done
 \`\`\`
 US-0001 (EPIC-0001): A
 Status: Done
+Priority: High (P0)
 Acceptance Criteria:
-
 - [x] AC-0001: one
 \`\`\`
 `;
@@ -50,5 +50,8 @@ describe('entity read APIs', () => {
   test('repo.stories.list accepts an array of statuses (IN clause)', () => {
     expect(repo.stories.list({ status: ['Done', 'Planned'] }).length).toBe(1);
     expect(repo.stories.list({ status: ['Planned', 'In Progress'] }).length).toBe(0);
+  });
+  test('repo.stories.get returns normalized priority (US-0255)', () => {
+    expect(repo.stories.get('US-0001').priority).toBe('P0');
   });
 });

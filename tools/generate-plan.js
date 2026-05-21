@@ -219,7 +219,7 @@ async function main() {
   // post-render (lines ~470) to pre-parse is fine. If it fails, we fall back
   // to the legacy parse only — the flag path silently degrades.
   let repoForDashboard = null;
-  if (process.env.PV_DASHBOARD_VIA_REPO === '1') {
+  if (process.env.PV_DASHBOARD_VIA_REPO !== '0') {
     try {
       const { Repository } = require('./lib/repository');
       const { indexAll } = require('./lib/repository/indexers');
@@ -509,8 +509,8 @@ async function main() {
   );
 
   // Phase B: emit SQLite index alongside HTML/JSON (best-effort, never blocks the build)
-  // Skip when PV_DASHBOARD_VIA_REPO=1 — the flag-on path already ran indexAll above.
-  if (process.env.PV_DASHBOARD_VIA_REPO !== '1') {
+  // Skip when PV_DASHBOARD_VIA_REPO=0 — the flag-on path already ran indexAll above.
+  if (process.env.PV_DASHBOARD_VIA_REPO === '0') {
     try {
       const { Repository } = require('./lib/repository');
       const { indexAll } = require('./lib/repository/indexers');

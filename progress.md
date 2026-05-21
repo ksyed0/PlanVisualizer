@@ -1908,3 +1908,41 @@ Branch: `docs/session-52-close` (session close commit only)
 ### What's Next
 
 - Phase C (EPIC-0038): Entity read APIs (`repo.stories`, `repo.epics`, `repo.acs`) then migrate dashboard read path to use repo under `PV_DASHBOARD_VIA_REPO=1` flag with snapshot parity test.
+
+---
+
+## Session 54 — 2026-05-21
+
+### What Was Done
+
+**Step 1 Phase C.5 — all 5 tasks shipped (C5.1–C5.5), EPIC-0042 Done:**
+
+- **C5.1 / US-0254:** Migration 003 widens `epics.status` and `stories.status` CHECK to include `Retired`. `INSERT OR IGNORE` replaced with explicit `INSERT`+`try/catch`; `SQLITE_CONSTRAINT_CHECK` violations routed to the warnings channel as `code: 'check-rejected'`. Closes L-0076.
+- **C5.2 / US-0254:** CHECK rejection observability — `plan:lint` now emits a warning when `rejected_rows > 0`. Temporary PRIMARYKEY catch arm explained via comment (removed in C5.3).
+- **C5.3 / US-0253:** Indexer rewrite delegates to `parseReleasePlan()` as canonical extraction source. Prose-node scan gap (L-0075) eliminated. `planning_tasks` table now correctly populated. Alt-format epics (`EPIC-XXXX` on its own line + separate `Title:` key) handled. `duplicate-ac` classified as a warning rather than a silent drop.
+- **C5.4 / US-0255:** Priority normalized at write time inside the indexer via `parseReleasePlan`. `dashboard-repo-reader.js` shim's legacy-priority preference removed. Closes L-0077.
+- **C5.5 / AC-0911:** `PV_DASHBOARD_VIA_REPO` default flipped to on; `=0` kept as the legacy escape hatch.
+
+**Housekeeping:**
+
+- ENH-0003 captured (bugs.status CHECK divergence).
+- ENH-0004 captured (14 duplicate-ac warnings surfaced by C.5 plan:lint rewrite).
+
+Branch: `claude/phase-c5-impl` — PR opened to `develop` (see PR URL below).
+
+### Test Results
+
+- Full suite: **1363 tests passing** (84 suites) — no new failures
+- Phase C.5 hard gate: `plan:lint` errors=0, **warnings=14** (14 `duplicate-ac` entries — pre-existing data drift in production RELEASE_PLAN.md, captured as ENH-0004), reports=0
+
+### Errors or Blockers
+
+None. The 14 `duplicate-ac` warnings are pre-existing data drift, not regressions. Captured as ENH-0004 for follow-up cleanup.
+
+### PR
+
+- PR URL: https://github.com/ksyed0/PlanVisualizer/pull/1082
+
+### What's Next
+
+- Phase D (EPIC-0039): SdlcStatus Cutover — promote SQLite to authoritative for tool-emitted lifecycle state. `sdlc-status.json` becomes a per-event mirror. See `docs/superpowers/plans/2026-05-19-step-1-repository-abstraction.md` Phase D section.

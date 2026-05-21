@@ -3880,7 +3880,7 @@ Acceptance Criteria:
 - [x] AC-0908: PV_DASHBOARD_VIA_REPO=1 path uses repo.stories.list() / repo.epics.list() / repo.acs.list() to feed renderHtml
 - [x] AC-0909: mergeRepoData shim overlays repo-sourced structural data on legacy computed fields (costs, snapshots) without breaking renderHtml's contract
 - [x] AC-0910: snapshot test runs both paths and diffs docs/plan-status.html — zero meaningful semantic diff
-- [ ] AC-0911: flag default flipped to PV_DASHBOARD_VIA_REPO=1 with PV_DASHBOARD_VIA_REPO=0 left as a fallback escape hatch (deferred to Phase C.5)
+- [x] AC-0911: flag default flipped to PV_DASHBOARD_VIA_REPO=1 with PV_DASHBOARD_VIA_REPO=0 left as a fallback escape hatch
 ```
 
 ## Epic — EPIC-0042: Step 1 Persistence — Indexer Hardening (Phase C.5)
@@ -3891,7 +3891,7 @@ Phase C.5 of Step 1 — pre-flight for Phase D. Closes three indexer gaps surfac
 EPIC-0042: Step 1 Persistence — Indexer Hardening (Phase C.5)
 Description: Widen release-plan-indexer to scan prose AST nodes; surface CHECK-rejected rows via a rejected-rows counter and migrate the schema to accept Retired; normalize priority at indexer write time. Each story corresponds to one lesson captured in Session 53 (L-0075/L-0076/L-0077). Hard gate: parity rerun on production RELEASE_PLAN.md shows zero "in legacy, not in repo" entity drops.
 Release Target: v2.5.0
-Status: To Do
+Status: Done
 Dependencies: EPIC-0038
 ```
 
@@ -3901,45 +3901,45 @@ Dependencies: EPIC-0038
 US-0253 (EPIC-0042): As an indexer consumer, I want release-plan-indexer.js to scan both fenced and prose AST nodes, so that ~31 entities currently in prose nodes enter SQLite and the repo path matches legacy parity without falling back.
 Priority: High (P1)
 Estimate: M
-Status: To Do
+Status: Done
 Plan Task: C5.1
 Dependencies: US-0227 (EPIC-0037), US-0230 (EPIC-0038)
 Related Lesson: L-0075
 Acceptance Criteria:
 
-- [ ] AC-0980: release-plan-indexer.js iterates prose nodes in addition to kind === 'fenced'; production index shows >0 prose entities ingested
-- [ ] AC-0981: parity gate run with PV_DASHBOARD_VIA_REPO=1 on production docs/RELEASE_PLAN.md shows zero "in legacy, not in repo" entity drops (instrumented in dashboard-repo-reader.js)
-- [ ] AC-0982: plan:lint warns when an entity header lives in a prose node that wouldn't have been indexed pre-fix (regression guard so the gap never silently reopens)
+- [x] AC-0980: release-plan-indexer.js iterates prose nodes in addition to kind === 'fenced'; production index shows >0 prose entities ingested
+- [x] AC-0981: parity gate run with PV_DASHBOARD_VIA_REPO=1 on production docs/RELEASE_PLAN.md shows zero "in legacy, not in repo" entity drops (instrumented in dashboard-repo-reader.js)
+- [x] AC-0982: plan:lint warns when an entity header lives in a prose node that wouldn't have been indexed pre-fix (regression guard so the gap never silently reopens)
 ```
 
 ```
 US-0254 (EPIC-0042): As an indexer maintainer, I want CHECK-rejected rows surfaced via a rejected-rows counter and the schema migrated to accept Retired, so that INSERT OR IGNORE never silently drops valid data.
 Priority: High (P1)
 Estimate: S
-Status: To Do
+Status: Done
 Plan Task: C5.2
 Dependencies: US-0227 (EPIC-0037)
 Related Lesson: L-0076
 Acceptance Criteria:
 
-- [ ] AC-0983: Migration 003 extends epics.status and stories.status CHECK to include 'Retired'; existing rows unaffected
-- [ ] AC-0984: indexer surfaces a rejected_rows counter in its return value; release-plan-indexer.js logs each CHECK violation with id + reason
-- [ ] AC-0985: plan:lint emits a warning when rejected_rows > 0 so silently-dropped entities surface during normal lint runs (not just parity audits)
+- [x] AC-0983: Migration 003 extends epics.status and stories.status CHECK to include 'Retired'; existing rows unaffected
+- [x] AC-0984: indexer surfaces a rejected_rows counter in its return value; release-plan-indexer.js logs each CHECK violation with id + reason
+- [x] AC-0985: plan:lint emits a warning when rejected_rows > 0 so silently-dropped entities surface during normal lint runs (not just parity audits)
 ```
 
 ```
 US-0255 (EPIC-0042): As a future repo consumer, I want priority normalized at indexer write time, so that "High (P0)" and "P0" never coexist in the database and read APIs return a single stable shape.
 Priority: High (P1)
 Estimate: S
-Status: To Do
+Status: Done
 Plan Task: C5.3
 Dependencies: US-0227 (EPIC-0037)
 Related Lesson: L-0077
 Acceptance Criteria:
 
-- [ ] AC-0986: release-plan-indexer.js normalizes priority strings (e.g. "High (P0)" → "P0") before insert, using the same logic as tools/lib/parse-release-plan.js
-- [ ] AC-0987: unit test inserts raw-format priority "High (P0)" and asserts stored value is "P0"; same coverage for Medium/Low variants
-- [ ] AC-0988: dashboard-repo-reader.js shim no longer needs to prefer legacy priority — story-repo returns the normalized value directly (shim simplified accordingly)
+- [x] AC-0986: release-plan-indexer.js normalizes priority strings (e.g. "High (P0)" → "P0") before insert, using the same logic as tools/lib/parse-release-plan.js
+- [x] AC-0987: unit test inserts raw-format priority "High (P0)" and asserts stored value is "P0"; same coverage for Medium/Low variants
+- [x] AC-0988: dashboard-repo-reader.js shim no longer needs to prefer legacy priority — story-repo returns the normalized value directly (shim simplified accordingly)
 ```
 
 ## Epic — EPIC-0039: Step 1 Persistence — SdlcStatus Cutover (Phase D)

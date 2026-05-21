@@ -73,7 +73,7 @@ describe('Dashboard parity: legacy vs repo-merged', () => {
       for (const s of merged.stories) {
         const l = legacyStoryById.get(s.id);
         expect(s.id).toBe(l.id);
-        expect(s.priority).toBe(l.priority); // legacy normalises ("P0"), repo doesn't — must come from legacy
+        expect(s.priority).toBe(l.priority); // both paths normalise (post-US-0255)
         expect(s.dependencies).toEqual(l.dependencies);
         expect(s.title).toBe(l.title);
         expect(s.status).toBe(l.status);
@@ -233,7 +233,7 @@ describe('Dashboard parity: legacy vs repo-merged', () => {
     expect(s.title).toBe('new title'); // repo overlays
     expect(s.status).toBe('In Progress'); // repo overlays
     expect(s.estimate).toBe('M'); // repo overlays
-    expect(s.priority).toBe('P1'); // legacy preserved (semantic gap)
+    expect(s.priority).toBe('P1'); // both paths produce 'P1' post-US-0255 — no gap
     expect(s.acs).toEqual([
       { id: 'AC-1', text: 'new1', done: true },
       { id: 'AC-2', text: 'new2', done: false },

@@ -16,6 +16,8 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 **Date:** 2026-05-20
 
+**Resolution (2026-05-21, Phase C.5):** The release-plan indexer now delegates to `parseReleasePlan()`, which was extended to accept alt-format epics (`EPIC-XXXX` on its own line with separate `Title:` key). The dual-extraction divergence that motivated this lesson is eliminated. Future indexers should follow the same pattern — use the canonical regex parser as the source of truth, don't reimplement AST extraction.
+
 ---
 
 ## L-0076 — Schema CHECK constraint rejects `Retired` status — `INSERT OR IGNORE` silently drops valid entities
@@ -30,6 +32,8 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 **Date:** 2026-05-20
 
+**Resolution (2026-05-21, Phase C.5):** `INSERT OR IGNORE` replaced with explicit `INSERT` wrapped in `try/catch`. `SQLITE_CONSTRAINT_CHECK` violations route to the warnings channel as `code: 'check-rejected'`. Migration 003 widened the epics+stories status CHECK to include `Retired`. The bugs.status CHECK still has divergence with BUGS.md convention — captured separately as ENH-0003.
+
 ---
 
 ## L-0077 — `priority` field shape divergence: normalize at write time in the indexer, never at read time
@@ -43,6 +47,8 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 **Prevention:** Phase D must add normalization of `"High (P0)"` → `"P0"` (and all priority variants) inside the indexer's write path, verified by a unit test that inserts a raw-format priority and asserts the stored value is normalized.
 
 **Date:** 2026-05-20
+
+**Resolution (2026-05-21, Phase C.5):** Priority is now normalized at write time inside the indexer (via parseReleasePlan). The `dashboard-repo-reader.js` shim's "don't overlay priority" workaround is gone; priority now overlays cleanly like other structural fields.
 
 ---
 
