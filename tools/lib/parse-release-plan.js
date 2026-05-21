@@ -1,4 +1,8 @@
 'use strict';
+// Used by both the dashboard read path (tools/generate-plan.js) AND the
+// SQLite indexer (tools/lib/repository/indexers/release-plan-indexer.js).
+// Survives Phase E — rename and relocate to
+// tools/lib/repository/parsers/release-plan-parser.js then, but do not delete.
 
 /**
  * Extracts all fenced code blocks (``` ... ```) from markdown text.
@@ -90,6 +94,8 @@ function parseStoryBlock(text) {
     const levelMatch = priorityRaw.match(/^(High|Medium|Low)/i);
     if (levelMatch) priority = levelMatch[1];
   }
+  const prRaw = get('PR');
+  const prMatch = prRaw.match(/#(\d+)/);
   return {
     id: header[1],
     epicId: header[2],
@@ -98,6 +104,9 @@ function parseStoryBlock(text) {
     estimate: get('Estimate'),
     status: get('Status'),
     branch: get('Branch'),
+    prNumber: prMatch ? parseInt(prMatch[1], 10) : null,
+    specPath: get('Spec') || null,
+    planPath: get('Plan') || null,
     acs: parseACs(text),
     dependencies: parseDeps(get('Dependencies')),
   };

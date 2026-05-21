@@ -1,112 +1,25 @@
 'use strict';
 const fs = require('fs');
-
-const EPIC_HEAD = /^EPIC-(\d+):\s*(.+)$/m;
-const EPIC_HEAD_ALT = /^(EPIC-(\d+))\s*$/m; // EPIC-XXXX on its own line (alt format)
-const US_HEAD = /^US-(\d+)\s+\(EPIC-(\d+)\):\s*(.+)$/m;
-const KV = /^(\w[\w\s]*?):\s*(.+)$/;
-const AC_LINE = /^- \[( |x)\]\s*AC-(\d+):\s*(.+)$/;
-
-function parseKV(body) {
-  const out = {};
-  for (const line of body.split('\n')) {
-    const m = line.match(KV);
-    if (m && !/^Acceptance Criteria/i.test(m[1])) out[m[1].trim()] = m[2].trim();
-  }
-  return out;
-}
+const { parseReleasePlan } = require('../../parse-release-plan');
 
 /**
- * Split a fenced block body into per-entity sub-sections.
- * A new section starts at every line that looks like an entity header:
- *   EPIC-XXXX: title
- *   EPIC-XXXX        (alt format)
- *   US-XXXX (EPIC-XXXX): title
- * Lines that don't start a new entity are appended to the current section.
+ * Index docs/RELEASE_PLAN.md into SQLite using parseReleasePlan() as the
+ * canonical entity extractor. Phase C.5 (EPIC-0042): the previous AST-based
+ * implementation missed entities in prose nodes (L-0075) and silently dropped
+ * rows on CHECK violations (L-0076). This rewrite delegates parsing to the
+ * same regex-based extractor the dashboard read path uses, then INSERTs each
+ * entity with try/catch routing CHECK violations to the warnings channel.
  */
-function splitEntitySections(body) {
-  const ENTITY_LINE = /^(EPIC-\d+(?::|$)|US-\d+\s+\(EPIC-\d+\):)/;
-  const lines = body.split('\n');
-  const sections = [];
-  let cur = null;
-  for (const line of lines) {
-    if (ENTITY_LINE.test(line)) {
-      if (cur !== null) sections.push(cur);
-      cur = line;
-    } else if (cur !== null) {
-      cur += '\n' + line;
-    }
-  }
-  if (cur !== null) sections.push(cur);
-  return sections;
-}
-
 function indexReleasePlan({ index, markdown, rel }) {
-  if (!fs.existsSync(markdown.absolute(rel))) return { counts: {}, warnings: [] };
-  const ast = markdown.readAst(rel);
+  const abs = markdown.absolute(rel);
+  if (!fs.existsSync(abs)) return { counts: {}, warnings: [] };
+  const raw = fs.readFileSync(abs, 'utf8');
+  const { epics, stories, tasks } = parseReleasePlan(raw);
   const warnings = [];
-
-  // --- Pass 1: collect all entities from AST ---
-  const epics = [],
-    stories = [];
-  let astLine = 1;
-
-  for (const node of ast) {
-    if (node.kind === 'prose') {
-      astLine += (node.text.match(/\n/g) || []).length;
-      continue;
-    }
-    const sections = splitEntitySections(node.body);
-    for (const section of sections) {
-      const epicMatch = section.match(EPIC_HEAD);
-      const epicAltMatch = !epicMatch && section.match(EPIC_HEAD_ALT);
-      const usMatch = section.match(US_HEAD);
-      const kv = parseKV(section);
-
-      if (!usMatch && (epicMatch || epicAltMatch)) {
-        const id = `EPIC-${(epicMatch || epicAltMatch)[epicMatch ? 1 : 2]}`;
-        const title = epicMatch ? epicMatch[2] : kv.Title || kv.title || 'Unknown';
-        epics.push({
-          id,
-          title,
-          status: kv.Status || 'To Do',
-          releaseTarget: kv['Release Target'] || kv.ReleaseTarget || null,
-          sourceFile: rel,
-          sourceLine: astLine,
-        });
-      } else if (usMatch) {
-        const id = `US-${usMatch[1]}`;
-        const epicId = `EPIC-${usMatch[2]}`;
-        const acs = [];
-        let acPos = 0;
-        for (const lineText of section.split('\n')) {
-          const m = lineText.match(AC_LINE);
-          if (m) acs.push({ id: `AC-${m[2]}`, checked: m[1] === 'x' ? 1 : 0, text: m[3], position: acPos++ });
-        }
-        const prMatch = (kv.PR || '').match(/#(\d+)/);
-        stories.push({
-          id,
-          epicId,
-          title: usMatch[3],
-          status: kv.Status || 'To Do',
-          priority: kv.Priority || null,
-          estimate: kv.Estimate || null,
-          branch: kv.Branch || null,
-          prNumber: prMatch ? parseInt(prMatch[1], 10) : null,
-          specPath: kv.Spec || null,
-          planPath: kv.Plan || null,
-          sourceFile: rel,
-          sourceLine: astLine,
-          acs,
-        });
-      }
-    }
-    astLine += (node.raw.match(/\n/g) || []).length;
-  }
-
-  // --- Pass 2: insert in dependency order ---
+  const counts = { epics: 0, stories: 0, acs: 0, tasks: 0 };
   const epicIds = new Set(epics.map((e) => e.id));
-  const counts = { epics: 0, stories: 0, acs: 0 };
+  const storyIds = new Set(stories.map((s) => s.id));
+  const seenAcs = new Set();
 
   index.transaction(() => {
     index.exec(
@@ -120,6 +33,7 @@ function indexReleasePlan({ index, markdown, rel }) {
       'INSERT INTO stories(id,epic_id,title,status,priority,estimate,branch,pr_number,spec_path,plan_path,source_file,source_line) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',
     );
     const insAc = index.prepare('INSERT INTO acs(id,story_id,checked,text,position) VALUES(?,?,?,?,?)');
+    const insTask = index.prepare('INSERT INTO planning_tasks(id,story_id,status) VALUES(?,?,?)');
 
     const tryInsert = (fn, entityId) => {
       try {
@@ -130,21 +44,12 @@ function indexReleasePlan({ index, markdown, rel }) {
           warnings.push({ code: 'check-rejected', entityId, message: e.message });
           return false;
         }
-        if (e.code === 'SQLITE_CONSTRAINT_PRIMARYKEY' || e.code === 'SQLITE_CONSTRAINT_UNIQUE') {
-          // Temporary: the current AST traversal picks up the same EPIC-XXXX header
-          // when it appears in both fenced and prose sections of RELEASE_PLAN.md,
-          // producing duplicate inserts that PRIMARYKEY would reject. INSERT OR IGNORE
-          // used to swallow these. Task C5.3 routes the indexer through
-          // parseReleasePlan() (which dedups via seenEpics/seenStories), making this
-          // catch arm dead code — it should be REMOVED as part of the C5.3 rewrite.
-          return false;
-        }
         throw e;
       }
     };
 
     for (const e of epics) {
-      if (tryInsert(() => insEpic.run(e.id, e.title, e.status, e.releaseTarget, e.sourceFile, e.sourceLine), e.id)) {
+      if (tryInsert(() => insEpic.run(e.id, e.title, e.status || 'To Do', e.releaseTarget || null, rel, null), e.id)) {
         counts.epics++;
       }
     }
@@ -164,24 +69,49 @@ function indexReleasePlan({ index, markdown, rel }) {
             s.id,
             s.epicId,
             s.title,
-            s.status,
-            s.priority,
-            s.estimate,
-            s.branch,
+            s.status || 'To Do',
+            s.priority || null,
+            s.estimate || null,
+            s.branch || null,
             s.prNumber,
             s.specPath,
             s.planPath,
-            s.sourceFile,
-            s.sourceLine,
+            rel,
+            null,
           ),
         s.id,
       );
       if (!inserted) continue;
       counts.stories++;
+      let acPos = 0;
       for (const a of s.acs) {
-        if (tryInsert(() => insAc.run(a.id, s.id, a.checked, a.text, a.position), a.id)) {
-          counts.acs++;
+        if (seenAcs.has(a.id)) {
+          warnings.push({
+            code: 'duplicate-ac',
+            entityId: a.id,
+            message: `AC ${a.id} declared more than once; later occurrence ignored`,
+          });
+          continue;
         }
+        if (tryInsert(() => insAc.run(a.id, s.id, a.done ? 1 : 0, a.text, acPos), a.id)) {
+          seenAcs.add(a.id);
+          counts.acs++;
+          acPos++;
+        }
+      }
+    }
+    for (const t of tasks) {
+      if (!storyIds.has(t.storyId)) {
+        warnings.push({
+          code: 'dangling-dependency',
+          entityId: t.id,
+          missing: t.storyId,
+          message: `Task ${t.id} references story ${t.storyId} not found in ${rel}`,
+        });
+        continue;
+      }
+      if (tryInsert(() => insTask.run(t.id, t.storyId, t.status || null), t.id)) {
+        counts.tasks++;
       }
     }
   });

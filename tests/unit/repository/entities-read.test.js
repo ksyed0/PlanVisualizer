@@ -12,7 +12,6 @@ Status: Done
 US-0001 (EPIC-0001): A
 Status: Done
 Acceptance Criteria:
-
 - [x] AC-0001: one
 \`\`\`
 `;
