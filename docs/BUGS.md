@@ -734,7 +734,7 @@ Steps to Reproduce:
   2. Step
 Expected: What should happen
 Actual: What actually happened
-Status: Open | In Progress | Fixed | Verified | Closed
+Status: Open | In Progress | Fixed | Verified | WontFix | Closed
 Fix Branch: bugfix/BUG-XXXX-short-description
 Lesson Encoded: Yes — see docs/LESSONS.md | No
 
@@ -1248,7 +1248,7 @@ Steps to Reproduce:
 
 ---
 
-BUG-0100: capture-cost.js silent failure when transcript not found
+BUG-0261: capture-cost.js silent failure when transcript not found
 Severity: Low
 Related Story: US-0012
 Steps to Reproduce:
@@ -1280,7 +1280,7 @@ Steps to Reproduce:
 
 ---
 
-BUG-0098: Open bug count includes Retired bugs — shows incorrect count in header
+BUG-0262: Open bug count includes Retired bugs — shows incorrect count in header
 Severity: Medium
 Related Story: US-0036
 Steps to Reproduce:
@@ -1297,7 +1297,7 @@ Steps to Reproduce:
 
 ---
 
-BUG-0099: Epic group headers remain visible when all children are filtered out
+BUG-0263: Epic group headers remain visible when all children are filtered out
 Severity: Medium
 Related Story: US-0010
 Steps to Reproduce:
@@ -1309,7 +1309,7 @@ Steps to Reproduce:
    Actual: Epic group headers remain visible even when all children are hidden by filters; counts show original totals
    Status: Fixed
    GH Issue: #612
-   Fix Branch: bugfix/BUG-0099-epic-header-filter-visibility
+   Fix Branch: bugfix/BUG-0263-epic-header-filter-visibility
    Lesson Encoded: No
 
 ---
