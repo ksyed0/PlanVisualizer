@@ -34,7 +34,7 @@ The `plan:lint` "duplicates" were not redundant entries — they were **distinct
 
 ### PR
 
-- PR: [TO BE FILLED — opened at end of session close]
+- PR: https://github.com/ksyed0/PlanVisualizer/pull/1086
 
 ---
 
