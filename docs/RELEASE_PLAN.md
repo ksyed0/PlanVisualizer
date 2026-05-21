@@ -3936,7 +3936,7 @@ Standalone follow-up to EPIC-0042 (Phase C.5). Closes ENH-0003 (bugs/lessons tab
 EPIC-0043: Post-C.5 Indexer Hygiene
 Description: Resolve duplicate-ID data drift in docs/RELEASE_PLAN.md and docs/BUGS.md. Migration 004 widens bugs.status CHECK to canonical set Open|In Progress|Fixed|Verified|WontFix|Closed. Extract the C5.2 inline tryInsert helper to tools/lib/repository/insert-helper.js. Sweep all 5 remaining indexers (bugs, lessons, test-cases, id-registry, sdlc-status) so CHECK + PRIMARYKEY/UNIQUE violations surface as warnings.
 Release Target: v2.5.0
-Status: To Do
+Status: Done
 Dependencies: EPIC-0042
 ```
 
@@ -3946,31 +3946,31 @@ Dependencies: EPIC-0042
 US-0256 (EPIC-0043): As a future indexer contributor, I want all 5 remaining indexers to use a shared try/catch helper that surfaces SQLite CHECK + duplicate-ID violations as warnings, so silent data drops are never hidden again.
 Priority: High (P1)
 Estimate: M
-Status: To Do
+Status: Done
 Plan Task: Tasks 3 & 4 of 2026-05-21-post-c5-hygiene.md
 Dependencies: US-0253 (EPIC-0042)
 Related Enhancement: ENH-0003
 Acceptance Criteria:
 
-- [ ] AC-0989: Migration 004 widens bugs.status CHECK to accept 'Verified', 'WontFix', 'Closed'; existing rows preserved; unknown statuses still rejected
-- [ ] AC-0990: Shared createTryInsert helper exists at tools/lib/repository/insert-helper.js with dedicated unit test (5 cases: success, CHECK rejection, PRIMARYKEY rejection, UNIQUE rejection, rethrow on unexpected error)
-- [ ] AC-0991: All 6 indexers (release-plan + bugs + lessons + test-cases + id-registry + sdlc-status) wrap INSERTs via the shared helper; CHECK + PRIMARYKEY + UNIQUE violations surface as warnings
-- [ ] AC-0992: docs/BUGS.md format-doc convention line lists the new canonical status set (Open | In Progress | Fixed | Verified | WontFix | Closed)
+- [x] AC-0989: Migration 004 widens bugs.status CHECK to accept 'Verified', 'WontFix', 'Closed'; existing rows preserved; unknown statuses still rejected
+- [x] AC-0990: Shared createTryInsert helper exists at tools/lib/repository/insert-helper.js with dedicated unit test (5 cases: success, CHECK rejection, PRIMARYKEY rejection, UNIQUE rejection, rethrow on unexpected error)
+- [x] AC-0991: All 6 indexers (release-plan + bugs + lessons + test-cases + id-registry + sdlc-status) wrap INSERTs via the shared helper; CHECK + PRIMARYKEY + UNIQUE violations surface as warnings
+- [x] AC-0992: docs/BUGS.md format-doc convention line lists the new canonical status set (Open | In Progress | Fixed | Verified | WontFix | Closed)
 ```
 
 ```
 US-0257 (EPIC-0043): As a maintainer, I want all duplicate ACs and BUG declarations resolved in production markdown so plan:lint returns 0/0/0 and the indexer sweep doesn't break CI on bad data.
 Priority: High (P1)
 Estimate: S
-Status: To Do
+Status: Done
 Plan Task: Tasks 1 & 2 of 2026-05-21-post-c5-hygiene.md
 Dependencies: (none — must ship before US-0256 in the same PR)
 Related Enhancement: ENH-0004
 Acceptance Criteria:
 
-- [ ] AC-0993: 14 duplicate AC declarations (AC-0150..0153, AC-0334..0343) resolved in docs/RELEASE_PLAN.md via diff-each-pair
-- [ ] AC-0994: 3 duplicate BUG declarations (BUG-0098, BUG-0099, BUG-0100) resolved in docs/BUGS.md
-- [ ] AC-0995: plan:lint returns errors: 0, warnings: 0, reports: 0 on production data
+- [x] AC-0993: 14 duplicate AC declarations (AC-0150..0153, AC-0334..0343) resolved in docs/RELEASE_PLAN.md via diff-each-pair
+- [x] AC-0994: 3 duplicate BUG declarations (BUG-0098, BUG-0099, BUG-0100) resolved in docs/BUGS.md
+- [x] AC-0995: plan:lint returns errors: 0, warnings: 0, reports: 0 on production data
 ```
 
 ## Epic — EPIC-0039: Step 1 Persistence — SdlcStatus Cutover (Phase D)

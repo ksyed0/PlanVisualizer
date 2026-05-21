@@ -4,6 +4,40 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 55 — 2026-05-21 (Post-C.5 Indexer Hygiene — EPIC-0043 Done)
+
+### What Was Done
+
+- **Task 1 — Resolve 14 duplicate ACs (US-0257):** Identified that the 14 `duplicate-ac` warnings from `plan:lint` were not redundant data but distinct entities sharing IDs — caused by bulk copy-paste during past story migrations (two clusters: AC-0150..0153 and AC-0334..0343). Renumbered the second occurrence of each pair to AC-0996..AC-1009. Updated 16 TC cross-references in `TEST_CASES.md` to point to the new IDs. Commit `fde0372`.
+- **Task 2 — Resolve 3 duplicate BUGs + BUGS.md format-doc (US-0257):** Same ID-collision pattern for BUG-0098, BUG-0099, BUG-0100. Renumbered second occurrences to BUG-0262, BUG-0263, BUG-0261. Updated BUGS.md format-doc convention line to document the canonical status set (`Open | In Progress | Fixed | Verified | WontFix | Closed`). Commit `c70a59b`.
+- **Task 3 — Migration 004 + shared insert-helper (US-0256):** Created Migration 004 (`tools/lib/repository/migrations/004_widen_bugs_status.sql`) widening `bugs.status` CHECK from `Open|In Progress|Fixed|Wontfix|Done` to the canonical set. Extracted the inline `tryInsert` helper from `release-plan-indexer.js` into a shared module at `tools/lib/repository/insert-helper.js` with 5 dedicated unit tests. Commit `8d56849`.
+- **Task 4 — Sweep all indexers (US-0256):** Migrated all 6 indexers (release-plan, bugs, lessons, test-cases, id-registry, sdlc-status) to wrap INSERTs via the shared `createTryInsert` helper. CHECK violations surface as `check-rejected` warnings; PRIMARYKEY/UNIQUE violations surface as `duplicate-id` errors. Commit `190035c`.
+
+### Key Finding: ID Collisions, Not Redundant Data
+
+The `plan:lint` "duplicates" were not redundant entries — they were **distinct entities with colliding IDs**. The diff-each-pair investigation showed unique content on both sides of each pair. This changed the resolution strategy from delete-one to renumber-one. 17 new IDs were allocated (AC-0996..AC-1009, BUG-0261..0263); zero content was deleted.
+
+### Test Results
+
+- **Full suite: 1372/1372 pass** (85 suites)
+- **plan:lint: errors: 0, warnings: 0, reports: 0** ✅
+- **Coverage: above 80% gate** ✅
+
+### Errors / Blockers
+
+- None. Clean run throughout.
+
+### Deferred
+
+- US-0083 AC-0262/0263 duplicate-content block (same text, different IDs) — not a `plan:lint` error, deferred to follow-up.
+- Orphaned planning block AC-0154..0164 — references a story no longer in RELEASE_PLAN; not a `plan:lint` error, deferred.
+
+### PR
+
+- PR: [TO BE FILLED — opened at end of session close]
+
+---
+
 ## Session 53 — 2026-05-20 (Phase C First Read Consumer — EPIC-0038 Done)
 
 ### What Was Done
