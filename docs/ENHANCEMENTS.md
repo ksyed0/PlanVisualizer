@@ -100,3 +100,32 @@ The `bugs` table CHECK constraint allows `Open | In Progress | Fixed | Wontfix |
 - Decide whether the same `WarningsChannel` rollout should sweep all indexers in one PR or stay incremental.
 
 **Reference:** Phase C.5 design spec, `docs/superpowers/specs/2026-05-21-phase-c5-indexer-hardening-design.md` §7.
+
+---
+
+## ENH-0004 — Clean up duplicate AC declarations in docs/RELEASE_PLAN.md
+
+**Surface:** Repository data (`docs/RELEASE_PLAN.md`)
+**Status:** Backlog
+**Origin:** Session 54 Phase C.5 (2026-05-21)
+
+**Opportunity:**
+Production `docs/RELEASE_PLAN.md` declares AC-0150..AC-0153 and AC-0334..AC-0343 twice — 14 duplicates total. The Phase C.5 indexer rewrite surfaced them as `duplicate-ac` warnings via `plan:lint`. Previously they were silently swallowed by `INSERT OR IGNORE` (L-0076 class).
+
+**Impact if unaddressed:**
+
+- `plan:lint` shows 14 warnings on every run, eroding signal-to-noise.
+- The second declaration of each AC is silently ignored by the indexer (only the first hits SQLite). Editors who update the second occurrence see no effect.
+- Future dedup logic in entity repos has to keep accounting for these.
+
+**Proposed path (when prioritized):**
+
+- For each duplicate AC ID, diff the two declarations. Decide which is canonical (probably the first, which is the one indexed today).
+- Delete the duplicate text. Verify the surrounding story still parses cleanly.
+- Confirm `plan:lint` returns `errors: 0, warnings: 0, reports: 0`.
+
+**Pre-work:**
+
+- Audit the duplicates to understand WHY they exist (copy-paste mistake during a story migration? Two stories pointing to the same AC?). The pattern of consecutive IDs (0150-0153, 0334-0343) suggests bulk copy-paste rather than gradual drift.
+
+**Reference:** Session 54 conversation log (2026-05-21). plan:lint output at commit `dd9de5b`.
