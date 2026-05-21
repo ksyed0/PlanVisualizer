@@ -859,28 +859,13 @@ cd <worktree-root> && \
 
 - [ ] **Step 1: Tick ACs and mark stories Done in RELEASE_PLAN.md**
 
-In `docs/RELEASE_PLAN.md`:
+EPIC-0043, US-0256, US-0257, and AC-0989..AC-0995 were pre-allocated in the spec PR (#1084). Find each in `docs/RELEASE_PLAN.md` and update:
 
-1. Find the EPIC-0043 fenced block (search for `EPIC-0043:`). Change `Status: To Do` to `Status: Done`.
-2. Find US-0256 fenced block. Change `Status: To Do` to `Status: Done`. Tick its ACs (AC-XXXX-EEEE format — replace `- [ ]` with `- [x]` for each).
-3. Find US-0257 fenced block. Change `Status: To Do` to `Status: Done`. Tick its ACs.
+1. **EPIC-0043** fenced block (search for `EPIC-0043:`). Change `Status: To Do` to `Status: Done`.
+2. **US-0256** fenced block. Change `Status: To Do` to `Status: Done`. Tick AC-0989, AC-0990, AC-0991, AC-0992 (`- [ ]` → `- [x]`).
+3. **US-0257** fenced block. Change `Status: To Do` to `Status: Done`. Tick AC-0993, AC-0994, AC-0995.
 
-If EPIC-0043 / US-0256 / US-0257 do not yet exist in `docs/RELEASE_PLAN.md` (depends on whether they were added when ENH-0003/0004 were filed), CREATE them as part of this step. Allocate the next available IDs from `docs/ID_REGISTRY.md` — current state per Session 54 should be `EPIC-0043`, `US-0256`, `US-0257`. Bump the registry's "Next Available ID" / "Last Assigned" cells accordingly.
-
-Each story should have 3-4 ACs covering its work. Use these:
-
-For US-0256:
-
-- AC-XXXX: Migration 004 widens `bugs.status` CHECK to accept `Verified`, `WontFix`, `Closed`; existing rows preserved
-- AC-XXXX: Shared `createTryInsert` helper exists at `tools/lib/repository/insert-helper.js` with dedicated unit test
-- AC-XXXX: All 6 indexers (release-plan + bugs + lessons + test-cases + id-registry + sdlc-status) wrap INSERTs via the shared helper; CHECK + PRIMARYKEY/UNIQUE violations surface as warnings
-- AC-XXXX: `docs/BUGS.md` format-doc convention line lists the new canonical status set
-
-For US-0257:
-
-- AC-XXXX: 14 duplicate AC declarations (AC-0150..0153, AC-0334..0343) resolved in `docs/RELEASE_PLAN.md` via diff-each-pair
-- AC-XXXX: 3 duplicate BUG declarations (BUG-0098, BUG-0099, BUG-0100) resolved in `docs/BUGS.md`
-- AC-XXXX: `plan:lint` returns `errors: 0, warnings: 0, reports: 0` on production data
+No new IDs are allocated in this task — they were pre-allocated. Confirm `docs/ID_REGISTRY.md` already reflects `EPIC-0044`, `US-0258`, `AC-0996` as next-available (these bumps happened in the spec PR).
 
 - [ ] **Step 2: Add Resolution postscripts to ENH-0003 and ENH-0004 in ENHANCEMENTS.md**
 
