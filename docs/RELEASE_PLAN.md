@@ -3942,6 +3942,51 @@ Acceptance Criteria:
 - [x] AC-0988: dashboard-repo-reader.js shim no longer needs to prefer legacy priority — story-repo returns the normalized value directly (shim simplified accordingly)
 ```
 
+## Epic — EPIC-0043: Post-C.5 Indexer Hygiene
+
+Standalone follow-up to EPIC-0042 (Phase C.5). Closes ENH-0003 (bugs/lessons table CHECK divergence + sweep all 5 remaining indexers with the shared try/catch pattern) and ENH-0004 (14 duplicate AC declarations + 3 duplicate BUG declarations in production markdown). Lands before Phase D so D contributors start with `plan:lint` returning 0/0/0.
+
+```
+EPIC-0043: Post-C.5 Indexer Hygiene
+Description: Resolve duplicate-ID data drift in docs/RELEASE_PLAN.md and docs/BUGS.md. Migration 004 widens bugs.status CHECK to canonical set Open|In Progress|Fixed|Verified|WontFix|Closed. Extract the C5.2 inline tryInsert helper to tools/lib/repository/insert-helper.js. Sweep all 5 remaining indexers (bugs, lessons, test-cases, id-registry, sdlc-status) so CHECK + PRIMARYKEY/UNIQUE violations surface as warnings.
+Release Target: v2.5.0
+Status: To Do
+Dependencies: EPIC-0042
+```
+
+## User Stories — EPIC-0043: Post-C.5 Indexer Hygiene
+
+```
+US-0256 (EPIC-0043): As a future indexer contributor, I want all 5 remaining indexers to use a shared try/catch helper that surfaces SQLite CHECK + duplicate-ID violations as warnings, so silent data drops are never hidden again.
+Priority: High (P1)
+Estimate: M
+Status: To Do
+Plan Task: Tasks 3 & 4 of 2026-05-21-post-c5-hygiene.md
+Dependencies: US-0253 (EPIC-0042)
+Related Enhancement: ENH-0003
+Acceptance Criteria:
+
+- [ ] AC-0989: Migration 004 widens bugs.status CHECK to accept 'Verified', 'WontFix', 'Closed'; existing rows preserved; unknown statuses still rejected
+- [ ] AC-0990: Shared createTryInsert helper exists at tools/lib/repository/insert-helper.js with dedicated unit test (5 cases: success, CHECK rejection, PRIMARYKEY rejection, UNIQUE rejection, rethrow on unexpected error)
+- [ ] AC-0991: All 6 indexers (release-plan + bugs + lessons + test-cases + id-registry + sdlc-status) wrap INSERTs via the shared helper; CHECK + PRIMARYKEY + UNIQUE violations surface as warnings
+- [ ] AC-0992: docs/BUGS.md format-doc convention line lists the new canonical status set (Open | In Progress | Fixed | Verified | WontFix | Closed)
+```
+
+```
+US-0257 (EPIC-0043): As a maintainer, I want all duplicate ACs and BUG declarations resolved in production markdown so plan:lint returns 0/0/0 and the indexer sweep doesn't break CI on bad data.
+Priority: High (P1)
+Estimate: S
+Status: To Do
+Plan Task: Tasks 1 & 2 of 2026-05-21-post-c5-hygiene.md
+Dependencies: (none — must ship before US-0256 in the same PR)
+Related Enhancement: ENH-0004
+Acceptance Criteria:
+
+- [ ] AC-0993: 14 duplicate AC declarations (AC-0150..0153, AC-0334..0343) resolved in docs/RELEASE_PLAN.md via diff-each-pair
+- [ ] AC-0994: 3 duplicate BUG declarations (BUG-0098, BUG-0099, BUG-0100) resolved in docs/BUGS.md
+- [ ] AC-0995: plan:lint returns errors: 0, warnings: 0, reports: 0 on production data
+```
+
 ## Epic — EPIC-0039: Step 1 Persistence — SdlcStatus Cutover (Phase D)
 
 Phase D of Step 1 — the biggest phase. Promotes SQLite to authoritative for tool-emitted state. `sdlc-status.json` becomes a per-event mirror written by the repo. Four lifecycle writers migrate in a single coordinated PR.
