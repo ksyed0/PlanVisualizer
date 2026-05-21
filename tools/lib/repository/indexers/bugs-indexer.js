@@ -1,5 +1,7 @@
 'use strict';
 const fs = require('fs');
+const { createTryInsert } = require('../insert-helper');
+
 const BUG_HEAD = /^BUG-(\d+):\s*(.+)$/m;
 const KV = /^(\w[\w\s]*?):\s*(.+)$/;
 
@@ -11,6 +13,7 @@ function indexBugs({ index, markdown, rel }) {
   index.transaction(() => {
     index.exec('DELETE FROM bugs; DELETE FROM bug_stories;');
     const ins = index.prepare('INSERT INTO bugs(id,status,severity,source_file,source_line) VALUES(?,?,?,?,?)');
+    const tryInsert = createTryInsert({ warnings });
     let line = 1;
     for (const node of ast) {
       if (node.kind === 'prose') {
@@ -27,11 +30,8 @@ function indexBugs({ index, markdown, rel }) {
         }
         const status = kv.Status || 'Open';
         const severity = kv.Severity || null;
-        try {
-          ins.run(id, status, severity, rel, line);
+        if (tryInsert(() => ins.run(id, status, severity, rel, line), id)) {
           count++;
-        } catch (e) {
-          warnings.push({ code: 'invalid-status', entityId: id, value: status, message: e.message });
         }
       }
       line += (node.raw.match(/\n/g) || []).length;
