@@ -1941,7 +1941,7 @@ None. The 14 `duplicate-ac` warnings are pre-existing data drift, not regression
 
 ### PR
 
-- PR URL: _(to be filled after `gh pr create`)_
+- PR URL: https://github.com/ksyed0/PlanVisualizer/pull/1082
 
 ### What's Next
 
