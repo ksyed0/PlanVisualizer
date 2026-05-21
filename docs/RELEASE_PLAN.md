@@ -4228,6 +4228,38 @@ Acceptance Criteria:
 
 ```
 
+## Epic — EPIC-0044: Pre-Phase-D Cleanup
+
+Address three deferred items from EPIC-0043's Session 55 close before Phase D starts: delete misplaced US-0083 declaration in EPIC-0004 section of RELEASE_PLAN.md (canonical placement at EPIC-0014 retained); delete orphaned AC-0154..0164 planning blocks (pre-implementation cruft that diverged from canonical Done versions); renumber Phase D plan doc's "Migration 002" references to "Migration 005" to reflect that Migrations 003 (C.5) and 004 (EPIC-0043) have shipped. Pure janitorial — no code touched, no tests added.
+
+```
+
+EPIC-0044: Pre-Phase-D Cleanup
+Description: Pre-Phase-D doc hygiene: delete misplaced US-0083 and orphan AC-0154..0164 planning blocks from RELEASE_PLAN.md; renumber Phase D's Migration 002 references to Migration 005 across RELEASE_PLAN.md (EPIC-0039 description + US-0233 + US-0239 ACs) and the Phase D plan doc (8 refs).
+Release Target: v2.5.0
+Status: Done
+Dependencies: EPIC-0043
+
+```
+
+## User Stories — EPIC-0044: Pre-Phase-D Cleanup
+
+```
+
+US-0258 (EPIC-0044): As a Phase D contributor, I want pre-existing planning-doc cruft cleaned up before D.1 starts, so I'm reading accurate doc references and `grep` produces no false-positive duplicates.
+Priority: Low (P2)
+Estimate: S
+Status: Done
+Branch: chore/pre-d-cleanup
+Dependencies: None
+Acceptance Criteria:
+
+- [x] AC-1010: docs/RELEASE_PLAN.md has zero duplicate US-0083 occurrences (misplaced block in EPIC-0004 section deleted; canonical placement at EPIC-0014 retained)
+- [x] AC-1011: docs/RELEASE_PLAN.md has zero unfenced/stale AC-0154..0164 planning blocks (orphan block deleted; canonical Done versions at EPIC-0008 retained)
+- [x] AC-1012: docs/superpowers/plans/2026-05-19-step-1-repository-abstraction.md Phase D references use "Migration 005" not "Migration 002"; corresponding paths updated (002-ingest-sdlc-status.js → 005-ingest-sdlc-status.js); RELEASE_PLAN.md EPIC-0039 description and dependent ACs (AC-0916, US-0233, US-0239) reflect the new number
+
+```
+
 ## Epic — EPIC-0039: Step 1 Persistence — SdlcStatus Cutover (Phase D)
 
 Phase D of Step 1 — the biggest phase. Promotes SQLite to authoritative for tool-emitted state. `sdlc-status.json` becomes a per-event mirror written by the repo. Four lifecycle writers migrate in a single coordinated PR.
