@@ -1173,10 +1173,10 @@ Estimate: S
 Status: Done
 Branch: feature/EPIC-0008-trends-snapshots
 Acceptance Criteria:
-  - [x] AC-0150: A .history/ directory is created in the project root (gitignored) if it does not exist
-  - [x] AC-0151: On each generate-plan.js run, a timestamped JSON file (e.g., 2026-03-30T14-00-00Z.json) is saved to .history/ containing all parsed dashboard data (epics, stories, bugs, costs, coverage, lessons, progress)
-  - [x] AC-0152: The snapshot includes a generation timestamp, Git commit SHA (if available), and all data sections that would otherwise be rendered to HTML
-  - [x] AC-0153: Invalid or corrupt JSON files in .history/ are gracefully skipped without crashing
+  - [x] AC-0996: A .history/ directory is created in the project root (gitignored) if it does not exist
+  - [x] AC-0997: On each generate-plan.js run, a timestamped JSON file (e.g., 2026-03-30T14-00-00Z.json) is saved to .history/ containing all parsed dashboard data (epics, stories, bugs, costs, coverage, lessons, progress)
+  - [x] AC-0998: The snapshot includes a generation timestamp, Git commit SHA (if available), and all data sections that would otherwise be rendered to HTML
+  - [x] AC-0999: Invalid or corrupt JSON files in .history/ are gracefully skipped without crashing
 Dependencies: None
 
 US-0055 (EPIC-0008): As a user, I want to view a progress trend chart showing story completion over time, so that I can see whether the project is accelerating or decelerating.
@@ -2247,20 +2247,6 @@ Dependencies: None
 ```
 
 ```
-US-0053 (EPIC-0014): As a developer, I want the render-html.js module to be split into smaller focused files, so that the codebase is easier to maintain and debug.
-Priority: Low (P3)
-Estimate: M
-Status: Done
-Branch: feature/US-0053-split-render-html
-Acceptance Criteria:
-  - [x] AC-0150: render-html.js is refactored into separate modules (render-utils.js, render-shell.js, render-tabs.js, render-scripts.js)
-  - [x] AC-0151: Each module exports a single render function that follows the existing contract
-  - [x] AC-0152: All existing tests pass after refactoring
-  - [x] AC-0153: The generate-plan.js orchestrator imports from the new module files via render-html.js orchestrator
-Dependencies: None
-```
-
-```
 US-0108 (EPIC-0014): As a Conductor agent, I want a CLI tool to update docs/sdlc-status.json at each pipeline phase transition, so that the agentic dashboard stays live without manual JSON editing and without each sub-agent needing to understand the file schema.
 Priority: High (P0)
 Estimate: S
@@ -2448,10 +2434,10 @@ Estimate: M
 Status: Done
 Branch: feature/US-0102-traceability-redesign
 Acceptance Criteria:
-  - [x] AC-0334: Pass/Fail/Not Run are rendered as filled colour dots (8px) instead of letters
-  - [x] AC-0335: Cross-hair hover highlights the full row and TC column header on cell hover
-  - [x] AC-0336: Legend moves inline with the table caption and shows live counts
-  - [x] AC-0337: First column (story ID + title) is sticky during horizontal scroll
+  - [x] AC-1000: Pass/Fail/Not Run are rendered as filled colour dots (8px) instead of letters
+  - [x] AC-1001: Cross-hair hover highlights the full row and TC column header on cell hover
+  - [x] AC-1002: Legend moves inline with the table caption and shows live counts
+  - [x] AC-1003: First column (story ID + title) is sticky during horizontal scroll
 Dependencies: US-0097
 ```
 
@@ -2462,10 +2448,10 @@ Estimate: S
 Status: Done
 Branch: feature/US-0103-status-editorial
 Acceptance Criteria:
-  - [x] AC-0338: Chart boxes are replaced with hairline top rule + display-face title + subtitle
-  - [x] AC-0339: Charts are grouped under "Delivery" and "Financial" supertitles
-  - [x] AC-0340: All doughnut charts have a centered hero number
-  - [x] AC-0341: Chart.js legends use Inter font family with point-style circular dots
+  - [x] AC-1004: Chart boxes are replaced with hairline top rule + display-face title + subtitle
+  - [x] AC-1005: Charts are grouped under "Delivery" and "Financial" supertitles
+  - [x] AC-1006: All doughnut charts have a centered hero number
+  - [x] AC-1007: Chart.js legends use Inter font family with point-style circular dots
 Dependencies: US-0094, US-0095, US-0099
 ```
 
@@ -2476,8 +2462,8 @@ Estimate: M
 Status: Done
 Branch: feature/US-0104-trends-polish
 Acceptance Criteria:
-  - [x] AC-0342: A time-range toggle (7d / 30d / 90d / All) filters all Trends charts client-side
-  - [x] AC-0343: Charts are grouped under "Progress", "Cost & Spend", "Quality" supertitles
+  - [x] AC-1008: A time-range toggle (7d / 30d / 90d / All) filters all Trends charts client-side
+  - [x] AC-1009: Charts are grouped under "Progress", "Cost & Spend", "Quality" supertitles
   - [x] AC-0344: Line charts use stroke-gradient fills via Chart.js createLinearGradient
   - [ ] AC-0345: Empty state shows an animated SVG placeholder instead of text-only copy
 Dependencies: US-0095
@@ -3950,7 +3936,7 @@ Standalone follow-up to EPIC-0042 (Phase C.5). Closes ENH-0003 (bugs/lessons tab
 EPIC-0043: Post-C.5 Indexer Hygiene
 Description: Resolve duplicate-ID data drift in docs/RELEASE_PLAN.md and docs/BUGS.md. Migration 004 widens bugs.status CHECK to canonical set Open|In Progress|Fixed|Verified|WontFix|Closed. Extract the C5.2 inline tryInsert helper to tools/lib/repository/insert-helper.js. Sweep all 5 remaining indexers (bugs, lessons, test-cases, id-registry, sdlc-status) so CHECK + PRIMARYKEY/UNIQUE violations surface as warnings.
 Release Target: v2.5.0
-Status: To Do
+Status: Done
 Dependencies: EPIC-0042
 ```
 
@@ -3960,31 +3946,31 @@ Dependencies: EPIC-0042
 US-0256 (EPIC-0043): As a future indexer contributor, I want all 5 remaining indexers to use a shared try/catch helper that surfaces SQLite CHECK + duplicate-ID violations as warnings, so silent data drops are never hidden again.
 Priority: High (P1)
 Estimate: M
-Status: To Do
+Status: Done
 Plan Task: Tasks 3 & 4 of 2026-05-21-post-c5-hygiene.md
 Dependencies: US-0253 (EPIC-0042)
 Related Enhancement: ENH-0003
 Acceptance Criteria:
 
-- [ ] AC-0989: Migration 004 widens bugs.status CHECK to accept 'Verified', 'WontFix', 'Closed'; existing rows preserved; unknown statuses still rejected
-- [ ] AC-0990: Shared createTryInsert helper exists at tools/lib/repository/insert-helper.js with dedicated unit test (5 cases: success, CHECK rejection, PRIMARYKEY rejection, UNIQUE rejection, rethrow on unexpected error)
-- [ ] AC-0991: All 6 indexers (release-plan + bugs + lessons + test-cases + id-registry + sdlc-status) wrap INSERTs via the shared helper; CHECK + PRIMARYKEY + UNIQUE violations surface as warnings
-- [ ] AC-0992: docs/BUGS.md format-doc convention line lists the new canonical status set (Open | In Progress | Fixed | Verified | WontFix | Closed)
+- [x] AC-0989: Migration 004 widens bugs.status CHECK to accept 'Verified', 'WontFix', 'Closed'; existing rows preserved; unknown statuses still rejected
+- [x] AC-0990: Shared createTryInsert helper exists at tools/lib/repository/insert-helper.js with dedicated unit test (5 cases: success, CHECK rejection, PRIMARYKEY rejection, UNIQUE rejection, rethrow on unexpected error)
+- [x] AC-0991: All 6 indexers (release-plan + bugs + lessons + test-cases + id-registry + sdlc-status) wrap INSERTs via the shared helper; CHECK + PRIMARYKEY + UNIQUE violations surface as warnings
+- [x] AC-0992: docs/BUGS.md format-doc convention line lists the new canonical status set (Open | In Progress | Fixed | Verified | WontFix | Closed)
 ```
 
 ```
 US-0257 (EPIC-0043): As a maintainer, I want all duplicate ACs and BUG declarations resolved in production markdown so plan:lint returns 0/0/0 and the indexer sweep doesn't break CI on bad data.
 Priority: High (P1)
 Estimate: S
-Status: To Do
+Status: Done
 Plan Task: Tasks 1 & 2 of 2026-05-21-post-c5-hygiene.md
 Dependencies: (none — must ship before US-0256 in the same PR)
 Related Enhancement: ENH-0004
 Acceptance Criteria:
 
-- [ ] AC-0993: 14 duplicate AC declarations (AC-0150..0153, AC-0334..0343) resolved in docs/RELEASE_PLAN.md via diff-each-pair
-- [ ] AC-0994: 3 duplicate BUG declarations (BUG-0098, BUG-0099, BUG-0100) resolved in docs/BUGS.md
-- [ ] AC-0995: plan:lint returns errors: 0, warnings: 0, reports: 0 on production data
+- [x] AC-0993: 14 duplicate AC declarations (AC-0150..0153, AC-0334..0343) resolved in docs/RELEASE_PLAN.md via diff-each-pair
+- [x] AC-0994: 3 duplicate BUG declarations (BUG-0098, BUG-0099, BUG-0100) resolved in docs/BUGS.md
+- [x] AC-0995: plan:lint returns errors: 0, warnings: 0, reports: 0 on production data
 ```
 
 ## Epic — EPIC-0039: Step 1 Persistence — SdlcStatus Cutover (Phase D)

@@ -101,6 +101,8 @@ The `bugs` table CHECK constraint allows `Open | In Progress | Fixed | Wontfix |
 
 **Reference:** Phase C.5 design spec, `docs/superpowers/specs/2026-05-21-phase-c5-indexer-hardening-design.md` §7.
 
+**Resolved (2026-05-21, Session 55):** Migration 004 widened `bugs.status` CHECK to `Open | In Progress | Fixed | Verified | WontFix | Closed`. All 6 indexers (release-plan + bugs + lessons + test-cases + id-registry + sdlc-status) wrap INSERTs via the shared `createTryInsert` helper at `tools/lib/repository/insert-helper.js`. CHECK violations surface as `check-rejected` warnings; duplicate IDs surface as `duplicate-id` errors. `plan:lint` returns `0/0/0` post-cleanup.
+
 ---
 
 ## ENH-0004 — Clean up duplicate AC declarations in docs/RELEASE_PLAN.md
@@ -129,3 +131,5 @@ Production `docs/RELEASE_PLAN.md` declares AC-0150..AC-0153 and AC-0334..AC-0343
 - Audit the duplicates to understand WHY they exist (copy-paste mistake during a story migration? Two stories pointing to the same AC?). The pattern of consecutive IDs (0150-0153, 0334-0343) suggests bulk copy-paste rather than gradual drift.
 
 **Reference:** Session 54 conversation log (2026-05-21). plan:lint output at commit `dd9de5b`.
+
+**Resolved (2026-05-21, Session 55):** 14 AC ID collisions (cluster AC-0150..0153 + cluster AC-0334..0343) resolved by renumbering the second occurrence in each pair to AC-0996..AC-1009 (16 TC cross-references in TEST_CASES.md updated). 3 BUG ID collisions resolved similarly: BUG-0098/0099/0100 second occurrences renumbered to BUG-0262/0263/0261. The "duplicates" turned out to be distinct entities sharing IDs, not redundant data — renumbering preserved all content.

@@ -1,10 +1,15 @@
 'use strict';
 const fs = require('fs');
+const { createTryInsert } = require('../insert-helper');
 
+// Note: Phase D (EPIC-0039) replaces this indexer when SQLite becomes authoritative
+// for sdlc-status. The shared-helper wrapping added here is preserved or improved
+// in that rewrite, not discarded.
 function indexSdlcStatusJson({ index, markdown, rel }) {
   const abs = markdown.absolute(rel);
   if (!fs.existsSync(abs)) return { counts: {}, warnings: [] };
   const data = JSON.parse(fs.readFileSync(abs, 'utf8'));
+  const warnings = [];
   let taskCount = 0,
     eventCount = 0;
   index.transaction(() => {
@@ -14,30 +19,47 @@ function indexSdlcStatusJson({ index, markdown, rel }) {
     );
     const insEvent = index.prepare('INSERT INTO sdlc_events(ts,kind,story_id,agent,payload_json) VALUES(?,?,?,?,?)');
     const insProg = index.prepare('INSERT INTO sdlc_programme(key,value_json) VALUES(?,?)');
+    const tryInsert = createTryInsert({ warnings });
     for (const t of data.tasks || []) {
-      insTask.run(
-        t.id,
-        t.storyId || null,
-        t.agent || null,
-        t.status || null,
-        t.startedAt || null,
-        t.completedAt || null,
-        t.planTaskIndex || null,
-        t.summary || null,
-        t.model || null,
-        t.modelRationale || null,
-        t.taskReview ? JSON.stringify(t.taskReview) : null,
-        t.baseSha || null,
-        t.headSha || null,
-      );
-      taskCount++;
+      if (
+        tryInsert(
+          () =>
+            insTask.run(
+              t.id,
+              t.storyId || null,
+              t.agent || null,
+              t.status || null,
+              t.startedAt || null,
+              t.completedAt || null,
+              t.planTaskIndex || null,
+              t.summary || null,
+              t.model || null,
+              t.modelRationale || null,
+              t.taskReview ? JSON.stringify(t.taskReview) : null,
+              t.baseSha || null,
+              t.headSha || null,
+            ),
+          t.id,
+        )
+      ) {
+        taskCount++;
+      }
     }
     for (const e of data.log || []) {
-      insEvent.run(e.ts || Date.now(), e.kind || 'unknown', e.storyId || null, e.agent || null, JSON.stringify(e));
-      eventCount++;
+      const ts = e.ts || Date.now();
+      const kind = e.kind || 'unknown';
+      if (
+        tryInsert(() => insEvent.run(ts, kind, e.storyId || null, e.agent || null, JSON.stringify(e)), `${kind}@${ts}`)
+      ) {
+        eventCount++;
+      }
     }
-    if (data.programme) for (const [k, v] of Object.entries(data.programme)) insProg.run(k, JSON.stringify(v));
+    if (data.programme) {
+      for (const [k, v] of Object.entries(data.programme)) {
+        tryInsert(() => insProg.run(k, JSON.stringify(v)), k);
+      }
+    }
   });
-  return { counts: { sdlc_tasks: taskCount, sdlc_events: eventCount }, warnings: [] };
+  return { counts: { sdlc_tasks: taskCount, sdlc_events: eventCount }, warnings };
 }
 module.exports = { indexSdlcStatusJson };

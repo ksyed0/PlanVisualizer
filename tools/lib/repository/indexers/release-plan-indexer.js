@@ -1,6 +1,7 @@
 'use strict';
 const fs = require('fs');
 const { parseReleasePlan } = require('../../parse-release-plan');
+const { createTryInsert } = require('../insert-helper');
 
 /**
  * Index docs/RELEASE_PLAN.md into SQLite using parseReleasePlan() as the
@@ -35,18 +36,7 @@ function indexReleasePlan({ index, markdown, rel }) {
     const insAc = index.prepare('INSERT INTO acs(id,story_id,checked,text,position) VALUES(?,?,?,?,?)');
     const insTask = index.prepare('INSERT INTO planning_tasks(id,story_id,status) VALUES(?,?,?)');
 
-    const tryInsert = (fn, entityId) => {
-      try {
-        fn();
-        return true;
-      } catch (e) {
-        if (e.code === 'SQLITE_CONSTRAINT_CHECK') {
-          warnings.push({ code: 'check-rejected', entityId, message: e.message });
-          return false;
-        }
-        throw e;
-      }
-    };
+    const tryInsert = createTryInsert({ warnings });
 
     for (const e of epics) {
       if (tryInsert(() => insEpic.run(e.id, e.title, e.status || 'To Do', e.releaseTarget || null, rel, null), e.id)) {
