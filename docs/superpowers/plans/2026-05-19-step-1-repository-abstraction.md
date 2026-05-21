@@ -99,7 +99,7 @@ tools/lib/migrations/            # project-state migrations (distinct from SQLit
   pv-state.js                    # read/write committed + local state files
   backup.js                      # snapshots into docs/.pv-backup/<version>/
   001-normalise-fenced-blocks.js
-  002-ingest-sdlc-status.js
+  005-ingest-sdlc-status.js
 
 tools/                           # CLI entry points (called via npm scripts)
   pv-check-upgrade.js
@@ -4168,11 +4168,11 @@ git add tools/lib/repository/entities/sdlc-*-repo.js tools/lib/repository/sdlc-m
 git commit -m "feat(repo): SdlcEvent/Task/Programme repos with re-query-inside-lock JSON mirror"
 ```
 
-### Task D.2: Migration 002 — JSON → SQLite ingest
+### Task D.2: Migration 005 — JSON → SQLite ingest
 
 **Files:**
 
-- Create: `tools/lib/migrations/002-ingest-sdlc-status.js`
+- Create: `tools/lib/migrations/005-ingest-sdlc-status.js`
 - Test: `tests/unit/migrations/002-ingest.test.js`
 
 - [ ] **Step 1: Write failing test**
@@ -4183,9 +4183,9 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const { Repository } = require('../../../tools/lib/repository');
-const mig = require('../../../tools/lib/migrations/002-ingest-sdlc-status');
+const mig = require('../../../tools/lib/migrations/005-ingest-sdlc-status');
 
-test('Migration 002 ingests existing JSON; idempotent on second run', async () => {
+test('Migration 005 ingests existing JSON; idempotent on second run', async () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'm2-'));
   fs.mkdirSync(path.join(root, 'docs'));
   fs.writeFileSync(
@@ -4211,10 +4211,10 @@ test('Migration 002 ingests existing JSON; idempotent on second run', async () =
 });
 ```
 
-- [ ] **Step 2: Implement Migration 002**
+- [ ] **Step 2: Implement Migration 005**
 
 ```js
-// tools/lib/migrations/002-ingest-sdlc-status.js
+// tools/lib/migrations/005-ingest-sdlc-status.js
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -4262,7 +4262,7 @@ Expected: PASS.
 - [ ] **Step 4: Commit**
 
 ```bash
-git add tools/lib/migrations/002-ingest-sdlc-status.js tests/unit/migrations/002-ingest.test.js
+git add tools/lib/migrations/005-ingest-sdlc-status.js tests/unit/migrations/002-ingest.test.js
 git commit -m "feat(migrations): 002 — ingest legacy sdlc-status.json into SQLite (idempotent)"
 ```
 
