@@ -53,13 +53,15 @@ function mergeRepoData(legacy, repoData) {
   const mergedStories = legacyStories.map((ls) => {
     const rs = repoStoryById.get(ls.id);
     if (!rs) return ls; // not in repo — keep legacy
-    // Don't overlay `priority`: legacy normalises ("P0"); repo stores raw
-    // ("High (P0)"). Overlaying would diff the snapshot.
+    // Both legacy and repo paths normalise priority at extraction time
+    // (parseReleasePlan handles "High (P0)" → "P0"). Overlaying from repo is
+    // safe and keeps the structural-fields-from-repo invariant consistent.
     const merged = {
       ...ls,
       title: rs.title ?? ls.title,
       epicId: rs.epicId ?? ls.epicId,
       status: rs.status ?? ls.status,
+      priority: rs.priority || ls.priority,
       estimate: rs.estimate || ls.estimate,
       branch: rs.branch || ls.branch,
     };
