@@ -2857,6 +2857,8 @@ git commit -m "feat(repo): dashboard reads epics/stories/acs via repository"
 
 ## Phase D — SdlcStatus Cutover (SQLite-Authoritative)
 
+> **Prerequisite added 2026-05-21:** Phase D now depends on **EPIC-0042 (Phase C.5 — Indexer Hardening)**. The Phase C parity gate surfaced three silent-data-loss bugs in the release-plan indexer (L-0075 prose-node gap, L-0076 silent CHECK rejections of `Retired` status, L-0077 priority shape divergence). C.5 closes them so D.1 starts against a complete, normalized SQLite baseline rather than a partial index whose gaps are masked by the Phase C shim's legacy fallback. **Do not begin D.1 until EPIC-0042 has merged into develop.** Design spec: [`docs/superpowers/specs/2026-05-21-phase-c5-indexer-hardening-design.md`](../specs/2026-05-21-phase-c5-indexer-hardening-design.md).
+
 **Hard gate:** all four sdlc-status writers (`agent-lifecycle.js`, `update-sdlc-status.js`, `agent-task-review.js`, `agent-spec-plan.js`) write via the repo only; `docs/sdlc-status.json` is generated from SQL on every event and byte-identical to legacy output for a fixture event stream; integration tests pass; dashboard live-update parity holds.
 
 **Effort:** 5-8 working days.

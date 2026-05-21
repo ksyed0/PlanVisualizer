@@ -68,3 +68,35 @@ This file (`docs/ENHANCEMENTS.md`) joins BUGS, LESSONS, TEST_CASES, and RELEASE_
 - Survey existing dashboard tabs to find the least-intrusive placement.
 
 **Reference:** Session 53 conversation log (2026-05-20).
+
+---
+
+## ENH-0003 — Bugs/lessons table CHECK constraint divergence from documented status conventions
+
+**Surface:** Repository schema (`tools/lib/repository/migrations/001_initial_schema.sql`) + `docs/BUGS.md` format convention
+**Status:** Backlog
+**Origin:** Session 53 Phase C.5 brainstorming audit (2026-05-21)
+
+**Opportunity:**
+The `bugs` table CHECK constraint allows `Open | In Progress | Fixed | Wontfix | Done`. The `BUGS.md` format-doc convention line lists `Open | In Progress | Fixed | Verified | Closed`. The schema and the convention disagree on two values (`Wontfix` and `Done` are in the schema but not the docs convention; `Verified` and `Closed` are in the docs convention but not the schema). Future-written bugs using the convention values would be silently dropped by `INSERT OR IGNORE` in `bugs-indexer.js` — the same class of bug as L-0076 in the epics+stories table.
+
+**Impact if unaddressed:**
+
+- No current data loss — the only actual bug status in `docs/BUGS.md` today is `Status: Fixed` (which IS allowed by the CHECK).
+- However, the divergence is a latent bug: any contributor who writes `Status: Verified` or `Status: Closed` following the documented convention will have their entry silently dropped from SQLite. The dashboard will be missing that bug from any repo-driven views.
+- The convention vs schema mismatch is also confusing for maintainers — which is canonical?
+
+**Proposed path (when prioritized):**
+
+- Decide on a canonical set of bug statuses (probably the union: `Open | In Progress | Fixed | Wontfix | Verified | Closed | Done`, or a curated subset).
+- Migration 004 widens the `bugs.status` CHECK to the canonical set.
+- Update the `BUGS.md` format-doc line to match.
+- Apply the same `try/catch` → `WarningsChannel` pattern (introduced for `release-plan-indexer` in Phase C.5) to `bugs-indexer.js` so future drift is visible at `plan:lint` time.
+- Audit `lessons-indexer.js`, `test-cases-indexer.js`, and other indexers for the same class of CHECK-vs-doc drift; widen scope if found.
+
+**Pre-work:**
+
+- Audit other indexers' CHECK constraints vs their source documents.
+- Decide whether the same `WarningsChannel` rollout should sweep all indexers in one PR or stay incremental.
+
+**Reference:** Phase C.5 design spec, `docs/superpowers/specs/2026-05-21-phase-c5-indexer-hardening-design.md` §7.
