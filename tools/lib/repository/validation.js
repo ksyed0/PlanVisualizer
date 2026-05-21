@@ -8,6 +8,7 @@ const RULES = {
   'orphan-ac': TIER.WARNING,
   'dangling-dependency': TIER.WARNING,
   'check-rejected': TIER.WARNING,
+  'duplicate-ac': TIER.WARNING,
   'id-registry-drift': TIER.WARNING,
   'ac-gap': TIER.REPORT,
   'done-without-pr': TIER.REPORT,
