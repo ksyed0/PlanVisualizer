@@ -4,6 +4,43 @@ Log every change that must propagate to other platforms, modules, or installatio
 
 ---
 
+## 2026-05-22 — Session 57 (EPIC-0039 / Phase D — SdlcStatus Cutover to SQLite)
+
+**SQLite is now authoritative for sdlc-status; `docs/sdlc-status.json` is a regenerated mirror (BREAKING for downstream consumers that wrote the JSON directly)**
+
+- **What changed:** All four lifecycle writers (`tools/agent-lifecycle.js`, `tools/update-sdlc-status.js`, `tools/agent-task-review.js`, `tools/agent-spec-plan.js`) now route every state mutation through `SdlcEventRepo` / `SdlcTaskRepo` / `SdlcProgrammeRepo`. Direct `fs.writeFileSync` and `atomicReadModifyWriteJson` on `docs/sdlc-status.json` are forbidden — hard-gate grep enforces this. The JSON file is regenerated under file lock from SQL on every write via `SdlcMirror`.
+- **Files:** `tools/agent-lifecycle.js`, `tools/update-sdlc-status.js`, `tools/agent-task-review.js`, `tools/agent-spec-plan.js`, `tools/lib/repository/sdlc-mirror.js`, `tools/lib/repository/entities/sdlc-{event,task,programme}-repo.js`, `tools/lib/agent-cli-repo-helpers.js`
+- **Platforms/modules affected:** Any downstream agent or tool that writes `docs/sdlc-status.json` directly will overwrite SQL state. They must migrate to call the writer CLIs or import the repo entity classes.
+- **PR:** Phase D PR (TBD #) — `claude/phase-d-impl → develop`
+
+**Migration 005 — JSON → SQLite one-time ingest (idempotent via post-ingest mirror hash)**
+
+- **What changed:** New data migration `tools/lib/migrations/005-ingest-sdlc-status.js` ingests an existing `docs/sdlc-status.json` into SQL via the D.1 repos on first `pv:upgrade`. Idempotency uses `meta_status('migration_005_hash')` storing a sha256 of the **post-ingest mirror** (not the source bytes — a source-hash strategy is broken by the mirror-on-every-write design). A re-run with matching hash returns `{skipped: 'idempotent'}` with no duplicate rows.
+- **Files:** `tools/lib/migrations/005-ingest-sdlc-status.js`, `tools/lib/repository/migrations/005_sdlc_task_lifecycle_fields.sql` (separate SQL schema migration from D.3 — note the two unrelated artifacts both numbered 005)
+- **Platforms/modules affected:** Any project upgrading from a pre-Phase-D PlanVisualizer must run `npm run pv:upgrade` once. Snapshots land in `docs/.pv-backup/pre-upgrade-<timestamp>/`.
+- **PR:** Phase D PR
+
+**New CLIs: `pv:upgrade` and `pv:rollback` (write-capable, snapshot-backed)**
+
+- **What changed:** `npm run pv:upgrade` runs pending migrations after taking a JSON-row snapshot of all three SQL tables + `meta_status` + the JSON mirror into `docs/.pv-backup/pre-upgrade-<timestamp>/`. `npm run pv:rollback --to <label>` restores the SQL tables, then rewrites the JSON mirror from SQL (not from the snapshotted JSON — SQL is the canonical re-render). `--dry-run` and refuse-to-clobber on uncommitted writes are both supported.
+- **Files:** `tools/pv-upgrade.js`, `tools/pv-rollback.js`, `tools/lib/migrations/sdlc-snapshot.js`, `docs/architecture/pv-backup-format.md`, `package.json` (`pv:upgrade` / `pv:rollback` scripts)
+- **Platforms/modules affected:** Adopting projects gain explicit upgrade/rollback ergonomics. The snapshot format (JSON rows, manifest-bearing) is documented at `docs/architecture/pv-backup-format.md`.
+- **PR:** Phase D PR
+
+**`sdlc-status-indexer.js` retired from the indexer registry (AC-1014)**
+
+- **What changed:** `docs/sdlc-status.json` removed from the indexer `MAP` in `tools/lib/repository/indexers/index.js` and from `MANAGED_SOURCES` in `tools/lib/repository/index.js`. The indexer file itself is retained as a reference with a retirement comment; deletion deferred to Phase E so the registry diff and file deletion land together.
+- **Platforms/modules affected:** Any downstream tool that called `indexAll()` against a post-pv:upgrade tree would have crashed (`TypeError: object is not iterable` against the post-D.3 object-shape `tasks` key). The crash is now removed; no migration required by downstream tools.
+- **PR:** Phase D PR
+
+**Writers throw, indexers warn (AC-1013)**
+
+- **What changed:** The `createTryInsert` helper (EPIC-0043) is **reserved for indexer-side use**. All Phase D writers propagate `SQLITE_CONSTRAINT_*` errors as exceptions. Any downstream code that imports `createTryInsert` for a write path is doing the wrong thing — it will silently swallow constraint violations.
+- **Files:** `tools/lib/repository/entities/sdlc-event-repo.js`, `sdlc-task-repo.js`, `sdlc-programme-repo.js`, `tools/lib/agent-cli-repo-helpers.js`
+- **Platforms/modules affected:** Any future indexer or writer must follow the same contract. Documented in AC-1013.
+
+---
+
 ## 2026-05-17 — Session 47 (US-0185 + US-0186)
 
 **AGENTS.md §CI Pipeline table updated (cross-platform)**

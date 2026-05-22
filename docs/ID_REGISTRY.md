@@ -7,11 +7,11 @@ Single source of truth for the next available ID in every artefact sequence.
 | ------------ | --------------------- | ----------------- |
 | EPIC         | EPIC-0045             | EPIC-0044         |
 | US           | US-0259               | US-0258           |
-| TASK         | TASK-0055             | TASK-0054         |
-| AC           | AC-1013               | AC-1012           |
+| TASK         | TASK-0066             | TASK-0065         |
+| AC           | AC-1015               | AC-1014           |
 | TC           | TC-0553               | TC-0552           |
 | BUG          | BUG-0264              | BUG-0263          |
-| Lesson       | L-0080                | L-0079            |
+| Lesson       | L-0083                | L-0082            |
 | ENH          | ENH-0005              | ENH-0004          |
 
 **Rules:**

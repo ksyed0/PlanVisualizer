@@ -4,6 +4,70 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 57 — 2026-05-21 (Phase D Task D.7 — US-0238 implemented)
+
+### What Was Done
+
+- Implemented **D.7 live-dashboard parity test** (`tests/integration/repository/live-dashboard-parity.test.js`, 349 lines, TASK-0063) covering three subtests:
+  - **A. Cross-writer parity** — 12-event interleaved fixture stream across all four Phase D writers (agent-lifecycle, update-sdlc-status, agent-task-review, agent-spec-plan). After the stream, on-disk `docs/sdlc-status.json` SQL-owned keys (`tasks`, `log`, `programme`) are byte-identical to a fresh `SdlcMirror._renderFromSql()`. Event log ids monotonic. BUG-0183 idempotency exercised via repeated `spec-await-ac` — at-most-one event row enforced.
+  - **B. SQL-as-source-of-truth across process restarts** — `Repository._reset()` between every dispatch. State written by writer A in process N is visible to writer B in process N+1; on-disk SQL-owned-key parity holds; `refresh()` is idempotent on re-open (no row duplication).
+  - **C. Live-dashboard read parity** — sniff-test on `tools/generate-dashboard.js:4137` confirms the dashboard fetches `./sdlc-status.json` directly with no SSE / WebSocket indirection, so (A)'s byte equality IS the dashboard live-update parity claim.
+- Test file includes a top-of-file (D) comment explaining the transitional dual-shape (unknown-top-level-keys preservation per `sdlc-mirror.js:32-43`) — full-file `===` is NOT asserted; only the SQL-owned key projection is.
+- TASK-0063 claimed in `docs/ID_REGISTRY.md`, bumped to TASK-0064.
+- US-0238 status → Done, all three ACs (AC-0931..AC-0933) ticked.
+
+### Test Results
+
+- Full suite: **1433 passed** / 0 failed (up from 1430 in D.6).
+- Coverage: **87.95% stmts** / 77.87% br / 89.16% funcs / 89.74% lines (was 87.93% post-D.6).
+- `npm run plan:lint`: 0/0/0.
+- `npm run lint` + `prettier --check`: clean on new file.
+- Phase D hard gate: `grep -rn "fs.writeFileSync.*sdlc-status\|atomicReadModifyWriteJson.*sdlc-status" tools/ | grep -v test` → empty.
+
+### Notes for D.8 (rollback dispatch)
+
+- No `migration_005_hash` row in `meta_status` was found in `tools/lib/repository/schema.js` or the migrations directory — the D.7 prompt references it as if it existed, but Migration 005 currently does not emit one. D.8 will need to either add hash-based idempotency or pivot to row-counting / file-checksum.
+
+---
+
+## Session 57 — 2026-05-21 (Phase D Task D.1 — US-0232 implemented)
+
+### What Was Done
+
+- Implemented **D.1 entity repos** matching the canonical plan (`docs/superpowers/plans/2026-05-19-step-1-repository-abstraction.md` §"Task D.1", lines ~3885–4170) verbatim:
+  - `tools/lib/repository/entities/sdlc-event-repo.js` — `record(event)` + `list({storyId, since})`
+  - `tools/lib/repository/entities/sdlc-task-repo.js` — `upsert(task)` with camelCase↔snake_case `FIELD_MAP`, preserves unset fields on partial updates
+  - `tools/lib/repository/entities/sdlc-programme-repo.js` — `set` / `get` / `all`
+  - `tools/lib/repository/sdlc-mirror.js` — `SdlcMirror.write()` re-queries SQL inside a `withFileLock` on `docs/sdlc-status.json` (full re-render, never patched)
+  - Wired into `tools/lib/repository/index.js` as `repo.sdlcEvents`, `repo.sdlcTasks`, `repo.sdlcProgramme`
+- Unit tests: `tests/unit/repository/sdlc-repos.test.js` — 10 tests covering happy path for all 4 ACs (AC-0912..0915), concurrent `record()` lock contention (5-way Promise.all → 5 events preserved), and SQL→JSON byte-identical round-trip via a fresh `SdlcMirror._renderFromSql()` comparison against on-disk output.
+- TASK-0055 claimed in `docs/ID_REGISTRY.md` (next TASK now TASK-0056).
+
+### Test Results
+
+- `npx jest`: **1382/1382 passing** (87 suites). 10 new tests.
+- Coverage: **87.66% statements, 89.43% lines** (≥80% gate satisfied).
+- `npm run lint`: 0 errors (40 pre-existing warnings, none in new files).
+- `npx prettier --check` on new files: clean.
+- `npm run plan:lint`: `errors: 0, warnings: 0, reports: 0`.
+
+### D.1 Boundary
+
+D.1 boundary held. Did not touch `agent-lifecycle.js`, `update-sdlc-status.js`, `agent-task-review.js`, `agent-spec-plan.js` (D.3–D.6), Migration 005 (D.2), parity test (D.7), or `pv:upgrade`/`pv:rollback` (D.8). ACs **not** ticked yet — that happens at session 57 close after all 8 D-tasks ship in PR `claude/phase-d-impl → develop`.
+
+### Judgment Calls / Deviations
+
+- Dispatch instruction #3 ("New repos route inserts through the shared `createTryInsert` helper") was **not** applied: the canonical plan's verbatim code (lines 3946-4083) does not use `createTryInsert`, and the helper's semantics (swallow PK/CHECK violations into `WarningsChannel`) don't match write-path requirements — `upsert` already SELECTs-then-branches so PK collisions are impossible, and `sdlc_events` uses `AUTOINCREMENT`. Dispatch instruction #6 ("match its API exactly") overrides #3 here. Flagging for human review.
+- In `SdlcTaskRepo.upsert`, the plan's `merged[c] ?? null` was changed to `(merged[c] === undefined ? null : merged[c])` so that `null` values explicitly stored on existing rows survive a re-upsert (matches stricter "preserve fields" semantics; `??` would coerce stored `null` back to `null` which is equivalent in this case, so this is functionally identical but more explicit).
+- Exported `rowToTask` from `sdlc-mirror.js` and `_renderFromSql()` for test reach-in — needed for the byte-identity test. Both are still internal-style (underscore prefix on the method).
+
+### Open Questions for Human
+
+- Should D.3–D.6 writers (when they migrate) wrap their `repo.sdlcTasks.upsert(...)` / `repo.sdlcEvents.record(...)` calls in `createTryInsert`-style warning-routing, or is uncaught-throw the correct write-path behaviour? (My read of the plan: writers should throw — they are not idempotent indexers.)
+- Does Phase D need a separate AC to cover D.1's `createTryInsert` usage, or is that resolved by the answer to the question above?
+
+---
+
 ## Session 56 — 2026-05-21 (Pre-Phase-D Cleanup — EPIC-0044 Done)
 
 ### What Was Done
@@ -2009,3 +2073,122 @@ None. The 14 `duplicate-ac` warnings are pre-existing data drift, not regression
 ### What's Next
 
 - Phase D (EPIC-0039): SdlcStatus Cutover — promote SQLite to authoritative for tool-emitted lifecycle state. `sdlc-status.json` becomes a per-event mirror. See `docs/superpowers/plans/2026-05-19-step-1-repository-abstraction.md` Phase D section.
+
+## D.3 — US-0234 / TASK-0058 (Phase D, migrate agent-lifecycle.js to repos)
+
+- Refactored `tools/agent-lifecycle.js` so every state mutation routes through `repo.sdlcTasks.upsert()` / `repo.sdlcEvents.record()`. No direct `fs.writeFileSync` on `docs/sdlc-status.json` (hard-gate grep clean).
+- Added schema migration `005_sdlc_task_lifecycle_fields.sql` to round-trip the legacy lifecycle bookkeeping columns (`description`, `concerns`, `blocked_reason`, `blocked_resolutions_json`, `retry_count`) through SQL.
+- Extended `SdlcTaskRepo` FIELD_MAP/COLUMNS + `SdlcMirror.rowToTask` so the JSON mirror exposes the same `state`/`story` aliases legacy readers (agent-context.js) depend on.
+- Mirror now preserves unknown top-level JSON keys (e.g. `stories`) so D.4-owned state survives D.3 writes pre-cutover.
+- Tests: 1389 → 1394 (+5 new D.3 tests in `tests/unit/agent-lifecycle-repo-writeback.test.js` covering hard-gate, start, done, writer-throws, and JSON↔SQL byte-identity). Coverage 87.86% statements.
+- Lint + Prettier clean. `plan:lint` 0/0/0.
+
+## D.4 — US-0235 / TASK-0059 — update-sdlc-status repo migration (2026-05-21)
+
+Scope: Phase D Task D.4 of EPIC-0039. Migrated `tools/update-sdlc-status.js`
+to route every state mutation through the D.1 entity repos (SdlcEventRepo,
+SdlcTaskRepo, SdlcProgrammeRepo) instead of `atomicReadModifyWriteJson` on
+`docs/sdlc-status.json`. Pure HANDLERS retained verbatim — existing 56 unit
+tests remain unchanged. Added a thin `readState` / `writeState` pair that
+materialises the rich legacy shape from `sdlcProgramme.all() + sdlcEvents.list()`
+and diffs the handler output back through the typed writers (programme keys
+→ `sdlcProgramme.set`, new log entries → `sdlcEvents.record`). The mirror
+regenerates `docs/sdlc-status.json` transitively under the file lock.
+
+ACs ticked: AC-0922, AC-0923, AC-0924.
+
+Tests: full suite 1393 passed (was 1389, +4 D.4 tests). Coverage steady at
+87.82% statements (unchanged — `update-sdlc-status.js` isn't under
+`tools/lib/**` for coverage).
+
+Hard gate: `grep -rn "fs.writeFileSync.*sdlc-status" tools/update-sdlc-status.js`
+returns 0 hits.
+
+Out of scope (deliberately untouched): `tools/agent-lifecycle.js` (D.3 sibling),
+`docs/ID_REGISTRY.md` (D.3 also-bumping concurrently). Dashboard JSON shape
+drift (`{tasks, log, programme}` vs legacy `{agents, stories, metrics, ...}`)
+is the documented Phase D semantics and will be addressed by the consumer-side
+migration in Phase E.
+
+## D.8 — US-0239 / TASK-0064 — pv:upgrade + pv:rollback (Phase D close-out, 2026-05-21)
+
+Scope: Phase D Task D.8 of EPIC-0039 — the last task before the Phase D PR
+opens. Built two write-capable CLIs and one shared snapshot/restore library:
+
+- `tools/pv-upgrade.js` — detects pending migrations, refuses on a dirty git
+  tree unless `--force`, takes a SQL-aware pre-snapshot into
+  `docs/.pv-backup/pre-upgrade-<timestamp>/`, runs the migration runner, then
+  verifies SQL-owned keys on `docs/sdlc-status.json` byte-equal a fresh
+  `SdlcMirror._renderFromSql()`. Mismatch → non-zero exit + clear message
+  pointing at the snapshot for rollback. A second invocation with the mirror
+  in sync and no pending migrations is a true no-op (no new snapshot dir).
+
+- `tools/pv-rollback.js` — `--to <label>` or `--to latest`; lists snapshots
+  when called bare. Restores SQL tables (`sdlc_events`, `sdlc_tasks`,
+  `sdlc_programme`) and the captured `meta_status` keys inside a single
+  `repo.index.transaction(...)`, then re-renders the JSON mirror from SQL via
+  `SdlcMirror.write()`. Refuses to run if the on-disk mirror's SQL-owned keys
+  diverge from SQL (writer mid-flight / stale mirror). `--dry-run` is pure.
+
+- `tools/lib/migrations/sdlc-snapshot.js` — captures
+  `{ sdlc_events, sdlc_tasks, sdlc_programme, meta_status[migration_005_hash] }`
+  as JSON row arrays + a `manifest.json` + a copy of `docs/sdlc-status.json`
+  for human review. Format choice rationale (also in
+  `docs/.pv-backup/README.md`): JSON over `.sqlite` dumps for git-diff
+  reviewability and better-sqlite3 version portability.
+
+Snapshot listing filters to manifest-bearing directories so the legacy
+flat-file snapshots from `tools/lib/migrations/backup.js` (`pre-005-*` etc.)
+don't pollute `pv:rollback --to latest`.
+
+ACs ticked: AC-0934, AC-0935, AC-0936, AC-0937.
+
+Tests: full suite 1439 passed (was 1433, +6 D.8 tests covering
+upgrade→mutate→rollback round trip, idempotent upgrade, corrupt-snapshot
+detection, refuse-to-clobber, dry-run purity, and bare-list mode). Coverage
+88.20% statements (was 87.95%).
+
+Hard gates at end of Phase D:
+
+1. `grep -rn "fs.writeFileSync.*sdlc-status\|atomicReadModifyWriteJson.*sdlc-status" tools/ | grep -v test` → empty.
+2. `npm test` → 1439 passed.
+3. `npm run plan:lint` → 0/0/0.
+4. `npm run lint` → 0 errors (43 pre-existing warnings unchanged).
+5. `npm run pv:upgrade && npm run pv:upgrade` → second invocation a no-op.
+
+## Session 57 — Phase D Close-Out (2026-05-22)
+
+Phase D (EPIC-0039) is implementation-complete. All eight stories (US-0232..US-0239) ship `Status: Done` with ACs ticked. Mid-flight additions AC-1013 (writers throw, indexers warn) and AC-1014 (sdlc-status-indexer retirement) ratified.
+
+**Final commit on `claude/phase-d-impl`:** `5f0c621` — `[fix] US-0239 | TASK-0065: retire sdlc-status indexer (AC-1014) — post-pv:upgrade plan:index crash`.
+
+**End-of-Phase-D hard gates (all green):**
+
+1. Hard-gate grep across `tools/` — empty.
+2. `npm test` → 1441 / 1441 across 96 suites.
+3. `npm run plan:lint` → 0 / 0 / 0.
+4. `npm run lint` → 0 errors / 43 pre-existing warnings.
+5. `npm run pv:upgrade && npm run pv:upgrade` — second run no-op.
+6. `npm run pv:upgrade && npm run plan:index` — clean (the AC-1014 fix unblocks this).
+
+**Coverage:** 88.20% statements / 89.63% lines.
+
+**Close-out housekeeping (this session):**
+
+- Session memory file: [docs/memory/sessions/2026-05-22-session-57-phase-d-complete.md](docs/memory/sessions/2026-05-22-session-57-phase-d-complete.md)
+- `MIGRATION_LOG.md` — new Session 57 block covering SQLite-authoritative cutover, Migration 005, `pv:upgrade`/`pv:rollback`, AC-1014 indexer retirement, and the AC-1013 writers-throw contract
+- `docs/LESSONS.md` — L-0081 (two Migration 005s in the repo) and L-0082 (hard gates that depend on a file's absence are silent gates). L-0080 reserved for PR #1092.
+- `ID_REGISTRY.md` — Lesson row bumped to next-available L-0083; AC row at L-0015; TASK row at L-0066.
+- `PROMPT_LOG.md` — consolidated Session 57 human-prompt block at top; agent dispatch micro-blocks left in place per append-only rule.
+- `docs/RELEASE_PLAN.md` — AC-0928 wording already corrected by D.6 (commit `b0eb14e`); AC-1014 added under US-0239.
+
+**Open follow-ups for Phase E (not blocking the Phase D merge):**
+
+- Remove `sdlc-mirror.js:32-43` unknown-top-level-key preservation once consumer migration is complete.
+- Delete `sdlc-status-indexer.js` reference file (currently retained for one release).
+- Migrate dashboard read path (`tools/generate-dashboard.js:~4137`) to read consolidated `{tasks, log, programme}` shape.
+- Gitignore `docs/.pv-state.json` (currently only `docs/sdlc-status.json` and `docs/.pv-state.local.json` are ignored — surfaced during AC-1014 verification).
+- Rename one of the two "Migration 005" files to a namespaced form (per L-0081).
+- Re-decompose `docs/architecture/enterprise-agentic-sdlc-spec-v2.md` (salvaged in PR #1092) into stories against then-current next-available IDs.
+
+**Next session:** Phase E kickoff or merge Phase D PR → develop, depending on review velocity.

@@ -1,9 +1,33 @@
 #!/usr/bin/env node
 'use strict';
 
+/**
+ * agent-task-review.js — CLI for the agentic-pipeline task-review gate.
+ *
+ * Post-Phase-D (US-0236 / TASK-0060) this tool no longer writes
+ * `docs/sdlc-status.json` directly. Every mutation of the taskReview
+ * substructure routes through the D.1 entity repos:
+ *
+ *   - repo.sdlcTasks.upsert({ id, taskReview, headSha, baseSha })
+ *   - repo.sdlcEvents.record({ kind: 'task-review-*', ... })
+ *
+ * The SdlcMirror re-renders `docs/sdlc-status.json` under a file lock on
+ * every write, so the on-disk JSON is a pure function of SQL state
+ * (writers throw, indexers warn — AC-1013).
+ */
+
 const fs = require('fs');
 const path = require('path');
 const State = require('./lib/agent-task-review-state');
+const { Repository } = require('./lib/repository');
+const {
+  resolveRoot,
+  ensureDocsDir,
+  adoptLegacySdlcPath,
+  syncLegacySdlcPath,
+  readMirror,
+  seedTasksFromLegacyJson,
+} = require('./lib/agent-cli-repo-helpers');
 
 const DEFAULT_ROOT = path.join(__dirname, '..');
 const DEFAULT_CAP = 2;
@@ -53,10 +77,6 @@ function readJson(p) {
   return JSON.parse(fs.readFileSync(p, 'utf8'));
 }
 
-function writeJson(p, data) {
-  fs.writeFileSync(p, JSON.stringify(data, null, 2) + '\n');
-}
-
 function readCap(root) {
   try {
     const cfg = readJson(path.join(root, 'plan-visualizer.config.json'));
@@ -67,9 +87,12 @@ function readCap(root) {
   }
 }
 
-function dispatch(opts, ctx = {}) {
-  const root = ctx.root || DEFAULT_ROOT;
-  const sdlcPath = ctx.sdlcPath || path.join(root, 'docs/sdlc-status.json');
+// Bridge helpers (resolveRoot / ensureDocsDir / adoptLegacySdlcPath /
+// syncLegacySdlcPath / readMirror / seedTasksFromLegacyJson) live in
+// tools/lib/agent-cli-repo-helpers.js — shared with agent-lifecycle.js
+// (D.3) and agent-spec-plan.js (D.6).
+
+async function dispatch(opts, ctx = {}) {
   const stdout = ctx.stdout || ((s) => process.stdout.write(s));
   const stderr = ctx.stderr || ((s) => process.stderr.write(s + '\n'));
 
@@ -84,15 +107,24 @@ function dispatch(opts, ctx = {}) {
     return 1;
   }
 
-  let data;
+  const root = resolveRoot(ctx);
+  ensureDocsDir(root);
+  adoptLegacySdlcPath(ctx, root);
+
+  // Fresh repo per dispatch for test isolation — matches the D.3 pattern.
+  Repository._reset();
+  let repo;
   try {
-    data = readJson(sdlcPath);
+    repo = Repository.getInstance({ root });
   } catch (e) {
-    stderr(`[agent-task-review] cannot read ${sdlcPath}: ${e.message}`);
+    stderr(`[agent-task-review] cannot open repository: ${e.message}`);
     return 1;
   }
 
   try {
+    await seedTasksFromLegacyJson(repo, root);
+    const data = readMirror(root);
+
     switch (opts.cmd) {
       case 'start': {
         if (!opts.baseSha) {
@@ -104,7 +136,24 @@ function dispatch(opts, ctx = {}) {
           return 1;
         }
         const token = State.initTaskReview(data, opts.taskId, opts.baseSha, opts.headSha);
-        writeJson(sdlcPath, data);
+        const t = data.tasks[opts.taskId];
+        await repo.sdlcTasks.upsert({
+          id: opts.taskId,
+          taskReview: t.taskReview,
+          baseSha: opts.baseSha,
+          headSha: opts.headSha,
+        });
+        await repo.sdlcEvents.record({
+          kind: 'task-review-start',
+          storyId: t.story || t.storyId || null,
+          agent: t.agent || null,
+          taskId: opts.taskId,
+          baseSha: opts.baseSha,
+          headSha: opts.headSha,
+          token,
+          ts: Date.now(),
+        });
+        syncLegacySdlcPath(ctx, root);
         stdout(token + '\n');
         return 0;
       }
@@ -123,7 +172,19 @@ function dispatch(opts, ctx = {}) {
         }
         const cap = readCap(root);
         const token = State.setSpecVerdict(data, opts.taskId, opts.verdict, opts.findings, cap);
-        writeJson(sdlcPath, data);
+        const t = data.tasks[opts.taskId];
+        await repo.sdlcTasks.upsert({ id: opts.taskId, taskReview: t.taskReview });
+        await repo.sdlcEvents.record({
+          kind: 'task-review-spec-verdict',
+          storyId: t.story || t.storyId || null,
+          agent: t.agent || null,
+          taskId: opts.taskId,
+          verdict: opts.verdict,
+          findings: opts.findings || null,
+          token,
+          ts: Date.now(),
+        });
+        syncLegacySdlcPath(ctx, root);
         stdout(token + '\n');
         return 0;
       }
@@ -142,7 +203,19 @@ function dispatch(opts, ctx = {}) {
         }
         const cap = readCap(root);
         const token = State.setQualityVerdict(data, opts.taskId, opts.verdict, opts.findings, cap);
-        writeJson(sdlcPath, data);
+        const t = data.tasks[opts.taskId];
+        await repo.sdlcTasks.upsert({ id: opts.taskId, taskReview: t.taskReview });
+        await repo.sdlcEvents.record({
+          kind: 'task-review-quality-verdict',
+          storyId: t.story || t.storyId || null,
+          agent: t.agent || null,
+          taskId: opts.taskId,
+          verdict: opts.verdict,
+          findings: opts.findings || null,
+          token,
+          ts: Date.now(),
+        });
+        syncLegacySdlcPath(ctx, root);
         stdout(token + '\n');
         return 0;
       }
@@ -157,7 +230,23 @@ function dispatch(opts, ctx = {}) {
           return 1;
         }
         const token = State.forgeRetry(data, opts.taskId, opts.triggeredBy, opts.newHeadSha);
-        writeJson(sdlcPath, data);
+        const t = data.tasks[opts.taskId];
+        await repo.sdlcTasks.upsert({
+          id: opts.taskId,
+          taskReview: t.taskReview,
+          headSha: opts.newHeadSha,
+        });
+        await repo.sdlcEvents.record({
+          kind: 'task-review-forge-retry',
+          storyId: t.story || t.storyId || null,
+          agent: t.agent || null,
+          taskId: opts.taskId,
+          triggeredBy: opts.triggeredBy,
+          newHeadSha: opts.newHeadSha,
+          token,
+          ts: Date.now(),
+        });
+        syncLegacySdlcPath(ctx, root);
         stdout(token + '\n');
         return 0;
       }
@@ -183,16 +272,24 @@ function dispatch(opts, ctx = {}) {
   } catch (e) {
     stderr(`[agent-task-review] ${e.message}`);
     return 1;
+  } finally {
+    Repository._reset();
   }
 }
 
-function main() {
+async function main() {
   const opts = parseArgs(process.argv);
   return dispatch(opts);
 }
 
 if (require.main === module) {
-  process.exit(main());
+  main().then(
+    (code) => process.exit(code),
+    (e) => {
+      console.error(`[agent-task-review] fatal: ${e.message}`);
+      process.exit(1);
+    },
+  );
 }
 
 module.exports = { parseArgs, dispatch, main, readCap };

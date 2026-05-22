@@ -23,9 +23,10 @@ Persistent semantic knowledge base. Topic files in `docs/memory/`. Updated autom
 
 ## Sessions
 
-- ◐ [Session 56 — Pre-Phase-D Cleanup (EPIC-0044 Done)](docs/memory/sessions/2026-05-21-session-56-pre-d-cleanup.md) · 2026-05-21
+- ◐ [Session 57 — Phase D Complete (SdlcStatus Cutover, EPIC-0039 Done)](docs/memory/sessions/2026-05-22-session-57-phase-d-complete.md) · 2026-05-22
+- ◐ [Session 54 — Phase C.5 Indexer Hardening (EPIC-0042 Done, AC-0911 Closed)](docs/memory/sessions/2026-05-21-session-54-phase-c5-complete.md) · 2026-05-21
 - ◐ [Session 55 — Post-C.5 Indexer Hygiene (EPIC-0043 Done, ENH-0003/0004 resolved)](docs/memory/sessions/2026-05-21-session-55-post-c5-hygiene-complete.md) · 2026-05-21
-- ◐ [Session 54 — Phase C.5 Indexer Hardening (EPIC-0042 Done, AC-0911 closed)](docs/memory/sessions/2026-05-21-session-54-phase-c5-complete.md) · 2026-05-21
+- ◐ [Session 56 — Pre-Phase-D Cleanup (EPIC-0044 Done)](docs/memory/sessions/2026-05-21-session-56-pre-d-cleanup.md) · 2026-05-21
 - ◐ [Session 50 — Persistence Strategy + Step 1 Phase A Start](docs/memory/sessions/2026-05-20-session-50-persistence-strategy-phase-a-start.md) · 2026-05-20
 - ◐ [Session 51 — Step 1 Phase A Complete (US-0219..US-0225, EPIC-0036 Done)](docs/memory/sessions/2026-05-20-session-51-phase-a-complete.md) · 2026-05-20
 - ◐ [Session 52 — Phase B complete: indexers + plan:lint, EPIC-0037 Done](docs/memory/sessions/2026-05-20-session-52-phase-b-complete.md) · 2026-05-20

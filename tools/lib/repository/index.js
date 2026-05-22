@@ -8,14 +8,21 @@ const { refresh } = require('./refresh');
 const { EpicRepo } = require('./entities/epic-repo');
 const { StoryRepo } = require('./entities/story-repo');
 const { AcRepo } = require('./entities/ac-repo');
+const { SdlcMirror } = require('./sdlc-mirror');
+const { SdlcEventRepo } = require('./entities/sdlc-event-repo');
+const { SdlcTaskRepo } = require('./entities/sdlc-task-repo');
+const { SdlcProgrammeRepo } = require('./entities/sdlc-programme-repo');
 
+// `docs/sdlc-status.json` is intentionally excluded from MANAGED_SOURCES as of
+// Phase D (EPIC-0039, US-0239/AC-1014). SQL is authoritative; the JSON is a
+// mirror rendered FROM SQL on every write. See indexers/index.js for the
+// matching retirement of indexSdlcStatusJson.
 const MANAGED_SOURCES = [
   'docs/RELEASE_PLAN.md',
   'docs/BUGS.md',
   'docs/LESSONS.md',
   'docs/TEST_CASES.md',
   'docs/ID_REGISTRY.md',
-  'docs/sdlc-status.json',
 ];
 
 let _instance = null;
@@ -50,6 +57,10 @@ class Repository {
     this.epics = new EpicRepo(this.index, root);
     this.stories = new StoryRepo(this.index, root);
     this.acs = new AcRepo(this.index, root);
+    this._sdlcMirror = new SdlcMirror({ root, index: this.index });
+    this.sdlcEvents = new SdlcEventRepo({ index: this.index, mirror: this._sdlcMirror });
+    this.sdlcTasks = new SdlcTaskRepo({ index: this.index, mirror: this._sdlcMirror });
+    this.sdlcProgramme = new SdlcProgrammeRepo({ index: this.index, mirror: this._sdlcMirror });
   }
 
   refresh() {

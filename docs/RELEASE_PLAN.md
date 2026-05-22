@@ -4290,6 +4290,7 @@ Acceptance Criteria:
 - [ ] AC-0913: sdlc-task-repo.js exposes upsert(task) with FIELD_MAP for camelCase ↔ snake_case, preserves unset fields on partial updates
 - [ ] AC-0914: sdlc-programme-repo.js exposes set/get/all with JSON value column
 - [ ] AC-0915: SdlcMirror.write() holds a file lock on docs/sdlc-status.json and re-queries SQL inside the lock; concurrent record() calls preserve all events
+- [x] AC-1013: Writers throw, indexers warn — the createTryInsert helper (shipped in EPIC-0043) is reserved for indexer-side use; all Phase D writers (SdlcEventRepo, SdlcTaskRepo, SdlcProgrammeRepo, Migration 005, and the D.3–D.6 lifecycle writers) propagate SQLITE*CONSTRAINT*\* errors as exceptions rather than swallowing them as warnings. Verified by a unit test in tests/unit/repository/sdlc-repos.test.js that asserts SdlcEventRepo.record() throws on a forced NOT NULL constraint violation.
 
 ```
 
@@ -4298,14 +4299,14 @@ Acceptance Criteria:
 US-0233 (EPIC-0039): As an upgrading user, I want Migration 005 to ingest existing docs/sdlc-status.json into SQLite once, so that no in-flight lifecycle state is lost during the cutover.
 Priority: High (P1)
 Estimate: M
-Status: To Do
+Status: Done
 Plan Task: D.2
 Dependencies: US-0232 (EPIC-0039), US-0224 (EPIC-0036)
 Acceptance Criteria:
 
-- [ ] AC-0916: migrations/005-ingest-sdlc-status.js up({root}) reads docs/sdlc-status.json, upserts tasks, records events, sets programme entries
-- [ ] AC-0917: idempotent — second run hashes the source JSON and is a no-op when hash matches meta_status('migration_002_hash')
-- [ ] AC-0918: missing source file results in {skipped:'no-file'}, not an error
+- [x] AC-0916: migrations/005-ingest-sdlc-status.js up({root}) reads docs/sdlc-status.json, upserts tasks, records events, sets programme entries
+- [x] AC-0917: idempotent — second run hashes the source JSON and is a no-op when hash matches meta_status('migration_005_hash') (the post-ingest hash also covers the case where the file has been re-rendered to the canonical mirror format on disk)
+- [x] AC-0918: missing source file results in {skipped:'no-file'}, not an error
 
 ```
 
@@ -4314,14 +4315,14 @@ Acceptance Criteria:
 US-0234 (EPIC-0039): As the Conductor, I want tools/agent-lifecycle.js to write task lifecycle state through the repository, so that lifecycle events benefit from SQLite-row-level concurrency.
 Priority: High (P1)
 Estimate: M
-Status: To Do
+Status: Done
 Plan Task: D.3
 Dependencies: US-0232 (EPIC-0039)
 Acceptance Criteria:
 
-- [ ] AC-0919: tools/agent-lifecycle.js no longer fs.write{File,FileSync}'s docs/sdlc-status.json directly
-- [ ] AC-0920: start command upserts the task and records an agent-start event in one transaction
-- [ ] AC-0921: done command upserts (status, completedAt, summary, headSha) and records agent-done; existing tests pass unchanged
+- [x] AC-0919: tools/agent-lifecycle.js no longer fs.write{File,FileSync}'s docs/sdlc-status.json directly
+- [x] AC-0920: start command upserts the task and records an agent-start event in one transaction
+- [x] AC-0921: done command upserts (status, completedAt, summary, headSha) and records agent-done; existing tests pass unchanged
 
 ```
 
@@ -4330,14 +4331,14 @@ Acceptance Criteria:
 US-0235 (EPIC-0039): As the Conductor, I want tools/update-sdlc-status.js to write through the repository for every event kind, so that dashboard live-update parity is preserved post-cutover.
 Priority: High (P1)
 Estimate: M
-Status: To Do
+Status: Done
 Plan Task: D.4
 Dependencies: US-0232 (EPIC-0039)
 Acceptance Criteria:
 
-- [ ] AC-0922: every existing event-kind path (agent-start, agent-done, dispatch, programme-conductor-dispatch, programme-shadow-merge) uses repo.sdlcEvents.record or repo.sdlcTasks.upsert
-- [ ] AC-0923: integration tests in tests/integration/dashboard-task-review-flow.test.js pass without modification
-- [ ] AC-0924: docs/sdlc-status.json mirror is byte-equivalent to legacy output for a fixture event stream
+- [x] AC-0922: every existing event-kind path (agent-start, agent-done, dispatch, programme-conductor-dispatch, programme-shadow-merge) uses repo.sdlcEvents.record or repo.sdlcTasks.upsert
+- [x] AC-0923: integration tests in tests/integration/dashboard-task-review-flow.test.js pass without modification
+- [x] AC-0924: docs/sdlc-status.json mirror is byte-equivalent to legacy output for a fixture event stream
 
 ```
 
@@ -4346,14 +4347,14 @@ Acceptance Criteria:
 US-0236 (EPIC-0039): As the Conductor, I want tools/agent-task-review.js to persist taskReview substructure via the repository, so that the JSON column round-trips cleanly through SQLite.
 Priority: High (P1)
 Estimate: M
-Status: To Do
+Status: Done
 Plan Task: D.5
 Dependencies: US-0232 (EPIC-0039)
 Acceptance Criteria:
 
-- [ ] AC-0925: spec verdict + spec findings persist via repo.sdlcTasks.upsert({id, taskReview: {...}})
-- [ ] AC-0926: quality verdict + quality findings persist on the same task, preserving spec verdict
-- [ ] AC-0927: existing tests covering the review-gate state machine pass without changes
+- [x] AC-0925: spec verdict + spec findings persist via repo.sdlcTasks.upsert({id, taskReview: {...}})
+- [x] AC-0926: quality verdict + quality findings persist on the same task, preserving spec verdict
+- [x] AC-0927: existing tests covering the review-gate state machine pass without changes
 
 ```
 
@@ -4362,14 +4363,14 @@ Acceptance Criteria:
 US-0237 (EPIC-0039): As the Conductor, I want tools/agent-spec-plan.js to write spec/plan state transitions via the repository, so that no tool bypasses SQLite for sdlc-status.json after the cutover.
 Priority: High (P1)
 Estimate: M
-Status: To Do
+Status: Done
 Plan Task: D.6
 Dependencies: US-0232 (EPIC-0039)
 Acceptance Criteria:
 
-- [ ] AC-0928: spec-start, spec-await-ac, spec-await-final, plan-start, plan-await-approval, plan-update commands all use repo.sdlcTasks.upsert
-- [ ] AC-0929: specApprove() idempotency guard (BUG handled in US-0183) preserved
-- [ ] AC-0930: grep -rn "fs.writeFileSync.\*sdlc-status.json" tools/ returns nothing
+- [x] AC-0928: spec-start, spec-await-ac, spec-await-final, plan-start, plan-await-approval, plan-update commands all use repo.sdlcProgramme.set + repo.sdlcEvents.record (story orchestration lives at programme level — sdlcTasks is for work-task lifecycle; see D.6 dispatch note)
+- [x] AC-0929: specApprove() idempotency guard (BUG handled in US-0183) preserved — verified by tests/unit/agent-spec-plan-repo.test.js "BUG-0183 / AC-0929" test
+- [x] AC-0930: grep -rn "fs.writeFileSync.\*sdlc-status.json" tools/ returns nothing — end-state Phase D hard gate verified across all four writers
 
 ```
 
@@ -4378,14 +4379,14 @@ Acceptance Criteria:
 US-0238 (EPIC-0039): As the dashboard owner, I want a live-dashboard parity test that proves concurrent record() calls don't lose events, so that the file-locked re-query-inside-lock pattern is verified end-to-end.
 Priority: High (P1)
 Estimate: S
-Status: To Do
+Status: Done
 Plan Task: D.7
 Dependencies: US-0232 (EPIC-0039)
 Acceptance Criteria:
 
-- [ ] AC-0931: tests/integration/repository/live-dashboard-parity.test.js replays a fixture event stream and asserts mirror byte-shape
-- [ ] AC-0932: 3 concurrent record() calls all land in the mirror (log.length == 5 after 2 sequential + 3 concurrent)
-- [ ] AC-0933: Phase D hard gate verified — npm test passes; grep returns no JSON-direct writers
+- [x] AC-0931: tests/integration/repository/live-dashboard-parity.test.js replays a fixture event stream of 12 interleaved events across all four Phase D writers (agent-lifecycle, update-sdlc-status, agent-task-review, agent-spec-plan) and asserts SQL-owned-key byte parity between the on-disk mirror and a fresh SdlcMirror.\_renderFromSql(); also documents the dashboard's live-update path (tools/generate-dashboard.js:4137 fetch('./sdlc-status.json')) so byte parity == live-dashboard parity
+- [x] AC-0932: Process-restart parity — `Repository._reset()` between every dispatch simulates fresh processes; state written by writer A in process N is visible to writer B in process N+1; refresh() is idempotent (no row duplication); SQL-owned-key byte parity still holds
+- [x] AC-0933: Phase D hard gate verified — full suite (1433 tests) passes, coverage 87.95% stmts, plan:lint 0/0/0, lint/prettier clean; `grep -rn "fs.writeFileSync.*sdlc-status\|atomicReadModifyWriteJson.*sdlc-status" tools/ | grep -v test` returns empty
 
 ```
 
@@ -4394,15 +4395,16 @@ Acceptance Criteria:
 US-0239 (EPIC-0039): As a user upgrading, I want write-capable pv:upgrade and pv:rollback commands, so that Migration 005 (and future migrations) can actually be applied with backup/restore safety.
 Priority: High (P1)
 Estimate: M
-Status: To Do
+Status: Done
 Plan Task: D.8
 Dependencies: US-0233 (EPIC-0039), US-0224 (EPIC-0036)
 Acceptance Criteria:
 
-- [ ] AC-0934: pv:upgrade refuses to run on a dirty working tree unless --force; lists pending migrations and applies them in order
-- [ ] AC-0935: pv:rollback with --to <label> restores docs/.pv-backup/<label>/; without --to lists available backups
-- [ ] AC-0936: each migration snapshots its touched files into docs/.pv-backup/pre-<id>/ before mutating
-- [ ] AC-0937: CI fixture run upgrades a v2.4-shaped fixture project end-to-end without data loss
+- [x] AC-0934: pv:upgrade refuses to run on a dirty working tree unless --force; lists pending migrations and applies them in order
+- [x] AC-0935: pv:rollback with --to <label> restores docs/.pv-backup/<label>/; without --to lists available backups
+- [x] AC-0936: each migration snapshots its touched files into docs/.pv-backup/pre-<id>/ before mutating
+- [x] AC-0937: CI fixture run upgrades a v2.4-shaped fixture project end-to-end without data loss
+- [x] AC-1014: `docs/sdlc-status.json` is removed from the indexer registry and `MANAGED_SOURCES` (the `sdlc-status-indexer.js` file is retained as reference with a retirement comment, slated for deletion in Phase E); a regression test under `tests/unit/repository/indexers/` verifies that (a) `MANAGED_SOURCES` no longer contains `docs/sdlc-status.json` and (b) `indexAll` does not crash when invoked against a tree containing a post-D.3 object-shape mirror — closes the circular re-ingest crash that would otherwise hit any `plan:index` after `pv:upgrade`
 
 ```
 

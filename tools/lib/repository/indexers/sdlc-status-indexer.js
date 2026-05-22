@@ -2,9 +2,14 @@
 const fs = require('fs');
 const { createTryInsert } = require('../insert-helper');
 
-// Note: Phase D (EPIC-0039) replaces this indexer when SQLite becomes authoritative
-// for sdlc-status. The shared-helper wrapping added here is preserved or improved
-// in that rewrite, not discarded.
+// RETIRED — Phase D (EPIC-0039, US-0239/AC-1014, 2026-05-22).
+// SQLite is now authoritative for sdlc-status; this indexer is no longer in
+// the registry (see ../index.js MAP). It is retained as a reference for one
+// release and will be deleted in Phase E.
+// Do NOT re-add to the indexer registry — re-indexing the mirror back into
+// SQL is circular (it DELETEs SQL state and re-ingests from JSON that was
+// generated from that very SQL state) and crashes on the post-D.3 object-
+// shape `tasks` key.
 function indexSdlcStatusJson({ index, markdown, rel }) {
   const abs = markdown.absolute(rel);
   if (!fs.existsSync(abs)) return { counts: {}, warnings: [] };

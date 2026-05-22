@@ -2,6 +2,47 @@
 
 Encode every bug fix and discovery as a permanent rule. Applied to all future sessions.
 
+> **L-0080 is reserved for [PR #1092](https://github.com/ksyed0/PlanVisualizer/pull/1092) ("ID Registry can drift silently when a planning branch is abandoned mid-flight").** That PR was authored in Session 57 but kept on a separate `docs/enterprise-agentic-sdlc-spec` branch. When #1092 merges into develop, L-0080 lands at the top of this file. The Phase D close-out (this branch) claims L-0081 and L-0082 below to avoid the collision.
+
+---
+
+## L-0082 — Hard gates that depend on a file's absence are silent gates
+
+@agent: Forge, Keystone
+
+**Context:** Session 57, Phase D close-out (EPIC-0039). Eight subagent dispatches (D.1–D.8) and a four-test integration parity suite (D.7) all reported green. Coverage 88.20%. `plan:lint` 0/0/0. The Phase D writer-side hard gate `grep -rn "fs.writeFileSync.*sdlc-status\|atomicReadModifyWriteJson.*sdlc-status" tools/ | grep -v test` returned empty. Despite all of this, running `npm run pv:upgrade && npm run plan:index` against a real fixture crashed with `TypeError: object is not iterable` at `tools/lib/repository/indexers/sdlc-status-indexer.js:23`. The crash had been latent since D.3's mirror reshape (commit `4ca37ef`) several days earlier. Cause of the test-suite blindness: `docs/sdlc-status.json` is gitignored, so the file does not exist in the tree the tests run against, so the indexer short-circuits at `if (!fs.existsSync(abs)) return ...` before reaching the broken loop. The test suite was structurally incapable of exercising the bug because the fixture conditions that trigger it never exist in any test tree.
+
+**Rule:** When a test gates on the **absence** of a file as its happy path, it is not exercising the code that runs in production. Identify every code path that has an `existsSync` (or equivalent) early-return on a gitignored file and add a test that either (a) materializes the file in a temp root the test owns, or (b) asserts the file should NEVER be created by any tooling that runs during tests — and then enforces that assertion. Hard-gate greps that rely on the absence of a string in source code are the same class of trap when the consumer of that source is conditioned on a runtime-only file: a clean grep is necessary but not sufficient. The end-to-end gate must run the actual user flow (`pv:upgrade && plan:index`, in this case) against a tree where the gitignored file IS created, exactly as it would be on a user's machine.
+
+**Prevention:**
+
+- Phase D added a regression test under `tests/unit/repository/indexers/sdlc-status-indexer-retirement.test.js` (AC-1014) that materializes a post-D.3 object-shape mirror in a temp root and confirms `indexAll` does not crash.
+- The end-of-Phase-D hard-gate checklist now includes `npm run pv:upgrade && npm run plan:index` as an explicit step — both must exit 0. This is the user-flow gate that no per-test fixture could simulate.
+- **Heuristic for future migrations:** any time a file moves from "tracked in repo" to "generated artifact" (or vice versa), grep `existsSync` + the filename across the codebase and verify every site is still semantically correct under the new lifecycle.
+
+**Date:** 2026-05-22
+
+**Resolution:** AC-1014 retired `sdlc-status-indexer.js` from the indexer registry. Indexing the SQL-rendered mirror back into SQL was always circular post-Phase-D; the indexer was obsolete the moment SQL became authoritative.
+
+---
+
+## L-0081 — Two distinct migrations both numbered 005 — the `migrations/` directory is silently double-booked
+
+@agent: Forge, Keystone
+
+**Context:** Session 57, Phase D (EPIC-0039). The codebase now contains two unrelated migrations both numbered Migration 005, in two different directories: `tools/lib/repository/migrations/005_sdlc_task_lifecycle_fields.sql` (a SQL schema migration added by D.3 that round-trips the lifecycle bookkeeping columns) and `tools/lib/migrations/005-ingest-sdlc-status.js` (a JS data migration added by D.2 that ingests legacy JSON into SQL). They serve different runners (the SQL schema migrator vs. the JS data-migration runner under `tools/lib/migrations/index.js`) but share the same numeric identifier. The D.7 parity-test agent mistakenly looked in the SQL directory only and reported `meta_status('migration_005_hash')` "didn't exist" — the hash is set by the JS migration, which the agent never found. This nearly produced a misguided D.8 design decision around row-count idempotency before the dispatcher spotted the directory confusion.
+
+**Rule:** Migration numbers must be unique across all migration runners in the repo. When a project has more than one migration system (schema vs. data, repo-side vs. tool-side, etc.), pick a naming convention that includes the runner namespace — e.g. `schema_005_*.sql` and `data_005_*.js` — so a `grep -r "Migration 005"` returns one and only one artefact. Two systems with overlapping numeric IDs is a foot-gun that wastes agent reasoning cycles and produces false negatives in code archaeology.
+
+**Prevention:**
+
+- Phase E (or a low-stakes housekeeping session) should rename one of the two existing 005 migrations to a namespaced form. Suggested: `tools/lib/repository/migrations/005_*.sql` → `schema_005_*.sql`, and `tools/lib/migrations/005-*.js` → `data_005-*.js`. Both runners get updated to match.
+- Any new migration directory added to the repo gets a `README.md` that lists every existing migration system in the codebase, so the next agent searching for "migration N" has a single index page.
+
+**Date:** 2026-05-22
+
+**Resolution:** Documented for now; rename deferred to a non-blocking session to avoid extending Phase D.
+
 ---
 
 ## L-0075 — Indexer prose-node gap: fenced-only scan silently misses entities in prose AST nodes

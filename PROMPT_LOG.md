@@ -2,6 +2,40 @@
 
 Timestamped log of every user prompt across all sessions. Append-only. Never edit or delete rows.
 
+> **Session 57 logging note (2026-05-22):** Earlier in this session the parallel subagents (D.3, D.4) and the sequential subagents (D.5, D.6, D.7, D.8) each appended their own dispatch-prompt row in different places — some at the bottom of the file (under the trailing Session 52 block) and some as new Session 57 micro-blocks at the top. The consolidated `## Session 57 — 2026-05-21/22 — Phase D Implementation` block immediately below this note is the canonical record of the **human prompts** that drove the session. The agent-authored dispatch rows scattered elsewhere in the file are left intact per the append-only rule; they document what each subagent received but are not human prompts.
+
+---
+
+## Session 57 — 2026-05-21/22 — Phase D Implementation (EPIC-0039 close-out)
+
+| #   | Timestamp            | Prompt                                                                                                                                                                                      |
+| --- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | 2026-05-21T15:00:00Z | clean up any unused branches, then open the Phase D kickoff prompt and dispatch the first task (D.1 — entity write repos for SdlcEvent/SdlcTask/SdlcProgramme).                             |
+| 2   | 2026-05-21T15:45:00Z | 1. I agree (writers throw / indexers warn) / 2. Yes create new AC for the decision / can you analyze what is in chore/epic-0030-0035-enterprise-agentic-sdlc-plan and make a recommendation |
+| 3   | 2026-05-21T16:15:00Z | execute the spec-salvage                                                                                                                                                                    |
+| 4   | 2026-05-21T16:25:00Z | update item 2 (L-0080 lesson on AC-0731..0852 ID reuse) and then 3 (dispatch D.2 with writers-throw AC); I will manage 1 (main-worktree branch deletion) afterwards                         |
+| 5   | 2026-05-21T16:55:00Z | I agree with your changes (Q1 post-ingest mirror hash, Q2 D.7 parity test scope, Q3 keep AC-0917 wording fix in same commit)                                                                |
+| 6   | 2026-05-21T17:25:00Z | I agree with your recommendations (sequential D.5 → D.6 rather than parallel)                                                                                                               |
+| 7   | 2026-05-21T17:40:00Z | What's happening (status check during D.5 background work)                                                                                                                                  |
+| 8   | 2026-05-22T01:35:00Z | apply the fix (retire sdlc-status-indexer.js from the indexer registry — AC-1014)                                                                                                           |
+| 9   | 2026-05-22T02:50:00Z | update session close documents then open the PR to develop                                                                                                                                  |
+
+---
+
+## Session 57 — 2026-05-21 — Phase D Task D.7 (US-0238)
+
+| #   | Timestamp            | Prompt                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| --- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | 2026-05-21T18:00:00Z | Dispatched: implement Phase D Task D.7 (US-0238) — live-dashboard parity integration test covering interleaved events across all four migrated writers, SQL-as-source-of-truth across process restarts, dashboard live-update read parity, and the transitional dual-shape contract. TASK-0063 claimed. Stay strictly inside D.7; do NOT modify writers or sdlc-mirror.js. Commit to claude/phase-d-impl. Tests + lint + plan:lint green. |
+
+---
+
+## Session 57 — 2026-05-21 — Phase D Task D.1 (US-0232)
+
+| #   | Timestamp            | Prompt                                                                                                                                                                                                                                                                                                                                  |
+| --- | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | 2026-05-21T15:00:00Z | Dispatched: implement Phase D Task D.1 (US-0232) — SdlcEventRepo, SdlcTaskRepo, SdlcProgrammeRepo with file-locked SQL→JSON mirror (SdlcMirror). Match canonical plan §D.1 (line ~4131+). Stay strictly inside the D.1 boundary; do NOT touch D.2-D.8. Commit to claude/phase-d-impl; do NOT open a PR. Tests + lint + plan:lint green. |
+
 ---
 
 ## Session 56 — 2026-05-21
@@ -958,3 +992,6 @@ _(Bug sweep session — see progress.md Session 16 entry. Was primarily spent fi
 | 5   | 2026-05-20T18:30:00Z | monitor the CI and fix any issues, merge when green (PR 1069 — Phase B)                                                                                              |
 | 6   | 2026-05-20T19:00:00Z | what is next                                                                                                                                                         |
 | 7   | 2026-05-20T19:10:00Z | merge PR 1045 and 1070 / Review PR 1059 to merge / update session docs and close the session / Cleanup any unused branches / create a prompt to proceed with phase C |
+| 8   | 2026-05-21T00:00:00Z | D.3 — migrate tools/agent-lifecycle.js to write through SdlcEventRepo/SdlcTaskRepo/SdlcProgrammeRepo per US-0234 / TASK-0058 (dispatched in parallel with D.4)       |
+| 9   | 2026-05-21T00:00:00Z | D.4 — migrate tools/update-sdlc-status.js to write through SdlcEventRepo/SdlcTaskRepo/SdlcProgrammeRepo per US-0235 / TASK-0059 (dispatched in parallel with D.3)    |
+| 10  | 2026-05-21T00:00:00Z | D.5 — migrate tools/agent-task-review.js to write taskReview through SdlcTaskRepo/SdlcEventRepo per US-0236 / TASK-0060                                              |
