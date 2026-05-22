@@ -4404,6 +4404,7 @@ Acceptance Criteria:
 - [x] AC-0935: pv:rollback with --to <label> restores docs/.pv-backup/<label>/; without --to lists available backups
 - [x] AC-0936: each migration snapshots its touched files into docs/.pv-backup/pre-<id>/ before mutating
 - [x] AC-0937: CI fixture run upgrades a v2.4-shaped fixture project end-to-end without data loss
+- [x] AC-1014: `docs/sdlc-status.json` is removed from the indexer registry and `MANAGED_SOURCES` (the `sdlc-status-indexer.js` file is retained as reference with a retirement comment, slated for deletion in Phase E); a regression test under `tests/unit/repository/indexers/` verifies that (a) `MANAGED_SOURCES` no longer contains `docs/sdlc-status.json` and (b) `indexAll` does not crash when invoked against a tree containing a post-D.3 object-shape mirror — closes the circular re-ingest crash that would otherwise hit any `plan:index` after `pv:upgrade`
 
 ```
 
