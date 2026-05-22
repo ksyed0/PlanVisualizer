@@ -126,11 +126,18 @@ function project(json)      { return programme(json).project      || json.projec
 2. Extend the existing pv:upgrade snapshot to capture the PRE-migration
    docs/sdlc-status.json into docs/.pv-backup/pre-upgrade-<ts>/
    (rollback safety — must happen BEFORE any SQL write).
-3. Open a single SQLite transaction.
+3. Open a single SQLite transaction (`db.exec('BEGIN')`).
 4. For each legacy key K in [agents, metrics, stories, epics, phases,
    cycles, currentPhase, githubStatus, project]:
      a. If json[K] exists AND programme[K] is absent:
-        repo.sdlcProgramme.set(K, json[K])    # state B → C
+        # Bypass SdlcProgrammeRepo.set() — that helper triggers a mirror
+        # write per call, which both breaks transactional atomicity and
+        # produces N=9 mirror writes instead of 1. Use raw SQL inside
+        # the transaction.
+        db.prepare(`INSERT INTO sdlc_programme(key, value_json)
+                    VALUES(?, ?)
+                    ON CONFLICT(key) DO UPDATE SET value_json=excluded.value_json`)
+          .run(K, JSON.stringify(json[K]))    # state B → C
      b. If json[K] exists AND programme[K] exists:
         # state C: SQL is canonical. Divergence indicates manual
         # tampering — log a warning but do not overwrite.
@@ -138,19 +145,21 @@ function project(json)      { return programme(json).project      || json.projec
           warningsChannel.push('migration_006_conflict_' + K);
         }
         # No write either way.
-5. Commit SQLite transaction.
-6. Trigger ONE mirror re-render (post-transaction). Until E.4 lands,
-   the preservation block will still copy top-level legacy keys
-   forward — Migration 006 itself does NOT strip them. The strip
-   happens organically once the preservation block is removed in
-   US-0261.
+5. Commit SQLite transaction (`db.exec('COMMIT')`). On any error during
+   step 4, ROLLBACK and rethrow — migrations-applied row stays absent
+   so next pv:upgrade retries cleanly.
+6. Now that SQL state is consistent and committed, trigger ONE mirror
+   re-render via `await this.mirror.write()`. Until E.4 lands, the
+   preservation block will still copy top-level legacy keys forward —
+   Migration 006 itself does NOT strip them. The strip happens
+   organically once the preservation block is removed in US-0261.
 7. Insert row into migrations-applied with hash of the canonical
    post-render mirror output.
 ```
 
 **Why the strip is organic, not explicit:** As long as the preservation block exists, any explicit strip in Migration 006 would be undone on the very next mirror write. The clean cutover is: ingest in 006 → remove preservation in E.4 → next mirror write naturally produces canonical-only output. This means `pv:upgrade` between US-0262 merge and US-0261 merge still produces state C (acceptable — readers handle it via the dual-read accessor).
 
-**Performance note:** `SdlcProgrammeRepo.set()` calls `mirror.write()` after every set. Naively, 9 sets = 9 mirror writes during the migration. This is acceptable for one-shot code that runs once per machine forever (total wall time < 1 second). Optimizing via a `setMany` API is YAGNI; if implementation reveals it's slow, file a follow-up enhancement (ENH-0005+).
+**Why bypass `SdlcProgrammeRepo.set()`:** the convenience helper does `INSERT...ON CONFLICT` followed by `await this.mirror.write()` per call. Calling it 9 times inside a transaction would (a) trigger 9 mirror writes that read uncommitted SQL state, (b) break transactional rollback (the first 8 mirror writes already touched disk before the 9th failed), and (c) acquire the mirror file lock 9 times. Raw SQL inside the txn + one mirror write after commit is the only correct shape. Migration code routinely bypasses repo-layer conveniences for this reason; it's not an anti-pattern here.
 
 ### 4.3 Sequencing
 
@@ -159,17 +168,20 @@ Story merge order (within Phase E):
 ```
 US-0259 (dashboard reads programme.* via dual-read helper)
         ↓
-US-0260 (non-dashboard consumers + init-sdlc-status seeds canonical)
+        ├─────────────────────────────────────────────┐
+        ↓                                             ↓
+US-0260 (non-dashboard consumers              US-0263 (housekeeping: rename
+        + init-sdlc-status seeds canonical)           data_005-*, .gitignore,
+        ↓                                             artifact audit) — fully
+US-0262 (Migration 006 — ingest + snapshot,           parallel with the trunk
+        preservation still alive)                     after US-0259 merges
         ↓
-US-0262 (Migration 006 — ingest + snapshot, preservation still alive)
-        ↓
-US-0261 (remove preservation block + delete sdlc-status-indexer.js
-         + remove dual-read fallback from accessor — single PR)
-        ↓
-US-0263 (housekeeping: rename data_005-*, gitignore .pv-state.json,
-         audit other escaping artifacts) — parallelizable with anything
-         after US-0259
+US-0261 (remove preservation block
+        + delete sdlc-status-indexer.js
+        + remove dual-read fallback — single PR)
 ```
+
+US-0263 is a fully independent branch off US-0259 and may merge any time after US-0259 lands. The trunk (US-0260 → US-0262 → US-0261) must remain sequential.
 
 At every point in this sequence:
 
@@ -209,7 +221,7 @@ At every point in this sequence:
 **Acceptance Criteria:**
 
 - **AC-1017** — All three non-dashboard consumers read via the accessor; integration tests pass against state A/B/C fixtures.
-- **AC-1018** — `init-sdlc-status` output, freshly run in a tmpdir, has `Object.keys(json.programme).sort() === ['agents','phases','project']` and empty top-level legacy keys.
+- **AC-1018** — `init-sdlc-status` output, freshly run in a tmpdir, has `Object.keys(json.programme).sort() === ['agents','phases','project']` and empty top-level legacy keys. Repeat-init behavior (running against a project where `programme.*` is already populated): **idempotent merge** — existing programme rows are preserved; only missing rows are seeded. Tested in `tests/tools/init-sdlc-status-repeat.test.js` against both an empty and a partially-populated programme.
 
 ---
 
@@ -279,6 +291,19 @@ At every point in this sequence:
 | Dashboard canonical-only    | `tests/integration/dashboard-canonical-shape.test.js`   | Headless DOM                    | Render against fixture with only `{tasks, log, programme}`; no `ReferenceError`; all regions populated          |
 | JSON canonical-only on disk | `tests/integration/sdlc-status-canonical-shape.test.js` | Materialized-temp-root (L-0082) | Spawn `pv:upgrade` in tmpdir; assert `Object.keys(json).sort() === ['log','programme','tasks']`                 |
 
+### 6.1.1 Test fixture location
+
+All Phase E test fixtures (state-A, state-B, state-C JSON files; corrupted-shape edge cases; etc.) live under `tests/fixtures/phase-e/`. This is a Phase-E-owned directory; it is NOT gitignored (unlike `docs/sdlc-status.json`). Fixtures are checked into the repo so tests are deterministic across machines.
+
+Naming convention:
+
+- `tests/fixtures/phase-e/state-a.json` — canonical-only (post-Phase-E target)
+- `tests/fixtures/phase-e/state-b.json` — pre-D.4 legacy-only
+- `tests/fixtures/phase-e/state-c.json` — preservation-doubled (top-level + programme.\* in sync)
+- `tests/fixtures/phase-e/state-c-conflict.json` — preservation-doubled with synthetic divergence (top-level `agents` ≠ `programme.agents`)
+
+All five implementation PRs (US-0259..US-0263) source fixtures from this directory.
+
 ### 6.2 Migration 006 tests
 
 | Scenario                        | Fixture                                            | Assertion                                                                           |
@@ -307,18 +332,18 @@ At every point in this sequence:
 
 ## 7. Risk Register
 
-| #   | Risk                                                                                             | Likelihood                    | Impact                                                            | Mitigation                                                                                                                                                                                                                                                                                                                                     |
-| --- | ------------------------------------------------------------------------------------------------ | ----------------------------- | ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| R1  | Missed consumer reading a legacy key (audit in §3 misses one)                                    | Medium                        | High — empty UI region or runtime error                           | Two safety nets: (a) transitional dual-read fallback in accessor masks the bug long enough for surveillance; (b) CI grep crawl: `grep -rn "\.(agents\|stories\|metrics\|epics\|phases\|cycles\|currentPhase\|githubStatus\|project)\b" tools/ docs/dashboard.html` and assert every hit reads via the accessor module. New violations fail CI. |
-| R2  | Dashboard window: empty `programme.*` between US-0259 merge and Migration 006 run                | Medium                        | Medium — empty dashboard for any dev pulling `develop` in the gap | Transitional dual-read fallback in accessor (Section 4.1). Removed in US-0261.                                                                                                                                                                                                                                                                 |
-| R3  | Migration 006 conflict between top-level and `programme.*` (state C divergence)                  | Low                           | Low — effectively impossible in normal operation                  | Warning channel logs `migration_006_conflict_{K}`; SQL value preserved; manual reconciliation if it ever fires                                                                                                                                                                                                                                 |
-| R4  | Migration 006 corrupts SQL on partial failure                                                    | Low                           | Critical — production state loss                                  | Pre-006 snapshot captured BEFORE any SQL write; all 9 `set()` calls wrapped in a single SQLite transaction (partial failure rolls back, migrations-applied row absent, next `pv:upgrade` retries); `pv:rollback` restores from snapshot                                                                                                        |
-| R5  | Mirror divergence between E.4 landing and any remaining consumer still reading top-level         | Low                           | Medium                                                            | US-0261 (E.4) is sequenced after US-0259 + US-0260 + US-0262 (Section 4.3) — enforced via PR review and orchestrator dispatch order                                                                                                                                                                                                            |
-| R6  | Snapshot bloat: pre-006 snapshots persist on disk doubling archive size                          | Low                           | Low                                                               | Existing `pv:upgrade` snapshot rotation already prunes old snapshots; no new code needed                                                                                                                                                                                                                                                       |
-| R7  | L-0080 ID-registry drift if US-0259..US-0263 claimed but spec PR doesn't merge same session      | Medium                        | Medium                                                            | Registry bump commit lands as part of the spec PR (first commit, pushed immediately); subsequent implementation PRs use already-claimed IDs                                                                                                                                                                                                    |
-| R8  | L-0081 not actually resolved (rename creates a new collision elsewhere)                          | Low                           | Low                                                               | AC-1021 includes `tests/repository/migrations-no-collision.test.js`; CI fails if any two migration files share a numeric prefix anywhere under `tools/lib/`                                                                                                                                                                                    |
-| R9  | L-0082 hidden gate trap: regression test passes because gitignored file masks the failure        | Medium                        | Medium                                                            | Two gates required for E.4: (a) code-presence grep against `sdlc-mirror.js` source; (b) materialized-temp-root behavior test that builds JSON from scratch                                                                                                                                                                                     |
-| R10 | `init-sdlc-status` left writing legacy top-level — Migration 006 re-fires on every fresh project | Low (now that AC-1018 exists) | High if missed                                                    | AC-1018 explicitly asserts canonical seed shape; without it, this risk is High likelihood                                                                                                                                                                                                                                                      |
+| #   | Risk                                                                                             | Likelihood                    | Impact                                                            | Mitigation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| --- | ------------------------------------------------------------------------------------------------ | ----------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| R1  | Missed consumer reading a legacy key (audit in §3 misses one)                                    | Medium                        | High — empty UI region or runtime error                           | Two safety nets: (a) transitional dual-read fallback in accessor masks the bug long enough for surveillance; (b) integration tests in §6.3 exercise all known consumers against state A/B/C fixtures, so any reader still reading top-level fails the state-A run. A blunt CI grep would generate excessive false positives on unrelated property accesses (`config.project`, `repo.agents`, etc.); a real automated check would need a custom ESLint rule restricting these property names to the accessor module — filed as an ENH follow-up rather than included in Phase E scope. |
+| R2  | Dashboard window: empty `programme.*` between US-0259 merge and Migration 006 run                | Medium                        | Medium — empty dashboard for any dev pulling `develop` in the gap | Transitional dual-read fallback in accessor (Section 4.1). Removed in US-0261.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| R3  | Migration 006 conflict between top-level and `programme.*` (state C divergence)                  | Low                           | Low — effectively impossible in normal operation                  | Warning channel logs `migration_006_conflict_{K}`; SQL value preserved; manual reconciliation if it ever fires                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| R4  | Migration 006 corrupts SQL on partial failure                                                    | Low                           | Critical — production state loss                                  | Pre-006 snapshot captured BEFORE any SQL write; all 9 `INSERT...ON CONFLICT` statements run as raw SQL inside a single explicit transaction (`BEGIN`/`COMMIT`) — partial failure ROLLBACKs cleanly, migrations-applied row stays absent, next `pv:upgrade` retries; mirror.write() runs ONCE after commit so on-disk JSON never reflects partial state; `pv:rollback` restores from snapshot                                                                                                                                                                                          |
+| R5  | Mirror divergence between E.4 landing and any remaining consumer still reading top-level         | Low                           | Medium                                                            | US-0261 (E.4) is sequenced after US-0259 + US-0260 + US-0262 (Section 4.3) — enforced via PR review and orchestrator dispatch order                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| R6  | Snapshot bloat: pre-006 snapshots persist on disk doubling archive size                          | Low                           | Low                                                               | Existing `pv:upgrade` snapshot rotation already prunes old snapshots; no new code needed                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| R7  | L-0080 ID-registry drift if US-0259..US-0263 claimed but spec PR doesn't merge same session      | Medium                        | Medium                                                            | Registry bump commit lands as part of the spec PR (first commit, pushed immediately); subsequent implementation PRs use already-claimed IDs                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| R8  | L-0081 not actually resolved (rename creates a new collision elsewhere)                          | Low                           | Low                                                               | AC-1021 includes `tests/repository/migrations-no-collision.test.js`; CI fails if any two migration files share a numeric prefix anywhere under `tools/lib/`                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| R9  | L-0082 hidden gate trap: regression test passes because gitignored file masks the failure        | Medium                        | Medium                                                            | Two gates required for E.4: (a) code-presence grep against `sdlc-mirror.js` source; (b) materialized-temp-root behavior test that builds JSON from scratch                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| R10 | `init-sdlc-status` left writing legacy top-level — Migration 006 re-fires on every fresh project | Low (now that AC-1018 exists) | High if missed                                                    | AC-1018 explicitly asserts canonical seed shape; without it, this risk is High likelihood                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 
 ---
 
