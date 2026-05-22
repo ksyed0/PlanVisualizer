@@ -4363,14 +4363,14 @@ Acceptance Criteria:
 US-0237 (EPIC-0039): As the Conductor, I want tools/agent-spec-plan.js to write spec/plan state transitions via the repository, so that no tool bypasses SQLite for sdlc-status.json after the cutover.
 Priority: High (P1)
 Estimate: M
-Status: To Do
+Status: Done
 Plan Task: D.6
 Dependencies: US-0232 (EPIC-0039)
 Acceptance Criteria:
 
-- [ ] AC-0928: spec-start, spec-await-ac, spec-await-final, plan-start, plan-await-approval, plan-update commands all use repo.sdlcTasks.upsert
-- [ ] AC-0929: specApprove() idempotency guard (BUG handled in US-0183) preserved
-- [ ] AC-0930: grep -rn "fs.writeFileSync.\*sdlc-status.json" tools/ returns nothing
+- [x] AC-0928: spec-start, spec-await-ac, spec-await-final, plan-start, plan-await-approval, plan-update commands all use repo.sdlcProgramme.set + repo.sdlcEvents.record (story orchestration lives at programme level — sdlcTasks is for work-task lifecycle; see D.6 dispatch note)
+- [x] AC-0929: specApprove() idempotency guard (BUG handled in US-0183) preserved — verified by tests/unit/agent-spec-plan-repo.test.js "BUG-0183 / AC-0929" test
+- [x] AC-0930: grep -rn "fs.writeFileSync.\*sdlc-status.json" tools/ returns nothing — end-state Phase D hard gate verified across all four writers
 
 ```
 
