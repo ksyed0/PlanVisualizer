@@ -966,3 +966,4 @@ _(Bug sweep session — see progress.md Session 16 entry. Was primarily spent fi
 | 5   | 2026-05-20T18:30:00Z | monitor the CI and fix any issues, merge when green (PR 1069 — Phase B)                                                                                              |
 | 6   | 2026-05-20T19:00:00Z | what is next                                                                                                                                                         |
 | 7   | 2026-05-20T19:10:00Z | merge PR 1045 and 1070 / Review PR 1059 to merge / update session docs and close the session / Cleanup any unused branches / create a prompt to proceed with phase C |
+| 8   | 2026-05-21T00:00:00Z | D.3 — migrate tools/agent-lifecycle.js to write through SdlcEventRepo/SdlcTaskRepo/SdlcProgrammeRepo per US-0234 / TASK-0058 (dispatched in parallel with D.4)       |

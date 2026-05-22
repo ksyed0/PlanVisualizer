@@ -129,8 +129,12 @@ describe('Migration 005 — JSON → SQLite ingest (US-0233)', () => {
     expect(onDisk).toBe(expected);
 
     // And the semantic content matches the fixture.
+    // Post-D.3 (US-0234) the mirror emits `tasks` as an object map keyed
+    // by id so downstream readers (agent-context.js, the lifecycle CLI
+    // `list`/`status` commands) can continue to use `tasks[taskId]`.
     const parsed = JSON.parse(onDisk);
-    expect(parsed.tasks).toHaveLength(1);
+    expect(Object.keys(parsed.tasks)).toHaveLength(1);
+    expect(parsed.tasks.t1.id).toBe('t1');
     expect(parsed.log).toHaveLength(2);
     expect(parsed.programme).toEqual({ phase: { current: 'integration' } });
   });

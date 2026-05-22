@@ -4315,14 +4315,14 @@ Acceptance Criteria:
 US-0234 (EPIC-0039): As the Conductor, I want tools/agent-lifecycle.js to write task lifecycle state through the repository, so that lifecycle events benefit from SQLite-row-level concurrency.
 Priority: High (P1)
 Estimate: M
-Status: To Do
+Status: Done
 Plan Task: D.3
 Dependencies: US-0232 (EPIC-0039)
 Acceptance Criteria:
 
-- [ ] AC-0919: tools/agent-lifecycle.js no longer fs.write{File,FileSync}'s docs/sdlc-status.json directly
-- [ ] AC-0920: start command upserts the task and records an agent-start event in one transaction
-- [ ] AC-0921: done command upserts (status, completedAt, summary, headSha) and records agent-done; existing tests pass unchanged
+- [x] AC-0919: tools/agent-lifecycle.js no longer fs.write{File,FileSync}'s docs/sdlc-status.json directly
+- [x] AC-0920: start command upserts the task and records an agent-start event in one transaction
+- [x] AC-0921: done command upserts (status, completedAt, summary, headSha) and records agent-done; existing tests pass unchanged
 
 ```
 
