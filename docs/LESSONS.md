@@ -2,8 +2,6 @@
 
 Encode every bug fix and discovery as a permanent rule. Applied to all future sessions.
 
-> **L-0080 is reserved for [PR #1092](https://github.com/ksyed0/PlanVisualizer/pull/1092) ("ID Registry can drift silently when a planning branch is abandoned mid-flight").** That PR was authored in Session 57 but kept on a separate `docs/enterprise-agentic-sdlc-spec` branch. When #1092 merges into develop, L-0080 lands at the top of this file. The Phase D close-out (this branch) claims L-0081 and L-0082 below to avoid the collision.
-
 ---
 
 ## L-0082 — Hard gates that depend on a file's absence are silent gates
@@ -42,6 +40,26 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 **Date:** 2026-05-22
 
 **Resolution:** Documented for now; rename deferred to a non-blocking session to avoid extending Phase D.
+
+---
+
+## L-0080 — ID Registry can drift silently when a planning branch is abandoned mid-flight
+
+@agent: Forge, Keystone
+
+**Context:** Session 57. A planning commit (`ddb4a36`, branch `chore/epic-0030-0035-enterprise-agentic-sdlc-plan`, 2026-05-18) claimed EPIC-0030..0035, US-0187..0214, and AC-0731..0852 for an "Enterprise Agentic SDLC" spec, bumped `docs/ID_REGISTRY.md` next-available pointers, and committed regenerated `plan-status.{html,json}` — but never pushed or PR'd. The branch sat unpushed on the main working tree. Subsequent sessions read the live (unbumped) `ID_REGISTRY.md` on `origin/develop` and reused the same ID ranges for entirely unrelated work: AC-0731..0852 were reassigned to the Agentic Dashboard density-pill and review-gate display under US-0186; EPIC-0036..0044 were taken for the repository-abstraction epic chain (Phase A through pre-Phase-D cleanup). AGENTS.md §"ID Registry" requires that IDs are _never_ reassigned even if the artefact is retired — but because the original assignment lived only in an unpushed commit, the rule fired silently and the registry diverged. The collision was discovered during Session 57 spec-salvage analysis.
+
+**Rule:** ID-Registry-mutating commits must be pushed to a remote branch **the same session they are authored**, or the registry bump must be reverted in the working tree before the session closes. The registry is a shared lock; holding it open in an unpushed commit is a write-ahead that other sessions cannot see and will overwrite. If a planning commit is intentionally held back (e.g., pending board review), it must include a `wip:` prefix on the branch name AND a corresponding entry in `MEMORY.md` flagging the in-flight ID claim, so the next session knows not to advance the registry from `origin/develop` alone. A bare `chore/...` branch sitting unpushed is invisible to every other session and will cause silent reassignment.
+
+**Prevention:**
+
+- **Process check at session close** (CLAUDE.md §"Session Close Checklist"): if `git diff origin/develop -- docs/ID_REGISTRY.md` shows uncommitted bumps, the session must either push the branch or revert the registry edit. Add this as an explicit checklist item.
+- **Tooling check (future):** `plan:lint` should warn when a local branch has registry bumps that exceed `origin/develop`'s registry while another local branch (or worktree) is consuming the same ID range.
+- **When ID reuse is detected**: do not retroactively renumber shipped work. The shipped assignments win; the unpushed assignments are abandoned. Document the abandoned range in the salvage commit so future readers know not to revive the old IDs.
+
+**Resolution (2026-05-21):** Salvaged the spec doc verbatim onto a clean branch `docs/enterprise-agentic-sdlc-spec` ([PR #1092](https://github.com/ksyed0/PlanVisualizer/pull/1092)) with a header note explaining the dead ID claims. The shipped AC-0731..0852 assignments under US-0186 remain canonical. Story/AC decomposition for the multi-team extension will be redone against then-current next-available IDs after Phase D ships.
+
+**Date:** 2026-05-21
 
 ---
 
