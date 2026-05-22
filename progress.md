@@ -2047,3 +2047,12 @@ None. The 14 `duplicate-ac` warnings are pre-existing data drift, not regression
 ### What's Next
 
 - Phase D (EPIC-0039): SdlcStatus Cutover — promote SQLite to authoritative for tool-emitted lifecycle state. `sdlc-status.json` becomes a per-event mirror. See `docs/superpowers/plans/2026-05-19-step-1-repository-abstraction.md` Phase D section.
+
+## D.3 — US-0234 / TASK-0058 (Phase D, migrate agent-lifecycle.js to repos)
+
+- Refactored `tools/agent-lifecycle.js` so every state mutation routes through `repo.sdlcTasks.upsert()` / `repo.sdlcEvents.record()`. No direct `fs.writeFileSync` on `docs/sdlc-status.json` (hard-gate grep clean).
+- Added schema migration `005_sdlc_task_lifecycle_fields.sql` to round-trip the legacy lifecycle bookkeeping columns (`description`, `concerns`, `blocked_reason`, `blocked_resolutions_json`, `retry_count`) through SQL.
+- Extended `SdlcTaskRepo` FIELD_MAP/COLUMNS + `SdlcMirror.rowToTask` so the JSON mirror exposes the same `state`/`story` aliases legacy readers (agent-context.js) depend on.
+- Mirror now preserves unknown top-level JSON keys (e.g. `stories`) so D.4-owned state survives D.3 writes pre-cutover.
+- Tests: 1389 → 1394 (+5 new D.3 tests in `tests/unit/agent-lifecycle-repo-writeback.test.js` covering hard-gate, start, done, writer-throws, and JSON↔SQL byte-identity). Coverage 87.86% statements.
+- Lint + Prettier clean. `plan:lint` 0/0/0.

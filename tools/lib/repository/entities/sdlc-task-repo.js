@@ -23,6 +23,13 @@ const COLUMNS = [
   'task_review_json',
   'base_sha',
   'head_sha',
+  // Added in schema migration 005 (US-0234 / TASK-0058) so the agent-lifecycle
+  // CLI can round-trip its full task record through SQL without losing fields.
+  'description',
+  'concerns',
+  'blocked_reason',
+  'blocked_resolutions_json',
+  'retry_count',
 ];
 
 const FIELD_MAP = {
@@ -39,7 +46,15 @@ const FIELD_MAP = {
   taskReview: 'task_review_json',
   baseSha: 'base_sha',
   headSha: 'head_sha',
+  description: 'description',
+  concerns: 'concerns',
+  blockedReason: 'blocked_reason',
+  blockedResolutions: 'blocked_resolutions_json',
+  retryCount: 'retry_count',
 };
+
+// camelCase keys whose values must be JSON.stringify-d before they hit SQL.
+const JSON_FIELDS = new Set(['taskReview', 'blockedResolutions']);
 
 class SdlcTaskRepo {
   constructor({ index, mirror }) {
@@ -52,7 +67,7 @@ class SdlcTaskRepo {
     const merged = { ...(existing || {}) };
     for (const [k, col] of Object.entries(FIELD_MAP)) {
       if (k in task) {
-        merged[col] = k === 'taskReview' ? JSON.stringify(task.taskReview) : task[k];
+        merged[col] = JSON_FIELDS.has(k) ? JSON.stringify(task[k]) : task[k];
       }
     }
     if (existing) {

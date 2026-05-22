@@ -22,27 +22,32 @@ function mkProject() {
   return root;
 }
 
-test('start → done(summary) → start → generate yields prior-work containing the first summary', () => {
+const { Repository } = require('../../tools/lib/repository');
+
+beforeEach(() => Repository._reset());
+afterEach(() => Repository._reset());
+
+test('start → done(summary) → start → generate yields prior-work containing the first summary', async () => {
   const root = mkProject();
   const sdlcPath = path.join(root, 'docs/sdlc-status.json');
   const out = [];
 
   // Task 1 start + done with summary
-  Lifecycle.dispatch(
+  await Lifecycle.dispatch(
     { cmd: 'start', story: 'US-0184', agent: 'Forge', task: 'first task', planTaskIndex: 1 },
-    { sdlcPath, stdout: (s) => out.push(s), skipRegen: true },
+    { sdlcPath, root, stdout: (s) => out.push(s), skipRegen: true },
   );
   const data1 = JSON.parse(fs.readFileSync(sdlcPath, 'utf8'));
   const task1Id = Object.keys(data1.tasks)[0];
-  Lifecycle.dispatch(
+  await Lifecycle.dispatch(
     { cmd: 'done', taskId: task1Id, summary: 'Implemented first thing [sha:abc1234]' },
-    { sdlcPath, stdout: () => {}, skipRegen: true },
+    { sdlcPath, root, stdout: () => {}, skipRegen: true },
   );
 
   // Task 2 start
-  Lifecycle.dispatch(
+  await Lifecycle.dispatch(
     { cmd: 'start', story: 'US-0184', agent: 'Forge', task: 'second task', planTaskIndex: 2 },
-    { sdlcPath, stdout: () => {}, skipRegen: true },
+    { sdlcPath, root, stdout: () => {}, skipRegen: true },
   );
   const data2 = JSON.parse(fs.readFileSync(sdlcPath, 'utf8'));
   const task2Id = Object.values(data2.tasks).find((t) => t.id !== task1Id).id;

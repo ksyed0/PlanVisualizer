@@ -28,7 +28,7 @@ describe('schema migrations', () => {
   test('applies all migrations on a fresh db', () => {
     ds = openIndexDatastore({ path: dbPath });
     applySchemaMigrations(ds);
-    expect(getSchemaVersion(ds)).toBe(4);
+    expect(getSchemaVersion(ds)).toBe(5);
     const tables = ds
       .prepare("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
       .all()
@@ -63,6 +63,6 @@ describe('schema migrations', () => {
     ds = openIndexDatastore({ path: dbPath });
     applySchemaMigrations(ds);
     applySchemaMigrations(ds);
-    expect(getSchemaVersion(ds)).toBe(4);
+    expect(getSchemaVersion(ds)).toBe(5);
   });
 });
