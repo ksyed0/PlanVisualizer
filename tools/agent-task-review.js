@@ -1,9 +1,25 @@
 #!/usr/bin/env node
 'use strict';
 
+/**
+ * agent-task-review.js — CLI for the agentic-pipeline task-review gate.
+ *
+ * Post-Phase-D (US-0236 / TASK-0060) this tool no longer writes
+ * `docs/sdlc-status.json` directly. Every mutation of the taskReview
+ * substructure routes through the D.1 entity repos:
+ *
+ *   - repo.sdlcTasks.upsert({ id, taskReview, headSha, baseSha })
+ *   - repo.sdlcEvents.record({ kind: 'task-review-*', ... })
+ *
+ * The SdlcMirror re-renders `docs/sdlc-status.json` under a file lock on
+ * every write, so the on-disk JSON is a pure function of SQL state
+ * (writers throw, indexers warn — AC-1013).
+ */
+
 const fs = require('fs');
 const path = require('path');
 const State = require('./lib/agent-task-review-state');
+const { Repository } = require('./lib/repository');
 
 const DEFAULT_ROOT = path.join(__dirname, '..');
 const DEFAULT_CAP = 2;
@@ -53,10 +69,6 @@ function readJson(p) {
   return JSON.parse(fs.readFileSync(p, 'utf8'));
 }
 
-function writeJson(p, data) {
-  fs.writeFileSync(p, JSON.stringify(data, null, 2) + '\n');
-}
-
 function readCap(root) {
   try {
     const cfg = readJson(path.join(root, 'plan-visualizer.config.json'));
@@ -67,9 +79,100 @@ function readCap(root) {
   }
 }
 
-function dispatch(opts, ctx = {}) {
-  const root = ctx.root || DEFAULT_ROOT;
-  const sdlcPath = ctx.sdlcPath || path.join(root, 'docs/sdlc-status.json');
+/**
+ * Resolve the repository root from the call context. Matches the helper in
+ * `agent-lifecycle.js` so test fixtures that pass a custom `sdlcPath` work
+ * identically across all Phase D writers.
+ */
+function resolveRoot(ctx) {
+  if (ctx && ctx.root) return ctx.root;
+  const sdlcPath = ctx && ctx.sdlcPath ? ctx.sdlcPath : path.join(DEFAULT_ROOT, 'docs', 'sdlc-status.json');
+  const docsDir = path.dirname(sdlcPath);
+  if (path.basename(docsDir) === 'docs') return path.dirname(docsDir);
+  return docsDir;
+}
+
+function ensureDocsDir(root) {
+  fs.mkdirSync(path.join(root, 'docs'), { recursive: true });
+}
+
+function adoptLegacySdlcPath(ctx, root) {
+  if (!ctx || !ctx.sdlcPath) return;
+  const canonical = path.join(root, 'docs', 'sdlc-status.json');
+  if (path.resolve(ctx.sdlcPath) === path.resolve(canonical)) return;
+  ensureDocsDir(root);
+  if (fs.existsSync(ctx.sdlcPath) && !fs.existsSync(canonical)) {
+    fs.copyFileSync(ctx.sdlcPath, canonical);
+  } else if (!fs.existsSync(canonical)) {
+    fs.writeFileSync(canonical, JSON.stringify({ tasks: {}, log: [], programme: {} }, null, 2));
+  }
+}
+
+function syncLegacySdlcPath(ctx, root) {
+  if (!ctx || !ctx.sdlcPath) return;
+  const canonical = path.join(root, 'docs', 'sdlc-status.json');
+  if (path.resolve(ctx.sdlcPath) === path.resolve(canonical)) return;
+  if (fs.existsSync(canonical)) {
+    fs.copyFileSync(canonical, ctx.sdlcPath);
+  }
+}
+
+/**
+ * The legacy on-disk JSON stores `tasks` as an object map keyed by id,
+ * with `state` (legacy alias for SQL `status`) and `headSha` carried per
+ * task. The schema indexer iterates `data.tasks || []` (array form) so a
+ * pre-seeded map is NOT auto-ingested on Repository.getInstance. For test
+ * fixtures and legacy on-disk projects, lift any tasks present in the JSON
+ * into SQL via SdlcTaskRepo.upsert() before reading mirror state.
+ */
+async function seedTasksFromLegacyJson(repo, root) {
+  const file = path.join(root, 'docs', 'sdlc-status.json');
+  if (!fs.existsSync(file)) return;
+  let raw;
+  try {
+    raw = JSON.parse(fs.readFileSync(file, 'utf8'));
+  } catch {
+    return;
+  }
+  const tasks = raw && raw.tasks;
+  if (!tasks || Array.isArray(tasks) || typeof tasks !== 'object') return;
+  for (const [id, t] of Object.entries(tasks)) {
+    if (!id) continue;
+    if (repo.sdlcTasks.get(id)) continue;
+    await repo.sdlcTasks.upsert({
+      id,
+      storyId: t.storyId || t.story || null,
+      agent: t.agent || null,
+      // Legacy field name `state` aliases SQL `status`.
+      status: t.status || t.state || null,
+      summary: t.summary || null,
+      headSha: t.headSha || null,
+      baseSha: t.baseSha || null,
+      taskReview: t.taskReview || null,
+    });
+  }
+}
+
+/**
+ * Re-materialise the legacy in-memory shape `{ tasks: { [id]: {...} } }`
+ * from the JSON mirror so the State helpers (which mutate `data.tasks[id]`
+ * in place) keep working unchanged. We read the mirror file (which the
+ * SdlcMirror keeps as a pure function of SQL state, plus any transitional
+ * unknown top-level keys preserved by D.3 scaffolding).
+ */
+function readMirror(root) {
+  const file = path.join(root, 'docs', 'sdlc-status.json');
+  if (!fs.existsSync(file)) return { tasks: {}, log: [], programme: {} };
+  try {
+    const parsed = JSON.parse(fs.readFileSync(file, 'utf8'));
+    if (!parsed.tasks) parsed.tasks = {};
+    return parsed;
+  } catch {
+    return { tasks: {}, log: [], programme: {} };
+  }
+}
+
+async function dispatch(opts, ctx = {}) {
   const stdout = ctx.stdout || ((s) => process.stdout.write(s));
   const stderr = ctx.stderr || ((s) => process.stderr.write(s + '\n'));
 
@@ -84,15 +187,24 @@ function dispatch(opts, ctx = {}) {
     return 1;
   }
 
-  let data;
+  const root = resolveRoot(ctx);
+  ensureDocsDir(root);
+  adoptLegacySdlcPath(ctx, root);
+
+  // Fresh repo per dispatch for test isolation — matches the D.3 pattern.
+  Repository._reset();
+  let repo;
   try {
-    data = readJson(sdlcPath);
+    repo = Repository.getInstance({ root });
   } catch (e) {
-    stderr(`[agent-task-review] cannot read ${sdlcPath}: ${e.message}`);
+    stderr(`[agent-task-review] cannot open repository: ${e.message}`);
     return 1;
   }
 
   try {
+    await seedTasksFromLegacyJson(repo, root);
+    const data = readMirror(root);
+
     switch (opts.cmd) {
       case 'start': {
         if (!opts.baseSha) {
@@ -104,7 +216,24 @@ function dispatch(opts, ctx = {}) {
           return 1;
         }
         const token = State.initTaskReview(data, opts.taskId, opts.baseSha, opts.headSha);
-        writeJson(sdlcPath, data);
+        const t = data.tasks[opts.taskId];
+        await repo.sdlcTasks.upsert({
+          id: opts.taskId,
+          taskReview: t.taskReview,
+          baseSha: opts.baseSha,
+          headSha: opts.headSha,
+        });
+        await repo.sdlcEvents.record({
+          kind: 'task-review-start',
+          storyId: t.story || t.storyId || null,
+          agent: t.agent || null,
+          taskId: opts.taskId,
+          baseSha: opts.baseSha,
+          headSha: opts.headSha,
+          token,
+          ts: Date.now(),
+        });
+        syncLegacySdlcPath(ctx, root);
         stdout(token + '\n');
         return 0;
       }
@@ -123,7 +252,19 @@ function dispatch(opts, ctx = {}) {
         }
         const cap = readCap(root);
         const token = State.setSpecVerdict(data, opts.taskId, opts.verdict, opts.findings, cap);
-        writeJson(sdlcPath, data);
+        const t = data.tasks[opts.taskId];
+        await repo.sdlcTasks.upsert({ id: opts.taskId, taskReview: t.taskReview });
+        await repo.sdlcEvents.record({
+          kind: 'task-review-spec-verdict',
+          storyId: t.story || t.storyId || null,
+          agent: t.agent || null,
+          taskId: opts.taskId,
+          verdict: opts.verdict,
+          findings: opts.findings || null,
+          token,
+          ts: Date.now(),
+        });
+        syncLegacySdlcPath(ctx, root);
         stdout(token + '\n');
         return 0;
       }
@@ -142,7 +283,19 @@ function dispatch(opts, ctx = {}) {
         }
         const cap = readCap(root);
         const token = State.setQualityVerdict(data, opts.taskId, opts.verdict, opts.findings, cap);
-        writeJson(sdlcPath, data);
+        const t = data.tasks[opts.taskId];
+        await repo.sdlcTasks.upsert({ id: opts.taskId, taskReview: t.taskReview });
+        await repo.sdlcEvents.record({
+          kind: 'task-review-quality-verdict',
+          storyId: t.story || t.storyId || null,
+          agent: t.agent || null,
+          taskId: opts.taskId,
+          verdict: opts.verdict,
+          findings: opts.findings || null,
+          token,
+          ts: Date.now(),
+        });
+        syncLegacySdlcPath(ctx, root);
         stdout(token + '\n');
         return 0;
       }
@@ -157,7 +310,23 @@ function dispatch(opts, ctx = {}) {
           return 1;
         }
         const token = State.forgeRetry(data, opts.taskId, opts.triggeredBy, opts.newHeadSha);
-        writeJson(sdlcPath, data);
+        const t = data.tasks[opts.taskId];
+        await repo.sdlcTasks.upsert({
+          id: opts.taskId,
+          taskReview: t.taskReview,
+          headSha: opts.newHeadSha,
+        });
+        await repo.sdlcEvents.record({
+          kind: 'task-review-forge-retry',
+          storyId: t.story || t.storyId || null,
+          agent: t.agent || null,
+          taskId: opts.taskId,
+          triggeredBy: opts.triggeredBy,
+          newHeadSha: opts.newHeadSha,
+          token,
+          ts: Date.now(),
+        });
+        syncLegacySdlcPath(ctx, root);
         stdout(token + '\n');
         return 0;
       }
@@ -183,16 +352,24 @@ function dispatch(opts, ctx = {}) {
   } catch (e) {
     stderr(`[agent-task-review] ${e.message}`);
     return 1;
+  } finally {
+    Repository._reset();
   }
 }
 
-function main() {
+async function main() {
   const opts = parseArgs(process.argv);
   return dispatch(opts);
 }
 
 if (require.main === module) {
-  process.exit(main());
+  main().then(
+    (code) => process.exit(code),
+    (e) => {
+      console.error(`[agent-task-review] fatal: ${e.message}`);
+      process.exit(1);
+    },
+  );
 }
 
 module.exports = { parseArgs, dispatch, main, readCap };

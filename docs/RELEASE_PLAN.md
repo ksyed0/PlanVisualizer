@@ -4347,14 +4347,14 @@ Acceptance Criteria:
 US-0236 (EPIC-0039): As the Conductor, I want tools/agent-task-review.js to persist taskReview substructure via the repository, so that the JSON column round-trips cleanly through SQLite.
 Priority: High (P1)
 Estimate: M
-Status: To Do
+Status: Done
 Plan Task: D.5
 Dependencies: US-0232 (EPIC-0039)
 Acceptance Criteria:
 
-- [ ] AC-0925: spec verdict + spec findings persist via repo.sdlcTasks.upsert({id, taskReview: {...}})
-- [ ] AC-0926: quality verdict + quality findings persist on the same task, preserving spec verdict
-- [ ] AC-0927: existing tests covering the review-gate state machine pass without changes
+- [x] AC-0925: spec verdict + spec findings persist via repo.sdlcTasks.upsert({id, taskReview: {...}})
+- [x] AC-0926: quality verdict + quality findings persist on the same task, preserving spec verdict
+- [x] AC-0927: existing tests covering the review-gate state machine pass without changes
 
 ```
 
