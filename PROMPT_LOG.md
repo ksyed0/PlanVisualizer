@@ -2,6 +2,24 @@
 
 Timestamped log of every user prompt across all sessions. Append-only. Never edit or delete rows.
 
+> **Session 57 logging note (2026-05-22):** Earlier in this session the parallel subagents (D.3, D.4) and the sequential subagents (D.5, D.6, D.7, D.8) each appended their own dispatch-prompt row in different places — some at the bottom of the file (under the trailing Session 52 block) and some as new Session 57 micro-blocks at the top. The consolidated `## Session 57 — 2026-05-21/22 — Phase D Implementation` block immediately below this note is the canonical record of the **human prompts** that drove the session. The agent-authored dispatch rows scattered elsewhere in the file are left intact per the append-only rule; they document what each subagent received but are not human prompts.
+
+---
+
+## Session 57 — 2026-05-21/22 — Phase D Implementation (EPIC-0039 close-out)
+
+| #   | Timestamp            | Prompt                                                                                                                                                                                      |
+| --- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | 2026-05-21T15:00:00Z | clean up any unused branches, then open the Phase D kickoff prompt and dispatch the first task (D.1 — entity write repos for SdlcEvent/SdlcTask/SdlcProgramme).                             |
+| 2   | 2026-05-21T15:45:00Z | 1. I agree (writers throw / indexers warn) / 2. Yes create new AC for the decision / can you analyze what is in chore/epic-0030-0035-enterprise-agentic-sdlc-plan and make a recommendation |
+| 3   | 2026-05-21T16:15:00Z | execute the spec-salvage                                                                                                                                                                    |
+| 4   | 2026-05-21T16:25:00Z | update item 2 (L-0080 lesson on AC-0731..0852 ID reuse) and then 3 (dispatch D.2 with writers-throw AC); I will manage 1 (main-worktree branch deletion) afterwards                         |
+| 5   | 2026-05-21T16:55:00Z | I agree with your changes (Q1 post-ingest mirror hash, Q2 D.7 parity test scope, Q3 keep AC-0917 wording fix in same commit)                                                                |
+| 6   | 2026-05-21T17:25:00Z | I agree with your recommendations (sequential D.5 → D.6 rather than parallel)                                                                                                               |
+| 7   | 2026-05-21T17:40:00Z | What's happening (status check during D.5 background work)                                                                                                                                  |
+| 8   | 2026-05-22T01:35:00Z | apply the fix (retire sdlc-status-indexer.js from the indexer registry — AC-1014)                                                                                                           |
+| 9   | 2026-05-22T02:50:00Z | update session close documents then open the PR to develop                                                                                                                                  |
+
 ---
 
 ## Session 57 — 2026-05-21 — Phase D Task D.7 (US-0238)

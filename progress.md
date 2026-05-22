@@ -2155,3 +2155,40 @@ Hard gates at end of Phase D:
 3. `npm run plan:lint` → 0/0/0.
 4. `npm run lint` → 0 errors (43 pre-existing warnings unchanged).
 5. `npm run pv:upgrade && npm run pv:upgrade` → second invocation a no-op.
+
+## Session 57 — Phase D Close-Out (2026-05-22)
+
+Phase D (EPIC-0039) is implementation-complete. All eight stories (US-0232..US-0239) ship `Status: Done` with ACs ticked. Mid-flight additions AC-1013 (writers throw, indexers warn) and AC-1014 (sdlc-status-indexer retirement) ratified.
+
+**Final commit on `claude/phase-d-impl`:** `5f0c621` — `[fix] US-0239 | TASK-0065: retire sdlc-status indexer (AC-1014) — post-pv:upgrade plan:index crash`.
+
+**End-of-Phase-D hard gates (all green):**
+
+1. Hard-gate grep across `tools/` — empty.
+2. `npm test` → 1441 / 1441 across 96 suites.
+3. `npm run plan:lint` → 0 / 0 / 0.
+4. `npm run lint` → 0 errors / 43 pre-existing warnings.
+5. `npm run pv:upgrade && npm run pv:upgrade` — second run no-op.
+6. `npm run pv:upgrade && npm run plan:index` — clean (the AC-1014 fix unblocks this).
+
+**Coverage:** 88.20% statements / 89.63% lines.
+
+**Close-out housekeeping (this session):**
+
+- Session memory file: [docs/memory/sessions/2026-05-22-session-57-phase-d-complete.md](docs/memory/sessions/2026-05-22-session-57-phase-d-complete.md)
+- `MIGRATION_LOG.md` — new Session 57 block covering SQLite-authoritative cutover, Migration 005, `pv:upgrade`/`pv:rollback`, AC-1014 indexer retirement, and the AC-1013 writers-throw contract
+- `docs/LESSONS.md` — L-0081 (two Migration 005s in the repo) and L-0082 (hard gates that depend on a file's absence are silent gates). L-0080 reserved for PR #1092.
+- `ID_REGISTRY.md` — Lesson row bumped to next-available L-0083; AC row at L-0015; TASK row at L-0066.
+- `PROMPT_LOG.md` — consolidated Session 57 human-prompt block at top; agent dispatch micro-blocks left in place per append-only rule.
+- `docs/RELEASE_PLAN.md` — AC-0928 wording already corrected by D.6 (commit `b0eb14e`); AC-1014 added under US-0239.
+
+**Open follow-ups for Phase E (not blocking the Phase D merge):**
+
+- Remove `sdlc-mirror.js:32-43` unknown-top-level-key preservation once consumer migration is complete.
+- Delete `sdlc-status-indexer.js` reference file (currently retained for one release).
+- Migrate dashboard read path (`tools/generate-dashboard.js:~4137`) to read consolidated `{tasks, log, programme}` shape.
+- Gitignore `docs/.pv-state.json` (currently only `docs/sdlc-status.json` and `docs/.pv-state.local.json` are ignored — surfaced during AC-1014 verification).
+- Rename one of the two "Migration 005" files to a namespaced form (per L-0081).
+- Re-decompose `docs/architecture/enterprise-agentic-sdlc-spec-v2.md` (salvaged in PR #1092) into stories against then-current next-available IDs.
+
+**Next session:** Phase E kickoff or merge Phase D PR → develop, depending on review velocity.
