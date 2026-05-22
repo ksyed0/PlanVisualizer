@@ -966,3 +966,20 @@ _(Bug sweep session — see progress.md Session 16 entry. Was primarily spent fi
 | 5   | 2026-05-20T18:30:00Z | monitor the CI and fix any issues, merge when green (PR 1069 — Phase B)                                                                                              |
 | 6   | 2026-05-20T19:00:00Z | what is next                                                                                                                                                         |
 | 7   | 2026-05-20T19:10:00Z | merge PR 1045 and 1070 / Review PR 1059 to merge / update session docs and close the session / Cleanup any unused branches / create a prompt to proceed with phase C |
+
+## D.4 — 2026-05-21 — TASK-0059 / US-0235
+
+**Prompt (dispatcher → D.4 sub-agent):**
+
+Implement Phase D Task D.4 of EPIC-0039: migrate `tools/update-sdlc-status.js`
+to write SdlcStatus through the D.1 entity repos instead of direct
+`fs.writeFileSync` on `docs/sdlc-status.json`. Use pre-allocated TASK-0059.
+Do not touch `docs/ID_REGISTRY.md` or `tools/agent-lifecycle.js` (D.3 owns
+the latter). Append to `progress.md` and `PROMPT_LOG.md` under a labelled
+D.4 block. Only edit US-0235 ACs in `docs/RELEASE_PLAN.md`. Add unit tests
+under `tests/unit/` covering happy path, constraint propagation, and JSON
+mirror round-trip. Verify hard gate `grep -rn "fs.writeFileSync.*sdlc-status"
+tools/update-sdlc-status.js` returns empty.
+
+**Response (sub-agent → dispatcher):** see D.4 progress block above; commit
+hashes captured in final report.

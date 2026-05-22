@@ -4331,14 +4331,14 @@ Acceptance Criteria:
 US-0235 (EPIC-0039): As the Conductor, I want tools/update-sdlc-status.js to write through the repository for every event kind, so that dashboard live-update parity is preserved post-cutover.
 Priority: High (P1)
 Estimate: M
-Status: To Do
+Status: Done
 Plan Task: D.4
 Dependencies: US-0232 (EPIC-0039)
 Acceptance Criteria:
 
-- [ ] AC-0922: every existing event-kind path (agent-start, agent-done, dispatch, programme-conductor-dispatch, programme-shadow-merge) uses repo.sdlcEvents.record or repo.sdlcTasks.upsert
-- [ ] AC-0923: integration tests in tests/integration/dashboard-task-review-flow.test.js pass without modification
-- [ ] AC-0924: docs/sdlc-status.json mirror is byte-equivalent to legacy output for a fixture event stream
+- [x] AC-0922: every existing event-kind path (agent-start, agent-done, dispatch, programme-conductor-dispatch, programme-shadow-merge) uses repo.sdlcEvents.record or repo.sdlcTasks.upsert
+- [x] AC-0923: integration tests in tests/integration/dashboard-task-review-flow.test.js pass without modification
+- [x] AC-0924: docs/sdlc-status.json mirror is byte-equivalent to legacy output for a fixture event stream
 
 ```
 
