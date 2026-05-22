@@ -27,6 +27,7 @@ const { renderAboutModal } = require('./lib/render-html');
 const { HANDLERS: sdlcHandlers } = require('./update-sdlc-status');
 const { atomicReadModifyWriteJson: atomicRMW } = require('../orchestrator/atomic-write');
 const TaskReview = require('./lib/dashboard-task-review');
+const reader = require('./lib/repository/sdlc-status-reader');
 
 // US-0186: Helpers embedded into the generated dashboard so the same review-gate
 // rendering code runs in the browser. fn.toString() emits the source verbatim;
@@ -39,6 +40,20 @@ const REVIEW_HELPERS_SOURCE = [
   TaskReview.renderReviewChipsM.toString(),
   TaskReview.renderReviewLineL.toString(),
 ].join('\n\n');
+
+// US-0259 (EPIC-0045 Phase E): same dual-read accessor injected as a browser
+// global so inline dashboard JS reads `pvReader.X(status)` instead of
+// `status.X` / `status.X || {}` etc. Single source of truth for both the
+// Node-side render path and the browser-side ticker/snapshot rebuilds.
+// Built from fn.toString() so the source stays byte-identical to the module.
+// See docs/superpowers/specs/2026-05-22-us-0259-accessor-api-design.md §4.
+const READER_SOURCE =
+  Object.keys(reader)
+    .map((name) => reader[name].toString())
+    .join('\n\n') +
+  '\n\nwindow.pvReader = { ' +
+  Object.keys(reader).join(', ') +
+  ' };\n';
 
 const ROOT = path.resolve(__dirname, '..');
 
@@ -313,10 +328,10 @@ function generateHTML(status) {
   const COMMIT_SHA = getCommitSha();
   const BUILD_NUMBER = getBuildNumber();
   const GIT_BRANCH = getCurrentBranch();
-  const agents = status.agents;
-  const phases = status.phases;
-  const metrics = { ...status.metrics };
-  const stories = status.stories;
+  const agents = reader.agents(status);
+  const phases = reader.phases(status);
+  const metrics = { ...reader.metrics(status) };
+  const stories = reader.stories(status);
   const log = status.log || [];
 
   // BUG-0164 / BUG-0166 — enrich with authoritative project data from plan-status.json.
@@ -410,7 +425,7 @@ function generateHTML(status) {
   // empty. The cycle "elapsed HH:MM:SS" timer is kicked off client-side
   // (see updateCycleElapsed() below) from a data-started-at attribute on
   // #cycle-elapsed; the server renders 00:00:00 as a placeholder.
-  const cycleStories = (status && status.stories) || {};
+  const cycleStories = reader.stories(status);
   const cycleStoryEntries = Object.entries(cycleStories).map(([id, s]) => ({ id, ...s }));
   const cycleCompletedCount = cycleStoryEntries.filter((s) => /^(Complete|Done)$/i.test(s.status)).length;
   const cycleNumber = cycleCompletedCount + 1;
@@ -484,7 +499,7 @@ function generateHTML(status) {
 
   // Pre-computed to avoid nested template literal inside the main HTML string
   const lbCiChip = (() => {
-    const gs = status.githubStatus;
+    const gs = reader.githubStatus(status);
     if (!gs || gs.ciSummary.total === 0) return '';
     const { failing, pending } = gs.ciSummary;
     const color = failing > 0 ? 'var(--risk)' : pending > 0 ? 'var(--warn)' : 'var(--ok)';
@@ -2258,7 +2273,7 @@ function generateHTML(status) {
 </style>
 </head>
 <body>
-${renderChrome({ projectName: (planData && planData.projectName) || (status && status.project && status.project.name) || 'PlanVisualizer', generatedAt: new Date().toISOString() }, 'live')}
+${renderChrome({ projectName: (planData && planData.projectName) || reader.project(status).name || 'PlanVisualizer', generatedAt: new Date().toISOString() }, 'live')}
 
 <!-- US-0122 AC-0417: incident ticker (hidden by default, .active shown beneath header when any agent/phase is blocked). -->
 <div id="incident-ticker" class="incident-ticker" aria-live="polite" aria-atomic="true"></div>
@@ -2611,7 +2626,7 @@ ${phases.map((p, i) => `    <div class="spark-bar ${p.status}" data-phase-id="${
 <div class="mc-legacy-section" style="display:none;">
   <div class="story-list">
 ${(() => {
-  const epics = status.epics || {};
+  const epics = reader.epics(status);
   const groups = {};
   Object.entries(stories).forEach(([id, story]) => {
     const epicId = story.epic || 'OTHER';
@@ -2676,7 +2691,7 @@ ${storyRows}
 <!-- US-0147: Agent Workload -->
 <div class="mc-legacy-section" style="display:none;" id="mc-workload-section">
   <div class="card-head"><h3>Agent Workload</h3></div>
-  ${renderAgentWorkload(status.agents, status.stories)}
+  ${renderAgentWorkload(reader.agents(status), reader.stories(status))}
 </div>
 
 <!-- US-0145: Event Log — primary column widget -->
@@ -2745,7 +2760,7 @@ ${
       const blockedCount = blockedAgents.length;
       const reviewCount = reviewAgents.length;
       const bugsCount = metrics.bugsOpen || 0;
-      const gs = status && status.githubStatus;
+      const gs = reader.githubStatus(status);
       const prsNeedingReview = gs ? (gs.prs || []).filter((p) => p.reviewCount === 0).length : 0;
       return (
         `<div class="mc-attn-chips">
@@ -2781,7 +2796,7 @@ ${
   <div class="mc-sidebar-panel">
     <div class="mc-sidebar-title">GITHUB</div>
     ${(() => {
-      const gs = status && status.githubStatus;
+      const gs = reader.githubStatus(status);
       if (!gs)
         return `<div style="font-size:11px;color:var(--mc-muted);font-style:italic;">Starting up — no data yet</div>`;
       const prRows = (gs.prs || [])
@@ -2983,6 +2998,11 @@ window.pvTaskReviewCap = ${
   };
 
 ${REVIEW_HELPERS_SOURCE}
+
+// US-0259: sdlc-status dual-read accessor injected as window.pvReader.
+// Same module that tools/generate-dashboard.js (Node side) uses, so the inline
+// browser ticker/refresh handlers below read through one canonical API.
+${READER_SOURCE}
 
 // pvSetTheme / openAbout — aliases expected by renderChrome() (shared chrome from render-shell.js)
 // BUG-0250: write to canonical 'pv-theme' key (shared with plan-status dashboard) so
@@ -3193,7 +3213,7 @@ function _applyLogFilter(filter) {
 // Detects state changes across page refreshes using localStorage, then plays
 // a Web Audio tone and fires a browser Notification when attention is needed.
 var DASH_SNAPSHOT = ${JSON.stringify({
-    currentPhase: status.currentPhase,
+    currentPhase: reader.currentPhase(status),
     bugsOpen: metrics.bugsOpen,
     agentStatuses: Object.fromEntries(Object.entries(agents).map(([k, v]) => [k, v.status])),
     phaseStatuses: phases.map((p) => ({ id: p.id, status: p.status })),
@@ -3314,14 +3334,14 @@ function requestAlerts() {
 // We derive it here from the raw sdlc-status.json on each tick so the function
 // is self-contained and callers can pass the untransformed fetch result.
 function buildSnapshotFromStatus(status) {
-  var phases = (status && status.phases) || [];
-  var agents = (status && status.agents) || {};
-  var metrics = (status && status.metrics) || {};
+  var phases = pvReader.phases(status);
+  var agents = pvReader.agents(status);
+  var metrics = pvReader.metrics(status);
   var complete = phases.filter(function(p) { return p.status === 'complete'; }).length;
   var agentStatuses = {};
   Object.keys(agents).forEach(function(k) { agentStatuses[k] = (agents[k] || {}).status; });
   return {
-    currentPhase: status && status.currentPhase,
+    currentPhase: pvReader.currentPhase(status),
     bugsOpen: typeof metrics.bugsOpen === 'number' ? metrics.bugsOpen : null,
     agentStatuses: agentStatuses,
     phaseStatuses: phases.map(function(p) { return { id: p.id, status: p.status }; }),
@@ -3340,13 +3360,16 @@ function buildSnapshotFromStatus(status) {
 // currentStory → currentTask → 'unknown' per AC-0417.
 function _findFirstBlocked(status) {
   if (!status) return { blocked: false, agent: null, story: null };
-  var agents = status.agents || null;
+  // US-0259: accessor returns {}/[] defaults, so we look up the populated state
+  // explicitly. The agentStatuses / phaseStatuses fallbacks aren't part of the
+  // 9 legacy keys (no accessor); they stay as direct reads.
+  var agents = pvReader.agents(status);
   var agentStatuses = status.agentStatuses || null;
-  var phases = status.phases || null;
+  var phases = pvReader.phases(status);
   var phaseStatuses = status.phaseStatuses || null;
 
-  if (agents && typeof agents === 'object') {
-    var names = Object.keys(agents);
+  var names = Object.keys(agents);
+  if (names.length > 0) {
     for (var i = 0; i < names.length; i++) {
       var a = agents[names[i]] || {};
       if (a.status === 'blocked') {
@@ -3562,7 +3585,7 @@ function patchDOM(status) {
   }
 
   // --- Project identity (US-0128) ------------------------------------------
-  var proj = status.project;
+  var proj = pvReader.project(status);
   if (proj) {
     var titleEl = document.querySelector('.header-title');
     if (titleEl && proj.name) titleEl.textContent = proj.name;
@@ -3584,7 +3607,7 @@ function patchDOM(status) {
   }
 
   // --- Epic progress strip (US-0130) ----------------------------------------
-  var epics = status.epics || {};
+  var epics = pvReader.epics(status);
   var epicKeys = Object.keys(epics);
   var epicStripEl = document.getElementById('epic-strip');
   var epicRowsEl = document.getElementById('epic-strip-rows');
@@ -3611,7 +3634,7 @@ function patchDOM(status) {
   }
 
   // --- Cycle history (US-0133) -----------------------------------------------
-  var cycles = Array.isArray(status.cycles) ? status.cycles : [];
+  var cycles = pvReader.cycles(status);
   var cycleSection = document.getElementById('cycle-history-section');
   var lapStrip = document.getElementById('cycle-lap-strip');
   var telemetryRow = document.getElementById('cycle-telemetry');
@@ -3700,9 +3723,10 @@ function patchDOM(status) {
   // Toggle status class, swap status icon, flip blocked beacon, reveal
   // completed-phase checkmark + elapsed footer, and resize the active
   // phase's partial-progress fill — all without remounting the block.
-  var phases = Array.isArray(status.phases) ? status.phases : [];
-  var _storiesTotal = (status.metrics && status.metrics.storiesTotal) || 0;
-  var _storiesDone = (status.metrics && status.metrics.storiesCompleted) || 0;
+  var phases = pvReader.phases(status);
+  var _metricsLocal = pvReader.metrics(status);
+  var _storiesTotal = _metricsLocal.storiesTotal || 0;
+  var _storiesDone = _metricsLocal.storiesCompleted || 0;
   var _fillRatio = _storiesTotal > 0 ? Math.max(0.04, Math.min(1, _storiesDone / _storiesTotal)) : 0.5;
   var _fillPct = Math.round(_fillRatio * 100);
   phases.forEach(function(p) {
@@ -3757,7 +3781,7 @@ function patchDOM(status) {
   });
 
   // --- Agents ----------------------------------------------------------------
-  var agents = status.agents || {};
+  var agents = pvReader.agents(status);
   Object.keys(agents).forEach(function(name) {
     var a = agents[name] || {};
     var card = document.getElementById('agent-' + name);
@@ -3818,7 +3842,7 @@ function patchDOM(status) {
   }
 
   // --- Metrics ---------------------------------------------------------------
-  var m = status.metrics || {};
+  var m = pvReader.metrics(status);
   function setText(id, value) {
     var el = document.getElementById(id);
     if (el && el.textContent !== String(value)) el.textContent = String(value);
@@ -3980,7 +4004,7 @@ function patchTaskList(status) {
   });
 
   // For each active agent card, find their current story and render tasks
-  var agents = (status && status.agents) || {};
+  var agents = pvReader.agents(status);
   Object.keys(agents).forEach(function (name) {
     var agent = agents[name];
     if (!agent || agent.status !== 'active' || !agent.currentStory) return;
@@ -4072,12 +4096,12 @@ function initTaskDensity() {
 
 document.addEventListener('DOMContentLoaded', initTaskDensity);
 
-// Rebuild the Pending Approvals panel content from the latest sdlc-status.stories.
+// Rebuild the Pending Approvals panel content from the latest pvReader.stories(status).
 // Called inside patchDOM() on every 5s refreshState() tick — no page reload.
 function patchPendingApprovals(status) {
   var body = document.getElementById('mc-pending-approvals-body');
   if (!body) return;
-  var stories = (status && status.stories) || {};
+  var stories = pvReader.stories(status);
   var pending = [];
   Object.keys(stories).forEach(function(id) {
     var st = stories[id];
@@ -4217,7 +4241,7 @@ function updateCycleElapsed() {
 }
 function patchCycleCounter(status) {
   if (!status || typeof status !== 'object') return;
-  var storiesMap = status.stories || {};
+  var storiesMap = pvReader.stories(status);
   var entries = Object.keys(storiesMap).map(function(id) { return Object.assign({ id: id }, storiesMap[id] || {}); });
   var completedCount = entries.filter(function(s) { return /^(Complete|Done)$/i.test(s.status); }).length;
   var active = null;
@@ -4233,7 +4257,7 @@ function patchCycleCounter(status) {
     // Prefer active story startedAt, fall back to the in-progress phase's startedAt.
     var started = (active && active.startedAt) || '';
     if (!started) {
-      var phases = Array.isArray(status.phases) ? status.phases : [];
+      var phases = pvReader.phases(status);
       for (var j = 0; j < phases.length; j++) {
         if (phases[j].status === 'in-progress' && phases[j].startedAt) { started = phases[j].startedAt; break; }
       }
