@@ -2056,3 +2056,30 @@ None. The 14 `duplicate-ac` warnings are pre-existing data drift, not regression
 - Mirror now preserves unknown top-level JSON keys (e.g. `stories`) so D.4-owned state survives D.3 writes pre-cutover.
 - Tests: 1389 → 1394 (+5 new D.3 tests in `tests/unit/agent-lifecycle-repo-writeback.test.js` covering hard-gate, start, done, writer-throws, and JSON↔SQL byte-identity). Coverage 87.86% statements.
 - Lint + Prettier clean. `plan:lint` 0/0/0.
+
+## D.4 — US-0235 / TASK-0059 — update-sdlc-status repo migration (2026-05-21)
+
+Scope: Phase D Task D.4 of EPIC-0039. Migrated `tools/update-sdlc-status.js`
+to route every state mutation through the D.1 entity repos (SdlcEventRepo,
+SdlcTaskRepo, SdlcProgrammeRepo) instead of `atomicReadModifyWriteJson` on
+`docs/sdlc-status.json`. Pure HANDLERS retained verbatim — existing 56 unit
+tests remain unchanged. Added a thin `readState` / `writeState` pair that
+materialises the rich legacy shape from `sdlcProgramme.all() + sdlcEvents.list()`
+and diffs the handler output back through the typed writers (programme keys
+→ `sdlcProgramme.set`, new log entries → `sdlcEvents.record`). The mirror
+regenerates `docs/sdlc-status.json` transitively under the file lock.
+
+ACs ticked: AC-0922, AC-0923, AC-0924.
+
+Tests: full suite 1393 passed (was 1389, +4 D.4 tests). Coverage steady at
+87.82% statements (unchanged — `update-sdlc-status.js` isn't under
+`tools/lib/**` for coverage).
+
+Hard gate: `grep -rn "fs.writeFileSync.*sdlc-status" tools/update-sdlc-status.js`
+returns 0 hits.
+
+Out of scope (deliberately untouched): `tools/agent-lifecycle.js` (D.3 sibling),
+`docs/ID_REGISTRY.md` (D.3 also-bumping concurrently). Dashboard JSON shape
+drift (`{tasks, log, programme}` vs legacy `{agents, stories, metrics, ...}`)
+is the documented Phase D semantics and will be addressed by the consumer-side
+migration in Phase E.
