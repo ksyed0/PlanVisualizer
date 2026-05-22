@@ -2109,3 +2109,49 @@ Out of scope (deliberately untouched): `tools/agent-lifecycle.js` (D.3 sibling),
 drift (`{tasks, log, programme}` vs legacy `{agents, stories, metrics, ...}`)
 is the documented Phase D semantics and will be addressed by the consumer-side
 migration in Phase E.
+
+## D.8 — US-0239 / TASK-0064 — pv:upgrade + pv:rollback (Phase D close-out, 2026-05-21)
+
+Scope: Phase D Task D.8 of EPIC-0039 — the last task before the Phase D PR
+opens. Built two write-capable CLIs and one shared snapshot/restore library:
+
+- `tools/pv-upgrade.js` — detects pending migrations, refuses on a dirty git
+  tree unless `--force`, takes a SQL-aware pre-snapshot into
+  `docs/.pv-backup/pre-upgrade-<timestamp>/`, runs the migration runner, then
+  verifies SQL-owned keys on `docs/sdlc-status.json` byte-equal a fresh
+  `SdlcMirror._renderFromSql()`. Mismatch → non-zero exit + clear message
+  pointing at the snapshot for rollback. A second invocation with the mirror
+  in sync and no pending migrations is a true no-op (no new snapshot dir).
+
+- `tools/pv-rollback.js` — `--to <label>` or `--to latest`; lists snapshots
+  when called bare. Restores SQL tables (`sdlc_events`, `sdlc_tasks`,
+  `sdlc_programme`) and the captured `meta_status` keys inside a single
+  `repo.index.transaction(...)`, then re-renders the JSON mirror from SQL via
+  `SdlcMirror.write()`. Refuses to run if the on-disk mirror's SQL-owned keys
+  diverge from SQL (writer mid-flight / stale mirror). `--dry-run` is pure.
+
+- `tools/lib/migrations/sdlc-snapshot.js` — captures
+  `{ sdlc_events, sdlc_tasks, sdlc_programme, meta_status[migration_005_hash] }`
+  as JSON row arrays + a `manifest.json` + a copy of `docs/sdlc-status.json`
+  for human review. Format choice rationale (also in
+  `docs/.pv-backup/README.md`): JSON over `.sqlite` dumps for git-diff
+  reviewability and better-sqlite3 version portability.
+
+Snapshot listing filters to manifest-bearing directories so the legacy
+flat-file snapshots from `tools/lib/migrations/backup.js` (`pre-005-*` etc.)
+don't pollute `pv:rollback --to latest`.
+
+ACs ticked: AC-0934, AC-0935, AC-0936, AC-0937.
+
+Tests: full suite 1439 passed (was 1433, +6 D.8 tests covering
+upgrade→mutate→rollback round trip, idempotent upgrade, corrupt-snapshot
+detection, refuse-to-clobber, dry-run purity, and bare-list mode). Coverage
+88.20% statements (was 87.95%).
+
+Hard gates at end of Phase D:
+
+1. `grep -rn "fs.writeFileSync.*sdlc-status\|atomicReadModifyWriteJson.*sdlc-status" tools/ | grep -v test` → empty.
+2. `npm test` → 1439 passed.
+3. `npm run plan:lint` → 0/0/0.
+4. `npm run lint` → 0 errors (43 pre-existing warnings unchanged).
+5. `npm run pv:upgrade && npm run pv:upgrade` → second invocation a no-op.

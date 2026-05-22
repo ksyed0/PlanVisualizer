@@ -4395,15 +4395,15 @@ Acceptance Criteria:
 US-0239 (EPIC-0039): As a user upgrading, I want write-capable pv:upgrade and pv:rollback commands, so that Migration 005 (and future migrations) can actually be applied with backup/restore safety.
 Priority: High (P1)
 Estimate: M
-Status: To Do
+Status: Done
 Plan Task: D.8
 Dependencies: US-0233 (EPIC-0039), US-0224 (EPIC-0036)
 Acceptance Criteria:
 
-- [ ] AC-0934: pv:upgrade refuses to run on a dirty working tree unless --force; lists pending migrations and applies them in order
-- [ ] AC-0935: pv:rollback with --to <label> restores docs/.pv-backup/<label>/; without --to lists available backups
-- [ ] AC-0936: each migration snapshots its touched files into docs/.pv-backup/pre-<id>/ before mutating
-- [ ] AC-0937: CI fixture run upgrades a v2.4-shaped fixture project end-to-end without data loss
+- [x] AC-0934: pv:upgrade refuses to run on a dirty working tree unless --force; lists pending migrations and applies them in order
+- [x] AC-0935: pv:rollback with --to <label> restores docs/.pv-backup/<label>/; without --to lists available backups
+- [x] AC-0936: each migration snapshots its touched files into docs/.pv-backup/pre-<id>/ before mutating
+- [x] AC-0937: CI fixture run upgrades a v2.4-shaped fixture project end-to-end without data loss
 
 ```
 
