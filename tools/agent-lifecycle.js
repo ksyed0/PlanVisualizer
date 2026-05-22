@@ -22,6 +22,14 @@ const fs = require('fs');
 const path = require('path');
 const LifeState = require('./lib/agent-lifecycle-state');
 const { Repository } = require('./lib/repository');
+const {
+  ensureDocsDir,
+  adoptLegacySdlcPath,
+  syncLegacySdlcPath,
+  readMirror,
+  taskToUpsert,
+  getRepoForCtx,
+} = require('./lib/agent-cli-repo-helpers');
 
 const ROOT = path.join(__dirname, '..');
 const SDLC_PATH = path.join(ROOT, 'docs/sdlc-status.json');
@@ -99,131 +107,14 @@ function regenDashboard(ctx) {
   }
 }
 
-/**
- * Resolve the repository root from the call context.
- *
- * The legacy CLI accepted `ctx.sdlcPath` as an arbitrary file path (used by
- * tests to redirect writes to a tmpdir). The repo singleton needs a
- * `root` whose `docs/` subdirectory will hold `sdlc-status.json`. We
- * derive root by stripping the trailing `docs/sdlc-status.json` (if
- * present) — and otherwise treating the file's parent's parent as root.
- */
-function resolveRoot(ctx) {
-  if (ctx && ctx.root) return ctx.root;
-  const sdlcPath = ctx && ctx.sdlcPath ? ctx.sdlcPath : SDLC_PATH;
-  // If `<root>/docs/sdlc-status.json`, root = <root>.
-  const docsDir = path.dirname(sdlcPath);
-  if (path.basename(docsDir) === 'docs') return path.dirname(docsDir);
-  // Otherwise treat the file's directory as the docs/ for a synthetic root.
-  // The test setup is: tmpdir/sdlc-status.json — we synthesise root = tmpdir
-  // and rename the file into tmpdir/docs/sdlc-status.json.
-  return docsDir;
-}
-
-function ensureDocsDir(root) {
-  fs.mkdirSync(path.join(root, 'docs'), { recursive: true });
-}
-
-/**
- * Tests historically created `<tmp>/sdlc-status.json` directly (not inside
- * a docs/ subdir). When we detect that shape, migrate the file into
- * `<tmp>/docs/sdlc-status.json` so the SdlcMirror can take it over.
- *
- * No-op if the file is already at the canonical path.
- */
-function adoptLegacySdlcPath(ctx, root) {
-  if (!ctx || !ctx.sdlcPath) return;
-  const canonical = path.join(root, 'docs', 'sdlc-status.json');
-  if (path.resolve(ctx.sdlcPath) === path.resolve(canonical)) return;
-  // The provided sdlcPath sits outside <root>/docs/. Move its contents
-  // into the canonical location so the mirror writes there.
-  ensureDocsDir(root);
-  if (fs.existsSync(ctx.sdlcPath) && !fs.existsSync(canonical)) {
-    fs.copyFileSync(ctx.sdlcPath, canonical);
-  } else if (!fs.existsSync(canonical)) {
-    fs.writeFileSync(canonical, JSON.stringify({ tasks: {}, log: [], programme: {} }, null, 2));
-  }
-}
-
-/**
- * After every repo write, the SdlcMirror writes the canonical
- * `<root>/docs/sdlc-status.json`. For backward-compat with tests that
- * pass a non-canonical `ctx.sdlcPath`, copy the canonical output back to
- * that path so the tests' read-back assertions still work.
- */
-function syncLegacySdlcPath(ctx, root) {
-  if (!ctx || !ctx.sdlcPath) return;
-  const canonical = path.join(root, 'docs', 'sdlc-status.json');
-  if (path.resolve(ctx.sdlcPath) === path.resolve(canonical)) return;
-  if (fs.existsSync(canonical)) {
-    fs.copyFileSync(canonical, ctx.sdlcPath);
-  }
-}
+// Bridge helpers (resolveRoot / ensureDocsDir / adoptLegacySdlcPath /
+// syncLegacySdlcPath / readMirror / taskToUpsert / parseTimestamp) and the
+// per-dispatch repo factory (getRepoForCtx) live in
+// tools/lib/agent-cli-repo-helpers.js — shared with agent-task-review.js
+// (D.5) and agent-spec-plan.js (D.6).
 
 function getRepo(ctx) {
-  const root = resolveRoot(ctx);
-  ensureDocsDir(root);
-  adoptLegacySdlcPath(ctx, root);
-  // Always reset the singleton for test isolation — every dispatch call
-  // gets a fresh repository pointing at the resolved root.
-  Repository._reset();
-  const repo = Repository.getInstance({ root });
-  return { repo, root };
-}
-
-/**
- * Translate a LifeState task object (the legacy in-memory shape used by
- * agent-lifecycle-state.js) into the camelCase keys the SdlcTaskRepo
- * understands. The legacy code uses `state` for what the schema calls
- * `status`, and uses `story` for what the schema calls `storyId`.
- */
-function taskToUpsert(t) {
-  return {
-    id: t.id,
-    storyId: t.story,
-    agent: t.agent,
-    status: t.state,
-    startedAt: parseTimestamp(t.startedAt),
-    completedAt: parseTimestamp(t.completedAt),
-    planTaskIndex: t.planTaskIndex,
-    summary: t.summary,
-    model: t.model,
-    headSha: t.headSha,
-    description: t.description,
-    concerns: t.concerns,
-    blockedReason: t.blockedReason,
-    blockedResolutions: t.blockedResolutions,
-    retryCount: t.retryCount,
-  };
-}
-
-function parseTimestamp(v) {
-  if (v === null || v === undefined) return null;
-  if (typeof v === 'number') return v;
-  const n = Date.parse(v);
-  return Number.isNaN(n) ? null : n;
-}
-
-/**
- * Read the current `tasks` map back out of the JSON mirror (canonical
- * post-D.3 shape — `tasks` is an object keyed by id, with `state`
- * aliased to `status`). The LifeState helpers consume this shape.
- *
- * Falls back to an empty `{ tasks: {} }` if the mirror file doesn't
- * exist yet (first ever call on a fresh root).
- */
-function readMirror(root) {
-  const file = path.join(root, 'docs', 'sdlc-status.json');
-  if (!fs.existsSync(file)) return { tasks: {}, log: [], programme: {} };
-  try {
-    const parsed = JSON.parse(fs.readFileSync(file, 'utf8'));
-    if (!parsed.tasks) parsed.tasks = {};
-    // The legacy seed JSON tests use sometimes carries `tasks` as an
-    // object map of arbitrary shape — preserve it as-is.
-    return parsed;
-  } catch {
-    return { tasks: {}, log: [], programme: {} };
-  }
+  return getRepoForCtx(ctx, { Repository });
 }
 
 async function dispatch(opts, ctx = {}) {
