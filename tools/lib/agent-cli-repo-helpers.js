@@ -81,10 +81,22 @@ function adoptLegacySdlcPath(ctx, root) {
   const canonical = path.join(root, 'docs', 'sdlc-status.json');
   if (path.resolve(ctx.sdlcPath) === path.resolve(canonical)) return;
   ensureDocsDir(root);
-  if (fs.existsSync(ctx.sdlcPath) && !fs.existsSync(canonical)) {
-    fs.copyFileSync(ctx.sdlcPath, canonical);
-  } else if (!fs.existsSync(canonical)) {
-    fs.writeFileSync(canonical, JSON.stringify({ tasks: {}, log: [], programme: {} }, null, 2));
+  // Use exclusive-create flags to avoid a TOCTOU race between the
+  // existsSync checks and the subsequent write (CodeQL js/file-system-race;
+  // see L-0071). EEXIST means another process created the canonical file
+  // first — that's the desired end state, so it's safe to ignore.
+  if (fs.existsSync(ctx.sdlcPath)) {
+    try {
+      fs.copyFileSync(ctx.sdlcPath, canonical, fs.constants.COPYFILE_EXCL);
+    } catch (e) {
+      if (e.code !== 'EEXIST') throw e;
+    }
+  } else {
+    try {
+      fs.writeFileSync(canonical, JSON.stringify({ tasks: {}, log: [], programme: {} }, null, 2), { flag: 'wx' });
+    } catch (e) {
+      if (e.code !== 'EEXIST') throw e;
+    }
   }
 }
 

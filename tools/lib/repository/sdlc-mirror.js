@@ -27,7 +27,14 @@ class SdlcMirror {
   async write() {
     fs.mkdirSync(path.dirname(this.file), { recursive: true });
     // Touch the file so proper-lockfile can acquire a lock on it.
-    if (!fs.existsSync(this.file)) fs.writeFileSync(this.file, '{}');
+    // Use exclusive-create (`wx`) to avoid a TOCTOU race between
+    // `existsSync` and `writeFileSync` (CodeQL js/file-system-race; see
+    // L-0071). EEXIST means another writer beat us to it — that's fine.
+    try {
+      fs.writeFileSync(this.file, '{}', { flag: 'wx' });
+    } catch (e) {
+      if (e.code !== 'EEXIST') throw e;
+    }
     await withFileLock(this.file, async () => {
       const out = this._renderFromSql();
       // TRANSITIONAL DEBT (Phase D scaffolding — REMOVE AFTER PHASE E):
