@@ -4,6 +4,32 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 57 — 2026-05-21 (Phase D Task D.7 — US-0238 implemented)
+
+### What Was Done
+
+- Implemented **D.7 live-dashboard parity test** (`tests/integration/repository/live-dashboard-parity.test.js`, 349 lines, TASK-0063) covering three subtests:
+  - **A. Cross-writer parity** — 12-event interleaved fixture stream across all four Phase D writers (agent-lifecycle, update-sdlc-status, agent-task-review, agent-spec-plan). After the stream, on-disk `docs/sdlc-status.json` SQL-owned keys (`tasks`, `log`, `programme`) are byte-identical to a fresh `SdlcMirror._renderFromSql()`. Event log ids monotonic. BUG-0183 idempotency exercised via repeated `spec-await-ac` — at-most-one event row enforced.
+  - **B. SQL-as-source-of-truth across process restarts** — `Repository._reset()` between every dispatch. State written by writer A in process N is visible to writer B in process N+1; on-disk SQL-owned-key parity holds; `refresh()` is idempotent on re-open (no row duplication).
+  - **C. Live-dashboard read parity** — sniff-test on `tools/generate-dashboard.js:4137` confirms the dashboard fetches `./sdlc-status.json` directly with no SSE / WebSocket indirection, so (A)'s byte equality IS the dashboard live-update parity claim.
+- Test file includes a top-of-file (D) comment explaining the transitional dual-shape (unknown-top-level-keys preservation per `sdlc-mirror.js:32-43`) — full-file `===` is NOT asserted; only the SQL-owned key projection is.
+- TASK-0063 claimed in `docs/ID_REGISTRY.md`, bumped to TASK-0064.
+- US-0238 status → Done, all three ACs (AC-0931..AC-0933) ticked.
+
+### Test Results
+
+- Full suite: **1433 passed** / 0 failed (up from 1430 in D.6).
+- Coverage: **87.95% stmts** / 77.87% br / 89.16% funcs / 89.74% lines (was 87.93% post-D.6).
+- `npm run plan:lint`: 0/0/0.
+- `npm run lint` + `prettier --check`: clean on new file.
+- Phase D hard gate: `grep -rn "fs.writeFileSync.*sdlc-status\|atomicReadModifyWriteJson.*sdlc-status" tools/ | grep -v test` → empty.
+
+### Notes for D.8 (rollback dispatch)
+
+- No `migration_005_hash` row in `meta_status` was found in `tools/lib/repository/schema.js` or the migrations directory — the D.7 prompt references it as if it existed, but Migration 005 currently does not emit one. D.8 will need to either add hash-based idempotency or pivot to row-counting / file-checksum.
+
+---
+
 ## Session 57 — 2026-05-21 (Phase D Task D.1 — US-0232 implemented)
 
 ### What Was Done

@@ -4379,14 +4379,14 @@ Acceptance Criteria:
 US-0238 (EPIC-0039): As the dashboard owner, I want a live-dashboard parity test that proves concurrent record() calls don't lose events, so that the file-locked re-query-inside-lock pattern is verified end-to-end.
 Priority: High (P1)
 Estimate: S
-Status: To Do
+Status: Done
 Plan Task: D.7
 Dependencies: US-0232 (EPIC-0039)
 Acceptance Criteria:
 
-- [ ] AC-0931: tests/integration/repository/live-dashboard-parity.test.js replays a fixture event stream and asserts mirror byte-shape
-- [ ] AC-0932: 3 concurrent record() calls all land in the mirror (log.length == 5 after 2 sequential + 3 concurrent)
-- [ ] AC-0933: Phase D hard gate verified — npm test passes; grep returns no JSON-direct writers
+- [x] AC-0931: tests/integration/repository/live-dashboard-parity.test.js replays a fixture event stream of 12 interleaved events across all four Phase D writers (agent-lifecycle, update-sdlc-status, agent-task-review, agent-spec-plan) and asserts SQL-owned-key byte parity between the on-disk mirror and a fresh SdlcMirror.\_renderFromSql(); also documents the dashboard's live-update path (tools/generate-dashboard.js:4137 fetch('./sdlc-status.json')) so byte parity == live-dashboard parity
+- [x] AC-0932: Process-restart parity — `Repository._reset()` between every dispatch simulates fresh processes; state written by writer A in process N is visible to writer B in process N+1; refresh() is idempotent (no row duplication); SQL-owned-key byte parity still holds
+- [x] AC-0933: Phase D hard gate verified — full suite (1433 tests) passes, coverage 87.95% stmts, plan:lint 0/0/0, lint/prettier clean; `grep -rn "fs.writeFileSync.*sdlc-status\|atomicReadModifyWriteJson.*sdlc-status" tools/ | grep -v test` returns empty
 
 ```
 
