@@ -311,4 +311,56 @@ describe('Migration 006 — data_006-ingest-legacy-programme', () => {
       expect(result.ingested).toBe(0);
     });
   });
+
+  describe('snapshot completeness — runner takes pre-migration snapshot via mod.touches', () => {
+    let root;
+
+    beforeAll(async () => {
+      root = mkRoot('us0262-snap-');
+      writeFixtureToRoot(root, 'state-b.json');
+      // Run through the runner (not directly via up()) so the per-
+      // migration snapshot machinery in tools/lib/migrations/index.js
+      // fires. The runner calls `snapshot({ root, label: 'pre-<id>',
+      // files: mod.touches })` BEFORE invoking up().
+      const { run } = require('../../../tools/lib/migrations');
+      await run({ root, actor: 'test' });
+      Repository._reset();
+    });
+
+    afterAll(() => {
+      Repository._reset();
+      fs.rmSync(root, { recursive: true, force: true });
+    });
+
+    it('docs/.pv-backup/pre-data_006-ingest-legacy-programme/ exists', () => {
+      const snapDir = path.join(root, 'docs', '.pv-backup', 'pre-data_006-ingest-legacy-programme');
+      expect(fs.existsSync(snapDir)).toBe(true);
+    });
+
+    it('snapshot contains a copy of sdlc-status.json with all 9 legacy top-level keys', () => {
+      const snapJsonPath = path.join(
+        root,
+        'docs',
+        '.pv-backup',
+        'pre-data_006-ingest-legacy-programme',
+        'docs',
+        'sdlc-status.json',
+      );
+      expect(fs.existsSync(snapJsonPath)).toBe(true);
+      const snapJson = JSON.parse(fs.readFileSync(snapJsonPath, 'utf8'));
+      for (const k of [
+        'agents',
+        'metrics',
+        'stories',
+        'epics',
+        'phases',
+        'cycles',
+        'currentPhase',
+        'githubStatus',
+        'project',
+      ]) {
+        expect(snapJson).toHaveProperty(k);
+      }
+    });
+  });
 });
