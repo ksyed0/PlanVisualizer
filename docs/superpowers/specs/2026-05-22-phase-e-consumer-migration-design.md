@@ -229,7 +229,7 @@ At every point in this sequence:
 
 **Scope:**
 
-- Create `tools/lib/repository/migrations/006-ingest-legacy-programme.js` implementing the algorithm in Section 4.2.
+- Create `tools/lib/migrations/data_006-ingest-legacy-programme.js` (a JS data migration — same directory + naming convention as `data_005-` per L-0081 / US-0263; **not** `tools/lib/repository/migrations/`, which is the SQL schema migrations dir) implementing the algorithm in Section 4.2.
 - Extend `pv:upgrade` snapshot to capture pre-006 JSON (preservation of legacy top-level keys in `docs/.pv-backup/pre-upgrade-<ts>/sdlc-status.json`).
 - Update `docs/architecture/pv-backup-format.md` to describe the extended snapshot contents.
 - Idempotency: migrations-applied row keyed on `"006"`.
@@ -326,7 +326,7 @@ All five implementation PRs (US-0259..US-0263) source fixtures from this directo
 ### 6.4 Coverage targets
 
 - ≥80% on all changed code (AGENTS.md §8 baseline).
-- ≥90% on `tools/lib/repository/sdlc-status-reader.js` and `tools/lib/repository/migrations/006-ingest-legacy-programme.js` (one-shot code that's painful to debug after the fact).
+- ≥90% on `tools/lib/repository/sdlc-status-reader.js` and `tools/lib/migrations/data_006-ingest-legacy-programme.js` (one-shot code that's painful to debug after the fact).
 
 ---
 
