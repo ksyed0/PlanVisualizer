@@ -32,15 +32,16 @@ function buildAgentStatus(role) {
   return base;
 }
 
-function buildStatus(configPath) {
-  const config = loadConfig(configPath || CONFIG_PATH);
-
+function buildAgentsMap(config) {
   const agents = {};
   for (const [name, cfg] of Object.entries(config.agents || {})) {
     agents[name] = buildAgentStatus(cfg.role);
   }
+  return agents;
+}
 
-  const phases = (config.phases || []).map((p, i) => ({
+function buildPhasesArray(config) {
+  return (config.phases || []).map((p, i) => ({
     id: i + 1,
     name: p.name,
     agents: (p.agents || []).slice(),
@@ -49,69 +50,68 @@ function buildStatus(configPath) {
     startedAt: null,
     completedAt: null,
   }));
+}
 
+function buildProjectObject(config) {
   return {
-    project: {
-      name: config.project?.name || 'My Project',
-      description: config.project?.description || 'Agentic AI SDLC',
-      repoUrl: config.project?.repoUrl || '',
-      startDate: config.project?.startDate || new Date().toISOString().split('T')[0],
-    },
-    currentPhase: 0,
-    phases,
-    agents,
-    epics: {},
-    stories: {},
-    cycles: [],
-    metrics: {
-      storiesCompleted: 0,
-      storiesTotal: 0,
-      tasksCompleted: 0,
-      tasksTotal: 0,
-      testsPassed: 0,
-      testsFailed: 0,
-      testsTotal: 0,
-      bugsOpen: 0,
-      bugsFixed: 0,
-      coveragePercent: 0,
-      reviewsApproved: 0,
-      reviewsBlocked: 0,
-    },
-    log: [],
+    name: config.project?.name || 'My Project',
+    description: config.project?.description || 'Agentic AI SDLC',
+    repoUrl: config.project?.repoUrl || '',
+    startDate: config.project?.startDate || new Date().toISOString().split('T')[0],
   };
 }
 
-function main() {
-  const force = process.argv.includes('--force');
-  const status = buildStatus(CONFIG_PATH);
-  const content = JSON.stringify(status, null, 2) + '\n';
-  fs.mkdirSync(path.dirname(STATUS_PATH), { recursive: true });
+// US-0260 / AC-1018: idempotent merge. Without --force, an existing
+// programme row is preserved. With --force, every row is overwritten.
+async function seedProgrammeRow(repo, key, value, { force }) {
+  if (!force) {
+    const existing = repo.sdlcProgramme.get(key);
+    if (existing !== null && existing !== undefined) return { key, action: 'preserved' };
+  }
+  await repo.sdlcProgramme.set(key, value);
+  return { key, action: 'seeded' };
+}
 
-  if (force) {
-    fs.writeFileSync(STATUS_PATH, content, 'utf8');
-    console.log('[init-sdlc-status] Generated docs/sdlc-status.json (forced).');
-  } else {
-    try {
-      fs.writeFileSync(STATUS_PATH, content, { encoding: 'utf8', flag: 'wx' });
-      const agentNames = Object.keys(JSON.parse(content).agents);
-      console.log(`[init-sdlc-status] Generated docs/sdlc-status.json with ${agentNames.length} agents.`);
-    } catch (err) {
-      if (err.code === 'EEXIST') {
-        console.log('[init-sdlc-status] docs/sdlc-status.json already exists. Use --force to overwrite.');
-        return;
-      }
-      throw err;
+async function main({ root = ROOT, configPath = CONFIG_PATH, force = false } = {}) {
+  const config = loadConfig(configPath);
+  const { Repository } = require('./lib/repository');
+  Repository._reset();
+  const repo = Repository.getInstance({ root });
+  try {
+    const results = [];
+    results.push(await seedProgrammeRow(repo, 'agents', buildAgentsMap(config), { force }));
+    results.push(await seedProgrammeRow(repo, 'phases', buildPhasesArray(config), { force }));
+    results.push(await seedProgrammeRow(repo, 'project', buildProjectObject(config), { force }));
+    const seeded = results.filter((r) => r.action === 'seeded').map((r) => r.key);
+    const preserved = results.filter((r) => r.action === 'preserved').map((r) => r.key);
+    if (seeded.length > 0) {
+      console.log(`[init-sdlc-status] Seeded programme rows: ${seeded.join(', ')}.`);
     }
+    if (preserved.length > 0) {
+      console.log(`[init-sdlc-status] Preserved existing programme rows: ${preserved.join(', ')}.`);
+    }
+    return { seeded, preserved };
+  } finally {
+    Repository._reset();
   }
 }
 
 if (require.main === module) {
-  try {
-    main();
-  } catch (err) {
-    console.error(err.message);
-    process.exit(1);
-  }
+  const force = process.argv.includes('--force');
+  main({ force }).then(
+    () => process.exit(0),
+    (err) => {
+      console.error(err.message);
+      process.exit(1);
+    },
+  );
 }
 
-module.exports = { buildStatus, loadConfig };
+module.exports = {
+  // Legacy: exposed for any out-of-tree consumer; new code should use main().
+  loadConfig,
+  buildAgentsMap,
+  buildPhasesArray,
+  buildProjectObject,
+  main,
+};
