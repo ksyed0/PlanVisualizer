@@ -17,5 +17,6 @@ docs/pending-approvals/
 
 # Step 1 repository abstraction
 .cache/
+docs/.pv-state.json
 docs/.pv-state.local.json
 docs/.pv-backup/

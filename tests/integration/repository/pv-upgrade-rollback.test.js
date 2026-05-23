@@ -74,7 +74,7 @@ describe('D.8 — pv:upgrade + pv:rollback', () => {
     // (1) Upgrade. AC-0934 lists pending; AC-0936 snapshots into docs/.pv-backup/.
     const up1 = await runCli(upgrade, ['--root', root]);
     expect(up1.rc).toBe(0);
-    expect(up1.stdout).toMatch(/1 pending migration\(s\): 005-ingest-sdlc-status/);
+    expect(up1.stdout).toMatch(/1 pending migration\(s\): data_005-ingest-sdlc-status/);
     expect(up1.stdout).toMatch(/success — mirror matches SQL/);
 
     // Snapshot directory exists with manifest + sql/ files.

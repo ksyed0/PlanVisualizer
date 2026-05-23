@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
-const mig = require('../../../tools/lib/migrations/005-ingest-sdlc-status');
+const mig = require('../../../tools/lib/migrations/data_005-ingest-sdlc-status');
 const { Repository } = require('../../../tools/lib/repository');
 const { SdlcMirror } = require('../../../tools/lib/repository/sdlc-mirror');
 
