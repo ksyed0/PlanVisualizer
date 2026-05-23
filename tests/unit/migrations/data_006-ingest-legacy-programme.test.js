@@ -201,4 +201,63 @@ describe('Migration 006 — data_006-ingest-legacy-programme', () => {
       expect(fromSql).toBe(fixture.currentPhase);
     });
   });
+
+  describe('rerun stability — second up() after a state-B ingest is also idempotent', () => {
+    let root;
+    let firstRunIngested;
+
+    beforeAll(async () => {
+      root = mkRoot('us0262-rerun-');
+      writeFixtureToRoot(root, 'state-b.json');
+      const first = await mig.up({ root });
+      firstRunIngested = first.ingested;
+      Repository._reset();
+    });
+
+    afterAll(() => {
+      Repository._reset();
+      fs.rmSync(root, { recursive: true, force: true });
+    });
+
+    it('first run ingested 9 rows', () => {
+      expect(firstRunIngested).toBe(9);
+    });
+
+    it('second up() against the migrated tree returns {skipped:"idempotent"}', async () => {
+      const second = await mig.up({ root });
+      expect(second).toEqual({ skipped: 'idempotent' });
+    });
+
+    it('third up() (after the second) is still idempotent (no hash rotation)', async () => {
+      const third = await mig.up({ root });
+      expect(third).toEqual({ skipped: 'idempotent' });
+    });
+  });
+
+  describe('state A row preservation — migration does not clobber pre-existing programme rows', () => {
+    let root;
+    let beforeAgents;
+
+    beforeAll(async () => {
+      root = mkRoot('us0262-stateA-preserve-');
+      writeFixtureToRoot(root, 'state-a.json');
+      Repository._reset();
+      const repo = Repository.getInstance({ root });
+      beforeAgents = repo.sdlcProgramme.get('agents');
+      Repository._reset();
+      await mig.up({ root });
+      Repository._reset();
+    });
+
+    afterAll(() => {
+      Repository._reset();
+      fs.rmSync(root, { recursive: true, force: true });
+    });
+
+    it('programme.agents row is byte-identical to its pre-migration value', () => {
+      const repo = Repository.getInstance({ root });
+      const afterAgents = repo.sdlcProgramme.get('agents');
+      expect(JSON.stringify(afterAgents)).toBe(JSON.stringify(beforeAgents));
+    });
+  });
 });
