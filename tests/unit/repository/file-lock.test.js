@@ -15,6 +15,16 @@ describe('withFileLock', () => {
   });
 
   test('serializes concurrent writes', async () => {
+    // withFileLock's contract is MUTUAL EXCLUSION, not FIFO. Promise.all
+    // schedules both callbacks immediately but neither V8's microtask queue
+    // nor the OS guarantees which one's first lockfile.lock() syscall hits
+    // the filesystem first. Under heavy parallel-worker load (e.g. Jest
+    // --maxWorkers=8 with the full suite contending for I/O) either order
+    // is valid; asserting a specific order produced an intermittent flake.
+    //
+    // Test the real invariant: each callback's start and end markers are
+    // adjacent in the order array, i.e. the two critical sections never
+    // interleaved. Whichever caller won the race is irrelevant.
     const order = [];
     await Promise.all([
       withFileLock(tmpFile, async () => {
@@ -27,7 +37,11 @@ describe('withFileLock', () => {
         order.push('B-end');
       }),
     ]);
-    expect(order).toEqual(['A-start', 'A-end', 'B-start', 'B-end']);
+    expect(order).toHaveLength(4);
+    const aStart = order.indexOf('A-start');
+    const bStart = order.indexOf('B-start');
+    expect(order[aStart + 1]).toBe('A-end'); // A is contiguous
+    expect(order[bStart + 1]).toBe('B-end'); // B is contiguous
   });
 
   test('locks are released after function throws', async () => {
