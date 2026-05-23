@@ -56,9 +56,15 @@ async function up({ root }) {
           // State B → C: legacy top-level row absent from SQL. Ingest.
           insert.run(k, JSON.stringify(data[k]));
           ingested++;
+        } else if (inJson && inProgramme) {
+          // State C: both shapes populated. SQL is canonical — never
+          // overwrite. Divergence indicates manual tampering or a stale
+          // legacy write that beat D.4 to the JSON. Log and continue.
+          if (JSON.stringify(data[k]) !== JSON.stringify(programmeFromSql[k])) {
+            repo.warningsChannel.append({ kind: `migration_006_conflict_${k}`, key: k });
+          }
         }
-        // State A (!inJson, *) and state-C-synced/divergent paths handled
-        // in Tasks 3 + 4.
+        // State A (!inJson, *) is the implicit no-op — nothing to do.
       }
       repo.index.exec('COMMIT');
     } catch (e) {

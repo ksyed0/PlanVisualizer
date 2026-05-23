@@ -260,4 +260,55 @@ describe('Migration 006 — data_006-ingest-legacy-programme', () => {
       expect(JSON.stringify(afterAgents)).toBe(JSON.stringify(beforeAgents));
     });
   });
+
+  describe('state C (divergence) — top-level differs from programme.*', () => {
+    let root;
+    let result;
+    let repo;
+    let warnings;
+
+    beforeAll(async () => {
+      root = mkRoot('us0262-stateC-');
+      const fixture = writeFixtureToRoot(root, 'state-c-conflict.json');
+      // Seed SQL with the programme data from the fixture (state-C assumes
+      // SQL is already populated with canonical programme data).
+      Repository._reset();
+      const seedRepo = Repository.getInstance({ root });
+      for (const [k, v] of Object.entries(fixture.programme || {})) {
+        await seedRepo.sdlcProgramme.set(k, v);
+      }
+      Repository._reset();
+      result = await mig.up({ root });
+      Repository._reset();
+      repo = Repository.getInstance({ root });
+      warnings = repo.warningsChannel.readAll();
+    });
+
+    afterAll(() => {
+      Repository._reset();
+      fs.rmSync(root, { recursive: true, force: true });
+    });
+
+    it('does NOT ingest the divergent key (SQL programme.agents stays canonical)', () => {
+      const agents = repo.sdlcProgramme.get('agents');
+      expect(agents).not.toBeNull();
+      // state-c-conflict.json's TOP-LEVEL agents is {stale-agent: ...} but
+      // programme.agents is the canonical 4-agent set. The migration must
+      // preserve the canonical set in SQL.
+      expect(agents).not.toHaveProperty('stale-agent');
+      expect(Object.keys(agents).length).toBeGreaterThan(0);
+    });
+
+    it('logs a migration_006_conflict_agents warning via warningsChannel', () => {
+      const conflicts = warnings.filter((w) => w.kind === 'migration_006_conflict_agents');
+      expect(conflicts.length).toBeGreaterThanOrEqual(1);
+      expect(conflicts[0]).toHaveProperty('ts');
+    });
+
+    it('returns ingested === 0 because all populated keys were already present in programme', () => {
+      // state-c-conflict has BOTH top-level and programme populated, so
+      // every key hits the divergence-or-synced branch. No ingest happens.
+      expect(result.ingested).toBe(0);
+    });
+  });
 });
