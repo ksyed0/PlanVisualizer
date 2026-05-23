@@ -28,6 +28,7 @@ const { backfillHistory, calculateAvgTokensPerEstimate, estimateStoryCost } = re
 const { fetchGitHubStatus } = require('./lib/fetch-github-status');
 const { compactMemory } = require('./lib/memory-index');
 const { archiveStaleMemory } = require('./lib/memory-archiver');
+const reader = require('./lib/repository/sdlc-status-reader');
 
 function applyPendingApprovals() {
   try {
@@ -261,7 +262,9 @@ async function main() {
     const sdlcPath = path.join(ROOT, 'docs/sdlc-status.json');
     if (fs.existsSync(sdlcPath)) {
       const sdlc = JSON.parse(fs.readFileSync(sdlcPath, 'utf8'));
-      const sdlcStories = sdlc.stories || {};
+      // US-0260: dual-read via accessor — reads programme.stories then falls
+      // back to legacy top-level stories. Fallback removed in US-0261.
+      const sdlcStories = reader.stories(sdlc);
       for (const story of stories) {
         const o = sdlcStories[story.id];
         if (o && o.specPhase) story.specPhase = o.specPhase;

@@ -4,6 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 const Assembler = require('./lib/agent-context-assembler');
+const reader = require('./lib/repository/sdlc-status-reader');
 
 const DEFAULT_ROOT = path.join(__dirname, '..');
 
@@ -78,7 +79,9 @@ function dispatch(opts, ctx = {}) {
     return 1;
   }
 
-  const story = (sdlc.stories || {})[opts.story] || {};
+  // US-0260: dual-read via accessor — reads programme.stories then falls
+  // back to legacy top-level stories. Fallback removed in US-0261.
+  const story = reader.stories(sdlc)[opts.story] || {};
   const specPath = story.specPhase && story.specPhase.specPath;
   const planPath = story.planPhase && story.planPhase.planPath;
 
