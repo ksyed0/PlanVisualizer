@@ -65,53 +65,38 @@ describe('US-0260: non-dashboard consumer migration', () => {
   });
 
   describe('dispatch-level reads against fixture shapes', () => {
-    const os = require('os');
-    const { Repository } = require('../../tools/lib/repository');
-
-    function mkRootWithFixture(fixtureName) {
-      const root = fs.mkdtempSync(path.join(os.tmpdir(), 'us0260-disp-'));
-      fs.mkdirSync(path.join(root, 'docs'), { recursive: true });
-      fs.writeFileSync(path.join(root, 'package.json'), JSON.stringify({ name: 't', version: '1.0.0' }));
-      const fixture = loadFixture(fixtureName);
-      fs.writeFileSync(path.join(root, 'docs', 'sdlc-status.json'), JSON.stringify(fixture, null, 2));
-      return root;
-    }
-
     describe('agent-context.js', () => {
       const reader = require('../../tools/lib/repository/sdlc-status-reader');
 
+      // We test the read pattern directly (the accessor) rather than
+      // dispatching, because dispatch requires a full agent-context bootstrap.
+      // The source guard above already confirms the consumer wires the
+      // accessor through.
+
       it('reads story metadata correctly from state-A (programme.stories)', () => {
-        const root = mkRootWithFixture('state-a.json');
-        try {
-          const sdlc = JSON.parse(fs.readFileSync(path.join(root, 'docs', 'sdlc-status.json'), 'utf8'));
-          // We test the read pattern directly (the accessor) rather than
-          // dispatching, because dispatch requires a full agent-context
-          // bootstrap. The source guard above already confirms the read
-          // pattern is wired through.
-          expect(reader.stories(sdlc)['US-0259'].status).toBe('InProgress');
-        } finally {
-          fs.rmSync(root, { recursive: true, force: true });
-        }
+        const sdlc = loadFixture('state-a.json');
+        expect(reader.stories(sdlc)['US-0259'].status).toBe('InProgress');
       });
 
       it('reads story metadata correctly from state-B (top-level stories)', () => {
-        const root = mkRootWithFixture('state-b.json');
-        try {
-          const sdlc = JSON.parse(fs.readFileSync(path.join(root, 'docs', 'sdlc-status.json'), 'utf8'));
-          expect(reader.stories(sdlc)['US-0259'].status).toBe('InProgress');
-        } finally {
-          fs.rmSync(root, { recursive: true, force: true });
-        }
+        const sdlc = loadFixture('state-b.json');
+        expect(reader.stories(sdlc)['US-0259'].status).toBe('InProgress');
       });
     });
 
     describe('agent-spec-plan.js: readStories() collapses to the accessor', () => {
       const reader = require('../../tools/lib/repository/sdlc-status-reader');
 
-      it('returns programme.stories preferentially', () => {
-        const onDisk = loadFixture('state-c.json'); // both shapes populated
-        expect(reader.stories(onDisk)['US-0259']).toBeDefined();
-        expect(reader.stories(onDisk)['US-0259'].status).toBe('InProgress');
+      it('returns programme.stories preferentially when both shapes are populated', () => {
+        // Inline divergent fixture: programme has status 'Done', top-level
+        // has status 'InProgress'. The accessor must return 'Done' to prove
+        // the programme-wins precedence (state-c.json on disk has identical
+        // content in both shapes, so it can't exercise this assertion).
+        const onDisk = {
+          programme: { stories: { 'US-0259': { status: 'Done' } } },
+          stories: { 'US-0259': { status: 'InProgress' } },
+        };
+        expect(reader.stories(onDisk)['US-0259'].status).toBe('Done');
       });
 
       it('falls back to top-level stories when programme is empty', () => {
@@ -119,7 +104,5 @@ describe('US-0260: non-dashboard consumer migration', () => {
         expect(reader.stories(onDisk)['US-0259']).toBeDefined();
       });
     });
-
-    afterAll(() => Repository._reset());
   });
 });

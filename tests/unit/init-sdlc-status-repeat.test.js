@@ -3,7 +3,7 @@
 /**
  * US-0260 / AC-1018: init-sdlc-status canonical seed + idempotent merge.
  *
- * Two scenarios:
+ * Four scenarios:
  *
  *   1. Empty programme — fresh init writes Object.keys(programme).sort() ===
  *      ['agents', 'phases', 'project'] and the on-disk JSON top-level keys
@@ -45,8 +45,6 @@ function writeConfig(root, overrides = {}) {
 }
 
 describe('US-0260 / AC-1018: init-sdlc-status repeat semantics', () => {
-  afterEach(() => Repository._reset());
-
   describe('empty programme — fresh init', () => {
     let root;
     let configPath;
@@ -78,10 +76,11 @@ describe('US-0260 / AC-1018: init-sdlc-status repeat semantics', () => {
       expect(Object.keys(json.programme).sort()).toEqual(['agents', 'phases', 'project']);
     });
 
-    it('programme.agents is keyed by configured agent name', () => {
+    it('programme.agents is keyed by configured agent name with idle defaults', () => {
       const json = JSON.parse(fs.readFileSync(path.join(root, 'docs', 'sdlc-status.json'), 'utf8'));
       expect(Object.keys(json.programme.agents).sort()).toEqual(['Forge', 'Lens']);
       expect(json.programme.agents.Forge.status).toBe('idle');
+      expect(json.programme.agents.Lens.status).toBe('idle');
     });
   });
 

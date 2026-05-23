@@ -6,6 +6,7 @@ const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
 const CONFIG_PATH = path.join(ROOT, 'agents.config.json');
+// eslint-disable-next-line no-unused-vars -- kept for out-of-tree consumers (US-0260)
 const STATUS_PATH = path.join(ROOT, 'docs', 'sdlc-status.json');
 
 function loadConfig(configPath) {

@@ -859,7 +859,6 @@ describe('US-0176 (EPIC-0026) MEMORY sidebar widget', () => {
   // assert presence/absence based on whatever state the running machine is in.
   test('AC-0637/0639: widget block renders only when claude-mem settings file is present', () => {
     const fs = require('fs');
-    const os = require('os');
     const path = require('path');
     const settingsPath = path.join(os.homedir(), '.claude-mem', 'settings.json');
     const settingsExists = fs.existsSync(settingsPath);
@@ -882,7 +881,6 @@ describe('US-0176 (EPIC-0026) MEMORY sidebar widget', () => {
   // that one of them appears when the widget is rendered.
   test('AC-0638: widget shows either an observation count or a "live" indicator', () => {
     const fs = require('fs');
-    const os = require('os');
     const path = require('path');
     const settingsPath = path.join(os.homedir(), '.claude-mem', 'settings.json');
     if (!fs.existsSync(settingsPath)) return; // nothing to assert when not installed
