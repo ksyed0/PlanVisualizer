@@ -4,6 +4,26 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
+## L-0083 — When a test is intermittently flaky, check whether its assertion is stronger than the contract it's testing
+
+@agent: Forge, Keystone
+
+**Context:** Session 58, EPIC-0045 Phase E (US-0260 PR #1106 close-out). `tests/unit/repository/file-lock.test.js`'s `serializes concurrent writes` test would intermittently fail with `expect(order).toEqual(['A-start', 'A-end', 'B-start', 'B-end'])` under `npx jest` default parallel workers, especially with the full suite running concurrently (`--maxWorkers=8`). Running `--runInBand` always passed. The test calls `withFileLock(tmpFile, A)` and `withFileLock(tmpFile, B)` inside `Promise.all([...])`, asserting a specific ordering. The lock's actual contract is **mutual exclusion**, not **first-caller-wins**: `Promise.all` schedules both callbacks immediately but neither V8's microtask queue nor the OS scheduler guarantees which one's first `lockfile.lock()` syscall reaches the filesystem first. Under load, B occasionally wins the race, completes synchronously (no sleep), releases the lock, then A acquires and runs — producing `['B-start', 'B-end', 'A-start', 'A-end']`. The test was over-specifying the contract. Reproduced 1/1 at `--maxWorkers=8` with full suite; 8/8 stress runs at the same config after the fix.
+
+**Rule:** When a test is intermittently flaky, **before** reaching for sleeps, retries, barriers, or `--runInBand` mitigations, ask whether the assertion is stronger than the contract being tested. Over-specified assertions create timing-dependent failures that cannot be eliminated by adding delays — only by weakening the assertion to match the actual invariant. The remedy is **not** to make the scheduler deterministic (which would make the test test nothing); it is to **describe what the system actually guarantees** and assert only that. For a mutex: assert no interleaving, not a specific winner. For a queue: assert FIFO, not specific timestamps. For an event bus: assert each subscriber received the event, not the per-subscriber order.
+
+**Prevention:**
+
+- When writing tests for concurrency primitives (locks, queues, semaphores, event buses), explicitly state the contract in a comment above the assertion. If the test is testing more than what the comment states, simplify the assertion until they match.
+- Treat "passes with `--runInBand`, fails with `--maxWorkers=N`" as a signal that the test depends on **single-threaded scheduling guarantees Node does not actually provide** — the fix lives in the assertion, not the configuration.
+- The user's own initial hypothesis ("shared tmpdir race between workers") was wrong — `mkdtempSync` produces a unique directory per `beforeEach`, no path is shared across worker processes. **Worth pausing to verify the hypothesis** before acting on it; the actual root cause was assertion shape, not filesystem contention.
+
+**Date:** 2026-05-23
+
+**Resolution:** Commit `6b92a3e` (folded into PR #1106) rewrites the assertion as `expect(order[order.indexOf('A-start') + 1]).toBe('A-end')` + `expect(order[order.indexOf('B-start') + 1]).toBe('B-end')`. The two pairs cannot both be contiguous if the critical sections interleaved; whichever caller won the race is irrelevant to that test.
+
+---
+
 ## L-0082 — Hard gates that depend on a file's absence are silent gates
 
 @agent: Forge, Keystone
