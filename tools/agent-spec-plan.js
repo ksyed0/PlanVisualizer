@@ -28,6 +28,7 @@ const path = require('path');
 const State = require('./lib/agent-spec-plan-state');
 const Flags = require('./lib/agent-spec-plan-flags');
 const { Repository } = require('./lib/repository');
+const reader = require('./lib/repository/sdlc-status-reader');
 const {
   resolveRoot,
   ensureDocsDir,
@@ -167,15 +168,13 @@ function readStories(repo, root) {
   if (fromSql && typeof fromSql === 'object') {
     return JSON.parse(JSON.stringify(fromSql));
   }
+  // US-0260: SQL row absent (first-write seed). Read the mirror via the
+  // dual-read accessor — it reads onDisk.programme.stories first, falls
+  // back to onDisk.stories (legacy top-level), and returns {} as the
+  // safe default. Collapses the previous legacyTopLevel + legacyProgramme
+  // merge into one call. Fallback removed in US-0261.
   const onDisk = readMirror(root);
-  const legacyTopLevel = onDisk.stories && typeof onDisk.stories === 'object' ? onDisk.stories : {};
-  // Some seeds put stories under programme.stories already — honour that
-  // path even when the SQL row is absent.
-  const legacyProgramme =
-    onDisk.programme && onDisk.programme.stories && typeof onDisk.programme.stories === 'object'
-      ? onDisk.programme.stories
-      : {};
-  return { ...legacyTopLevel, ...legacyProgramme };
+  return reader.stories(onDisk);
 }
 
 /**
