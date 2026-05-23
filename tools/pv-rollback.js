@@ -180,10 +180,6 @@ async function main({ argv = process.argv.slice(2), stdout = (s) => process.stdo
       const snapshotStr = JSON.stringify(snapshotOwned, null, 2);
       const renderedStr = JSON.stringify(renderedOwned, null, 2);
       if (snapshotStr !== renderedStr) {
-        stdout('DEBUG: snapshot mirror:');
-        stdout(snapshotStr);
-        stdout('DEBUG: rendered after:');
-        stdout(renderedStr);
         Repository._reset();
         stdout('pv:rollback: FAILED — restored SQL does not match snapshot JSON mirror.');
         stdout('  The snapshot may be corrupt or was authored against a different schema.');
