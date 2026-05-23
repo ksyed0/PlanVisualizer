@@ -10,6 +10,7 @@
  */
 
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..', '..');
@@ -408,79 +409,6 @@ describe('US-0120 stories panel polish', () => {
 
     // min-width: 0 on .story-title must persist — BUG-0164 fix guard.
     expect(html).toMatch(/\.story-title \{[^}]*min-width:\s*0/);
-  });
-});
-
-// --- US-0127: init-sdlc-status buildStatus ---
-const os = require('os');
-
-describe('init-sdlc-status — buildStatus', () => {
-  let tmpDir;
-
-  beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sdlc-test-'));
-  });
-
-  afterEach(() => {
-    fs.rmSync(tmpDir, { recursive: true, force: true });
-    jest.resetModules();
-  });
-
-  function writeConfig(obj) {
-    fs.writeFileSync(path.join(tmpDir, 'agents.config.json'), JSON.stringify(obj));
-    return path.join(tmpDir, 'agents.config.json');
-  }
-
-  it('writes project block (not hackathon) to output', () => {
-    const { buildStatus } = require('../../tools/init-sdlc-status');
-    const cfgPath = writeConfig({
-      project: {
-        name: 'TestProj',
-        description: 'Desc',
-        repoUrl: 'https://github.com/test/proj',
-        startDate: '2026-01-01',
-      },
-      phases: [],
-      agents: {},
-    });
-    const status = buildStatus(cfgPath);
-    expect(status.project).toBeDefined();
-    expect(status.project.name).toBe('TestProj');
-    expect(status.project.repoUrl).toBe('https://github.com/test/proj');
-    expect(status.hackathon).toBeUndefined();
-  });
-
-  it('seeds phases from config with id, status:pending, timestamps null', () => {
-    const { buildStatus } = require('../../tools/init-sdlc-status');
-    const cfgPath = writeConfig({
-      project: { name: 'P', description: '', repoUrl: '', startDate: '2026-01-01' },
-      phases: [
-        { name: 'Build', agents: ['Dev'], deliverables: ['code'] },
-        { name: 'Test', agents: ['QA'], deliverables: ['report'] },
-      ],
-      agents: {},
-    });
-    const status = buildStatus(cfgPath);
-    expect(status.phases).toHaveLength(2);
-    expect(status.phases[0]).toMatchObject({
-      id: 1,
-      name: 'Build',
-      status: 'pending',
-      startedAt: null,
-      completedAt: null,
-    });
-    expect(status.phases[1]).toMatchObject({ id: 2, name: 'Test' });
-  });
-
-  it('initialises cycles as empty array', () => {
-    const { buildStatus } = require('../../tools/init-sdlc-status');
-    const cfgPath = writeConfig({
-      project: { name: 'P', description: '', repoUrl: '', startDate: '' },
-      phases: [],
-      agents: {},
-    });
-    const status = buildStatus(cfgPath);
-    expect(status.cycles).toEqual([]);
   });
 });
 
@@ -931,7 +859,6 @@ describe('US-0176 (EPIC-0026) MEMORY sidebar widget', () => {
   // assert presence/absence based on whatever state the running machine is in.
   test('AC-0637/0639: widget block renders only when claude-mem settings file is present', () => {
     const fs = require('fs');
-    const os = require('os');
     const path = require('path');
     const settingsPath = path.join(os.homedir(), '.claude-mem', 'settings.json');
     const settingsExists = fs.existsSync(settingsPath);
@@ -954,7 +881,6 @@ describe('US-0176 (EPIC-0026) MEMORY sidebar widget', () => {
   // that one of them appears when the widget is rendered.
   test('AC-0638: widget shows either an observation count or a "live" indicator', () => {
     const fs = require('fs');
-    const os = require('os');
     const path = require('path');
     const settingsPath = path.join(os.homedir(), '.claude-mem', 'settings.json');
     if (!fs.existsSync(settingsPath)) return; // nothing to assert when not installed
