@@ -56,7 +56,7 @@ class Repository {
     this._refreshCount = 0;
     this.epics = new EpicRepo(this.index, root);
     this.stories = new StoryRepo(this.index, root);
-    this.acs = new AcRepo(this.index, root);
+    this.acs = new AcRepo(this.index, root, () => this.stories);
     this._sdlcMirror = new SdlcMirror({ root, index: this.index });
     this.sdlcEvents = new SdlcEventRepo({ index: this.index, mirror: this._sdlcMirror });
     this.sdlcTasks = new SdlcTaskRepo({ index: this.index, mirror: this._sdlcMirror });

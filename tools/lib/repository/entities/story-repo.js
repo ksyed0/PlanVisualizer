@@ -69,7 +69,25 @@ class StoryRepo extends BaseRepo {
           throw new Error(`StoryRepo.update: expected 1 parsed story, got ${parsed.stories.length}`);
         }
         const draft = parsed.stories[0];
+        // Normalize AC objects to use 'checked' instead of 'done' for consistency with AcRepo schema
+        if (Array.isArray(draft.acs)) {
+          for (const ac of draft.acs) {
+            if ('done' in ac && !('checked' in ac)) {
+              ac.checked = ac.done;
+              delete ac.done;
+            }
+          }
+        }
         fn(draft);
+        // Normalize back to 'done' for serialization
+        if (Array.isArray(draft.acs)) {
+          for (const ac of draft.acs) {
+            if ('checked' in ac && !('done' in ac)) {
+              ac.done = ac.checked;
+              delete ac.checked;
+            }
+          }
+        }
         return serializeStory(draft);
       },
     });
