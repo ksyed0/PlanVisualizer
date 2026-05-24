@@ -4,6 +4,74 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 58 — 2026-05-22/23 (Phase E partial — US-0259/US-0263/US-0260 shipped; US-0262/US-0261 remain)
+
+### What Was Done
+
+EPIC-0045 (Phase E — Consumer Migration & Cleanup) is **3 of 5 stories complete**. The dual-read accessor + all three reader migrations + the canonical init seed shipped to `develop` across four PRs:
+
+| Story   | Path                                                        | PR                                                          | Develop commit |
+| ------- | ----------------------------------------------------------- | ----------------------------------------------------------- | -------------- |
+| US-0259 | dual-read accessor + dashboard consumer migration           | [#1102](https://github.com/ksyed0/PlanVisualizer/pull/1102) | `8bb81da3`     |
+| US-0263 | data_005 rename + gitignore docs/.pv-state.json             | [#1103](https://github.com/ksyed0/PlanVisualizer/pull/1103) | `430b0590`     |
+| US-0260 | non-dashboard consumer migration + canonical init seed      | [#1106](https://github.com/ksyed0/PlanVisualizer/pull/1106) | `36a816d3`     |
+| (spec)  | docs: Migration 006 path disambiguation (US-0262 unblocker) | [#1107](https://github.com/ksyed0/PlanVisualizer/pull/1107) | `90dbba86`     |
+
+**Accessor module** (`tools/lib/repository/sdlc-status-reader.js`, US-0259): 10 pure dual-read functions over `docs/sdlc-status.json`. Each reads `programme.{key}` first, falls back to legacy top-level, then to a safe default. `currentPhase` and `githubStatus` use explicit `typeof`-checks rather than `||` short-circuit so `currentPhase: 0` and `githubStatus: null` survive correctly. Module coverage 100% on 85 unit tests.
+
+**Dashboard migration** (US-0259): every direct `status.{agents,metrics,stories,epics,phases,cycles,currentPhase,githubStatus,project}` read in `tools/generate-dashboard.js` is now routed through the accessor. The same module is injected as `window.pvReader` into the emitted inline `<script>` block via `fn.toString()` so the browser-side ticker / refresh handlers share one source of truth (option B from the design note). 18 `pvReader.*` call sites in the regenerated `docs/dashboard.html`; 0 direct legacy reads. 27 integration tests guard against regression.
+
+**Three non-dashboard consumer migrations** (US-0260):
+
+- `tools/generate-plan.js:263` — `sdlc.stories || {}` becomes `reader.stories(sdlc)`.
+- `tools/agent-context.js:84` — `(sdlc.stories || {})[opts.story]` becomes `reader.stories(sdlc)[opts.story]`. `sdlc.tasks` untouched (canonical, no accessor).
+- `tools/agent-spec-plan.js#readStories()` — the dual `legacyTopLevel + legacyProgramme` merge in the SQL-absent fallback collapses to one `reader.stories(onDisk)` call. SQL-first path unchanged.
+
+**Canonical init seed** (US-0260): `tools/init-sdlc-status.js` no longer writes a legacy-shape JSON. It now calls `SdlcProgrammeRepo.set()` three times (`agents`, `phases`, `project`), and the mirror module renders the canonical `{tasks, log, programme}` shape automatically. AC-1018 idempotent-merge: without `--force` an existing row is preserved; with `--force` it's overwritten.
+
+**L-0081 fix** (US-0263): `tools/lib/migrations/005-ingest-sdlc-status.js` → `data_005-ingest-sdlc-status.js`; runner regex widened to `/^(?:data_)?\d{3}-.*\.js$/`. `tests/unit/migrations/migrations-no-collision.test.js` enforces no two migration files share a namespaced prefix across `tools/lib/repository/migrations/` and `tools/lib/migrations/`.
+
+**Gitignore audit** (US-0263, AC-1022): `docs/.pv-state.json` added to `.gitignore`. Audit of `pv:upgrade`/`pv:rollback`/`pv:doctor`/`pv:check-upgrade` and their lib deps found this as the only working-tree escapee.
+
+**File-lock parallel-flake fix** (folded into PR #1106): `tests/unit/repository/file-lock.test.js` had `serializes concurrent writes` asserting strict `Promise.all` ordering (first-caller-wins), which is stronger than the lock's mutual-exclusion contract. Under `--maxWorkers=8` with full-suite I/O contention, B occasionally won the race, producing intermittent CI failures. Fix asserts the real invariant (each callback's start+end are adjacent in the order array). Reproduced 1/1 pre-fix, 0/16 stress runs post-fix.
+
+**Migration 006 spec disambiguation** (PR #1107): Phase E spec at lines 232 and 329 pegged Migration 006 at `tools/lib/repository/migrations/006-*.js` — a directory containing SQL schema migrations only. Doc-only patch corrects both lines to `tools/lib/migrations/data_006-ingest-legacy-programme.js` (matching `data_005-` per L-0081 / US-0263), with an inline rationale to prevent the next reader from re-tripping the ambiguity. Two surgical edits.
+
+### Hard Gates (current develop tip `90dbba8`)
+
+1. `npm test` → 101 suites / **1572 tests pass** (zero regressions; +20 net tests vs. start of session).
+2. `npm run lint` → 0 errors / 43 pre-existing warnings unchanged. The new `STATUS_PATH` warning is explicitly suppressed by `eslint-disable-next-line no-unused-vars -- kept for out-of-tree consumers (US-0260)`.
+3. `npm run format:check` → all clean.
+4. Phase E hard-gate #3 (dashboard reads only `{tasks, log, programme}`) ✅ achieved by US-0259. The other three Phase E hard gates (#1 preservation block removed, #2 indexer file deleted, #4 on-disk JSON canonical-only) remain US-0261 work.
+
+### Acceptance Criteria Ticked
+
+- **AC-1015** — accessor dual-read fixture parity (US-0259).
+- **AC-1016** — dashboard renders against state-A/B/C fixtures (US-0259).
+- **AC-1017** — three non-dashboard consumers use accessor (US-0260).
+- **AC-1018** — init writes canonical programme; idempotent merge (US-0260).
+- **AC-1021** — migrations-no-collision regression test (US-0263).
+- **AC-1022** — `docs/.pv-state.json` gitignored + escapee audit (US-0263).
+
+### Workflow
+
+This session adopted the `superpowers:executing-plans` skill chain partway through (after US-0263 shipped, in response to the user's explicit request). US-0260 was the first story executed via the full chain: `writing-plans` (plan doc committed as the first commit on the feature branch) → `subagent-driven-development` (fresh implementer subagent per task, two-stage spec+quality review) → `finishing-a-development-branch` (PR open + sanity verify). Plan file: [docs/superpowers/plans/2026-05-23-us-0260-non-dashboard-consumers.md](docs/superpowers/plans/2026-05-23-us-0260-non-dashboard-consumers.md). The two-stage review caught real issues at every task that the implementer self-review missed (superseded test removal, missing `Lens.status` assertion, non-falsifiable precedence test, dead helper code).
+
+### Open Work (Phase E remaining)
+
+- **US-0262** — Migration 006: ingest legacy top-level into SQL. Creates `tools/lib/migrations/data_006-ingest-legacy-programme.js` (path now clarified by #1107), extends `pv:upgrade` snapshot capture, integrates with `pv:rollback`, handles state-C divergence via `warningsChannel`, idempotency keyed on `"006"`. Test coverage target ≥90%. Blocks US-0261.
+- **US-0261** — Removes the preservation block in `sdlc-mirror.js`, deletes `sdlc-status-indexer.js`, strips the `|| json.{key}` dual-read fallback from the accessor. Closes the four Phase E hard gates. Sequenced last per spec §4.3.
+
+### New Lesson
+
+- **L-0083** — Tests should assert the contract, not the implementation. Source: file-lock parallel-flake forensics. See `docs/LESSONS.md`.
+
+### Next Session
+
+Either: kick off US-0262 (Migration 006) via `writing-plans` → `subagent-driven-development`. Or merge any outstanding PRs first if Phase E reviewers leave feedback.
+
+---
+
 ## Session 57 — 2026-05-21 (Phase D Task D.7 — US-0238 implemented)
 
 ### What Was Done
