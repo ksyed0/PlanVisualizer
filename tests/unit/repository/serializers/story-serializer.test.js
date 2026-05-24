@@ -66,5 +66,50 @@ describe('story-serializer', () => {
       };
       expect(() => serialize(bad)).toThrow(ValidationError);
     });
+
+    it('throws ValidationError when story is null', () => {
+      expect(() => serialize(null)).toThrow(ValidationError);
+    });
+
+    it('throws ValidationError when story is not an object', () => {
+      expect(() => serialize(42)).toThrow(ValidationError);
+      expect(() => serialize('not an object')).toThrow(ValidationError);
+    });
+
+    it('throws ValidationError when title is missing', () => {
+      const bad = {
+        id: 'US-9999',
+        epicId: 'EPIC-0001',
+        status: 'To Do',
+        priority: 'High',
+        estimate: 'M',
+        acs: [],
+      };
+      expect(() => serialize(bad)).toThrow(ValidationError);
+    });
+
+    it('throws ValidationError when priority is missing', () => {
+      const bad = {
+        id: 'US-9999',
+        epicId: 'EPIC-0001',
+        title: 'x',
+        status: 'To Do',
+        estimate: 'M',
+        acs: [],
+      };
+      expect(() => serialize(bad)).toThrow(ValidationError);
+    });
+
+    it('throws ValidationError when estimate is missing', () => {
+      const bad = {
+        id: 'US-9999',
+        epicId: 'EPIC-0001',
+        title: 'x',
+        status: 'To Do',
+        priority: 'High',
+        acs: [],
+      };
+      expect(() => serialize(bad)).toThrow(ValidationError);
+    });
   });
 });
