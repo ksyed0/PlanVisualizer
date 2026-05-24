@@ -163,15 +163,28 @@ async function main({ argv = process.argv.slice(2), stdout = (s) => process.stdo
   //     snapshot's JSON copy on the same keys. If the snapshot was authored
   //     by `capture()` correctly, these MUST match — Phase D guarantees the
   //     JSON mirror is a pure function of SQL.
+  //
+  //     EXCEPTION: if the snapshot's mirror has no SQL-owned keys at all
+  //     (i.e., was captured before SQL data existed), skip the check. This
+  //     happens during migrations that ingest legacy data into SQL (e.g.
+  //     Migration 006 ingesting into sdlc_programme). The snapshot is still
+  //     valid — it captured the pre-migration state exactly — but the
+  //     rendered output now includes SQL-owned keys that didn't exist in the
+  //     original JSON.
   if (snapshot.mirror) {
-    const renderedAfter = freshRender(repo);
-    const snapshotOwned = JSON.stringify(projectSqlOwned(snapshot.mirror), null, 2);
-    const renderedStr = JSON.stringify(renderedAfter, null, 2);
-    if (snapshotOwned !== renderedStr) {
-      Repository._reset();
-      stdout('pv:rollback: FAILED — restored SQL does not match snapshot JSON mirror.');
-      stdout('  The snapshot may be corrupt or was authored against a different schema.');
-      return 6;
+    const snapshotOwned = projectSqlOwned(snapshot.mirror);
+    const hasSnapshotSqlData = Object.keys(snapshotOwned).length > 0;
+    if (hasSnapshotSqlData) {
+      const renderedAfter = freshRender(repo);
+      const renderedOwned = projectSqlOwned(renderedAfter);
+      const snapshotStr = JSON.stringify(snapshotOwned, null, 2);
+      const renderedStr = JSON.stringify(renderedOwned, null, 2);
+      if (snapshotStr !== renderedStr) {
+        Repository._reset();
+        stdout('pv:rollback: FAILED — restored SQL does not match snapshot JSON mirror.');
+        stdout('  The snapshot may be corrupt or was authored against a different schema.');
+        return 6;
+      }
     }
   }
   Repository._reset();
