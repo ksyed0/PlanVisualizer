@@ -72,7 +72,6 @@ describe('US-0259: dashboard consumer migration', () => {
   describe('AC-1016: generateHTML renders against all three fixture shapes', () => {
     const cases = [
       ['state-a (canonical-only, programme.*)', 'state-a.json'],
-      ['state-b (legacy-only, top-level keys)', 'state-b.json'],
       ['state-c (preservation-doubled)', 'state-c.json'],
     ];
 
@@ -113,6 +112,23 @@ describe('US-0259: dashboard consumer migration', () => {
         });
       });
     }
+  });
+
+  describe('US-0261: dual-read fallback removed — state-B no longer renders populated regions', () => {
+    it('generateHTML(state-B) succeeds but renders no agent names', () => {
+      const fs2 = require('fs');
+      const path2 = require('path');
+      const stateB = JSON.parse(
+        fs2.readFileSync(path2.join(__dirname, '..', 'fixtures', 'phase-e', 'state-b.json'), 'utf8'),
+      );
+      const html = generateHTML(stateB);
+      expect(typeof html).toBe('string');
+      // None of the state-B top-level agent names should appear in the
+      // rendered dashboard — the accessor returns {} now that the dual-
+      // read fallback is gone.
+      expect(html).not.toContain('code-implementer');
+      expect(html).not.toContain('test-runner');
+    });
   });
 
   describe('edge case: generateHTML survives a malformed fixture', () => {
