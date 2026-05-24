@@ -12,44 +12,44 @@
 
 ## File Structure
 
-| File                                                             | Action | Responsibility                                                                                                                       |
-| ---------------------------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `tools/lib/repository/errors.js`                                 | Create | `ValidationError`, `SerializerStabilityError` classes. Both extend `Error` with `.code` + `.details`.                                |
-| `tools/lib/repository/serializers/_fence-utils.js`               | Create | Shared helpers: `findBlockRange(text, idRe)`, `padValue(s)`, `joinLines(lines)`, fence-aware whitespace rules.                       |
-| `tools/lib/repository/serializers/story-serializer.js`           | Create | Inverse of `parse-release-plan.js#parseStory`. Emits the `US-XXXX (EPIC-YYYY): ...` block.                                           |
-| `tools/lib/repository/serializers/epic-serializer.js`            | Create | Inverse of `parse-release-plan.js#parseEpicBlock`. Emits the `EPIC-XXXX: Title` block.                                               |
-| `tools/lib/repository/serializers/ac-serializer.js`              | Create | Emits a single `  - [ ] AC-XXXX: text` line (no fence — ACs nest inside a story's `Acceptance Criteria:` list).                      |
-| `tools/lib/repository/serializers/bug-serializer.js`             | Create | Inverse of `parse-bugs.js`. Emits the `BUG-XXXX: Title` block with `Severity:`, `Related Story:`, etc.                               |
-| `tools/lib/repository/serializers/lesson-serializer.js`          | Create | Inverse of `parse-lessons.js`. Emits the `## L-XXXX — Title` block with `**Rule:**`, `**Date:**`, `**Bugs:**`.                       |
-| `tools/lib/repository/serializers/test-case-serializer.js`       | Create | Inverse of `parse-test-cases.js`. Emits the `TC-XXXX: Title` block.                                                                  |
-| `tools/lib/repository/serializers/task-serializer.js`            | Create | Inverse of the task-line format used in `RELEASE_PLAN.md` plan-task sections (`Plan Task: E.N`). Emits the `TASK-XXXX: ...` line.    |
-| `tools/lib/repository/markdown-mutator.js`                       | Create | `replaceBlock({path, idRegex, transform})` — the anchored-block-replacement core used by every `.update(id, fn)`.                    |
-| `tools/lib/repository/entities/story-repo.js`                    | Modify | Add `async update(id, fn)` + `async create(entity)`. Both run under `withFileLock(RELEASE_PLAN.md)` + re-index via existing indexer. |
-| `tools/lib/repository/entities/epic-repo.js`                     | Modify | Same `.update` / `.create` pattern as StoryRepo.                                                                                     |
-| `tools/lib/repository/entities/ac-repo.js`                       | Modify | `.update(id, fn)` only — ACs are created by mutating their parent story's AC list, not standalone (see Task 8 note).                 |
-| `tools/lib/repository/entities/bug-repo.js`                      | Create | New entity repo over `bugs` table + BUGS.md source file.                                                                             |
-| `tools/lib/repository/entities/lesson-repo.js`                   | Create | New entity repo over `lessons` table + LESSONS.md.                                                                                   |
-| `tools/lib/repository/entities/test-case-repo.js`                | Create | New entity repo over `test_cases` table + TEST_CASES.md.                                                                             |
-| `tools/lib/repository/entities/task-repo.js`                     | Create | New entity repo over `tasks` table + RELEASE_PLAN.md plan-task sections.                                                             |
-| `tools/lib/repository/index.js`                                  | Modify | Wire the 4 new entity repos into `Repository`'s constructor (`this.bugs`, `this.lessons`, `this.testCases`, `this.tasks`).           |
-| `tests/unit/repository/errors.test.js`                           | Create | ValidationError shape + JSON serialisability.                                                                                        |
-| `tests/unit/repository/serializers/_fence-utils.test.js`         | Create | findBlockRange, padValue, joinLines unit coverage.                                                                                   |
-| `tests/unit/repository/serializers/story-serializer.test.js`     | Create | Round-trip (parse→serialize→parse equal) + byte-stability (serialize→parse→serialize === input) for 6 story fixtures.                |
-| `tests/unit/repository/serializers/epic-serializer.test.js`      | Create | Same for 3 epic fixtures.                                                                                                            |
-| `tests/unit/repository/serializers/ac-serializer.test.js`        | Create | Same for [ ]/[x] checked/unchecked + AC-TBD variants.                                                                                |
-| `tests/unit/repository/serializers/bug-serializer.test.js`       | Create | Same for 4 bug fixtures including the `### BUG-` heading-prefix form.                                                                |
-| `tests/unit/repository/serializers/lesson-serializer.test.js`    | Create | Same for both `—` and `:` separator forms.                                                                                           |
-| `tests/unit/repository/serializers/test-case-serializer.test.js` | Create | Same for Pass/Fail/Not Run status variants.                                                                                          |
-| `tests/unit/repository/serializers/task-serializer.test.js`      | Create | Same for TASK rows.                                                                                                                  |
-| `tests/unit/repository/markdown-mutator.test.js`                 | Create | replaceBlock pure-string unit tests (no fs).                                                                                         |
-| `tests/integration/repository/story-update.test.js`              | Create | AC-0938 + AC-0942: full-flow story update with byte-identical surrounding prose regression.                                          |
-| `tests/integration/repository/entity-write-matrix.test.js`       | Create | AC-0939: one update + one create per entity type, with assertion that SQL index reflects the change.                                 |
+| File                                                             | Action | Responsibility                                                                                                                                                                                                                                                                                                                                                                     |
+| ---------------------------------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tools/lib/repository/errors.js`                                 | Create | `ValidationError`, `SerializerStabilityError` classes. Both extend `Error` with `.code` + `.details`.                                                                                                                                                                                                                                                                              |
+| `tools/lib/repository/serializers/_fence-utils.js`               | Create | Shared helpers: `findBlockRange(text, idRe)`, `padValue(s)`, `joinLines(lines)`, fence-aware whitespace rules.                                                                                                                                                                                                                                                                     |
+| `tools/lib/repository/serializers/story-serializer.js`           | Create | Inverse of `parse-release-plan.js#parseStory`. Emits the `US-XXXX (EPIC-YYYY): ...` block.                                                                                                                                                                                                                                                                                         |
+| `tools/lib/repository/serializers/epic-serializer.js`            | Create | Inverse of `parse-release-plan.js#parseEpicBlock`. Emits the `EPIC-XXXX: Title` block.                                                                                                                                                                                                                                                                                             |
+| `tools/lib/repository/serializers/ac-serializer.js`              | Create | Emits a single `  - [ ] AC-XXXX: text` line (no fence — ACs nest inside a story's `Acceptance Criteria:` list).                                                                                                                                                                                                                                                                    |
+| `tools/lib/repository/serializers/bug-serializer.js`             | Create | Inverse of `parse-bugs.js`. Emits the `BUG-XXXX: Title` block with `Severity:`, `Related Story:`, etc.                                                                                                                                                                                                                                                                             |
+| `tools/lib/repository/serializers/lesson-serializer.js`          | Create | Inverse of `parse-lessons.js`. Emits the `## L-XXXX — Title` block with `**Rule:**`, `**Date:**`, `**Bugs:**`.                                                                                                                                                                                                                                                                     |
+| `tools/lib/repository/serializers/test-case-serializer.js`       | Create | Inverse of `parse-test-cases.js`. Emits the `TC-XXXX: Title` block.                                                                                                                                                                                                                                                                                                                |
+| `tools/lib/repository/serializers/task-serializer.js`            | Create | Inverse of the task-line format used in `RELEASE_PLAN.md` plan-task sections (`Plan Task: E.N`). Emits the `TASK-XXXX: ...` line.                                                                                                                                                                                                                                                  |
+| `tools/lib/repository/markdown-mutator.js`                       | Create | `replaceBlock({path, idRegex, mutator})` — the anchored-block-replacement core used by every `.update(id, fn)`. Pure-string variant `replaceBlockInText(text, idRegex, mutator)` is the unit-testable inner. Unfenced sibling: `replaceUnfencedRange(text, startRe, nextRe, mutator)` (positional — there is no fs wrapper; entity repos call it inside their own `withFileLock`). |
+| `tools/lib/repository/entities/story-repo.js`                    | Modify | Add `async update(id, fn)` + `async create(entity)`. Both run under `withFileLock(RELEASE_PLAN.md)` + re-index via existing indexer.                                                                                                                                                                                                                                               |
+| `tools/lib/repository/entities/epic-repo.js`                     | Modify | Same `.update` / `.create` pattern as StoryRepo.                                                                                                                                                                                                                                                                                                                                   |
+| `tools/lib/repository/entities/ac-repo.js`                       | Modify | `.update(id, fn)` only — ACs are created by mutating their parent story's AC list, not standalone (see Task 8 note).                                                                                                                                                                                                                                                               |
+| `tools/lib/repository/entities/bug-repo.js`                      | Create | New entity repo over `bugs` table + BUGS.md source file.                                                                                                                                                                                                                                                                                                                           |
+| `tools/lib/repository/entities/lesson-repo.js`                   | Create | New entity repo over `lessons` table + LESSONS.md.                                                                                                                                                                                                                                                                                                                                 |
+| `tools/lib/repository/entities/test-case-repo.js`                | Create | New entity repo over `test_cases` table + TEST_CASES.md.                                                                                                                                                                                                                                                                                                                           |
+| `tools/lib/repository/entities/task-repo.js`                     | Create | New entity repo over `tasks` table + RELEASE_PLAN.md plan-task sections.                                                                                                                                                                                                                                                                                                           |
+| `tools/lib/repository/index.js`                                  | Modify | Wire the 4 new entity repos into `Repository`'s constructor (`this.bugs`, `this.lessons`, `this.testCases`, `this.tasks`).                                                                                                                                                                                                                                                         |
+| `tests/unit/repository/errors.test.js`                           | Create | ValidationError shape + JSON serialisability.                                                                                                                                                                                                                                                                                                                                      |
+| `tests/unit/repository/serializers/_fence-utils.test.js`         | Create | findBlockRange, padValue, joinLines unit coverage.                                                                                                                                                                                                                                                                                                                                 |
+| `tests/unit/repository/serializers/story-serializer.test.js`     | Create | Round-trip (parse→serialize→parse equal) + byte-stability (serialize→parse→serialize === input) for 6 story fixtures.                                                                                                                                                                                                                                                              |
+| `tests/unit/repository/serializers/epic-serializer.test.js`      | Create | Same for 3 epic fixtures.                                                                                                                                                                                                                                                                                                                                                          |
+| `tests/unit/repository/serializers/ac-serializer.test.js`        | Create | Same for [ ]/[x] checked/unchecked + AC-TBD variants.                                                                                                                                                                                                                                                                                                                              |
+| `tests/unit/repository/serializers/bug-serializer.test.js`       | Create | Same for 4 bug fixtures including the `### BUG-` heading-prefix form.                                                                                                                                                                                                                                                                                                              |
+| `tests/unit/repository/serializers/lesson-serializer.test.js`    | Create | Same for both `—` and `:` separator forms.                                                                                                                                                                                                                                                                                                                                         |
+| `tests/unit/repository/serializers/test-case-serializer.test.js` | Create | Same for Pass/Fail/Not Run status variants.                                                                                                                                                                                                                                                                                                                                        |
+| `tests/unit/repository/serializers/task-serializer.test.js`      | Create | Same for TASK rows.                                                                                                                                                                                                                                                                                                                                                                |
+| `tests/unit/repository/markdown-mutator.test.js`                 | Create | replaceBlock pure-string unit tests (no fs).                                                                                                                                                                                                                                                                                                                                       |
+| `tests/integration/repository/story-update.test.js`              | Create | AC-0938 + AC-0942: full-flow story update with byte-identical surrounding prose regression.                                                                                                                                                                                                                                                                                        |
+| `tests/integration/repository/entity-write-matrix.test.js`       | Create | AC-0939: one update + one create per entity type, with assertion that SQL index reflects the change.                                                                                                                                                                                                                                                                               |
 
 ---
 
 ## Pre-Work
 
-Branch base: **`origin/develop`** (the EPIC-0040 spec PR #1118 is docs-only and will merge in parallel; this story does not depend on it being merged first because the spec is reference material, not code).
+Branch base: **`origin/develop`**. The EPIC-0040 spec (PR #1118) and the 8-plan bundle (PR #1119) are docs-only. **Order requirement:** merge #1118 + #1119 BEFORE branching for US-0240, otherwise the spec + plan files this story references won't be on `develop`. Reverify with `ls docs/superpowers/specs/2026-05-24-epic-0040-planning-writers-design.md docs/superpowers/plans/2026-05-24-us-024*.md` before Pre-Step 1.
 
 - [ ] **Pre-Step 1: Create the feature branch**
 
@@ -75,13 +75,32 @@ docs/superpowers/specs/2026-05-24-epic-0040-planning-writers-design.md
 Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>"
 ```
 
-- [ ] **Pre-Step 3: Verify current schema covers the 4 new entity tables**
+- [ ] **Pre-Step 3: Verify schema + indexers (pre-flighted 2026-05-24 — included for re-verification)**
 
 ```bash
-grep -l "CREATE TABLE.*bugs\|CREATE TABLE.*lessons\|CREATE TABLE.*test_cases\|CREATE TABLE.*tasks" tools/lib/repository/migrations/*.sql
+grep -E "CREATE TABLE IF NOT EXISTS (bugs|lessons|test_cases|planning_tasks)" tools/lib/repository/migrations/001_initial_schema.sql
+ls tools/lib/repository/indexers/
 ```
 
-Expected: at least one `.sql` file per table. If `tasks` is missing (the planning-task `TASK-XXXX` rows from RELEASE_PLAN's `Plan Task: E.N` sections), STOP and surface — Phase B should have created it; if it didn't, this plan needs a Task 0.5 to add a schema migration. The indexers list (`tools/lib/repository/indexers/*-indexer.js`) is a faster check: `release-plan-indexer.js`, `bugs-indexer.js`, `lessons-indexer.js`, `test-cases-indexer.js`, `id-registry-indexer.js` all exist — tasks are indexed via release-plan-indexer (the planning-task lines live inside the release-plan blocks).
+**Pre-flight findings (must still hold at execution time — STOP if not):**
+
+- Table names: `bugs`, `lessons`, `test_cases`, `planning_tasks` (NOT `tasks`).
+- All 4 indexers exist: `bugs-indexer.js`, `lessons-indexer.js`, `test-cases-indexer.js`, `release-plan-indexer.js` (the last covers stories + epics + planning_tasks; the planning-task `TASK-XXXX` lines live inside story blocks).
+- **Schema is a THIN index** — the SQL tables hold only a subset of the entity fields the parsers extract. Verbatim column lists (from `001_initial_schema.sql`):
+  - `bugs (id, status, severity, source_file, source_line)` — NO title/related_story/fix_branch/lesson_encoded/gh_issue_number/estimated_cost_usd. Status post-`004_bugs_status_widen.sql`: `{Open, In Progress, Fixed, Verified, WontFix, Closed}`.
+  - `lessons (id, text, source_file, source_line)` — NO title/rule/date/bug_ids broken out.
+  - `test_cases (id, story_id, title, status)` — NO type/related_task/related_ac/defect.
+  - `planning_tasks (id, story_id, status)` — NO title.
+  - `stories`/`epics` status post-`003_widen_status_check.sql`: `{To Do, Planned, In Progress, Blocked, Done, Retired}`.
+
+**Consequence — markdown is the source of truth, SQL is a search index.** Tasks 7, 8, 9 implement entity repos that:
+
+1. Mutate the FULL entity in markdown via the serializer.
+2. Re-call the existing indexer (`indexBugs` / `indexLessons` / `indexTestCases` / `indexReleasePlan`) to refresh the THIN SQL columns from the just-written markdown.
+
+The plan does NOT invent a custom `_upsertRow` per entity that tries to persist fields the schema doesn't have. The `_upsertRow` sketch shown for StoryRepo (Task 7 Step 3) is correct because `stories` is fully columnar; for bugs/lessons/test_cases/planning_tasks, use `_reindex()` (which calls the indexer) instead. US-0242's `_upsertRow` shows the StoryRepo pattern only — for other entities the tx commit re-runs the indexer at flush time, not a per-entity upsert.
+
+If schema names/columns or indexer file list have drifted since 2026-05-24, STOP and update the plan before proceeding.
 
 ---
 
@@ -508,7 +527,11 @@ Create `tools/lib/repository/serializers/story-serializer.js`:
 const { ValidationError } = require('../errors');
 const { joinLines } = require('./_fence-utils');
 
-const ALLOWED_STATUS = new Set(['To Do', 'In Progress', 'Done', 'Blocked', 'Retired', 'Cancelled']);
+// Must match the SQLite CHECK constraint in migration 003_widen_status_check.sql:
+//   CHECK (status IN ('To Do','Planned','In Progress','Blocked','Done','Retired'))
+// Adding values here without a matching schema migration → _upsertRow throws
+// SQLITE_CONSTRAINT_CHECK at runtime. Keep this set in lock-step with the schema.
+const ALLOWED_STATUS = new Set(['To Do', 'Planned', 'In Progress', 'Blocked', 'Done', 'Retired']);
 const ID_RE = /^US-\d+$/;
 
 /**
@@ -720,7 +743,9 @@ const { ValidationError } = require('../errors');
 const { joinLines } = require('./_fence-utils');
 
 const ID_RE = /^EPIC-\d+$/;
-const ALLOWED_STATUS = new Set(['To Do', 'In Progress', 'Done', 'Blocked', 'Retired', 'Cancelled']);
+// Matches the epics CHECK constraint post-migration 003. See story-serializer
+// for the lock-step rationale.
+const ALLOWED_STATUS = new Set(['To Do', 'Planned', 'In Progress', 'Blocked', 'Done', 'Retired']);
 
 function serialize(epic) {
   if (!epic || !ID_RE.test(epic.id || '')) {
@@ -868,7 +893,10 @@ const { ValidationError } = require('../errors');
 const { joinLines } = require('./_fence-utils');
 
 const ID_RE = /^BUG-\d+$/;
-const ALLOWED_STATUS = new Set(['Open', 'In Progress', 'Fixed', 'Closed', 'Wontfix', 'Duplicate']);
+// Must match the bugs.status CHECK constraint in 004_bugs_status_widen.sql.
+// Note the case-sensitive 'WontFix' (NOT 'Wontfix' from 001) — 004 widened and
+// renormalised the casing.
+const ALLOWED_STATUS = new Set(['Open', 'In Progress', 'Fixed', 'Verified', 'WontFix', 'Closed']);
 
 function serialize(bug) {
   if (!bug || !ID_RE.test(bug.id || ''))
@@ -1843,16 +1871,16 @@ Open `tools/lib/repository/entities/epic-repo.js`. Apply the StoryRepo Task 7 pa
 
 For each, follow the StoryRepo template. Wire the indexer call to the corresponding `indexBugs` / `indexLessons` / `indexTestCases` (and for tasks, `indexReleasePlan`). Source files:
 
-| Repo         | Source file            | Parser           | Serializer             | Indexer            |
-| ------------ | ---------------------- | ---------------- | ---------------------- | ------------------ |
-| BugRepo      | `docs/BUGS.md`         | `parseBugs`      | `bug-serializer`       | `indexBugs`        |
-| LessonRepo   | `docs/LESSONS.md`      | `parseLessons`   | `lesson-serializer`    | `indexLessons`     |
-| TestCaseRepo | `docs/TEST_CASES.md`   | `parseTestCases` | `test-case-serializer` | `indexTestCases`   |
-| TaskRepo     | `docs/RELEASE_PLAN.md` | inline regex     | `task-serializer`      | `indexReleasePlan` |
+| Repo         | Source file            | Parser           | Serializer             | Indexer            | SQL table        |
+| ------------ | ---------------------- | ---------------- | ---------------------- | ------------------ | ---------------- |
+| BugRepo      | `docs/BUGS.md`         | `parseBugs`      | `bug-serializer`       | `indexBugs`        | `bugs`           |
+| LessonRepo   | `docs/LESSONS.md`      | `parseLessons`   | `lesson-serializer`    | `indexLessons`     | `lessons`        |
+| TestCaseRepo | `docs/TEST_CASES.md`   | `parseTestCases` | `test-case-serializer` | `indexTestCases`   | `test_cases`     |
+| TaskRepo     | `docs/RELEASE_PLAN.md` | inline regex     | `task-serializer`      | `indexReleasePlan` | `planning_tasks` |
 
 **TaskRepo special case:** tasks live inside story blocks as `TASK-XXXX: title [Status]` lines. TaskRepo.update follows AcRepo's delegation pattern: get the parent storyId from SQL, then `repo.stories.update(storyId, story => { /* find + mutate the matching task line */ })`. Add a parse helper inline.
 
-**Files without fenced blocks (BUGS.md, LESSONS.md, TEST_CASES.md):** the anchored-block-replacement assumes fences. For these files, use a different mutator: `replaceUnfencedRange({path, startRe, endRe, transform})` — finds the line range from `startRe` matching to the next `startRe`-match-or-EOF, slices, transforms, splices back. Create this in `markdown-mutator.js` alongside `replaceBlockInText`.
+**Files without fenced blocks (BUGS.md, LESSONS.md, TEST_CASES.md):** the anchored-block-replacement assumes fences. For these files, use a different helper: `replaceUnfencedRange(text, startRe, nextRe, mutator)` — pure-string positional API; finds the line range from `startRe` matching to the line BEFORE the next `nextRe` match (or EOF), passes the body to `mutator(body) → newBody`, splices the result back. The entity repos wrap the call in `withFileLock` + tmp+rename themselves. Create the helper in `markdown-mutator.js` alongside `replaceBlockInText`.
 
 Add to `markdown-mutator.js`:
 
@@ -1890,18 +1918,13 @@ const { serialize: serializeBug } = require('../serializers/bug-serializer');
 const { parseBugs } = require('../../parse-bugs');
 const { ValidationError } = require('../errors');
 
+// SQL is a THIN search index — bugs columns are only {id, status, severity,
+// source_file, source_line}. To return the FULL entity from .get(id), this
+// repo re-parses BUGS.md on demand instead of relying on the SQL row. The
+// SQL row exists purely so dashboards / lints can filter by status without
+// re-parsing every read.
 function mapBug(r) {
-  return {
-    id: r.id,
-    title: r.title,
-    severity: r.severity,
-    status: r.status,
-    relatedStory: r.related_story,
-    fixBranch: r.fix_branch,
-    lessonEncoded: r.lesson_encoded,
-    ghIssueNumber: r.gh_issue_number,
-    estimatedCostUsd: r.estimated_cost_usd,
-  };
+  return { id: r.id, status: r.status, severity: r.severity, sourceFile: r.source_file, sourceLine: r.source_line };
 }
 
 class BugRepo extends BaseRepo {
@@ -1949,9 +1972,26 @@ class BugRepo extends BaseRepo {
 module.exports = { BugRepo };
 ```
 
-LessonRepo, TestCaseRepo are structural copies of BugRepo with adjusted parser/serializer/indexer/source-file.
+LessonRepo, TestCaseRepo are structural copies of BugRepo with adjusted parser/serializer/indexer/source-file/table-name. Per the Pre-Step 3 thin-index reality:
 
-TaskRepo follows AcRepo's delegation pattern (extract parent storyId, defer to StoryRepo.update).
+- `mapLesson(r)` returns only `{id, text, sourceFile, sourceLine}` (no title/rule/date/bugIds).
+- `mapTestCase(r)` returns only `{id, storyId, title, status}` (no type/relatedTask/relatedAc/defect).
+
+Consumers that need the FULL entity (with title/rule/etc.) must call `repo.lessons.get(id)` — implement `get` on these repos to re-parse the on-disk markdown for the requested id rather than rely on the SQL row. Pattern:
+
+```js
+get(id) {
+  const fs = require('fs');
+  const { parseLessons } = require('../../parse-lessons');
+  if (!fs.existsSync(this._lessonsPath)) return null;
+  const text = fs.readFileSync(this._lessonsPath, 'utf8');
+  return parseLessons(text).find((l) => l.id === id) || null;
+}
+```
+
+Override `BaseRepo.get` with this override on BugRepo / LessonRepo / TestCaseRepo. StoryRepo + EpicRepo keep the BaseRepo SQL-row get because their schemas are fully columnar.
+
+TaskRepo binds to the `planning_tasks` table (NOT `tasks`) and follows AcRepo's delegation pattern (extract parent storyId from the SQL `planning_tasks.story_id`, defer to StoryRepo.update). The task title lives only in the markdown line `TASK-XXXX: title [Status]`; SQL holds only `{id, story_id, status}`.
 
 - [ ] **Step 5: Wire the new repos in Repository constructor**
 
@@ -1977,7 +2017,7 @@ npx jest tests/integration/repository/entity-write-matrix.test.js 2>&1 | tail -1
 
 Iterate. Likely fixes:
 
-- Schema columns mismatch the `mapBug` / `mapLesson` field names — adjust `mapXxx` to match the actual SQL schema (`grep CREATE TABLE tools/lib/repository/migrations/*.sql`).
+- Schema columns are THINNER than the entity field set (see Pre-Step 3 column lists). `mapXxx` must map ONLY columns that exist; full-entity reads go through `parseXxx` on demand (override pattern shown above for BugRepo/LessonRepo/TestCaseRepo).
 - Some entities have indexer counts that fail if the source file doesn't exist — guard the create path so the file is bootstrapped if missing.
 - Parser-quirks (e.g., `parseBugs` regex requires a specific header style) need the same fix as Step 3 in Task 5.
 
