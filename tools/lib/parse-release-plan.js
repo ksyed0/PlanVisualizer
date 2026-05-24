@@ -111,7 +111,7 @@ function parseStoryBlock(text) {
     priority: priority,
     estimate: get('Estimate'),
     status: get('Status'),
-    branch: get('Branch') || null,
+    branch: get('Branch'),
     prNumber: prMatch ? parseInt(prMatch[1], 10) : null,
     specPath: get('Spec') || null,
     planPath: get('Plan') || null,
