@@ -4,6 +4,64 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 59 — 2026-05-23/24 (EPIC-0045 Phase E COMPLETE — all 5 stories shipped, 4 hard gates closed)
+
+### What Was Done
+
+**EPIC-0045 closed.** The remaining 2 stories (US-0262 + US-0261) and the EPIC close-out doc PR shipped. Phase E retires Phase D's three transitional scaffolds — the `sdlc-mirror.js` preservation block, the retired `sdlc-status-indexer.js` file, and the `|| json.{key}` dual-read fallback in the US-0259 accessor — and ingests the 9 legacy top-level keys of `docs/sdlc-status.json` into `sdlc_programme` SQL via Migration 006.
+
+| Story                                                                        | PR                                                          | Develop commit |
+| ---------------------------------------------------------------------------- | ----------------------------------------------------------- | -------------- |
+| **US-0262** — Migration 006 (legacy top-level → SQL)                         | [#1111](https://github.com/ksyed0/PlanVisualizer/pull/1111) | `1c5c867`      |
+| **US-0261** — Phase E close-out (3 deletions + AC-1020 + pv:doctor)          | [#1114](https://github.com/ksyed0/PlanVisualizer/pull/1114) | `0e86bb6`      |
+| **(close-out)** — RELEASE_PLAN.md + session docs + L-0084 + L-0085 (this PR) | (pending)                                                   | (pending)      |
+
+**Migration 006** (US-0262, `tools/lib/migrations/data_006-ingest-legacy-programme.js`): one-shot ingest using hash-based idempotency (`meta_status('migration_006_hash')`), single `BEGIN/COMMIT` SQL transaction with `ROLLBACK` on error, raw `INSERT...ON CONFLICT` per legacy key, divergence detection via `repo.warningsChannel.append({kind: 'migration_006_conflict_' + K})`, single post-commit `mirror.write()`. 91.48% statement coverage. Side-fix to `pv-rollback.js` for the pre-SQL-data snapshot case.
+
+**Phase E close-out** (US-0261): three deletions (preservation block, indexer file, accessor fallback) + three AC-1020 hard-gate tests + a `pv:doctor` extension that detects un-upgraded clones and prints a "Run `npm run pv:upgrade`" remediation. Six collateral test files updated to use canonical `{tasks, log, programme}` fixture shape after the fallback strip invalidated their legacy-shape setups.
+
+### Hard Gates (Phase E §2, all closed on develop tip `0e86bb6`)
+
+1. `tools/lib/repository/sdlc-mirror.js:32-43` preservation scaffolding removed → ✅ PASS
+2. `tools/lib/repository/indexers/sdlc-status-indexer.js` deleted → ✅ PASS
+3. Dashboard reads only `{tasks, log, programme}` → ✅ PASS (closed by US-0259)
+4. `docs/sdlc-status.json` contains exactly `{tasks, log, programme}` after `pv:upgrade` → ✅ PASS
+
+### Acceptance Criteria Ticked
+
+- **AC-1019** — Migration 006 algorithm + idempotency + divergence detection + rollback roundtrip (US-0262).
+- **AC-1020** — 4 Phase E hard gates + pv:doctor un-upgraded-clone DX guard (US-0261).
+
+Combined with Session 58's AC closures (AC-1015..AC-1018, AC-1021, AC-1022), **all 8 ACs claimed by the spec PR (#1100) are now closed.**
+
+### New Lessons
+
+- **L-0084** — Husky-rejected commits leave orphan commits + dirty working trees; subagents misread the rollback as success.
+- **L-0085** — Subagents drift out of scope when fixing test failures inline; verify file lists before accepting "DONE."
+
+### Workflow Recap
+
+US-0262 + US-0261 followed the same superpowers skill chain as US-0260. All subagent dispatches used haiku (to stay under the 1M-context credit threshold). The two-stage review (spec compliance then code quality) caught real issues at every story. The orphan-commit + scope-drift incidents (L-0084 + L-0085) were both caught by the controller's `git show --stat` verification before merge.
+
+### Test Suite + Lint
+
+- Full suite: **107 suites / 1596 tests pass** (`--runInBand`).
+- Lint: 0 errors / 44 pre-existing warnings.
+- Format: Prettier clean.
+
+### EPIC-0045 Final State
+
+**5 of 5 stories complete.** EPIC marked `Status: Done` in `docs/RELEASE_PLAN.md`. All 4 hard gates closed. Session memory: [docs/memory/sessions/2026-05-24-session-59-phase-e-complete.md](docs/memory/sessions/2026-05-24-session-59-phase-e-complete.md).
+
+### Next Session
+
+No remaining Phase E work. Possible follow-ups:
+
+- **ENH:** Wire `detectUnMigratedClone` from `pv:doctor` into `generate-dashboard.js` startup for a passive stderr nudge.
+- **Coverage:** Migration 006 has a small coverage gap on its defensive error paths (`JSON.parse` failure, transaction `ROLLBACK`) — acceptable for one-shot bootstrap code.
+
+---
+
 ## Session 58 — 2026-05-22/23 (Phase E partial — US-0259/US-0263/US-0260 shipped; US-0262/US-0261 remain)
 
 ### What Was Done
