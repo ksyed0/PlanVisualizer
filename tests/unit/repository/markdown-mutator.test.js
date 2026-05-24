@@ -1,6 +1,9 @@
 'use strict';
 
-const { replaceBlockInText } = require('../../../tools/lib/repository/markdown-mutator');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+const { replaceBlockInText, replaceBlock } = require('../../../tools/lib/repository/markdown-mutator');
 
 const DOC = [
   '# Header',
@@ -52,5 +55,42 @@ describe('replaceBlockInText', () => {
     const lastBlockDoc = '```\nUS-0001: only\nStatus: Done\n```\n';
     const out = replaceBlockInText(lastBlockDoc, /^US-0001\b/, () => 'US-0001: only\nStatus: To Do\n');
     expect(out).toBe('```\nUS-0001: only\nStatus: To Do\n```\n');
+  });
+});
+
+describe('replaceBlock (filesystem)', () => {
+  let tmpDir;
+  let filePath;
+  beforeEach(() => {
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'mutator-'));
+    filePath = path.join(tmpDir, 'doc.md');
+  });
+  afterEach(() => {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  it('writes the mutated block to disk and reports changed=true', async () => {
+    fs.writeFileSync(filePath, '# H\n\n```\nUS-0001: t\nStatus: To Do\n```\n');
+    const result = await replaceBlock({
+      path: filePath,
+      idRegex: /^US-0001\b/,
+      mutator: () => 'US-0001: t\nStatus: Done\n',
+    });
+    expect(result).toEqual({ changed: true });
+    const after = fs.readFileSync(filePath, 'utf8');
+    expect(after).toContain('Status: Done');
+    expect(after).toContain('# H');
+  });
+
+  it('reports changed=false and leaves the file untouched when mutator returns the same body', async () => {
+    const original = '# H\n\n```\nUS-0001: t\nStatus: To Do\n```\n';
+    fs.writeFileSync(filePath, original);
+    const result = await replaceBlock({
+      path: filePath,
+      idRegex: /^US-0001\b/,
+      mutator: (body) => body,
+    });
+    expect(result).toEqual({ changed: false });
+    expect(fs.readFileSync(filePath, 'utf8')).toBe(original);
   });
 });
