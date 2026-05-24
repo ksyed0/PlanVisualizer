@@ -1,5 +1,13 @@
 'use strict';
+const path = require('path');
+const fs = require('fs');
 const { BaseRepo } = require('./base-repo');
+const { replaceBlock } = require('../markdown-mutator');
+const { serialize: serializeStory } = require('../serializers/story-serializer');
+const { parseReleasePlan } = require('../../parse-release-plan');
+const { ValidationError } = require('../errors');
+const { withFileLock } = require('../file-lock');
+const { indexReleasePlan } = require('../indexers/release-plan-indexer');
 
 function mapStory(r) {
   return {
@@ -43,6 +51,68 @@ class StoryRepo extends BaseRepo {
       .prepare(sql)
       .all(...args)
       .map(mapStory);
+  }
+
+  async update(id, fn) {
+    const current = this.get(id);
+    if (!current) throw new Error(`StoryRepo.update: ${id} not found`);
+
+    const idRegex = new RegExp(`^${id}\\b`);
+    const releasePlanPath = path.join(this._root, 'docs', 'RELEASE_PLAN.md');
+
+    await replaceBlock({
+      path: releasePlanPath,
+      idRegex,
+      mutator: (body) => {
+        const parsed = parseReleasePlan('```\n' + body + '```\n');
+        if (parsed.stories.length !== 1) {
+          throw new Error(`StoryRepo.update: expected 1 parsed story, got ${parsed.stories.length}`);
+        }
+        const draft = parsed.stories[0];
+        fn(draft);
+        return serializeStory(draft);
+      },
+    });
+
+    // Re-ingest via existing indexer (idempotent, delete-then-insert).
+    indexReleasePlan({
+      index: this.index,
+      markdown: {
+        absolute: (rel) => path.join(this._root, rel),
+      },
+      rel: 'docs/RELEASE_PLAN.md',
+    });
+  }
+
+  async create(entity) {
+    if (this.get(entity.id)) {
+      throw new ValidationError(`StoryRepo.create: ${entity.id} already exists`, {
+        code: 'DUPLICATE_ID',
+        details: { id: entity.id },
+      });
+    }
+
+    // Serialize and validate.
+    const body = serializeStory(entity);
+
+    const releasePlanPath = path.join(this._root, 'docs', 'RELEASE_PLAN.md');
+    await withFileLock(releasePlanPath, async () => {
+      const text = fs.readFileSync(releasePlanPath, 'utf8');
+      const sep = text.endsWith('\n') ? '\n' : '\n\n';
+      const next = text + sep + '```\n' + body + '```\n';
+      const tmp = releasePlanPath + '.tmp';
+      fs.writeFileSync(tmp, next);
+      fs.renameSync(tmp, releasePlanPath);
+    });
+
+    // Re-ingest.
+    indexReleasePlan({
+      index: this.index,
+      markdown: {
+        absolute: (rel) => path.join(this._root, rel),
+      },
+      rel: 'docs/RELEASE_PLAN.md',
+    });
   }
 }
 module.exports = { StoryRepo };
