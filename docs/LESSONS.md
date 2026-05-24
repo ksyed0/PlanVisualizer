@@ -4,6 +4,28 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
+## L-0086 — A cross-plan consistency review catches blockers that per-plan self-review misses; run it before merge whenever an EPIC ships multiple plans in one sitting
+
+@agent: Forge, Keystone
+
+**Context:** Session 60, EPIC-0040 plan-writing. The `superpowers:writing-plans` skill mandates a per-plan self-review (spec coverage, placeholder scan, type consistency WITHIN that plan). For EPIC-0040, 8 plans were written in one sitting. Per-plan self-review passed for all 8. A separately-dispatched `pr-review-toolkit:code-reviewer` agent then ran a CROSS-plan consistency pass and surfaced 4 blockers + 2 important findings that no per-plan review could have caught: (a) parameter-name drift across plans (`transform` in one plan's file-structure table, `mutator` in code + callers), (b) Status enum mismatches between the serializer code in US-0240 and the actual SQLite CHECK constraint in `001_initial_schema.sql` / `003_widen_status_check.sql` — would have hard-failed on first `_upsertRow`, (c) wrong table name (`tasks` vs the real `planning_tasks`), (d) the SQL schema being THIN (only an index, not full-entity persistence) versus the plans' assumption of thick columnar persistence, (e) one test file referenced by US-0247 as a hard-gate REQUIRED_TEST that didn't exist on develop and wasn't explicitly created by US-0246, (f) merge-order requirement that the spec + plans PRs land before the first feature branch. All would have caused implementer subagents to dead-end at the first failing test, requiring mid-execution recovery.
+
+**Rule:** When an EPIC produces multiple plans (≥2 plans in one session), the per-plan self-review is necessary but not sufficient. Dispatch a cross-plan consistency review BEFORE merging the plans. The reviewer must check: (a) signature consistency across plans (function defined in plan X is called with matching arity in plan Y), (b) ground-truth alignment against the actual codebase state (schemas, table names, enum values, file existence), (c) implicit "thick vs thin" assumptions that don't hold up against the real schema, (d) cross-plan dependency claims (does US-0247 assert a file exists that no earlier plan creates?), (e) merge-order constraints.
+
+**Prevention:**
+
+- Add cross-plan review as an explicit step in the EPIC-level brainstorming → writing-plans workflow when more than one plan is generated in a single session.
+- Brief the reviewer with the exact scope: doc-only review, only the spec + plans, look for cross-plan inconsistencies (signatures, identifiers, file paths, schema alignment). NOT a code review of the plans' prose.
+- The reviewer must inspect the actual codebase for ground-truth (schema columns, indexer file existence, status enums) — not trust the plans' Pre-Work assertions, which were written without re-verifying.
+- Apply fixes inline on the plans PR before merge — cheaper than mid-execution recovery (which costs a fresh subagent dispatch + the implementer's confusion).
+- If the reviewer surfaces ≥3 blockers, treat as a signal that the plans were rushed — consider time-boxing a second authoring pass rather than patching.
+
+**Date:** 2026-05-24
+
+**Resolution:** PR #1119 (the 8 plans) gained a follow-up commit `8682317` that fixed all 4 blockers + 1 important finding before merge. Develop tip now contains plans that ground against actual schema + indexer state.
+
+---
+
 ## L-0085 — Subagents drift out of scope when fixing test failures inline; verify the actual file list against the expected scope before accepting "DONE"
 
 @agent: Forge, Keystone
