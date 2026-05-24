@@ -162,17 +162,17 @@ describe('Migration 006 — data_006-ingest-legacy-programme', () => {
     });
 
     it('mirror re-renders the canonical {tasks, log, programme} shape after commit', () => {
-      // The preservation block in sdlc-mirror.js (deleted in US-0261) keeps
-      // top-level legacy keys alive until then. So the post-migration JSON
-      // is state-C (both shapes populated), not yet state-A. AC-1019's
-      // canonical-only-on-disk is US-0261's gate, not US-0262's.
+      // The preservation block in sdlc-mirror.js was deleted in US-0261.
+      // So the post-migration JSON is now state-A (canonical-only shape).
+      // AC-1019's canonical-only-on-disk gate: the mirror emits only
+      // {tasks, log, programme} with no legacy top-level keys.
       const json = JSON.parse(fs.readFileSync(path.join(root, 'docs', 'sdlc-status.json'), 'utf8'));
       expect(json.programme).toBeDefined();
       expect(Object.keys(json.programme).sort()).toEqual(
         ['agents', 'cycles', 'currentPhase', 'epics', 'githubStatus', 'metrics', 'phases', 'project', 'stories'].sort(),
       );
-      // Top-level legacy keys still present (preservation block at work).
-      expect(json.agents).toBeDefined();
+      // Top-level legacy keys NOT present — preservation block is gone (US-0261).
+      expect(json.agents).toBeUndefined();
     });
 
     it('mirror was written exactly once after commit (not per-key)', () => {
@@ -278,6 +278,11 @@ describe('Migration 006 — data_006-ingest-legacy-programme', () => {
         await seedRepo.sdlcProgramme.set(k, v);
       }
       Repository._reset();
+      // After seeding SQL, the mirror has written canonical {tasks, log,
+      // programme} to the JSON file, deleting the top-level legacy keys.
+      // Restore the full state-c-conflict fixture so the migration can detect
+      // the divergence between top-level and programme.
+      writeFixtureToRoot(root, 'state-c-conflict.json');
       result = await mig.up({ root });
       Repository._reset();
       repo = Repository.getInstance({ root });
