@@ -78,9 +78,9 @@ describe('US-0260: non-dashboard consumer migration', () => {
         expect(reader.stories(sdlc)['US-0259'].status).toBe('InProgress');
       });
 
-      it('reads story metadata correctly from state-B (top-level stories)', () => {
+      it('US-0261: reads safe default ({}) from state-B (top-level stories) — no fallback', () => {
         const sdlc = loadFixture('state-b.json');
-        expect(reader.stories(sdlc)['US-0259'].status).toBe('InProgress');
+        expect(reader.stories(sdlc)).toEqual({});
       });
     });
 
@@ -99,9 +99,9 @@ describe('US-0260: non-dashboard consumer migration', () => {
         expect(reader.stories(onDisk)['US-0259'].status).toBe('Done');
       });
 
-      it('falls back to top-level stories when programme is empty', () => {
-        const onDisk = loadFixture('state-b.json'); // top-level only
-        expect(reader.stories(onDisk)['US-0259']).toBeDefined();
+      it('US-0261: returns safe default ({}) when programme is empty — no fallback', () => {
+        const onDisk = loadFixture('state-b.json');
+        expect(reader.stories(onDisk)).toEqual({});
       });
     });
   });

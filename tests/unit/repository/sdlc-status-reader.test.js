@@ -34,19 +34,51 @@ describe('sdlc-status-reader', () => {
     });
   });
 
-  describe('AC-1015: state-A (programme.*) and state-B (top-level) return equal values', () => {
-    const stateA = load('state-a.json');
+  describe('US-0261: dual-read fallback removed — state-B now returns safe defaults', () => {
     const stateB = load('state-b.json');
 
-    // programme() returns the container, not a dual-read value, so it is
-    // legitimately different across the two shapes (populated vs {}).
-    const DUAL_READ_KEYS = ACCESSOR_KEYS.filter((k) => k !== 'programme');
+    // Pre-US-0261, reader.X(stateB) returned the legacy-top-level value
+    // (proving the dual-read fallback worked). Post-US-0261, the
+    // fallback is stripped: every accessor returns the safe default
+    // because programme.* is empty in state-B.
+    //
+    // This test pins the post-fallback contract.
 
-    for (const key of DUAL_READ_KEYS) {
-      it(`reader.${key}(stateA) deep-equals reader.${key}(stateB)`, () => {
-        expect(reader[key](stateA)).toEqual(reader[key](stateB));
-      });
-    }
+    it('agents(stateB) returns {} (default, not the populated top-level agents)', () => {
+      expect(reader.agents(stateB)).toEqual({});
+    });
+
+    it('metrics(stateB) returns {}', () => {
+      expect(reader.metrics(stateB)).toEqual({});
+    });
+
+    it('stories(stateB) returns {}', () => {
+      expect(reader.stories(stateB)).toEqual({});
+    });
+
+    it('epics(stateB) returns {}', () => {
+      expect(reader.epics(stateB)).toEqual({});
+    });
+
+    it('phases(stateB) returns []', () => {
+      expect(reader.phases(stateB)).toEqual([]);
+    });
+
+    it('cycles(stateB) returns []', () => {
+      expect(reader.cycles(stateB)).toEqual([]);
+    });
+
+    it('currentPhase(stateB) returns null', () => {
+      expect(reader.currentPhase(stateB)).toBeNull();
+    });
+
+    it('githubStatus(stateB) returns null', () => {
+      expect(reader.githubStatus(stateB)).toBeNull();
+    });
+
+    it('project(stateB) returns {}', () => {
+      expect(reader.project(stateB)).toEqual({});
+    });
   });
 
   describe('state-C (preservation-doubled) reads programme.* first', () => {
@@ -120,12 +152,14 @@ describe('sdlc-status-reader', () => {
       expect(reader.cycles({ cycles: { not: 'an array' } })).toEqual([]);
     });
 
-    it('returns the array when top-level cycles is a valid array and programme is empty', () => {
+    it('US-0261: returns [] when top-level cycles is a valid array but programme is empty (no fallback)', () => {
+      // Pre-US-0261 this test asserted the fallback returned the top-level array.
+      // Post-US-0261, there is no fallback; the accessor returns the safe default.
       const fixture = {
         programme: {},
         cycles: [{ id: 'cycle-1', outcome: 'green' }],
       };
-      expect(reader.cycles(fixture)).toEqual([{ id: 'cycle-1', outcome: 'green' }]);
+      expect(reader.cycles(fixture)).toEqual([]);
     });
   });
 
@@ -135,15 +169,17 @@ describe('sdlc-status-reader', () => {
       expect(reader.currentPhase(fixture)).toBe(0);
     });
 
-    it('returns 0 when top-level currentPhase === 0 and programme is empty', () => {
-      expect(reader.currentPhase({ programme: {}, currentPhase: 0 })).toBe(0);
+    it('US-0261: returns null when top-level currentPhase === 0 and programme is empty (no fallback)', () => {
+      // Pre-US-0261 this test asserted the fallback returned the top-level value.
+      // Post-US-0261, there is no fallback; the accessor returns null.
+      expect(reader.currentPhase({ programme: {}, currentPhase: 0 })).toBeNull();
     });
 
     it('returns null when neither shape has a numeric currentPhase', () => {
       expect(reader.currentPhase({ programme: { currentPhase: 'oops' } })).toBeNull();
     });
 
-    it('prefers programme.currentPhase over top-level', () => {
+    it('prefers programme.currentPhase over top-level (only source now)', () => {
       expect(reader.currentPhase({ programme: { currentPhase: 3 }, currentPhase: 9 })).toBe(3);
     });
   });

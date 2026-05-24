@@ -14,9 +14,9 @@ const { SdlcTaskRepo } = require('./entities/sdlc-task-repo');
 const { SdlcProgrammeRepo } = require('./entities/sdlc-programme-repo');
 
 // `docs/sdlc-status.json` is intentionally excluded from MANAGED_SOURCES as of
-// Phase D (EPIC-0039, US-0239/AC-1014). SQL is authoritative; the JSON is a
-// mirror rendered FROM SQL on every write. See indexers/index.js for the
-// matching retirement of indexSdlcStatusJson.
+// Phase D (US-0239/AC-1014). SQL is authoritative; the JSON is a mirror
+// rendered FROM SQL on every write. The corresponding indexer was deleted
+// in Phase E (US-0261); see indexers/index.js and L-0082 for context.
 const MANAGED_SOURCES = [
   'docs/RELEASE_PLAN.md',
   'docs/BUGS.md',

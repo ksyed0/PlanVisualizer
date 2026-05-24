@@ -13,8 +13,11 @@ function mkProject() {
   fs.writeFileSync(
     path.join(root, 'docs/sdlc-status.json'),
     JSON.stringify({
-      stories: { 'US-0184': { planPhase: { planPath: 'docs/plan.md' } } },
       tasks: {},
+      log: [],
+      programme: {
+        stories: { 'US-0184': { planPhase: { planPath: 'docs/plan.md' } } },
+      },
     }),
   );
   fs.writeFileSync(path.join(root, 'docs/plan.md'), '## Task 1: First\n\nstep one\n\n## Task 2: Second\n\nstep two\n');
@@ -31,6 +34,14 @@ test('start → done(summary) → start → generate yields prior-work containin
   const root = mkProject();
   const sdlcPath = path.join(root, 'docs/sdlc-status.json');
   const out = [];
+
+  // Initialize story data in SQL
+  Repository._reset();
+  let repo = Repository.getInstance({ root });
+  await repo.sdlcProgramme.set('stories', {
+    'US-0184': { planPhase: { planPath: 'docs/plan.md' } },
+  });
+  Repository._reset();
 
   // Task 1 start + done with summary
   await Lifecycle.dispatch(

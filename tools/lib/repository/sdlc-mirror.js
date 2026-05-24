@@ -37,28 +37,6 @@ class SdlcMirror {
     }
     await withFileLock(this.file, async () => {
       const out = this._renderFromSql();
-      // TRANSITIONAL DEBT (Phase D scaffolding — REMOVE AFTER PHASE E):
-      // Preserve any extra top-level keys that exist on the current
-      // on-disk JSON (e.g. `stories`, `agents`, `metrics`) but are not yet
-      // owned by a Phase D entity repo. Without this, a write from one
-      // migrated writer (e.g. agent-lifecycle.js — D.3) would silently
-      // drop state that other writers (update-sdlc-status.js — D.4) still
-      // own in the JSON. This whole block becomes unreachable — and must
-      // be deleted — once Phase E (EPIC-0040) finishes migrating
-      // dashboard/legacy consumers to read directly through the entity
-      // repos. Tracking story: Phase E TBD (will be filed under EPIC-0040
-      // alongside the planning-writer cutover). See US-0234 / TASK-0058,
-      // US-0236 / TASK-0060.
-      try {
-        const existing = JSON.parse(fs.readFileSync(this.file, 'utf8'));
-        if (existing && typeof existing === 'object' && !Array.isArray(existing)) {
-          for (const [k, v] of Object.entries(existing)) {
-            if (!(k in out)) out[k] = v;
-          }
-        }
-      } catch {
-        /* malformed or empty — fall through to pure SQL render */
-      }
       const tmp = this.file + '.tmp';
       fs.writeFileSync(tmp, JSON.stringify(out, null, 2));
       fs.renameSync(tmp, this.file);

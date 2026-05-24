@@ -20,21 +20,11 @@
  *      equality of the SQL-owned keys on the disk mirror IS the dashboard
  *      live-update parity claim, and (A) covers (C).
  *
- * D. Transitional dual-shape contract. `tools/lib/repository/sdlc-mirror.js`
- *    lines 32-43 document that the mirror preserves *unknown* top-level
- *    keys (e.g. `stories`, `agents`, `metrics`) that live in the on-disk
- *    JSON but are not yet owned by a Phase D entity repo. Because of this
- *    preservation, a full-file `===` byte equality check would FAIL when
- *    seed JSON carries those legacy keys. The contract is therefore:
- *
- *       * SQL-owned keys (`tasks`, `log`, `programme`) are byte-identical
- *         to a fresh `SdlcMirror._renderFromSql()` against the same SQL
- *         state.
- *       * Unknown top-level keys present in the seed JSON are preserved
- *         verbatim — they do NOT participate in parity.
- *
- *    Phase E (EPIC-0040) will delete the preservation block and the full
- *    file will become byte-identical to the SQL render.
+ * D. Phase E canonical shape. Phase D (EPIC-0040) documents that the mirror
+ *    preserves unknown top-level keys (e.g. `stories`, `agents`, `metrics`).
+ *    Phase E deletes the preservation block (US-0261), so the on-disk mirror
+ *    is now a pure function of SQL state: {tasks, log, programme} only. Full
+ *    file byte equality holds without caveats.
  *
  * AC-0931..AC-0933.
  */
@@ -103,13 +93,26 @@ describe('D.7 — live-dashboard parity across all four Phase D writers', () => 
     const root = mkRoot();
     const sdlcPath = path.join(root, 'docs', 'sdlc-status.json');
     // Seed legacy top-level keys (stories owned by HANDLERS, agents) so we
-    // also exercise the transitional preservation block (D).
+    // with canonical shape (tasks, log, programme).
     fs.writeFileSync(
       sdlcPath,
       JSON.stringify({
-        stories: { 'US-0181': { status: 'Planned' }, 'US-0185': { status: 'Planned' } },
+        tasks: {},
+        log: [],
+        programme: {
+          stories: { 'US-0181': { status: 'Planned' }, 'US-0185': { status: 'Planned' } },
+        },
       }),
     );
+
+    // Initialize stories in SQL so SpecPlan and other writers can find them
+    Repository._reset();
+    let repo = Repository.getInstance({ root });
+    await repo.sdlcProgramme.set('stories', {
+      'US-0181': { status: 'Planned' },
+      'US-0185': { status: 'Planned' },
+    });
+    Repository._reset();
 
     // ---- Interleaved fixture event stream (12 events across 4 writers) ----
     // Order is non-trivial: A → C → B → A → C → B → D → A → B → D → C → A
@@ -132,7 +135,7 @@ describe('D.7 — live-dashboard parity across all four Phase D writers', () => 
 
     // 3. B: update-sdlc-status agent-start (programme.agents + log via events)
     Repository._reset();
-    let repo = Repository.getInstance({ root });
+    repo = Repository.getInstance({ root });
     await runUpdateSdlc(repo, 'agent-start', { agent: 'Pixel', story: 'US-0096', task: 'zebra', model: 'sonnet' });
 
     // 4. A: lifecycle blocked
@@ -243,11 +246,8 @@ describe('D.7 — live-dashboard parity across all four Phase D writers', () => 
     expect(story).toBeTruthy();
     expect(story.specPhase.acApprovedAt).toBeTruthy();
 
-    // (D) Transitional dual-shape — legacy `stories` top-level key from the
-    //     seed JSON must still be present, but it is NOT part of the parity
-    //     contract. Document that it is preserved unchanged.
-    expect(onDisk.stories).toBeDefined();
-    expect(onDisk.stories['US-0185']).toBeTruthy();
+    // (D) Phase E canonical shape — no preservation of legacy keys. The
+    //     on-disk mirror is a pure function of SQL state only.
 
     // Cleanup.
     Repository._reset();
@@ -260,7 +260,16 @@ describe('D.7 — live-dashboard parity across all four Phase D writers', () => 
   test('AC-0932: process restart between events — mirror parity holds, state visible across instances', async () => {
     const root = mkRoot();
     const sdlcPath = path.join(root, 'docs', 'sdlc-status.json');
-    fs.writeFileSync(sdlcPath, JSON.stringify({ stories: { 'US-0181': { status: 'Planned' } } }));
+    fs.writeFileSync(
+      sdlcPath,
+      JSON.stringify({
+        tasks: {},
+        log: [],
+        programme: {
+          stories: { 'US-0181': { status: 'Planned' } },
+        },
+      }),
+    );
 
     // Each step does Repository._reset() before dispatching, simulating a
     // fresh process whose only inheritance from the previous step is the
