@@ -34,7 +34,7 @@ const fs = require('fs');
 const path = require('path');
 
 const SQL_TABLES = ['sdlc_events', 'sdlc_tasks', 'sdlc_programme'];
-const META_KEYS = ['migration_005_hash'];
+const META_KEYS = ['migration_005_hash', 'migration_006_hash'];
 
 function backupDir(root, label) {
   return path.join(root, 'docs', '.pv-backup', label);

@@ -17,8 +17,8 @@ Each snapshot directory contains:
 - `sql/sdlc_events.json` — full row array for the `sdlc_events` table.
 - `sql/sdlc_tasks.json` — full row array for the `sdlc_tasks` table.
 - `sql/sdlc_programme.json` — full row array for the `sdlc_programme` table.
-- `sql/meta_status.json` — captured `meta_status` keys (today: just
-  `migration_005_hash`).
+- `sql/meta_status.json` — captured `meta_status` keys (today:
+  `migration_005_hash`, `migration_006_hash`).
 - `manifest.json` — metadata: `createdAt`, `label`, row `counts`,
   `metaKeysCaptured`.
 
