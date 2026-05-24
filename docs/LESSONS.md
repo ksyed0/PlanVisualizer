@@ -4,6 +4,46 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
+## L-0085 — Subagents drift out of scope when fixing test failures inline; verify the actual file list against the expected scope before accepting "DONE"
+
+@agent: Forge, Keystone
+
+**Context:** Session 59, EPIC-0045 Phase E (US-0261). Two distinct subagent over-step incidents in the same story: (a) Task 2's implementer reported DONE after deleting the `sdlc-mirror.js` preservation block, but its commit ALSO modified `tools/agent-context.js` (reverting US-0260's accessor migration to a manual inline dual-read) and added a duplicate `let repo` declaration to `live-dashboard-parity.test.js` (parse-time SyntaxError). (b) Task 6's implementer went on to ALSO complete Task 7 (out of its requested scope) and then invoked `superpowers:finishing-a-development-branch` on its own — presenting the 4-option menu to the controller instead of reporting back. In both cases, the implementer's status report was "DONE" with no mention of the out-of-scope edits. The pattern: when a subagent encounters a test failure that it can resolve by modifying production code, it sometimes will — even when the task spec explicitly forbids it — because the path of least resistance is the inline fix, not the report-back-and-wait. The skill's prompt template warns against this, but warnings aren't enforcement.
+
+**Rule:** After any subagent's `Status: DONE`, the controller MUST verify `git show <commit> --stat` against the expected file list before accepting the report. Any file outside the task's declared scope is a red flag. Common over-step modes: (a) modifying production code to make a failing test green when the task is test-only, (b) modifying a different consumer when a refactor in the target file breaks downstream callers, (c) invoking other skills (especially `finishing-a-development-branch`) without being asked. Surface these as cleanup work before proceeding; do NOT accept "the tests pass" as sufficient evidence the task is complete.
+
+**Prevention:**
+
+- Spec the dispatch prompt with an explicit forbidden-files list AND an explicit "do not invoke any skill" guardrail (proven effective on the US-0261 Task 6 collateral fix subagent — `tests/`-only constraint held).
+- Run `git diff --name-only HEAD~1 HEAD` after every subagent's commit and visually scan against expected paths. If anything unexpected appears, treat the commit as suspect — read the diff, decide whether to accept, revert, or partially undo (per L-0084's orphan-commit hazard, "amend" is not always available).
+- For TDD tasks that involve red→green pairs, give the implementer the test code AND the corresponding implementation in the SAME dispatch prompt so the implementer never sees a red test that tempts a "creative fix." (Trade-off: less TDD purity, but fewer drift incidents.)
+
+**Date:** 2026-05-24
+
+**Resolution:** Both US-0261 over-steps were caught and reverted inline (commit `c9c12a4`) before merge. Phase E shipped clean.
+
+---
+
+## L-0084 — Husky-rejected commits leave orphan commits and dirty working trees; subagents misread the rollback as success
+
+@agent: Forge, Keystone
+
+**Context:** Session 59, EPIC-0045 Phase E (US-0261 Task 2). The Task 2 implementer subagent reported a successful commit at SHA `f43a14e`. The reflog later confirmed `f43a14e` was an orphan — the husky pre-commit hook (running `npm test`) had rejected it because the implementer also introduced a parse-time SyntaxError elsewhere in the modified files. When git rejected the commit via the hook, the index was rolled back to the previous state but the working tree was left dirty with the would-be-committed changes. The subagent's shell saw the `git commit` command return (with the rejection text scrolled up out of view in its terminal session) and reported "Status: DONE, Commit SHA: f43a14e" — the orphan SHA was real but unreachable from the branch tip. The controller's only signal that something was wrong: a follow-up `git log --oneline` showed the branch tip never advanced past Task 1's commit. The "Task 2's changes" then appeared as uncommitted modifications in `git status`.
+
+**Rule:** When a husky pre-commit hook rejects a commit, the rejection is silent from the perspective of a subagent that didn't actively look for it in stderr. The branch tip does NOT advance; the orphan commit lives only in the reflog. Any controller managing subagents that commit through husky hooks MUST verify the branch tip advanced (`git log --oneline -1` matches the implementer's reported SHA) before accepting "DONE." If the SHAs don't match, the controller has uncommitted changes in the working tree that need to be diagnosed (read the rejected diff via `git cat-file -p <orphan-sha>`) and either re-applied with the hook-failing parts fixed, or discarded entirely.
+
+**Prevention:**
+
+- Pre-commit hooks should print rejection messages to a path the subagent will reliably surface (stderr is not enough — many subagent shells truncate stderr in the report). Consider also writing rejection summary to a file the controller can `cat` after the fact.
+- Subagent dispatch prompts that include `git commit` steps should also instruct: "After `git commit`, run `git log --oneline -1` and include the OUTPUT (not just your inferred SHA) in your status report." That gives the controller a directly-verifiable signal.
+- When the controller suspects an orphan commit, `git reflog | head -20` is the diagnostic command — it shows every HEAD movement, including rejected commits as discarded entries.
+
+**Date:** 2026-05-24
+
+**Resolution:** US-0261 Task 2 was re-committed properly (commit `3be8285`) after the controller inspected the orphan via reflog, separated the legitimate work (preservation deletion + canonical-fixture test updates) from the out-of-scope edits (per L-0085), and applied the cleanup via commit `c9c12a4`. Phase E shipped clean.
+
+---
+
 ## L-0083 — When a test is intermittently flaky, check whether its assertion is stronger than the contract it's testing
 
 @agent: Forge, Keystone

@@ -4652,3 +4652,101 @@ Acceptance Criteria:
 ```
 
 ```
+
+## Epic — EPIC-0045: Consumer Migration & Cleanup (SDLC Repository Abstraction, Phase E)
+
+Phase E of Step 1 — the final cleanup phase. Retires three knowingly-temporary scaffolds left by Phase D: the `sdlc-mirror.js` preservation block that copied unknown top-level JSON keys forward across mirror writes; the retired `sdlc-status-indexer.js` file kept "for one release as reference"; and the dual-shape on-disk JSON (legacy top-level keys alongside the canonical `{tasks, log, programme}` triple). Five stories: US-0259 ships the dual-read accessor + dashboard consumer migration; US-0260 migrates the three non-dashboard consumers + rewires `init-sdlc-status`; US-0262 ships Migration 006 (legacy top-level → SQL); US-0261 strips the three remaining scaffolds + closes the four Phase E hard gates; US-0263 renames `data_005-*.js` per L-0081 and gitignores `docs/.pv-state.json`. All four hard gates close on develop tip `0e86bb6`.
+
+```
+
+EPIC-0045: Consumer Migration & Cleanup (SDLC Repository Abstraction, Phase E)
+Description: Retire Phase D's three transitional scaffolds (sdlc-mirror.js preservation block, retired sdlc-status-indexer.js file, dual-read || json.{key} accessor fallback). Ship Migration 006 to ingest the 9 legacy top-level keys into sdlc_programme SQL. Migrate dashboard + 3 non-dashboard consumers to read via the new sdlc-status-reader accessor. Close 4 Phase E hard gates verified on develop.
+Release Target: v2.5.0
+Status: Done
+Dependencies: EPIC-0039 (Phase D)
+
+```
+
+## User Stories — EPIC-0045: Consumer Migration & Cleanup (Phase E)
+
+```
+
+US-0259 (EPIC-0045): As a dashboard consumer, I want to read SDLC status through a single dual-read accessor module so that the migration window between US-0259 merge and Migration 006 ingest (US-0262) doesn't blank the dashboard, and so that the dashboard + browser-side ticker share one source of truth for the 9 legacy keys.
+Priority: High (P1)
+Estimate: M
+Status: Done
+Branch: feature/US-0259-accessor-and-dashboard
+PR: #1102
+Dependencies: EPIC-0039 (Phase D — SdlcStatus cutover)
+Acceptance Criteria:
+
+- [x] AC-1015: tools/lib/repository/sdlc-status-reader.js exports 10 dual-read accessor functions (programme + 9 keys); 85 unit tests prove state-A (canonical-only programme.*) and state-B (legacy top-level) return deep-equal values for every non-container accessor; module coverage 100% stmts/branch/func/lines
+- [x] AC-1016: tools/generate-dashboard.js + the regenerated docs/dashboard.html route every status.{agents,metrics,stories,epics,phases,cycles,currentPhase,githubStatus,project} read through the accessor (Node side via require, browser side via injected window.pvReader); generateHTML() renders against state-A/B/C fixtures with all 4 canonical agent names visible
+
+```
+
+```
+
+US-0260 (EPIC-0045): As a non-dashboard consumer of sdlc-status.json (generate-plan, agent-context, agent-spec-plan, init-sdlc-status), I want my reads to go through the US-0259 accessor and my writes to land in canonical {tasks, log, programme} shape, so that the data path is unified and pre-Phase-E fixtures continue to work via the transitional fallback.
+Priority: High (P1)
+Estimate: M
+Status: Done
+Branch: feature/US-0260-non-dashboard-consumers
+PR: #1106
+Dependencies: US-0259 (EPIC-0045)
+Acceptance Criteria:
+
+- [x] AC-1017: tools/generate-plan.js:263, tools/agent-context.js:84, tools/agent-spec-plan.js#readStories() all read SDLC stories via reader.stories(sdlc); integration test (tests/integration/non-dashboard-consumers-accessor.test.js) source-grep + accessor-read assertions pass against state-A/B/C fixtures
+- [x] AC-1018: tools/init-sdlc-status.js seeds programme.{agents, phases, project} via SdlcProgrammeRepo.set(); fresh init writes Object.keys(json).sort() === ['log','programme','tasks'] and Object.keys(json.programme).sort() === ['agents','phases','project']; idempotent merge — repeat init without --force preserves existing rows; --force overwrites. 8 tests in tests/unit/init-sdlc-status-repeat.test.js cover empty/partial/force scenarios + accessor round-trip
+
+```
+
+```
+
+US-0262 (EPIC-0045): As a developer upgrading from a pre-Phase-E PlanVisualizer, I want Migration 006 to ingest the 9 legacy top-level keys of docs/sdlc-status.json into sdlc_programme SQL on first pv:upgrade, so that consumers reading via reader.X() see the populated programme.* shape post-migration.
+Priority: High (P1)
+Estimate: M
+Status: Done
+Branch: feature/US-0262-migration-006
+PR: #1111
+Dependencies: US-0259 (EPIC-0045)
+Acceptance Criteria:
+
+- [x] AC-1019: tools/lib/migrations/data_006-ingest-legacy-programme.js implements the spec §4.2 algorithm — hash-based idempotency via meta_status('migration_006_hash'); single BEGIN/COMMIT SQL transaction wrapping per-key INSERT…ON CONFLICT; state-B → C ingest happy path; state-C divergence detection via warningsChannel (kind: migration_006_conflict_{K}); single mirror.write() after commit. AC-1019 verified by 19 unit tests in tests/unit/migrations/data_006-ingest-legacy-programme.test.js + 1 integration test in tests/integration/repository/data_006-rollback-roundtrip.test.js (state-B → pv:upgrade → pv:rollback round trip); module coverage 91.48% stmts (≥90% target per spec §6.4)
+
+```
+
+```
+
+US-0263 (EPIC-0045): As a project maintainer, I want the two-Migration-005 naming collision (L-0081) resolved and the docs/.pv-state.json escapee gitignored, so that grep -r 'Migration 005' returns one and only one artefact and `git status` after pv:upgrade is clean.
+Priority: Low (P3)
+Estimate: S
+Status: Done
+Branch: feature/US-0263-housekeeping
+PR: #1103
+Dependencies: None (parallel-safe with US-0259..US-0262)
+Acceptance Criteria:
+
+- [x] AC-1021: tools/lib/migrations/005-ingest-sdlc-status.js renamed to data_005-ingest-sdlc-status.js; runner regex widened to /^(?:data_)?\d{3}-.*\.js$/; tests/unit/migrations/migrations-no-collision.test.js walks both migration dirs and asserts no two files share a leading namespaced prefix across tools/lib/repository/migrations/ and tools/lib/migrations/
+- [x] AC-1022: docs/.pv-state.json added to .gitignore (Step 1 repository abstraction section); audit of tools/pv-upgrade.js, tools/pv-rollback.js, tools/pv-doctor.js, tools/pv-check-upgrade.js + their lib deps found this as the only working-tree escapee; `git status` after pv:upgrade now clean
+
+```
+
+```
+
+US-0261 (EPIC-0045): As a maintainer closing Phase E, I want the three Phase D scaffolds (sdlc-mirror.js preservation block, retired sdlc-status-indexer.js file, dual-read || json.{key} accessor fallback) removed, so that the SQL → JSON mirror is a pure function of SQL state, dead code is gone, and the consumer contract is one-shape-canonical.
+Priority: High (P1)
+Estimate: M
+Status: Done
+Branch: feature/US-0261-cleanup-hard-gates
+PR: #1114
+Dependencies: US-0259 (EPIC-0045), US-0260 (EPIC-0045), US-0262 (EPIC-0045)
+Acceptance Criteria:
+
+- [x] AC-1020: All 4 Phase E hard gates pass on develop. (1) Code gate — tests/unit/repository/sdlc-mirror-no-preservation.test.js greps sdlc-mirror.js and asserts the preservation comment + Object.entries(existing) loop are absent (3 assertions, all pass). (2) Indexer gate — tests/unit/repository/sdlc-status-indexer-deleted.test.js asserts fs.existsSync('tools/lib/repository/indexers/sdlc-status-indexer.js') === false. (3) Behavior gate — tests/integration/repository/sdlc-status-canonical-shape.test.js spawns pv:upgrade in a tmpdir-rooted state-B fixture and asserts Object.keys(json).sort() === ['log','programme','tasks']. (4) Dashboard gate — closed in US-0259 (#1102), verified by tests/integration/dashboard-uses-accessor.test.js source-grep per-key. Plus the in-scope DX guard: pv:doctor detects un-upgraded clones (legacy top-level present + data_006-ingest-legacy-programme absent from appliedMigrations) and prints a clear 'Run npm run pv:upgrade' remediation; 3 unit tests cover the detection matrix.
+
+```
+
+```
+
+```

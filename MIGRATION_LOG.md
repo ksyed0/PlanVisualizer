@@ -4,6 +4,33 @@ Log every change that must propagate to other platforms, modules, or installatio
 
 ---
 
+## 2026-05-24 — Session 59 (EPIC-0045 / Phase E COMPLETE — all 5 stories shipped, 4 hard gates closed)
+
+**Migration 006 — JSON top-level → SQL sdlc_programme one-time ingest (BREAKING for any tooling that read legacy top-level keys post-upgrade)**
+
+- **What changed:** New JS data migration `tools/lib/migrations/data_006-ingest-legacy-programme.js` ingests the 9 legacy top-level keys of `docs/sdlc-status.json` (`agents`, `metrics`, `stories`, `epics`, `phases`, `cycles`, `currentPhase`, `githubStatus`, `project`) into `sdlc_programme` SQL rows on first `pv:upgrade`. Idempotency via `meta_status('migration_006_hash')`. Single `BEGIN/COMMIT` SQL transaction with `ROLLBACK` on any error. Bypasses `SdlcProgrammeRepo.set()` (raw SQL + single post-commit `mirror.write()`) for transactional + file-lock safety. State-C divergence detection logs `migration_006_conflict_{K}` via `repo.warningsChannel.append()`; SQL value unchanged on divergence.
+- **Files:** `tools/lib/migrations/data_006-ingest-legacy-programme.js`, `tools/lib/migrations/sdlc-snapshot.js` (META_KEYS extended), `tools/pv-rollback.js` (corrupt-snapshot exception for pre-SQL-data snapshots), `docs/architecture/pv-backup-format.md`.
+- **Platforms/modules affected:** Any project upgrading from a pre-Phase-E PlanVisualizer must run `npm run pv:upgrade` once. Snapshots include both `pre-data_006-ingest-legacy-programme/` per-migration AND `pre-upgrade-<ts>/` broader snapshots.
+- **PR:** [#1111](https://github.com/ksyed0/PlanVisualizer/pull/1111) — `feature/US-0262-migration-006 → develop` (commit `1c5c867`)
+
+**Mirror is now a pure function of SQL state — sdlc-mirror.js preservation block deleted (BREAKING for any consumer that wrote legacy top-level keys directly to the JSON expecting them to survive)**
+
+- **What changed:** US-0261 (PR #1114) deletes the 19-line `// TRANSITIONAL DEBT` block from `SdlcMirror.write()`. After this, the on-disk `docs/sdlc-status.json` contains exactly `{tasks, log, programme}` after every mirror write — no legacy top-level key survives across writes. The dual-read fallback in the US-0259 accessor is also stripped (`reader.X(json)` now reads `programme.X` only, returns safe default if absent). The retired `tools/lib/repository/indexers/sdlc-status-indexer.js` file is deleted entirely.
+- **Files:** `tools/lib/repository/sdlc-mirror.js`, `tools/lib/repository/indexers/sdlc-status-indexer.js` (DELETED), `tools/lib/repository/indexers/index.js` (breadcrumb), `tools/lib/repository/index.js` (breadcrumb), `tools/lib/repository/sdlc-status-reader.js`, `tools/pv-doctor.js`.
+- **Platforms/modules affected:** Any external script that wrote top-level legacy keys to `docs/sdlc-status.json` expecting them to persist is broken — those keys are now overwritten by the next mirror render. Migration path: write through `SdlcProgrammeRepo.set(key, value)` instead. The accessor's removed fallback means a developer who pulls post-US-0261 `develop` but hasn't run `pv:upgrade` will see empty-dashboard until Migration 006 runs. The new `pv:doctor` `detectUnMigratedClone` check prints a clear `"Run npm run pv:upgrade"` remediation in that scenario.
+- **PR:** [#1114](https://github.com/ksyed0/PlanVisualizer/pull/1114) — `feature/US-0261-cleanup-hard-gates → develop` (commit `0e86bb6`)
+
+**Phase E hard gates verified on develop tip `0e86bb6` (all 4 closed)**
+
+1. Preservation block removed (grep) → PASS
+2. Indexer file deleted (fs.existsSync) → PASS
+3. Dashboard reads only canonical (grep) → PASS (closed by US-0259)
+4. Canonical on-disk shape after `pv:upgrade` (integration test) → PASS
+
+EPIC-0045 closed. 5 of 5 stories shipped. Full suite: 107 suites / 1596 tests pass.
+
+---
+
 ## 2026-05-23 — Session 58 (EPIC-0045 / Phase E partial — Consumer Migration, 3 of 5 stories shipped)
 
 **`tools/init-sdlc-status.js` no longer writes legacy top-level JSON keys — fresh init now produces canonical `{tasks, log, programme: {agents, phases, project}}` only (BREAKING for any external consumer that parsed the legacy top-level shape from a freshly-init'd project)**
