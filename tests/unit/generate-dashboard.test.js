@@ -37,45 +37,51 @@ function makeHealthyFixture() {
   // something other than the "no active" fallback path.
   agents.Pixel = { status: 'active', currentTask: 'US-0124 test harness', tasksCompleted: 1 };
 
+  // US-0261: Phase E canonical shape — the 9 legacy keys nest under
+  // `programme.*` because the accessor's dual-read fallback was stripped.
+  // `tasks` and `log` are canonical top-level keys (not migrated).
   return {
-    project: {
-      name: 'SDLC Dashboard',
-      description: 'Agentic AI SDLC',
-      repoUrl: 'https://github.com/ksyed0/PlanVisualizer',
-      startDate: '2026-04-15',
-    },
-    cycles: [],
-    currentPhase: 3,
-    phases: CANONICAL_PHASES.map((p, i) => ({
-      ...p,
-      status: i < 2 ? 'complete' : i === 2 ? 'in-progress' : 'pending',
-    })),
-    agents,
-    epics: {
-      'EPIC-0016': 'Agentic Dashboard Mission Control Redesign',
-    },
-    stories: {
-      'US-0124': {
-        title: 'Baseline test harness for generate-dashboard.js',
-        status: 'In Progress',
-        epic: 'EPIC-0016',
+    tasks: {},
+    log: [{ time: '09:00', agent: 'Conductor', message: 'Session started' }],
+    programme: {
+      project: {
+        name: 'SDLC Dashboard',
+        description: 'Agentic AI SDLC',
+        repoUrl: 'https://github.com/ksyed0/PlanVisualizer',
+        startDate: '2026-04-15',
+      },
+      cycles: [],
+      currentPhase: 3,
+      phases: CANONICAL_PHASES.map((p, i) => ({
+        ...p,
+        status: i < 2 ? 'complete' : i === 2 ? 'in-progress' : 'pending',
+      })),
+      agents,
+      epics: {
+        'EPIC-0016': 'Agentic Dashboard Mission Control Redesign',
+      },
+      stories: {
+        'US-0124': {
+          title: 'Baseline test harness for generate-dashboard.js',
+          status: 'In Progress',
+          epic: 'EPIC-0016',
+        },
+      },
+      metrics: {
+        storiesCompleted: 0,
+        storiesTotal: 1,
+        tasksCompleted: 0,
+        tasksTotal: 1,
+        testsPassed: 6,
+        testsFailed: 0,
+        testsTotal: 6,
+        bugsOpen: 0,
+        bugsFixed: 0,
+        coveragePercent: 85,
+        reviewsApproved: 0,
+        reviewsBlocked: 0,
       },
     },
-    metrics: {
-      storiesCompleted: 0,
-      storiesTotal: 1,
-      tasksCompleted: 0,
-      tasksTotal: 1,
-      testsPassed: 6,
-      testsFailed: 0,
-      testsTotal: 6,
-      bugsOpen: 0,
-      bugsFixed: 0,
-      coveragePercent: 85,
-      reviewsApproved: 0,
-      reviewsBlocked: 0,
-    },
-    log: [{ time: '09:00', agent: 'Conductor', message: 'Session started' }],
   };
 }
 
@@ -123,7 +129,7 @@ describe('generate-dashboard.js baseline harness (US-0124)', () => {
   test('AC-0428: blocked agent status surfaces blocked markup in the output', () => {
     const { generateHTML } = require('../../tools/generate-dashboard.js');
     const fixture = makeHealthyFixture();
-    fixture.agents.Lens = {
+    fixture.programme.agents.Lens = {
       status: 'blocked',
       currentTask: 'awaiting clarification',
       tasksCompleted: 0,
@@ -162,7 +168,7 @@ describe('generate-dashboard — US-0142 active agent prominence', () => {
   function makeFixtureWithAgentStatus(status) {
     const fixture = makeHealthyFixture();
     // Replace Pixel (the default active agent) with our test status
-    fixture.agents.Pixel = { status, currentTask: 'US-0142 test', tasksCompleted: 1 };
+    fixture.programme.agents.Pixel = { status, currentTask: 'US-0142 test', tasksCompleted: 1 };
     return fixture;
   }
 
@@ -278,7 +284,7 @@ describe('US-0121 terminal-aesthetic activity log', () => {
 
 describe('US-0120 stories panel polish', () => {
   function makeStoriesFixture() {
-    const base = {
+    const programme = {
       project: {
         name: 'SDLC Dashboard',
         description: 'Agentic AI SDLC',
@@ -319,9 +325,12 @@ describe('US-0120 stories panel polish', () => {
         },
       },
       metrics: { storiesCompleted: 1, storiesTotal: 3, tasksCompleted: 0, tasksTotal: 3 },
-      log: [{ time: '09:00', agent: 'Conductor', message: 'Session started' }],
     };
-    return base;
+    return {
+      tasks: {},
+      log: [{ time: '09:00', agent: 'Conductor', message: 'Session started' }],
+      programme,
+    };
   }
 
   // AC-0407: 3px vertical status strip on each story row, colour-coded by
@@ -539,8 +548,8 @@ describe('generate-dashboard — US-0147 agent workload live data', () => {
   it('renders pv-workload-bar when stories have assigned agents', () => {
     const { generateHTML } = require('../../tools/generate-dashboard.js');
     const fixture = makeHealthyFixture();
-    fixture.stories['US-0001'] = { title: 'Foo', status: 'In Progress', epic: 'EPIC-0016', agent: 'Pixel' };
-    fixture.stories['US-0002'] = { title: 'Bar', status: 'Done', epic: 'EPIC-0016', agent: 'Pixel' };
+    fixture.programme.stories['US-0001'] = { title: 'Foo', status: 'In Progress', epic: 'EPIC-0016', agent: 'Pixel' };
+    fixture.programme.stories['US-0002'] = { title: 'Bar', status: 'Done', epic: 'EPIC-0016', agent: 'Pixel' };
     const html = generateHTML(fixture);
     expect(html).toContain('pv-workload-bar');
   });
@@ -548,7 +557,7 @@ describe('generate-dashboard — US-0147 agent workload live data', () => {
   it('renders agent workload section with agent names', () => {
     const { generateHTML } = require('../../tools/generate-dashboard.js');
     const fixture = makeHealthyFixture();
-    fixture.stories['US-0003'] = { title: 'Baz', status: 'In Progress', epic: 'EPIC-0016', agent: 'Forge' };
+    fixture.programme.stories['US-0003'] = { title: 'Baz', status: 'In Progress', epic: 'EPIC-0016', agent: 'Forge' };
     const html = generateHTML(fixture);
     expect(html).toContain('pv-workload-section');
   });
@@ -557,15 +566,20 @@ describe('generate-dashboard — US-0147 agent workload live data', () => {
     const { generateHTML } = require('../../tools/generate-dashboard.js');
     const fixture = makeHealthyFixture();
     // stories without agent field
-    Object.values(fixture.stories).forEach((s) => delete s.agent);
+    Object.values(fixture.programme.stories).forEach((s) => delete s.agent);
     expect(() => generateHTML(fixture)).not.toThrow();
   });
 
   it('renders (N done) sub-label in workload rows', () => {
     const { generateHTML } = require('../../tools/generate-dashboard.js');
     const fixture = makeHealthyFixture();
-    fixture.stories['US-0010'] = { title: 'Done story', status: 'Done', epic: 'EPIC-0016', agent: 'Pixel' };
-    fixture.stories['US-0011'] = { title: 'Active story', status: 'In Progress', epic: 'EPIC-0016', agent: 'Pixel' };
+    fixture.programme.stories['US-0010'] = { title: 'Done story', status: 'Done', epic: 'EPIC-0016', agent: 'Pixel' };
+    fixture.programme.stories['US-0011'] = {
+      title: 'Active story',
+      status: 'In Progress',
+      epic: 'EPIC-0016',
+      agent: 'Pixel',
+    };
     const html = generateHTML(fixture);
     expect(html).toContain('pv-workload-done');
     expect(html).toContain('(1 done)');
@@ -899,14 +913,17 @@ describe('agent workload — model chip', () => {
 
   function statusWithAgent(model) {
     return {
-      currentPhase: 0,
-      phases: [{ id: 1, name: 'Build', status: 'active' }],
-      agents: {
-        Pixel: { status: 'active', currentTask: 'X', currentStory: 'US-0001', model },
-      },
-      stories: { 'US-0001': { status: 'InProgress' } },
-      metrics: {},
+      tasks: {},
       log: [],
+      programme: {
+        currentPhase: 0,
+        phases: [{ id: 1, name: 'Build', status: 'active' }],
+        agents: {
+          Pixel: { status: 'active', currentTask: 'X', currentStory: 'US-0001', model },
+        },
+        stories: { 'US-0001': { status: 'InProgress' } },
+        metrics: {},
+      },
     };
   }
 
@@ -927,14 +944,14 @@ describe('agent workload — model chip', () => {
 
   test('renders no model chip when model is null (idle)', () => {
     const status = statusWithAgent(null);
-    status.agents.Pixel.status = 'idle';
+    status.programme.agents.Pixel.status = 'idle';
     const html = generateHTML(status);
     expect(html).not.toMatch(/<span class="mc-agent-model-chip/);
   });
 
   test('renders no model chip when model is undefined (pre-migration)', () => {
     const status = statusWithAgent(undefined);
-    delete status.agents.Pixel.model;
+    delete status.programme.agents.Pixel.model;
     const html = generateHTML(status);
     expect(html).not.toMatch(/<span class="mc-agent-model-chip/);
   });

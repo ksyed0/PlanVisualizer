@@ -260,7 +260,16 @@ describe('D.7 — live-dashboard parity across all four Phase D writers', () => 
   test('AC-0932: process restart between events — mirror parity holds, state visible across instances', async () => {
     const root = mkRoot();
     const sdlcPath = path.join(root, 'docs', 'sdlc-status.json');
-    fs.writeFileSync(sdlcPath, JSON.stringify({ stories: { 'US-0181': { status: 'Planned' } } }));
+    fs.writeFileSync(
+      sdlcPath,
+      JSON.stringify({
+        tasks: {},
+        log: [],
+        programme: {
+          stories: { 'US-0181': { status: 'Planned' } },
+        },
+      }),
+    );
 
     // Each step does Repository._reset() before dispatching, simulating a
     // fresh process whose only inheritance from the previous step is the

@@ -26,8 +26,12 @@ function mkRoot(storyExtras = {}) {
   fs.writeFileSync(
     path.join(root, 'docs/sdlc-status.json'),
     JSON.stringify({
-      stories: {
-        'US-0181': { status: 'Planned', ...storyExtras },
+      tasks: {},
+      log: [],
+      programme: {
+        stories: {
+          'US-0181': { status: 'Planned', ...storyExtras },
+        },
       },
     }),
   );

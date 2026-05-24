@@ -17,7 +17,16 @@ function setupTmp() {
   const sdlcPath = path.join(tmpdir, 'sdlc-status.json');
   const pendingDir = path.join(tmpdir, 'pending');
   fs.mkdirSync(pendingDir, { recursive: true });
-  fs.writeFileSync(sdlcPath, JSON.stringify({ stories: { 'US-0181': { status: 'Planned' } } }));
+  fs.writeFileSync(
+    sdlcPath,
+    JSON.stringify({
+      tasks: {},
+      log: [],
+      programme: {
+        stories: { 'US-0181': { status: 'Planned' } },
+      },
+    }),
+  );
   return { tmpdir, sdlcPath, pendingDir };
 }
 

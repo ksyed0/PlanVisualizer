@@ -100,7 +100,16 @@ describe('dispatch — spec phase', () => {
   beforeEach(() => {
     tmpdir = fs.mkdtempSync(path.join(os.tmpdir(), 'agt-cli-'));
     sdlcPath = path.join(tmpdir, 'sdlc-status.json');
-    fs.writeFileSync(sdlcPath, JSON.stringify({ stories: { 'US-0181': { status: 'Planned' } } }));
+    fs.writeFileSync(
+      sdlcPath,
+      JSON.stringify({
+        tasks: {},
+        log: [],
+        programme: {
+          stories: { 'US-0181': { status: 'Planned' } },
+        },
+      }),
+    );
   });
   afterEach(() => fs.rmSync(tmpdir, { recursive: true, force: true }));
 
@@ -159,7 +168,16 @@ describe('dispatch — plan phase + helpers', () => {
     sdlcPath = path.join(tmpdir, 'sdlc-status.json');
     pendingDir = path.join(tmpdir, 'pending');
     fs.mkdirSync(pendingDir, { recursive: true });
-    fs.writeFileSync(sdlcPath, JSON.stringify({ stories: { 'US-0181': { status: 'Planned' } } }));
+    fs.writeFileSync(
+      sdlcPath,
+      JSON.stringify({
+        tasks: {},
+        log: [],
+        programme: {
+          stories: { 'US-0181': { status: 'Planned' } },
+        },
+      }),
+    );
   });
   afterEach(() => fs.rmSync(tmpdir, { recursive: true, force: true }));
 
@@ -255,7 +273,16 @@ describe('dispatch — plan-update', () => {
   beforeEach(() => {
     tmpdir = fs.mkdtempSync(path.join(os.tmpdir(), 'agt-plan-upd-'));
     sdlcPath = path.join(tmpdir, 'sdlc-status.json');
-    fs.writeFileSync(sdlcPath, JSON.stringify({ stories: { 'US-0183': { status: 'Planned' } } }));
+    fs.writeFileSync(
+      sdlcPath,
+      JSON.stringify({
+        tasks: {},
+        log: [],
+        programme: {
+          stories: { 'US-0183': { status: 'Planned' } },
+        },
+      }),
+    );
   });
   afterEach(() => fs.rmSync(tmpdir, { recursive: true, force: true }));
 
