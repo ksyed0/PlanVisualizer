@@ -1,5 +1,29 @@
 'use strict';
 
+/**
+ * Multi-entity, multi-file write transaction wrapper.
+ *
+ * Usage:
+ *   await repo.transaction(async (tx) => {
+ *     await tx.stories.update('US-0001', s => { s.status = 'Done'; });
+ *     await tx.acs.update('AC-0001', a => { a.checked = true; });
+ *   });
+ *
+ * Read-Your-Own-Writes: staged writes are visible to subsequent
+ * tx.X.get(id) calls within the same callback.
+ *
+ * GUIDELINE — keep the callback minimal:
+ *   The transaction opens SQLite BEGIN DEFERRED at the start of the
+ *   callback. Once the first write fires, SQLite holds a write lock
+ *   until COMMIT. A callback that awaits network I/O, reads unrelated
+ *   files, or sleeps holds that lock and blocks concurrent writers.
+ *
+ *   Stage your writes and return. Don't await anything inside
+ *   repo.transaction(...) that isn't a tx.X.* call.
+ *
+ * This is documentation-only — there is no runtime enforcement.
+ */
+
 const fs = require('fs');
 const { acquireMany } = require('./file-lock');
 
