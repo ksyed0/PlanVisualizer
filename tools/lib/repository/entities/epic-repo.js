@@ -1,5 +1,13 @@
 'use strict';
+const path = require('path');
+const fs = require('fs');
 const { BaseRepo } = require('./base-repo');
+const { replaceBlock } = require('../markdown-mutator');
+const { serialize: serializeEpic } = require('../serializers/epic-serializer');
+const { parseReleasePlan } = require('../../parse-release-plan');
+const { ValidationError } = require('../errors');
+const { withFileLock } = require('../file-lock');
+const { indexReleasePlan } = require('../indexers/release-plan-indexer');
 
 function mapEpic(r) {
   return {
@@ -13,12 +21,75 @@ function mapEpic(r) {
 }
 
 class EpicRepo extends BaseRepo {
-  constructor(index, root) {
+  constructor(index, root, markdown) {
     super({ index, table: 'epics', mapRow: mapEpic, root });
+    this._markdown = markdown;
   }
   list({ status } = {}) {
     if (status) return this.index.prepare('SELECT * FROM epics WHERE status=? ORDER BY id').all(status).map(mapEpic);
     return this.index.prepare('SELECT * FROM epics ORDER BY id').all().map(mapEpic);
+  }
+
+  async update(id, fn) {
+    const current = this.get(id);
+    if (!current) throw new Error(`EpicRepo.update: ${id} not found`);
+
+    const idRegex = new RegExp(`^${id}\\b`);
+    const releasePlanPath = path.join(this._root, 'docs', 'RELEASE_PLAN.md');
+
+    await replaceBlock({
+      path: releasePlanPath,
+      idRegex,
+      mutator: (body) => {
+        const parsed = parseReleasePlan('```\n' + body + '```\n');
+        if (parsed.epics.length !== 1) {
+          throw new Error(`EpicRepo.update: expected 1 parsed epic, got ${parsed.epics.length}`);
+        }
+        const draft = parsed.epics[0];
+        fn(draft);
+        return serializeEpic(draft);
+      },
+    });
+
+    // Re-ingest via existing indexer (idempotent, delete-then-insert).
+    indexReleasePlan({
+      index: this.index,
+      markdown: {
+        absolute: (rel) => path.join(this._root, rel),
+      },
+      rel: 'docs/RELEASE_PLAN.md',
+    });
+  }
+
+  async create(entity) {
+    if (this.get(entity.id)) {
+      throw new ValidationError(`EpicRepo.create: ${entity.id} already exists`, {
+        code: 'DUPLICATE_ID',
+        details: { id: entity.id },
+      });
+    }
+
+    // Serialize and validate.
+    const body = serializeEpic(entity);
+
+    const releasePlanPath = path.join(this._root, 'docs', 'RELEASE_PLAN.md');
+    await withFileLock(releasePlanPath, async () => {
+      const text = fs.readFileSync(releasePlanPath, 'utf8');
+      const sep = text.endsWith('\n') ? '\n' : '\n\n';
+      const next = text + sep + '```\n' + body + '```\n';
+      const tmp = releasePlanPath + '.tmp';
+      fs.writeFileSync(tmp, next);
+      fs.renameSync(tmp, releasePlanPath);
+    });
+
+    // Re-ingest.
+    indexReleasePlan({
+      index: this.index,
+      markdown: {
+        absolute: (rel) => path.join(this._root, rel),
+      },
+      rel: 'docs/RELEASE_PLAN.md',
+    });
   }
 }
 module.exports = { EpicRepo };

@@ -7,7 +7,9 @@
 /**
  * Extracts all fenced code blocks (``` ... ```) from markdown text.
  * Returns array of block content strings.
+ * @deprecated Kept for reference; parseReleasePlan uses blank-line chunking (BUG-0158 fix).
  */
+// eslint-disable-next-line no-unused-vars
 function extractCodeBlocks(md) {
   // Line-by-line state machine — correctly handles adjacent fences like
   // ```\n\n``` which previously broke regex-based pairing and dropped content
@@ -113,6 +115,9 @@ function parseStoryBlock(text) {
     prNumber: prMatch ? parseInt(prMatch[1], 10) : null,
     specPath: get('Spec') || null,
     planPath: get('Plan') || null,
+    planTask: get('Plan Task') || null,
+    relatedBug: get('Related Bug') || null,
+    doneDate: get('DoneDate') || null,
     acs: parseACs(text),
     dependencies: parseDeps(get('Dependencies')),
   };
