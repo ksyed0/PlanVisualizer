@@ -23,9 +23,10 @@ Persistent semantic knowledge base. Topic files in `docs/memory/`. Updated autom
 
 ## Sessions
 
-- ◐ [Session 60 — EPIC-0040 Planning (brainstorm → spec → 8 plans → cross-plan review → merge)](docs/memory/sessions/2026-05-24-session-60-epic-0040-planning.md) · 2026-05-24
-- ● [Session 59 — EPIC-0045 Phase E COMPLETE (all 5 stories shipped, 4 hard gates closed)](docs/memory/sessions/2026-05-24-session-59-phase-e-complete.md) · 2026-05-24
-- ◐ [Session 58 — Phase E partial (US-0259/US-0263/US-0260 shipped; US-0262/US-0261 remain)](docs/memory/sessions/2026-05-23-session-58-phase-e-partial.md) · 2026-05-23
+- ◐ [Session 61 — EPIC-0040 COMPLETE (8 stories shipped, 4 hard gates closed)](docs/memory/sessions/2026-05-25-session-61-epic-0040-complete.md) · 2026-05-25
+- ◐ [Session 59 — EPIC-0045 Phase E COMPLETE (US-0259..US-0263 all shipped)](docs/memory/sessions/2026-05-24-session-59-phase-e-complete.md) · 2026-05-24
+- ◐ [Session 60 — EPIC-0040 Planning (Brainstorm → Spec → 8 Plans → Cross-Plan Review → Merge)](docs/memory/sessions/2026-05-24-session-60-epic-0040-planning.md) · 2026-05-24
+- ◐ [Session 58 — Phase E partial (US-0259, US-0263, US-0260 shipped; US-0262, US-0261 remain)](docs/memory/sessions/2026-05-23-session-58-phase-e-partial.md) · 2026-05-23
 - ◐ [Session 57 — Phase D Complete (SdlcStatus Cutover, EPIC-0039 Done)](docs/memory/sessions/2026-05-22-session-57-phase-d-complete.md) · 2026-05-22
 - ◐ [Session 54 — Phase C.5 Indexer Hardening (EPIC-0042 Done, AC-0911 Closed)](docs/memory/sessions/2026-05-21-session-54-phase-c5-complete.md) · 2026-05-21
 - ◐ [Session 55 — Post-C.5 Indexer Hygiene (EPIC-0043 Done, ENH-0003/0004 resolved)](docs/memory/sessions/2026-05-21-session-55-post-c5-hygiene-complete.md) · 2026-05-21

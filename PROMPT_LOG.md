@@ -6,6 +6,30 @@ Timestamped log of every user prompt across all sessions. Append-only. Never edi
 
 ---
 
+## Session 61 — 2026-05-25 — EPIC-0040 EXECUTION (8 stories shipped, 4 hard gates closed)
+
+| #   | Timestamp            | Prompt                                                                                                                                                                                    |
+| --- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | 2026-05-25T17:00:00Z | gh pr view 1118 --json state --jq .state / gh pr view 1119 --json state --jq .state                                                                                                       |
+| 2   | 2026-05-25T17:05:00Z | clean up all unused branches                                                                                                                                                              |
+| 3   | 2026-05-25T17:10:00Z | review whats in funny-cohen                                                                                                                                                               |
+| 4   | 2026-05-25T17:15:00Z | ok remove it [delete the abandoned funny-cohen worktree + branch]                                                                                                                         |
+| 5   | 2026-05-25T17:20:00Z | Execute EPIC-0040 (8 stories, US-0240 through US-0247) end-to-end using superpowers:subagent-driven-development … Start with US-0240. Begin. [full execution contract — 8 stories serial] |
+| 6   | 2026-05-25T18:00:00Z | Spawn fresh session per story (Recommended) [chip spawn decision after US-0240 Task 1]                                                                                                    |
+| 7   | 2026-05-25T18:15:00Z | [chip prompt pasted back] Execute US-0241 of EPIC-0040 …                                                                                                                                  |
+| 8   | 2026-05-25T18:30:00Z | Continue from where you left off.                                                                                                                                                         |
+| 9   | 2026-05-25T18:35:00Z | continue [resume after US-0241 merge]                                                                                                                                                     |
+| 10  | 2026-05-25T19:05:00Z | Fix with O_NOFOLLOW + mkdtemp for tests (Recommended) [CodeQL resolution for US-0243]                                                                                                     |
+| 11  | 2026-05-25T19:25:00Z | Relocate snapshot dir to <root>/.pv-cache/docs-pre-norm/ (Recommended) [second CodeQL resolution after suppressions failed]                                                               |
+| 12  | 2026-05-25T19:50:00Z | continue [start US-0242]                                                                                                                                                                  |
+| 13  | 2026-05-25T20:30:00Z | are you using superpowers executing plan skill                                                                                                                                            |
+| 14  | 2026-05-25T20:35:00Z | no, continue with subagent-driven development for the next items in scope [start US-0244]                                                                                                 |
+| 15  | 2026-05-25T20:50:00Z | continue [start US-0245]                                                                                                                                                                  |
+| 16  | 2026-05-25T21:10:00Z | continue [start US-0246]                                                                                                                                                                  |
+| 17  | 2026-05-25T21:30:00Z | continue [start US-0247 — close-out]                                                                                                                                                      |
+
+---
+
 ## Session 60 — 2026-05-24 — EPIC-0040 Planning (spec + 8 plans shipped; cross-plan review applied; merged)
 
 | #   | Timestamp            | Prompt                                                                                                                                                                                                   |
