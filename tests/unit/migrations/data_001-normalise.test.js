@@ -118,4 +118,35 @@ describe('US-0243 / AC-0950..0952: Migration 001', () => {
     const after = fs.readFileSync(filePath, 'utf8');
     expect(after).toContain('TC-0001');
   });
+
+  // Security regression: writeFileNoFollow must refuse to follow a hostile
+  // symlink at the snapshot path. CodeQL (js/insecure-temporary-file) flagged
+  // the original fs.writeFileSync on /tmp/docs-pre-norm/<basename>; the
+  // O_NOFOLLOW wrapper closes the symlink-clobber attack vector.
+  it('refuses to write through a hostile symlink at the snapshot path (ELOOP)', async () => {
+    root = mkRoot();
+    const filePath = path.join(root, 'docs', 'RELEASE_PLAN.md');
+    fs.writeFileSync(filePath, SAMPLE_PLAN);
+
+    const snapPath = '/tmp/docs-pre-norm/RELEASE_PLAN.md';
+    // Pre-clean any existing snapshot, then plant a symlink to a sensitive
+    // target. The migration's writeFileNoFollow MUST throw ELOOP rather than
+    // overwrite the symlink target.
+    fs.mkdirSync('/tmp/docs-pre-norm', { recursive: true });
+    if (fs.existsSync(snapPath) || fs.lstatSync(snapPath, { throwIfNoEntry: false })) {
+      fs.unlinkSync(snapPath);
+    }
+    const hostileTarget = fs.mkdtempSync(path.join(os.tmpdir(), 'sensitive-')) + '/secret.txt';
+    fs.writeFileSync(hostileTarget, 'original-secret-contents');
+    fs.symlinkSync(hostileTarget, snapPath);
+
+    await expect(migration.up({ root })).rejects.toThrow(/ELOOP|symbolic link/i);
+
+    // The symlink target must be untouched.
+    expect(fs.readFileSync(hostileTarget, 'utf8')).toBe('original-secret-contents');
+
+    // Clean up so subsequent tests aren't affected.
+    fs.unlinkSync(snapPath);
+    fs.rmSync(path.dirname(hostileTarget), { recursive: true, force: true });
+  });
 });

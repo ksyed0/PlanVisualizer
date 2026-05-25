@@ -25,6 +25,27 @@ const { replaceBlockInText } = require('../repository/markdown-mutator');
 
 const SNAPSHOT_DIR = '/tmp/docs-pre-norm';
 
+/**
+ * Write `content` to `filePath` refusing to follow symlinks at the final path
+ * component (O_NOFOLLOW). Replaces `fs.writeFileSync` for paths under
+ * /tmp/docs-pre-norm/ where CodeQL's js/insecure-temporary-file rule warns
+ * about predictable temp paths. We keep the predictable location (the spec
+ * mandates it for human review) but defend against symlink-clobber attacks.
+ *
+ * If the final component is a symlink, fs.openSync throws ELOOP and the
+ * migration aborts — the caller MUST treat any failure here as a security
+ * stop, not a transient I/O glitch.
+ */
+function writeFileNoFollow(filePath, content) {
+  const flags = fs.constants.O_WRONLY | fs.constants.O_CREAT | fs.constants.O_TRUNC | fs.constants.O_NOFOLLOW;
+  const fd = fs.openSync(filePath, flags, 0o644);
+  try {
+    fs.writeSync(fd, content);
+  } finally {
+    fs.closeSync(fd);
+  }
+}
+
 function renderReleasePlan(text) {
   const { parseReleasePlan } = require('../parse-release-plan');
   const { serialize: serializeStory } = require('../repository/serializers/story-serializer');
@@ -124,7 +145,7 @@ async function up({ root }) {
 
     const input = fs.readFileSync(filePath, 'utf8');
     const snapPath = path.join(SNAPSHOT_DIR, path.basename(filePath));
-    fs.writeFileSync(snapPath, input);
+    writeFileNoFollow(snapPath, input);
 
     const render = KIND_RENDER[target.kind];
     const pass1 = render(input);
@@ -132,7 +153,7 @@ async function up({ root }) {
 
     if (pass1 !== pass2) {
       const diffPath = path.join(SNAPSHOT_DIR, `_pass1-vs-pass2-${path.basename(filePath)}.diff`);
-      fs.writeFileSync(diffPath, `=== pass1 ===\n${pass1}\n=== pass2 ===\n${pass2}\n`);
+      writeFileNoFollow(diffPath, `=== pass1 ===\n${pass1}\n=== pass2 ===\n${pass2}\n`);
       throw new SerializerStabilityError(`Migration 001: pass1 !== pass2 for ${target.rel}; see ${diffPath}`, {
         pass1,
         pass2,

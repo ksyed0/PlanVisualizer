@@ -34,6 +34,11 @@ for (const f of report.perFile) {
   }
   lines.push('');
 }
-fs.writeFileSync(OUT_PATH, lines.join('\n'));
+// Write with O_NOFOLLOW so a hostile symlink at OUT_PATH can't redirect
+// our write to a sensitive file (CodeQL js/insecure-temporary-file).
+const flags = fs.constants.O_WRONLY | fs.constants.O_CREAT | fs.constants.O_TRUNC | fs.constants.O_NOFOLLOW;
+const fd = fs.openSync(OUT_PATH, flags, 0o644);
+fs.writeSync(fd, lines.join('\n'));
+fs.closeSync(fd);
 console.log(`Wrote ${OUT_PATH} (${report.totalDivergences} divergences across ${report.totalEntities} entities).`);
 if (report.totalDivergences > 0) process.exit(1);

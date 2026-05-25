@@ -5,8 +5,12 @@ const os = require('os');
 const path = require('path');
 const { auditFile, auditAll } = require('../../../tools/lib/repository/round-trip-audit');
 
+// mkdtempSync gives an OS-guaranteed-unique directory — avoids the
+// predictable-path / symlink-clobber issue CodeQL flags with
+// js/insecure-temporary-file when using Date.now() + Math.random().
 function tmp(content, ext = '.md') {
-  const p = path.join(os.tmpdir(), `audit-${Date.now()}-${Math.random()}${ext}`);
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'audit-'));
+  const p = path.join(dir, `audit${ext}`);
   fs.writeFileSync(p, content);
   return p;
 }
