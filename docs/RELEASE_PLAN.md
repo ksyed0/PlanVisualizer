@@ -4417,7 +4417,8 @@ Phase E of Step 1. The biggest payload of code: write APIs for human-authored en
 EPIC-0040: Step 1 Persistence — Planning Writers (Phase E)
 Description: Write APIs for stories, epics, ACs, bugs, lessons, test_cases, id_registry land with AST-preserving serializers. ID allocator bypasses the index and writes ID_REGISTRY.md under a file lock. repo.transaction((tx) => ...) lands with lexicographic lock acquisition + batched markdown writes at commit. Migration 001 normalises fenced blocks one-shot; user reviews the diff. agent-context.js, generate-plan.js (writer paths), and sync-github.js migrate in one PR. Final round-trip gate on post-Migration-001 production files.
 Release Target: v2.5.0
-Status: To Do
+Status: Done
+DoneDate: 2026-05-25
 Dependencies: EPIC-0039
 
 ```
@@ -4429,16 +4430,19 @@ Dependencies: EPIC-0039
 US-0240 (EPIC-0040): As any planning writer, I want update/create APIs on stories, epics, ACs, bugs, lessons, test_cases, planning_tasks with AST-preserving serializers, so that mutations replace exactly the targeted fenced block.
 Priority: High (P1)
 Estimate: XL
-Status: To Do
+Status: Done
+Branch: feature/US-0240-writer-apis
+PR: #1124
+DoneDate: 2026-05-25
 Plan Task: E.1
 Dependencies: US-0230 (EPIC-0038), US-0218 (EPIC-0036)
 Acceptance Criteria:
 
-- [ ] AC-0938: story-repo.update(id, fn) reads under file lock, applies fn to a draft, validates, AST-replaces, and mirrors to SQL
-- [ ] AC-0939: same pattern implemented for epic-repo, ac-repo, bug-repo, lesson-repo, test-case-repo, task-repo
-- [ ] AC-0940: serializers/{entity}-serializer.js emits the canonical fenced-block body matching current production file formatting
-- [ ] AC-0941: ValidationError thrown on invalid Status enum, duplicate ID, or malformed block (error-tier per validation.js)
-- [ ] AC-0942: surrounding prose remains byte-identical after any update (regression test against fixture)
+- [x] AC-0938: story-repo.update(id, fn) reads under file lock, applies fn to a draft, validates, AST-replaces, and mirrors to SQL
+- [x] AC-0939: same pattern implemented for epic-repo, ac-repo, bug-repo, lesson-repo, test-case-repo, task-repo
+- [x] AC-0940: serializers/{entity}-serializer.js emits the canonical fenced-block body matching current production file formatting
+- [x] AC-0941: ValidationError thrown on invalid Status enum, duplicate ID, or malformed block (error-tier per validation.js)
+- [x] AC-0942: surrounding prose remains byte-identical after any update (regression test against fixture)
 
 ```
 
@@ -4447,14 +4451,17 @@ Acceptance Criteria:
 US-0241 (EPIC-0040): As a story creator, I want repo.idRegistry.allocate(sequence, count) that bypasses the index and reads/writes ID_REGISTRY.md under a file lock, so that allocations never collide across concurrent writers.
 Priority: High (P1)
 Estimate: M
-Status: To Do
+Status: Done
+Branch: feature/US-0241-id-allocator
+PR: #1126
+DoneDate: 2026-05-25
 Plan Task: E.2
 Related Bug: BUG-0258
 Acceptance Criteria:
 
-- [ ] AC-0943: id-allocator.js reads ID_REGISTRY.md inside withFileLock, bumps next_id by count, returns the allocated IDs
-- [ ] AC-0944: bumps last_assigned to the highest allocated ID; rewrites the registry table row in place preserving column alignment
-- [ ] AC-0945: count=1 returns a string; count>1 returns an array of contiguous IDs
+- [x] AC-0943: id-allocator.js reads ID_REGISTRY.md inside withFileLock, bumps next_id by count, returns the allocated IDs
+- [x] AC-0944: bumps last_assigned to the highest allocated ID; rewrites the registry table row in place preserving column alignment
+- [x] AC-0945: count=1 returns a string; count>1 returns an array of contiguous IDs
 
 ```
 
@@ -4463,15 +4470,18 @@ Acceptance Criteria:
 US-0242 (EPIC-0040): As any multi-entity writer, I want repo.transaction((tx) => ...) that batches markdown writes until commit in lexicographic lock order, so that story+ACs+ID-registry mutations are atomic.
 Priority: High (P1)
 Estimate: L
-Status: To Do
+Status: Done
+Branch: feature/US-0242-transaction-wrapper
+PR: #1131
+DoneDate: 2026-05-25
 Plan Task: E.3
 Dependencies: US-0240 (EPIC-0040), US-0241 (EPIC-0040)
 Acceptance Criteria:
 
-- [ ] AC-0946: transaction(fn) opens a SQLite BEGIN, runs fn against a proxy, acquires file locks in lexicographic path order, flushes pending markdown writes, COMMITs
-- [ ] AC-0947: throw inside fn rolls back SQLite and discards staged markdown writes (no files modified)
-- [ ] AC-0948: tx.idRegistry.allocate inside a transaction reserves IDs but doesn't write ID_REGISTRY.md until commit; another process blocks on the lock
-- [ ] AC-0949: each entity repo implements an \*InTransaction variant that stages into ctx.pendingWrites
+- [x] AC-0946: transaction(fn) opens a SQLite BEGIN, runs fn against a proxy, acquires file locks in lexicographic path order, flushes pending markdown writes, COMMITs
+- [x] AC-0947: throw inside fn rolls back SQLite and discards staged markdown writes (no files modified)
+- [x] AC-0948: tx.idRegistry.allocate inside a transaction reserves IDs but doesn't write ID_REGISTRY.md until commit; another process blocks on the lock
+- [x] AC-0949: each entity repo implements an \*InTransaction variant that stages into ctx.pendingWrites
 
 ```
 
@@ -4480,14 +4490,17 @@ Acceptance Criteria:
 US-0243 (EPIC-0040): As an upgrading user, I want Migration 001 to normalise all managed markdown via two-pass AST round-trip, so that Phase E writes start from a canonical baseline.
 Priority: High (P1)
 Estimate: M
-Status: To Do
+Status: Done
+Branch: feature/US-0243-migration-001
+PR: #1129
+DoneDate: 2026-05-25
 Plan Task: E.4
 Dependencies: US-0218 (EPIC-0036)
 Acceptance Criteria:
 
-- [ ] AC-0950: migrations/001-normalise-fenced-blocks.js applies parse→serialise→parse→serialise to RELEASE_PLAN.md, BUGS.md, LESSONS.md, TEST_CASES.md, ID_REGISTRY.md
-- [ ] AC-0951: writes back only when result differs from input; second run is a no-op
-- [ ] AC-0952: user reviews the diff against /tmp/docs-pre-norm before committing; explicit human approval gate
+- [x] AC-0950: migrations/001-normalise-fenced-blocks.js applies parse→serialise→parse→serialise to RELEASE_PLAN.md, BUGS.md, LESSONS.md, TEST_CASES.md (ID_REGISTRY.md excluded — pipe-table format has no serializer; US-0241's id-allocator manipulates rows in-place)
+- [x] AC-0951: writes back only when result differs from input; second run is a no-op
+- [x] AC-0952: user reviews the diff against <root>/.pv-cache/docs-pre-norm before committing; explicit human approval gate (relocated from /tmp/ per CodeQL js/insecure-temporary-file)
 
 ```
 
@@ -4496,14 +4509,17 @@ Acceptance Criteria:
 US-0244 (EPIC-0040): As the context curator, I want tools/agent-context.js to write any managed-path mutations through the repository, so that the Phase F CI rule passes.
 Priority: Medium (P2)
 Estimate: S
-Status: To Do
+Status: Done
+Branch: feature/US-0244-agent-context
+PR: #1133
+DoneDate: 2026-05-25
 Plan Task: E.5
 Dependencies: US-0240 (EPIC-0040)
 Acceptance Criteria:
 
-- [ ] AC-0953: tools/agent-context.js any task-summary update uses repo.sdlcTasks.upsert
-- [ ] AC-0954: tests/integration/agent-context-flow.test.js passes
-- [ ] AC-0955: grep -n "fs.write\|fs.append" tools/agent-context.js shows only writes to exempt paths
+- [x] AC-0953: tools/agent-context.js any task-summary update uses repo.sdlcTasks.upsert (Outcome A: Phase D already migrated; hard-gate test prevents regression)
+- [x] AC-0954: tests/integration/agent-context-flow.test.js passes
+- [x] AC-0955: grep -n "fs.write\|fs.append" tools/agent-context.js shows only writes to exempt paths (zero managed writes today; locked by tests/integration/agent-context-grep-no-direct-writes.test.js)
 
 ```
 
@@ -4512,14 +4528,17 @@ Acceptance Criteria:
 US-0245 (EPIC-0040): As the dashboard builder, I want tools/generate-plan.js writer paths (status patching, story-row updates) to go through the repository, so that the build never bypasses the abstraction.
 Priority: High (P1)
 Estimate: M
-Status: To Do
+Status: Done
+Branch: feature/US-0245-generate-plan
+PR: #1135
+DoneDate: 2026-05-25
 Plan Task: E.6
 Dependencies: US-0240 (EPIC-0040)
 Acceptance Criteria:
 
-- [ ] AC-0956: any patchDOM-driven status writes use repo.stories.update
-- [ ] AC-0957: npm run plan:generate && npm run plan:lint reports zero errors
-- [ ] AC-0958: legacy markdown writes removed from generate-plan.js (or routed via repo)
+- [x] AC-0956: any patchDOM-driven status writes use repo.stories.update (closed as "no surface area" — no patchDOM affordance exists in generate-plan.js; hard-gate test prevents future regression)
+- [x] AC-0957: npm run plan:generate && npm run plan:lint reports zero errors (verified: 0 errors, 0 warnings, 0 reports)
+- [x] AC-0958: legacy markdown writes removed from generate-plan.js (or routed via repo) — only 2 writes exist, both to exempt generated outputs (plan-status.json, plan-status.html)
 
 ```
 
@@ -4528,14 +4547,17 @@ Acceptance Criteria:
 US-0246 (EPIC-0040): As the GitHub sync, I want tools/sync-github.js to update story PR numbers via the repository, so that GitHub-driven writes participate in the same lock + index pipeline.
 Priority: Medium (P2)
 Estimate: S
-Status: To Do
+Status: Done
+Branch: feature/US-0246-sync-github
+PR: #1137
+DoneDate: 2026-05-25
 Plan Task: E.7
 Dependencies: US-0240 (EPIC-0040)
 Acceptance Criteria:
 
-- [ ] AC-0959: any RELEASE_PLAN.md mutation in sync-github.js becomes repo.stories.update(id, s => { s.prNumber = N; })
-- [ ] AC-0960: existing sync-github integration tests pass
-- [ ] AC-0961: grep -n "fs.write" tools/sync-github.js shows only writes to exempt paths
+- [x] AC-0959: any RELEASE_PLAN.md mutation in sync-github.js becomes repo.stories.update(id, s => { s.prNumber = N; }) (closed as "no surface area in sync-github.js" — PR-number updates live in sync-stories.js)
+- [x] AC-0960: existing sync-github integration tests pass (created tests/integration/sync-github-flow.test.js)
+- [x] AC-0961: grep -n "fs.write" tools/sync-github.js shows only writes to exempt paths (locked by tests/integration/sync-github-grep-no-managed-writes.test.js + new BugRepo.listAll() closes the parse-bugs gap)
 
 ```
 
@@ -4544,13 +4566,16 @@ Acceptance Criteria:
 US-0247 (EPIC-0040): As the maintainer, I want the round-trip harness re-run against post-Migration-001 production files as the Phase E gate, so that prose-preservation regressions surface before Phase F.
 Priority: High (P1)
 Estimate: S
-Status: To Do
+Status: Done
+Branch: feature/US-0247-phase-e-hard-gate
+PR: #TBD
+DoneDate: 2026-05-25
 Plan Task: E.8
 Dependencies: US-0243 (EPIC-0040)
 Acceptance Criteria:
 
-- [ ] AC-0962: tests/integration/repository/round-trip.test.js asserts byte-identical (not just idempotent) after Migration 001 has run
-- [ ] AC-0963: Phase E hard gate verified — no fs.write outside the repo (per allowlist), round-trip byte-identical, plan:lint zero errors
+- [x] AC-0962: tests/integration/repository/epic-0040-hard-gates.test.js asserts byte-identical round-trip on 917 entities (231 stories + 38 epics + 227 bugs + 89 lessons + 332 test cases) after Migration 001
+- [x] AC-0963: Phase E hard gate verified — 4 describe blocks: round-trip byte-identity, no managed fs.write in 3 consumers, plan:lint zero errors, all 6 per-consumer integration tests exist
 
 ```
 
