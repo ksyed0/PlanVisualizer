@@ -172,4 +172,39 @@ describe('US-0242 / AC-0946: repo.transaction wrapper', () => {
     });
     expect(repo.testCases.get('TC-0001').status).toBe('Pass'); // committed
   });
+
+  it('AC-0948: tx.idRegistry.allocate reserves in-memory; ID_REGISTRY.md unchanged until commit', async () => {
+    root = mkRoot();
+    const SEED_REGISTRY = `# ID Registry\n\n| **Sequence** | **Next Available ID** | **Last Assigned** |\n| ------------ | --------------------- | ----------------- |\n| US           | US-0264               | US-0263           |\n`;
+    fs.writeFileSync(path.join(root, 'docs', 'ID_REGISTRY.md'), SEED_REGISTRY);
+    if (Repository._reset) Repository._reset();
+    const repo = Repository.getInstance({ root });
+
+    let mid;
+    await repo.transaction(async (tx) => {
+      const id = await tx.idRegistry.allocate('US');
+      expect(id).toBe('US-0264');
+      mid = fs.readFileSync(path.join(root, 'docs', 'ID_REGISTRY.md'), 'utf8');
+      expect(mid).toBe(SEED_REGISTRY);
+      const id2 = await tx.idRegistry.allocate('US');
+      expect(id2).toBe('US-0265');
+    });
+    const after = fs.readFileSync(path.join(root, 'docs', 'ID_REGISTRY.md'), 'utf8');
+    expect(after).toContain('| US           | US-0266               | US-0265           |');
+  });
+
+  it('AC-0948: tx rollback discards in-tx allocations', async () => {
+    root = mkRoot();
+    const SEED_REGISTRY = `# ID Registry\n\n| **Sequence** | **Next Available ID** | **Last Assigned** |\n| ------------ | --------------------- | ----------------- |\n| US           | US-0264               | US-0263           |\n`;
+    fs.writeFileSync(path.join(root, 'docs', 'ID_REGISTRY.md'), SEED_REGISTRY);
+    if (Repository._reset) Repository._reset();
+    const repo = Repository.getInstance({ root });
+    await expect(
+      repo.transaction(async (tx) => {
+        await tx.idRegistry.allocate('US', 5);
+        throw new Error('intentional');
+      }),
+    ).rejects.toThrow('intentional');
+    expect(fs.readFileSync(path.join(root, 'docs', 'ID_REGISTRY.md'), 'utf8')).toBe(SEED_REGISTRY);
+  });
 });
