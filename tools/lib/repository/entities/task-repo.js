@@ -11,17 +11,21 @@ class TaskRepo extends BaseRepo {
     this._getStoryRepo = storyRepoGetter;
   }
 
-  async update(id, fn) {
+  async update(id, fn, opts = {}) {
     const current = this.get(id);
     if (!current) throw new Error(`TaskRepo.update: ${id} not found`);
     const storyRepo = this._getStoryRepo();
-    await storyRepo.update(current.storyId, (story) => {
-      // Tasks are stored on story.tasks
-      const tasks = story.tasks || [];
-      const target = tasks.find((t) => t.id === id);
-      if (!target) throw new Error(`TaskRepo.update: ${id} not in story ${current.storyId} block`);
-      fn(target);
-    });
+    await storyRepo.update(
+      current.storyId,
+      (story) => {
+        // Tasks are stored on story.tasks
+        const tasks = story.tasks || [];
+        const target = tasks.find((t) => t.id === id);
+        if (!target) throw new Error(`TaskRepo.update: ${id} not in story ${current.storyId} block`);
+        fn(target);
+      },
+      opts,
+    );
   }
 }
 module.exports = { TaskRepo };
