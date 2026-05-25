@@ -8,8 +8,16 @@
  * EXCLUDES docs/ID_REGISTRY.md — pipe-table format has no serializer; US-0241's
  * id-allocator manipulates rows in-place rather than via parse-serialize.
  *
- * Algorithm (spec §4.3):
- *   1. Snapshot each managed file to /tmp/docs-pre-norm/<basename>.
+ * Snapshot location: `<root>/.pv-cache/docs-pre-norm/<basename>` — relocated
+ * from the original /tmp/docs-pre-norm/ to a project-local cache directory.
+ * The relocation closes CodeQL's js/insecure-temporary-file alert (predictable
+ * /tmp paths flagged as symlink-clobber risk) and makes the snapshots more
+ * discoverable — they sit next to the project. The .pv-cache/ dir is
+ * gitignored. The O_NOFOLLOW defense + symlink regression test are preserved
+ * as defense-in-depth.
+ *
+ * Algorithm (spec §4.3, snapshot location amended per L-followup):
+ *   1. Snapshot each managed file to <root>/.pv-cache/docs-pre-norm/<basename>.
  *   2. Pass 1: render canonical text from parsed entities.
  *   3. Pass 2: render canonical text from the result of pass 1.
  *   4. If pass1 !== pass2: throw SerializerStabilityError + write diff sidecar.
@@ -23,14 +31,14 @@ const path = require('path');
 const { SerializerStabilityError } = require('../repository/errors');
 const { replaceBlockInText } = require('../repository/markdown-mutator');
 
-const SNAPSHOT_DIR = '/tmp/docs-pre-norm';
+const SNAPSHOT_SUBDIR = path.join('.pv-cache', 'docs-pre-norm');
 
 /**
  * Write `content` to `filePath` refusing to follow symlinks at the final path
- * component (O_NOFOLLOW). Replaces `fs.writeFileSync` for paths under
- * /tmp/docs-pre-norm/ where CodeQL's js/insecure-temporary-file rule warns
- * about predictable temp paths. We keep the predictable location (the spec
- * mandates it for human review) but defend against symlink-clobber attacks.
+ * component (O_NOFOLLOW). Defense-in-depth: even though the snapshot dir is
+ * now project-local (not /tmp/), refusing to follow symlinks keeps the
+ * symlink-clobber attack vector closed if a hostile process plants a symlink
+ * inside .pv-cache/ before the migration runs.
  *
  * If the final component is a symlink, fs.openSync throws ELOOP and the
  * migration aborts — the caller MUST treat any failure here as a security
@@ -38,11 +46,6 @@ const SNAPSHOT_DIR = '/tmp/docs-pre-norm';
  */
 function writeFileNoFollow(filePath, content) {
   const flags = fs.constants.O_WRONLY | fs.constants.O_CREAT | fs.constants.O_TRUNC | fs.constants.O_NOFOLLOW;
-  // codeql[js/insecure-temporary-file]: well-known path is intentional (spec
-  // §4.3 mandates /tmp/docs-pre-norm/ for human review of the snapshot diff
-  // after migration). The O_NOFOLLOW flag above closes the symlink-clobber
-  // attack vector; regression test in data_001-normalise.test.js plants a
-  // hostile symlink and asserts ELOOP.
   const fd = fs.openSync(filePath, flags, 0o644);
   try {
     fs.writeSync(fd, content);
@@ -138,7 +141,8 @@ const TARGETS = [
 const touches = TARGETS.map((t) => t.rel);
 
 async function up({ root }) {
-  fs.mkdirSync(SNAPSHOT_DIR, { recursive: true });
+  const snapshotDir = path.join(root, SNAPSHOT_SUBDIR);
+  fs.mkdirSync(snapshotDir, { recursive: true });
   const results = [];
 
   for (const target of TARGETS) {
@@ -149,7 +153,7 @@ async function up({ root }) {
     }
 
     const input = fs.readFileSync(filePath, 'utf8');
-    const snapPath = path.join(SNAPSHOT_DIR, path.basename(filePath));
+    const snapPath = path.join(snapshotDir, path.basename(filePath));
     writeFileNoFollow(snapPath, input);
 
     const render = KIND_RENDER[target.kind];
@@ -157,7 +161,7 @@ async function up({ root }) {
     const pass2 = render(pass1);
 
     if (pass1 !== pass2) {
-      const diffPath = path.join(SNAPSHOT_DIR, `_pass1-vs-pass2-${path.basename(filePath)}.diff`);
+      const diffPath = path.join(snapshotDir, `_pass1-vs-pass2-${path.basename(filePath)}.diff`);
       writeFileNoFollow(diffPath, `=== pass1 ===\n${pass1}\n=== pass2 ===\n${pass2}\n`);
       throw new SerializerStabilityError(`Migration 001: pass1 !== pass2 for ${target.rel}; see ${diffPath}`, {
         pass1,
@@ -181,7 +185,7 @@ async function up({ root }) {
   const anyNormalised = results.some((r) => r.status === 'normalised');
   if (anyNormalised) {
     process.stderr.write(
-      `\n✅ Normalised ${results.filter((r) => r.status === 'normalised').length} file(s). Review with:\n     diff -r ${SNAPSHOT_DIR}/ docs/\n   or just \`git diff\`.\n   Then \`git commit\` to keep the changes, or \`git checkout .\` to revert.\n`,
+      `\n✅ Normalised ${results.filter((r) => r.status === 'normalised').length} file(s). Review with:\n     diff -r ${snapshotDir}/ docs/\n   or just \`git diff\`.\n   Then \`git commit\` to keep the changes, or \`git checkout .\` to revert.\n`,
     );
   }
 

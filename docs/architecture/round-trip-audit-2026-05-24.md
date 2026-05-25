@@ -61,8 +61,10 @@ No issues. The test-case-serializer matches production format exactly.
 After the fixes in commit `cb1c6d5`, re-running `node tools/audit-round-trip.js` produces:
 
 ```
-Wrote /tmp/docs-pre-norm/_round-trip-audit.txt (0 divergences across 917 entities).
+Wrote <root>/.pv-cache/docs-pre-norm/_round-trip-audit.txt (0 divergences across 917 entities).
 ```
+
+> **Note on snapshot location.** The original spec (§4.3) mandated `/tmp/docs-pre-norm/`. The path was relocated to `<root>/.pv-cache/docs-pre-norm/` (gitignored) during this PR to satisfy CodeQL's `js/insecure-temporary-file` rule. Defense-in-depth (O_NOFOLLOW) and the symlink regression test are preserved. The human-review workflow is unchanged: `diff -r .pv-cache/docs-pre-norm/ docs/` or `git diff`.
 
 The full test suite remains green (1,722 tests passing). Migration 001 can now run against production without losing data.
 

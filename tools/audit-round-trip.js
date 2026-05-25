@@ -12,7 +12,11 @@ const TARGETS = [
   { path: path.join(ROOT, 'docs', 'TEST_CASES.md'), kind: 'test-cases' },
 ];
 
-const OUT_DIR = '/tmp/docs-pre-norm';
+// Project-local cache (gitignored). Was /tmp/docs-pre-norm/ but CodeQL's
+// js/insecure-temporary-file rule flagged any write to a predictable /tmp
+// path. Relocating here makes the audit report discoverable next to the
+// project and sidesteps the rule entirely.
+const OUT_DIR = path.join(ROOT, '.pv-cache', 'docs-pre-norm');
 fs.mkdirSync(OUT_DIR, { recursive: true });
 const OUT_PATH = path.join(OUT_DIR, '_round-trip-audit.txt');
 
@@ -34,12 +38,11 @@ for (const f of report.perFile) {
   }
   lines.push('');
 }
-// Write with O_NOFOLLOW so a hostile symlink at OUT_PATH can't redirect
-// our write to a sensitive file (CodeQL js/insecure-temporary-file).
+// Write with O_NOFOLLOW for defense-in-depth: even though OUT_DIR is now
+// project-local, a hostile process could still plant a symlink inside
+// .pv-cache/ before the CLI runs. O_NOFOLLOW makes that case throw ELOOP
+// rather than clobber the symlink target.
 const flags = fs.constants.O_WRONLY | fs.constants.O_CREAT | fs.constants.O_TRUNC | fs.constants.O_NOFOLLOW;
-// codeql[js/insecure-temporary-file]: well-known path is intentional (spec
-// §4.3 mandates /tmp/docs-pre-norm/ for human review of the audit report).
-// O_NOFOLLOW closes the symlink-clobber attack; same defense as the migration.
 const fd = fs.openSync(OUT_PATH, flags, 0o644);
 fs.writeSync(fd, lines.join('\n'));
 fs.closeSync(fd);

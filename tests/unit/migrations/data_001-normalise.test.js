@@ -57,12 +57,11 @@ describe('US-0243 / AC-0950..0952: Migration 001', () => {
     expect(parseReleasePlan(after).stories[0].status).toBe('To Do');
   });
 
-  it('AC-0950: snapshots pre-mutation copy to /tmp/docs-pre-norm/', async () => {
+  it('AC-0950: snapshots pre-mutation copy to <root>/.pv-cache/docs-pre-norm/', async () => {
     root = mkRoot();
     const filePath = path.join(root, 'docs', 'RELEASE_PLAN.md');
     fs.writeFileSync(filePath, SAMPLE_PLAN);
-    const snapPath = '/tmp/docs-pre-norm/RELEASE_PLAN.md';
-    if (fs.existsSync(snapPath)) fs.unlinkSync(snapPath);
+    const snapPath = path.join(root, '.pv-cache', 'docs-pre-norm', 'RELEASE_PLAN.md');
     await migration.up({ root });
     expect(fs.existsSync(snapPath)).toBe(true);
     expect(fs.readFileSync(snapPath, 'utf8')).toBe(SAMPLE_PLAN);
@@ -120,22 +119,21 @@ describe('US-0243 / AC-0950..0952: Migration 001', () => {
   });
 
   // Security regression: writeFileNoFollow must refuse to follow a hostile
-  // symlink at the snapshot path. CodeQL (js/insecure-temporary-file) flagged
-  // the original fs.writeFileSync on /tmp/docs-pre-norm/<basename>; the
-  // O_NOFOLLOW wrapper closes the symlink-clobber attack vector.
+  // symlink at the snapshot path. Even though the snapshot dir is now
+  // project-local (<root>/.pv-cache/docs-pre-norm/), defense-in-depth: a
+  // hostile process could plant a symlink inside the cache before the
+  // migration runs. O_NOFOLLOW makes that case throw ELOOP.
   it('refuses to write through a hostile symlink at the snapshot path (ELOOP)', async () => {
     root = mkRoot();
     const filePath = path.join(root, 'docs', 'RELEASE_PLAN.md');
     fs.writeFileSync(filePath, SAMPLE_PLAN);
 
-    const snapPath = '/tmp/docs-pre-norm/RELEASE_PLAN.md';
-    // Pre-clean any existing snapshot, then plant a symlink to a sensitive
-    // target. The migration's writeFileNoFollow MUST throw ELOOP rather than
-    // overwrite the symlink target.
-    fs.mkdirSync('/tmp/docs-pre-norm', { recursive: true });
-    if (fs.existsSync(snapPath) || fs.lstatSync(snapPath, { throwIfNoEntry: false })) {
-      fs.unlinkSync(snapPath);
-    }
+    const snapDir = path.join(root, '.pv-cache', 'docs-pre-norm');
+    const snapPath = path.join(snapDir, 'RELEASE_PLAN.md');
+    // Pre-create the snapshot dir, then plant a symlink to a sensitive target
+    // at the exact write location. The migration's writeFileNoFollow MUST
+    // throw ELOOP rather than overwrite the symlink target.
+    fs.mkdirSync(snapDir, { recursive: true });
     const hostileTarget = fs.mkdtempSync(path.join(os.tmpdir(), 'sensitive-')) + '/secret.txt';
     fs.writeFileSync(hostileTarget, 'original-secret-contents');
     fs.symlinkSync(hostileTarget, snapPath);
@@ -145,8 +143,7 @@ describe('US-0243 / AC-0950..0952: Migration 001', () => {
     // The symlink target must be untouched.
     expect(fs.readFileSync(hostileTarget, 'utf8')).toBe('original-secret-contents');
 
-    // Clean up so subsequent tests aren't affected.
-    fs.unlinkSync(snapPath);
+    // Clean up the hostile target (root + its .pv-cache get cleaned by afterEach).
     fs.rmSync(path.dirname(hostileTarget), { recursive: true, force: true });
   });
 });
