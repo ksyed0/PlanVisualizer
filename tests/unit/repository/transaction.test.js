@@ -139,4 +139,37 @@ describe('US-0242 / AC-0946: repo.transaction wrapper', () => {
     expect(fs.existsSync(path.join(root, 'docs', 'LESSONS.md.tmp'))).toBe(false);
     expect(fs.existsSync(path.join(root, 'docs', 'RELEASE_PLAN.md.tmp'))).toBe(false);
   });
+
+  it('epic tx staging: tx.epics.update stages SQL + commits markdown', async () => {
+    root = mkRoot();
+    fs.writeFileSync(path.join(root, 'docs', 'RELEASE_PLAN.md'), '# Plan\n\n```\nEPIC-0001: e\nStatus: To Do\n```\n');
+    if (Repository._reset) Repository._reset();
+    const repo = Repository.getInstance({ root });
+    indexAll({ index: repo.index, markdown: repo.markdown, warningsChannel: repo.warningsChannel });
+    await repo.transaction(async (tx) => {
+      await tx.epics.update('EPIC-0001', (e) => {
+        e.status = 'Done';
+      });
+      expect(tx.epics.get('EPIC-0001').status).toBe('Done'); // RYOW
+    });
+    expect(repo.epics.get('EPIC-0001').status).toBe('Done'); // committed
+  });
+
+  it('testCase tx staging: tx.testCases.update stages SQL + commits markdown', async () => {
+    root = mkRoot();
+    fs.writeFileSync(
+      path.join(root, 'docs', 'TEST_CASES.md'),
+      '# Test Cases\n\nTC-0001: Sample\nType: unit\nStatus: [ ] Not Run\n',
+    );
+    if (Repository._reset) Repository._reset();
+    const repo = Repository.getInstance({ root });
+    indexAll({ index: repo.index, markdown: repo.markdown, warningsChannel: repo.warningsChannel });
+    await repo.transaction(async (tx) => {
+      await tx.testCases.update('TC-0001', (t) => {
+        t.status = 'Pass';
+      });
+      expect(tx.testCases.get('TC-0001').status).toBe('Pass'); // RYOW
+    });
+    expect(repo.testCases.get('TC-0001').status).toBe('Pass'); // committed
+  });
 });
