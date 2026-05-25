@@ -20,3 +20,7 @@ docs/pending-approvals/
 docs/.pv-state.json
 docs/.pv-state.local.json
 docs/.pv-backup/
+
+# Migration 001 (US-0243) snapshot directory — pre-mutation copies + diff
+# sidecars used for the human-review gate after pv:upgrade.
+.pv-cache/

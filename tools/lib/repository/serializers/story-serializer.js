@@ -47,8 +47,10 @@ function serialize(story) {
     lines.push(`Dependencies: ${story.dependencies.join(', ')}`);
   }
   if (Array.isArray(story.acs) && story.acs.length > 0) {
+    // No blank line before the AC list — parseReleasePlan segments on \n{2,}
+    // and would split the AC items into a separate chunk from the story header,
+    // dropping them on re-parse (round-trip audit revealed this on 2026-05-25).
     lines.push('Acceptance Criteria:');
-    lines.push('');
     for (const ac of story.acs) {
       const check = ac.done ? 'x' : ' ';
       lines.push(`- [${check}] ${ac.id}: ${ac.text}`);

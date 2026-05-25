@@ -3,7 +3,20 @@ const { ValidationError } = require('../errors');
 const { joinLines } = require('./_fence-utils');
 
 const ID_RE = /^BUG-\d+$/;
-const ALLOWED_STATUS = new Set(['Open', 'In Progress', 'Fixed', 'Verified', 'WontFix', 'Closed']);
+// 'Retired' and 'Rejected' added to match real production data (8 bugs in
+// docs/BUGS.md as of 2026-05-25); schema in 004_bugs_status_widen.sql is
+// narrower and will be widened in a future migration. Round-trip audit
+// flagged these on 2026-05-25 — see docs/architecture/round-trip-audit-2026-05-24.md.
+const ALLOWED_STATUS = new Set([
+  'Open',
+  'In Progress',
+  'Fixed',
+  'Verified',
+  'WontFix',
+  'Closed',
+  'Retired',
+  'Rejected',
+]);
 
 function serialize(bug) {
   if (!bug || !ID_RE.test(bug.id || ''))
