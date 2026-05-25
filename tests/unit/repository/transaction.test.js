@@ -97,4 +97,46 @@ describe('US-0242 / AC-0946: repo.transaction wrapper', () => {
     expect(fs.readFileSync(path.join(root, 'docs', 'RELEASE_PLAN.md'), 'utf8')).toBe(SEED);
     expect(repo.stories.get('US-0001').status).toBe('To Do');
   });
+
+  it('AC-0946: transaction writes multiple files without race conditions', async () => {
+    root = mkRoot();
+    fs.writeFileSync(
+      path.join(root, 'docs', 'RELEASE_PLAN.md'),
+      '# Plan\n\n```\nEPIC-0001: e\nStatus: To Do\n```\n\n```\nUS-0001 (EPIC-0001): A\nPriority: High (P1)\nEstimate: M\nStatus: To Do\n```\n',
+    );
+    fs.writeFileSync(path.join(root, 'docs', 'BUGS.md'), 'BUG-0001: B\nSeverity: Low\nStatus: Open\n');
+    fs.writeFileSync(path.join(root, 'docs', 'LESSONS.md'), '## L-0001 — L\n\n**Rule:** sample\n');
+
+    if (Repository._reset) Repository._reset();
+    const repo = Repository.getInstance({ root });
+    indexAll({ index: repo.index, markdown: repo.markdown, warningsChannel: repo.warningsChannel });
+
+    // Verify initial state
+    expect(repo.bugs.get('BUG-0001').status).toBe('Open');
+    expect(repo.lessons.get('L-0001').rule).toBe('sample');
+    expect(repo.stories.get('US-0001').status).toBe('To Do');
+
+    // Execute transaction with updates to all three files
+    await repo.transaction(async (tx) => {
+      await tx.bugs.update('BUG-0001', (b) => {
+        b.status = 'Fixed';
+      });
+      await tx.lessons.update('L-0001', (l) => {
+        l.rule = 'updated';
+      });
+      await tx.stories.update('US-0001', (s) => {
+        s.status = 'Done';
+      });
+    });
+
+    // Verify all updates committed
+    expect(repo.bugs.get('BUG-0001').status).toBe('Fixed');
+    expect(repo.lessons.get('L-0001').rule).toBe('updated');
+    expect(repo.stories.get('US-0001').status).toBe('Done');
+
+    // Verify the markdown files were actually updated (no tmp files left behind)
+    expect(fs.existsSync(path.join(root, 'docs', 'BUGS.md.tmp'))).toBe(false);
+    expect(fs.existsSync(path.join(root, 'docs', 'LESSONS.md.tmp'))).toBe(false);
+    expect(fs.existsSync(path.join(root, 'docs', 'RELEASE_PLAN.md.tmp'))).toBe(false);
+  });
 });
