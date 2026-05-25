@@ -75,7 +75,7 @@ describe('D.8 — pv:upgrade + pv:rollback', () => {
     const up1 = await runCli(upgrade, ['--root', root]);
     expect(up1.rc).toBe(0);
     expect(up1.stdout).toMatch(
-      /2 pending migration\(s\): data_005-ingest-sdlc-status, data_006-ingest-legacy-programme/,
+      /3 pending migration\(s\): data_001-normalise-fenced-blocks, data_005-ingest-sdlc-status, data_006-ingest-legacy-programme/,
     );
     expect(up1.stdout).toMatch(/success — mirror matches SQL/);
 
