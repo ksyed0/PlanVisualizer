@@ -96,6 +96,16 @@ class StoryRepo extends BaseRepo {
       // Deep-clone so the mutator doesn't accidentally affect cached state.
       const draft = JSON.parse(JSON.stringify(current));
 
+      // Attach ACs to the story object for this transaction (needed for AC updates).
+      // Use 'checked' property (consistent with normalization below).
+      if (!draft.acs) {
+        const acs = this.index
+          .prepare('SELECT * FROM acs WHERE story_id=? ORDER BY position')
+          .all(id)
+          .map((r) => ({ id: r.id, storyId: r.story_id, checked: !!r.checked, text: r.text, position: r.position }));
+        draft.acs = acs;
+      }
+
       // Normalize AC objects to use 'checked' instead of 'done' for consistency with AcRepo schema
       if (Array.isArray(draft.acs)) {
         for (const ac of draft.acs) {
