@@ -37,6 +37,9 @@ for (const f of report.perFile) {
 // Write with O_NOFOLLOW so a hostile symlink at OUT_PATH can't redirect
 // our write to a sensitive file (CodeQL js/insecure-temporary-file).
 const flags = fs.constants.O_WRONLY | fs.constants.O_CREAT | fs.constants.O_TRUNC | fs.constants.O_NOFOLLOW;
+// codeql[js/insecure-temporary-file]: well-known path is intentional (spec
+// §4.3 mandates /tmp/docs-pre-norm/ for human review of the audit report).
+// O_NOFOLLOW closes the symlink-clobber attack; same defense as the migration.
 const fd = fs.openSync(OUT_PATH, flags, 0o644);
 fs.writeSync(fd, lines.join('\n'));
 fs.closeSync(fd);

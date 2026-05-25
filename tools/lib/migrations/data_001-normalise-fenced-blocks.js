@@ -38,6 +38,11 @@ const SNAPSHOT_DIR = '/tmp/docs-pre-norm';
  */
 function writeFileNoFollow(filePath, content) {
   const flags = fs.constants.O_WRONLY | fs.constants.O_CREAT | fs.constants.O_TRUNC | fs.constants.O_NOFOLLOW;
+  // codeql[js/insecure-temporary-file]: well-known path is intentional (spec
+  // §4.3 mandates /tmp/docs-pre-norm/ for human review of the snapshot diff
+  // after migration). The O_NOFOLLOW flag above closes the symlink-clobber
+  // attack vector; regression test in data_001-normalise.test.js plants a
+  // hostile symlink and asserts ELOOP.
   const fd = fs.openSync(filePath, flags, 0o644);
   try {
     fs.writeSync(fd, content);
