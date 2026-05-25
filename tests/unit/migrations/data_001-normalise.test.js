@@ -86,4 +86,36 @@ describe('US-0243 / AC-0950..0952: Migration 001', () => {
       storySer.serialize = real;
     }
   });
+
+  it('renderBugs: normalises BUGS.md', async () => {
+    root = mkRoot();
+    const filePath = path.join(root, 'docs', 'BUGS.md');
+    const SAMPLE_BUGS = `# Bugs\n\nBUG-0001: Sample bug\nSeverity: Low\nStatus: Open\n`;
+    fs.writeFileSync(filePath, SAMPLE_BUGS);
+    await migration.up({ root });
+    const after = fs.readFileSync(filePath, 'utf8');
+    expect(after).toContain('BUG-0001');
+    expect(after).toContain('Status: Open');
+  });
+
+  it('renderLessons: normalises LESSONS.md', async () => {
+    root = mkRoot();
+    const filePath = path.join(root, 'docs', 'LESSONS.md');
+    const SAMPLE_LESSONS = `# Lessons\n\n## L-0001 — Sample lesson\n\n**Rule:** be careful\n`;
+    fs.writeFileSync(filePath, SAMPLE_LESSONS);
+    await migration.up({ root });
+    const after = fs.readFileSync(filePath, 'utf8');
+    expect(after).toContain('## L-0001');
+    expect(after).toContain('**Rule:** be careful');
+  });
+
+  it('renderTestCases: normalises TEST_CASES.md', async () => {
+    root = mkRoot();
+    const filePath = path.join(root, 'docs', 'TEST_CASES.md');
+    const SAMPLE_TCS = `# Test Cases\n\nTC-0001: Sample\nType: unit\nStatus: [ ] Not Run\n`;
+    fs.writeFileSync(filePath, SAMPLE_TCS);
+    await migration.up({ root });
+    const after = fs.readFileSync(filePath, 'utf8');
+    expect(after).toContain('TC-0001');
+  });
 });
