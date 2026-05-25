@@ -49,13 +49,11 @@ describe('lesson-serializer', () => {
       ).toThrow(ValidationError);
     });
 
-    it('throws ValidationError on missing rule', () => {
-      expect(() =>
-        serialize({
-          id: 'L-9999',
-          title: 'x',
-        }),
-      ).toThrow(ValidationError);
+    it('does NOT throw on missing rule — production has 15 rule-less lessons (L-0044, L-0051..0074)', () => {
+      // Rule is optional. Serializer skips the **Rule:** line if absent.
+      const out = serialize({ id: 'L-9999', title: 'x' });
+      expect(out).toContain('## L-9999 — x');
+      expect(out).not.toContain('**Rule:**');
     });
 
     it('throws ValidationError on null', () => {
