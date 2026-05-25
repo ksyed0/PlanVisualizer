@@ -4,6 +4,65 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
+## L-0089 — `BEGIN DEFERRED` while the callback awaits is a SQLite-with-async transaction footgun; document the "callback must complete promptly" rule in module JSDoc
+
+@agent: Forge, Lens
+
+**Context:** Session 61, US-0242 (transaction wrapper). `repo.transaction(async (tx) => {...})` opens `BEGIN DEFERRED` at the start of the callback. Once the first write fires inside that callback, SQLite escalates to a RESERVED lock and holds it until `COMMIT`. If the user's callback then `await`s a slow operation (network I/O, unrelated file read, `setTimeout`), the lock stays held — every concurrent writer queues up behind it. Worst case: cross-process writers timeout on `proper-lockfile`'s 30s default and the whole pipeline stalls. No runtime enforcement exists (the wrapper can't know what `await`s are "expected"). The hazard surfaced during design review of US-0242 and was deemed correct-but-dangerous; the mitigation is documentation, not enforcement.
+
+**Rule:** When designing a transaction wrapper that opens a database transaction at the start of an async callback, document the "keep the callback minimal — stage writes and return; don't `await` anything except tx.X.\* calls" rule in module-level JSDoc. The doc is the contract; integration tests that complete quickly are the inverse-canary (if a test hangs, the callback is doing something it shouldn't).
+
+**Prevention:**
+
+- Add the BEGIN-DEFERRED-while-async hazard to module JSDoc on any module exporting a `transaction(fn)` API. Use the language: "Stage your writes and return. Don't await anything inside `repo.transaction(...)` that isn't a `tx.X.*` call."
+- Per-consumer integration tests catch hangs by virtue of completing quickly (Jest's default 5s timeout fires; a hanging callback turns into a CI failure).
+- If a static-analysis follow-up is desired, write a custom ESLint rule that flags non-`tx.*` `await`s inside `repo.transaction()` callback bodies. Rejected here as scope expansion for US-0242; defer to a future cleanup story.
+
+**Date:** 2026-05-25
+
+---
+
+## L-0088 — GitHub-hosted CodeQL Code Scanning does NOT honor inline `// codeql[<rule-id>]` or `// lgtm[...]` comments; only UI dismissal, API dismissal, or path relocation works
+
+@agent: Forge, Lens
+
+**Context:** Session 61, US-0243 (Migration 001). Migration 001 writes pre-mutation snapshots to `/tmp/docs-pre-norm/`. CodeQL's `js/insecure-temporary-file` rule flagged the writes as a symlink-clobber risk (any value flowing from `/tmp/` into `fs.openSync` / `fs.writeFileSync` taints). I added `O_NOFOLLOW` defense at the runtime layer (writeFileNoFollow helper) + a planted-symlink regression test that proves ELOOP on hostile symlinks. That closed the THREAT, but didn't satisfy CodeQL's static analysis (it's path-symbolic, not threat-model-aware). I then attempted `// codeql[js/insecure-temporary-file]` inline suppressions — those don't work in GitHub Code Scanning. The only path forward was relocating from `/tmp/docs-pre-norm/` to `<root>/.pv-cache/docs-pre-norm/` (project-local, gitignored), which broke the path taint at the source.
+
+**Rule:** When CodeQL Code Scanning fails on a PR and the threat model genuinely doesn't apply (or has runtime defense), do NOT spend commits attempting inline-comment suppressions — they're not a feature of GitHub-hosted scanning. The 3 working paths are: (1) dismiss the alert via the GitHub UI ("Used in tests" / "Won't fix"), (2) dismiss via API (`PATCH /repos/.../code-scanning/alerts/<n>`), or (3) refactor so the static-analysis taint breaks at the source.
+
+**Prevention:**
+
+- Default to path/data-flow refactoring before reaching for dismissal — refactoring usually improves the design anyway (project-local cache dirs are a better pattern than `/tmp/` for build artifacts).
+- Reserve UI/API dismissal for genuinely-can't-refactor cases. Document the dismissal reason in the alert's comment field for future reviewers.
+- Pair runtime defense (`O_NOFOLLOW`, etc.) with a regression test that exercises the threat. The defense survives even if CodeQL suppression details change.
+
+**Date:** 2026-05-25
+
+**Resolution:** US-0243 commit `22fcc6e` relocated `SNAPSHOT_DIR` from `/tmp/docs-pre-norm/` to `<root>/.pv-cache/docs-pre-norm/`. CodeQL went from `fail` (4 alerts) → `neutral` (0 alerts). PR #1129 merged.
+
+---
+
+## L-0087 — Round-trip property tests against single-block fixtures don't catch parser-segmentation losses; ALWAYS audit the real corpus before declaring "serializer round-trip clean"
+
+@agent: Forge, Lens
+
+**Context:** Session 61, US-0240 → US-0243. US-0240's `story-serializer.test.js` round-trip tests passed for 19 fixtures — each fixture wrapped a single story in fences, no surrounding prose. Test asserted `parse(serialize(parse(input))) === parse(input)`. All green. Migration 001's pre-flight audit (US-0243) then ran the same shape against the production `RELEASE_PLAN.md` and flagged **84 `acs` field drops**. Root cause: `story-serializer` emitted a blank line between `Acceptance Criteria:` and the AC list. `parseReleasePlan` segments the document by `\n{2,}`. The fixture (with no surrounding blocks) reached the AC items in the same chunk; the real document (many sibling story blocks) split the AC items into a separate chunk that `parseStoryBlock` never saw. Test-fixture geometry hid a bug that production geometry exposed.
+
+**Rule:** When a serializer's round-trip test passes against fixtures, do NOT declare the serializer "round-trip clean." Always run the round-trip audit harness against the actual production corpus before relying on the property. Fixture tests verify the serializer in isolation; the audit verifies it composes correctly with the parser's segmentation behavior over a real document.
+
+**Prevention:**
+
+- Build the round-trip audit harness BEFORE shipping the serializer (spec §4.4 of EPIC-0040 mandated it as a pre-flight prerequisite for Migration 001 — that's why it caught this).
+- Audit reports 0 divergences → trust the serializer. Audit reports ≥1 divergence → triage every one. The fix is either serializer-side (emit a format that survives re-parse) or parser-side (loosen segmentation).
+- Fixture geometry matters. Wrap fixtures in the surrounding context they'll see in production (multiple sibling blocks separated by blank lines, header prose, etc.) rather than in a minimal `# Test\n\n<fenced block>\n` template.
+- The audit harness pattern generalizes: any time you have a parse/serialize pair, run the audit against real data before trusting the property in tests.
+
+**Date:** 2026-05-25
+
+**Resolution:** Fixed in US-0243 commit `cb1c6d5` — removed the blank line from story-serializer's AC emission. Re-running the audit dropped divergences from 107 → 0. The same commit widened bug-serializer's status enum to accept production values (`Retired`, `Rejected`) and made lesson-serializer's `rule` field optional (15 production lessons lack it).
+
+---
+
 ## L-0086 — A cross-plan consistency review catches blockers that per-plan self-review misses; run it before merge whenever an EPIC ships multiple plans in one sitting
 
 @agent: Forge, Keystone

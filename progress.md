@@ -2354,3 +2354,53 @@ Phase D (EPIC-0039) is implementation-complete. All eight stories (US-0232..US-0
 - Re-decompose `docs/architecture/enterprise-agentic-sdlc-spec-v2.md` (salvaged in PR #1092) into stories against then-current next-available IDs.
 
 **Next session:** Phase E kickoff or merge Phase D PR → develop, depending on review velocity.
+
+---
+
+## Session 61 — 2026-05-25 — EPIC-0040 COMPLETE (8 stories shipped)
+
+**Shipped:** All 8 stories of EPIC-0040 (Step 1 Persistence — Planning Writers, Phase E).
+
+| Story   | PR     | What                                                           |
+| ------- | ------ | -------------------------------------------------------------- |
+| US-0240 | #1124  | Writer APIs + 7 serializers + anchored-block `.update`/.create |
+| US-0241 | #1126  | `id-allocator.js` with file-locked ID_REGISTRY.md mutation     |
+| US-0242 | #1131  | `repo.transaction(fn)` with RYOW + lex-ordered locks           |
+| US-0243 | #1129  | Migration 001 normalise-fenced-blocks + round-trip audit       |
+| US-0244 | #1133  | `agent-context.js` managed-write hard-gate (audit + lock)      |
+| US-0245 | #1135  | `generate-plan.js` managed-write hard-gate (audit + lock)      |
+| US-0246 | #1137  | `sync-github.js` managed-write hard-gate (real migration)      |
+| US-0247 | (this) | EPIC close-out: 4-gate consolidated hard-gate test + docs      |
+
+**4 Phase E hard gates verified:**
+
+1. Round-trip byte-identity on 917 production entities (231 stories + 38 epics + 227 bugs + 89 lessons + 332 test cases)
+2. No managed-path `fs.write*` in agent-context.js / generate-plan.js / sync-github.js
+3. `plan:lint` reports 0/0/0
+4. All 6 required per-consumer integration tests exist
+
+**New lessons encoded (3):**
+
+- L-0087: round-trip tests against single-block fixtures don't catch parser-segmentation losses; always audit the real corpus before declaring "serializer round-trip clean"
+- L-0088: GitHub-hosted CodeQL doesn't honor inline `// codeql[...]` suppressions; only UI/API dismissal or path relocation works
+- L-0089: BEGIN-DEFERRED-while-async is a SQLite transaction footgun; document the "callback must complete promptly" rule in module JSDoc
+
+**Test suite:** 132 suites / 2,669 tests passing (+986 since EPIC-0040 started; most from the 917-entity it.each in the hard-gate consolidated test).
+
+**Coverage:** 89%+ statements across all affected modules. Per-task ≥80% gate enforced via review/fix-up cycles.
+
+**Process metrics:**
+
+- 8 PRs landed in sequence over the session.
+- 6 of 8 used `gh pr merge --squash` directly; 2 needed `--auto` because the prior PR landed during the CI cycle.
+- 2 of 8 were "Outcome A" stories (US-0244, US-0245) — audit revealed nothing to migrate; only the hard-gate test landed.
+- Hard-gate test in US-0246 caught a real gap on first dispatch (missed `parseBugs` import); forced a clean fix that added `BugRepo.listAll()`.
+
+**Follow-ups (out of scope, flagged for future stories):**
+
+- EPIC-0041 (Phase F — Lock-Down): ESLint rule enforcing the no-managed-`fs.write` contract. Now unblocked.
+- Schema follow-up: `bugs.status` CHECK constraint should be widened to include `Retired` + `Rejected`. Future migration `005_bugs_status_widen_v2.sql`.
+- TaskRepo.update end-to-end roundtrip: needs parser extension for nested tasks in story blocks.
+- Brittle test-count assertions in `pv-upgrade-rollback.test.js` should switch to structural assertions.
+
+**Next session:** Manual review of this PR (US-0247) → merge → EPIC-0041 (Phase F) kickoff.
