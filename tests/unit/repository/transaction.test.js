@@ -44,4 +44,17 @@ describe('US-0242 / AC-0946: repo.transaction wrapper', () => {
       expect(typeof tx.idRegistry.allocate).toBe('function');
     });
   });
+
+  it('rolls back on user error: re-throws + leaves SQL ready for next transaction', async () => {
+    root = mkRoot();
+    if (Repository._reset) Repository._reset();
+    const repo = Repository.getInstance({ root });
+    await expect(
+      repo.transaction(async () => {
+        throw new Error('boom');
+      }),
+    ).rejects.toThrow('boom');
+    // If ROLLBACK didn't fire, the next BEGIN would error with "cannot start a transaction within a transaction".
+    await expect(repo.transaction(async () => 'next-tx-works')).resolves.toBe('next-tx-works');
+  });
 });

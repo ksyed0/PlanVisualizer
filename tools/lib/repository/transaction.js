@@ -93,7 +93,7 @@ function bindTransaction(repo) {
         fs.renameSync(tmp, p);
       }
       repo.index.exec('COMMIT');
-      ctx.sqliteTxBegin = false;
+      ctx.sqliteTxBegun = false;
     } catch (err) {
       try {
         repo.index.exec('ROLLBACK');
