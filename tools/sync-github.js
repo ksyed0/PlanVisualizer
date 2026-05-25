@@ -56,10 +56,9 @@ async function run() {
   const summary = { created: 0, closed: 0, reopened: 0, pulled: 0, skipped: 0 };
 
   try {
-    const { parseBugs } = require('./lib/parse-bugs');
     const { Repository } = require('./lib/repository');
-    const bugsRaw = fs.readFileSync(path.join(ROOT, 'docs/BUGS.md'), 'utf8');
-    const bugs = parseBugs(bugsRaw);
+    const repo = Repository.getInstance({ root: ROOT });
+    const bugs = repo.bugs.listAll();
 
     const ghIssues = dryRun ? [] : await listIssues(token, repo, defaultLabels[0]);
 

@@ -20,11 +20,21 @@ class BugRepo extends BaseRepo {
     this._markdown = markdown;
   }
 
-  // Override .get to return the FULL entity (re-parse markdown on demand)
+  // Override .get to return the FULL entity (re-parse markdown on demand).
   get(id) {
     if (!fs.existsSync(this._bugsPath)) return null;
     const text = fs.readFileSync(this._bugsPath, 'utf8');
     return parseBugs(text).find((b) => b.id === id) || null;
+  }
+
+  // Return ALL bugs as full parsed entities (id, title, status, severity,
+  // relatedStory, ghIssueNumber, etc.). Used by sync-github.js — bypasses the
+  // thin SQL row that `.list()` would return. Single re-parse per call vs the
+  // N+1 cost of mapping `.list()` results through `.get()`.
+  listAll() {
+    if (!fs.existsSync(this._bugsPath)) return [];
+    const text = fs.readFileSync(this._bugsPath, 'utf8');
+    return parseBugs(text);
   }
 
   _upsertRow(bug) {
