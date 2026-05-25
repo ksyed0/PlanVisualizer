@@ -112,3 +112,61 @@ describe('US-0240 / AC-0939: testCase .update + .create', () => {
     expect(after).toContain('TC-0002: New');
   });
 });
+
+describe('US-0240 / AC-0939: tasks repo .update', () => {
+  let root;
+  afterEach(() => {
+    if (Repository._reset) Repository._reset();
+    if (root) fs.rmSync(root, { recursive: true, force: true });
+  });
+
+  it('throws when TASK id does not exist', async () => {
+    root = mkRoot();
+    const seed = `\`\`\`
+EPIC-0001: e
+Status: To Do
+\`\`\`
+
+\`\`\`
+US-0001 (EPIC-0001): host
+Priority: High
+Estimate: M
+Status: In Progress
+\`\`\`
+
+TASK-0001 (US-0001): do thing
+Status: To Do
+`;
+    fs.writeFileSync(path.join(root, 'docs', 'RELEASE_PLAN.md'), seed);
+    if (Repository._reset) Repository._reset();
+    const repo = Repository.getInstance({ root });
+    const { indexReleasePlan } = require('../../../tools/lib/repository/indexers/release-plan-indexer');
+    indexReleasePlan({ index: repo.index, markdown: repo.markdown, rel: 'docs/RELEASE_PLAN.md' });
+    await expect(repo.tasks.update('TASK-9999', () => {})).rejects.toThrow(/not found/i);
+  });
+
+  it('throws when TASK not in story block (delegation incomplete)', async () => {
+    root = mkRoot();
+    const seed = `\`\`\`
+EPIC-0001: e
+Status: To Do
+\`\`\`
+
+\`\`\`
+US-0001 (EPIC-0001): host
+Priority: High
+Estimate: M
+Status: In Progress
+\`\`\`
+
+TASK-0001 (US-0001): do thing
+Status: To Do
+`;
+    fs.writeFileSync(path.join(root, 'docs', 'RELEASE_PLAN.md'), seed);
+    if (Repository._reset) Repository._reset();
+    const repo = Repository.getInstance({ root });
+    const { indexReleasePlan } = require('../../../tools/lib/repository/indexers/release-plan-indexer');
+    indexReleasePlan({ index: repo.index, markdown: repo.markdown, rel: 'docs/RELEASE_PLAN.md' });
+    await expect(repo.tasks.update('TASK-0001', () => {})).rejects.toThrow(/not in story/i);
+  });
+});
