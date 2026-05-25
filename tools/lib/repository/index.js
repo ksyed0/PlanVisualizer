@@ -16,6 +16,7 @@ const { SdlcMirror } = require('./sdlc-mirror');
 const { SdlcEventRepo } = require('./entities/sdlc-event-repo');
 const { SdlcTaskRepo } = require('./entities/sdlc-task-repo');
 const { SdlcProgrammeRepo } = require('./entities/sdlc-programme-repo');
+const { IdAllocator } = require('./id-allocator');
 
 // `docs/sdlc-status.json` is intentionally excluded from MANAGED_SOURCES as of
 // Phase D (US-0239/AC-1014). SQL is authoritative; the JSON is a mirror
@@ -69,6 +70,7 @@ class Repository {
     this.sdlcEvents = new SdlcEventRepo({ index: this.index, mirror: this._sdlcMirror });
     this.sdlcTasks = new SdlcTaskRepo({ index: this.index, mirror: this._sdlcMirror });
     this.sdlcProgramme = new SdlcProgrammeRepo({ index: this.index, mirror: this._sdlcMirror });
+    this.idRegistry = new IdAllocator({ root });
   }
 
   refresh() {
