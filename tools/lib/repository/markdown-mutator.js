@@ -41,4 +41,23 @@ async function replaceBlock({ path: filePath, idRegex, mutator }) {
   });
 }
 
-module.exports = { replaceBlockInText, replaceBlock };
+/**
+ * For files where entities are NOT in fenced blocks. Splices the line
+ * range from the first line matching `startRe` to the line BEFORE the
+ * next `nextRe` match (or end-of-file). Pure-string helper — callers
+ * own the file-lock and atomic write.
+ */
+function replaceUnfencedRange(text, startRe, nextRe, mutator) {
+  const lines = text.split('\n');
+  let i = lines.findIndex((l) => startRe.test(l));
+  if (i < 0) throw new Error(`replaceUnfencedRange: startRe ${startRe} not found`);
+  let j = i + 1;
+  while (j < lines.length && !nextRe.test(lines[j])) j++;
+  const body = lines.slice(i, j).join('\n') + '\n';
+  const newBody = mutator(body);
+  const newLines = newBody.replace(/\n$/, '').split('\n');
+  const out = [...lines.slice(0, i), ...newLines, ...lines.slice(j)].join('\n');
+  return out;
+}
+
+module.exports = { replaceBlockInText, replaceBlock, replaceUnfencedRange };

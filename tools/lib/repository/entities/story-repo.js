@@ -27,8 +27,9 @@ function mapStory(r) {
 }
 
 class StoryRepo extends BaseRepo {
-  constructor(index, root) {
+  constructor(index, root, markdown) {
     super({ index, table: 'stories', mapRow: mapStory, root });
+    this._markdown = markdown;
   }
   list({ epicId, status } = {}) {
     const where = [],
