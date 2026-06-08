@@ -1086,6 +1086,7 @@ _(Bug sweep session — see progress.md Session 16 entry. Was primarily spent fi
 
 ## Session 62 — 2026-06-08
 
-| #   | Timestamp            | Prompt                                                                                      |
-| --- | -------------------- | ------------------------------------------------------------------------------------------- |
-| 1   | 2026-06-08T21:00:00Z | Fix jest scanning phantom tests in stale .claude/worktrees (BUG-0265); create PR to develop |
+| #   | Timestamp            | Prompt                                                                                            |
+| --- | -------------------- | ------------------------------------------------------------------------------------------------- |
+| 1   | 2026-06-08T21:00:00Z | Fix jest scanning phantom tests in stale .claude/worktrees (BUG-0265); create PR to develop       |
+| 2   | 2026-06-08T21:30:00Z | Active-agent hero card task text unreadable on the agentic dashboard (light theme) — fix BUG-0266 |
