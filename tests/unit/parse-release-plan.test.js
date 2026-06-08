@@ -125,3 +125,28 @@ Dependencies: None
     expect(r.epics[0].doneDate).toBe('2026-04-15');
   });
 });
+
+describe('alt-format epic headers (id-on-own-line + Title: key)', () => {
+  test('parseReleasePlan picks up EPIC-XXXX with separate Title: key', () => {
+    const md = `EPIC-0021
+Title: Test Case Audit
+Status: Done
+StartDate: 2026-04-27
+DoneDate: 2026-04-27
+ReleaseTarget: v1.x
+
+\`\`\`
+US-0100 (EPIC-0021): Some Story
+Status: Done
+\`\`\`
+`;
+    const { epics, stories } = parseReleasePlan(md);
+    expect(epics).toHaveLength(1);
+    expect(epics[0].id).toBe('EPIC-0021');
+    expect(epics[0].title).toBe('Test Case Audit');
+    expect(epics[0].status).toBe('Done');
+    expect(epics[0].releaseTarget).toBe('v1.x');
+    expect(stories).toHaveLength(1);
+    expect(stories[0].epicId).toBe('EPIC-0021');
+  });
+});

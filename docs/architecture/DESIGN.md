@@ -1,14 +1,18 @@
 # PlanVisualizer — Design Document
 
-**Version:** 1.3
+**Version:** 1.4
 **Status:** Active
-**Last Updated:** 2026-03-18
+**Last Updated:** 2026-05-18
 
 ---
 
 ## 1. Product Vision
 
-PlanVisualizer turns markdown-based project management files into a beautiful, self-contained HTML dashboard — with zero runtime dependencies, no server, and no build step. It is the visual layer on top of the AGENTS.md workflow.
+PlanVisualizer started as the **visual layer on top of the AGENTS.md workflow** — markdown in, beautiful self-contained HTML dashboard out, zero runtime dependencies, no server, no build step.
+
+Since v2.4.0 (EPIC-0028), it has expanded into a **full agentic orchestration engine**: the same tool that visualizes project state now also _drives_ the work — coordinating specialist sub-agents through spec → plan → dispatch with per-task review gates, automated BLOCKED routing, and live state on the Agentic Dashboard. The static report (`plan-status.html`) and the live orchestration view (`dashboard.html`) share the same markdown-first philosophy: every mutation is auditable, every state is recoverable from plain text + `sdlc-status.json`.
+
+For the agentic engine in detail (component diagram, state machines, sequence diagrams), see [`docs/architecture/AGENTIC_PIPELINE.md`](./AGENTIC_PIPELINE.md). This document covers the product-level "why" and the static reporting layer.
 
 ---
 
@@ -22,6 +26,15 @@ Claude Code projects following the AGENTS.md workflow maintain all project state
 - Is test coverage meeting the 80% target?
 
 PlanVisualizer solves this by parsing those same markdown files and generating a single `plan-status.html` that can be opened in any browser or deployed to GitHub Pages.
+
+**EPIC-0028 expanded the problem statement.** As Claude Code projects grew from "human-in-the-loop on every dispatch" to "automated sub-agent fleets," a new pain emerged: when 8 specialists are running in parallel across spec → plan → dispatch → review → retry loops, the operator can't tell what's happening without parsing logs. PlanVisualizer now answers a second set of questions:
+
+- Which story is each agent currently working?
+- Which tasks have cleared review, which are mid-retry, which escalated?
+- What model tier was each task dispatched with?
+- Which spec gates and plan gates are awaiting user approval?
+
+The Agentic Dashboard (`dashboard.html`) renders these from `sdlc-status.json` with a 5-second refresh — no JS framework, same zero-build-step constraint.
 
 ---
 

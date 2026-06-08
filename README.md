@@ -16,6 +16,51 @@ No runtime dependencies — Node.js and git only.
 
 ---
 
+## What's New in v2.4.0 — Agentic Orchestration Engine
+
+EPIC-0028 closes the loop: PlanVisualizer now _drives_ the work end-to-end, not just visualizes it. Four CLI tools coordinate specialist sub-agents through spec → plan → dispatch → per-task review without a human between tasks.
+
+- **Pre-dispatch spec/plan orchestration** — `tools/agent-spec-plan.js` drives every story through spec → plan → user-approval gates before any code is written. Compass writes ACs, Keystone writes the implementation plan, Lens reviews both, the user approves at AC and Plan gates. (`npm run agent:approve` / `agent:reject` / `agent:pending` / `agent:apply` / `agent:list` / `agent:status`.)
+- **Per-task lifecycle tracking** — `tools/agent-lifecycle.js` records start/done/blocked/needs-context for each task within a story dispatch, with smart BLOCKED routing suggestions (`MORE_CONTEXT` / `UPGRADE_MODEL` / `SPLIT_TASK` / `ESCALATE_HUMAN`) and a 2-resolution escalation cap. Tasks live under `sdlc-status.json → tasks.<uuid>`.
+- **Context Curator** — `tools/agent-context.js generate` assembles a structured markdown payload for every sub-agent dispatch (task, story ACs, plan excerpt, prior-work summaries, agent-tagged lessons). No more "go read the codebase yourself."
+- **Two-phase Lens review gates** — `tools/agent-task-review.js` drives Lens twice per task (spec compliance → code quality) with retry loop and cap. Findings flow back to Forge automatically. `[sha:<commit>]` token convention in `--summary` lets the Conductor capture diff ranges without knowing Forge's worktree path.
+- **Automated BLOCKED routing** — Conductor auto-resolves `MORE_CONTEXT` (regenerates context + splices blocked reason) and `UPGRADE_MODEL` (haiku → sonnet → opus tier escalation); `SPLIT_TASK` and `ESCALATE_HUMAN` surface to the user.
+- **Dashboard review-gate visualization (US-0186)** — Each `done` task row on the Agentic Dashboard shows live review state. S/M/L density toggle in the topbar (next to the LIVE badge): **S** = single icon (`✓ / ⟳ / ✗`), **M** = `[SPEC ✓] [QUAL ⟳]` chips, **L** (default) = indented second line `Spec ✓ · Quality ⟳ · retry 1/2`. Persists in `localStorage`. The `⟳` glyph spins continuously; `prefers-reduced-motion` honored.
+
+**Full architecture reference (mermaid state machines, sequence diagrams, schema):** [`docs/architecture/AGENTIC_PIPELINE.md`](docs/architecture/AGENTIC_PIPELINE.md).
+
+**New npm scripts** (added on install/update):
+
+```bash
+# Spec & plan phase (US-0182)
+npm run agent:approve          # approve an open AC or plan gate
+npm run agent:reject           # reject with reason
+npm run agent:pending          # show pending approval gates
+npm run agent:apply            # apply a downloaded gate decision
+npm run agent:list             # list all stories with phase state
+npm run agent:status           # show one story's full phase + task state
+
+# Per-task lifecycle (US-0183)
+npm run agent:start            # node tools/agent-lifecycle.js start ...
+npm run agent:done             # node tools/agent-lifecycle.js done --summary "...[sha:abc]"
+npm run agent:blocked          # node tools/agent-lifecycle.js blocked --reason "..."
+npm run agent:concerns         # node tools/agent-lifecycle.js concerns --note "..."
+npm run agent:needs-context    # node tools/agent-lifecycle.js needs-context --missing "..."
+npm run agent:resolve          # node tools/agent-lifecycle.js resolve --action ...
+
+# Context curator (US-0184)
+npm run agent:context          # node tools/agent-context.js generate ...
+
+# Per-task review gates (US-0185)
+npm run agent:review-start         # node tools/agent-task-review.js start --task-id ...
+npm run agent:review-spec          # node tools/agent-task-review.js spec-verdict ...
+npm run agent:review-quality       # node tools/agent-task-review.js quality-verdict ...
+npm run agent:review-retry         # node tools/agent-task-review.js forge-retry ...
+npm run agent:review-status        # node tools/agent-task-review.js status --task-id ...
+```
+
+---
+
 ## What's New in v2.3.0
 
 - **Memory Token Optimisation** — `tools/memory.js` CLI replaces the monolithic `MEMORY.md` with a compact auto-generated index + per-topic files under `docs/memory/{topics,sessions,snapshots}/`. Run `node tools/memory.js migrate` to split, `compact` to regenerate the index, `archive` to retire stale snapshots, `validate` to check drift. Reduces `MEMORY.md` from ~40 KB to ~2 KB (~95% token reduction per session start).

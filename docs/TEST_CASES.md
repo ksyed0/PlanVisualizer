@@ -2365,7 +2365,7 @@ Steps:
 TC-0145: Traceability matrix cells render as colored dots not letter text
 Related Story: US-0102
 Related Task:
-Related AC: AC-0334
+Related AC: AC-1000
 Type: Visual
 Preconditions: renderHtml called with testCases having Pass, Fail, and Not Run statuses
 Steps:
@@ -2376,7 +2376,7 @@ Steps:
    Expected Result: Cells use tc-dot classes with CSS pseudo-element circles; no letter abbreviationsTC-0146: Traceability first column has trace-sticky-col class on header and data cells
    Related Story: US-0102
    Related Task:
-   Related AC: AC-0337
+   Related AC: AC-1003
    Type: Functional
    Preconditions: renderHtml called with testCases present
    Steps:
@@ -2394,7 +2394,7 @@ Steps:
 TC-0147: Traceability caption contains live pass/fail/not-run counts with tc-dot icons
 Related Story: US-0102
 Related Task:
-Related AC: AC-0336
+Related AC: AC-1002
 Type: Functional
 Preconditions: renderHtml called with mixed Pass/Fail/Not Run test cases
 Steps:
@@ -2412,7 +2412,7 @@ Steps:
 TC-0148: Traceability TC column headers carry data-col attributes for crosshair JS
 Related Story: US-0102
 Related Task:
-Related AC: AC-0335
+Related AC: AC-1001
 Type: Functional
 Preconditions: renderHtml called with testCases
 Steps:
@@ -2430,7 +2430,7 @@ Steps:
 TC-0149: Status tab chart sections render with chart-header-rule, display-title, and chart-subtitle
 Related Story: US-0103
 Related Task:
-Related AC: AC-0338
+Related AC: AC-1004
 Type: Visual
 Preconditions: renderHtml called with any story/cost data
 Steps:
@@ -2448,7 +2448,7 @@ Steps:
 TC-0150: Status tab contains "Delivery" and "Financial" section supertitles
 Related Story: US-0103
 Related Task:
-Related AC: AC-0339
+Related AC: AC-1005
 Type: Visual
 Preconditions: renderHtml called with any data
 Steps:
@@ -2466,7 +2466,7 @@ Steps:
 TC-0151: Doughnut chart containers include chart-center-overlay with hero-num child
 Related Story: US-0103
 Related Task:
-Related AC: AC-0340
+Related AC: AC-1006
 Type: Visual
 Preconditions: renderHtml called with any data
 Steps:
@@ -2484,7 +2484,7 @@ Steps:
 TC-0152: Chart.js configuration specifies Inter font family in legend options
 Related Story: US-0103
 Related Task:
-Related AC: AC-0341
+Related AC: AC-1007
 Type: Functional
 Preconditions: renderHtml called with any data
 Steps:
@@ -3106,7 +3106,7 @@ Steps:
 TC-0190: saveSnapshot creates .history/ directory when it does not exist
 Related Story: US-0149
 Related Task:
-Related AC: AC-0150
+Related AC: AC-0996
 Type: Functional
 Preconditions: tools/lib/snapshot.js loaded; a temp directory with no .history/ subdirectory
 Steps:
@@ -3124,7 +3124,7 @@ Steps:
 TC-0191: saveSnapshot writes a timestamped JSON file matching SNAPSHOT_REGEX
 Related Story: US-0149
 Related Task:
-Related AC: AC-0151
+Related AC: AC-0997
 Type: Functional
 Preconditions: tools/lib/snapshot.js loaded; a writable temp directory
 Steps:
@@ -3142,7 +3142,7 @@ Steps:
 TC-0192: saveSnapshot snapshot contains generatedAt, commit, and data fields
 Related Story: US-0149
 Related Task:
-Related AC: AC-0152
+Related AC: AC-0998
 Type: Functional
 Preconditions: tools/lib/snapshot.js loaded
 Steps:
@@ -3160,7 +3160,7 @@ Steps:
 TC-0193: loadSnapshots silently skips corrupt JSON files
 Related Story: US-0149
 Related Task:
-Related AC: AC-0153
+Related AC: AC-0999
 Type: Functional
 Preconditions: tools/lib/snapshot.js loaded; a temp directory with one valid-named but invalid-JSON file
 Steps:
@@ -3178,7 +3178,7 @@ Steps:
 TC-0194: loadSnapshots returns empty array when .history/ does not exist
 Related Story: US-0149
 Related Task:
-Related AC: AC-0153
+Related AC: AC-0999
 Type: Functional
 Preconditions: tools/lib/snapshot.js loaded
 Steps:
@@ -3412,7 +3412,7 @@ Steps:
 TC-0207: loadSnapshots ignores files not matching SNAPSHOT_REGEX
 Related Story: US-0149
 Related Task:
-Related AC: AC-0153
+Related AC: AC-0999
 Type: Functional
 Preconditions: tools/lib/snapshot.js loaded; temp dir contains two valid snapshots and three non-matching files
 Steps:
@@ -3430,7 +3430,7 @@ Steps:
 TC-0208: saveSnapshot stores commit SHA when supplied via options
 Related Story: US-0149
 Related Task:
-Related AC: AC-0152
+Related AC: AC-0998
 Type: Functional
 Preconditions: tools/lib/snapshot.js loaded; writable temp directory
 Steps:
@@ -3855,7 +3855,7 @@ Steps:
 TC-0232: SNAPSHOT_REGEX rejects filenames without trailing Z
 Related Story: US-0149
 Related Task:
-Related AC: AC-0151
+Related AC: AC-0997
 Type: Functional
 Preconditions: tools/lib/snapshot.js loaded
 Steps:

@@ -1695,6 +1695,99 @@
   /* Collapsed sections inside existing HTML we keep inline */
   .mc-legacy-section { margin-bottom: 14px; }
   /* ===== END MISSION CONTROL REDESIGN ===== */
+
+  /* US-0186: Review-gate visualization */
+  .pv-rev-chip {
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 9px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .pv-rev-chip.ok     { background: color-mix(in oklab, var(--ok)          18%, transparent); color: var(--ok); }
+  .pv-rev-chip.warn   { background: color-mix(in oklab, var(--warn)        18%, transparent); color: var(--warn); }
+  .pv-rev-chip.risk   { background: color-mix(in oklab, var(--risk)        18%, transparent); color: var(--risk); }
+  .pv-rev-chip.review { background: color-mix(in oklab, var(--live-accent) 18%, transparent); color: var(--live-accent); }
+
+  .pv-rev-line {
+    padding-left: 80px;
+    font-size: 9.5px;
+    margin-top: 1px;
+  }
+  .pv-rev-line .ok     { color: var(--ok); }
+  .pv-rev-line .warn   { color: var(--warn); }
+  .pv-rev-line .risk   { color: var(--risk); }
+  .pv-rev-line .review { color: var(--live-accent); }
+  .pv-rev-line span + span::before { content: ' · '; color: var(--text-mute); }
+
+  .pv-rev-icon {
+    font-weight: 700;
+    margin-left: auto;
+  }
+  .pv-rev-icon.ok     { color: var(--ok); }
+  .pv-rev-icon.warn   { color: var(--warn); }
+  .pv-rev-icon.risk   { color: var(--risk); }
+  .pv-rev-icon.review { color: var(--live-accent); }
+
+  .pv-density-toggle {
+    display: flex;
+    gap: 2px;
+    background: var(--bg-card-inner);
+    border-radius: 4px;
+    padding: 2px;
+  }
+  .pv-density-toggle button {
+    padding: 2px 8px;
+    border: 0;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    border-radius: 3px;
+  }
+  .pv-density-toggle button.active {
+    background: var(--live-accent);
+    color: var(--text);
+  }
+
+  /* US-0186: Animations */
+  @keyframes pv-rev-spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+  @keyframes pv-rev-appear {
+    from { opacity: 0; transform: translateY(-1px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .pv-rev-icon.review {
+    display: inline-block;
+    animation: pv-rev-spin 1.4s linear infinite, pv-rev-appear 200ms ease-out;
+  }
+  .pv-rev-chip.review {
+    animation: pv-rev-appear 200ms ease-out;
+  }
+  .pv-rev-chip,
+  .pv-rev-line,
+  .pv-rev-icon {
+    animation: pv-rev-appear 200ms ease-out;
+  }
+  .pv-density-toggle button {
+    transition: background-color 150ms ease, color 150ms ease;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pv-rev-icon.review,
+    .pv-rev-chip.review,
+    .pv-rev-chip,
+    .pv-rev-line,
+    .pv-rev-icon {
+      animation: none;
+    }
+    .pv-density-toggle button {
+      transition: none;
+    }
+  }
 </style>
 </head>
 <body>
@@ -1709,7 +1802,7 @@
       <button class="pv-seg pv-seg-active" aria-pressed="true">Pipeline</button>
     </div>
     <div class="pv-chrome-spacer"></div>
-    <span id="gen-time" data-iso="2026-05-14T16:33:30.863Z" style="font-size:11px;color:var(--text-mute);white-space:nowrap"></span>
+    <span id="gen-time" data-iso="2026-05-22T21:37:44.650Z" style="font-size:11px;color:var(--text-mute);white-space:nowrap"></span>
     <span class="mode-badge mode-live" aria-label="Mode: Live" tabindex="0">
     <span class="pip" aria-hidden="true"></span>LIVE
   </span>
@@ -1741,6 +1834,11 @@
     <span class="mc-topbar-clock" id="mc-topbar-clock">00:00:00</span>
   </div>
   <div class="mc-topbar-right">
+    <div class="pv-density-toggle" role="radiogroup" aria-label="Task review density">
+      <button data-density="S" onclick="setTaskDensity('S')" title="Compact — single outcome icon per task">S</button>
+      <button data-density="M" onclick="setTaskDensity('M')" title="Medium — phase chips per task">M</button>
+      <button data-density="L" onclick="setTaskDensity('L')" title="Large — phase status on a second line">L</button>
+    </div>
     <span class="mc-live-badge" title="Live — refreshing every 5s"><span class="mc-live-dot" aria-hidden="true"></span>LIVE</span>
   </div>
 </div>
@@ -1792,19 +1890,19 @@
     <!-- PHASE -->
     <div class="mc-stat-tile">
       <div class="mc-stat-label">PHASE</div>
-      <div class="mc-stat-value info" id="mc-stat-phase">0<span style="font-size:13px;opacity:0.6;">/6</span></div>
+      <div class="mc-stat-value info" id="mc-stat-phase">0<span style="font-size:13px;opacity:0.6;">/0</span></div>
       <div class="mc-stat-sub">STANDBY</div>
     </div>
     <!-- ACTIVE AGENTS -->
     <div class="mc-stat-tile">
       <div class="mc-stat-label">ACTIVE</div>
       <div class="mc-stat-value warn" id="mc-stat-active">0</div>
-      <div class="mc-stat-sub">of 9 agents</div>
+      <div class="mc-stat-sub">of 0 agents</div>
     </div>
     <!-- QUEUE (stories in progress/planned) -->
     <div class="mc-stat-tile">
       <div class="mc-stat-label">QUEUE</div>
-      <div class="mc-stat-value" id="mc-stat-queue">11</div>
+      <div class="mc-stat-value" id="mc-stat-queue">24</div>
       <div class="mc-stat-sub">stories remaining</div>
     </div>
     <!-- REVIEWS -->
@@ -1827,7 +1925,7 @@
     <!-- COVERAGE -->
     <div class="mc-stat-tile">
       <div class="mc-stat-label">COVERAGE</div>
-      <div class="mc-stat-value green" id="mc-stat-coverage">87.8%</div>
+      <div class="mc-stat-value green" id="mc-stat-coverage">88.2%</div>
       <div class="mc-stat-sub">statements</div>
     </div>
     <!-- AI SPEND -->
@@ -1849,60 +1947,7 @@
   <span class="mc-section-meta" id="cycle-counter" aria-live="polite">CYCLE 001 &middot; <span id="cycle-elapsed" data-started-at="">00:00:00</span></span>
 </div>
 <div class="pipeline mc-legacy-section">
-  <div class="phase-block pending" id="phase-1" data-phase-status="pending">
-    <div class="phase-beacon" aria-hidden="true"></div>
-    <div class="phase-status" id="phase-1-icon" aria-hidden="true">⏳</div>
-    <div class="phase-number" id="phase-1-num">01</div>
-    <div class="phase-name">Blueprint</div>
-    <div class="phase-deliverables">refined ACs · priority list</div>
-    <div class="phase-elapsed" id="phase-1-elapsed" data-has-elapsed="0"><span class="phase-check" id="phase-1-check" aria-label="complete">✓</span></div>
-    <div class="phase-fill-track"><div class="phase-fill-bar pv-phase-fill" id="phase-1-fill" style="width: 0%"></div></div>
-  </div>
-  <div class="phase-block pending" id="phase-2" data-phase-status="pending">
-    <div class="phase-beacon" aria-hidden="true"></div>
-    <div class="phase-status" id="phase-2-icon" aria-hidden="true">⏳</div>
-    <div class="phase-number" id="phase-2-num">02</div>
-    <div class="phase-name">Architect</div>
-    <div class="phase-deliverables">scaffold · types · service stubs</div>
-    <div class="phase-elapsed" id="phase-2-elapsed" data-has-elapsed="0"><span class="phase-check" id="phase-2-check" aria-label="complete">✓</span></div>
-    <div class="phase-fill-track"><div class="phase-fill-bar pv-phase-fill" id="phase-2-fill" style="width: 0%"></div></div>
-  </div>
-  <div class="phase-block pending" id="phase-3" data-phase-status="pending">
-    <div class="phase-beacon" aria-hidden="true"></div>
-    <div class="phase-status" id="phase-3-icon" aria-hidden="true">⏳</div>
-    <div class="phase-number" id="phase-3-num">03</div>
-    <div class="phase-name">Build</div>
-    <div class="phase-deliverables">implementation · unit tests</div>
-    <div class="phase-elapsed" id="phase-3-elapsed" data-has-elapsed="0"><span class="phase-check" id="phase-3-check" aria-label="complete">✓</span></div>
-    <div class="phase-fill-track"><div class="phase-fill-bar pv-phase-fill" id="phase-3-fill" style="width: 0%"></div></div>
-  </div>
-  <div class="phase-block pending" id="phase-4" data-phase-status="pending">
-    <div class="phase-beacon" aria-hidden="true"></div>
-    <div class="phase-status" id="phase-4-icon" aria-hidden="true">⏳</div>
-    <div class="phase-number" id="phase-4-num">04</div>
-    <div class="phase-name">Integration</div>
-    <div class="phase-deliverables">wired services · e2e flows</div>
-    <div class="phase-elapsed" id="phase-4-elapsed" data-has-elapsed="0"><span class="phase-check" id="phase-4-check" aria-label="complete">✓</span></div>
-    <div class="phase-fill-track"><div class="phase-fill-bar pv-phase-fill" id="phase-4-fill" style="width: 0%"></div></div>
-  </div>
-  <div class="phase-block pending" id="phase-5" data-phase-status="pending">
-    <div class="phase-beacon" aria-hidden="true"></div>
-    <div class="phase-status" id="phase-5-icon" aria-hidden="true">⏳</div>
-    <div class="phase-number" id="phase-5-num">05</div>
-    <div class="phase-name">Test</div>
-    <div class="phase-deliverables">test report · coverage</div>
-    <div class="phase-elapsed" id="phase-5-elapsed" data-has-elapsed="0"><span class="phase-check" id="phase-5-check" aria-label="complete">✓</span></div>
-    <div class="phase-fill-track"><div class="phase-fill-bar pv-phase-fill" id="phase-5-fill" style="width: 0%"></div></div>
-  </div>
-  <div class="phase-block pending" id="phase-6" data-phase-status="pending">
-    <div class="phase-beacon" aria-hidden="true"></div>
-    <div class="phase-status" id="phase-6-icon" aria-hidden="true">⏳</div>
-    <div class="phase-number" id="phase-6-num">06</div>
-    <div class="phase-name">Polish</div>
-    <div class="phase-deliverables">bug fixes · demo prep</div>
-    <div class="phase-elapsed" id="phase-6-elapsed" data-has-elapsed="0"><span class="phase-check" id="phase-6-check" aria-label="complete">✓</span></div>
-    <div class="phase-fill-track"><div class="phase-fill-bar pv-phase-fill" id="phase-6-fill" style="width: 0%"></div></div>
-  </div>
+  <div style="width:100%;padding:20px 16px;font-size:12px;color:var(--text-secondary);font-family:var(--font-display),monospace;letter-spacing:0.06em;text-align:center;opacity:0.6;">STANDBY &middot; No pipeline cycle active</div>
 </div>
 
 <!-- ROSTER section -->
@@ -1924,94 +1969,7 @@
   <span class="mc-section-label">ALL AGENTS</span>
 </div>
 <div class="mc-idle-roster" id="mc-idle-roster">
-<div class="mc-idle-card agent-card is-idle" id="agent-Compass" data-agent-name="Compass" data-agent="Compass" data-agent-status="idle" style="--agent-color:oklch(50% 0.20 264);">
-  <div class="mc-idle-portrait"><img src="agents/images/optimized/compass-160.png" alt="Compass" onerror="this.parentElement.innerHTML=&#39;&lt;div style=&quot;width:100%;aspect-ratio:1;background:var(--mc-surface);display:flex;align-items:center;justify-content:center;font-size:22px;&quot;&gt;C&lt;/div&gt;&#39;"></div>
-  <div class="mc-idle-info">
-    <span class="mc-idle-name">Compass</span>
-    <span class="mc-idle-sep">·</span>
-    <span class="mc-idle-role">Product Owner</span>
-    <span class="mc-idle-badge">IDLE</span>
-  </div>
-  <div class="agent-status" id="agent-Compass-status" style="display:none;">idle</div>
-  <div id="agent-Compass-task" style="display:none;"></div>
-</div>
-<div class="mc-idle-card agent-card is-idle" id="agent-Keystone" data-agent-name="Keystone" data-agent="Keystone" data-agent-status="idle" style="--agent-color:oklch(44% 0.22 310);">
-  <div class="mc-idle-portrait"><img src="agents/images/optimized/keystone-160.png" alt="Keystone" onerror="this.parentElement.innerHTML=&#39;&lt;div style=&quot;width:100%;aspect-ratio:1;background:var(--mc-surface);display:flex;align-items:center;justify-content:center;font-size:22px;&quot;&gt;K&lt;/div&gt;&#39;"></div>
-  <div class="mc-idle-info">
-    <span class="mc-idle-name">Keystone</span>
-    <span class="mc-idle-sep">·</span>
-    <span class="mc-idle-role">Architect</span>
-    <span class="mc-idle-badge">IDLE</span>
-  </div>
-  <div class="agent-status" id="agent-Keystone-status" style="display:none;">idle</div>
-  <div id="agent-Keystone-task" style="display:none;"></div>
-</div>
-<div class="mc-idle-card agent-card is-idle" id="agent-Lens" data-agent-name="Lens" data-agent="Lens" data-agent-status="idle" style="--agent-color:oklch(72% 0.19 46);">
-  <div class="mc-idle-portrait"><img src="agents/images/optimized/lens-160.png" alt="Lens" onerror="this.parentElement.innerHTML=&#39;&lt;div style=&quot;width:100%;aspect-ratio:1;background:var(--mc-surface);display:flex;align-items:center;justify-content:center;font-size:22px;&quot;&gt;L&lt;/div&gt;&#39;"></div>
-  <div class="mc-idle-info">
-    <span class="mc-idle-name">Lens</span>
-    <span class="mc-idle-sep">·</span>
-    <span class="mc-idle-role">Code Reviewer</span>
-    <span class="mc-idle-badge">IDLE</span>
-  </div>
-  <div class="agent-status" id="agent-Lens-status" style="display:none;">idle</div>
-  <div id="agent-Lens-task" style="display:none;"></div>
-</div>
-<div class="mc-idle-card agent-card is-idle" id="agent-Palette" data-agent-name="Palette" data-agent="Palette" data-agent-status="idle" style="--agent-color:oklch(60% 0.14 185);">
-  <div class="mc-idle-portrait"><img src="agents/images/optimized/palette-160.png" alt="Palette" onerror="this.parentElement.innerHTML=&#39;&lt;div style=&quot;width:100%;aspect-ratio:1;background:var(--mc-surface);display:flex;align-items:center;justify-content:center;font-size:22px;&quot;&gt;P&lt;/div&gt;&#39;"></div>
-  <div class="mc-idle-info">
-    <span class="mc-idle-name">Palette</span>
-    <span class="mc-idle-sep">·</span>
-    <span class="mc-idle-role">UI Designer</span>
-    <span class="mc-idle-badge">IDLE</span>
-  </div>
-  <div class="agent-status" id="agent-Palette-status" style="display:none;">idle</div>
-  <div id="agent-Palette-task" style="display:none;"></div>
-</div>
-<div class="mc-idle-card agent-card is-idle" id="agent-Forge" data-agent-name="Forge" data-agent="Forge" data-agent-status="idle" style="--agent-color:oklch(44% 0.22 25);">
-  <div class="mc-idle-portrait"><img src="agents/images/optimized/forge-160.png" alt="Forge" onerror="this.parentElement.innerHTML=&#39;&lt;div style=&quot;width:100%;aspect-ratio:1;background:var(--mc-surface);display:flex;align-items:center;justify-content:center;font-size:22px;&quot;&gt;F&lt;/div&gt;&#39;"></div>
-  <div class="mc-idle-info">
-    <span class="mc-idle-name">Forge</span>
-    <span class="mc-idle-sep">·</span>
-    <span class="mc-idle-role">Backend Developer</span>
-    <span class="mc-idle-badge">IDLE</span>
-  </div>
-  <div class="agent-status" id="agent-Forge-status" style="display:none;">idle</div>
-  <div id="agent-Forge-task" style="display:none;"></div>
-</div>
-<div class="mc-idle-card agent-card is-idle" id="agent-Pixel" data-agent-name="Pixel" data-agent="Pixel" data-agent-status="idle" style="--agent-color:oklch(38% 0.20 270);">
-  <div class="mc-idle-portrait"><img src="agents/images/optimized/pixel-160.png" alt="Pixel" onerror="this.parentElement.innerHTML=&#39;&lt;div style=&quot;width:100%;aspect-ratio:1;background:var(--mc-surface);display:flex;align-items:center;justify-content:center;font-size:22px;&quot;&gt;P&lt;/div&gt;&#39;"></div>
-  <div class="mc-idle-info">
-    <span class="mc-idle-name">Pixel</span>
-    <span class="mc-idle-sep">·</span>
-    <span class="mc-idle-role">Frontend Developer</span>
-    <span class="mc-idle-badge">IDLE</span>
-  </div>
-  <div class="agent-status" id="agent-Pixel-status" style="display:none;">idle</div>
-  <div id="agent-Pixel-task" style="display:none;"></div>
-</div>
-<div class="mc-idle-card agent-card is-idle" id="agent-Sentinel" data-agent-name="Sentinel" data-agent="Sentinel" data-agent-status="idle" style="--agent-color:oklch(50% 0.17 145);">
-  <div class="mc-idle-portrait"><img src="agents/images/optimized/sentinel-160.png" alt="Sentinel" onerror="this.parentElement.innerHTML=&#39;&lt;div style=&quot;width:100%;aspect-ratio:1;background:var(--mc-surface);display:flex;align-items:center;justify-content:center;font-size:22px;&quot;&gt;S&lt;/div&gt;&#39;"></div>
-  <div class="mc-idle-info">
-    <span class="mc-idle-name">Sentinel</span>
-    <span class="mc-idle-sep">·</span>
-    <span class="mc-idle-role">Functional Tester</span>
-    <span class="mc-idle-badge">IDLE</span>
-  </div>
-  <div class="agent-status" id="agent-Sentinel-status" style="display:none;">idle</div>
-  <div id="agent-Sentinel-task" style="display:none;"></div>
-</div>
-<div class="mc-idle-card agent-card is-idle" id="agent-Circuit" data-agent-name="Circuit" data-agent="Circuit" data-agent-status="idle" style="--agent-color:oklch(40% 0.22 285);">
-  <div class="mc-idle-portrait"><img src="agents/images/optimized/circuit-160.png" alt="Circuit" onerror="this.parentElement.innerHTML=&#39;&lt;div style=&quot;width:100%;aspect-ratio:1;background:var(--mc-surface);display:flex;align-items:center;justify-content:center;font-size:22px;&quot;&gt;C&lt;/div&gt;&#39;"></div>
-  <div class="mc-idle-info">
-    <span class="mc-idle-name">Circuit</span>
-    <span class="mc-idle-sep">·</span>
-    <span class="mc-idle-role">Automation Tester</span>
-    <span class="mc-idle-badge">IDLE</span>
-  </div>
-  <div class="agent-status" id="agent-Circuit-status" style="display:none;">idle</div>
-  <div id="agent-Circuit-task" style="display:none;"></div>
-</div>
+
 </div>
 <!-- Hidden spotlight stub for patchDOM compatibility -->
 <div id="agent-spotlight" style="display:none;" data-agent-name="" data-started-at="">
@@ -2044,38 +2002,33 @@
 
 <!-- TELEMETRY: hidden metric IDs for patchDOM compatibility (US-0111) -->
 <div style="display:none;" aria-hidden="true">
-  <span id="metric-phasesComplete">0 / 6</span>
+  <span id="metric-phasesComplete">0 / 0</span>
   <span id="metric-phasesCompleteNum">0</span>
-  <span id="metric-phasesTotalNum">6</span>
-  <span id="metric-storiesDone">168 / 179</span>
+  <span id="metric-phasesTotalNum">0</span>
+  <span id="metric-storiesDone">202 / 226</span>
   <span id="metric-tasksDone">54 / 54</span>
-  <span id="metric-testsPassed">0</span>
-  <span id="metric-testsFailed">0</span>
-  <span id="metric-testsTotal">0</span>
+  <span id="metric-testsPassed">undefined</span>
+  <span id="metric-testsFailed">undefined</span>
+  <span id="metric-testsTotal">undefined</span>
   <span id="metric-bugsOpen">5</span>
-  <span id="metric-bugsFixed">212</span>
-  <span id="metric-reviewsApproved">0</span>
-  <span id="metric-reviewsBlocked">0</span>
-  <span id="metric-coveragePercent">87.8%</span>
-  <b id="stamp-phase-progress">12:33</b>
-  <b id="stamp-quality">12:33</b>
-  <b id="stamp-reviews">12:33</b>
+  <span id="metric-bugsFixed">215</span>
+  <span id="metric-reviewsApproved">undefined</span>
+  <span id="metric-reviewsBlocked">undefined</span>
+  <span id="metric-coveragePercent">88.2%</span>
+  <b id="stamp-phase-progress">17:37</b>
+  <b id="stamp-quality">17:37</b>
+  <b id="stamp-reviews">17:37</b>
   <!-- Doughnut for patchDOM coverage -->
-  <div id="metric-coverageDoughnut" data-coverage="87.8" data-tone="green">
-    <circle id="metric-coverageDoughnutFill" class="d-fill green" stroke-dashoffset="12.20"></circle>
+  <div id="metric-coverageDoughnut" data-coverage="88.2" data-tone="green">
+    <circle id="metric-coverageDoughnutFill" class="d-fill green" stroke-dashoffset="11.80"></circle>
   </div>
   <!-- Sparkline for patchDOM -->
   <div id="metric-phasesSparkline">
-    <div class="spark-bar pending" data-phase-id="1" data-phase-status="pending" style="height: 18%"></div>
-    <div class="spark-bar pending" data-phase-id="2" data-phase-status="pending" style="height: 18%"></div>
-    <div class="spark-bar pending" data-phase-id="3" data-phase-status="pending" style="height: 18%"></div>
-    <div class="spark-bar pending" data-phase-id="4" data-phase-status="pending" style="height: 18%"></div>
-    <div class="spark-bar pending" data-phase-id="5" data-phase-status="pending" style="height: 18%"></div>
-    <div class="spark-bar pending" data-phase-id="6" data-phase-status="pending" style="height: 18%"></div>
+
   </div>
   <!-- Progress bars -->
   <div class="progress-bar"><div id="metric-phasesBar" class="progress-fill blue" style="width:0%"></div></div>
-  <div class="progress-bar"><div id="metric-storiesBar" class="progress-fill green" style="width:94%"></div></div>
+  <div class="progress-bar"><div id="metric-storiesBar" class="progress-fill green" style="width:89%"></div></div>
   <div class="progress-bar"><div id="metric-tasksBar" class="progress-fill red" style="width:100%"></div></div>
 </div>
 
@@ -2089,7 +2042,7 @@
 <!-- US-0147: Agent Workload -->
 <div class="mc-legacy-section" style="display:none;" id="mc-workload-section">
   <div class="card-head"><h3>Agent Workload</h3></div>
-  <div class="pv-workload-section"><div class="pv-workload-row"><span class="pv-workload-name">Compass</span><div class="pv-workload-track"><div class="pv-workload-bar" style="width:0%"></div></div><span class="pv-workload-count">0</span><span class="pv-workload-done">(0 done)</span></div><div class="pv-workload-row"><span class="pv-workload-name">Keystone</span><div class="pv-workload-track"><div class="pv-workload-bar" style="width:0%"></div></div><span class="pv-workload-count">0</span><span class="pv-workload-done">(0 done)</span></div><div class="pv-workload-row"><span class="pv-workload-name">Lens</span><div class="pv-workload-track"><div class="pv-workload-bar" style="width:0%"></div></div><span class="pv-workload-count">0</span><span class="pv-workload-done">(0 done)</span></div><div class="pv-workload-row"><span class="pv-workload-name">Palette</span><div class="pv-workload-track"><div class="pv-workload-bar" style="width:0%"></div></div><span class="pv-workload-count">0</span><span class="pv-workload-done">(0 done)</span></div><div class="pv-workload-row"><span class="pv-workload-name">Forge</span><div class="pv-workload-track"><div class="pv-workload-bar" style="width:0%"></div></div><span class="pv-workload-count">0</span><span class="pv-workload-done">(0 done)</span></div><div class="pv-workload-row"><span class="pv-workload-name">Pixel</span><div class="pv-workload-track"><div class="pv-workload-bar" style="width:0%"></div></div><span class="pv-workload-count">0</span><span class="pv-workload-done">(0 done)</span></div><div class="pv-workload-row"><span class="pv-workload-name">Sentinel</span><div class="pv-workload-track"><div class="pv-workload-bar" style="width:0%"></div></div><span class="pv-workload-count">0</span><span class="pv-workload-done">(0 done)</span></div><div class="pv-workload-row"><span class="pv-workload-name">Circuit</span><div class="pv-workload-track"><div class="pv-workload-bar" style="width:0%"></div></div><span class="pv-workload-count">0</span><span class="pv-workload-done">(0 done)</span></div></div>
+  <div class="pv-workload-section"><div class="pv-workload-empty">No agents configured.</div></div>
 </div>
 
 <!-- US-0145: Event Log — primary column widget -->
@@ -2148,7 +2101,7 @@
   <!-- MEMORY sidebar widget — US-0176 (EPIC-0026) -->
   <div class="mc-sidebar-panel">
     <div class="mc-sidebar-title">MEMORY</div>
-    <div style="font-size:11px;color:var(--mc-muted);margin-bottom:4px"><span style="color:var(--ok)">●</span> 3,348 observations</div>
+    <div style="font-size:11px;color:var(--mc-muted);margin-bottom:4px"><span style="color:var(--ok)">●</span> 3,370 observations</div>
     <div style="font-size:10px;color:var(--mc-dim);margin-bottom:4px">127.0.0.1:37701</div>
     <a href="http://127.0.0.1:37701" target="_blank" rel="noopener" style="font-size:11px;color:var(--info)">view live →</a>
   </div>
@@ -2210,15 +2163,10 @@
     <div id="card-phase-progress" style="font-size:12px;">
       <div class="metric-sub">Phases Complete</div>
       <div class="metric-hero blue" style="font-size:32px;" id="metric-phaseHero">
-        <span id="metric-phasesCompleteNum2">0</span>/<span class="hero-den">6</span>
+        <span id="metric-phasesCompleteNum2">0</span>/<span class="hero-den">0</span>
       </div>
       <div class="phase-sparkline" id="metric-phasesSparkline2" aria-hidden="true" style="height:20px;margin-bottom:6px;">
-        <div class="spark-bar pending" style="height:18%" title="Blueprint"></div>
-        <div class="spark-bar pending" style="height:18%" title="Architect"></div>
-        <div class="spark-bar pending" style="height:18%" title="Build"></div>
-        <div class="spark-bar pending" style="height:18%" title="Integration"></div>
-        <div class="spark-bar pending" style="height:18%" title="Test"></div>
-        <div class="spark-bar pending" style="height:18%" title="Polish"></div>
+
       </div>
       <div class="progress-bar" style="height:5px;"><div class="progress-fill blue" style="width:0%"></div></div>
     </div>
@@ -2228,7 +2176,7 @@
   <div class="mc-sidebar-panel">
     <div class="mc-sidebar-title">QUALITY</div>
     <div style="display:flex;align-items:center;gap:12px;font-size:12px;">
-      <span style="font-family:var(--font-display),monospace;font-size:28px;color:var(--ok);">87.8%</span>
+      <span style="font-family:var(--font-display),monospace;font-size:28px;color:var(--ok);">88.2%</span>
       <div>
         <div style="color:var(--mc-muted);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;">Coverage</div>
         <div id="card-quality" style="margin-top:4px;font-size:11px;color:var(--mc-muted);">
@@ -2361,15 +2309,15 @@
         <div>
           <p class="pv-about-supertitle">This Project</p>
           <div class="pv-about-meta-row"><span class="pv-about-meta-label">Name: </span><span class="pv-about-meta-value">plan-visualizer</span></div>
-          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Version: </span><span class="pv-about-meta-value">v2.3.13</span></div>
-          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Branch: </span><span class="pv-about-meta-value">feature/US-0183-task-lifecycle-protocol</span></div>
-          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Build: </span><span class="pv-about-meta-value">r767 8bd0abc</span></div>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Version: </span><span class="pv-about-meta-value">v2.4.22</span></div>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Branch: </span><span class="pv-about-meta-value">feature/US-0259-accessor-and-dashboard</span></div>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Build: </span><span class="pv-about-meta-value">r827 1c6dfe6</span></div>
         </div>
         <div>
           <p class="pv-about-supertitle">Dashboard Tool</p>
           <div class="pv-about-meta-row"><span class="pv-about-meta-label">View: </span><span class="pv-about-meta-value">Agentic SDLC Dashboard</span></div>
-          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Generated by: </span><span class="pv-about-meta-value">plan-visualizer v2.3.13</span></div>
-          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Generated at: </span><span id="about-gen-time" data-iso="May 14, 2026, 12:33 PM" class="pv-about-meta-value"></span></div>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Generated by: </span><span class="pv-about-meta-value">plan-visualizer v2.4.22</span></div>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Generated at: </span><span id="about-gen-time" data-iso="May 22, 2026, 05:37 PM" class="pv-about-meta-value"></span></div>
         </div>
       </div>
     </div>
@@ -2377,10 +2325,197 @@
 </div>
 
 <div class="footer">
-  Claude Code Agentic AI SDLC | Last refreshed: May 14, 2026, 12:33 PM
+  Claude Code Agentic AI SDLC | Last refreshed: May 22, 2026, 05:37 PM
 </div>
 
 <script>
+// US-0186: Review-gate cap literal and helper sources, injected from server-side config
+// so the same render code path runs both in tests (Node) and in the live dashboard.
+window.pvTaskReviewCap = 2;
+
+function _chip(cls, label, title) {
+  return '<span class="pv-rev-chip ' + cls + '" title="' + title + '">' + label + '</span>';
+}
+
+function _iconCls(icon) {
+  if (icon === '✓') return 'ok';
+  if (icon === '⟳') return 'review';
+  if (icon === '✗') return 'risk';
+  return '';
+}
+
+function deriveDisplayState(taskReview) {
+  if (!taskReview) return null;
+  if (taskReview.headSha === 'none') return { skipped: true };
+
+  var status = taskReview.status;
+  var specV = taskReview.specVerdict;
+  var qualV = taskReview.qualityVerdict;
+  var retries = taskReview.forgeRetries || 0;
+
+  var specIcon = null;
+  if (specV === 'APPROVED') specIcon = '✓';
+  else if (specV === 'REQUEST_CHANGES') specIcon = '✗';
+  else if (status === 'spec_reviewing') specIcon = '⟳';
+
+  var qualityIcon = null;
+  if (qualV === 'APPROVED') qualityIcon = '✓';
+  else if (qualV === 'REQUEST_CHANGES') qualityIcon = '✗';
+  else if (status === 'quality_reviewing') qualityIcon = '⟳';
+
+  var retryCount = null;
+  if (status === 'forge_retry') {
+    retryCount = retries + 1;
+  } else if (retries > 0 && (status === 'spec_reviewing' || status === 'quality_reviewing')) {
+    retryCount = retries;
+  }
+
+  var escalated = status === 'escalated';
+
+  var overall = null;
+  if (specIcon === '✓' && qualityIcon === '✓') overall = '✓';
+  else if (specIcon === '✗' || qualityIcon === '✗') overall = '✗';
+  else if (specIcon === '⟳' || qualityIcon === '⟳') overall = '⟳';
+
+  var cap =
+    typeof globalThis !== 'undefined' && typeof globalThis.pvTaskReviewCap === 'number'
+      ? globalThis.pvTaskReviewCap
+      : 2;
+
+  return {
+    skipped: false,
+    specIcon: specIcon,
+    qualityIcon: qualityIcon,
+    retryCount: retryCount,
+    retryCap: cap,
+    escalated: escalated,
+    overall: overall,
+  };
+}
+
+function renderReviewIconS(ds) {
+  if (!ds || ds.skipped || !ds.overall) return '';
+  var cls;
+  var title;
+  if (ds.overall === '✓') {
+    cls = 'ok';
+    title = 'Review cleared';
+  } else if (ds.overall === '⟳') {
+    cls = 'review';
+    title = 'Review in progress';
+  } else {
+    cls = 'risk';
+    title = 'Review needs changes or escalated';
+  }
+  return '<span class="pv-rev-icon ' + cls + '" title="' + title + '">' + ds.overall + '</span>';
+}
+
+function renderReviewChipsM(ds) {
+  if (!ds || ds.skipped) return '';
+  var chips = [];
+
+  if (ds.specIcon === '✓') chips.push(_chip('ok', 'SPEC ✓', 'Spec compliance review: approved'));
+  else if (ds.specIcon === '⟳') chips.push(_chip('review', 'SPEC ⟳', 'Spec compliance review in progress'));
+  else if (ds.specIcon === '✗') chips.push(_chip('risk', 'SPEC ✗', 'Spec compliance review: changes requested'));
+
+  if (ds.qualityIcon === '✓') chips.push(_chip('ok', 'QUAL ✓', 'Code quality review: approved'));
+  else if (ds.qualityIcon === '⟳') chips.push(_chip('review', 'QUAL ⟳', 'Code quality review in progress'));
+  else if (ds.qualityIcon === '✗') chips.push(_chip('risk', 'QUAL ✗', 'Code quality review: changes requested'));
+
+  if (ds.escalated) {
+    chips.push(_chip('risk', 'ESCALATED', 'Review cap exhausted — manual review required'));
+  } else if (ds.retryCount) {
+    chips.push(_chip('warn', 'RETRY ' + ds.retryCount + '/' + ds.retryCap, 'Forge retry in progress'));
+  }
+
+  return chips.join(' ');
+}
+
+function renderReviewLineL(ds) {
+  if (!ds || ds.skipped) return '';
+  var parts = [];
+
+  if (ds.specIcon) {
+    parts.push('<span class="' + _iconCls(ds.specIcon) + '">Spec ' + ds.specIcon + '</span>');
+  }
+  if (ds.qualityIcon) {
+    parts.push('<span class="' + _iconCls(ds.qualityIcon) + '">Quality ' + ds.qualityIcon + '</span>');
+  }
+  if (ds.escalated) {
+    parts.push('<span class="risk">escalated</span>');
+  } else if (ds.retryCount) {
+    parts.push('<span class="warn">retry ' + ds.retryCount + '/' + ds.retryCap + '</span>');
+  }
+
+  if (parts.length === 0) return '';
+  return '<div class="pv-rev-line">' + parts.join(' · ') + '</div>';
+}
+
+// US-0259: sdlc-status dual-read accessor injected as window.pvReader.
+// Same module that tools/generate-dashboard.js (Node side) uses, so the inline
+// browser ticker/refresh handlers below read through one canonical API.
+function programme(json) {
+  return (json && json.programme) || {};
+}
+
+function agents(json) {
+  return programme(json).agents || (json && json.agents) || {};
+}
+
+function metrics(json) {
+  return programme(json).metrics || (json && json.metrics) || {};
+}
+
+function stories(json) {
+  return programme(json).stories || (json && json.stories) || {};
+}
+
+function epics(json) {
+  return programme(json).epics || (json && json.epics) || {};
+}
+
+function phases(json) {
+  return programme(json).phases || (json && json.phases) || [];
+}
+
+function cycles(json) {
+  // The bare `||` chain is unsafe here: a non-array value (null, "", {}) at
+  // programme.cycles must NOT shadow a valid top-level array. Type-check each
+  // source. Matches the defensive Array.isArray() guard in dashboard.html.
+  const fromProgramme = programme(json).cycles;
+  if (Array.isArray(fromProgramme)) return fromProgramme;
+  const fromTopLevel = json && json.cycles;
+  if (Array.isArray(fromTopLevel)) return fromTopLevel;
+  return [];
+}
+
+function currentPhase(json) {
+  // Explicit `typeof === 'number'` check because `currentPhase: 0` is a valid
+  // not-started value; a bare `||` chain would incorrectly fall through.
+  const fromProgramme = programme(json).currentPhase;
+  if (typeof fromProgramme === 'number') return fromProgramme;
+  const fromTopLevel = json && json.currentPhase;
+  if (typeof fromTopLevel === 'number') return fromTopLevel;
+  return null;
+}
+
+function githubStatus(json) {
+  // Only accessor (besides currentPhase) that returns null: the dashboard's
+  // `if (!gs) return;` guard treats absence as a signal, not an empty object.
+  const fromProgramme = programme(json).githubStatus;
+  if (fromProgramme && typeof fromProgramme === 'object') return fromProgramme;
+  const fromTopLevel = json && json.githubStatus;
+  if (fromTopLevel && typeof fromTopLevel === 'object') return fromTopLevel;
+  return null;
+}
+
+function project(json) {
+  return programme(json).project || (json && json.project) || {};
+}
+
+window.pvReader = { programme, agents, metrics, stories, epics, phases, cycles, currentPhase, githubStatus, project };
+
+
 // pvSetTheme / openAbout — aliases expected by renderChrome() (shared chrome from render-shell.js)
 // BUG-0250: write to canonical 'pv-theme' key (shared with plan-status dashboard) so
 // theme preference syncs across both dashboards. Mirror to legacy 'dashboard-theme'
@@ -2589,7 +2724,7 @@ function _applyLogFilter(filter) {
 // ── Dashboard Alert System ────────────────────────────────────────────────────
 // Detects state changes across page refreshes using localStorage, then plays
 // a Web Audio tone and fires a browser Notification when attention is needed.
-var DASH_SNAPSHOT = {"currentPhase":0,"bugsOpen":5,"agentStatuses":{"Conductor":"idle","Compass":"idle","Keystone":"idle","Lens":"idle","Palette":"idle","Forge":"idle","Pixel":"idle","Sentinel":"idle","Circuit":"idle"},"phaseStatuses":[{"id":1,"status":"pending"},{"id":2,"status":"pending"},{"id":3,"status":"pending"},{"id":4,"status":"pending"},{"id":5,"status":"pending"},{"id":6,"status":"pending"}],"pipelineComplete":false};
+var DASH_SNAPSHOT = {"currentPhase":null,"bugsOpen":5,"agentStatuses":{},"phaseStatuses":[],"pipelineComplete":false};
 
 // US-0111: expose agent colors to the client so patchDOM() can restyle
 // agent-status pills when an agent transitions between idle/active/blocked
@@ -2705,14 +2840,14 @@ function requestAlerts() {
 // We derive it here from the raw sdlc-status.json on each tick so the function
 // is self-contained and callers can pass the untransformed fetch result.
 function buildSnapshotFromStatus(status) {
-  var phases = (status && status.phases) || [];
-  var agents = (status && status.agents) || {};
-  var metrics = (status && status.metrics) || {};
+  var phases = pvReader.phases(status);
+  var agents = pvReader.agents(status);
+  var metrics = pvReader.metrics(status);
   var complete = phases.filter(function(p) { return p.status === 'complete'; }).length;
   var agentStatuses = {};
   Object.keys(agents).forEach(function(k) { agentStatuses[k] = (agents[k] || {}).status; });
   return {
-    currentPhase: status && status.currentPhase,
+    currentPhase: pvReader.currentPhase(status),
     bugsOpen: typeof metrics.bugsOpen === 'number' ? metrics.bugsOpen : null,
     agentStatuses: agentStatuses,
     phaseStatuses: phases.map(function(p) { return { id: p.id, status: p.status }; }),
@@ -2731,13 +2866,16 @@ function buildSnapshotFromStatus(status) {
 // currentStory → currentTask → 'unknown' per AC-0417.
 function _findFirstBlocked(status) {
   if (!status) return { blocked: false, agent: null, story: null };
-  var agents = status.agents || null;
+  // US-0259: accessor returns {}/[] defaults, so we look up the populated state
+  // explicitly. The agentStatuses / phaseStatuses fallbacks aren't part of the
+  // 9 legacy keys (no accessor); they stay as direct reads.
+  var agents = pvReader.agents(status);
   var agentStatuses = status.agentStatuses || null;
-  var phases = status.phases || null;
+  var phases = pvReader.phases(status);
   var phaseStatuses = status.phaseStatuses || null;
 
-  if (agents && typeof agents === 'object') {
-    var names = Object.keys(agents);
+  var names = Object.keys(agents);
+  if (names.length > 0) {
     for (var i = 0; i < names.length; i++) {
       var a = agents[names[i]] || {};
       if (a.status === 'blocked') {
@@ -2953,7 +3091,7 @@ function patchDOM(status) {
   }
 
   // --- Project identity (US-0128) ------------------------------------------
-  var proj = status.project;
+  var proj = pvReader.project(status);
   if (proj) {
     var titleEl = document.querySelector('.header-title');
     if (titleEl && proj.name) titleEl.textContent = proj.name;
@@ -2975,7 +3113,7 @@ function patchDOM(status) {
   }
 
   // --- Epic progress strip (US-0130) ----------------------------------------
-  var epics = status.epics || {};
+  var epics = pvReader.epics(status);
   var epicKeys = Object.keys(epics);
   var epicStripEl = document.getElementById('epic-strip');
   var epicRowsEl = document.getElementById('epic-strip-rows');
@@ -3002,7 +3140,7 @@ function patchDOM(status) {
   }
 
   // --- Cycle history (US-0133) -----------------------------------------------
-  var cycles = Array.isArray(status.cycles) ? status.cycles : [];
+  var cycles = pvReader.cycles(status);
   var cycleSection = document.getElementById('cycle-history-section');
   var lapStrip = document.getElementById('cycle-lap-strip');
   var telemetryRow = document.getElementById('cycle-telemetry');
@@ -3091,9 +3229,10 @@ function patchDOM(status) {
   // Toggle status class, swap status icon, flip blocked beacon, reveal
   // completed-phase checkmark + elapsed footer, and resize the active
   // phase's partial-progress fill — all without remounting the block.
-  var phases = Array.isArray(status.phases) ? status.phases : [];
-  var _storiesTotal = (status.metrics && status.metrics.storiesTotal) || 0;
-  var _storiesDone = (status.metrics && status.metrics.storiesCompleted) || 0;
+  var phases = pvReader.phases(status);
+  var _metricsLocal = pvReader.metrics(status);
+  var _storiesTotal = _metricsLocal.storiesTotal || 0;
+  var _storiesDone = _metricsLocal.storiesCompleted || 0;
   var _fillRatio = _storiesTotal > 0 ? Math.max(0.04, Math.min(1, _storiesDone / _storiesTotal)) : 0.5;
   var _fillPct = Math.round(_fillRatio * 100);
   phases.forEach(function(p) {
@@ -3148,7 +3287,7 @@ function patchDOM(status) {
   });
 
   // --- Agents ----------------------------------------------------------------
-  var agents = status.agents || {};
+  var agents = pvReader.agents(status);
   Object.keys(agents).forEach(function(name) {
     var a = agents[name] || {};
     var card = document.getElementById('agent-' + name);
@@ -3209,7 +3348,7 @@ function patchDOM(status) {
   }
 
   // --- Metrics ---------------------------------------------------------------
-  var m = status.metrics || {};
+  var m = pvReader.metrics(status);
   function setText(id, value) {
     var el = document.getElementById(id);
     if (el && el.textContent !== String(value)) el.textContent = String(value);
@@ -3371,7 +3510,7 @@ function patchTaskList(status) {
   });
 
   // For each active agent card, find their current story and render tasks
-  var agents = (status && status.agents) || {};
+  var agents = pvReader.agents(status);
   Object.keys(agents).forEach(function (name) {
     var agent = agents[name];
     if (!agent || agent.status !== 'active' || !agent.currentStory) return;
@@ -3392,43 +3531,83 @@ function patchTaskList(status) {
       card.appendChild(container);
     }
 
-    var html = tasks.slice(-5).map(function (t) {
-      var color =
-        t.state === 'done'
-          ? 'var(--ok)'
-          : t.state === 'blocked' || t.state === 'escalated'
-            ? 'var(--risk)'
-            : t.state === 'done_with_concerns'
-              ? 'var(--warn)'
-              : 'var(--text-mute)';
-      var label = t.state.replace(/_/g, ' ').toUpperCase();
-      var desc = t.description
-        ? t.description.slice(0, 55) + (t.description.length > 55 ? '…' : '')
-        : '';
-      return (
-        '<div style="display:flex;gap:6px;align-items:baseline;margin-bottom:2px">' +
-        '<span style="color:' +
-        color +
-        ';font-weight:700;min-width:80px">' +
-        label +
-        '</span>' +
-        '<span style="color:var(--text-dim)">' +
-        desc +
-        '</span>' +
-        '</div>'
-      );
-    }).join('');
+    var html = tasks
+      .slice(-5)
+      .map(function (t) {
+        var color =
+          t.state === 'done'
+            ? 'var(--ok)'
+            : t.state === 'blocked' || t.state === 'escalated'
+              ? 'var(--risk)'
+              : t.state === 'done_with_concerns'
+                ? 'var(--warn)'
+                : 'var(--text-mute)';
+        var label = t.state.replace(/_/g, ' ').toUpperCase();
+        var desc = t.description
+          ? t.description.slice(0, 55) + (t.description.length > 55 ? '…' : '')
+          : '';
+
+        // US-0186: derive review-gate display and pick renderer based on density.
+        var density = window.pvTaskDensity || 'L';
+        var ds = deriveDisplayState(t.taskReview);
+        var reviewHtml = '';
+        if (ds && !ds.skipped) {
+          if (density === 'S') reviewHtml = renderReviewIconS(ds);
+          else if (density === 'M') reviewHtml = renderReviewChipsM(ds);
+          else reviewHtml = renderReviewLineL(ds);
+        }
+
+        var rowHead =
+          '<div style="display:flex;gap:6px;align-items:baseline;margin-bottom:2px">' +
+          '<span style="color:' + color + ';font-weight:700;min-width:80px">' + label + '</span>' +
+          '<span style="color:var(--text-dim);flex:1">' + desc + '</span>' +
+          (density === 'S' || density === 'M' ? reviewHtml : '') +
+          '</div>';
+
+        var rowTail = density === 'L' ? reviewHtml : '';
+        return rowHead + rowTail;
+      })
+      .join('');
 
     container.innerHTML = html;
   });
 }
 
-// Rebuild the Pending Approvals panel content from the latest sdlc-status.stories.
+// US-0186: Task review density toggle. Persists choice in localStorage so the
+// dashboard remembers user preference across reloads. setTaskDensity also
+// re-renders the task list using the cached _pvLastStatus so the change is
+// immediate without waiting for the next 5s refresh tick.
+function setTaskDensity(d) {
+  if (d !== 'S' && d !== 'M' && d !== 'L') return;
+  window.pvTaskDensity = d;
+  try {
+    localStorage.setItem('pv-task-density', d);
+  } catch (e) {
+    /* private mode — ignore */
+  }
+  document.querySelectorAll('.pv-density-toggle button').forEach(function (b) {
+    b.classList.toggle('active', b.dataset.density === d);
+  });
+  if (window._pvLastStatus) patchTaskList(window._pvLastStatus);
+}
+
+function initTaskDensity() {
+  var saved;
+  try {
+    saved = localStorage.getItem('pv-task-density');
+  } catch (e) {}
+  var d = saved === 'S' || saved === 'M' || saved === 'L' ? saved : 'L';
+  setTaskDensity(d);
+}
+
+document.addEventListener('DOMContentLoaded', initTaskDensity);
+
+// Rebuild the Pending Approvals panel content from the latest pvReader.stories(status).
 // Called inside patchDOM() on every 5s refreshState() tick — no page reload.
 function patchPendingApprovals(status) {
   var body = document.getElementById('mc-pending-approvals-body');
   if (!body) return;
-  var stories = (status && status.stories) || {};
+  var stories = pvReader.stories(status);
   var pending = [];
   Object.keys(stories).forEach(function(id) {
     var st = stories[id];
@@ -3488,6 +3667,8 @@ async function refreshState() {
     var res = await fetch('./sdlc-status.json', { cache: 'no-store' });
     if (!res || !res.ok) throw new Error('HTTP ' + (res ? res.status : 'no response'));
     var newStatus = await res.json();
+    // US-0186: cache last status so setTaskDensity() can re-render without refetch.
+    window._pvLastStatus = newStatus;
     patchDOM(newStatus);
     patchCycleCounter(newStatus);
     runAlertCheck(newStatus);
@@ -3566,7 +3747,7 @@ function updateCycleElapsed() {
 }
 function patchCycleCounter(status) {
   if (!status || typeof status !== 'object') return;
-  var storiesMap = status.stories || {};
+  var storiesMap = pvReader.stories(status);
   var entries = Object.keys(storiesMap).map(function(id) { return Object.assign({ id: id }, storiesMap[id] || {}); });
   var completedCount = entries.filter(function(s) { return /^(Complete|Done)$/i.test(s.status); }).length;
   var active = null;
@@ -3582,7 +3763,7 @@ function patchCycleCounter(status) {
     // Prefer active story startedAt, fall back to the in-progress phase's startedAt.
     var started = (active && active.startedAt) || '';
     if (!started) {
-      var phases = Array.isArray(status.phases) ? status.phases : [];
+      var phases = pvReader.phases(status);
       for (var j = 0; j < phases.length; j++) {
         if (phases[j].status === 'in-progress' && phases[j].startedAt) { started = phases[j].startedAt; break; }
       }

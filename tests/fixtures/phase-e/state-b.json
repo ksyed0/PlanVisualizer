@@ -1,0 +1,150 @@
+{
+  "tasks": [],
+  "log": [],
+  "programme": {},
+  "agents": {
+    "code-implementer": {
+      "status": "active",
+      "currentTask": "TASK-0066",
+      "tasksCompleted": 12,
+      "blockers": 0,
+      "model": "sonnet"
+    },
+    "test-runner": {
+      "status": "idle",
+      "currentTask": null,
+      "tasksCompleted": 8,
+      "testsPassed": 412,
+      "testsFailed": 0,
+      "model": "haiku"
+    },
+    "coverage-reporter": {
+      "status": "idle",
+      "currentTask": null,
+      "tasksCompleted": 3,
+      "coveragePercent": 87,
+      "model": "haiku"
+    },
+    "reviewer": {
+      "status": "needs-review",
+      "currentTask": "US-0259",
+      "tasksCompleted": 6,
+      "reviewsCompleted": 4,
+      "model": "opus"
+    }
+  },
+  "metrics": {
+    "storiesCompleted": 4,
+    "storiesTotal": 5,
+    "tasksCompleted": 29,
+    "tasksTotal": 33,
+    "testsPassed": 412,
+    "testsFailed": 0,
+    "testsTotal": 412,
+    "bugsOpen": 2,
+    "bugsFixed": 8,
+    "coveragePercent": 87,
+    "reviewsApproved": 4,
+    "reviewsBlocked": 0
+  },
+  "stories": {
+    "US-0259": {
+      "status": "InProgress",
+      "epic": "EPIC-0045",
+      "assignedAgent": "code-implementer",
+      "startedAt": "2026-05-22T16:40:51Z",
+      "completedAt": null,
+      "specPhase": "approved",
+      "planPhase": "drafting",
+      "phaseHistory": [
+        {
+          "phase": "spec",
+          "enteredAt": "2026-05-22T16:00:00Z"
+        }
+      ]
+    },
+    "US-0260": {
+      "status": "ToDo",
+      "epic": "EPIC-0045",
+      "assignedAgent": null,
+      "startedAt": null,
+      "completedAt": null,
+      "specPhase": null,
+      "planPhase": null,
+      "phaseHistory": []
+    }
+  },
+  "epics": {
+    "EPIC-0045": {
+      "name": "Consumer Migration & Cleanup",
+      "status": "active",
+      "startedAt": "2026-05-22T15:00:00Z",
+      "completedAt": null,
+      "storiesCompleted": 0,
+      "storiesTotal": 5
+    }
+  },
+  "phases": [
+    {
+      "id": "E.1",
+      "name": "Audit",
+      "agents": ["spec-author"],
+      "deliverables": ["consumer-audit"],
+      "status": "complete",
+      "startedAt": "2026-05-22T12:00:00Z",
+      "completedAt": "2026-05-22T16:30:00Z"
+    },
+    {
+      "id": "E.2",
+      "name": "Dashboard reader migration",
+      "agents": ["code-implementer", "test-runner"],
+      "deliverables": ["sdlc-status-reader.js"],
+      "status": "active",
+      "startedAt": "2026-05-22T16:30:00Z",
+      "completedAt": null
+    }
+  ],
+  "cycles": [
+    {
+      "id": "cycle-57",
+      "completedAt": "2026-05-22T11:00:00Z",
+      "storiesCompleted": 3,
+      "testsPassed": 408,
+      "testsFailed": 0,
+      "coveragePercent": 86,
+      "bugsFixed": 2,
+      "outcome": "green",
+      "incidents": 0,
+      "phaseDurations": {
+        "spec": 30,
+        "plan": 45,
+        "implement": 120
+      }
+    }
+  ],
+  "currentPhase": 2,
+  "githubStatus": {
+    "prs": [
+      {
+        "number": 1100,
+        "state": "merged",
+        "title": "Phase E spec"
+      }
+    ],
+    "ciSummary": {
+      "passing": true,
+      "failing": 0
+    },
+    "deployment": {
+      "url": "https://ksyed0.github.io/PlanVisualizer/"
+    },
+    "fetchedAt": "2026-05-22T17:00:00Z",
+    "ciPollUntil": "2026-05-22T17:05:00Z"
+  },
+  "project": {
+    "name": "PlanVisualizer",
+    "description": "Parse plan markdown into a status dashboard.",
+    "repoUrl": "https://github.com/ksyed0/PlanVisualizer",
+    "startDate": "2025-01-01"
+  }
+}

@@ -20,6 +20,7 @@
 - **Entry point:** `node tools/generate-plan.js`
 - **Dashboard:** `https://ksyed0.github.io/PlanVisualizer/plan-status.html`
 - **Project Constitution:** `PROJECT.md` (create if missing; see AGENTS.md §3)
+- **Agentic Orchestration Engine (opt-in):** see AGENTS.md §Orchestration Engine and `docs/architecture/AGENTIC_PIPELINE.md`. CLI: 21 `agent:*` npm scripts covering spec/plan gate, lifecycle, context, and review gate.
 
 ---
 

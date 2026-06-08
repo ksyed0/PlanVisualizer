@@ -194,7 +194,7 @@ else
   fi
 fi
 
-# ── 0.5. Ensure US-0181 orchestration directories exist ─────────────────────
+# ── 0.5. Ensure US-0182 orchestration directories exist ─────────────────────
 mkdir -p "${TARGET}/docs/pending-approvals"
 if [ ! -f "${TARGET}/docs/pending-approvals/.gitkeep" ]; then
   touch "${TARGET}/docs/pending-approvals/.gitkeep"
@@ -356,6 +356,20 @@ const toAdd = {
   'agent:apply':             'node tools/agent-spec-plan.js apply-pending',
   'agent:list':              'node tools/agent-spec-plan.js list',
   'agent:status':            'node tools/agent-spec-plan.js status',
+  'agent:start':             'node tools/agent-task-lifecycle.js start',
+  'agent:done':              'node tools/agent-task-lifecycle.js done',
+  'agent:concerns':          'node tools/agent-task-lifecycle.js done-with-concerns',
+  'agent:needs-context':     'node tools/agent-task-lifecycle.js needs-context',
+  'agent:blocked':           'node tools/agent-task-lifecycle.js blocked',
+  'agent:resolve':           'node tools/agent-task-lifecycle.js resolve',
+  'agent:tasks':             'node tools/agent-task-lifecycle.js list',
+  'agent:task-status':       'node tools/agent-task-lifecycle.js status',
+  'agent:context':           'node tools/agent-context-curator.js',
+  'agent:review-start':      'node tools/agent-task-review.js start',
+  'agent:review-spec':       'node tools/agent-task-review.js spec-decision',
+  'agent:review-quality':    'node tools/agent-task-review.js quality-decision',
+  'agent:review-retry':      'node tools/agent-task-review.js retry-decision',
+  'agent:review-status':     'node tools/agent-task-review.js status',
   'dashboard:watch':         'node tools/watch-dashboard.js',
 };
 let added = 0;

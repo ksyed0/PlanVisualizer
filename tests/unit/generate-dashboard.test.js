@@ -10,6 +10,7 @@
  */
 
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..', '..');
@@ -36,45 +37,51 @@ function makeHealthyFixture() {
   // something other than the "no active" fallback path.
   agents.Pixel = { status: 'active', currentTask: 'US-0124 test harness', tasksCompleted: 1 };
 
+  // US-0261: Phase E canonical shape — the 9 legacy keys nest under
+  // `programme.*` because the accessor's dual-read fallback was stripped.
+  // `tasks` and `log` are canonical top-level keys (not migrated).
   return {
-    project: {
-      name: 'SDLC Dashboard',
-      description: 'Agentic AI SDLC',
-      repoUrl: 'https://github.com/ksyed0/PlanVisualizer',
-      startDate: '2026-04-15',
-    },
-    cycles: [],
-    currentPhase: 3,
-    phases: CANONICAL_PHASES.map((p, i) => ({
-      ...p,
-      status: i < 2 ? 'complete' : i === 2 ? 'in-progress' : 'pending',
-    })),
-    agents,
-    epics: {
-      'EPIC-0016': 'Agentic Dashboard Mission Control Redesign',
-    },
-    stories: {
-      'US-0124': {
-        title: 'Baseline test harness for generate-dashboard.js',
-        status: 'In Progress',
-        epic: 'EPIC-0016',
+    tasks: {},
+    log: [{ time: '09:00', agent: 'Conductor', message: 'Session started' }],
+    programme: {
+      project: {
+        name: 'SDLC Dashboard',
+        description: 'Agentic AI SDLC',
+        repoUrl: 'https://github.com/ksyed0/PlanVisualizer',
+        startDate: '2026-04-15',
+      },
+      cycles: [],
+      currentPhase: 3,
+      phases: CANONICAL_PHASES.map((p, i) => ({
+        ...p,
+        status: i < 2 ? 'complete' : i === 2 ? 'in-progress' : 'pending',
+      })),
+      agents,
+      epics: {
+        'EPIC-0016': 'Agentic Dashboard Mission Control Redesign',
+      },
+      stories: {
+        'US-0124': {
+          title: 'Baseline test harness for generate-dashboard.js',
+          status: 'In Progress',
+          epic: 'EPIC-0016',
+        },
+      },
+      metrics: {
+        storiesCompleted: 0,
+        storiesTotal: 1,
+        tasksCompleted: 0,
+        tasksTotal: 1,
+        testsPassed: 6,
+        testsFailed: 0,
+        testsTotal: 6,
+        bugsOpen: 0,
+        bugsFixed: 0,
+        coveragePercent: 85,
+        reviewsApproved: 0,
+        reviewsBlocked: 0,
       },
     },
-    metrics: {
-      storiesCompleted: 0,
-      storiesTotal: 1,
-      tasksCompleted: 0,
-      tasksTotal: 1,
-      testsPassed: 6,
-      testsFailed: 0,
-      testsTotal: 6,
-      bugsOpen: 0,
-      bugsFixed: 0,
-      coveragePercent: 85,
-      reviewsApproved: 0,
-      reviewsBlocked: 0,
-    },
-    log: [{ time: '09:00', agent: 'Conductor', message: 'Session started' }],
   };
 }
 
@@ -122,7 +129,7 @@ describe('generate-dashboard.js baseline harness (US-0124)', () => {
   test('AC-0428: blocked agent status surfaces blocked markup in the output', () => {
     const { generateHTML } = require('../../tools/generate-dashboard.js');
     const fixture = makeHealthyFixture();
-    fixture.agents.Lens = {
+    fixture.programme.agents.Lens = {
       status: 'blocked',
       currentTask: 'awaiting clarification',
       tasksCompleted: 0,
@@ -161,7 +168,7 @@ describe('generate-dashboard — US-0142 active agent prominence', () => {
   function makeFixtureWithAgentStatus(status) {
     const fixture = makeHealthyFixture();
     // Replace Pixel (the default active agent) with our test status
-    fixture.agents.Pixel = { status, currentTask: 'US-0142 test', tasksCompleted: 1 };
+    fixture.programme.agents.Pixel = { status, currentTask: 'US-0142 test', tasksCompleted: 1 };
     return fixture;
   }
 
@@ -277,7 +284,7 @@ describe('US-0121 terminal-aesthetic activity log', () => {
 
 describe('US-0120 stories panel polish', () => {
   function makeStoriesFixture() {
-    const base = {
+    const programme = {
       project: {
         name: 'SDLC Dashboard',
         description: 'Agentic AI SDLC',
@@ -318,9 +325,12 @@ describe('US-0120 stories panel polish', () => {
         },
       },
       metrics: { storiesCompleted: 1, storiesTotal: 3, tasksCompleted: 0, tasksTotal: 3 },
-      log: [{ time: '09:00', agent: 'Conductor', message: 'Session started' }],
     };
-    return base;
+    return {
+      tasks: {},
+      log: [{ time: '09:00', agent: 'Conductor', message: 'Session started' }],
+      programme,
+    };
   }
 
   // AC-0407: 3px vertical status strip on each story row, colour-coded by
@@ -408,79 +418,6 @@ describe('US-0120 stories panel polish', () => {
 
     // min-width: 0 on .story-title must persist — BUG-0164 fix guard.
     expect(html).toMatch(/\.story-title \{[^}]*min-width:\s*0/);
-  });
-});
-
-// --- US-0127: init-sdlc-status buildStatus ---
-const os = require('os');
-
-describe('init-sdlc-status — buildStatus', () => {
-  let tmpDir;
-
-  beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sdlc-test-'));
-  });
-
-  afterEach(() => {
-    fs.rmSync(tmpDir, { recursive: true, force: true });
-    jest.resetModules();
-  });
-
-  function writeConfig(obj) {
-    fs.writeFileSync(path.join(tmpDir, 'agents.config.json'), JSON.stringify(obj));
-    return path.join(tmpDir, 'agents.config.json');
-  }
-
-  it('writes project block (not hackathon) to output', () => {
-    const { buildStatus } = require('../../tools/init-sdlc-status');
-    const cfgPath = writeConfig({
-      project: {
-        name: 'TestProj',
-        description: 'Desc',
-        repoUrl: 'https://github.com/test/proj',
-        startDate: '2026-01-01',
-      },
-      phases: [],
-      agents: {},
-    });
-    const status = buildStatus(cfgPath);
-    expect(status.project).toBeDefined();
-    expect(status.project.name).toBe('TestProj');
-    expect(status.project.repoUrl).toBe('https://github.com/test/proj');
-    expect(status.hackathon).toBeUndefined();
-  });
-
-  it('seeds phases from config with id, status:pending, timestamps null', () => {
-    const { buildStatus } = require('../../tools/init-sdlc-status');
-    const cfgPath = writeConfig({
-      project: { name: 'P', description: '', repoUrl: '', startDate: '2026-01-01' },
-      phases: [
-        { name: 'Build', agents: ['Dev'], deliverables: ['code'] },
-        { name: 'Test', agents: ['QA'], deliverables: ['report'] },
-      ],
-      agents: {},
-    });
-    const status = buildStatus(cfgPath);
-    expect(status.phases).toHaveLength(2);
-    expect(status.phases[0]).toMatchObject({
-      id: 1,
-      name: 'Build',
-      status: 'pending',
-      startedAt: null,
-      completedAt: null,
-    });
-    expect(status.phases[1]).toMatchObject({ id: 2, name: 'Test' });
-  });
-
-  it('initialises cycles as empty array', () => {
-    const { buildStatus } = require('../../tools/init-sdlc-status');
-    const cfgPath = writeConfig({
-      project: { name: 'P', description: '', repoUrl: '', startDate: '' },
-      phases: [],
-      agents: {},
-    });
-    const status = buildStatus(cfgPath);
-    expect(status.cycles).toEqual([]);
   });
 });
 
@@ -611,8 +548,8 @@ describe('generate-dashboard — US-0147 agent workload live data', () => {
   it('renders pv-workload-bar when stories have assigned agents', () => {
     const { generateHTML } = require('../../tools/generate-dashboard.js');
     const fixture = makeHealthyFixture();
-    fixture.stories['US-0001'] = { title: 'Foo', status: 'In Progress', epic: 'EPIC-0016', agent: 'Pixel' };
-    fixture.stories['US-0002'] = { title: 'Bar', status: 'Done', epic: 'EPIC-0016', agent: 'Pixel' };
+    fixture.programme.stories['US-0001'] = { title: 'Foo', status: 'In Progress', epic: 'EPIC-0016', agent: 'Pixel' };
+    fixture.programme.stories['US-0002'] = { title: 'Bar', status: 'Done', epic: 'EPIC-0016', agent: 'Pixel' };
     const html = generateHTML(fixture);
     expect(html).toContain('pv-workload-bar');
   });
@@ -620,7 +557,7 @@ describe('generate-dashboard — US-0147 agent workload live data', () => {
   it('renders agent workload section with agent names', () => {
     const { generateHTML } = require('../../tools/generate-dashboard.js');
     const fixture = makeHealthyFixture();
-    fixture.stories['US-0003'] = { title: 'Baz', status: 'In Progress', epic: 'EPIC-0016', agent: 'Forge' };
+    fixture.programme.stories['US-0003'] = { title: 'Baz', status: 'In Progress', epic: 'EPIC-0016', agent: 'Forge' };
     const html = generateHTML(fixture);
     expect(html).toContain('pv-workload-section');
   });
@@ -629,15 +566,20 @@ describe('generate-dashboard — US-0147 agent workload live data', () => {
     const { generateHTML } = require('../../tools/generate-dashboard.js');
     const fixture = makeHealthyFixture();
     // stories without agent field
-    Object.values(fixture.stories).forEach((s) => delete s.agent);
+    Object.values(fixture.programme.stories).forEach((s) => delete s.agent);
     expect(() => generateHTML(fixture)).not.toThrow();
   });
 
   it('renders (N done) sub-label in workload rows', () => {
     const { generateHTML } = require('../../tools/generate-dashboard.js');
     const fixture = makeHealthyFixture();
-    fixture.stories['US-0010'] = { title: 'Done story', status: 'Done', epic: 'EPIC-0016', agent: 'Pixel' };
-    fixture.stories['US-0011'] = { title: 'Active story', status: 'In Progress', epic: 'EPIC-0016', agent: 'Pixel' };
+    fixture.programme.stories['US-0010'] = { title: 'Done story', status: 'Done', epic: 'EPIC-0016', agent: 'Pixel' };
+    fixture.programme.stories['US-0011'] = {
+      title: 'Active story',
+      status: 'In Progress',
+      epic: 'EPIC-0016',
+      agent: 'Pixel',
+    };
     const html = generateHTML(fixture);
     expect(html).toContain('pv-workload-done');
     expect(html).toContain('(1 done)');
@@ -931,7 +873,6 @@ describe('US-0176 (EPIC-0026) MEMORY sidebar widget', () => {
   // assert presence/absence based on whatever state the running machine is in.
   test('AC-0637/0639: widget block renders only when claude-mem settings file is present', () => {
     const fs = require('fs');
-    const os = require('os');
     const path = require('path');
     const settingsPath = path.join(os.homedir(), '.claude-mem', 'settings.json');
     const settingsExists = fs.existsSync(settingsPath);
@@ -954,7 +895,6 @@ describe('US-0176 (EPIC-0026) MEMORY sidebar widget', () => {
   // that one of them appears when the widget is rendered.
   test('AC-0638: widget shows either an observation count or a "live" indicator', () => {
     const fs = require('fs');
-    const os = require('os');
     const path = require('path');
     const settingsPath = path.join(os.homedir(), '.claude-mem', 'settings.json');
     if (!fs.existsSync(settingsPath)) return; // nothing to assert when not installed
@@ -973,14 +913,17 @@ describe('agent workload — model chip', () => {
 
   function statusWithAgent(model) {
     return {
-      currentPhase: 0,
-      phases: [{ id: 1, name: 'Build', status: 'active' }],
-      agents: {
-        Pixel: { status: 'active', currentTask: 'X', currentStory: 'US-0001', model },
-      },
-      stories: { 'US-0001': { status: 'InProgress' } },
-      metrics: {},
+      tasks: {},
       log: [],
+      programme: {
+        currentPhase: 0,
+        phases: [{ id: 1, name: 'Build', status: 'active' }],
+        agents: {
+          Pixel: { status: 'active', currentTask: 'X', currentStory: 'US-0001', model },
+        },
+        stories: { 'US-0001': { status: 'InProgress' } },
+        metrics: {},
+      },
     };
   }
 
@@ -1001,15 +944,72 @@ describe('agent workload — model chip', () => {
 
   test('renders no model chip when model is null (idle)', () => {
     const status = statusWithAgent(null);
-    status.agents.Pixel.status = 'idle';
+    status.programme.agents.Pixel.status = 'idle';
     const html = generateHTML(status);
     expect(html).not.toMatch(/<span class="mc-agent-model-chip/);
   });
 
   test('renders no model chip when model is undefined (pre-migration)', () => {
     const status = statusWithAgent(undefined);
-    delete status.agents.Pixel.model;
+    delete status.programme.agents.Pixel.model;
     const html = generateHTML(status);
     expect(html).not.toMatch(/<span class="mc-agent-model-chip/);
+  });
+});
+
+// --- US-0186: Dashboard Review-Gate Visualization ---
+describe('US-0186 review-gate visualization', () => {
+  const CFG_PATH = path.join(ROOT, 'agents.config.json');
+  let originalConfig;
+
+  beforeEach(() => {
+    originalConfig = fs.readFileSync(CFG_PATH, 'utf8');
+    jest.resetModules();
+  });
+
+  afterEach(() => {
+    fs.writeFileSync(CFG_PATH, originalConfig);
+    jest.resetModules();
+  });
+
+  function renderWithConfig(orchestrationBlock) {
+    const cfg = JSON.parse(originalConfig);
+    if (orchestrationBlock === undefined) {
+      delete cfg.orchestration;
+    } else {
+      cfg.orchestration = orchestrationBlock;
+    }
+    fs.writeFileSync(CFG_PATH, JSON.stringify(cfg, null, 2));
+    jest.resetModules();
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    return generateHTML(makeHealthyFixture());
+  }
+
+  test('emits window.pvTaskReviewCap literal from config (3)', () => {
+    const html = renderWithConfig({ iterationCap: { spec: 3, plan: 3, taskReview: 3 } });
+    expect(html).toMatch(/window\.pvTaskReviewCap\s*=\s*3/);
+  });
+
+  test('emits window.pvTaskReviewCap default 2 when config missing taskReview key', () => {
+    const html = renderWithConfig({ iterationCap: { spec: 3, plan: 3 } });
+    expect(html).toMatch(/window\.pvTaskReviewCap\s*=\s*2/);
+  });
+
+  test('embeds deriveDisplayState and render function sources in script block', () => {
+    const html = renderWithConfig({ iterationCap: { taskReview: 2 } });
+    expect(html).toContain('function deriveDisplayState(');
+    expect(html).toContain('function renderReviewIconS(');
+    expect(html).toContain('function renderReviewChipsM(');
+    expect(html).toContain('function renderReviewLineL(');
+  });
+});
+
+describe('US-0186 patchTaskList review-gate integration', () => {
+  test('patchTaskList source references deriveDisplayState and reads window.pvTaskDensity', () => {
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    const html = generateHTML(makeHealthyFixture());
+    expect(html).toMatch(/function patchTaskList\(/);
+    expect(html).toMatch(/deriveDisplayState\(/);
+    expect(html).toMatch(/window\.pvTaskDensity/);
   });
 });

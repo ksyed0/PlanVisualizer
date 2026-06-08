@@ -32,6 +32,7 @@ AGENTS = [
     "circuit",
     "compass",
     "conductor",
+    "deploy",
     "forge",
     "keystone",
     "lens",

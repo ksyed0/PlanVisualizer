@@ -734,7 +734,7 @@ Steps to Reproduce:
   2. Step
 Expected: What should happen
 Actual: What actually happened
-Status: Open | In Progress | Fixed | Verified | Closed
+Status: Open | In Progress | Fixed | Verified | WontFix | Closed
 Fix Branch: bugfix/BUG-XXXX-short-description
 Lesson Encoded: Yes — see docs/LESSONS.md | No
 
@@ -1248,7 +1248,7 @@ Steps to Reproduce:
 
 ---
 
-BUG-0100: capture-cost.js silent failure when transcript not found
+BUG-0261: capture-cost.js silent failure when transcript not found
 Severity: Low
 Related Story: US-0012
 Steps to Reproduce:
@@ -1280,7 +1280,7 @@ Steps to Reproduce:
 
 ---
 
-BUG-0098: Open bug count includes Retired bugs — shows incorrect count in header
+BUG-0262: Open bug count includes Retired bugs — shows incorrect count in header
 Severity: Medium
 Related Story: US-0036
 Steps to Reproduce:
@@ -1297,7 +1297,7 @@ Steps to Reproduce:
 
 ---
 
-BUG-0099: Epic group headers remain visible when all children are filtered out
+BUG-0263: Epic group headers remain visible when all children are filtered out
 Severity: Medium
 Related Story: US-0010
 Steps to Reproduce:
@@ -1309,7 +1309,7 @@ Steps to Reproduce:
    Actual: Epic group headers remain visible even when all children are hidden by filters; counts show original totals
    Status: Fixed
    GH Issue: #612
-   Fix Branch: bugfix/BUG-0099-epic-header-filter-visibility
+   Fix Branch: bugfix/BUG-0263-epic-header-filter-visibility
    Lesson Encoded: No
 
 ---
@@ -3941,10 +3941,61 @@ Steps to Reproduce:
 2.  View any trend chart (Done, Coverage, AI Cost, Open Bugs)
     Expected: Smooth lines that reflect actual project change over time.
     Actual: Charts look spiky with flat segments followed by sudden jumps. Root cause is snapshot cadence: e.g. 12 snapshots on 2026-04-28 (clustered minutes apart), then an 8-day gap (2026-04-29 → 2026-05-07), then a 3-day gap with significant work (PR #989, PR #991). Charts plot snapshots at equal x-axis spacing so dense periods look flat and gaps render as jumps. AI Cost and Open Bugs charts also include backfill artefacts (e.g. open bugs jumping 118 → 11 in one snapshot when status filter logic changed).
+    Status: Fixed
+    GH Issue: #993
+    Fix Branch: bugfix/BUG-0254-0257-dashboard-ux-and-data-issues
+    Fix: `dedupeSnapshots()` added to `tools/lib/snapshot.js` collapses near-in-time snapshots within a 30-minute window (DEDUPE_WINDOW_MS). `generate-plan.js` calls it before `extractTrends()`. 150 raw snapshots reduced to 93 on this project (57 near-duplicates collapsed). BUGS.md status was stale — fix shipped in PR #993 (Session 42) but never marked here.
+    Lesson Encoded: Yes — see L-0056
+
+---
+
+BUG-0258: ID_REGISTRY drifts silently from actual artefact IDs in use
+Severity: Medium
+Related Story: US-0215 (EPIC-0036)
+Steps to Reproduce:
+
+1.  Inspect docs/ID_REGISTRY.md "Next Available ID" for any sequence
+2.  Compare against the max actual ID for that sequence across docs/RELEASE_PLAN.md, BUGS.md, etc.
+    Expected: Registry next-id is strictly greater than max-in-use across all source files.
+    Actual: Drift happens whenever a commit references a new ID (e.g. "feat(EPIC-0029): ...") before the registry is bumped. Discovered 2026-05-19 — EPIC-0029 referenced in commit history while ID_REGISTRY.md still listed EPIC-0029 as next-available. Resynced in commit ddb4a36 alongside the EPIC-0030..0035 plan addition, but the underlying problem (no enforcement at write time) is unaddressed.
     Status: Open
     GH Issue:
     Fix Branch:
-    Notes: Possible fixes: (a) snapshot deduplication — collapse N snapshots within a 5-min window into one; (b) time-axis charts — use actual timestamps for x-axis rather than equal spacing; (c) post-hoc smoothing or sparse-aware rendering. Pick one or combine.
+    Notes: Root cause is that markdown is the source of truth but no tool validates referential integrity at write time. Closed by EPIC-0036 (Step 1 Repository Foundation) — the indexed SQLite layer emits an 'id-registry-drift' warning at write time, and EPIC-0041 promotes it to a hard error. Logged primarily as evidence that the EPIC-0036 work is justified.
+    Lesson Encoded: No
+
+---
+
+BUG-0259: tools/lib/file-lock.js referenced in CLAUDE.md + enterprise-agentic-sdlc spec but does not exist
+Severity: Low
+Related Story: US-0216 (EPIC-0036)
+Steps to Reproduce:
+
+1.  ls tools/lib/file-lock.js
+2.  grep -rn "file-lock\\|atomic-write\\|git-safe" CLAUDE.md docs/architecture/enterprise-agentic-sdlc-spec-v2.md
+    Expected: If the files are referenced, they exist in the codebase.
+    Actual: Both CLAUDE.md and the enterprise-agentic-sdlc spec reference `tools/lib/file-lock.js`, `atomic-write.js`, and `git-safe.js` as existing concurrency primitives. Discovered 2026-05-19 during plan authoring: the files do not exist. Past parallel-write safety has relied on ad-hoc atomic-rename-via-tmp patterns inside individual tools, not a shared primitive.
+    Status: Fixed
+    GH Issue:
+    Fix Branch: claude/trusting-ptolemy-a305f1
+    Notes: Fixed in commit 0d720af (US-0216 / Task A.2) by introducing `tools/lib/repository/file-lock.js` as a `proper-lockfile` wrapper exposing `withFileLock(file, fn)` (30s stale timeout) and `acquireMany(files, onAcquired)` with lexicographic ordering and reverse-order release on cleanup. Unit tests in `tests/unit/repository/file-lock.test.js` cover concurrent-write serialisation, throw-safety, and lexicographic acquisition (3/3 passing). The spec text and CLAUDE.md references to `tools/lib/file-lock.js` (legacy path) will be corrected as part of EPIC-0036 Phase F (US-0248), which moves the module under `internal/` with a deprecation shim at the legacy path.
+    Lesson Encoded: No
+
+---
+
+BUG-0260: engines.node constraint (>=22) conflicts with CI matrix (Node 20)
+Severity: High
+Related Story: US-0215 (EPIC-0036)
+Steps to Reproduce:
+
+1.  Inspect `package.json` engines field: `"node": ">=22.0.0"`
+2.  Inspect `.github/workflows/ci.yml`: all `setup-node` steps pin `node-version: '20'`
+    Expected: The engines constraint and the CI matrix agree on the minimum supported Node version, so `npm install` on CI cannot fail the engines check and production deployments target a supported runtime.
+    Actual: CI runs Node 20, which is below the >=22 floor declared in engines. Running `npm install` (or any npm lifecycle) on CI will emit an "unsupported engine" warning; with `engine-strict=true` in `.npmrc` it becomes a hard failure. More importantly the constraint falsely advertises that Node 20 is unsupported when the project currently runs on it.
+    Status: Fixed
+    GH Issue:
+    Fix Branch: claude/trusting-ptolemy-a305f1
+    Notes: Introduced in commit 2bafd93 (US-0215 / Task A.1). Fixed in commit c823074 by bumping all 8 `node-version` occurrences across `.github/workflows/` to `'22'` (Node 22 is active LTS and is required by Task A.5's node:sqlite fallback). Verified by re-review subagent on 2026-05-20.
     Lesson Encoded: No
 
 ---

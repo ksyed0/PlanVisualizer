@@ -1,13 +1,59 @@
 # PlanVisualizer — Technical Architecture
 
-**Version:** 1.5
-**Last Updated:** 2026-03-18
+**Version:** 1.6
+**Last Updated:** 2026-05-18
+
+> **Scope note:** This document covers the **static dashboard generator** — parsers, renderers, and `plan-status.html` output. The **agentic orchestration engine** (EPIC-0028) — `agent-spec-plan.js`, `agent-lifecycle.js`, `agent-context.js`, `agent-task-review.js`, and the live Agentic Dashboard — has its own dedicated reference at [`docs/architecture/AGENTIC_PIPELINE.md`](./AGENTIC_PIPELINE.md), with mermaid diagrams for the spec/plan phase, per-task lifecycle, review gates, BLOCKED routing, and `sdlc-status.json` schema.
 
 ---
 
 ## 1. Overview
 
 PlanVisualizer is a Node.js CLI tool with no production runtime dependencies. It reads markdown files, parses them with regex-based parsers, and renders a self-contained HTML dashboard. The output is a single `.html` file deployable anywhere.
+
+Since v2.4.0 it also includes an **agentic orchestration engine** that drives specialist sub-agents through spec → plan → dispatch → per-task review gates with live state on the Agentic Dashboard. See `AGENTIC_PIPELINE.md` for that layer.
+
+### Top-level system diagram
+
+```mermaid
+flowchart TB
+  subgraph Inputs["Markdown source files"]
+    MD["RELEASE_PLAN.md · TEST_CASES.md · BUGS.md<br/>LESSONS.md · progress.md · AI_COST_LOG.md · MEMORY.md"]
+  end
+
+  subgraph Engine["Agentic Orchestration Engine<br/>(see AGENTIC_PIPELINE.md)"]
+    SPP[agent-spec-plan.js]
+    LF[agent-lifecycle.js]
+    CX[agent-context.js]
+    TR[agent-task-review.js]
+    SDLC[sdlc-status.json]
+  end
+
+  subgraph Generator["Static dashboard generator (this document)"]
+    Parsers["tools/lib/parse-*.js<br/>regex-based parsers"]
+    Renderer["tools/lib/render-html.js<br/>+ render-tabs / render-shell"]
+  end
+
+  subgraph Outputs
+    SH["docs/plan-status.html<br/>10-tab static report"]
+    DH["docs/dashboard.html<br/>Agentic Dashboard<br/>live, 5s refresh"]
+  end
+
+  MD --> Parsers
+  Parsers --> Renderer
+  Renderer --> SH
+
+  SPP --> SDLC
+  LF --> SDLC
+  TR --> SDLC
+  CX -.reads.-> SDLC
+  CX -.reads.-> MD
+
+  SDLC --> DH
+  MD --> DH
+```
+
+The rest of this document covers the **Generator** + **Outputs** boxes. The Engine box has its own document.
 
 ---
 

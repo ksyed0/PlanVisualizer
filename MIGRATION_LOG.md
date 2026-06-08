@@ -4,6 +4,104 @@ Log every change that must propagate to other platforms, modules, or installatio
 
 ---
 
+## 2026-05-24 — Session 59 (EPIC-0045 / Phase E COMPLETE — all 5 stories shipped, 4 hard gates closed)
+
+**Migration 006 — JSON top-level → SQL sdlc_programme one-time ingest (BREAKING for any tooling that read legacy top-level keys post-upgrade)**
+
+- **What changed:** New JS data migration `tools/lib/migrations/data_006-ingest-legacy-programme.js` ingests the 9 legacy top-level keys of `docs/sdlc-status.json` (`agents`, `metrics`, `stories`, `epics`, `phases`, `cycles`, `currentPhase`, `githubStatus`, `project`) into `sdlc_programme` SQL rows on first `pv:upgrade`. Idempotency via `meta_status('migration_006_hash')`. Single `BEGIN/COMMIT` SQL transaction with `ROLLBACK` on any error. Bypasses `SdlcProgrammeRepo.set()` (raw SQL + single post-commit `mirror.write()`) for transactional + file-lock safety. State-C divergence detection logs `migration_006_conflict_{K}` via `repo.warningsChannel.append()`; SQL value unchanged on divergence.
+- **Files:** `tools/lib/migrations/data_006-ingest-legacy-programme.js`, `tools/lib/migrations/sdlc-snapshot.js` (META_KEYS extended), `tools/pv-rollback.js` (corrupt-snapshot exception for pre-SQL-data snapshots), `docs/architecture/pv-backup-format.md`.
+- **Platforms/modules affected:** Any project upgrading from a pre-Phase-E PlanVisualizer must run `npm run pv:upgrade` once. Snapshots include both `pre-data_006-ingest-legacy-programme/` per-migration AND `pre-upgrade-<ts>/` broader snapshots.
+- **PR:** [#1111](https://github.com/ksyed0/PlanVisualizer/pull/1111) — `feature/US-0262-migration-006 → develop` (commit `1c5c867`)
+
+**Mirror is now a pure function of SQL state — sdlc-mirror.js preservation block deleted (BREAKING for any consumer that wrote legacy top-level keys directly to the JSON expecting them to survive)**
+
+- **What changed:** US-0261 (PR #1114) deletes the 19-line `// TRANSITIONAL DEBT` block from `SdlcMirror.write()`. After this, the on-disk `docs/sdlc-status.json` contains exactly `{tasks, log, programme}` after every mirror write — no legacy top-level key survives across writes. The dual-read fallback in the US-0259 accessor is also stripped (`reader.X(json)` now reads `programme.X` only, returns safe default if absent). The retired `tools/lib/repository/indexers/sdlc-status-indexer.js` file is deleted entirely.
+- **Files:** `tools/lib/repository/sdlc-mirror.js`, `tools/lib/repository/indexers/sdlc-status-indexer.js` (DELETED), `tools/lib/repository/indexers/index.js` (breadcrumb), `tools/lib/repository/index.js` (breadcrumb), `tools/lib/repository/sdlc-status-reader.js`, `tools/pv-doctor.js`.
+- **Platforms/modules affected:** Any external script that wrote top-level legacy keys to `docs/sdlc-status.json` expecting them to persist is broken — those keys are now overwritten by the next mirror render. Migration path: write through `SdlcProgrammeRepo.set(key, value)` instead. The accessor's removed fallback means a developer who pulls post-US-0261 `develop` but hasn't run `pv:upgrade` will see empty-dashboard until Migration 006 runs. The new `pv:doctor` `detectUnMigratedClone` check prints a clear `"Run npm run pv:upgrade"` remediation in that scenario.
+- **PR:** [#1114](https://github.com/ksyed0/PlanVisualizer/pull/1114) — `feature/US-0261-cleanup-hard-gates → develop` (commit `0e86bb6`)
+
+**Phase E hard gates verified on develop tip `0e86bb6` (all 4 closed)**
+
+1. Preservation block removed (grep) → PASS
+2. Indexer file deleted (fs.existsSync) → PASS
+3. Dashboard reads only canonical (grep) → PASS (closed by US-0259)
+4. Canonical on-disk shape after `pv:upgrade` (integration test) → PASS
+
+EPIC-0045 closed. 5 of 5 stories shipped. Full suite: 107 suites / 1596 tests pass.
+
+---
+
+## 2026-05-23 — Session 58 (EPIC-0045 / Phase E partial — Consumer Migration, 3 of 5 stories shipped)
+
+**`tools/init-sdlc-status.js` no longer writes legacy top-level JSON keys — fresh init now produces canonical `{tasks, log, programme: {agents, phases, project}}` only (BREAKING for any external consumer that parsed the legacy top-level shape from a freshly-init'd project)**
+
+- **What changed:** US-0260 rewires `init-sdlc-status` to seed `programme.{agents, phases, project}` via three `SdlcProgrammeRepo.set()` calls. The mirror module renders the canonical `{tasks, log, programme}` triple automatically. The legacy `buildStatus()` function — which built a 9-key legacy-top-level JSON shape (`project`, `currentPhase`, `phases`, `agents`, `epics`, `stories`, `cycles`, `metrics`, `log`) and wrote it via `fs.writeFileSync` — is deleted entirely. AC-1018 idempotent-merge: without `--force` an existing `sdlc_programme` row is preserved; with `--force` it is overwritten. The previous file-level `wx` flag is gone; idempotency now lives at the per-row level.
+- **Files:** `tools/init-sdlc-status.js`, `tests/unit/init-sdlc-status-repeat.test.js` (new — 8 tests covering AC-1018), `tests/unit/generate-dashboard.test.js` (removed 3 superseded `buildStatus` tests).
+- **Platforms/modules affected:** Any external script that reads `docs/sdlc-status.json` from a freshly-init'd project and expects top-level `project`, `phases`, `agents`, `metrics`, etc. will see those keys missing. They must migrate to read `programme.{key}` (or use the US-0259 accessor — `require('./tools/lib/repository/sdlc-status-reader')` if running in-process). GitHub Pages deploy scripts that parsed the legacy shape are at risk.
+- **Dual-read accessor cushions the transition window:** The US-0259 accessor (`tools/lib/repository/sdlc-status-reader.js`) reads `programme.{key}` first and falls back to legacy top-level `{key}`. So existing checkouts that haven't run `pv:upgrade` since US-0262 (Migration 006) lands will continue to work. The fallback is removed in US-0261 after Migration 006 has provably run.
+- **PR:** [#1106](https://github.com/ksyed0/PlanVisualizer/pull/1106) — `feature/US-0260-non-dashboard-consumers → develop` (commit `36a816d3`)
+
+**`tools/lib/repository/sdlc-status-reader.js` is the new single-source-of-truth read API for `docs/sdlc-status.json`'s 9 legacy keys (BREAKING for direct readers — they should migrate to the accessor)**
+
+- **What changed:** US-0259 introduces a 10-function dual-read accessor module. Every direct `status.{agents,metrics,stories,epics,phases,cycles,currentPhase,githubStatus,project}` read in the codebase has been migrated to call `reader.X(status)` (Node side) or `pvReader.X(status)` (browser side, where the module is injected into `docs/dashboard.html` via `fn.toString()`). `currentPhase` and `githubStatus` use explicit `typeof` checks so `currentPhase: 0` and `githubStatus: null` survive correctly through the dual-read chain (a bare `||` would collapse them).
+- **Files:** `tools/lib/repository/sdlc-status-reader.js` (new — 70 lines, 100% test coverage on 85 unit tests), `tools/generate-dashboard.js` + regenerated `docs/dashboard.html` (US-0259), `tools/generate-plan.js` + `tools/agent-context.js` + `tools/agent-spec-plan.js` (US-0260), `tests/fixtures/phase-e/*` (9 new shared fixtures — state-a/b/c/c-conflict + 5 edge cases).
+- **Platforms/modules affected:** Any consumer (out-of-tree script, external tool, downstream package) that reads `docs/sdlc-status.json` should switch from `json.{legacy-key}` to `reader.{legacy-key}(json)` for forward-compatibility. The accessor handles both old-shape (legacy top-level) and new-shape (canonical programme) JSON transparently during the transition window.
+- **PR:** [#1102](https://github.com/ksyed0/PlanVisualizer/pull/1102) — `feature/US-0259-accessor-and-dashboard → develop` (commit `8bb81da3`)
+
+**`tools/lib/migrations/005-ingest-sdlc-status.js` → `data_005-ingest-sdlc-status.js` (BREAKING for any external runner that scanned the bare-prefix filename)**
+
+- **What changed:** US-0263 renames the JS data migration to the namespaced `data_NNN-` prefix per L-0081's rule. The runner regex in `tools/lib/migrations/index.js` is widened to `/^(?:data_)?\d{3}-.*\.js$/` so legacy filename patterns keep working. Migration 005's content-addressed idempotency (`meta_status('migration_005_hash')`) means checkouts that already ran the old-named migration are unaffected — re-running under the new name returns `{skipped: 'idempotent'}`. The only cosmetic side-effect is a duplicate entry in `pv-state.json`'s `appliedMigrations` array.
+- **Files:** `tools/lib/migrations/{data_005-ingest-sdlc-status.js,index.js}`, `tests/unit/migrations/{data_005-ingest-sdlc-status.test.js,migrations-no-collision.test.js}` (new — AC-1021 enforces no two migration files share a leading namespaced prefix across the JS data-migration dir and the SQL schema-migration dir), `tests/integration/repository/pv-upgrade-rollback.test.js` (regex matcher updated).
+- **Platforms/modules affected:** Any external script that grepped `tools/lib/migrations/005-*.js` literally will miss the renamed file. The collision test prevents future drift.
+- **`.gitignore` update (AC-1022):** `docs/.pv-state.json` added — was previously escaping into the working tree on every `pv:upgrade`.
+- **PR:** [#1103](https://github.com/ksyed0/PlanVisualizer/pull/1103) — `feature/US-0263-housekeeping → develop` (commit `430b0590`)
+
+**Phase E spec correction (`docs/superpowers/specs/2026-05-22-phase-e-consumer-migration-design.md`) — Migration 006 path disambiguation**
+
+- **What changed:** Spec lines 232 and 329 incorrectly pegged Migration 006 at `tools/lib/repository/migrations/006-*.js` (a SQL-only directory). Doc-only patch corrects both to `tools/lib/migrations/data_006-ingest-legacy-programme.js`, matching the L-0081 / US-0263 naming convention. Inline parenthetical added at line 232 to prevent future ambiguity.
+- **Files:** `docs/superpowers/specs/2026-05-22-phase-e-consumer-migration-design.md` (2 line edits).
+- **Platforms/modules affected:** None — doc-only. Unblocks US-0262 implementer from making a wrong-path mistake that would have failed AC-1021 at CI.
+- **PR:** [#1107](https://github.com/ksyed0/PlanVisualizer/pull/1107) — `feature/docs-us-0262-path-clarification → develop` (commit `90dbba86`)
+
+---
+
+## 2026-05-22 — Session 57 (EPIC-0039 / Phase D — SdlcStatus Cutover to SQLite)
+
+**SQLite is now authoritative for sdlc-status; `docs/sdlc-status.json` is a regenerated mirror (BREAKING for downstream consumers that wrote the JSON directly)**
+
+- **What changed:** All four lifecycle writers (`tools/agent-lifecycle.js`, `tools/update-sdlc-status.js`, `tools/agent-task-review.js`, `tools/agent-spec-plan.js`) now route every state mutation through `SdlcEventRepo` / `SdlcTaskRepo` / `SdlcProgrammeRepo`. Direct `fs.writeFileSync` and `atomicReadModifyWriteJson` on `docs/sdlc-status.json` are forbidden — hard-gate grep enforces this. The JSON file is regenerated under file lock from SQL on every write via `SdlcMirror`.
+- **Files:** `tools/agent-lifecycle.js`, `tools/update-sdlc-status.js`, `tools/agent-task-review.js`, `tools/agent-spec-plan.js`, `tools/lib/repository/sdlc-mirror.js`, `tools/lib/repository/entities/sdlc-{event,task,programme}-repo.js`, `tools/lib/agent-cli-repo-helpers.js`
+- **Platforms/modules affected:** Any downstream agent or tool that writes `docs/sdlc-status.json` directly will overwrite SQL state. They must migrate to call the writer CLIs or import the repo entity classes.
+- **PR:** Phase D PR (TBD #) — `claude/phase-d-impl → develop`
+
+**Migration 005 — JSON → SQLite one-time ingest (idempotent via post-ingest mirror hash)**
+
+- **What changed:** New data migration `tools/lib/migrations/005-ingest-sdlc-status.js` ingests an existing `docs/sdlc-status.json` into SQL via the D.1 repos on first `pv:upgrade`. Idempotency uses `meta_status('migration_005_hash')` storing a sha256 of the **post-ingest mirror** (not the source bytes — a source-hash strategy is broken by the mirror-on-every-write design). A re-run with matching hash returns `{skipped: 'idempotent'}` with no duplicate rows.
+- **Files:** `tools/lib/migrations/005-ingest-sdlc-status.js`, `tools/lib/repository/migrations/005_sdlc_task_lifecycle_fields.sql` (separate SQL schema migration from D.3 — note the two unrelated artifacts both numbered 005)
+- **Platforms/modules affected:** Any project upgrading from a pre-Phase-D PlanVisualizer must run `npm run pv:upgrade` once. Snapshots land in `docs/.pv-backup/pre-upgrade-<timestamp>/`.
+- **PR:** Phase D PR
+
+**New CLIs: `pv:upgrade` and `pv:rollback` (write-capable, snapshot-backed)**
+
+- **What changed:** `npm run pv:upgrade` runs pending migrations after taking a JSON-row snapshot of all three SQL tables + `meta_status` + the JSON mirror into `docs/.pv-backup/pre-upgrade-<timestamp>/`. `npm run pv:rollback --to <label>` restores the SQL tables, then rewrites the JSON mirror from SQL (not from the snapshotted JSON — SQL is the canonical re-render). `--dry-run` and refuse-to-clobber on uncommitted writes are both supported.
+- **Files:** `tools/pv-upgrade.js`, `tools/pv-rollback.js`, `tools/lib/migrations/sdlc-snapshot.js`, `docs/architecture/pv-backup-format.md`, `package.json` (`pv:upgrade` / `pv:rollback` scripts)
+- **Platforms/modules affected:** Adopting projects gain explicit upgrade/rollback ergonomics. The snapshot format (JSON rows, manifest-bearing) is documented at `docs/architecture/pv-backup-format.md`.
+- **PR:** Phase D PR
+
+**`sdlc-status-indexer.js` retired from the indexer registry (AC-1014)**
+
+- **What changed:** `docs/sdlc-status.json` removed from the indexer `MAP` in `tools/lib/repository/indexers/index.js` and from `MANAGED_SOURCES` in `tools/lib/repository/index.js`. The indexer file itself is retained as a reference with a retirement comment; deletion deferred to Phase E so the registry diff and file deletion land together.
+- **Platforms/modules affected:** Any downstream tool that called `indexAll()` against a post-pv:upgrade tree would have crashed (`TypeError: object is not iterable` against the post-D.3 object-shape `tasks` key). The crash is now removed; no migration required by downstream tools.
+- **PR:** Phase D PR
+
+**Writers throw, indexers warn (AC-1013)**
+
+- **What changed:** The `createTryInsert` helper (EPIC-0043) is **reserved for indexer-side use**. All Phase D writers propagate `SQLITE_CONSTRAINT_*` errors as exceptions. Any downstream code that imports `createTryInsert` for a write path is doing the wrong thing — it will silently swallow constraint violations.
+- **Files:** `tools/lib/repository/entities/sdlc-event-repo.js`, `sdlc-task-repo.js`, `sdlc-programme-repo.js`, `tools/lib/agent-cli-repo-helpers.js`
+- **Platforms/modules affected:** Any future indexer or writer must follow the same contract. Documented in AC-1013.
+
+---
+
 ## 2026-05-17 — Session 47 (US-0185 + US-0186)
 
 **AGENTS.md §CI Pipeline table updated (cross-platform)**

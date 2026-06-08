@@ -4,6 +4,388 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 60 — 2026-05-24 (EPIC-0040 PLANNING — spec + 8 plans shipped; ready for execution)
+
+### What Was Done
+
+EPIC-0040 (Planning Writers — Phase E sibling to EPIC-0045) brainstormed, specced, planned, cross-plan-reviewed, and merged. **No code changes** — two docs-only PRs that establish the executable EPIC-0040 work package.
+
+| PR    | Title                                              | Develop commit |
+| ----- | -------------------------------------------------- | -------------- |
+| #1118 | docs: EPIC-0040 design spec                        | (squashed)     |
+| #1119 | docs: EPIC-0040 — 8 per-story implementation plans | (squashed)     |
+
+### Brainstorming → Spec → Plans → Review → Merge
+
+1. **Brainstorming** via `superpowers:brainstorming` — 5 design decisions locked (RYOW transaction semantics, procedural git-as-gate Migration 001 approval, per-entity serializer modules, "Phase E" naming disambiguation, 8 self-critical observations folded in during user review).
+2. **Spec** at `docs/superpowers/specs/2026-05-24-epic-0040-planning-writers-design.md` (459 lines, 7 sections + 11 references).
+3. **8 plans** under `docs/superpowers/plans/2026-05-24-us-024{0..7}-*.md` (~5,600 lines total), per-plan self-review per `superpowers:writing-plans`.
+4. **Cross-plan consistency review** via `pr-review-toolkit:code-reviewer` — surfaced 4 blockers + 2 important findings the per-plan self-reviews missed. Fixed inline on PR #1119 via follow-up commit `8682317` before merge.
+5. **CI + merge** — both PRs needed `gh pr update-branch` (BEHIND on develop); all 7 visible checks passed (CodeQL correctly skipped for docs-only); squash-merged both.
+
+### Hard Gates / Status
+
+- EPIC-0040 status: **Planned, ready for execution.** All 8 stories (US-0240..US-0247) and 26 ACs (AC-0938..AC-0963) pre-allocated in `RELEASE_PLAN.md`.
+- Next session opens with the dependency-ordered execution sequence specified in the session-60 memory file.
+
+### Lessons Encoded
+
+- **L-0086** — Cross-plan consistency review catches blockers per-plan self-review misses; mandatory when an EPIC ships ≥2 plans in one session.
+
+### Metrics
+
+- Plans + spec: 9 files, ~6,060 lines.
+- Test suite: unchanged (107 suites / 1596 tests on develop tip — no code touched).
+- Coverage: unchanged (no code changes).
+
+---
+
+## Session 59 — 2026-05-23/24 (EPIC-0045 Phase E COMPLETE — all 5 stories shipped, 4 hard gates closed)
+
+### What Was Done
+
+**EPIC-0045 closed.** The remaining 2 stories (US-0262 + US-0261) and the EPIC close-out doc PR shipped. Phase E retires Phase D's three transitional scaffolds — the `sdlc-mirror.js` preservation block, the retired `sdlc-status-indexer.js` file, and the `|| json.{key}` dual-read fallback in the US-0259 accessor — and ingests the 9 legacy top-level keys of `docs/sdlc-status.json` into `sdlc_programme` SQL via Migration 006.
+
+| Story                                                                        | PR                                                          | Develop commit |
+| ---------------------------------------------------------------------------- | ----------------------------------------------------------- | -------------- |
+| **US-0262** — Migration 006 (legacy top-level → SQL)                         | [#1111](https://github.com/ksyed0/PlanVisualizer/pull/1111) | `1c5c867`      |
+| **US-0261** — Phase E close-out (3 deletions + AC-1020 + pv:doctor)          | [#1114](https://github.com/ksyed0/PlanVisualizer/pull/1114) | `0e86bb6`      |
+| **(close-out)** — RELEASE_PLAN.md + session docs + L-0084 + L-0085 (this PR) | (pending)                                                   | (pending)      |
+
+**Migration 006** (US-0262, `tools/lib/migrations/data_006-ingest-legacy-programme.js`): one-shot ingest using hash-based idempotency (`meta_status('migration_006_hash')`), single `BEGIN/COMMIT` SQL transaction with `ROLLBACK` on error, raw `INSERT...ON CONFLICT` per legacy key, divergence detection via `repo.warningsChannel.append({kind: 'migration_006_conflict_' + K})`, single post-commit `mirror.write()`. 91.48% statement coverage. Side-fix to `pv-rollback.js` for the pre-SQL-data snapshot case.
+
+**Phase E close-out** (US-0261): three deletions (preservation block, indexer file, accessor fallback) + three AC-1020 hard-gate tests + a `pv:doctor` extension that detects un-upgraded clones and prints a "Run `npm run pv:upgrade`" remediation. Six collateral test files updated to use canonical `{tasks, log, programme}` fixture shape after the fallback strip invalidated their legacy-shape setups.
+
+### Hard Gates (Phase E §2, all closed on develop tip `0e86bb6`)
+
+1. `tools/lib/repository/sdlc-mirror.js:32-43` preservation scaffolding removed → ✅ PASS
+2. `tools/lib/repository/indexers/sdlc-status-indexer.js` deleted → ✅ PASS
+3. Dashboard reads only `{tasks, log, programme}` → ✅ PASS (closed by US-0259)
+4. `docs/sdlc-status.json` contains exactly `{tasks, log, programme}` after `pv:upgrade` → ✅ PASS
+
+### Acceptance Criteria Ticked
+
+- **AC-1019** — Migration 006 algorithm + idempotency + divergence detection + rollback roundtrip (US-0262).
+- **AC-1020** — 4 Phase E hard gates + pv:doctor un-upgraded-clone DX guard (US-0261).
+
+Combined with Session 58's AC closures (AC-1015..AC-1018, AC-1021, AC-1022), **all 8 ACs claimed by the spec PR (#1100) are now closed.**
+
+### New Lessons
+
+- **L-0084** — Husky-rejected commits leave orphan commits + dirty working trees; subagents misread the rollback as success.
+- **L-0085** — Subagents drift out of scope when fixing test failures inline; verify file lists before accepting "DONE."
+
+### Workflow Recap
+
+US-0262 + US-0261 followed the same superpowers skill chain as US-0260. All subagent dispatches used haiku (to stay under the 1M-context credit threshold). The two-stage review (spec compliance then code quality) caught real issues at every story. The orphan-commit + scope-drift incidents (L-0084 + L-0085) were both caught by the controller's `git show --stat` verification before merge.
+
+### Test Suite + Lint
+
+- Full suite: **107 suites / 1596 tests pass** (`--runInBand`).
+- Lint: 0 errors / 44 pre-existing warnings.
+- Format: Prettier clean.
+
+### EPIC-0045 Final State
+
+**5 of 5 stories complete.** EPIC marked `Status: Done` in `docs/RELEASE_PLAN.md`. All 4 hard gates closed. Session memory: [docs/memory/sessions/2026-05-24-session-59-phase-e-complete.md](docs/memory/sessions/2026-05-24-session-59-phase-e-complete.md).
+
+### Next Session
+
+No remaining Phase E work. Possible follow-ups:
+
+- **ENH:** Wire `detectUnMigratedClone` from `pv:doctor` into `generate-dashboard.js` startup for a passive stderr nudge.
+- **Coverage:** Migration 006 has a small coverage gap on its defensive error paths (`JSON.parse` failure, transaction `ROLLBACK`) — acceptable for one-shot bootstrap code.
+
+---
+
+## Session 58 — 2026-05-22/23 (Phase E partial — US-0259/US-0263/US-0260 shipped; US-0262/US-0261 remain)
+
+### What Was Done
+
+EPIC-0045 (Phase E — Consumer Migration & Cleanup) is **3 of 5 stories complete**. The dual-read accessor + all three reader migrations + the canonical init seed shipped to `develop` across four PRs:
+
+| Story   | Path                                                        | PR                                                          | Develop commit |
+| ------- | ----------------------------------------------------------- | ----------------------------------------------------------- | -------------- |
+| US-0259 | dual-read accessor + dashboard consumer migration           | [#1102](https://github.com/ksyed0/PlanVisualizer/pull/1102) | `8bb81da3`     |
+| US-0263 | data_005 rename + gitignore docs/.pv-state.json             | [#1103](https://github.com/ksyed0/PlanVisualizer/pull/1103) | `430b0590`     |
+| US-0260 | non-dashboard consumer migration + canonical init seed      | [#1106](https://github.com/ksyed0/PlanVisualizer/pull/1106) | `36a816d3`     |
+| (spec)  | docs: Migration 006 path disambiguation (US-0262 unblocker) | [#1107](https://github.com/ksyed0/PlanVisualizer/pull/1107) | `90dbba86`     |
+
+**Accessor module** (`tools/lib/repository/sdlc-status-reader.js`, US-0259): 10 pure dual-read functions over `docs/sdlc-status.json`. Each reads `programme.{key}` first, falls back to legacy top-level, then to a safe default. `currentPhase` and `githubStatus` use explicit `typeof`-checks rather than `||` short-circuit so `currentPhase: 0` and `githubStatus: null` survive correctly. Module coverage 100% on 85 unit tests.
+
+**Dashboard migration** (US-0259): every direct `status.{agents,metrics,stories,epics,phases,cycles,currentPhase,githubStatus,project}` read in `tools/generate-dashboard.js` is now routed through the accessor. The same module is injected as `window.pvReader` into the emitted inline `<script>` block via `fn.toString()` so the browser-side ticker / refresh handlers share one source of truth (option B from the design note). 18 `pvReader.*` call sites in the regenerated `docs/dashboard.html`; 0 direct legacy reads. 27 integration tests guard against regression.
+
+**Three non-dashboard consumer migrations** (US-0260):
+
+- `tools/generate-plan.js:263` — `sdlc.stories || {}` becomes `reader.stories(sdlc)`.
+- `tools/agent-context.js:84` — `(sdlc.stories || {})[opts.story]` becomes `reader.stories(sdlc)[opts.story]`. `sdlc.tasks` untouched (canonical, no accessor).
+- `tools/agent-spec-plan.js#readStories()` — the dual `legacyTopLevel + legacyProgramme` merge in the SQL-absent fallback collapses to one `reader.stories(onDisk)` call. SQL-first path unchanged.
+
+**Canonical init seed** (US-0260): `tools/init-sdlc-status.js` no longer writes a legacy-shape JSON. It now calls `SdlcProgrammeRepo.set()` three times (`agents`, `phases`, `project`), and the mirror module renders the canonical `{tasks, log, programme}` shape automatically. AC-1018 idempotent-merge: without `--force` an existing row is preserved; with `--force` it's overwritten.
+
+**L-0081 fix** (US-0263): `tools/lib/migrations/005-ingest-sdlc-status.js` → `data_005-ingest-sdlc-status.js`; runner regex widened to `/^(?:data_)?\d{3}-.*\.js$/`. `tests/unit/migrations/migrations-no-collision.test.js` enforces no two migration files share a namespaced prefix across `tools/lib/repository/migrations/` and `tools/lib/migrations/`.
+
+**Gitignore audit** (US-0263, AC-1022): `docs/.pv-state.json` added to `.gitignore`. Audit of `pv:upgrade`/`pv:rollback`/`pv:doctor`/`pv:check-upgrade` and their lib deps found this as the only working-tree escapee.
+
+**File-lock parallel-flake fix** (folded into PR #1106): `tests/unit/repository/file-lock.test.js` had `serializes concurrent writes` asserting strict `Promise.all` ordering (first-caller-wins), which is stronger than the lock's mutual-exclusion contract. Under `--maxWorkers=8` with full-suite I/O contention, B occasionally won the race, producing intermittent CI failures. Fix asserts the real invariant (each callback's start+end are adjacent in the order array). Reproduced 1/1 pre-fix, 0/16 stress runs post-fix.
+
+**Migration 006 spec disambiguation** (PR #1107): Phase E spec at lines 232 and 329 pegged Migration 006 at `tools/lib/repository/migrations/006-*.js` — a directory containing SQL schema migrations only. Doc-only patch corrects both lines to `tools/lib/migrations/data_006-ingest-legacy-programme.js` (matching `data_005-` per L-0081 / US-0263), with an inline rationale to prevent the next reader from re-tripping the ambiguity. Two surgical edits.
+
+### Hard Gates (current develop tip `90dbba8`)
+
+1. `npm test` → 101 suites / **1572 tests pass** (zero regressions; +20 net tests vs. start of session).
+2. `npm run lint` → 0 errors / 43 pre-existing warnings unchanged. The new `STATUS_PATH` warning is explicitly suppressed by `eslint-disable-next-line no-unused-vars -- kept for out-of-tree consumers (US-0260)`.
+3. `npm run format:check` → all clean.
+4. Phase E hard-gate #3 (dashboard reads only `{tasks, log, programme}`) ✅ achieved by US-0259. The other three Phase E hard gates (#1 preservation block removed, #2 indexer file deleted, #4 on-disk JSON canonical-only) remain US-0261 work.
+
+### Acceptance Criteria Ticked
+
+- **AC-1015** — accessor dual-read fixture parity (US-0259).
+- **AC-1016** — dashboard renders against state-A/B/C fixtures (US-0259).
+- **AC-1017** — three non-dashboard consumers use accessor (US-0260).
+- **AC-1018** — init writes canonical programme; idempotent merge (US-0260).
+- **AC-1021** — migrations-no-collision regression test (US-0263).
+- **AC-1022** — `docs/.pv-state.json` gitignored + escapee audit (US-0263).
+
+### Workflow
+
+This session adopted the `superpowers:executing-plans` skill chain partway through (after US-0263 shipped, in response to the user's explicit request). US-0260 was the first story executed via the full chain: `writing-plans` (plan doc committed as the first commit on the feature branch) → `subagent-driven-development` (fresh implementer subagent per task, two-stage spec+quality review) → `finishing-a-development-branch` (PR open + sanity verify). Plan file: [docs/superpowers/plans/2026-05-23-us-0260-non-dashboard-consumers.md](docs/superpowers/plans/2026-05-23-us-0260-non-dashboard-consumers.md). The two-stage review caught real issues at every task that the implementer self-review missed (superseded test removal, missing `Lens.status` assertion, non-falsifiable precedence test, dead helper code).
+
+### Open Work (Phase E remaining)
+
+- **US-0262** — Migration 006: ingest legacy top-level into SQL. Creates `tools/lib/migrations/data_006-ingest-legacy-programme.js` (path now clarified by #1107), extends `pv:upgrade` snapshot capture, integrates with `pv:rollback`, handles state-C divergence via `warningsChannel`, idempotency keyed on `"006"`. Test coverage target ≥90%. Blocks US-0261.
+- **US-0261** — Removes the preservation block in `sdlc-mirror.js`, deletes `sdlc-status-indexer.js`, strips the `|| json.{key}` dual-read fallback from the accessor. Closes the four Phase E hard gates. Sequenced last per spec §4.3.
+
+### New Lesson
+
+- **L-0083** — Tests should assert the contract, not the implementation. Source: file-lock parallel-flake forensics. See `docs/LESSONS.md`.
+
+### Next Session
+
+Either: kick off US-0262 (Migration 006) via `writing-plans` → `subagent-driven-development`. Or merge any outstanding PRs first if Phase E reviewers leave feedback.
+
+---
+
+## Session 57 — 2026-05-21 (Phase D Task D.7 — US-0238 implemented)
+
+### What Was Done
+
+- Implemented **D.7 live-dashboard parity test** (`tests/integration/repository/live-dashboard-parity.test.js`, 349 lines, TASK-0063) covering three subtests:
+  - **A. Cross-writer parity** — 12-event interleaved fixture stream across all four Phase D writers (agent-lifecycle, update-sdlc-status, agent-task-review, agent-spec-plan). After the stream, on-disk `docs/sdlc-status.json` SQL-owned keys (`tasks`, `log`, `programme`) are byte-identical to a fresh `SdlcMirror._renderFromSql()`. Event log ids monotonic. BUG-0183 idempotency exercised via repeated `spec-await-ac` — at-most-one event row enforced.
+  - **B. SQL-as-source-of-truth across process restarts** — `Repository._reset()` between every dispatch. State written by writer A in process N is visible to writer B in process N+1; on-disk SQL-owned-key parity holds; `refresh()` is idempotent on re-open (no row duplication).
+  - **C. Live-dashboard read parity** — sniff-test on `tools/generate-dashboard.js:4137` confirms the dashboard fetches `./sdlc-status.json` directly with no SSE / WebSocket indirection, so (A)'s byte equality IS the dashboard live-update parity claim.
+- Test file includes a top-of-file (D) comment explaining the transitional dual-shape (unknown-top-level-keys preservation per `sdlc-mirror.js:32-43`) — full-file `===` is NOT asserted; only the SQL-owned key projection is.
+- TASK-0063 claimed in `docs/ID_REGISTRY.md`, bumped to TASK-0064.
+- US-0238 status → Done, all three ACs (AC-0931..AC-0933) ticked.
+
+### Test Results
+
+- Full suite: **1433 passed** / 0 failed (up from 1430 in D.6).
+- Coverage: **87.95% stmts** / 77.87% br / 89.16% funcs / 89.74% lines (was 87.93% post-D.6).
+- `npm run plan:lint`: 0/0/0.
+- `npm run lint` + `prettier --check`: clean on new file.
+- Phase D hard gate: `grep -rn "fs.writeFileSync.*sdlc-status\|atomicReadModifyWriteJson.*sdlc-status" tools/ | grep -v test` → empty.
+
+### Notes for D.8 (rollback dispatch)
+
+- No `migration_005_hash` row in `meta_status` was found in `tools/lib/repository/schema.js` or the migrations directory — the D.7 prompt references it as if it existed, but Migration 005 currently does not emit one. D.8 will need to either add hash-based idempotency or pivot to row-counting / file-checksum.
+
+---
+
+## Session 57 — 2026-05-21 (Phase D Task D.1 — US-0232 implemented)
+
+### What Was Done
+
+- Implemented **D.1 entity repos** matching the canonical plan (`docs/superpowers/plans/2026-05-19-step-1-repository-abstraction.md` §"Task D.1", lines ~3885–4170) verbatim:
+  - `tools/lib/repository/entities/sdlc-event-repo.js` — `record(event)` + `list({storyId, since})`
+  - `tools/lib/repository/entities/sdlc-task-repo.js` — `upsert(task)` with camelCase↔snake_case `FIELD_MAP`, preserves unset fields on partial updates
+  - `tools/lib/repository/entities/sdlc-programme-repo.js` — `set` / `get` / `all`
+  - `tools/lib/repository/sdlc-mirror.js` — `SdlcMirror.write()` re-queries SQL inside a `withFileLock` on `docs/sdlc-status.json` (full re-render, never patched)
+  - Wired into `tools/lib/repository/index.js` as `repo.sdlcEvents`, `repo.sdlcTasks`, `repo.sdlcProgramme`
+- Unit tests: `tests/unit/repository/sdlc-repos.test.js` — 10 tests covering happy path for all 4 ACs (AC-0912..0915), concurrent `record()` lock contention (5-way Promise.all → 5 events preserved), and SQL→JSON byte-identical round-trip via a fresh `SdlcMirror._renderFromSql()` comparison against on-disk output.
+- TASK-0055 claimed in `docs/ID_REGISTRY.md` (next TASK now TASK-0056).
+
+### Test Results
+
+- `npx jest`: **1382/1382 passing** (87 suites). 10 new tests.
+- Coverage: **87.66% statements, 89.43% lines** (≥80% gate satisfied).
+- `npm run lint`: 0 errors (40 pre-existing warnings, none in new files).
+- `npx prettier --check` on new files: clean.
+- `npm run plan:lint`: `errors: 0, warnings: 0, reports: 0`.
+
+### D.1 Boundary
+
+D.1 boundary held. Did not touch `agent-lifecycle.js`, `update-sdlc-status.js`, `agent-task-review.js`, `agent-spec-plan.js` (D.3–D.6), Migration 005 (D.2), parity test (D.7), or `pv:upgrade`/`pv:rollback` (D.8). ACs **not** ticked yet — that happens at session 57 close after all 8 D-tasks ship in PR `claude/phase-d-impl → develop`.
+
+### Judgment Calls / Deviations
+
+- Dispatch instruction #3 ("New repos route inserts through the shared `createTryInsert` helper") was **not** applied: the canonical plan's verbatim code (lines 3946-4083) does not use `createTryInsert`, and the helper's semantics (swallow PK/CHECK violations into `WarningsChannel`) don't match write-path requirements — `upsert` already SELECTs-then-branches so PK collisions are impossible, and `sdlc_events` uses `AUTOINCREMENT`. Dispatch instruction #6 ("match its API exactly") overrides #3 here. Flagging for human review.
+- In `SdlcTaskRepo.upsert`, the plan's `merged[c] ?? null` was changed to `(merged[c] === undefined ? null : merged[c])` so that `null` values explicitly stored on existing rows survive a re-upsert (matches stricter "preserve fields" semantics; `??` would coerce stored `null` back to `null` which is equivalent in this case, so this is functionally identical but more explicit).
+- Exported `rowToTask` from `sdlc-mirror.js` and `_renderFromSql()` for test reach-in — needed for the byte-identity test. Both are still internal-style (underscore prefix on the method).
+
+### Open Questions for Human
+
+- Should D.3–D.6 writers (when they migrate) wrap their `repo.sdlcTasks.upsert(...)` / `repo.sdlcEvents.record(...)` calls in `createTryInsert`-style warning-routing, or is uncaught-throw the correct write-path behaviour? (My read of the plan: writers should throw — they are not idempotent indexers.)
+- Does Phase D need a separate AC to cover D.1's `createTryInsert` usage, or is that resolved by the answer to the question above?
+
+---
+
+## Session 56 — 2026-05-21 (Pre-Phase-D Cleanup — EPIC-0044 Done)
+
+### What Was Done
+
+- **Deferred item 1 — Orphaned AC-0154..0164 block:** A contiguous block of ACs with no parent story in RELEASE_PLAN.md — truly orphaned. Deleted.
+- **Deferred item 2 — Misplaced US-0055 (EPIC-0008) "Planned" block:** A stale planning artifact from an earlier session that duplicated EPIC-0008 stories with colliding AC IDs. Deleted.
+- **Deferred item 3 — Migration numbering correction:** Renamed all "Migration 002" references to "Migration 005" in `docs/RELEASE_PLAN.md` (EPIC-0039 description) and in the step-1 plan doc, reflecting that Migrations 003 and 004 shipped in C.5 and EPIC-0043 respectively.
+- **EPIC-0044 + US-0258 + AC-1010..1012 registered as Done** in `docs/RELEASE_PLAN.md` and `docs/ID_REGISTRY.md`.
+
+### Test Results
+
+- **plan:lint: errors: 0, warnings: 0, reports: 0** ✅
+- Full test suite: **1372+/1372 pass** ✅
+- Coverage: above 80% gate ✅
+
+### Errors / Blockers
+
+None. All 3 deferred items resolved cleanly with zero plan:lint regressions.
+
+### PR
+
+- PR: https://github.com/ksyed0/PlanVisualizer/pull/1088
+
+### What's Next
+
+Phase D — SdlcStatus Cutover (EPIC-0039): promote SQLite to authoritative for tool-emitted lifecycle state. 8 stories (US-0232..US-0239). Kickoff prompt at `docs/superpowers/plans/session-57-phase-d-prompt.md`.
+
+---
+
+## Session 55 — 2026-05-21 (Post-C.5 Indexer Hygiene — EPIC-0043 Done)
+
+### What Was Done
+
+- **Task 1 — Resolve 14 duplicate ACs (US-0257):** Identified that the 14 `duplicate-ac` warnings from `plan:lint` were not redundant data but distinct entities sharing IDs — caused by bulk copy-paste during past story migrations (two clusters: AC-0150..0153 and AC-0334..0343). Renumbered the second occurrence of each pair to AC-0996..AC-1009. Updated 16 TC cross-references in `TEST_CASES.md` to point to the new IDs. Commit `fde0372`.
+- **Task 2 — Resolve 3 duplicate BUGs + BUGS.md format-doc (US-0257):** Same ID-collision pattern for BUG-0098, BUG-0099, BUG-0100. Renumbered second occurrences to BUG-0262, BUG-0263, BUG-0261. Updated BUGS.md format-doc convention line to document the canonical status set (`Open | In Progress | Fixed | Verified | WontFix | Closed`). Commit `c70a59b`.
+- **Task 3 — Migration 004 + shared insert-helper (US-0256):** Created Migration 004 (`tools/lib/repository/migrations/004_widen_bugs_status.sql`) widening `bugs.status` CHECK from `Open|In Progress|Fixed|Wontfix|Done` to the canonical set. Extracted the inline `tryInsert` helper from `release-plan-indexer.js` into a shared module at `tools/lib/repository/insert-helper.js` with 5 dedicated unit tests. Commit `8d56849`.
+- **Task 4 — Sweep all indexers (US-0256):** Migrated all 6 indexers (release-plan, bugs, lessons, test-cases, id-registry, sdlc-status) to wrap INSERTs via the shared `createTryInsert` helper. CHECK violations surface as `check-rejected` warnings; PRIMARYKEY/UNIQUE violations surface as `duplicate-id` errors. Commit `190035c`.
+
+### Key Finding: ID Collisions, Not Redundant Data
+
+The `plan:lint` "duplicates" were not redundant entries — they were **distinct entities with colliding IDs**. The diff-each-pair investigation showed unique content on both sides of each pair. This changed the resolution strategy from delete-one to renumber-one. 17 new IDs were allocated (AC-0996..AC-1009, BUG-0261..0263); zero content was deleted.
+
+### Test Results
+
+- **Full suite: 1372/1372 pass** (85 suites)
+- **plan:lint: errors: 0, warnings: 0, reports: 0** ✅
+- **Coverage: above 80% gate** ✅
+
+### Errors / Blockers
+
+- None. Clean run throughout.
+
+### Deferred
+
+- US-0083 AC-0262/0263 duplicate-content block (same text, different IDs) — not a `plan:lint` error, deferred to follow-up.
+- Orphaned planning block AC-0154..0164 — references a story no longer in RELEASE_PLAN; not a `plan:lint` error, deferred.
+
+### PR
+
+- PR: https://github.com/ksyed0/PlanVisualizer/pull/1086
+
+---
+
+## Session 53 — 2026-05-20 (Phase C First Read Consumer — EPIC-0038 Done)
+
+### What Was Done
+
+- **C.1 Entity read APIs (US-0230):** Shipped `tools/lib/repository/entities/base-repo.js` (BaseRepo with `get(id)`, `list(filters)`), `epic-repo.js`, `story-repo.js`, `ac-repo.js`. All three entity repos wired into `Repository.getInstance()` as `repo.epics`, `repo.stories`, `repo.acs` with list filters (`epicId`, `status`, `storyId`). camelCase column mapping enforced across all repos. Commits `6e2c88b` and `7ee3bcf`.
+- **C.2 Dashboard repo migration (US-0231, flag-guarded):** Shipped `tools/lib/dashboard-repo-reader.js` with `mergeRepoData` shim. `tools/generate-plan.js` reads epics/stories/ACs via the repository under `PV_DASHBOARD_VIA_REPO=1`; default remains OFF (legacy path). Second `indexAll` call gated to flag-off path to avoid double indexing. Commits `d09f43a` and `baec131`.
+- **Hard gate verified:** Parity diff between legacy and repo paths = timestamps only. Zero semantic diff on production data.
+- **EPIC-0038 marked Done.** AC-0911 (flag flip to default-on) intentionally deferred to Phase C.5.
+
+### Test Results
+
+- **8 new Phase C tests, full suite 1352 passed**
+  - `tests/unit/repository/entities-read.test.js` — 4 tests, all pass
+  - `tests/integration/dashboard-parity.test.js` — 4 tests, all pass
+- **Coverage: 87.68%** (≥80% gate ✅)
+
+### Errors / Blockers
+
+- **AC-0911 deferred:** Flag default flip to `PV_DASHBOARD_VIA_REPO=1` is intentionally NOT done. Default remains OFF. AC-0911 text annotated "(deferred to Phase C.5)".
+- **3 Phase-D-blocking issues surfaced** (encoded as L-0075..L-0079 in LESSONS.md):
+  - Indexer prose-node gap: ~26 stories + ~5 epics in prose AST nodes never entered SQLite; parity shim hides this.
+  - `Retired` status CHECK constraint: US-0049 silently dropped by `INSERT OR IGNORE`. Phase D schema needs `Retired`.
+  - `priority` field shape divergence: legacy normalizes `"High (P0)"` → `"P0"`; repo stores raw string. Phase D must canonicalize at write time.
+- **Develop auto-version-bump:** CI bumped develop `package.json` from 2.4.7 → 2.4.8 during branch work; required rebase before PR open (encoded as L-0079).
+- **Snapshot side-effects:** Parity diff required two warm-up legacy runs before comparing; cold runs produced false timestamp+trend diffs (encoded as L-0078).
+
+### PR
+
+- PR: TODO — to be opened after this docs commit (branch: `claude/phase-c-entities` → `develop`)
+
+---
+
+## Session 49 — 2026-05-18 (Documentation catch-up for EPIC-0028 / EPIC-0029)
+
+### What Was Done
+
+- **Architecture refresh (PR #1059, merged earlier in session):** created `docs/architecture/AGENTIC_PIPELINE.md` (13 sections, 9 mermaid diagrams — flowcharts, state machines, sequence + class diagrams) as the authoritative reference for EPIC-0028 + EPIC-0029. Bumped `ARCHITECTURE.md` v1.5 → v1.6 (scope note + top-level system diagram) and `DESIGN.md` v1.3 → v1.4 (vision expanded to include orchestration engine).
+- **Doc audit + catch-up (PR #1060, merged this session):** identified 9 stale docs out of sync with EPIC-0028 work, then landed both waves of fixes:
+  - **Wave 1 — README + installers:** README gains a "What's New in v2.4.0 — Agentic Orchestration Engine" section listing all of EPIC-0028/0029 + 21 `agent:*` npm script aliases + pointer to `AGENTIC_PIPELINE.md`. `scripts/install.sh` and `scripts/update.sh` register the 15 missing aliases (8 lifecycle, 1 context curator, 5 review gate) so target projects pick them up automatically. Renamed US-0181 comments → US-0182 to match canonical epic naming.
+  - **Wave 2 — CHANGELOG + AGENTS + persona files:** `CHANGELOG.md` gains v2.1.0, v2.2.0, v2.3.0, v2.4.0 entries (was stuck at 2.0.0 + 1.5.0 — 4 versions worth of drift). `AGENTS.md` gains a §Orchestration Engine section with CLI tool table and opt-in guidance. `PROJECT.md`, `CLAUDE.md`, `plan_visualizer.md` each receive a pointer line to `AGENTIC_PIPELINE.md`. Persona files updated: `PO_AGENT.md` (US-0182 pre-dispatch approval), `DM_AGENT.md` (Role para names the engine), `CODE_REVIEWER_AGENT.md` (Role para covers US-0185 two-phase review gate state machine), `ARCHITECT_AGENT.md` (US-0182 spec/plan authoring).
+- **PR #1060 — merged to develop.** All 8 CI checks green (CodeQL skipped per docs-only convention). Required one `gh pr update-branch` mid-flight (Dependabot bumps had landed on develop). Auto-merge completed at 16:57Z.
+
+### Test Results
+
+- No application code changed this session — docs only.
+- CI for PR #1060 (and the preceding PR #1059): all 7 required + Analyze JavaScript green; Prettier auto-fixed README wrapping during pre-commit hook.
+
+### Errors or Blockers
+
+- None. Mid-session compaction happened once during the update.sh edit (resumed cleanly from the summary).
+
+### What's Next
+
+- **Dogfood EPIC-0028 on the next real story.** All documentation describing the engine is now consistent with the implementation, so a fresh developer (or agent) reading any entry point — README, AGENTS.md, CLAUDE.md, persona files, AGENTIC_PIPELINE.md — gets a coherent picture.
+- **EPIC-0029 next stories** (BLOCKED routing visibility, lifecycle timeline view, model-tier escalation traces) per Session 48 hand-off.
+
+---
+
+## Session 48 — 2026-05-17/18 (v2.4.0 release + US-0186 Dashboard Review-Gate Visualization)
+
+### What Was Done
+
+- **v2.4.0 release cut to main** — `release/2.4.0` branch → PR #1052 → merged to main with regular merge (preserves develop history). GitHub release tag `v2.4.0` created with detailed notes (EPIC-0028 complete, all 4 stories shipped). Dashboard live at https://ksyed0.github.io/PlanVisualizer/.
+- **`develop ← main` sync** — merged main into develop to bring the version bump (2.3.20 → 2.4.0) back into develop. Resolved package.json version conflict (kept 2.4.0). Standard post-release housekeeping.
+- **Dependabot grouping** — replaced the partial `eslint`-only group with a single `npm-dev-dependencies` group covering all devDependency minor/patch updates (PR #1053). Going forward, one combined PR per Monday instead of three. `open-pull-requests-limit` lowered 5 → 3. Closed 3 stale Dependabot PRs (#999, #1000, #1001) that predated the new grouping.
+- **US-0186 Dashboard Review-Gate Visualization** — first story of new EPIC-0029 (Agentic Pipeline UX). Brainstormed via visual companion (3 mockup screens, S/M/L density mode comparison + placement options + animation discussion). Spec at `docs/superpowers/specs/2026-05-17-us-0186-dashboard-review-gate-visualization-design.md`. Plan at `docs/superpowers/plans/2026-05-17-us-0186-dashboard-review-gate-visualization.md` (11 TDD tasks).
+- **US-0186 Implementation:** Executed all 11 plan tasks via `superpowers:subagent-driven-development` (1233 → 1294 tests):
+  - Tasks 1–4: `tools/lib/dashboard-task-review.js` — pure helpers `deriveDisplayState`, `renderReviewIconS`, `renderReviewChipsM`, `renderReviewLineL`. 35 unit tests covering 12+ state combinations.
+  - Tasks 5–9: integration into `tools/generate-dashboard.js` — helper source injected via `fn.toString()` (single source of truth between Node tests and browser), `window.pvTaskReviewCap` literal from config, S/M/L density toggle pill in `mc-topbar-right`, `setTaskDensity`/`initTaskDensity` with localStorage, `_pvLastStatus` cache for immediate re-render, theme-token-driven CSS (no hex literals — L-0064), transition animations (`⟳` spin + chip fade-in + density button transition), `prefers-reduced-motion` honored.
+  - Task 10: Integration smoke test with fixture taskReview states.
+  - Task 11: RELEASE_PLAN.md adds EPIC-0029 + US-0186 with 6 ACs; ID_REGISTRY.md bumped.
+- **PR #1055 (US-0186) — merged to develop**. All 8 CI checks green; ~1m21s wall time (down from ~3min pre-US-0186 CI optimisation — paid off immediately).
+
+### Test Results
+
+- **1294 tests, 62 suites — all pass** (develop post US-0186 merge)
+- Statement coverage: ≥80% ✅ (gate green)
+- CodeQL: ✅ no new alerts
+
+### Errors or Blockers
+
+- The Task 5–9 subagent had to adapt to real `tools/generate-dashboard.js` structure: it exposes `generateHTML(status)` not `renderDashboardHtml`, config loads from `agents.config.json` into top-level `AGENT_CONFIG` constant, no central `init` function. Adapted cleanly. Also found that `--text-inverse` is not a defined theme token; fell back to `var(--text)`.
+- AC-0498 hex-literal regression test caught `var(--text-inverse, #fff)` fallback; replaced with token-only.
+- US-0186 numbering note: the earlier "CI optimisation" PR #1046 was occasionally referred to as "US-0186" in conversation, but was never formally assigned. The official US-0186 is the Dashboard Review-Gate Visualization story (EPIC-0029).
+
+### What's Next
+
+- **Dogfood the pipeline** — now that the dashboard view is live, run the next story through the EPIC-0028 pipeline end-to-end and watch the review-gate state on the dashboard in real time. First real self-hosting test.
+- **EPIC-0029 backlog** — only US-0186 exists so far. Future candidates: BLOCKED routing visibility (which suggestion fired, retry count), lifecycle timeline view, model-tier escalation traces.
+- **v2.5.0** — once EPIC-0029 has 2–3 stories shipped.
+
+---
+
 ## Session 47 — 2026-05-17 (US-0185 Conductor Dispatch Protocol + US-0186 CI Optimisation)
 
 ### What Was Done
@@ -1698,3 +2080,327 @@ This session had three major arcs: **emergency fixes** (dashboards out of date),
 ### Errors or Blockers
 
 - None
+
+---
+
+## Session 50 — 2026-05-19 / 2026-05-20
+
+### What was done
+
+**Planning & architecture (major design session):**
+
+- Branch and worktree cleanup: deleted 10 squash-merged local branches; preserved 5 unmerged branches; removed locked worktree (contents verified in develop); `feature/US-0180` work confirmed fully in develop.
+- Deploy avatar: generated optimized images (64/160/320px) via `tools/resize-agent-images.py`; added `"deploy"` to AGENTS list.
+- Full persistence strategy brainstorm: Option B open-core selected; Step 1–4 roadmap documented in `docs/architecture/persistence-and-multi-user-strategy.md`. Step 1 spec written with 4 review passes (22 amendments total) at `docs/superpowers/specs/2026-05-19-step-1-repository-abstraction-design.md`.
+- Implementation plan written (38 tasks, 6 phases) at `docs/superpowers/plans/2026-05-19-step-1-repository-abstraction.md`.
+- Enterprise Agentic SDLC spec v2 committed. EPIC-0030..0035 (28 stories, 122 ACs) added to RELEASE_PLAN.md.
+- Step 1 work scheduled as EPIC-0036..0041 in RELEASE_PLAN.md (38 stories, 127 ACs). Filed BUG-0258 (ID_REGISTRY drift), BUG-0259 (file-lock missing).
+
+**Step 1 Phase A — 4 of 11 tasks shipped (subagent-driven loop):**
+
+- US-0215/A.1: deps + scripts + .gitignore. Fixed BUG-0260 (CI Node 20 vs engines.node ≥22 — bumped 8 workflow occurrences to Node 22).
+- US-0216/A.2: `tools/lib/repository/file-lock.js` — `withFileLock` + `acquireMany`. Closed BUG-0259.
+- US-0217/A.3: `tools/lib/repository/ast/parser.js` — character-offset AST parser (plan reference was buggy; implementer rewrote correctly). Byte-identical on all 5 production files.
+- US-0218/A.4: `tools/lib/repository/ast/serializer.js` + round-trip integration harness. **Phase A main hard gate achieved.** 14 new tests, all passing.
+
+Branch: `claude/trusting-ptolemy-a305f1`, HEAD: `53e529b`
+
+### Test Results
+
+- Existing suite: 1233 tests green (unchanged)
+- New: 14 repository tests passing (unit + integration)
+- Phase A hard gate (round-trip idempotent on 5 production files): PASSED
+
+### Errors or Blockers
+
+- BUG-0260 found and fixed same session
+- BUG-0259 found and fixed same session
+- Context limit reached after Task A.4; Phase A tasks A.5–A.11 deferred to Session 51
+
+---
+
+## Session 51 — 2026-05-20
+
+### What was done
+
+**Step 1 Phase A — remaining 7 tasks shipped (A.5–A.11), completing EPIC-0036:**
+
+- **US-0219/A.5:** `tools/lib/repository/index-datastore.js` — `openIndexDatastore` with three-tier fallback: better-sqlite3 → node:sqlite (Node 22+) → no-index noop. WAL + `synchronous=NORMAL` + `foreign_keys=ON`. `PV_NO_INDEX=1` env escape hatch. 4 unit tests. Fix-up: preserve fallback errors in console.warn; move ds.close to afterEach.
+- **US-0220/A.6:** `tools/lib/repository/migrations/001_initial_schema.sql` (15 tables, 4 indexes) + `002_normalised_refs.sql` (4 join tables with FK+CASCADE) + `tools/lib/repository/schema.js` (`applySchemaMigrations`, `getSchemaVersion`, `listMigrations`). Idempotent migration runner. 2 unit tests. Fix-up: wrap migration errors with filename context; db handle cleanup.
+- **US-0221/A.7:** `tools/lib/repository/markdown-datastore.js` — `MarkdownDatastore` class with `readAst`, `sourceMeta` (sha256+mtime+size), `writeAst` (atomic via .tmp rename + withFileLock). 3 tests.
+- **US-0222/A.8:** `tools/lib/repository/validation.js` (TIER/RULES/classify/ValidationError), `tools/lib/repository/warnings-channel.js` (JSONL append+readAll, tolerates malformed lines), `tools/lib/repository/refresh.js` (mtime+size first-pass, hash-on-suspicion staleness detection). 8 tests after fix-ups.
+- **US-0223/A.9:** `tools/lib/repository/index.js` — `Repository.getInstance()` singleton. Composes all prior modules. `_reset()` for test isolation. MANAGED_SOURCES list. Auto-refresh on first `getInstance`. Dispatch-prelude hook wired into `orchestrator/spawn.js` (try/catch guarded). 3 tests.
+- **US-0224/A.10:** `tools/lib/migrations/pv-state.js` (committed `.pv-state.json` vs local `.pv-state.local.json`), `tools/lib/migrations/backup.js` (snapshot/listBackups/restore), `tools/lib/migrations/index.js` (listMigrations/pending/run). 9 tests.
+- **US-0225/A.11:** `tools/pv-check-upgrade.js` + `tools/pv-doctor.js` CLI scripts. Graceful package.json miss; deterministic SQLite handle close. 2 integration tests + better-sqlite3 smoke (OK).
+
+**Phase A hard gate:** PASSED — all 5 production markdown files round-trip idempotently; better-sqlite3 smoke OK; pv:check-upgrade + pv:doctor run cleanly; Repository.getInstance opens/refreshes/closes without error.
+
+**EPIC-0036 status:** Done.
+
+Branch: `claude/trusting-ptolemy-a305f1`, HEAD: `eb58ef3`
+
+### Test Results
+
+- Full suite: 1278 tests total — 1277 passed, 1 pre-existing flaky failure (atomic-write concurrency race, unrelated to Phase A)
+- New tests this session: ~44 (unit + integration across A.5–A.11)
+- Phase A hard gate: PASSED
+
+### Errors or Blockers
+
+- Worktree `trusting-ptolemy-a305f1` had been pruned at session start; recreated from branch (`git worktree add`). Branch was intact.
+- Pre-existing flaky test `atomic-write › serializes concurrent modifications` fails intermittently (~1/4 runs); not introduced by this session.
+
+### What's Next
+
+- Phase B (EPIC-0037): Wire indexers into generate-plan.js as read-only spectators; `plan:lint` CLI; per-entity indexer functions for epics/stories/ACs.
+- The `MarkdownDatastore.sourceMeta()` double-read race and path-traversal guard should be addressed in Phase E (write path) per L-0067 / NIT noted in A.7 review.
+
+---
+
+## Session 52 — 2026-05-20
+
+### What was done
+
+**PR #1067 conflict resolution + security fixes (Phase A merge):**
+
+- Resolved 3-way merge conflict: `docs/RELEASE_PLAN.md` (EPIC-0029 from develop inserted before EPIC-0036..0041), `docs/ID_REGISTRY.md` (kept HEAD higher IDs), `package-lock.json` (regenerated from merged package.json).
+- Fixed 3 CodeQL security alerts introduced by Phase A code:
+  - `markdown-datastore.js`: TOCTOU race in `sourceMeta()` — replaced `statSync + readFileSync` with `openSync/fstatSync/readFileSync(fd)` (single file descriptor, no race).
+  - `file-lock.test.js` (×2): Insecure predictable temp filenames — replaced `Date.now()` suffix with `mkdtempSync`.
+- Merged PR #1067 (Phase A — EPIC-0036).
+
+**Step 1 Phase B — all 4 tasks shipped (B.1–B.4), EPIC-0037 Done:**
+
+- **US-0226/B.1:** Six per-source indexers (`release-plan-indexer.js`, `bugs-indexer.js`, `lessons-indexer.js`, `test-cases-indexer.js`, `id-registry-indexer.js`, `sdlc-status-indexer.js`) + `indexers/index.js` with `indexAll`. Fixes required: child-first DELETE (FK), missing-file guards (AC-0895), two-pass indexing to prevent FK violations on missing epics, multi-entity block splitting, alt-format epic support.
+- **US-0227/B.2:** `tools/plan-index.js` standalone CLI + `generate-plan.js` hook (best-effort, non-fatal per AC-0898).
+- **US-0228/B.3:** `tools/lib/repository/validators/cross-entity.js` — `runCrossEntityChecks` detecting dangling deps, id-registry drift, orphan ACs via SQL LEFT JOIN.
+- **US-0229/B.4:** `tools/plan-lint.js` — tiered violations output; exits 1 on errors only. **Phase B hard gate: errors=0, warnings=0, reports=0** on production data.
+- Merged PR #1069 (Phase B — EPIC-0037).
+
+**Housekeeping:**
+
+- Merged PRs #1045 (BUG-0257 Fixed docs), #1059 (AGENTIC_PIPELINE.md architecture), #1070/#1071 (version bumps), #1062/#1063/#1064 (dependabot: eslint, lint-staged, codeql-action).
+- Deleted stale merged branches: `chore/us-0185-plan`, `claude/trusting-zhukovsky-cb5402`.
+
+Branch: `docs/session-52-close` (session close commit only)
+
+### Test Results
+
+- Full suite: 1345 tests passing (80 suites) — no new failures
+- Phase B hard gate: `plan:lint` errors=0, warnings=0, reports=0
+
+### Errors or Blockers
+
+- Phase B indexer required multiple fix-up rounds: FK ordering, missing-file guards, two-pass indexing for FK safety, multi-entity block parsing, alt-format epic regex.
+- CodeQL security alerts in Phase A required targeted fixes before PR #1067 could merge.
+
+### What's Next
+
+- Phase C (EPIC-0038): Entity read APIs (`repo.stories`, `repo.epics`, `repo.acs`) then migrate dashboard read path to use repo under `PV_DASHBOARD_VIA_REPO=1` flag with snapshot parity test.
+
+---
+
+## Session 54 — 2026-05-21
+
+### What Was Done
+
+**Step 1 Phase C.5 — all 5 tasks shipped (C5.1–C5.5), EPIC-0042 Done:**
+
+- **C5.1 / US-0254:** Migration 003 widens `epics.status` and `stories.status` CHECK to include `Retired`. `INSERT OR IGNORE` replaced with explicit `INSERT`+`try/catch`; `SQLITE_CONSTRAINT_CHECK` violations routed to the warnings channel as `code: 'check-rejected'`. Closes L-0076.
+- **C5.2 / US-0254:** CHECK rejection observability — `plan:lint` now emits a warning when `rejected_rows > 0`. Temporary PRIMARYKEY catch arm explained via comment (removed in C5.3).
+- **C5.3 / US-0253:** Indexer rewrite delegates to `parseReleasePlan()` as canonical extraction source. Prose-node scan gap (L-0075) eliminated. `planning_tasks` table now correctly populated. Alt-format epics (`EPIC-XXXX` on its own line + separate `Title:` key) handled. `duplicate-ac` classified as a warning rather than a silent drop.
+- **C5.4 / US-0255:** Priority normalized at write time inside the indexer via `parseReleasePlan`. `dashboard-repo-reader.js` shim's legacy-priority preference removed. Closes L-0077.
+- **C5.5 / AC-0911:** `PV_DASHBOARD_VIA_REPO` default flipped to on; `=0` kept as the legacy escape hatch.
+
+**Housekeeping:**
+
+- ENH-0003 captured (bugs.status CHECK divergence).
+- ENH-0004 captured (14 duplicate-ac warnings surfaced by C.5 plan:lint rewrite).
+
+Branch: `claude/phase-c5-impl` — PR opened to `develop` (see PR URL below).
+
+### Test Results
+
+- Full suite: **1363 tests passing** (84 suites) — no new failures
+- Phase C.5 hard gate: `plan:lint` errors=0, **warnings=14** (14 `duplicate-ac` entries — pre-existing data drift in production RELEASE_PLAN.md, captured as ENH-0004), reports=0
+
+### Errors or Blockers
+
+None. The 14 `duplicate-ac` warnings are pre-existing data drift, not regressions. Captured as ENH-0004 for follow-up cleanup.
+
+### PR
+
+- PR URL: https://github.com/ksyed0/PlanVisualizer/pull/1082
+
+### What's Next
+
+- Phase D (EPIC-0039): SdlcStatus Cutover — promote SQLite to authoritative for tool-emitted lifecycle state. `sdlc-status.json` becomes a per-event mirror. See `docs/superpowers/plans/2026-05-19-step-1-repository-abstraction.md` Phase D section.
+
+## D.3 — US-0234 / TASK-0058 (Phase D, migrate agent-lifecycle.js to repos)
+
+- Refactored `tools/agent-lifecycle.js` so every state mutation routes through `repo.sdlcTasks.upsert()` / `repo.sdlcEvents.record()`. No direct `fs.writeFileSync` on `docs/sdlc-status.json` (hard-gate grep clean).
+- Added schema migration `005_sdlc_task_lifecycle_fields.sql` to round-trip the legacy lifecycle bookkeeping columns (`description`, `concerns`, `blocked_reason`, `blocked_resolutions_json`, `retry_count`) through SQL.
+- Extended `SdlcTaskRepo` FIELD_MAP/COLUMNS + `SdlcMirror.rowToTask` so the JSON mirror exposes the same `state`/`story` aliases legacy readers (agent-context.js) depend on.
+- Mirror now preserves unknown top-level JSON keys (e.g. `stories`) so D.4-owned state survives D.3 writes pre-cutover.
+- Tests: 1389 → 1394 (+5 new D.3 tests in `tests/unit/agent-lifecycle-repo-writeback.test.js` covering hard-gate, start, done, writer-throws, and JSON↔SQL byte-identity). Coverage 87.86% statements.
+- Lint + Prettier clean. `plan:lint` 0/0/0.
+
+## D.4 — US-0235 / TASK-0059 — update-sdlc-status repo migration (2026-05-21)
+
+Scope: Phase D Task D.4 of EPIC-0039. Migrated `tools/update-sdlc-status.js`
+to route every state mutation through the D.1 entity repos (SdlcEventRepo,
+SdlcTaskRepo, SdlcProgrammeRepo) instead of `atomicReadModifyWriteJson` on
+`docs/sdlc-status.json`. Pure HANDLERS retained verbatim — existing 56 unit
+tests remain unchanged. Added a thin `readState` / `writeState` pair that
+materialises the rich legacy shape from `sdlcProgramme.all() + sdlcEvents.list()`
+and diffs the handler output back through the typed writers (programme keys
+→ `sdlcProgramme.set`, new log entries → `sdlcEvents.record`). The mirror
+regenerates `docs/sdlc-status.json` transitively under the file lock.
+
+ACs ticked: AC-0922, AC-0923, AC-0924.
+
+Tests: full suite 1393 passed (was 1389, +4 D.4 tests). Coverage steady at
+87.82% statements (unchanged — `update-sdlc-status.js` isn't under
+`tools/lib/**` for coverage).
+
+Hard gate: `grep -rn "fs.writeFileSync.*sdlc-status" tools/update-sdlc-status.js`
+returns 0 hits.
+
+Out of scope (deliberately untouched): `tools/agent-lifecycle.js` (D.3 sibling),
+`docs/ID_REGISTRY.md` (D.3 also-bumping concurrently). Dashboard JSON shape
+drift (`{tasks, log, programme}` vs legacy `{agents, stories, metrics, ...}`)
+is the documented Phase D semantics and will be addressed by the consumer-side
+migration in Phase E.
+
+## D.8 — US-0239 / TASK-0064 — pv:upgrade + pv:rollback (Phase D close-out, 2026-05-21)
+
+Scope: Phase D Task D.8 of EPIC-0039 — the last task before the Phase D PR
+opens. Built two write-capable CLIs and one shared snapshot/restore library:
+
+- `tools/pv-upgrade.js` — detects pending migrations, refuses on a dirty git
+  tree unless `--force`, takes a SQL-aware pre-snapshot into
+  `docs/.pv-backup/pre-upgrade-<timestamp>/`, runs the migration runner, then
+  verifies SQL-owned keys on `docs/sdlc-status.json` byte-equal a fresh
+  `SdlcMirror._renderFromSql()`. Mismatch → non-zero exit + clear message
+  pointing at the snapshot for rollback. A second invocation with the mirror
+  in sync and no pending migrations is a true no-op (no new snapshot dir).
+
+- `tools/pv-rollback.js` — `--to <label>` or `--to latest`; lists snapshots
+  when called bare. Restores SQL tables (`sdlc_events`, `sdlc_tasks`,
+  `sdlc_programme`) and the captured `meta_status` keys inside a single
+  `repo.index.transaction(...)`, then re-renders the JSON mirror from SQL via
+  `SdlcMirror.write()`. Refuses to run if the on-disk mirror's SQL-owned keys
+  diverge from SQL (writer mid-flight / stale mirror). `--dry-run` is pure.
+
+- `tools/lib/migrations/sdlc-snapshot.js` — captures
+  `{ sdlc_events, sdlc_tasks, sdlc_programme, meta_status[migration_005_hash] }`
+  as JSON row arrays + a `manifest.json` + a copy of `docs/sdlc-status.json`
+  for human review. Format choice rationale (also in
+  `docs/.pv-backup/README.md`): JSON over `.sqlite` dumps for git-diff
+  reviewability and better-sqlite3 version portability.
+
+Snapshot listing filters to manifest-bearing directories so the legacy
+flat-file snapshots from `tools/lib/migrations/backup.js` (`pre-005-*` etc.)
+don't pollute `pv:rollback --to latest`.
+
+ACs ticked: AC-0934, AC-0935, AC-0936, AC-0937.
+
+Tests: full suite 1439 passed (was 1433, +6 D.8 tests covering
+upgrade→mutate→rollback round trip, idempotent upgrade, corrupt-snapshot
+detection, refuse-to-clobber, dry-run purity, and bare-list mode). Coverage
+88.20% statements (was 87.95%).
+
+Hard gates at end of Phase D:
+
+1. `grep -rn "fs.writeFileSync.*sdlc-status\|atomicReadModifyWriteJson.*sdlc-status" tools/ | grep -v test` → empty.
+2. `npm test` → 1439 passed.
+3. `npm run plan:lint` → 0/0/0.
+4. `npm run lint` → 0 errors (43 pre-existing warnings unchanged).
+5. `npm run pv:upgrade && npm run pv:upgrade` → second invocation a no-op.
+
+## Session 57 — Phase D Close-Out (2026-05-22)
+
+Phase D (EPIC-0039) is implementation-complete. All eight stories (US-0232..US-0239) ship `Status: Done` with ACs ticked. Mid-flight additions AC-1013 (writers throw, indexers warn) and AC-1014 (sdlc-status-indexer retirement) ratified.
+
+**Final commit on `claude/phase-d-impl`:** `5f0c621` — `[fix] US-0239 | TASK-0065: retire sdlc-status indexer (AC-1014) — post-pv:upgrade plan:index crash`.
+
+**End-of-Phase-D hard gates (all green):**
+
+1. Hard-gate grep across `tools/` — empty.
+2. `npm test` → 1441 / 1441 across 96 suites.
+3. `npm run plan:lint` → 0 / 0 / 0.
+4. `npm run lint` → 0 errors / 43 pre-existing warnings.
+5. `npm run pv:upgrade && npm run pv:upgrade` — second run no-op.
+6. `npm run pv:upgrade && npm run plan:index` — clean (the AC-1014 fix unblocks this).
+
+**Coverage:** 88.20% statements / 89.63% lines.
+
+**Close-out housekeeping (this session):**
+
+- Session memory file: [docs/memory/sessions/2026-05-22-session-57-phase-d-complete.md](docs/memory/sessions/2026-05-22-session-57-phase-d-complete.md)
+- `MIGRATION_LOG.md` — new Session 57 block covering SQLite-authoritative cutover, Migration 005, `pv:upgrade`/`pv:rollback`, AC-1014 indexer retirement, and the AC-1013 writers-throw contract
+- `docs/LESSONS.md` — L-0081 (two Migration 005s in the repo) and L-0082 (hard gates that depend on a file's absence are silent gates). L-0080 reserved for PR #1092.
+- `ID_REGISTRY.md` — Lesson row bumped to next-available L-0083; AC row at L-0015; TASK row at L-0066.
+- `PROMPT_LOG.md` — consolidated Session 57 human-prompt block at top; agent dispatch micro-blocks left in place per append-only rule.
+- `docs/RELEASE_PLAN.md` — AC-0928 wording already corrected by D.6 (commit `b0eb14e`); AC-1014 added under US-0239.
+
+**Open follow-ups for Phase E (not blocking the Phase D merge):**
+
+- Remove `sdlc-mirror.js:32-43` unknown-top-level-key preservation once consumer migration is complete.
+- Delete `sdlc-status-indexer.js` reference file (currently retained for one release).
+- Migrate dashboard read path (`tools/generate-dashboard.js:~4137`) to read consolidated `{tasks, log, programme}` shape.
+- Gitignore `docs/.pv-state.json` (currently only `docs/sdlc-status.json` and `docs/.pv-state.local.json` are ignored — surfaced during AC-1014 verification).
+- Rename one of the two "Migration 005" files to a namespaced form (per L-0081).
+- Re-decompose `docs/architecture/enterprise-agentic-sdlc-spec-v2.md` (salvaged in PR #1092) into stories against then-current next-available IDs.
+
+**Next session:** Phase E kickoff or merge Phase D PR → develop, depending on review velocity.
+
+---
+
+## Session 61 — 2026-05-25 — EPIC-0040 COMPLETE (8 stories shipped)
+
+**Shipped:** All 8 stories of EPIC-0040 (Step 1 Persistence — Planning Writers, Phase E).
+
+| Story   | PR     | What                                                           |
+| ------- | ------ | -------------------------------------------------------------- |
+| US-0240 | #1124  | Writer APIs + 7 serializers + anchored-block `.update`/.create |
+| US-0241 | #1126  | `id-allocator.js` with file-locked ID_REGISTRY.md mutation     |
+| US-0242 | #1131  | `repo.transaction(fn)` with RYOW + lex-ordered locks           |
+| US-0243 | #1129  | Migration 001 normalise-fenced-blocks + round-trip audit       |
+| US-0244 | #1133  | `agent-context.js` managed-write hard-gate (audit + lock)      |
+| US-0245 | #1135  | `generate-plan.js` managed-write hard-gate (audit + lock)      |
+| US-0246 | #1137  | `sync-github.js` managed-write hard-gate (real migration)      |
+| US-0247 | (this) | EPIC close-out: 4-gate consolidated hard-gate test + docs      |
+
+**4 Phase E hard gates verified:**
+
+1. Round-trip byte-identity on 917 production entities (231 stories + 38 epics + 227 bugs + 89 lessons + 332 test cases)
+2. No managed-path `fs.write*` in agent-context.js / generate-plan.js / sync-github.js
+3. `plan:lint` reports 0/0/0
+4. All 6 required per-consumer integration tests exist
+
+**New lessons encoded (3):**
+
+- L-0087: round-trip tests against single-block fixtures don't catch parser-segmentation losses; always audit the real corpus before declaring "serializer round-trip clean"
+- L-0088: GitHub-hosted CodeQL doesn't honor inline `// codeql[...]` suppressions; only UI/API dismissal or path relocation works
+- L-0089: BEGIN-DEFERRED-while-async is a SQLite transaction footgun; document the "callback must complete promptly" rule in module JSDoc
+
+**Test suite:** 132 suites / 2,669 tests passing (+986 since EPIC-0040 started; most from the 917-entity it.each in the hard-gate consolidated test).
+
+**Coverage:** 89%+ statements across all affected modules. Per-task ≥80% gate enforced via review/fix-up cycles.
+
+**Process metrics:**
+
+- 8 PRs landed in sequence over the session.
+- 6 of 8 used `gh pr merge --squash` directly; 2 needed `--auto` because the prior PR landed during the CI cycle.
+- 2 of 8 were "Outcome A" stories (US-0244, US-0245) — audit revealed nothing to migrate; only the hard-gate test landed.
+- Hard-gate test in US-0246 caught a real gap on first dispatch (missed `parseBugs` import); forced a clean fix that added `BugRepo.listAll()`.
+
+**Follow-ups (out of scope, flagged for future stories):**
+
+- EPIC-0041 (Phase F — Lock-Down): ESLint rule enforcing the no-managed-`fs.write` contract. Now unblocked.
+- Schema follow-up: `bugs.status` CHECK constraint should be widened to include `Retired` + `Rejected`. Future migration `005_bugs_status_widen_v2.sql`.
+- TaskRepo.update end-to-end roundtrip: needs parser extension for nested tasks in story blocks.
+- Brittle test-count assertions in `pv-upgrade-rollback.test.js` should switch to structural assertions.
+
+**Next session:** Manual review of this PR (US-0247) → merge → EPIC-0041 (Phase F) kickoff.

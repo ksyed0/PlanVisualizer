@@ -52,11 +52,28 @@
 
 const path = require('path');
 const fs = require('fs');
-const { atomicReadModifyWriteJson, atomicWriteJson } = require('../orchestrator/atomic-write');
 const { fetchGitHubStatus } = require('./lib/fetch-github-status');
 const CONFIG_PATH = path.join(__dirname, '..', 'plan-visualizer.config.json');
 
-const STATUS_PATH = path.join(__dirname, '..', 'docs', 'sdlc-status.json');
+// D.4 (US-0235): writes route through the D.1 entity repos. We never write
+// docs/sdlc-status.json directly from this module — the JSON mirror is
+// regenerated transitively by SdlcMirror inside a file lock on every
+// repo.sdlc*.{record,upsert,set} call. The pure HANDLERS below remain in-memory
+// mutators of the legacy rich-state shape so the existing unit tests keep
+// asserting handler semantics directly; the main() loop materialises that
+// state from the repo, applies the handler, then writes back through the
+// repo's typed entity APIs (writers throw, indexers warn — AC-1013).
+const PROGRAMME_FIELDS = [
+  'currentPhase',
+  'phases',
+  'agents',
+  'stories',
+  'metrics',
+  'epics',
+  'cycles',
+  'project',
+  'githubStatus',
+];
 
 function parseArgs(argv) {
   const cmd = argv[2];
@@ -428,6 +445,85 @@ const HANDLERS = {
   },
 };
 
+/**
+ * Materialise the legacy rich-state shape from the repo. Returns the same
+ * structure the legacy on-disk JSON used so HANDLERS keep working unchanged.
+ * Programme fields are stored as individual keys; the log is reconstructed
+ * from sdlc_events ordered by id.
+ */
+function readState(repo) {
+  const programme = repo.sdlcProgramme.all();
+  const data = {};
+  for (const f of PROGRAMME_FIELDS) {
+    if (f in programme) data[f] = programme[f];
+  }
+  // Default scaffolding so HANDLERS that read these fields don't NPE.
+  if (!data.agents) data.agents = {};
+  if (!data.stories) data.stories = {};
+  if (!data.phases) data.phases = [];
+  if (!data.metrics) data.metrics = {};
+
+  // Reconstruct the log from the event store. Each event row was recorded
+  // by a previous handler; the payload_json carries the original log entry
+  // shape ({time, agent, message, ...extra}).
+  const events = repo.sdlcEvents.list();
+  data.log = events.map((row) => {
+    const payload = JSON.parse(row.payload_json);
+    return {
+      time: payload.time,
+      agent: payload.agent || row.agent,
+      message: payload.message,
+      ...payload,
+    };
+  });
+
+  return data;
+}
+
+/**
+ * Persist mutations the handler made back through the repo. Programme fields
+ * whose value changed are upserted via sdlcProgramme.set(); new log entries
+ * (appended by appendLog) are recorded via sdlcEvents.record(). Errors from
+ * the typed writers propagate — we do NOT catch SQLITE_CONSTRAINT_* here
+ * (AC-1013: writers throw, indexers warn).
+ */
+async function writeState(repo, before, after) {
+  // 1. Programme fields — set when the value actually changed.
+  for (const f of PROGRAMME_FIELDS) {
+    if (!(f in after)) continue;
+    const newVal = after[f];
+    const oldVal = before[f];
+    if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
+      await repo.sdlcProgramme.set(f, newVal);
+    }
+  }
+
+  // 2. New log entries. We compare lengths since appendLog only ever
+  // appends-and-trims; in normal operation a handler adds 1 entry. If the
+  // log was truncated by appendLog's 200-entry cap, the new entries are
+  // still the tail slice.
+  const beforeLen = (before.log || []).length;
+  const afterLen = (after.log || []).length;
+  if (afterLen > beforeLen) {
+    const newEntries = (after.log || []).slice(beforeLen);
+    for (const entry of newEntries) {
+      // Derive (kind, storyId, agent) from the entry; the rest of the entry
+      // is preserved verbatim in payload_json by SdlcEventRepo.record().
+      await repo.sdlcEvents.record({
+        ts: entry.time ? Date.parse(entry.time) || Date.now() : Date.now(),
+        kind: 'log',
+        agent: entry.agent || null,
+        storyId: entry.storyId || null,
+        ...entry,
+      });
+    }
+  } else if (afterLen < beforeLen) {
+    // Trim case (appendLog's 200-cap, or session-start). The mirror would
+    // still emit the full event history; we accept that drift — it is more
+    // durable, not less. No-op.
+  }
+}
+
 async function main() {
   const { cmd, opts } = parseArgs(process.argv);
 
@@ -444,11 +540,6 @@ async function main() {
     process.exit(1);
   }
 
-  if (!fs.existsSync(STATUS_PATH)) {
-    console.error(`${STATUS_PATH} not found. Run tools/init-sdlc-status.js first.`);
-    process.exit(1);
-  }
-
   // Commands that mutate agent/story state and should trigger a dashboard regen
   const REGEN_CMDS = new Set([
     'agent-start',
@@ -462,8 +553,16 @@ async function main() {
     'phase-blocked',
   ]);
 
+  const { Repository } = require('./lib/repository');
+  const repo = Repository.getInstance({ root: path.join(__dirname, '..') });
+
   try {
-    await atomicReadModifyWriteJson(STATUS_PATH, (data) => handler(data, opts));
+    const before = readState(repo);
+    // Clone so the handler's mutations don't mutate `before` (which we use
+    // for change detection).
+    const data = JSON.parse(JSON.stringify(before));
+    const after = await handler(data, opts);
+    await writeState(repo, before, after);
     console.log(`[update-sdlc-status] ${cmd} ${JSON.stringify(opts)}`);
   } catch (err) {
     console.error(`[update-sdlc-status] failed:`, err.message);
@@ -486,4 +585,4 @@ if (require.main === module) {
   main();
 }
 
-module.exports = { HANDLERS, parseArgs, resetSession };
+module.exports = { HANDLERS, parseArgs, resetSession, readState, writeState, PROGRAMME_FIELDS };

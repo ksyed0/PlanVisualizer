@@ -1,10 +1,41 @@
 #!/usr/bin/env node
 'use strict';
 
+/**
+ * agent-spec-plan.js — CLI for the spec-plan orchestration gates.
+ *
+ * Post-Phase-D (US-0237 / TASK-0061) this tool no longer writes
+ * docs/sdlc-status.json directly. Every state mutation routes through the
+ * D.1 entity repos:
+ *
+ *   - repo.sdlcProgramme.set('stories', {...})  — story spec/plan phases
+ *   - repo.sdlcEvents.record({ kind: 'spec-plan-*', ... })  — typed log
+ *
+ * The SdlcMirror re-renders `docs/sdlc-status.json` under a file lock on
+ * every write, so the on-disk JSON is a pure function of SQL state
+ * (writers throw, indexers warn — AC-1013).
+ *
+ * The `specApprove()` / `planApprove()` idempotency guards (AC-0929 —
+ * tracked under US-0183) live verbatim in tools/lib/agent-spec-plan-state.js
+ * and are exercised unchanged from this CLI. The guard short-circuits a
+ * second approve on an already-approved story and returns the orchestration
+ * unchanged, so the eventual mirror write is a no-op and the repo emits no
+ * spurious event.
+ */
+
 const fs = require('fs');
 const path = require('path');
 const State = require('./lib/agent-spec-plan-state');
 const Flags = require('./lib/agent-spec-plan-flags');
+const { Repository } = require('./lib/repository');
+const reader = require('./lib/repository/sdlc-status-reader');
+const {
+  resolveRoot,
+  ensureDocsDir,
+  adoptLegacySdlcPath,
+  syncLegacySdlcPath,
+  readMirror,
+} = require('./lib/agent-cli-repo-helpers');
 
 const ROOT = path.join(__dirname, '..');
 const SDLC_PATH = path.join(ROOT, 'docs/sdlc-status.json');
@@ -71,17 +102,8 @@ function parseArgs(argv) {
   return out;
 }
 
-function readSdlc(sdlcPath) {
-  return JSON.parse(fs.readFileSync(sdlcPath, 'utf8'));
-}
-
-function writeSdlc(sdlcPath, data) {
-  fs.writeFileSync(sdlcPath, JSON.stringify(data, null, 2) + '\n');
-}
-
-function ensureStory(data, storyId) {
-  if (!data.stories) data.stories = {};
-  const story = data.stories[storyId];
+function ensureStory(stories, storyId) {
+  const story = stories[storyId];
   if (!story) {
     throw new Error(`Story '${storyId}' not found in sdlc-status.json`);
   }
@@ -131,16 +153,46 @@ function regenDashboard(ctx = {}) {
   }
 }
 
-function dispatch(opts, ctx = {}) {
-  const sdlcPath = ctx.sdlcPath || SDLC_PATH;
-  let data;
-  try {
-    data = readSdlc(sdlcPath);
-  } catch (e) {
-    console.error(`[agent-spec-plan] Cannot read ${sdlcPath}: ${e.message}`);
-    return 1;
+/**
+ * Materialise the `stories` map from SQL plus any pre-existing top-level
+ * `stories` carried by the legacy on-disk JSON (test seeds). The repo is
+ * the source of truth — but on the first call before any repo write, the
+ * SQL `sdlc_programme.stories` row may not exist yet, so we fall back to
+ * the on-disk JSON.
+ *
+ * Returns a fresh object (never the SQL row reference) so downstream
+ * mutation does not leak back into the repo.
+ */
+function readStories(repo, root) {
+  const fromSql = repo.sdlcProgramme.get('stories');
+  if (fromSql && typeof fromSql === 'object') {
+    return JSON.parse(JSON.stringify(fromSql));
   }
+  // US-0260: SQL row absent (first-write seed). Read the mirror via the
+  // dual-read accessor — it reads onDisk.programme.stories first, falls
+  // back to onDisk.stories (legacy top-level), and returns {} as the
+  // safe default. Collapses the previous legacyTopLevel + legacyProgramme
+  // merge into one call. Fallback removed in US-0261.
+  const onDisk = readMirror(root);
+  return reader.stories(onDisk);
+}
 
+/**
+ * Persist the stories map back through the typed repos. The repo call writes
+ * the SQLite row and triggers a mirror re-render under the file lock —
+ * docs/sdlc-status.json is never written directly here.
+ */
+async function writeStories(repo, stories, evt) {
+  await repo.sdlcProgramme.set('stories', stories);
+  if (evt) {
+    await repo.sdlcEvents.record({
+      ts: Date.now(),
+      ...evt,
+    });
+  }
+}
+
+async function dispatch(opts, ctx = {}) {
   const cmd = opts.cmd;
 
   const storyCmds = new Set([
@@ -164,10 +216,25 @@ function dispatch(opts, ctx = {}) {
     return 1;
   }
 
+  const root = resolveRoot(ctx, { defaultRoot: ROOT });
+  ensureDocsDir(root);
+  adoptLegacySdlcPath(ctx, root);
+
+  Repository._reset();
+  let repo;
   try {
+    repo = Repository.getInstance({ root });
+  } catch (e) {
+    console.error(`[agent-spec-plan] cannot open repository: ${e.message}`);
+    return 1;
+  }
+
+  try {
+    const stories = readStories(repo, root);
+
     let story, orch, newOrch;
     if (storyCmds.has(cmd)) {
-      story = ensureStory(data, opts.story);
+      story = ensureStory(stories, opts.story);
       ensureOrchestration(story);
       orch = getOrchestration(story);
     }
@@ -176,7 +243,11 @@ function dispatch(opts, ctx = {}) {
       case 'spec-start':
         newOrch = State.specStart(orch, { uiSurface: opts.uiSurface === 'true' });
         applyOrchestration(story, newOrch);
-        writeSdlc(sdlcPath, data);
+        await writeStories(repo, stories, {
+          kind: 'spec-plan-spec-start',
+          storyId: opts.story,
+        });
+        syncLegacySdlcPath(ctx, root);
         return 0;
 
       case 'spec-update':
@@ -186,19 +257,34 @@ function dispatch(opts, ctx = {}) {
         }
         newOrch = State.specUpdate(orch, { field: opts.field, value: opts.value });
         applyOrchestration(story, newOrch);
-        writeSdlc(sdlcPath, data);
+        await writeStories(repo, stories, {
+          kind: 'spec-plan-spec-update',
+          storyId: opts.story,
+          field: opts.field,
+          value: opts.value,
+        });
+        syncLegacySdlcPath(ctx, root);
         return 0;
 
       case 'spec-await-ac':
         newOrch = State.specAwaitAc(orch);
         applyOrchestration(story, newOrch);
-        writeSdlc(sdlcPath, data);
+        await writeStories(repo, stories, {
+          kind: 'spec-plan-spec-await-ac',
+          storyId: opts.story,
+        });
+        syncLegacySdlcPath(ctx, root);
         return 2;
 
       case 'spec-review-result':
         newOrch = State.specReviewResult(orch, { verdict: opts.verdict });
         applyOrchestration(story, newOrch);
-        writeSdlc(sdlcPath, data);
+        await writeStories(repo, stories, {
+          kind: 'spec-plan-spec-review-result',
+          storyId: opts.story,
+          verdict: opts.verdict,
+        });
+        syncLegacySdlcPath(ctx, root);
         if (story.specPhase.state === 'escalated') {
           console.error(
             `[agent-spec-plan] Iteration cap reached for spec phase. Story escalated. Manual resolution required.`,
@@ -210,14 +296,25 @@ function dispatch(opts, ctx = {}) {
       case 'spec-await-final':
         newOrch = State.specAwaitFinal(orch);
         applyOrchestration(story, newOrch);
-        writeSdlc(sdlcPath, data);
+        await writeStories(repo, stories, {
+          kind: 'spec-plan-spec-await-final',
+          storyId: opts.story,
+        });
+        syncLegacySdlcPath(ctx, root);
         return 2;
 
-      case 'approve':
+      case 'approve': {
         if (!opts.gate) {
           console.error('--gate required');
           return 1;
         }
+        // AC-0929: specApprove() / planApprove() idempotency guards live in
+        // agent-spec-plan-state.js — re-approving an already-approved gate
+        // returns the orchestration unchanged. We DETECT that no-op here so
+        // we don't emit a spurious event row (writers should reflect real
+        // state change). Equality is structural since both helpers either
+        // return the same object reference or a deep-cloned record.
+        const prevOrch = orch;
         if (opts.gate === 'ac') newOrch = State.acApprove(orch);
         else if (opts.gate === 'spec') newOrch = State.specApprove(orch);
         else if (opts.gate === 'plan') newOrch = State.planApprove(orch);
@@ -226,9 +323,22 @@ function dispatch(opts, ctx = {}) {
           return 1;
         }
         applyOrchestration(story, newOrch);
-        writeSdlc(sdlcPath, data);
+        const noopIdempotent = newOrch === prevOrch;
+        await writeStories(
+          repo,
+          stories,
+          noopIdempotent
+            ? null
+            : {
+                kind: 'spec-plan-approve',
+                storyId: opts.story,
+                gate: opts.gate,
+              },
+        );
+        syncLegacySdlcPath(ctx, root);
         console.log(`[agent-spec-plan] Approved ${opts.gate} gate for ${opts.story}.`);
         return 0;
+      }
 
       case 'reject':
         if (!opts.gate) {
@@ -247,7 +357,13 @@ function dispatch(opts, ctx = {}) {
           return 1;
         }
         applyOrchestration(story, newOrch);
-        writeSdlc(sdlcPath, data);
+        await writeStories(repo, stories, {
+          kind: 'spec-plan-reject',
+          storyId: opts.story,
+          gate: opts.gate,
+          reason: opts.reason,
+        });
+        syncLegacySdlcPath(ctx, root);
         console.log(`[agent-spec-plan] Rejected ${opts.gate} gate for ${opts.story}: ${opts.reason}`);
         return 0;
 
@@ -269,7 +385,12 @@ function dispatch(opts, ctx = {}) {
       case 'plan-start':
         newOrch = State.planStart(orch, { author: opts.author });
         applyOrchestration(story, newOrch);
-        writeSdlc(sdlcPath, data);
+        await writeStories(repo, stories, {
+          kind: 'spec-plan-plan-start',
+          storyId: opts.story,
+          author: opts.author,
+        });
+        syncLegacySdlcPath(ctx, root);
         return 0;
 
       case 'plan-update':
@@ -279,7 +400,13 @@ function dispatch(opts, ctx = {}) {
         }
         newOrch = State.planUpdate(orch, { field: opts.field, value: opts.value });
         applyOrchestration(story, newOrch);
-        writeSdlc(sdlcPath, data);
+        await writeStories(repo, stories, {
+          kind: 'spec-plan-plan-update',
+          storyId: opts.story,
+          field: opts.field,
+          value: opts.value,
+        });
+        syncLegacySdlcPath(ctx, root);
         return 0;
 
       case 'plan-spec-gap':
@@ -289,7 +416,12 @@ function dispatch(opts, ctx = {}) {
         }
         newOrch = State.planSpecGap(orch, { reason: opts.reason });
         applyOrchestration(story, newOrch);
-        writeSdlc(sdlcPath, data);
+        await writeStories(repo, stories, {
+          kind: 'spec-plan-plan-spec-gap',
+          storyId: opts.story,
+          reason: opts.reason,
+        });
+        syncLegacySdlcPath(ctx, root);
         console.warn(
           `[agent-spec-plan] Spec gap reported by plan author. Spec phase reopened for ${opts.story}: ${opts.reason}`,
         );
@@ -298,7 +430,12 @@ function dispatch(opts, ctx = {}) {
       case 'plan-review-result':
         newOrch = State.planReviewResult(orch, { verdict: opts.verdict });
         applyOrchestration(story, newOrch);
-        writeSdlc(sdlcPath, data);
+        await writeStories(repo, stories, {
+          kind: 'spec-plan-plan-review-result',
+          storyId: opts.story,
+          verdict: opts.verdict,
+        });
+        syncLegacySdlcPath(ctx, root);
         if (story.planPhase.state === 'escalated') {
           console.error(`[agent-spec-plan] Iteration cap reached for plan phase. Story escalated.`);
           return 1;
@@ -308,7 +445,11 @@ function dispatch(opts, ctx = {}) {
       case 'plan-await-approval':
         newOrch = State.planAwaitApproval(orch);
         applyOrchestration(story, newOrch);
-        writeSdlc(sdlcPath, data);
+        await writeStories(repo, stories, {
+          kind: 'spec-plan-plan-await-approval',
+          storyId: opts.story,
+        });
+        syncLegacySdlcPath(ctx, root);
         return 2;
 
       case 'escalate':
@@ -322,12 +463,16 @@ function dispatch(opts, ctx = {}) {
           console.error(`Unknown phase '${opts.phase}'`);
           return 1;
         }
-        writeSdlc(sdlcPath, data);
+        await writeStories(repo, stories, {
+          kind: 'spec-plan-escalate',
+          storyId: opts.story,
+          phase: opts.phase,
+        });
+        syncLegacySdlcPath(ctx, root);
         return 0;
 
       case 'show-pending': {
         const log = ctx.log || console.log;
-        const stories = data.stories || {};
         const pending = [];
         for (const [id, st] of Object.entries(stories)) {
           if (!st.specPhase) continue;
@@ -342,7 +487,6 @@ function dispatch(opts, ctx = {}) {
 
       case 'list': {
         const log = ctx.log || console.log;
-        const stories = data.stories || {};
         const rows = [];
         for (const [id, st] of Object.entries(stories)) {
           if (!st.specPhase) continue;
@@ -357,7 +501,7 @@ function dispatch(opts, ctx = {}) {
       }
 
       case 'apply-pending': {
-        const dir = opts.dir || path.join(ROOT, 'docs/pending-approvals');
+        const dir = opts.dir || path.join(root, 'docs/pending-approvals');
         const flags = Flags.scanPendingDir(dir);
         for (const flag of flags) {
           if (!flag.ok) {
@@ -366,7 +510,8 @@ function dispatch(opts, ctx = {}) {
           }
           const p = flag.payload;
           const subOpts = { cmd: p.action, story: p.story, gate: p.gate, reason: p.reason };
-          const code = dispatch(subOpts, { sdlcPath });
+          // Sub-dispatch reuses the same ctx so writes stay in the same root.
+          const code = await dispatch(subOpts, ctx);
           if (code === 0) {
             try {
               fs.unlinkSync(flag.filePath);
@@ -389,24 +534,32 @@ function dispatch(opts, ctx = {}) {
   } catch (e) {
     console.error(`[agent-spec-plan] ${e.message}`);
     return 1;
+  } finally {
+    Repository._reset();
   }
 }
 
-function main() {
+async function main() {
   const opts = parseArgs(process.argv);
   if (!opts.cmd) {
     console.error('Usage: node tools/agent-spec-plan.js <command> [options]');
     return 1;
   }
-  const code = dispatch(opts);
+  const code = await dispatch(opts);
   // Auto-regen the Agentic Dashboard after any state-mutating command.
   // Read-only commands (status/list/show-pending) skip this.
   if (!READ_ONLY_CMDS.has(opts.cmd)) regenDashboard();
   return code;
 }
 
-module.exports = { parseArgs, dispatch, main };
+module.exports = { parseArgs, dispatch, main, SDLC_PATH };
 
 if (require.main === module) {
-  process.exit(main());
+  main().then(
+    (code) => process.exit(code),
+    (e) => {
+      console.error(`[agent-spec-plan] fatal: ${e.message}`);
+      process.exit(1);
+    },
+  );
 }

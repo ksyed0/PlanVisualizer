@@ -17,6 +17,8 @@
 
 **Delivery Payload:** `docs/plan-status.html` — a self-contained HTML file deployed to GitHub Pages at `https://ksyed0.github.io/PlanVisualizer/`.
 
+**Agentic Orchestration Engine (opt-in):** EPIC-0028 + EPIC-0029 add a pre-dispatch spec/plan gate, per-task lifecycle, Context Curator, two-phase Lens review gates, and a dashboard review-gate visualization (S/M/L density). Authoritative reference: `docs/architecture/AGENTIC_PIPELINE.md`. CLI surface: 21 `agent:*` npm scripts wired up by `install.sh` / `update.sh`.
+
 ---
 
 ## §2 Data Schemas
