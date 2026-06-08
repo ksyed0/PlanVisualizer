@@ -2,6 +2,12 @@
 
 All notable changes to PlanVisualizer are documented here.
 
+## [Unreleased]
+
+### Fixed
+
+- **BUG-0264 — claude-mem Stop hook crash (`Cannot find module 'zod/v3'`)** — `install.sh`/`update.sh` now verify the active claude-mem worker can resolve its dependencies after install/update, attempt repair via `npx claude-mem install` if not, and flag stale non-pinned plugin-cache versions (the actual trigger after an interrupted upgrade). The crash originated in the third-party claude-mem worker, not PlanVisualizer's own `capture-cost.js` Stop hook.
+
 ## [2.4.0] — 2026-05-17
 
 ### Added — EPIC-0028 Agentic Orchestration Engine
