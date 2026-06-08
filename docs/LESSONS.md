@@ -4,6 +4,16 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
+## L-0091 — Jest `testMatch` with a leading `**/` silently scans nested git worktrees
+
+@agent: Forge
+
+**Rule:** `testMatch: ['**/tests/unit/**/*.test.js', ...]` matches _any_ ancestor directory, so when a git worktree lives inside the repo (e.g. `.claude/worktrees/<name>/`), jest discovers and runs that worktree's copy of the tests too. Stale worktrees whose `node_modules` have been removed then fail with `Cannot find module …`, breaking `npm test` locally even though the change under test is fine (CI is unaffected because CI checks out a clean tree without worktrees). **Fix:** exclude the worktree root from both discovery and Haste resolution — `testPathIgnorePatterns: ['/node_modules/', '/\\.claude/']` and `modulePathIgnorePatterns: ['/\\.claude/']`. More generally, any glob anchored with `**/` should be paired with explicit ignore patterns for in-repo worktree/cache dirs.
+_Identified fixing BUG-0265 — a stale `.claude/worktrees/` tree made jest scan 371 phantom test files._
+**Date:** 2026-06-08
+
+---
+
 ## L-0090 — A failing Stop hook is not necessarily _our_ Stop hook; identify the owner before "fixing" it
 
 @agent: Circuit

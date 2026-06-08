@@ -1083,3 +1083,9 @@ _(Bug sweep session — see progress.md Session 16 entry. Was primarily spent fi
 | 8   | 2026-05-21T00:00:00Z | D.3 — migrate tools/agent-lifecycle.js to write through SdlcEventRepo/SdlcTaskRepo/SdlcProgrammeRepo per US-0234 / TASK-0058 (dispatched in parallel with D.4)       |
 | 9   | 2026-05-21T00:00:00Z | D.4 — migrate tools/update-sdlc-status.js to write through SdlcEventRepo/SdlcTaskRepo/SdlcProgrammeRepo per US-0235 / TASK-0059 (dispatched in parallel with D.3)    |
 | 10  | 2026-05-21T00:00:00Z | D.5 — migrate tools/agent-task-review.js to write taskReview through SdlcTaskRepo/SdlcEventRepo per US-0236 / TASK-0060                                              |
+
+## Session 62 — 2026-06-08
+
+| #   | Timestamp            | Prompt                                                                                      |
+| --- | -------------------- | ------------------------------------------------------------------------------------------- |
+| 1   | 2026-06-08T21:00:00Z | Fix jest scanning phantom tests in stale .claude/worktrees (BUG-0265); create PR to develop |
