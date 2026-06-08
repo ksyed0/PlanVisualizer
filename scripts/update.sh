@@ -104,7 +104,7 @@ CM_SETTINGS="$HOME/.claude-mem/settings.json"
 CM_BASE="$HOME/.claude/plugins/cache/thedotmack/claude-mem"
 CM_VER=$(ls "$CM_BASE" 2>/dev/null | sort -V | tail -1)
 
-# verify_claude_mem_health — guard against BUG-0258.
+# verify_claude_mem_health — guard against BUG-0264.
 # claude-mem registers its OWN Stop hook (scripts/worker-service.cjs). An
 # interrupted version upgrade can leave a stale version directory in the plugin
 # cache with incomplete node_modules; Claude Code may still invoke that stale
