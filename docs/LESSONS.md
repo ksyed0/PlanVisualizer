@@ -4,6 +4,16 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
+## L-0092 — Theme-specific surface overrides must be matched by foreground overrides, or contrast silently breaks
+
+@agent: Pixel
+
+**Rule:** When a component hard-codes a foreground palette for one theme (e.g. the active-agent hero card's light-orange name + orange task text designed for a dark surface), a _more specific_ generic rule can quietly swap its background in the other theme and tank contrast. Here `.agent-card.is-active` (specificity 0,2,0, `background: var(--surface)`) outranked `.mc-active-card` (0,1,0, dark) so in **light theme** the hero card went near-white while its text stayed dark-tuned — the task line measured **~1.1:1** (WCAG AA needs 4.5:1), i.e. invisible (BUG-0266). **Fixes:** (1) when you set a themed background on a component, set its text colours in the _same_ specificity/theme scope; (2) measure contrast in **both** themes, not just the one you author in — a quick `getComputedStyle` + relative-luminance probe in the browser catches this; (3) prefer pinning a deliberately-dark "hero/on-air" surface in both themes (`[data-theme='light'] .mc-active-card.agent-card.is-active { background: … }`) over re-tuning every foreground colour.
+_Identified fixing BUG-0266 — verified with an in-browser oklch→rgb contrast probe (1.07→7.42:1 on the task text) and a screenshot._
+**Date:** 2026-06-08
+
+---
+
 ## L-0089 — `BEGIN DEFERRED` while the callback awaits is a SQLite-with-async transaction footgun; document the "callback must complete promptly" rule in module JSDoc
 
 @agent: Forge, Lens

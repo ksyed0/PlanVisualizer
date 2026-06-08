@@ -2,6 +2,12 @@
 
 All notable changes to PlanVisualizer are documented here.
 
+## [Unreleased]
+
+### Fixed
+
+- **BUG-0266 — active-agent hero card task text unreadable in light theme** — the hero card's text palette is designed for a dark surface, but `.agent-card.is-active` (higher specificity) leaked a light background in light theme, dropping the current-task text to ~1.1:1 contrast. The card is now pinned dark in light theme too, restoring all four text elements to ≥7:1 (WCAG AA).
+
 ## [2.4.0] — 2026-05-17
 
 ### Added — EPIC-0028 Agentic Orchestration Engine
