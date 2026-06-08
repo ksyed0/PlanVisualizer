@@ -7,6 +7,7 @@ All notable changes to PlanVisualizer are documented here.
 ### Fixed
 
 - **BUG-0265 — jest scans phantom tests in nested git worktrees** — `jest.config.js` now sets `testPathIgnorePatterns`/`modulePathIgnorePatterns` to exclude `/.claude/`, so a stale `.claude/worktrees/<name>/` tree no longer makes `npm test` discover and fail on worktree-local test copies (whose `node_modules` may be absent). CI is unaffected; this fixes local runs only.
+- **BUG-0264 — claude-mem Stop hook crash (`Cannot find module 'zod/v3'`)** — `install.sh`/`update.sh` now verify the active claude-mem worker can resolve its dependencies after install/update, attempt repair via `npx claude-mem install` if not, and flag stale non-pinned plugin-cache versions (the actual trigger after an interrupted upgrade). The crash originated in the third-party claude-mem worker, not PlanVisualizer's own `capture-cost.js` Stop hook.
 
 ## [2.4.0] — 2026-05-17
 
