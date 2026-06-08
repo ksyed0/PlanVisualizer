@@ -4,6 +4,16 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
+## L-0068 — A failing Stop hook is not necessarily _our_ Stop hook; identify the owner before "fixing" it
+
+@agent: Circuit
+
+**Rule:** Claude Code runs **all** registered `Stop` hooks. PlanVisualizer's `install.sh §0.1` runs `npx claude-mem install`, which makes the third-party **claude-mem** plugin register its own Stop hook (`worker-service.cjs`). When a Stop-hook error surfaces, read the **path in the error** before assuming it is `tools/capture-cost.js`. The `Cannot find module 'zod/v3'` crash (BUG-0258) came entirely from claude-mem's worker, not our code — `zod/v3` is a valid subpath of zod 4.x; the real cause was a **stale plugin version directory** (13.3.0) left in `~/.claude/plugins/cache` after an interrupted upgrade to 13.4.1, with incomplete `node_modules`. Two takeaways: (1) Never fabricate a repo "fix" for a third-party plugin's bug — the file lives outside the git tree and faking it is dishonest. (2) Since our installer _triggers_ the claude-mem install, the legitimate fix is on our side of the boundary: verify the active worker can resolve its deps after install/update (`verify_claude_mem_health` in `install.sh`/`update.sh`) and flag stale non-pinned version dirs, which are what fire spurious crashes. The pinned version is the `installPath` in `~/.claude/plugins/installed_plugins.json`.
+_Identified fixing BUG-0258. Repaired locally by moving the orphaned 13.3.0 cache dir aside; hardened both installer scripts to self-verify._
+**Date:** 2026-06-08
+
+---
+
 ## L-0066 — `npm audit` does not need `npm ci` — running it wastes a full install per PR
 
 @agent: Circuit

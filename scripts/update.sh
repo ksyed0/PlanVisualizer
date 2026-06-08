@@ -104,6 +104,61 @@ CM_SETTINGS="$HOME/.claude-mem/settings.json"
 CM_BASE="$HOME/.claude/plugins/cache/thedotmack/claude-mem"
 CM_VER=$(ls "$CM_BASE" 2>/dev/null | sort -V | tail -1)
 
+# verify_claude_mem_health — guard against BUG-0258.
+# claude-mem registers its OWN Stop hook (scripts/worker-service.cjs). An
+# interrupted version upgrade can leave a stale version directory in the plugin
+# cache with incomplete node_modules; Claude Code may still invoke that stale
+# worker, which then crashes the Stop hook with "Cannot find module 'zod/v3'".
+# PlanVisualizer triggers the claude-mem install/update above, so we verify the
+# active worker can resolve its deps (repairing if not) and flag stale copies.
+# $1 = log prefix ("install" / "update"). Never fatal — advisory only.
+verify_claude_mem_health() {
+  local prefix="$1"
+  command -v node >/dev/null 2>&1 || return 0   # node needed to verify; skip silently
+  [ -d "$CM_BASE" ] || return 0
+
+  # The version Claude Code actually loads is the installPath in
+  # installed_plugins.json; fall back to the highest cached version.
+  local pinned_path pinned_scripts pinned_ver stale
+  pinned_path=$(node -e '
+    try {
+      const j = require(process.env.HOME + "/.claude/plugins/installed_plugins.json");
+      const e = (j["claude-mem@thedotmack"] || []).find(x => x && x.installPath) || {};
+      process.stdout.write(e.installPath || "");
+    } catch (_) { process.stdout.write(""); }
+  ' 2>/dev/null || true)
+  if [ -z "$pinned_path" ] && [ -n "${CM_VER:-}" ]; then
+    pinned_path="$CM_BASE/$CM_VER"
+  fi
+  [ -n "$pinned_path" ] || return 0
+  pinned_scripts="$pinned_path/scripts"
+
+  if node -e "require.resolve('zod/v3', { paths: ['$pinned_scripts'] })" >/dev/null 2>&1; then
+    echo "[$prefix] claude-mem worker dependencies verified ✓"
+  else
+    echo "[$prefix] Warning: claude-mem worker is missing dependencies (zod/v3 unresolved)."
+    echo "[$prefix] This causes 'Cannot find module zod/v3' Stop hook errors — repairing..."
+    npx claude-mem install || true
+    if node -e "require.resolve('zod/v3', { paths: ['$pinned_scripts'] })" >/dev/null 2>&1; then
+      echo "[$prefix] claude-mem worker dependencies repaired ✓"
+    else
+      echo "[$prefix] Warning: repair did not resolve it. Fix manually with:"
+      echo "[$prefix]   rm -rf \"$CM_BASE\" && npx claude-mem install"
+    fi
+  fi
+
+  # Flag stale (non-pinned) version dirs — the actual trigger for spurious
+  # Stop-hook crashes after an interrupted upgrade.
+  pinned_ver=$(basename "$pinned_path")
+  stale=$(ls "$CM_BASE" 2>/dev/null | grep -vx "$pinned_ver" || true)
+  if [ -n "$stale" ]; then
+    echo "[$prefix] Note: stale claude-mem version(s) in cache (active: $pinned_ver):"
+    echo "$stale" | sed "s#^#[$prefix]   - stale: #"
+    echo "[$prefix] These can fire broken Stop hooks. Remove safely with:"
+    echo "$stale" | sed "s#^#[$prefix]   rm -rf $CM_BASE/#"
+  fi
+}
+
 if [ -f "$CM_SETTINGS" ]; then
   if [ -n "$CM_VER" ]; then
     echo "[update] Updating claude-mem (v${CM_VER} installed)..."
@@ -112,6 +167,7 @@ if [ -f "$CM_SETTINGS" ]; then
   fi
   npx claude-mem update 2>&1 || echo "[update] Warning: claude-mem update failed — continuing."
   echo ""
+  verify_claude_mem_health update
 else
   echo ""
   echo "[update] claude-mem not detected."
@@ -125,6 +181,7 @@ else
       echo ""
       echo "[update] claude-mem installed successfully ✓"
       echo ""
+      verify_claude_mem_health update
     else
       echo ""
       echo "[update] Warning: claude-mem install may have failed."
