@@ -14,6 +14,26 @@ _Identified fixing BUG-0266 — verified with an in-browser oklch→rgb contrast
 
 ---
 
+## L-0091 — Jest `testMatch` with a leading `**/` silently scans nested git worktrees
+
+@agent: Forge
+
+**Rule:** `testMatch: ['**/tests/unit/**/*.test.js', ...]` matches _any_ ancestor directory, so when a git worktree lives inside the repo (e.g. `.claude/worktrees/<name>/`), jest discovers and runs that worktree's copy of the tests too. Stale worktrees whose `node_modules` have been removed then fail with `Cannot find module …`, breaking `npm test` locally even though the change under test is fine (CI is unaffected because CI checks out a clean tree without worktrees). **Fix:** exclude the worktree root from both discovery and Haste resolution — `testPathIgnorePatterns: ['/node_modules/', '/\\.claude/']` and `modulePathIgnorePatterns: ['/\\.claude/']`. More generally, any glob anchored with `**/` should be paired with explicit ignore patterns for in-repo worktree/cache dirs.
+_Identified fixing BUG-0265 — a stale `.claude/worktrees/` tree made jest scan 371 phantom test files._
+**Date:** 2026-06-08
+
+---
+
+## L-0090 — A failing Stop hook is not necessarily _our_ Stop hook; identify the owner before "fixing" it
+
+@agent: Circuit
+
+**Rule:** Claude Code runs **all** registered `Stop` hooks. PlanVisualizer's `install.sh §0.1` runs `npx claude-mem install`, which makes the third-party **claude-mem** plugin register its own Stop hook (`worker-service.cjs`). When a Stop-hook error surfaces, read the **path in the error** before assuming it is `tools/capture-cost.js`. The `Cannot find module 'zod/v3'` crash (BUG-0264) came entirely from claude-mem's worker, not our code — `zod/v3` is a valid subpath of zod 4.x; the real cause was a **stale plugin version directory** (13.3.0) left in `~/.claude/plugins/cache` after an interrupted upgrade to 13.4.1, with incomplete `node_modules`. Two takeaways: (1) Never fabricate a repo "fix" for a third-party plugin's bug — the file lives outside the git tree and faking it is dishonest. (2) Since our installer _triggers_ the claude-mem install, the legitimate fix is on our side of the boundary: verify the active worker can resolve its deps after install/update (`verify_claude_mem_health` in `install.sh`/`update.sh`) and flag stale non-pinned version dirs, which are what fire spurious crashes. The pinned version is the `installPath` in `~/.claude/plugins/installed_plugins.json`.
+_Identified fixing BUG-0264. Repaired locally by moving the orphaned 13.3.0 cache dir aside; hardened both installer scripts to self-verify._
+**Date:** 2026-06-08
+
+---
+
 ## L-0089 — `BEGIN DEFERRED` while the callback awaits is a SQLite-with-async transaction footgun; document the "callback must complete promptly" rule in module JSDoc
 
 @agent: Forge, Lens
