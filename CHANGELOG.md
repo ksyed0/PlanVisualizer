@@ -2,6 +2,12 @@
 
 All notable changes to PlanVisualizer are documented here.
 
+## [Unreleased]
+
+### Fixed
+
+- **BUG-0265 — jest scans phantom tests in nested git worktrees** — `jest.config.js` now sets `testPathIgnorePatterns`/`modulePathIgnorePatterns` to exclude `/.claude/`, so a stale `.claude/worktrees/<name>/` tree no longer makes `npm test` discover and fail on worktree-local test copies (whose `node_modules` may be absent). CI is unaffected; this fixes local runs only.
+
 ## [2.4.0] — 2026-05-17
 
 ### Added — EPIC-0028 Agentic Orchestration Engine
