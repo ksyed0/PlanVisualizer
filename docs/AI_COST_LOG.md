@@ -657,3 +657,5 @@ Input Tokens column = direct input + cache-write tokens; cost computed with dist
 > > > > > > > | 2026-06-05 | e15699bd-b284-42b1-9b07-075c19149452 | claude/jolly-kilby-a46992 | 181984 | 36833 | 2117807 | 1.8702 |
 > > > > > > > | 2026-06-05 | e15699bd-b284-42b1-9b07-075c19149452 | claude/jolly-kilby-a46992 | 198969 | 44531 | 3015446 | 2.3187 |
 > > > > > > > | 2026-06-05 | e15699bd-b284-42b1-9b07-075c19149452 | claude/jolly-kilby-a46992 | 207544 | 48607 | 3669619 | 2.6082 |
+> > > > > > > | 2026-06-08 | 17a4c577-4d61-4feb-ba51-20a332f26b05 | hotfix/BUG-0258-claude-mem-worker-deps | 363692 | 127467 | 11142746 | 6.5787 |
+> > > > > > > | 2026-06-08 | 17a4c577-4d61-4feb-ba51-20a332f26b05 | hotfix/BUG-0258-claude-mem-worker-deps | 1269530 | 409087 | 50346763 | 25.9393 |
