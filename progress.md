@@ -2441,7 +2441,7 @@ Key design decisions:
 | New bugs discovered (found on GH, no BUGS.md entry) | 2     |
 
 New issues: #1155 (BUG-0254), #1156 (BUG-0255), #1157 (BUG-0256), #1158 (BUG-0258)
-New bugs discovered: BUG-0265 (#1152 — Conductor Last Dispatch strip), BUG-0266 (#1153 — phases show inactive)
+New bugs discovered: BUG-0267 (#1152 — Conductor Last Dispatch strip), BUG-0268 (#1153 — phases show inactive)
 
 **3. Bug Status Corrections**
 
@@ -2459,8 +2459,8 @@ New bugs discovered: BUG-0265 (#1152 — Conductor Last Dispatch strip), BUG-026
 | EPIC     | EPIC-0046 | EPIC-0047 |
 | US       | US-0264   | US-0269   |
 | AC       | AC-1023   | AC-1048   |
-| BUG      | BUG-0265  | BUG-0267  |
-| L        | L-0091    | L-0092    |
+| BUG      | BUG-0267  | BUG-0267  |
+| L        | L-0093    | L-0094    |
 
 ### Test Results
 
@@ -2468,7 +2468,7 @@ No new tests written this session (planning only). Last known: 132 suites / 2,66
 
 ### New Lesson Encoded
 
-- L-0091: Mark bugs Fixed in BUGS.md and close GH Issues immediately when the fix lands
+- L-0093: Mark bugs Fixed in BUGS.md and close GH Issues immediately when the fix lands
 
 ### Next Session
 

@@ -1221,7 +1221,7 @@ _Learned from BUG-0210 — Lessons and Bugs tabs both have epic group headers, b
 
 ---
 
-## L-0091: Mark bugs Fixed in BUGS.md and close GH Issues immediately when the fix lands — not later @agent:all
+## L-0093: Mark bugs Fixed in BUGS.md and close GH Issues immediately when the fix lands — not later @agent:all
 
 **Context:** Session 62, 2026-06-21. During GitHub/BUGS.md reconciliation, 139 GitHub issues were found open despite the corresponding BUGS.md entries showing `Status: Fixed`. BUG-0254, BUG-0255, and BUG-0256 were found `Status: Open` in BUGS.md despite all three being fixed months earlier (render-shell.js and render-tabs.js had the code). BUG-0256's fix even had an inline comment referencing the bug ID.
 

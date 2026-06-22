@@ -26,8 +26,8 @@ Full brainstorm → spec → implementation plan for Deploy agent (EPIC-0046), p
 ## IDs Assigned
 
 - EPIC-0046, US-0264–US-0268, AC-1023–AC-1047
-- BUG-0265 (#1152 — Conductor Last Dispatch strip), BUG-0266 (#1153 — phases inactive)
-- L-0091
+- BUG-0267 (#1152 — Conductor Last Dispatch strip), BUG-0268 (#1153 — phases inactive)
+- L-0093
 
 ## GitHub Reconciliation
 
