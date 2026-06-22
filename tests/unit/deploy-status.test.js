@@ -66,6 +66,10 @@ describe('deploy-status — deploy-start', () => {
   it('throws if --sha missing', () => {
     expect(() => HANDLERS['deploy-start'](baseState(), { env: 'staging', story: 'US-0264' })).toThrow('--sha required');
   });
+
+  it('throws if --story missing', () => {
+    expect(() => HANDLERS['deploy-start'](baseState(), { env: 'staging', sha: 'abc' })).toThrow('--story required');
+  });
 });
 
 // ── deploy-complete ────────────────────────────────────────────────────────

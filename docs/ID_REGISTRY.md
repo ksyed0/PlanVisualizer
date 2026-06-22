@@ -8,7 +8,7 @@ Single source of truth for the next available ID in every artefact sequence.
 | EPIC         | EPIC-0047             | EPIC-0046         |
 | US           | US-0269               | US-0268           |
 | TASK         | TASK-0071             | TASK-0070         |
-| AC           | AC-10001              | AC-10000          |
+| AC           | AC-1048               | AC-1047           |
 | TC           | TC-0553               | TC-0552           |
 | BUG          | BUG-0269              | BUG-0268          |
 | Lesson       | L-0094                | L-0093            |
@@ -20,4 +20,4 @@ Single source of truth for the next available ID in every artefact sequence.
 - Update immediately after assigning — before writing the artefact content.
 - IDs are permanent. Retired artefacts are marked `Status: Retired`, never deleted.
 - All cross-references must use the full ID (e.g., `US-0003`, not "the login story").
-- Zero-padding to 4 digits is cosmetic. IDs beyond 9999 use 5+ digits naturally (e.g. AC-10000). All parser regexes accept variable-length digit sequences.
+- Zero-padding to 4 digits is cosmetic. The ID scanner caps at 4-digit sequences to avoid matching example text (e.g. AC-10000 in prose).

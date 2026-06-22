@@ -109,6 +109,9 @@ const HANDLERS = {
     env.status = 'rolled-back';
     env.sha = opts['to-sha'];
     env.lastDeployAt = new Date().toISOString();
+    if (data.activeDeployment && data.activeDeployment.to === opts.env) {
+      data.activeDeployment = null;
+    }
     data.promotionHistory.push({
       from: opts.env,
       to: opts.env,

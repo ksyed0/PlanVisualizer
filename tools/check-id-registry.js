@@ -30,7 +30,7 @@ const SOURCES = {
 };
 
 function findMax(files, prefix) {
-  const re = new RegExp(`\\b${prefix}-(\\d+)\\b`, 'g');
+  const re = new RegExp(`\\b${prefix}-(\\d{1,4})\\b`, 'g');
   let max = 0;
   for (const rel of files) {
     const abs = path.join(ROOT, rel);
