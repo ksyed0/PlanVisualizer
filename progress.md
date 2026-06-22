@@ -2404,3 +2404,73 @@ Phase D (EPIC-0039) is implementation-complete. All eight stories (US-0232..US-0
 - Brittle test-count assertions in `pv-upgrade-rollback.test.js` should switch to structural assertions.
 
 **Next session:** Manual review of this PR (US-0247) → merge → EPIC-0041 (Phase F) kickoff.
+
+---
+
+## Session 62 — 2026-06-21 — EPIC-0046 Deploy Agent Planning + GitHub Reconciliation
+
+**Branch:** `hotfix/BUG-0258-claude-mem-worker-deps`
+
+### Work Completed
+
+**1. Deploy Agent (EPIC-0046) — Brainstorm → Spec → Plan**
+
+Full brainstorm (6 decision points), 5-section spec, 7-task implementation plan written and committed.
+
+| Artefact | Path                                                       | IDs Assigned                                |
+| -------- | ---------------------------------------------------------- | ------------------------------------------- |
+| Spec     | `docs/superpowers/specs/2026-06-21-deploy-agent-design.md` | EPIC-0046, US-0264–US-0268, AC-1023–AC-1047 |
+| Plan     | `docs/superpowers/plans/2026-06-21-deploy-agent.md`        | (above)                                     |
+
+Key design decisions:
+
+- Phase 7 by default; on-demand out-of-band dispatch via Conductor
+- `tools/deploy-status.js` mirrors `update-sdlc-status.js` (exports HANDLERS + parseArgs)
+- `docs/deploy-status.json`: environments (dev/staging/prod), activeDeployment, ciRuns[], incidents[], promotionHistory[]
+- Incidents: structured triage → Conductor, never raw logs; auto-rollback on hard failures only
+- Dashboard: static Deploy panel (generated at build time) + live `deploy-status.json` fetch in `refreshState()`
+- CI Contract: Keystone produces `docs/ci-contract.md` at Phase 2; Deploy reads it before scaffolding workflows
+- Deploy portrait images already present: `docs/agents/images/optimized/deploy-{64,160,320}.png`
+
+**2. GitHub Issues / BUGS.md Reconciliation**
+
+| Action                                              | Count |
+| --------------------------------------------------- | ----- |
+| GH issues closed (Fixed in BUGS.md but still open)  | 139   |
+| New GH issues created for open bugs with no issue   | 4     |
+| New bugs discovered (found on GH, no BUGS.md entry) | 2     |
+
+New issues: #1155 (BUG-0254), #1156 (BUG-0255), #1157 (BUG-0256), #1158 (BUG-0258)
+New bugs discovered: BUG-0265 (#1152 — Conductor Last Dispatch strip), BUG-0266 (#1153 — phases show inactive)
+
+**3. Bug Status Corrections**
+
+| Bug      | Code status                                                                   | Action                                |
+| -------- | ----------------------------------------------------------------------------- | ------------------------------------- |
+| BUG-0254 | Already fixed in render-shell.js:131-146                                      | Plan Task 6 verifies and marks Fixed  |
+| BUG-0255 | Already fixed in render-tabs.js:963                                           | Plan Task 6 verifies and marks Fixed  |
+| BUG-0256 | Already fixed in render-tabs.js:2476-2487 (has BUG-0256 comment)              | Plan Task 6 verifies and marks Fixed  |
+| BUG-0258 | EPIC-0036 cross-entity validator emits warnings; standalone CLI still missing | Plan Task 7 adds check-id-registry.js |
+
+### ID Registry Changes This Session
+
+| Sequence | Old Next  | New Next  |
+| -------- | --------- | --------- |
+| EPIC     | EPIC-0046 | EPIC-0047 |
+| US       | US-0264   | US-0269   |
+| AC       | AC-1023   | AC-1048   |
+| BUG      | BUG-0265  | BUG-0267  |
+| L        | L-0091    | L-0092    |
+
+### Test Results
+
+No new tests written this session (planning only). Last known: 132 suites / 2,669 tests / 89%+ coverage.
+
+### New Lesson Encoded
+
+- L-0091: Mark bugs Fixed in BUGS.md and close GH Issues immediately when the fix lands
+
+### Next Session
+
+Execute `docs/superpowers/plans/2026-06-21-deploy-agent.md` using `superpowers:subagent-driven-development`.
+Start with Task 1 (agent identity) on branch `feature/US-0264-deploy-agent-identity`.

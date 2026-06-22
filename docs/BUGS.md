@@ -4000,7 +4000,7 @@ Steps to Reproduce:
 
 ---
 
-BUG-0261b: Dashboard — Conductor 'Last Dispatch' strip always shows 'No dispatches yet'
+BUG-0265: Dashboard — Conductor 'Last Dispatch' strip always shows 'No dispatches yet'
 Severity: Medium
 Related Story:
 Steps to Reproduce:
@@ -4016,7 +4016,7 @@ Steps to Reproduce:
 
 ---
 
-BUG-0261c: Dashboard — all pipeline phases show inactive after session-start / epic-start
+BUG-0266: Dashboard — all pipeline phases show inactive after session-start / epic-start
 Severity: Medium
 Related Story:
 Steps to Reproduce:

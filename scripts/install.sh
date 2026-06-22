@@ -278,11 +278,16 @@ fi
 # ── 2.6. Inject PlanVisualizer reference into AGENTS.md ─────────────────────
 AGENTS_DEST="${TARGET}/AGENTS.md"
 PV_MARKER="## PlanVisualizer Format Requirements"
-if [ -f "$AGENTS_DEST" ]; then
-  if grep -q "$PV_MARKER" "$AGENTS_DEST"; then
-    echo "[install] AGENTS.md already references plan_visualizer.md — skipping."
-  else
-    cat >> "$AGENTS_DEST" <<'MD'
+if [ ! -f "$AGENTS_DEST" ]; then
+  echo "[install] No AGENTS.md found — copying from PlanVisualizer repo ..."
+  cp "${REPO_ROOT}/AGENTS.md" "$AGENTS_DEST"
+  echo "[install] AGENTS.md installed (full agent operating standards)."
+fi
+
+if grep -q "$PV_MARKER" "$AGENTS_DEST"; then
+  echo "[install] AGENTS.md already references plan_visualizer.md — skipping."
+else
+  cat >> "$AGENTS_DEST" <<'MD'
 
 ---
 
@@ -292,20 +297,7 @@ This project uses PlanVisualizer. Read **plan_visualizer.md** (in this project r
 exact document formats required for RELEASE_PLAN.md, TEST_CASES.md, BUGS.md, AI_COST_LOG.md,
 and progress.md. Consult it whenever creating or updating any of these files.
 MD
-    echo "[install] Appended PlanVisualizer reference to AGENTS.md."
-  fi
-else
-  echo "[install] No AGENTS.md found — creating one referencing plan_visualizer.md ..."
-  cat > "$AGENTS_DEST" <<'MD'
-# AGENTS.md
-
-## PlanVisualizer Format Requirements
-
-This project uses PlanVisualizer. Read **plan_visualizer.md** (in this project root) for the
-exact document formats required for RELEASE_PLAN.md, TEST_CASES.md, BUGS.md, AI_COST_LOG.md,
-and progress.md. Consult it whenever creating or updating any of these files.
-MD
-  echo "[install] Created AGENTS.md with PlanVisualizer reference."
+  echo "[install] Appended PlanVisualizer reference to AGENTS.md."
 fi
 
 # ── 3. Merge npm scripts into target package.json ────────────────────────────

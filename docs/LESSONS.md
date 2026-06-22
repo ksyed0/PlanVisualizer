@@ -1218,3 +1218,15 @@ _Learned from BUG-0210 — Lessons and Bugs tabs both have epic group headers, b
 **Prevention:** When writing indexers for RELEASE_PLAN.md, always check for both `EPIC-XXXX: title` and `EPIC-XXXX\nTitle: title` variants. Older EPICs predate the standardised fenced-block format.
 
 **Date:** 2026-05-20
+
+---
+
+## L-0091: Mark bugs Fixed in BUGS.md and close GH Issues immediately when the fix lands — not later @agent:all
+
+**Context:** Session 62, 2026-06-21. During GitHub/BUGS.md reconciliation, 139 GitHub issues were found open despite the corresponding BUGS.md entries showing `Status: Fixed`. BUG-0254, BUG-0255, and BUG-0256 were found `Status: Open` in BUGS.md despite all three being fixed months earlier (render-shell.js and render-tabs.js had the code). BUG-0256's fix even had an inline comment referencing the bug ID.
+
+**Fix:** The reconciliation fork closed 139 stale GH issues and created 4 new ones for genuinely open bugs. BUG-0254/0255/0256 marked Fixed in this session.
+
+**Prevention:** When committing a bugfix, update the three status fields in a single follow-up commit before moving on: (1) `BUGS.md Status: Fixed`, (2) `GH Issue: close via gh issue close`, (3) `Fix Branch: <branch>`. The inline `// BUG-XXXX:` code comment is a bonus — it creates a searchable trail from the fix back to the BUGS.md entry.
+
+**Date:** 2026-06-21
