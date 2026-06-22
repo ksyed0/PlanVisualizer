@@ -2515,12 +2515,10 @@ ${(() => {
   const agentList = Object.entries(agents);
   const imgBase = 'agents/images';
 
-  const lastDispatch = [...log].reverse().find(
-    (e) =>
-      e.tag === 'dispatch' ||
-      String(e.message || '')
-        .toLowerCase()
-        .startsWith('dispatch'),
+  const lastDispatch = [...log].reverse().find((e) =>
+    String(e.message || '')
+      .toLowerCase()
+      .startsWith('started '),
   );
 
   // Split: active non-Conductor agents | idle/other non-Conductor agents

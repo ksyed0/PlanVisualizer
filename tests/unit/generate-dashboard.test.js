@@ -487,6 +487,25 @@ describe('generate-dashboard — US-0143 conductor dispatch hold', () => {
     expect(src).toContain('_dispatchCount++');
     expect(src).toContain('conductor-dispatch-count');
   });
+
+  it('BUG-0267: Last Dispatch strip shows message when log has a started entry', () => {
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    const fixture = makeHealthyFixture();
+    fixture.log = [
+      { time: '10:00', agent: 'Forge', message: 'started US-0264: implement deploy agent', model: 'sonnet' },
+    ];
+    const html = generateHTML(fixture);
+    expect(html).not.toContain('No dispatches yet');
+    expect(html).toContain('started US-0264: implement deploy agent');
+  });
+
+  it('BUG-0267: Last Dispatch strip shows fallback when log has no started entries', () => {
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    const fixture = makeHealthyFixture();
+    fixture.log = [{ time: '10:00', agent: 'Conductor', message: 'Session started — 5 stories planned' }];
+    const html = generateHTML(fixture);
+    expect(html).toContain('No dispatches yet');
+  });
 });
 
 describe('generate-dashboard — US-0145 event log', () => {
