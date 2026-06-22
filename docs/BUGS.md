@@ -3900,7 +3900,7 @@ Steps to Reproduce:
     Expected: Risk filter sits inside the filter bar alongside Epic / Status / Priority. Sort dropdown offers multiple options (e.g. by ID, status, priority, estimate, risk, cost).
     Actual: Risk filter is rendered as a separate row, visually disconnected from the filter bar. Sort dropdown only allows sorting by risk.
     Status: Open
-    GH Issue:
+    GH Issue: #1155
     Fix Branch:
     Lesson Encoded: No
 
@@ -3914,7 +3914,7 @@ Steps to Reproduce:
     Expected: Shows the actual velocity (stories/week, e.g. "1.2 stories/wk") with a small label explaining "based on 10-week lookback".
     Actual: Shows "10wk" — which is `velocityWeeks` (the lookback window length, not the velocity itself). No stories/wk number, no explanation of what 10 weeks means. Code at `tools/lib/render-tabs.js:950` builds the label from `comp.velocityWeeks` only.
     Status: Open
-    GH Issue:
+    GH Issue: #1156
     Fix Branch:
     Lesson Encoded: No
 
@@ -3928,7 +3928,7 @@ Steps to Reproduce:
     Expected: Default sort by lesson ID descending (newest L-XXXX first) or by date descending — matches expectation that the latest lessons surface at the top.
     Actual: Lessons appear in an apparently arbitrary order. Sort picker exists but the default ordering does not match any obvious criterion.
     Status: Open
-    GH Issue:
+    GH Issue: #1157
     Fix Branch:
     Lesson Encoded: No
 
@@ -3959,7 +3959,7 @@ Steps to Reproduce:
     Expected: Registry next-id is strictly greater than max-in-use across all source files.
     Actual: Drift happens whenever a commit references a new ID (e.g. "feat(EPIC-0029): ...") before the registry is bumped. Discovered 2026-05-19 — EPIC-0029 referenced in commit history while ID_REGISTRY.md still listed EPIC-0029 as next-available. Resynced in commit ddb4a36 alongside the EPIC-0030..0035 plan addition, but the underlying problem (no enforcement at write time) is unaddressed.
     Status: Open
-    GH Issue:
+    GH Issue: #1158
     Fix Branch:
     Notes: Root cause is that markdown is the source of truth but no tool validates referential integrity at write time. Closed by EPIC-0036 (Step 1 Repository Foundation) — the indexed SQLite layer emits an 'id-registry-drift' warning at write time, and EPIC-0041 promotes it to a hard error. Logged primarily as evidence that the EPIC-0036 work is justified.
     Lesson Encoded: No
@@ -3996,6 +3996,38 @@ Steps to Reproduce:
     GH Issue:
     Fix Branch: claude/trusting-ptolemy-a305f1
     Notes: Introduced in commit 2bafd93 (US-0215 / Task A.1). Fixed in commit c823074 by bumping all 8 `node-version` occurrences across `.github/workflows/` to `'22'` (Node 22 is active LTS and is required by Task A.5's node:sqlite fallback). Verified by re-review subagent on 2026-05-20.
+    Lesson Encoded: No
+
+---
+
+BUG-0261b: Dashboard — Conductor 'Last Dispatch' strip always shows 'No dispatches yet'
+Severity: Medium
+Related Story:
+Steps to Reproduce:
+
+1.  Run `npm run agent:start` and `npm run agent:epic-start`
+2.  Open docs/dashboard.html → Conductor card
+    Expected: The "Last Dispatch" strip shows the most recent agent the Conductor dispatched and its story.
+    Actual: Always shows "No dispatches yet" even after active dispatches have been recorded in sdlc-status.json.
+    Status: Open
+    GH Issue: #1152
+    Fix Branch:
+    Lesson Encoded: No
+
+---
+
+BUG-0261c: Dashboard — all pipeline phases show inactive after session-start / epic-start
+Severity: Medium
+Related Story:
+Steps to Reproduce:
+
+1.  Run `npm run agent:start`, `npm run agent:epic-start`, `npm run agent:phase -- --number 1 --status in-progress`
+2.  Open docs/dashboard.html → pipeline timeline
+    Expected: Phase 1 (Blueprint) is highlighted as in-progress; the active phase label in the topbar updates accordingly.
+    Actual: All 6 phases show as pending/inactive — no phase is highlighted and the active phase label shows the default state.
+    Status: Open
+    GH Issue: #1153
+    Fix Branch:
     Lesson Encoded: No
 
 ---
