@@ -3619,7 +3619,7 @@ function patchDeployPanel(deployStatus) {
       return !i.resolvedAt;
     }).length;
     badge.textContent = openCount + ' open';
-    badge.style.color = openCount > 0 ? 'var(--mc-danger)' : 'var(--mc-ok)';
+    badge.style.color = openCount > 0 ? 'var(--mc-risk)' : 'var(--mc-ok)';
   }
 }
 
