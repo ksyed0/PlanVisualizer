@@ -3568,6 +3568,61 @@ function runAlertCheck(status) {
   alerts.forEach(function(a) { sendNotification(a.title, a.body); });
 }
 
+function runDeployAlertCheck(deployStatus) {
+  if (!deployStatus || !deployStatus.environments) return;
+  var criticals = [];
+  var warnings = [];
+  Object.keys(deployStatus.environments).forEach(function (envName) {
+    var state = deployStatus.environments[envName];
+    if (state.status === 'down') {
+      _applyBlockedUI({ agent: 'Deploy', task: envName + ' is DOWN — check deploy-status.json' });
+      criticals.push({
+        title: 'CRITICAL: ' + envName + ' environment is down',
+        body: 'Deploy reports ' + envName + ' is unreachable. Check deploy-status.json for incident details.',
+      });
+    } else if (state.status === 'degraded') {
+      warnings.push({
+        title: 'WARNING: ' + envName + ' environment degraded',
+        body: envName + ' is responding but degraded. Monitor deploy-status.json.',
+      });
+    }
+  });
+  if (criticals.length > 0) {
+    playBeep(440, 0.25, 'square');
+    setTimeout(function () {
+      playBeep(880, 0.25, 'square');
+    }, 280);
+    setTimeout(function () {
+      playBeep(440, 0.25, 'square');
+    }, 560);
+    criticals.forEach(function (a) {
+      sendNotification(a.title, a.body);
+    });
+  } else if (warnings.length > 0) {
+    playBeep(880, 0.3);
+    setTimeout(function () {
+      playBeep(1046, 0.4);
+    }, 350);
+    warnings.forEach(function (a) {
+      sendNotification(a.title, a.body);
+    });
+  }
+}
+
+function patchDeployPanel(deployStatus) {
+  var panel = document.getElementById('deploy-panel');
+  if (!panel || !deployStatus) return;
+  // Update open incident count without a full re-render
+  var badge = panel.querySelector('.deploy-incident-count');
+  if (badge) {
+    var openCount = (deployStatus.incidents || []).filter(function (i) {
+      return !i.resolvedAt;
+    }).length;
+    badge.textContent = openCount + ' open';
+    badge.style.color = openCount > 0 ? 'var(--mc-danger)' : 'var(--mc-ok)';
+  }
+}
+
 // Page-load initialization: restore button state and fire initial delta check
 // against DASH_SNAPSHOT so behavior matches the previous IIFE exactly.
 (function() {
@@ -4231,6 +4286,17 @@ async function refreshState() {
     patchDOM(newStatus);
     patchCycleCounter(newStatus);
     runAlertCheck(newStatus);
+    // Fetch deploy-status.json for live Deploy panel updates and alerts
+    try {
+      var dRes = await fetch('./deploy-status.json', { cache: 'no-store' });
+      if (dRes && dRes.ok) {
+        var deployStatus = await dRes.json();
+        patchDeployPanel(deployStatus);
+        runDeployAlertCheck(deployStatus);
+      }
+    } catch (_e) {
+      // deploy-status.json may not exist — silent skip, static panel remains
+    }
     _lastFetchedAt = Date.now();
     _lastFetchOk = true;
     updateLastUpdatedTicker(false);
