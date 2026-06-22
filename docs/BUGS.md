@@ -4012,10 +4012,13 @@ Steps to Reproduce:
 2.  Open docs/dashboard.html → Conductor card
     Expected: The "Last Dispatch" strip shows the most recent agent the Conductor dispatched and its story.
     Actual: Always shows "No dispatches yet" even after active dispatches have been recorded in sdlc-status.json.
-    Status: Open
+    Status: Fixed
     GH Issue: #1152
-    Fix Branch:
+    Fix Branch: hotfix/BUG-0258-claude-mem-worker-deps
     Lesson Encoded: No
+    Root Cause: lastDispatch filter in generate-dashboard.js searched for e.tag==='dispatch' or
+    message.startsWith('dispatch') — neither ever matches. appendLog() never writes a tag field,
+    and agent-start messages begin with 'started '. Fixed to startsWith('started ').
 
 ---
 
@@ -4028,9 +4031,13 @@ Steps to Reproduce:
 2.  Open docs/dashboard.html → pipeline timeline
     Expected: Phase 1 (Blueprint) is highlighted as in-progress; the active phase label in the topbar updates accordingly.
     Actual: All 6 phases show as pending/inactive — no phase is highlighted and the active phase label shows the default state.
-    Status: Open
+    Status: Fixed
     GH Issue: #1153
-    Fix Branch:
+    Fix Branch: hotfix/BUG-0258-claude-mem-worker-deps
     Lesson Encoded: No
+    Root Cause: proper-lockfile was missing from node_modules despite being declared in package.json.
+    SdlcMirror.write() threw on every call, so sdlc-status.json stayed in the pre-migration flat
+    format (top-level phases key). The reader only reads from status.programme.phases → always [].
+    Fixed by running npm install to restore proper-lockfile.
 
 ---
