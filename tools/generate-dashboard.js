@@ -326,7 +326,7 @@ function renderDeployPanel(deploy) {
   }
 
   function dotFor(status) {
-    const pulse = status === 'deploying' ? 'style="animation:livePulse 1s infinite"' : '';
+    const pulse = status === 'deploying' ? 'style="animation:live-dot-pulse 2.4s ease-in-out infinite"' : '';
     const cls = { healthy: 'ok', deploying: 'ok', degraded: 'warn', down: 'err', 'rolled-back': 'err' }[status] || '';
     return `<span class="live-dot ${cls}" ${pulse}></span>`;
   }
