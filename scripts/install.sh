@@ -520,7 +520,7 @@ if [ "$SETUP_AGENTS" = true ] || [ -f "${TARGET}/docs/dashboard.html" ]; then
   echo "[install] Copied orchestrator/ (atomic-write, file-lock, spawn)"
 
   # SDLC status tools
-  for f in tools/update-sdlc-status.js tools/init-sdlc-status.js; do
+  for f in tools/update-sdlc-status.js tools/init-sdlc-status.js tools/deploy-status.js; do
     [ -f "${REPO_ROOT}/${f}" ] && cp "${REPO_ROOT}/${f}" "${TARGET}/${f}" && echo "[install] Copied ${f}"
   done
 

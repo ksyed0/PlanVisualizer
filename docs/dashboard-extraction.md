@@ -61,6 +61,14 @@ node tools/init-sdlc-status.js
 
 This creates `docs/sdlc-status.json` seeded with your project config. The dashboard reads this file every 5 seconds.
 
+### Seed deploy state
+
+```bash
+npm run agent:deploy-init
+```
+
+Creates `docs/deploy-status.json` with all three environments (`dev`, `staging`, `production`) in `idle` state. Run once after installation, alongside `npm run init:status`.
+
 ### 4. Open the dashboard
 
 Serve `docs/` with any static server or open `docs/dashboard.html` directly in a browser:

@@ -37,7 +37,16 @@
     "pv:check-upgrade": "node tools/pv-check-upgrade.js",
     "pv:upgrade": "node tools/pv-upgrade.js",
     "pv:rollback": "node tools/pv-rollback.js",
-    "pv:doctor": "node tools/pv-doctor.js"
+    "pv:doctor": "node tools/pv-doctor.js",
+    "agent:deploy-init": "node tools/deploy-status.js init",
+    "agent:deploy-start": "node tools/deploy-status.js deploy-start",
+    "agent:deploy-complete": "node tools/deploy-status.js deploy-complete",
+    "agent:deploy-fail": "node tools/deploy-status.js deploy-fail",
+    "agent:deploy-rollback": "node tools/deploy-status.js rollback",
+    "agent:deploy-promote": "node tools/deploy-status.js promote",
+    "agent:deploy-health": "node tools/deploy-status.js health-check",
+    "agent:deploy-ci": "node tools/deploy-status.js ci-status",
+    "agent:deploy-incident": "node tools/deploy-status.js incident"
   },
   "engines": {
     "node": ">=22.0.0"

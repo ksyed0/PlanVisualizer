@@ -1,0 +1,26 @@
+{
+  "environments": {
+    "dev": {
+      "sha": null,
+      "status": "idle",
+      "lastDeployAt": null,
+      "lastDeployStory": null
+    },
+    "staging": {
+      "sha": null,
+      "status": "idle",
+      "lastDeployAt": null,
+      "lastDeployStory": null
+    },
+    "production": {
+      "sha": null,
+      "status": "idle",
+      "lastDeployAt": null,
+      "lastDeployStory": null
+    }
+  },
+  "activeDeployment": null,
+  "ciRuns": [],
+  "incidents": [],
+  "promotionHistory": []
+}

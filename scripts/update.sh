@@ -434,7 +434,7 @@ if [ -f "${TARGET}/docs/dashboard.html" ]; then
   echo "[update] Updating orchestrator/ ..."
   mkdir -p "${TARGET}/orchestrator"
   cp -r "${REPO_ROOT}/orchestrator/." "${TARGET}/orchestrator/"
-  for f in tools/update-sdlc-status.js tools/init-sdlc-status.js; do
+  for f in tools/update-sdlc-status.js tools/init-sdlc-status.js tools/deploy-status.js; do
     [ -f "${REPO_ROOT}/${f}" ] && cp "${REPO_ROOT}/${f}" "${TARGET}/${f}"
   done
   # agents.config.json — copy canonical roster if absent
