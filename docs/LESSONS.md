@@ -1230,3 +1230,27 @@ _Learned from BUG-0210 — Lessons and Bugs tabs both have epic group headers, b
 **Prevention:** When committing a bugfix, update the three status fields in a single follow-up commit before moving on: (1) `BUGS.md Status: Fixed`, (2) `GH Issue: close via gh issue close`, (3) `Fix Branch: <branch>`. The inline `// BUG-XXXX:` code comment is a bonus — it creates a searchable trail from the fix back to the BUGS.md entry.
 
 **Date:** 2026-06-21
+
+---
+
+## L-0094: Plan-specified CSS variables must be verified against the actual stylesheet — never trust the spec verbatim @agent:Forge @agent:Pixel
+
+**Context:** Session 63, 2026-06-22. EPIC-0046 plan specified `var(--mc-danger)` and `var(--mc-mono)` in `renderDeployPanel()` and `patchDeployPanel()`. Neither variable exists in `tools/generate-dashboard.js`. The correct vars are `--risk` (or its alias `--mc-risk`) and `--font-mono`. Implementation copied the plan verbatim and the variables silently failed at runtime (browser falls back to black / default font).
+
+**Fix:** During per-task review loops, substituted `--risk`/`--font-mono` in Task 4 and `--mc-risk` in Task 5. The final review confirmed the substitutions are correct.
+
+**Prevention:** Before using any CSS custom property from a plan or spec, grep the stylesheet file for it: `grep -n "\-\-var-name" tools/generate-dashboard.js`. If not found, find the semantically closest existing variable and use that instead. Document the substitution in your self-review.
+
+**Date:** 2026-06-22
+
+---
+
+## L-0095: ID-scanning regex must cap digit length to avoid matching example IDs in prose (`\d{1,4}` not `\d+`) @agent:Forge @agent:Keystone
+
+**Context:** Session 63, 2026-06-22. `tools/check-id-registry.js`'s `findMax()` used `\bAC-(\d+)\b` across source markdown files. `RELEASE_PLAN.md` contains the example text `"AC-10000 displays without truncation"` inside a description body — not a real assigned ID. The tool parsed this as the highest AC in use, ran `--fix`, and corrupted `ID_REGISTRY.md` by replacing `AC-1048` with `AC-10001` (8,953 slots wrong).
+
+**Fix:** Changed regex to `\bAC-(\d{1,4})\b` — capping at 4 digits excludes any 5-digit example ID while covering all real sequences (currently max ~AC-1047). Also reset the registry to AC-1048 / AC-1047.
+
+**Prevention:** When building ID-scanning tools, always cap the digit group to the realistic maximum width (4 digits covers IDs up to 9999 — enough for any foreseeable project scale). Prose descriptions often contain example IDs; a length cap is the simplest guard without requiring structure-aware parsing.
+
+**Date:** 2026-06-22

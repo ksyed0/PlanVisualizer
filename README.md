@@ -16,6 +16,34 @@ No runtime dependencies — Node.js and git only.
 
 ---
 
+## What's New in v2.4.x — Deploy Agent (EPIC-0046)
+
+**Deploy** joins the pipeline as the 10th specialist agent (Phase 7 — DevOps Engineer). It owns CI/CD workflows, infrastructure-as-code, environment promotion, and incident triage.
+
+- **Deploy agent identity** — `docs/agents/DEPLOY_AGENT.md` instruction file with full protocols: environment promotion ladder (dev → staging → production), structured incident triage table, auto-rollback on hard failures, and CI contract handoff from Keystone. Portrait images (`deploy-64/160/320.png`) included.
+- **`tools/deploy-status.js` CLI state tool** — 9 commands: `init`, `deploy-start`, `deploy-complete`, `deploy-fail`, `rollback`, `promote`, `health-check`, `ci-status`, `incident`. Mirrors `update-sdlc-status.js` exactly (exports `HANDLERS`, `parseArgs`, `BLANK_STATUS`). Uses `atomicReadModifyWriteJson` for safe concurrent writes.
+- **Deploy panel on the Agentic Dashboard** — Static `renderDeployPanel()` shows environment health dots (dev / staging / production), active deployment progress, last CI run, and open incident count. Live `refreshState()` polls `deploy-status.json` every cycle; `runDeployAlertCheck()` plays audio alerts and browser notifications on `down`/`degraded` environments; `patchDeployPanel()` updates the incident badge without a full re-render.
+- **CI Contract protocol** — `docs/templates/ci-contract.md` template for Keystone to fill at Phase 2; Deploy reads `docs/ci-contract.md` before scaffolding any `.github/workflows/*.yml`. Architect agent updated with CI Contract section.
+- **Conductor (DM_AGENT) integration** — Phase 7 dispatch prompt, out-of-band trigger table (hotfix / new CI pipeline / CI optimization / environment setup / infra-as-code), and incident response decision table.
+- **`tools/check-id-registry.js`** — Standalone CLI that scans source markdown for the highest ID in each sequence and compares against `docs/ID_REGISTRY.md`. Run `npm run check:ids` to detect drift; `npm run check:ids -- --fix` to auto-correct.
+
+**New npm scripts:**
+
+```bash
+npm run agent:deploy-init       # seed docs/deploy-status.json (run once after install)
+npm run agent:deploy-start      # node tools/deploy-status.js deploy-start --env staging --sha abc --story US-XXXX
+npm run agent:deploy-complete   # record successful deploy
+npm run agent:deploy-fail       # record failed deploy
+npm run agent:deploy-rollback   # execute rollback
+npm run agent:deploy-promote    # record environment promotion
+npm run agent:deploy-health     # record health-check result (ok/warn/fail)
+npm run agent:deploy-ci         # record CI run result
+npm run agent:deploy-incident   # file a structured incident
+npm run check:ids               # validate ID_REGISTRY.md against source markdown
+```
+
+---
+
 ## What's New in v2.4.0 — Agentic Orchestration Engine
 
 EPIC-0028 closes the loop: PlanVisualizer now _drives_ the work end-to-end, not just visualizes it. Four CLI tools coordinate specialist sub-agents through spec → plan → dispatch → per-task review without a human between tasks.
