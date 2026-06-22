@@ -46,7 +46,8 @@
     "agent:deploy-promote": "node tools/deploy-status.js promote",
     "agent:deploy-health": "node tools/deploy-status.js health-check",
     "agent:deploy-ci": "node tools/deploy-status.js ci-status",
-    "agent:deploy-incident": "node tools/deploy-status.js incident"
+    "agent:deploy-incident": "node tools/deploy-status.js incident",
+    "check:ids": "node tools/check-id-registry.js"
   },
   "engines": {
     "node": ">=22.0.0"

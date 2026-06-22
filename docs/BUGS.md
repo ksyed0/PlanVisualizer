@@ -3961,10 +3961,10 @@ Steps to Reproduce:
 2.  Compare against the max actual ID for that sequence across docs/RELEASE_PLAN.md, BUGS.md, etc.
     Expected: Registry next-id is strictly greater than max-in-use across all source files.
     Actual: Drift happens whenever a commit references a new ID (e.g. "feat(EPIC-0029): ...") before the registry is bumped. Discovered 2026-05-19 — EPIC-0029 referenced in commit history while ID_REGISTRY.md still listed EPIC-0029 as next-available. Resynced in commit ddb4a36 alongside the EPIC-0030..0035 plan addition, but the underlying problem (no enforcement at write time) is unaddressed.
-    Status: Open
+    Status: Fixed
     GH Issue: #1158
-    Fix Branch:
-    Notes: Root cause is that markdown is the source of truth but no tool validates referential integrity at write time. Closed by EPIC-0036 (Step 1 Repository Foundation) — the indexed SQLite layer emits an 'id-registry-drift' warning at write time, and EPIC-0041 promotes it to a hard error. Logged primarily as evidence that the EPIC-0036 work is justified.
+    Fix Branch: (this plan)
+    Fix: tools/check-id-registry.js added — detects and optionally fixes drift against raw markdown. EPIC-0036's cross-entity validator (tools/lib/repository/validators/cross-entity.js:52) provides write-time enforcement via the repository layer. Run `npm run check:ids` before any session close.
     Lesson Encoded: No
 
 ---
