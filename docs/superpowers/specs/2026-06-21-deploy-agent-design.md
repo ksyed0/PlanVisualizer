@@ -202,11 +202,23 @@ Mirrors `tools/update-sdlc-status.js` exactly in structure. Uses `atomicReadModi
 
 **Valid environment statuses:** `idle | deploying | healthy | degraded | down | rolled-back`
 
-**Incident object shape:**
+**`activeDeployment` non-null shape** (written by `deploy-start`, cleared by `deploy-complete` / `deploy-fail`):
 
 ```json
 {
-  "id": "INC-001",
+  "from": "staging",
+  "to": "production",
+  "sha": "a3f2c1b",
+  "story": "US-0264",
+  "startedAt": "2026-06-21T10:00:00Z"
+}
+```
+
+**Incident object shape** (retained for last 50; `id` is auto-incremented as `incidents.length + 1` at write time — no ID_REGISTRY sequence needed):
+
+```json
+{
+  "id": 1,
   "env": "production",
   "type": "code|infra|flaky-test|config",
   "severity": "low|medium|high|critical",
@@ -216,6 +228,18 @@ Mirrors `tools/update-sdlc-status.js` exactly in structure. Uses `atomicReadModi
   "autoRemediationAttempted": false,
   "resolvedAt": null,
   "openedAt": "2026-06-21T10:00:00Z"
+}
+```
+
+**`promotionHistory` entry shape** (retained for last 100):
+
+```json
+{
+  "from": "staging",
+  "to": "production",
+  "sha": "a3f2c1b",
+  "story": "US-0264",
+  "promotedAt": "2026-06-21T10:05:00Z"
 }
 ```
 
@@ -429,7 +453,7 @@ Dependencies: None
 Acceptance Criteria:
   - [ ] AC-1023: agents.config.json gains a Deploy entry with role "DevOps Engineer", icon 🚀, color oklch(48% 0.20 195), avatar "deploy", instructionFile "docs/agents/DEPLOY_AGENT.md"
   - [ ] AC-1024: DEPLOY_AGENT.md created with mandatory startup (5 steps), BLAST Phase 7, 10 core responsibilities, CI contract protocol, environment promotion protocol, incident triage protocol, rollback protocol, escalation rules table, and Conductor reporting format
-  - [ ] AC-1025: ARCHITECT_AGENT.md gains a ## CI Contract section instructing Keystone to produce docs/ci-contract.md during Phase 2
+  - [ ] AC-1025: ARCHITECT_AGENT.md gains a ## CI Contract section instructing Keystone to copy docs/templates/ci-contract.md, fill in all fields, and save it as docs/ci-contract.md during Phase 2
   - [ ] AC-1026: docs/templates/ci-contract.md created with all required fields: test commands, coverage threshold, lint command, build command, required secrets, deploy targets, additional checks
 ```
 
@@ -446,8 +470,8 @@ Branch: feature/US-0265-deploy-status-cli
 Dependencies: US-0264
 Acceptance Criteria:
   - [ ] AC-1027: tools/deploy-status.js implements all 9 commands (init, deploy-start, deploy-complete, deploy-fail, rollback, promote, health-check, ci-status, incident) using atomicReadModifyWriteJson from orchestrator/atomic-write.js
-  - [ ] AC-1028: docs/deploy-status.json schema: environments map (dev/staging/production each with sha, status, lastDeployAt, lastDeployStory), activeDeployment, ciRuns[], incidents[], promotionHistory[]
-  - [ ] AC-1029: init command seeds a blank deploy-status.json; idempotent with --no-overwrite flag; ci-status command trims ciRuns[] to the last 20 entries to prevent unbounded growth; init is documented in docs/dashboard-extraction.md alongside init-sdlc-status so new pipeline setups seed both state files
+  - [ ] AC-1028: docs/deploy-status.json schema: environments map (dev/staging/production each with sha, status, lastDeployAt, lastDeployStory); activeDeployment null or { from, to, sha, story, startedAt }; ciRuns[]; incidents[] each with { id (auto-int), env, type, severity, description, suggestedResolution, suggestedOwner, autoRemediationAttempted, resolvedAt, openedAt }; promotionHistory[] each with { from, to, sha, story, promotedAt }
+  - [ ] AC-1029: init command seeds a blank deploy-status.json; idempotent with --no-overwrite flag; ci-status command trims ciRuns[] to the last 20 entries; incident command trims incidents[] to the last 50 entries; promote command trims promotionHistory[] to the last 100 entries; init is documented in docs/dashboard-extraction.md alongside init-sdlc-status so new pipeline setups seed both state files
   - [ ] AC-1030: All 9 agent:deploy-* npm scripts added to package.json (init, start, complete, fail, rollback, promote, health, ci, incident)
   - [ ] AC-1031: scripts/install.sh §7 and update.sh §7 copy tools/deploy-status.js to target projects alongside existing dashboard tools
   - [ ] AC-1032: Unit tests cover all 9 command handlers in tests/unit/deploy-status.test.js
@@ -504,7 +528,7 @@ Branch: feature/US-0268-dashboard-alerts-tests
 Dependencies: US-0267
 Acceptance Criteria:
   - [ ] AC-1043: runAlertCheck() extended: environment status down fires a CRITICAL browser notification and triggers the red 4px viewport border + incident strip; degraded fires a WARN notification
-  - [ ] AC-1044: Phase 7 Deploy segment renders in the pipeline timeline (automatic via agents.config.json phase update from US-0266; verify it renders correctly)
+  - [ ] AC-1044: Phase 7 Deploy segment renders in the pipeline timeline — generate-dashboard.js reads phases from sdlc-status.json (not agents.config.json directly), so npm run init:status must be re-run after the agents.config.json Phase 7 addition to re-seed sdlc-status.json with 7 phases; the US-0268 test fixture pre-seeds a 7-phase sdlc-status.json to verify rendering
   - [ ] AC-1045: generate-dashboard.test.js updated to assert "Deploy" renders in the agent roster (fixture agent count updated to 10)
   - [ ] AC-1046: New fixture test: healthy deploy-status.json with one active deployment renders the Deploy panel environment ladder and active deployment row correctly
   - [ ] AC-1047: New fixture test: deploy-status.json with one open critical incident triggers the alert markup (red border class or incident strip element present in rendered HTML)
