@@ -11,7 +11,12 @@
     { "name": "Build", "agents": ["Pixel", "Forge", "Palette"], "deliverables": ["implementation", "unit tests"] },
     { "name": "Integration", "agents": ["Pixel"], "deliverables": ["wired services", "e2e flows"] },
     { "name": "Test", "agents": ["Sentinel", "Circuit"], "deliverables": ["test report", "coverage"] },
-    { "name": "Polish", "agents": ["Pixel", "Forge"], "deliverables": ["bug fixes", "demo prep"] }
+    { "name": "Polish", "agents": ["Pixel", "Forge"], "deliverables": ["bug fixes", "demo prep"] },
+    {
+      "name": "Deploy",
+      "agents": ["Deploy"],
+      "deliverables": ["deployed sha", "environment health report", "open incidents"]
+    }
   ],
   "agents": {
     "Conductor": {
@@ -76,6 +81,13 @@
       "color": "oklch(40% 0.22 285)",
       "avatar": "circuit",
       "instructionFile": "docs/agents/AUTOMATION_TESTER_AGENT.md"
+    },
+    "Deploy": {
+      "role": "DevOps Engineer",
+      "icon": "🚀",
+      "color": "oklch(48% 0.20 195)",
+      "avatar": "deploy",
+      "instructionFile": "docs/agents/DEPLOY_AGENT.md"
     }
   },
   "dashboard": {

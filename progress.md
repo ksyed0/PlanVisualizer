@@ -2404,3 +2404,125 @@ Phase D (EPIC-0039) is implementation-complete. All eight stories (US-0232..US-0
 - Brittle test-count assertions in `pv-upgrade-rollback.test.js` should switch to structural assertions.
 
 **Next session:** Manual review of this PR (US-0247) → merge → EPIC-0041 (Phase F) kickoff.
+
+---
+
+## Session 62 — 2026-06-21 — EPIC-0046 Deploy Agent Planning + GitHub Reconciliation
+
+**Branch:** `hotfix/BUG-0258-claude-mem-worker-deps`
+
+### Work Completed
+
+**1. Deploy Agent (EPIC-0046) — Brainstorm → Spec → Plan**
+
+Full brainstorm (6 decision points), 5-section spec, 7-task implementation plan written and committed.
+
+| Artefact | Path                                                       | IDs Assigned                                |
+| -------- | ---------------------------------------------------------- | ------------------------------------------- |
+| Spec     | `docs/superpowers/specs/2026-06-21-deploy-agent-design.md` | EPIC-0046, US-0264–US-0268, AC-1023–AC-1047 |
+| Plan     | `docs/superpowers/plans/2026-06-21-deploy-agent.md`        | (above)                                     |
+
+Key design decisions:
+
+- Phase 7 by default; on-demand out-of-band dispatch via Conductor
+- `tools/deploy-status.js` mirrors `update-sdlc-status.js` (exports HANDLERS + parseArgs)
+- `docs/deploy-status.json`: environments (dev/staging/prod), activeDeployment, ciRuns[], incidents[], promotionHistory[]
+- Incidents: structured triage → Conductor, never raw logs; auto-rollback on hard failures only
+- Dashboard: static Deploy panel (generated at build time) + live `deploy-status.json` fetch in `refreshState()`
+- CI Contract: Keystone produces `docs/ci-contract.md` at Phase 2; Deploy reads it before scaffolding workflows
+- Deploy portrait images already present: `docs/agents/images/optimized/deploy-{64,160,320}.png`
+
+**2. GitHub Issues / BUGS.md Reconciliation**
+
+| Action                                              | Count |
+| --------------------------------------------------- | ----- |
+| GH issues closed (Fixed in BUGS.md but still open)  | 139   |
+| New GH issues created for open bugs with no issue   | 4     |
+| New bugs discovered (found on GH, no BUGS.md entry) | 2     |
+
+New issues: #1155 (BUG-0254), #1156 (BUG-0255), #1157 (BUG-0256), #1158 (BUG-0258)
+New bugs discovered: BUG-0267 (#1152 — Conductor Last Dispatch strip), BUG-0268 (#1153 — phases show inactive)
+
+**3. Bug Status Corrections**
+
+| Bug      | Code status                                                                   | Action                                |
+| -------- | ----------------------------------------------------------------------------- | ------------------------------------- |
+| BUG-0254 | Already fixed in render-shell.js:131-146                                      | Plan Task 6 verifies and marks Fixed  |
+| BUG-0255 | Already fixed in render-tabs.js:963                                           | Plan Task 6 verifies and marks Fixed  |
+| BUG-0256 | Already fixed in render-tabs.js:2476-2487 (has BUG-0256 comment)              | Plan Task 6 verifies and marks Fixed  |
+| BUG-0258 | EPIC-0036 cross-entity validator emits warnings; standalone CLI still missing | Plan Task 7 adds check-id-registry.js |
+
+### ID Registry Changes This Session
+
+| Sequence | Old Next  | New Next  |
+| -------- | --------- | --------- |
+| EPIC     | EPIC-0046 | EPIC-0047 |
+| US       | US-0264   | US-0269   |
+| AC       | AC-1023   | AC-1048   |
+| BUG      | BUG-0267  | BUG-0267  |
+| L        | L-0093    | L-0094    |
+
+### Test Results
+
+No new tests written this session (planning only). Last known: 132 suites / 2,669 tests / 89%+ coverage.
+
+### New Lesson Encoded
+
+- L-0093: Mark bugs Fixed in BUGS.md and close GH Issues immediately when the fix lands
+
+### Next Session
+
+Execute `docs/superpowers/plans/2026-06-21-deploy-agent.md` using `superpowers:subagent-driven-development`.
+Start with Task 1 (agent identity) on branch `feature/US-0264-deploy-agent-identity`.
+
+---
+
+## Session 63 — 2026-06-22
+
+### What Was Done
+
+Executed `docs/superpowers/plans/2026-06-21-deploy-agent.md` using subagent-driven development (7 tasks, 10 implementation commits, PR #1159 → develop).
+
+**Task 1 (US-0264):** Deploy agent identity — `agents.config.json` 10th entry, `DEPLOY_AGENT.md`, `docs/templates/ci-contract.md`, `ARCHITECT_AGENT.md` CI Contract section. Dashboard confirmed rendering Deploy 🚀 card.
+
+**Task 2 (US-0265):** `tools/deploy-status.js` — 9 commands, 29 unit tests, 9 `agent:deploy-*` npm scripts, install.sh/update.sh loop updated, `docs/dashboard-extraction.md` documented. `docs/deploy-status.json` seeded.
+
+**Task 3 (US-0266):** `DM_AGENT.md` updated — sub-agents table 8→9, Phase 7 dispatch, out-of-band protocol, incident response decision table.
+
+**Task 4 (US-0267):** `renderDeployPanel()` + `generateHTML(status, deployStatus)` + optional `deploy-status.json` read in `generate()`. Deploy panel renders "No deployments yet" on new installs.
+
+**Task 5 (US-0268):** `refreshState()` live polling, `runDeployAlertCheck()`, `patchDeployPanel()`. Test harness: 10 agents + Phase 7 + 2 Deploy panel tests. Note: Task 5 subagent hit API rate limit mid-execution; changes committed by controller after verification.
+
+**Task 6:** BUG-0254/0255/0256 marked Fixed in BUGS.md (code verified in render-shell.js:131-146, render-tabs.js:963, render-tabs.js:2476-2487).
+
+**Task 7 (BUG-0258):** `tools/check-id-registry.js` + `check:ids` npm script + ID_REGISTRY.md resynced.
+
+**Final review fixes (1 commit):**
+
+- `findMax()` regex `\d+` → `\d{1,4}` (AC-10000 example prose corruption)
+- AC_REGISTRY reset to AC-1048 / AC-1047
+- `docs/deploy-status.json` gitignored + untracked
+- `rollback()` clears `activeDeployment`
+- Missing `--story required` throw test added
+
+**README updated** with v2.4.x Deploy Agent section.
+
+### Test Results
+
+- `deploy-status`: 29/29 ✅
+- `generate-dashboard`: 230/230 ✅
+- Full suite: 8721/8746 (25 pre-existing proper-lockfile failures, confirmed pre-existing by stash test)
+
+### Open Bugs
+
+- BUG-0267 (#1152): Dashboard Conductor "Last Dispatch" strip always shows "No dispatches yet"
+- BUG-0268 (#1153): All pipeline phases show inactive after session-start / epic-start
+
+### Lessons
+
+- L-0094: Plan-specified CSS variables must be verified against the actual stylesheet before use
+- L-0095: ID-scanning regex should cap digit length (`\d{1,4}`) to avoid matching 5-digit example IDs in prose
+
+### Blockers
+
+None. PR #1159 open, awaiting CI and merge to develop.

@@ -40,6 +40,15 @@ You are the **Architect Agent**. You own the project scaffold, type system, serv
 6. **Create mock data files** — Seed data for development and testing
 7. **Author pre-dispatch specs & plans (US-0182)** — when the Conductor invokes the orchestration engine, you produce the spec, plan, and acceptance checks that go to the PO for approval before any code is written. See `docs/architecture/AGENTIC_PIPELINE.md` for the spec/plan gate state machine.
 
+## CI Contract
+
+At Phase 2, copy `docs/templates/ci-contract.md` to `docs/ci-contract.md` and fill
+in all fields: test commands, coverage threshold, lint command, build command, required
+secrets, deploy targets, and additional checks.
+
+This file is Deploy's authoritative source for CI requirements. If the file already
+exists, update only sections affected by the current story's architectural changes.
+
 ## PlanVisualizer Integration
 
 - Work on the branch assigned by the DM agent

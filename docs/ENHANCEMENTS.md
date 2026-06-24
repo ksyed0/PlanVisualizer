@@ -133,3 +133,193 @@ Production `docs/RELEASE_PLAN.md` declares AC-0150..AC-0153 and AC-0334..AC-0343
 **Reference:** Session 54 conversation log (2026-05-21). plan:lint output at commit `dd9de5b`.
 
 **Resolved (2026-05-21, Session 55):** 14 AC ID collisions (cluster AC-0150..0153 + cluster AC-0334..0343) resolved by renumbering the second occurrence in each pair to AC-0996..AC-1009 (16 TC cross-references in TEST_CASES.md updated). 3 BUG ID collisions resolved similarly: BUG-0098/0099/0100 second occurrences renumbered to BUG-0262/0263/0261. The "duplicates" turned out to be distinct entities sharing IDs, not redundant data — renumbering preserved all content.
+
+---
+
+## ENH-0005 — Cache-hit ratio metric + optimization surface
+
+**Surface:** AI cost telemetry (`tools/lib/compute-costs.js`, dashboard cost tab)
+**Status:** Backlog
+**Origin:** Session telemetry review (2026-06-05)
+
+**Opportunity:**
+`docs/AI_COST_LOG.md` already captures `Cache Read Tokens` per session, but the dashboard never surfaces the cache-hit ratio (`cacheRead / (input + cacheRead)`). This is the single biggest lever for cost reduction on long sessions — cache reads cost $0.30/MTok vs $3/MTok for direct input (10× cheaper).
+
+**Impact if unaddressed:**
+
+- We cannot tell whether a session was expensive because of work volume or because of poor cache utilization (e.g. context resets, frequent tool-output churn that invalidates the prefix).
+- No feedback loop to drive prompt-stability discipline (reading files in stable order, batching edits, etc.).
+- Cost regressions caused by hook or prompt changes are invisible until the monthly total ticks up.
+
+**Proposed path (when prioritized):**
+
+- Extend `compute-costs.js` to derive `cacheHitRatio` per row, per story, per epic, and a rolling 7-day average.
+- Add a Cache Hit % tile to the cost tab next to existing Total / Spent / Remaining cards.
+- Add a sparkline of cache-hit % over the last N sessions to spot regressions.
+- Define a target threshold (e.g. ≥70%) and badge sessions below it for review.
+
+**Pre-work:**
+
+- Decide whether `cache-write` tokens count toward "miss" or are reported separately (they cost $3.75/MTok and represent first-time cache priming — useful but expensive).
+- Confirm the existing parser keeps the cache-read column on `[est]` rows (older estimates may not have realistic values).
+
+**Reference:** Session telemetry conversation (2026-06-05).
+
+---
+
+## ENH-0006 — Per-turn / per-tool token attribution
+
+**Surface:** AI cost capture (`tools/capture-cost.js`, `docs/AI_COST_LOG.md` schema)
+**Status:** Backlog
+**Origin:** Session telemetry review (2026-06-05)
+
+**Opportunity:**
+The Stop hook writes one row per session — a single bag of tokens with no breakdown by turn, tool, or activity (Bash vs Read vs Agent fan-out). Without that granularity, we can't answer "what is expensive?" — only "was this session expensive?".
+
+**Impact if unaddressed:**
+
+- Optimization is guesswork. We cannot prove that switching from N Read calls to one batched Read saved tokens, or that a Workflow fan-out is paying for itself.
+- Pathological loops (a tool returning huge output on every turn) cannot be detected from the ledger.
+- Agent/subagent attribution (ENH-0010) is impossible without per-turn data as a foundation.
+
+**Proposed path (when prioritized):**
+
+- Add a sibling artefact `docs/AI_COST_TURNS.jsonl` (append-only JSONL, one row per turn): `{sessionId, turnIndex, inputTokens, outputTokens, cacheReadTokens, toolCalls: [{name, count}]}`. JSONL keeps the monthly markdown ledger small while enabling drill-down.
+- Update `capture-cost.js` to walk the transcript turn-by-turn rather than collapsing the whole session.
+- Add a per-tool roll-up view on the dashboard (table of tool name × total tokens × % of session cost).
+- Decide retention policy (full history vs rolling 90 days) — JSONL grows fast.
+
+**Pre-work:**
+
+- Sample a few transcripts to confirm the JSONL schema can be derived from existing fields (`message.usage`, `tool_use` blocks).
+- Decide whether per-turn rows are committed to the repo (privacy / repo bloat) or kept local-only with the markdown ledger as the committed summary.
+
+**Reference:** Session telemetry conversation (2026-06-05).
+
+---
+
+## ENH-0007 — Multi-model pricing + Model dimension in cost log
+
+**Surface:** AI cost pipeline (`tools/capture-cost.js`, `tools/lib/compute-costs.js`, `plan-visualizer.config.json`)
+**Status:** Backlog
+**Origin:** Session telemetry review (2026-06-05)
+
+**Opportunity:**
+Rates are hardcoded to Claude Sonnet 4.6 across both the hook (header comment + `RATES` const in `capture-cost.js`) and `compute-costs.js`. Sessions run on Opus 4.7, Haiku 4.5, or mixed-model agent fan-outs are mispriced. Opus output is ~5× Sonnet; Haiku is ~⅓. The mispricing compounds as model mix shifts.
+
+**Impact if unaddressed:**
+
+- Recorded `Cost USD` diverges from actual Anthropic billing — undermines budget tile and per-story cost columns.
+- Decisions like "should we move this workflow to Haiku?" cannot be A/B'd from the ledger.
+- Adding new model tiers (Opus 4.8, future Haiku rev) requires editing code in two places, easy to drift.
+
+**Proposed path (when prioritized):**
+
+- Add a `Model` column to `docs/AI_COST_LOG.md` (default `sonnet-4.6` for backfill).
+- Move pricing out of `capture-cost.js` and `compute-costs.js` into `plan-visualizer.config.json` under `costs.modelRates`: a map of `{modelId: {input, cacheWrite, output, cacheRead}}`. Both modules read from config.
+- For mixed-model sessions (subagents on a different model), record the **primary** model in the column and capture the per-model breakdown in the per-turn JSONL from ENH-0006.
+- Add a per-model rollup on the dashboard.
+
+**Pre-work:**
+
+- Audit the Stop hook payload to confirm the active model ID is reachable (it is — `message.model` in the transcript).
+- Decide migration: re-cost historical rows at their actual model (risky — we don't know what they ran on) vs leave them stamped as `sonnet-4.6` and start clean.
+
+**Reference:** Session telemetry conversation (2026-06-05).
+
+---
+
+## ENH-0008 — Cost trend chart + cost-per-unit-of-work metric
+
+**Surface:** Dashboard (Costs tab) + `tools/lib/compute-costs.js`
+**Status:** Backlog
+**Origin:** Session telemetry review (2026-06-05)
+
+**Opportunity:**
+Risk has a trend chart (EPIC-0010); cost does not. There is no way to eyeball "are sessions getting more expensive per story-point?" — the core question for cost optimization. We have the inputs (per-story cost via branch join, per-story t-shirt size) but no derived `$ / story-point` or `$ / AC` metric and no chart.
+
+**Impact if unaddressed:**
+
+- Cost regressions from prompt/hook/model changes blend into noise. We notice only when monthly totals jump.
+- No quantitative basis to defend optimization work — "did caching the agent prompt actually help?" remains anecdotal.
+- Velocity vs cost cannot be reasoned about together.
+
+**Proposed path (when prioritized):**
+
+- In `compute-costs.js`, derive per-story `costPerPoint = totalCost / tShirtPoints` (using existing t-shirt → point mapping in `plan-visualizer.config.json`).
+- Add a rolling chart on the Costs tab: per-week median `$/point` with min/max band.
+- Add a per-epic table column: `Avg $/point` and `Trend` arrow vs prior epic.
+- Optional: split AI cost vs human cost on the same chart to show the AI/human cost ratio.
+
+**Pre-work:**
+
+- Decide handling for stories with no cost rows (skip vs flag).
+- Decide week boundary (ISO week vs sprint cadence — if sprints exist in config).
+- Validate the t-shirt → point mapping is centralised and not duplicated across modules.
+
+**Reference:** Session telemetry conversation (2026-06-05).
+
+---
+
+## ENH-0009 — Token/cost budget alert thresholds
+
+**Surface:** Budget tile (`tools/lib/budget.js`, `tools/lib/render-tabs.js`) + optional Stop-hook warning
+**Status:** Backlog
+**Origin:** Session telemetry review (2026-06-05)
+
+**Opportunity:**
+The budget tile shows Total / Spent / Remaining but only post-hoc. There is no alerting threshold (e.g. ≥80% spent, ≥95% spent), no projection (`at current burn rate, budget exhausted in N days`), and no per-session warning when a single session crosses a configured cost ceiling.
+
+**Impact if unaddressed:**
+
+- Budget overruns are discovered after the fact — no warning while there is still room to course-correct.
+- Outlier sessions (e.g. a runaway agent loop that burns $10 in one turn) are not flagged.
+- Stakeholders cannot set "soft caps" that nudge behaviour without hard-stopping work.
+
+**Proposed path (when prioritized):**
+
+- Extend `plan-visualizer.config.json → costs` with `thresholds: {warn: 0.8, critical: 0.95}` and `perSessionWarnUSD: 5.0`.
+- `budget.js` returns `{spent, remaining, percentUsed, level: 'ok'|'warn'|'critical', projectedExhaustionDate}` using a 7-day burn-rate average.
+- Render-tabs colours the tile and adds a one-line callout when `level !== 'ok'`.
+- `capture-cost.js` writes a one-line stderr warning when a session row crosses `perSessionWarnUSD`. Optional: append a `⚠` marker to the row.
+- Optional escalation hook: when `level === 'critical'`, surface on every tab header, not just Costs.
+
+**Pre-work:**
+
+- Decide burn-rate window (7d default vs configurable).
+- Decide whether alerts also fire in CI (PR comment when the branch's cumulative cost crosses a per-story threshold).
+
+**Reference:** Session telemetry conversation (2026-06-05).
+
+---
+
+## ENH-0010 — Subagent / workflow cost attribution
+
+**Surface:** AI cost capture (`tools/capture-cost.js`) + per-turn ledger (depends on ENH-0006)
+**Status:** Backlog
+**Origin:** Session telemetry review (2026-06-05)
+
+**Opportunity:**
+Agent-tool calls and `Workflow` fan-outs run subagents whose token usage is billed to the parent session row with no breakdown. A 10-agent workflow shows as one row of "expensive session" — we cannot see which subagent burned the budget or whether parallelism is paying off.
+
+**Impact if unaddressed:**
+
+- Cannot quantify ROI of multi-agent orchestration. "Was that workflow worth it?" stays unanswerable.
+- Pathological subagents (one finder out of N that loops) hide inside the aggregate.
+- Decisions like "swap this subagent to Haiku" lack data.
+
+**Proposed path (when prioritized):**
+
+- **Depends on ENH-0006** (per-turn JSONL) and **ENH-0007** (model dimension) — both are prerequisites.
+- In the per-turn schema, add `parentTurnIndex` and `agentLabel` so subagent turns can be rolled up under the parent.
+- In `capture-cost.js`, detect subagent invocations via `Agent` / `Workflow` tool-use blocks in the transcript and tag the produced turns with the agent label + model.
+- Dashboard view: collapse-by-default tree where a parent session expands into its subagent contributions (label · model · tokens · cost · wall-clock).
+- Add a "workflow efficiency" metric: `parallelWallClock / serialWallClock` to show fan-out savings.
+
+**Pre-work:**
+
+- Sample transcripts of a real `Workflow` run to confirm subagent turns are distinguishable in the JSONL (they are — subagent SDK turns carry their own session IDs).
+- Decide whether subagent rows appear in the markdown ledger (probably not — too noisy; keep them in JSONL only).
+- Coordinate with ENH-0006 schema design to avoid two passes at the per-turn format.
+
+**Reference:** Session telemetry conversation (2026-06-05).

@@ -10,7 +10,7 @@
 #   - Appends any missing CLAUDE.md PlanVisualizer section
 #   - Re-runs migrate-config.js to add any new config keys
 #   - Ensures Stop hook and Bash allowlist are in .claude/settings.json
-#   - Does NOT overwrite plan-visualizer.config.json or AGENTS.md content
+#   - Does NOT overwrite plan-visualizer.config.json or AGENTS.md content (appends PV section if missing)
 #   - Does NOT overwrite docs/BUGS.md, docs/RELEASE_PLAN.md, or any user data
 
 set -euo pipefail
@@ -264,6 +264,30 @@ else
   echo "[update] CLAUDE.md already has PlanVisualizer section — skipping."
 fi
 
+# ── 5.5. Ensure AGENTS.md has PlanVisualizer section ────────────────────────
+AGENTS_DEST="${TARGET}/AGENTS.md"
+PV_MARKER="## PlanVisualizer Format Requirements"
+if [ ! -f "$AGENTS_DEST" ]; then
+  echo "[update] No AGENTS.md found — copying from PlanVisualizer repo ..."
+  cp "${REPO_ROOT}/AGENTS.md" "$AGENTS_DEST"
+  echo "[update] AGENTS.md installed (full agent operating standards)."
+fi
+if grep -q "$PV_MARKER" "$AGENTS_DEST"; then
+  echo "[update] AGENTS.md already references plan_visualizer.md — skipping."
+else
+  cat >> "$AGENTS_DEST" <<'MD'
+
+---
+
+## PlanVisualizer Format Requirements
+
+This project uses PlanVisualizer. Read **plan_visualizer.md** (in this project root) for the
+exact document formats required for RELEASE_PLAN.md, TEST_CASES.md, BUGS.md, AI_COST_LOG.md,
+and progress.md. Consult it whenever creating or updating any of these files.
+MD
+  echo "[update] Appended PlanVisualizer reference to AGENTS.md."
+fi
+
 # ── 6. Migrate config to latest schema ───────────────────────────────────────
 if [ -f "${TARGET}/tools/migrate-config.js" ]; then
   echo "[update] Checking config schema ..."
@@ -356,19 +380,19 @@ const toAdd = {
   'agent:apply':             'node tools/agent-spec-plan.js apply-pending',
   'agent:list':              'node tools/agent-spec-plan.js list',
   'agent:status':            'node tools/agent-spec-plan.js status',
-  'agent:start':             'node tools/agent-task-lifecycle.js start',
-  'agent:done':              'node tools/agent-task-lifecycle.js done',
-  'agent:concerns':          'node tools/agent-task-lifecycle.js done-with-concerns',
-  'agent:needs-context':     'node tools/agent-task-lifecycle.js needs-context',
-  'agent:blocked':           'node tools/agent-task-lifecycle.js blocked',
-  'agent:resolve':           'node tools/agent-task-lifecycle.js resolve',
-  'agent:tasks':             'node tools/agent-task-lifecycle.js list',
-  'agent:task-status':       'node tools/agent-task-lifecycle.js status',
-  'agent:context':           'node tools/agent-context-curator.js',
+  'agent:start':             'node tools/agent-lifecycle.js start',
+  'agent:done':              'node tools/agent-lifecycle.js done',
+  'agent:concerns':          'node tools/agent-lifecycle.js concerns',
+  'agent:needs-context':     'node tools/agent-lifecycle.js needs-context',
+  'agent:blocked':           'node tools/agent-lifecycle.js blocked',
+  'agent:resolve':           'node tools/agent-lifecycle.js resolve',
+  'agent:tasks':             'node tools/agent-lifecycle.js list',
+  'agent:task-status':       'node tools/agent-lifecycle.js status',
+  'agent:context':           'node tools/agent-context.js generate',
   'agent:review-start':      'node tools/agent-task-review.js start',
-  'agent:review-spec':       'node tools/agent-task-review.js spec-decision',
-  'agent:review-quality':    'node tools/agent-task-review.js quality-decision',
-  'agent:review-retry':      'node tools/agent-task-review.js retry-decision',
+  'agent:review-spec':       'node tools/agent-task-review.js spec-verdict',
+  'agent:review-quality':    'node tools/agent-task-review.js quality-verdict',
+  'agent:review-retry':      'node tools/agent-task-review.js forge-retry',
   'agent:review-status':     'node tools/agent-task-review.js status',
   'dashboard:watch':         'node tools/watch-dashboard.js',
 };
@@ -410,7 +434,7 @@ if [ -f "${TARGET}/docs/dashboard.html" ]; then
   echo "[update] Updating orchestrator/ ..."
   mkdir -p "${TARGET}/orchestrator"
   cp -r "${REPO_ROOT}/orchestrator/." "${TARGET}/orchestrator/"
-  for f in tools/update-sdlc-status.js tools/init-sdlc-status.js; do
+  for f in tools/update-sdlc-status.js tools/init-sdlc-status.js tools/deploy-status.js; do
     [ -f "${REPO_ROOT}/${f}" ] && cp "${REPO_ROOT}/${f}" "${TARGET}/${f}"
   done
   # agents.config.json — copy canonical roster if absent

@@ -24,9 +24,26 @@ const CANONICAL_PHASES = [
   { id: 4, name: 'Integration', agents: ['Pixel'], deliverables: ['wired services', 'e2e flows'] },
   { id: 5, name: 'Test', agents: ['Sentinel', 'Circuit'], deliverables: ['test report', 'coverage'] },
   { id: 6, name: 'Polish', agents: ['Pixel', 'Forge'], deliverables: ['bug fixes', 'demo prep'] },
+  {
+    id: 7,
+    name: 'Deploy',
+    agents: ['Deploy'],
+    deliverables: ['deployed sha', 'environment health report', 'open incidents'],
+  },
 ];
 
-const AGENT_NAMES = ['Conductor', 'Compass', 'Keystone', 'Lens', 'Palette', 'Forge', 'Pixel', 'Sentinel', 'Circuit'];
+const AGENT_NAMES = [
+  'Conductor',
+  'Compass',
+  'Keystone',
+  'Lens',
+  'Palette',
+  'Forge',
+  'Pixel',
+  'Sentinel',
+  'Circuit',
+  'Deploy',
+];
 
 function makeHealthyFixture() {
   const agents = {};
@@ -469,6 +486,25 @@ describe('generate-dashboard — US-0143 conductor dispatch hold', () => {
     );
     expect(src).toContain('_dispatchCount++');
     expect(src).toContain('conductor-dispatch-count');
+  });
+
+  it('BUG-0267: Last Dispatch strip shows message when log has a started entry', () => {
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    const fixture = makeHealthyFixture();
+    fixture.log = [
+      { time: '10:00', agent: 'Forge', message: 'started US-0264: implement deploy agent', model: 'sonnet' },
+    ];
+    const html = generateHTML(fixture);
+    expect(html).not.toContain('No dispatches yet');
+    expect(html).toContain('started US-0264: implement deploy agent');
+  });
+
+  it('BUG-0267: Last Dispatch strip shows fallback when log has no started entries', () => {
+    const { generateHTML } = require('../../tools/generate-dashboard.js');
+    const fixture = makeHealthyFixture();
+    fixture.log = [{ time: '10:00', agent: 'Conductor', message: 'Session started — 5 stories planned' }];
+    const html = generateHTML(fixture);
+    expect(html).toContain('No dispatches yet');
   });
 });
 
@@ -1011,5 +1047,83 @@ describe('US-0186 patchTaskList review-gate integration', () => {
     expect(html).toMatch(/function patchTaskList\(/);
     expect(html).toMatch(/deriveDisplayState\(/);
     expect(html).toMatch(/window\.pvTaskDensity/);
+  });
+});
+
+describe('Deploy panel rendering', () => {
+  const { generateHTML } = require('../../tools/generate-dashboard.js');
+
+  it('renders deploy panel with active deployment when deployStatus provided', () => {
+    const deployStatus = {
+      environments: {
+        dev: { sha: 'aaa1111', status: 'healthy', lastDeployAt: new Date().toISOString(), lastDeployStory: 'US-0264' },
+        staging: {
+          sha: 'bbb2222',
+          status: 'deploying',
+          lastDeployAt: new Date().toISOString(),
+          lastDeployStory: 'US-0264',
+        },
+        production: {
+          sha: 'ccc3333',
+          status: 'healthy',
+          lastDeployAt: new Date().toISOString(),
+          lastDeployStory: 'US-0261',
+        },
+      },
+      activeDeployment: {
+        from: 'staging',
+        to: 'production',
+        sha: 'bbb2222',
+        story: 'US-0264',
+        startedAt: new Date().toISOString(),
+      },
+      ciRuns: [
+        { workflow: 'plan-visualizer.yml', status: 'passed', runId: null, recordedAt: new Date().toISOString() },
+      ],
+      incidents: [],
+      promotionHistory: [],
+    };
+    const html = generateHTML(makeHealthyFixture(), deployStatus);
+    expect(html).toContain('id="deploy-panel"');
+    expect(html).toContain('staging');
+    expect(html).toContain('production');
+    expect(html).toContain('bbb2222');
+    expect(html).toContain('plan-visualizer.yml');
+    expect(html).toContain('0 open');
+  });
+
+  it('renders critical incident badge when deploy-status has open incident', () => {
+    const deployStatus = {
+      environments: {
+        dev: { sha: null, status: 'idle', lastDeployAt: null, lastDeployStory: null },
+        staging: { sha: null, status: 'idle', lastDeployAt: null, lastDeployStory: null },
+        production: {
+          sha: 'abc1234',
+          status: 'down',
+          lastDeployAt: new Date().toISOString(),
+          lastDeployStory: 'US-0264',
+        },
+      },
+      activeDeployment: null,
+      ciRuns: [],
+      incidents: [
+        {
+          id: 1,
+          env: 'production',
+          type: 'infra',
+          severity: 'critical',
+          description: 'Health check failing',
+          suggestedResolution: 'Rollback',
+          suggestedOwner: 'Deploy',
+          autoRemediationAttempted: false,
+          resolvedAt: null,
+          openedAt: new Date().toISOString(),
+        },
+      ],
+      promotionHistory: [],
+    };
+    const html = generateHTML(makeHealthyFixture(), deployStatus);
+    expect(html).toContain('id="deploy-panel"');
+    expect(html).toContain('1 open');
   });
 });

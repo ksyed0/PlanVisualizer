@@ -70,6 +70,7 @@ function findGitRoot(start) {
 }
 const GIT_ROOT = findGitRoot(ROOT);
 const STATUS_PATH = path.join(GIT_ROOT, 'docs', 'sdlc-status.json');
+const DEPLOY_STATUS_PATH = path.join(GIT_ROOT, 'docs', 'deploy-status.json');
 const PLAN_STATUS_PATH = path.join(ROOT, 'docs', 'plan-status.json');
 const OUTPUT_PATH = path.join(ROOT, 'docs', 'dashboard.html');
 
@@ -313,7 +314,66 @@ function renderAgentWorkload(agents, stories) {
   return `<div class="pv-workload-section">${rows}</div>`;
 }
 
-function generateHTML(status) {
+function renderDeployPanel(deploy) {
+  const allIdle =
+    deploy && Object.values(deploy.environments || {}).every((e) => e.status === 'idle') && !deploy.activeDeployment;
+
+  if (!deploy || allIdle) {
+    return `<div class="deploy-panel" id="deploy-panel">
+      <div class="section-header">DEPLOY</div>
+      <p style="color:var(--mc-dim);font-size:12px;margin-top:8px;font-style:italic;">No deployments yet</p>
+    </div>`;
+  }
+
+  function dotFor(status) {
+    const pulse = status === 'deploying' ? 'style="animation:live-dot-pulse 2.4s ease-in-out infinite"' : '';
+    const cls = { healthy: 'ok', deploying: 'ok', degraded: 'warn', down: 'err', 'rolled-back': 'err' }[status] || '';
+    return `<span class="live-dot ${cls}" ${pulse}></span>`;
+  }
+
+  const envRows = ['dev', 'staging', 'production']
+    .map((name) => {
+      const e = (deploy.environments || {})[name] || { status: 'idle', sha: null, lastDeployStory: null };
+      const sha = e.sha
+        ? `<code style="font-size:10px;opacity:.8">${esc(e.sha.slice(0, 7))}</code>`
+        : '<span style="opacity:.4">—</span>';
+      const story = e.lastDeployStory
+        ? `<span style="color:var(--mc-dim);font-size:10px;margin-left:4px">${esc(e.lastDeployStory)}</span>`
+        : '';
+      return `<div class="deploy-env-row">${dotFor(e.status)}<span class="deploy-env-name">${esc(name)}</span>${sha}${story}</div>`;
+    })
+    .join('');
+
+  let activeRow = '';
+  if (deploy.activeDeployment) {
+    const ad = deploy.activeDeployment;
+    const from = ad.from ? `${esc(ad.from)} → ` : '';
+    const elapsed = ad.startedAt ? formatElapsed(new Date(ad.startedAt)) : '';
+    activeRow = `<div class="deploy-section-label" style="margin-top:8px">ACTIVE DEPLOYMENT</div>
+      <div class="deploy-active-row" style="font-size:11px;font-family:var(--font-mono)">${from}${esc(ad.to)} · ${esc(ad.story || '—')} · ${esc(elapsed)}</div>`;
+  }
+
+  const lastCi = deploy.ciRuns && deploy.ciRuns.length ? deploy.ciRuns[deploy.ciRuns.length - 1] : null;
+  const ciText = lastCi ? `<span style="font-size:11px">${esc(lastCi.workflow)} · ${esc(lastCi.status)}</span>` : '';
+
+  const openCount = (deploy.incidents || []).filter((i) => !i.resolvedAt).length;
+  const incBadge =
+    openCount > 0
+      ? `<span style="color:var(--risk);font-weight:600" class="deploy-incident-count">${openCount} open</span>`
+      : `<span style="color:var(--mc-ok)" class="deploy-incident-count">0 open</span>`;
+
+  return `<div class="deploy-panel" id="deploy-panel">
+    <div class="section-header">DEPLOY</div>
+    <div class="deploy-envs" style="margin-top:6px">${envRows}</div>
+    ${activeRow}
+    <div class="deploy-footer" style="margin-top:8px;font-size:11px;display:flex;gap:12px;flex-wrap:wrap">
+      <span class="deploy-section-label">LAST CI</span>${ciText}
+      <span class="deploy-section-label">INCIDENTS</span>${incBadge}
+    </div>
+  </div>`;
+}
+
+function generateHTML(status, deployStatus) {
   const now = new Date().toLocaleString('en-US', {
     month: 'short',
     day: 'numeric',
@@ -2465,12 +2525,10 @@ ${(() => {
   const agentList = Object.entries(agents);
   const imgBase = 'agents/images';
 
-  const lastDispatch = [...log].reverse().find(
-    (e) =>
-      e.tag === 'dispatch' ||
-      String(e.message || '')
-        .toLowerCase()
-        .startsWith('dispatch'),
+  const lastDispatch = [...log].reverse().find((e) =>
+    String(e.message || '')
+      .toLowerCase()
+      .startsWith('started '),
   );
 
   // Split: active non-Conductor agents | idle/other non-Conductor agents
@@ -2963,6 +3021,11 @@ ${phases.map((p, i) => `        <div class="spark-bar ${p.status}" style="height
       </div>
     </div>
     <span id="card-reviews" hidden></span>
+  </div>
+
+  <!-- Deploy panel (US-0267) -->
+  <div class="mc-sidebar-panel">
+    ${renderDeployPanel(deployStatus || null)}
   </div>
 
 </div><!-- /mc-sidebar -->
@@ -3511,6 +3574,61 @@ function runAlertCheck(status) {
 
   // Browser notifications
   alerts.forEach(function(a) { sendNotification(a.title, a.body); });
+}
+
+function runDeployAlertCheck(deployStatus) {
+  if (!deployStatus || !deployStatus.environments) return;
+  var criticals = [];
+  var warnings = [];
+  Object.keys(deployStatus.environments).forEach(function (envName) {
+    var state = deployStatus.environments[envName];
+    if (state.status === 'down') {
+      _applyBlockedUI({ agent: 'Deploy', task: envName + ' is DOWN — check deploy-status.json' });
+      criticals.push({
+        title: 'CRITICAL: ' + envName + ' environment is down',
+        body: 'Deploy reports ' + envName + ' is unreachable. Check deploy-status.json for incident details.',
+      });
+    } else if (state.status === 'degraded') {
+      warnings.push({
+        title: 'WARNING: ' + envName + ' environment degraded',
+        body: envName + ' is responding but degraded. Monitor deploy-status.json.',
+      });
+    }
+  });
+  if (criticals.length > 0) {
+    playBeep(440, 0.25, 'square');
+    setTimeout(function () {
+      playBeep(880, 0.25, 'square');
+    }, 280);
+    setTimeout(function () {
+      playBeep(440, 0.25, 'square');
+    }, 560);
+    criticals.forEach(function (a) {
+      sendNotification(a.title, a.body);
+    });
+  } else if (warnings.length > 0) {
+    playBeep(880, 0.3);
+    setTimeout(function () {
+      playBeep(1046, 0.4);
+    }, 350);
+    warnings.forEach(function (a) {
+      sendNotification(a.title, a.body);
+    });
+  }
+}
+
+function patchDeployPanel(deployStatus) {
+  var panel = document.getElementById('deploy-panel');
+  if (!panel || !deployStatus) return;
+  // Update open incident count without a full re-render
+  var badge = panel.querySelector('.deploy-incident-count');
+  if (badge) {
+    var openCount = (deployStatus.incidents || []).filter(function (i) {
+      return !i.resolvedAt;
+    }).length;
+    badge.textContent = openCount + ' open';
+    badge.style.color = openCount > 0 ? 'var(--mc-risk)' : 'var(--mc-ok)';
+  }
 }
 
 // Page-load initialization: restore button state and fire initial delta check
@@ -4176,6 +4294,17 @@ async function refreshState() {
     patchDOM(newStatus);
     patchCycleCounter(newStatus);
     runAlertCheck(newStatus);
+    // Fetch deploy-status.json for live Deploy panel updates and alerts
+    try {
+      var dRes = await fetch('./deploy-status.json', { cache: 'no-store' });
+      if (dRes && dRes.ok) {
+        var deployStatus = await dRes.json();
+        patchDeployPanel(deployStatus);
+        runDeployAlertCheck(deployStatus);
+      }
+    } catch (_e) {
+      // deploy-status.json may not exist — silent skip, static panel remains
+    }
     _lastFetchedAt = Date.now();
     _lastFetchOk = true;
     updateLastUpdatedTicker(false);
@@ -4335,7 +4464,16 @@ function generate() {
     console.error('Could not read', STATUS_PATH);
     process.exit(1);
   }
-  const html = generateHTML(status);
+  // Read deploy-status.json (optional — may not exist for new projects)
+  let deployStatus = null;
+  try {
+    if (fs.existsSync(DEPLOY_STATUS_PATH)) {
+      deployStatus = JSON.parse(fs.readFileSync(DEPLOY_STATUS_PATH, 'utf8'));
+    }
+  } catch (e) {
+    console.warn('[generate-dashboard] could not read deploy-status.json:', e.message);
+  }
+  const html = generateHTML(status, deployStatus);
   fs.writeFileSync(OUTPUT_PATH, html, 'utf8');
   console.log(`[${new Date().toLocaleTimeString()}] Dashboard generated: ${OUTPUT_PATH}`);
 }

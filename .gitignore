@@ -4,6 +4,7 @@ docs/coverage/
 docs/plan-status.html
 docs/plan-status.json
 docs/sdlc-status.json
+docs/deploy-status.json
 # .history/ tracked intentionally for Trends tab persistence
 .DS_Store
 .superpowers/

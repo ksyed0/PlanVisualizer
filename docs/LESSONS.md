@@ -4,6 +4,34 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
+## L-0095 — ID-scanning regex must cap digit length to avoid matching example IDs in prose (`\d{1,4}` not `\d+`)
+
+@agent: Forge, Keystone
+
+**Context:** Session 63, 2026-06-22. `tools/check-id-registry.js`'s `findMax()` used `\bAC-(\d+)\b` across source markdown files. `RELEASE_PLAN.md` contains the example text `"AC-10000 displays without truncation"` inside a description body — not a real assigned ID. The tool parsed this as the highest AC in use, ran `--fix`, and corrupted `ID_REGISTRY.md` by replacing `AC-1048` with `AC-10001` (8,953 slots wrong).
+
+**Fix:** Changed regex to `\bAC-(\d{1,4})\b` — capping at 4 digits excludes any 5-digit example ID while covering all real sequences (currently max ~AC-1047). Also reset the registry to AC-1048 / AC-1047.
+
+**Prevention:** When building ID-scanning tools, always cap the digit group to the realistic maximum width (4 digits covers IDs up to 9999 — enough for any foreseeable project scale). Prose descriptions often contain example IDs; a length cap is the simplest guard without requiring structure-aware parsing.
+
+**Date:** 2026-06-22
+
+---
+
+## L-0094 — Plan-specified CSS variables must be verified against the actual stylesheet — never trust the spec verbatim
+
+@agent: Forge, Pixel
+
+**Context:** Session 63, 2026-06-22. EPIC-0046 plan specified `var(--mc-danger)` and `var(--mc-mono)` in `renderDeployPanel()` and `patchDeployPanel()`. Neither variable exists in `tools/generate-dashboard.js`. The correct vars are `--risk` (or its alias `--mc-risk`) and `--font-mono`. Implementation copied the plan verbatim and the variables silently failed at runtime (browser falls back to black / default font).
+
+**Fix:** During per-task review loops, substituted `--risk`/`--font-mono` in Task 4 and `--mc-risk` in Task 5. The final review confirmed the substitutions are correct.
+
+**Prevention:** Before using any CSS custom property from a plan or spec, grep the stylesheet file for it: `grep -n "\-\-var-name" tools/generate-dashboard.js`. If not found, find the semantically closest existing variable and use that instead. Document the substitution in your self-review.
+
+**Date:** 2026-06-22
+
+---
+
 ## L-0092 — Theme-specific surface overrides must be matched by foreground overrides, or contrast silently breaks
 
 @agent: Pixel
@@ -1238,3 +1266,39 @@ _Learned from BUG-0210 — Lessons and Bugs tabs both have epic group headers, b
 **Prevention:** When writing indexers for RELEASE_PLAN.md, always check for both `EPIC-XXXX: title` and `EPIC-XXXX\nTitle: title` variants. Older EPICs predate the standardised fenced-block format.
 
 **Date:** 2026-05-20
+
+---
+
+## L-0093: Mark bugs Fixed in BUGS.md and close GH Issues immediately when the fix lands — not later @agent:all
+
+**Context:** Session 62, 2026-06-21. During GitHub/BUGS.md reconciliation, 139 GitHub issues were found open despite the corresponding BUGS.md entries showing `Status: Fixed`. BUG-0254, BUG-0255, and BUG-0256 were found `Status: Open` in BUGS.md despite all three being fixed months earlier (render-shell.js and render-tabs.js had the code). BUG-0256's fix even had an inline comment referencing the bug ID.
+
+**Fix:** The reconciliation fork closed 139 stale GH issues and created 4 new ones for genuinely open bugs. BUG-0254/0255/0256 marked Fixed in this session.
+
+**Prevention:** When committing a bugfix, update the three status fields in a single follow-up commit before moving on: (1) `BUGS.md Status: Fixed`, (2) `GH Issue: close via gh issue close`, (3) `Fix Branch: <branch>`. The inline `// BUG-XXXX:` code comment is a bonus — it creates a searchable trail from the fix back to the BUGS.md entry.
+
+**Date:** 2026-06-21
+
+---
+
+## L-0094: Plan-specified CSS variables must be verified against the actual stylesheet — never trust the spec verbatim @agent:Forge @agent:Pixel
+
+**Context:** Session 63, 2026-06-22. EPIC-0046 plan specified `var(--mc-danger)` and `var(--mc-mono)` in `renderDeployPanel()` and `patchDeployPanel()`. Neither variable exists in `tools/generate-dashboard.js`. The correct vars are `--risk` (or its alias `--mc-risk`) and `--font-mono`. Implementation copied the plan verbatim and the variables silently failed at runtime (browser falls back to black / default font).
+
+**Fix:** During per-task review loops, substituted `--risk`/`--font-mono` in Task 4 and `--mc-risk` in Task 5. The final review confirmed the substitutions are correct.
+
+**Prevention:** Before using any CSS custom property from a plan or spec, grep the stylesheet file for it: `grep -n "\-\-var-name" tools/generate-dashboard.js`. If not found, find the semantically closest existing variable and use that instead. Document the substitution in your self-review.
+
+**Date:** 2026-06-22
+
+---
+
+## L-0095: ID-scanning regex must cap digit length to avoid matching example IDs in prose (`\d{1,4}` not `\d+`) @agent:Forge @agent:Keystone
+
+**Context:** Session 63, 2026-06-22. `tools/check-id-registry.js`'s `findMax()` used `\bAC-(\d+)\b` across source markdown files. `RELEASE_PLAN.md` contains the example text `"AC-10000 displays without truncation"` inside a description body — not a real assigned ID. The tool parsed this as the highest AC in use, ran `--fix`, and corrupted `ID_REGISTRY.md` by replacing `AC-1048` with `AC-10001` (8,953 slots wrong).
+
+**Fix:** Changed regex to `\bAC-(\d{1,4})\b` — capping at 4 digits excludes any 5-digit example ID while covering all real sequences (currently max ~AC-1047). Also reset the registry to AC-1048 / AC-1047.
+
+**Prevention:** When building ID-scanning tools, always cap the digit group to the realistic maximum width (4 digits covers IDs up to 9999 — enough for any foreseeable project scale). Prose descriptions often contain example IDs; a length cap is the simplest guard without requiring structure-aware parsing.
+
+**Date:** 2026-06-22
