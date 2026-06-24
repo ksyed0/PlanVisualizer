@@ -4,6 +4,54 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
+## L-0095 — ID-scanning regex must cap digit length to avoid matching example IDs in prose (`\d{1,4}` not `\d+`)
+
+@agent: Forge, Keystone
+
+**Context:** Session 63, 2026-06-22. `tools/check-id-registry.js`'s `findMax()` used `\bAC-(\d+)\b` across source markdown files. `RELEASE_PLAN.md` contains the example text `"AC-10000 displays without truncation"` inside a description body — not a real assigned ID. The tool parsed this as the highest AC in use, ran `--fix`, and corrupted `ID_REGISTRY.md` by replacing `AC-1048` with `AC-10001` (8,953 slots wrong).
+
+**Fix:** Changed regex to `\bAC-(\d{1,4})\b` — capping at 4 digits excludes any 5-digit example ID while covering all real sequences (currently max ~AC-1047). Also reset the registry to AC-1048 / AC-1047.
+
+**Prevention:** When building ID-scanning tools, always cap the digit group to the realistic maximum width (4 digits covers IDs up to 9999 — enough for any foreseeable project scale). Prose descriptions often contain example IDs; a length cap is the simplest guard without requiring structure-aware parsing.
+
+**Date:** 2026-06-22
+
+---
+
+## L-0094 — Plan-specified CSS variables must be verified against the actual stylesheet — never trust the spec verbatim
+
+@agent: Forge, Pixel
+
+**Context:** Session 63, 2026-06-22. EPIC-0046 plan specified `var(--mc-danger)` and `var(--mc-mono)` in `renderDeployPanel()` and `patchDeployPanel()`. Neither variable exists in `tools/generate-dashboard.js`. The correct vars are `--risk` (or its alias `--mc-risk`) and `--font-mono`. Implementation copied the plan verbatim and the variables silently failed at runtime (browser falls back to black / default font).
+
+**Fix:** During per-task review loops, substituted `--risk`/`--font-mono` in Task 4 and `--mc-risk` in Task 5. The final review confirmed the substitutions are correct.
+
+**Prevention:** Before using any CSS custom property from a plan or spec, grep the stylesheet file for it: `grep -n "\-\-var-name" tools/generate-dashboard.js`. If not found, find the semantically closest existing variable and use that instead. Document the substitution in your self-review.
+
+**Date:** 2026-06-22
+
+---
+
+## L-0092 — Theme-specific surface overrides must be matched by foreground overrides, or contrast silently breaks
+
+@agent: Pixel
+
+**Rule:** When a component hard-codes a foreground palette for one theme (e.g. the active-agent hero card's light-orange name + orange task text designed for a dark surface), a _more specific_ generic rule can quietly swap its background in the other theme and tank contrast. Here `.agent-card.is-active` (specificity 0,2,0, `background: var(--surface)`) outranked `.mc-active-card` (0,1,0, dark) so in **light theme** the hero card went near-white while its text stayed dark-tuned — the task line measured **~1.1:1** (WCAG AA needs 4.5:1), i.e. invisible (BUG-0266). **Fixes:** (1) when you set a themed background on a component, set its text colours in the _same_ specificity/theme scope; (2) measure contrast in **both** themes, not just the one you author in — a quick `getComputedStyle` + relative-luminance probe in the browser catches this; (3) prefer pinning a deliberately-dark "hero/on-air" surface in both themes (`[data-theme='light'] .mc-active-card.agent-card.is-active { background: … }`) over re-tuning every foreground colour.
+_Identified fixing BUG-0266 — verified with an in-browser oklch→rgb contrast probe (1.07→7.42:1 on the task text) and a screenshot._
+**Date:** 2026-06-08
+
+---
+
+## L-0091 — Jest `testMatch` with a leading `**/` silently scans nested git worktrees
+
+@agent: Forge
+
+**Rule:** `testMatch: ['**/tests/unit/**/*.test.js', ...]` matches _any_ ancestor directory, so when a git worktree lives inside the repo (e.g. `.claude/worktrees/<name>/`), jest discovers and runs that worktree's copy of the tests too. Stale worktrees whose `node_modules` have been removed then fail with `Cannot find module …`, breaking `npm test` locally even though the change under test is fine (CI is unaffected because CI checks out a clean tree without worktrees). **Fix:** exclude the worktree root from both discovery and Haste resolution — `testPathIgnorePatterns: ['/node_modules/', '/\\.claude/']` and `modulePathIgnorePatterns: ['/\\.claude/']`. More generally, any glob anchored with `**/` should be paired with explicit ignore patterns for in-repo worktree/cache dirs.
+_Identified fixing BUG-0265 — a stale `.claude/worktrees/` tree made jest scan 371 phantom test files._
+**Date:** 2026-06-08
+
+---
+
 ## L-0090 — A failing Stop hook is not necessarily _our_ Stop hook; identify the owner before "fixing" it
 
 @agent: Circuit

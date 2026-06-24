@@ -1970,6 +1970,16 @@ function generateHTML(status, deployStatus) {
     box-shadow: 0 0 28px oklch(72% 0.19 38 / 10%);
     margin-bottom: 10px;
   }
+  /* BUG-0266: the active hero card's text palette (light-orange name, orange
+     role/task, translucent-black story overlay) is designed for a DARK surface.
+     In light theme, .agent-card.is-active (specificity 0,2,0) outranks
+     .mc-active-card (0,1,0) and leaks var(--surface) as the background, turning
+     the story box light-grey and dropping the task text to ~1.1:1 contrast
+     (unreadable). Pin the hero card dark in light theme too — scoped to light so
+     dark theme is untouched. */
+  [data-theme='light'] .mc-active-card.agent-card.is-active {
+    background: oklch(10% 0.03 38);
+  }
   .mc-active-portrait-banner {
     width: 100%;
     height: 200px;
