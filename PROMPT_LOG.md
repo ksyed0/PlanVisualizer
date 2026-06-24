@@ -1117,3 +1117,15 @@ _(Bug sweep session — see progress.md Session 16 entry. Was primarily spent fi
 | 3   | 2026-06-22T03:00:00Z | are there any open bugs                                                                        |
 | 4   | 2026-06-22T03:05:00Z | update session docs to prepare to close session                                                |
 | 5   | 2026-06-22T03:06:00Z | update the readme to include the new deploy agent                                              |
+
+---
+
+## Session 65 — 2026-06-24
+
+| #   | Timestamp            | Prompt                                                                                                                      |
+| --- | -------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| 1   | 2026-06-24T18:00:00Z | [Context-compacted resume — resolving merge conflicts from develop; merging PR #1159] fix these please (BUG-0267, BUG-0268) |
+| 2   | 2026-06-24T18:15:00Z | whats next                                                                                                                  |
+| 3   | 2026-06-24T18:20:00Z | review CI, fix issues, and merge when green / cleanup stale worktree                                                        |
+| 4   | 2026-06-24T18:45:00Z | whats left                                                                                                                  |
+| 5   | 2026-06-24T18:46:00Z | yes, close out the session                                                                                                  |

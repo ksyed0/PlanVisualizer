@@ -2526,3 +2526,48 @@ Executed `docs/superpowers/plans/2026-06-21-deploy-agent.md` using subagent-driv
 ### Blockers
 
 None. PR #1159 open, awaiting CI and merge to develop.
+
+---
+
+## Session 65 — 2026-06-24
+
+### Goal
+
+Resolve 4 merge conflicts from `git merge origin/develop` that were blocking PR #1159, get CI green, and merge to develop.
+
+### What Was Done
+
+**Conflict resolution (`git merge origin/develop`):**
+
+- `CHANGELOG.md` — kept both sides: develop's BUG-0265/BUG-0266 entries + our BUG-0267/BUG-0268 entries
+- `PROMPT_LOG.md` — kept both sides; renumbered our sessions (+1) since develop owned Session 62 (Jun 8)
+- `docs/ID_REGISTRY.md` — took highest value per sequence: BUG-0269/0268, L-0096/0095, ENH-0011/0010
+- `docs/LESSONS.md` — kept all entries from both branches; fixed L-0094/0095 tagging format (`@agent: X` on its own line)
+
+**Test fixes:**
+
+- `npm rebuild better-sqlite3` — native module was compiled against wrong Node.js ABI (NODE_MODULE_VERSION 141 vs 127), fixed by rebuild
+- All 2715 tests pass post-merge
+
+**CI + merge:**
+
+- Push triggered all 8 CI checks on the long-lived PR #1159 (auto-trigger finally fired)
+- All checks passed (CI + CodeQL)
+- `gh pr merge 1159 --squash --delete-branch` — merged to develop, branch deleted
+
+### Test Results
+
+- 133 suites, 2715 tests ✅ (locally after merge commit)
+- CI: 8/8 checks green on PR #1159
+
+### Lessons Applied
+
+- L-0094/L-0095 tagging format: `@agent:` header must be on its own line, not inline in the heading
+
+### Open Bugs
+
+None blocking. BUG-0267 and BUG-0268 fixed and merged.
+
+### Blockers
+
+None.

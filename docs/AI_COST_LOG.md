@@ -812,3 +812,5 @@ Input Tokens column = direct input + cache-write tokens; cost computed with dist
 > > > > > > > | 2026-06-22 | bd3cc4bd-3c31-480e-b527-3b14d972ad86 | hotfix/BUG-0258-claude-mem-worker-deps | 494685 | 78563 | 19849388 | 8.9880 |
 > > > > > > > | 2026-06-22 | bd3cc4bd-3c31-480e-b527-3b14d972ad86 | hotfix/BUG-0258-claude-mem-worker-deps | 494696 | 78720 | 19994632 | 9.0340 |
 > > > > > > > | 2026-06-22 | bd3cc4bd-3c31-480e-b527-3b14d972ad86 | hotfix/BUG-0258-claude-mem-worker-deps | 538523 | 94026 | 24440502 | 10.7617 |
+> > > > > > > | 2026-06-24 | bd3cc4bd-3c31-480e-b527-3b14d972ad86 | develop | 1732201 | 225409 | 53351548 | 25.8818 |
+> > > > > > > | 2026-06-24 | bd3cc4bd-3c31-480e-b527-3b14d972ad86 | develop | 1849876 | 226291 | 53535746 | 26.3916 |

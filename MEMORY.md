@@ -43,5 +43,6 @@ Persistent semantic knowledge base. Topic files in `docs/memory/`. Updated autom
 ## Snapshots
 
 - ◐ [Project Completion Status (as of 2026-05-05 Session 40)](docs/memory/snapshots/2026-05-05-project-completion-status.md) · 2026-05-05
+- ◐ [Session 65 — Merge Conflict Resolution + PR #1159 Merge to develop](docs/memory/sessions/2026-06-24-session-65-merge-conflicts-pr1159.md) · 2026-06-24
 - ◐ [Session 63 — Deploy Agent EPIC-0046 Complete (10 commits, PR #1159)](docs/memory/sessions/2026-06-22-session-63-deploy-agent-epic-0046.md) · 2026-06-22
 - ◐ [Session 62 — EPIC-0046 Deploy Agent Planning + GitHub Reconciliation](docs/memory/sessions/2026-06-21-session-62-deploy-agent-planning.md) · 2026-06-21

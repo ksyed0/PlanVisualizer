@@ -1802,7 +1802,7 @@
       <button class="pv-seg pv-seg-active" aria-pressed="true">Pipeline</button>
     </div>
     <div class="pv-chrome-spacer"></div>
-    <span id="gen-time" data-iso="2026-05-22T21:37:44.650Z" style="font-size:11px;color:var(--text-mute);white-space:nowrap"></span>
+    <span id="gen-time" data-iso="2026-06-22T04:07:43.053Z" style="font-size:11px;color:var(--text-mute);white-space:nowrap"></span>
     <span class="mode-badge mode-live" aria-label="Mode: Live" tabindex="0">
     <span class="pip" aria-hidden="true"></span>LIVE
   </span>
@@ -2015,9 +2015,9 @@
   <span id="metric-reviewsApproved">undefined</span>
   <span id="metric-reviewsBlocked">undefined</span>
   <span id="metric-coveragePercent">88.2%</span>
-  <b id="stamp-phase-progress">17:37</b>
-  <b id="stamp-quality">17:37</b>
-  <b id="stamp-reviews">17:37</b>
+  <b id="stamp-phase-progress">00:07</b>
+  <b id="stamp-quality">00:07</b>
+  <b id="stamp-reviews">00:07</b>
   <!-- Doughnut for patchDOM coverage -->
   <div id="metric-coverageDoughnut" data-coverage="88.2" data-tone="green">
     <circle id="metric-coverageDoughnutFill" class="d-fill green" stroke-dashoffset="11.80"></circle>
@@ -2101,7 +2101,7 @@
   <!-- MEMORY sidebar widget — US-0176 (EPIC-0026) -->
   <div class="mc-sidebar-panel">
     <div class="mc-sidebar-title">MEMORY</div>
-    <div style="font-size:11px;color:var(--mc-muted);margin-bottom:4px"><span style="color:var(--ok)">●</span> 3,370 observations</div>
+    <div style="font-size:11px;color:var(--mc-muted);margin-bottom:4px"><span style="color:var(--ok)">●</span> 5,722 observations</div>
     <div style="font-size:10px;color:var(--mc-dim);margin-bottom:4px">127.0.0.1:37701</div>
     <a href="http://127.0.0.1:37701" target="_blank" rel="noopener" style="font-size:11px;color:var(--info)">view live →</a>
   </div>
@@ -2185,6 +2185,14 @@
       </div>
     </div>
     <span id="card-reviews" hidden></span>
+  </div>
+
+  <!-- Deploy panel (US-0267) -->
+  <div class="mc-sidebar-panel">
+    <div class="deploy-panel" id="deploy-panel">
+      <div class="section-header">DEPLOY</div>
+      <p style="color:var(--mc-dim);font-size:12px;margin-top:8px;font-style:italic;">No deployments yet</p>
+    </div>
   </div>
 
 </div><!-- /mc-sidebar -->
@@ -2300,6 +2308,14 @@
           <span style="font-weight:600;font-size:12px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--clr-text-primary,var(--text-primary))">Circuit</span>
           <span style="font-size:10px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--clr-text-muted,var(--text-muted))">Automation Tester</span>
         </span>
+      </li><li style="display:flex;align-items:center;gap:8px;min-width:0">
+        <img src="agents/images/optimized/deploy-64.png" alt="Deploy"
+          style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid var(--clr-border,var(--bg-card-border));background:var(--clr-surface-raised,var(--bg-card-inner))"
+          onerror="this.outerHTML='&lt;span style=&quot;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;border:1px solid var(--clr-border)&quot;&gt;🚀&lt;/span&gt;'">
+        <span style="min-width:0;display:flex;flex-direction:column">
+          <span style="font-weight:600;font-size:12px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--clr-text-primary,var(--text-primary))">Deploy</span>
+          <span style="font-size:10px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--clr-text-muted,var(--text-muted))">DevOps Engineer</span>
+        </span>
       </li></ul>
       <div class="pv-about-links">
         <div class="pv-about-links-row"><span class="pv-about-meta-label">Repo: </span><a href="https://github.com/yourorg/your-project" target="_blank" rel="noopener">https://github.com/yourorg/your-project</a></div>
@@ -2309,15 +2325,15 @@
         <div>
           <p class="pv-about-supertitle">This Project</p>
           <div class="pv-about-meta-row"><span class="pv-about-meta-label">Name: </span><span class="pv-about-meta-value">plan-visualizer</span></div>
-          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Version: </span><span class="pv-about-meta-value">v2.4.22</span></div>
-          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Branch: </span><span class="pv-about-meta-value">feature/US-0259-accessor-and-dashboard</span></div>
-          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Build: </span><span class="pv-about-meta-value">r827 1c6dfe6</span></div>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Version: </span><span class="pv-about-meta-value">v2.4.41</span></div>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Branch: </span><span class="pv-about-meta-value">hotfix/BUG-0258-claude-mem-worker-deps</span></div>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Build: </span><span class="pv-about-meta-value">r879 07f53ce</span></div>
         </div>
         <div>
           <p class="pv-about-supertitle">Dashboard Tool</p>
           <div class="pv-about-meta-row"><span class="pv-about-meta-label">View: </span><span class="pv-about-meta-value">Agentic SDLC Dashboard</span></div>
-          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Generated by: </span><span class="pv-about-meta-value">plan-visualizer v2.4.22</span></div>
-          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Generated at: </span><span id="about-gen-time" data-iso="May 22, 2026, 05:37 PM" class="pv-about-meta-value"></span></div>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Generated by: </span><span class="pv-about-meta-value">plan-visualizer v2.4.41</span></div>
+          <div class="pv-about-meta-row"><span class="pv-about-meta-label">Generated at: </span><span id="about-gen-time" data-iso="Jun 22, 2026, 12:07 AM" class="pv-about-meta-value"></span></div>
         </div>
       </div>
     </div>
@@ -2325,7 +2341,7 @@
 </div>
 
 <div class="footer">
-  Claude Code Agentic AI SDLC | Last refreshed: May 22, 2026, 05:37 PM
+  Claude Code Agentic AI SDLC | Last refreshed: Jun 22, 2026, 12:07 AM
 </div>
 
 <script>
@@ -2459,58 +2475,54 @@ function programme(json) {
 }
 
 function agents(json) {
-  return programme(json).agents || (json && json.agents) || {};
+  return programme(json).agents || {};
 }
 
 function metrics(json) {
-  return programme(json).metrics || (json && json.metrics) || {};
+  return programme(json).metrics || {};
 }
 
 function stories(json) {
-  return programme(json).stories || (json && json.stories) || {};
+  return programme(json).stories || {};
 }
 
 function epics(json) {
-  return programme(json).epics || (json && json.epics) || {};
+  return programme(json).epics || {};
 }
 
 function phases(json) {
-  return programme(json).phases || (json && json.phases) || [];
+  return programme(json).phases || [];
 }
 
 function cycles(json) {
-  // The bare `||` chain is unsafe here: a non-array value (null, "", {}) at
-  // programme.cycles must NOT shadow a valid top-level array. Type-check each
-  // source. Matches the defensive Array.isArray() guard in dashboard.html.
+  // Type-narrow check preserved: programme.cycles may be set to a
+  // non-array value in old fixtures, and the consumer contract is that
+  // cycles() always returns an array.
   const fromProgramme = programme(json).cycles;
   if (Array.isArray(fromProgramme)) return fromProgramme;
-  const fromTopLevel = json && json.cycles;
-  if (Array.isArray(fromTopLevel)) return fromTopLevel;
   return [];
 }
 
 function currentPhase(json) {
-  // Explicit `typeof === 'number'` check because `currentPhase: 0` is a valid
-  // not-started value; a bare `||` chain would incorrectly fall through.
+  // Explicit `typeof === 'number'` check because `currentPhase: 0` is a
+  // valid not-started value; a bare `||` chain would incorrectly fall
+  // through and return null.
   const fromProgramme = programme(json).currentPhase;
   if (typeof fromProgramme === 'number') return fromProgramme;
-  const fromTopLevel = json && json.currentPhase;
-  if (typeof fromTopLevel === 'number') return fromTopLevel;
   return null;
 }
 
 function githubStatus(json) {
-  // Only accessor (besides currentPhase) that returns null: the dashboard's
-  // `if (!gs) return;` guard treats absence as a signal, not an empty object.
+  // The only accessor (besides currentPhase) that returns null: the
+  // dashboard's `if (!gs) return;` guard treats absence as a signal,
+  // not an empty object.
   const fromProgramme = programme(json).githubStatus;
   if (fromProgramme && typeof fromProgramme === 'object') return fromProgramme;
-  const fromTopLevel = json && json.githubStatus;
-  if (fromTopLevel && typeof fromTopLevel === 'object') return fromTopLevel;
   return null;
 }
 
 function project(json) {
-  return programme(json).project || (json && json.project) || {};
+  return programme(json).project || {};
 }
 
 window.pvReader = { programme, agents, metrics, stories, epics, phases, cycles, currentPhase, githubStatus, project };
@@ -2729,7 +2741,7 @@ var DASH_SNAPSHOT = {"currentPhase":null,"bugsOpen":5,"agentStatuses":{},"phaseS
 // US-0111: expose agent colors to the client so patchDOM() can restyle
 // agent-status pills when an agent transitions between idle/active/blocked
 // without the server-side renderer being involved.
-var DASH_AGENT_COLORS = {"Conductor":"oklch(52% 0.22 25)","Compass":"oklch(50% 0.20 264)","Keystone":"oklch(44% 0.22 310)","Lens":"oklch(72% 0.19 46)","Palette":"oklch(60% 0.14 185)","Forge":"oklch(44% 0.22 25)","Pixel":"oklch(38% 0.20 270)","Sentinel":"oklch(50% 0.17 145)","Circuit":"oklch(40% 0.22 285)"};
+var DASH_AGENT_COLORS = {"Conductor":"oklch(52% 0.22 25)","Compass":"oklch(50% 0.20 264)","Keystone":"oklch(44% 0.22 310)","Lens":"oklch(72% 0.19 46)","Palette":"oklch(60% 0.14 185)","Forge":"oklch(44% 0.22 25)","Pixel":"oklch(38% 0.20 270)","Sentinel":"oklch(50% 0.17 145)","Circuit":"oklch(40% 0.22 285)","Deploy":"oklch(48% 0.20 195)"};
 
 // US-0122 AC-0419 / BUG-0160: Singleton AudioContext. Previously, every
 // playBeep() call instantiated a new AudioContext, leaking a context on each

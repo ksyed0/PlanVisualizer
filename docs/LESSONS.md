@@ -4,6 +4,18 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
+## L-0096 — ID_REGISTRY merge conflicts: always take max(HEAD, theirs) per sequence; PROMPT_LOG session numbers: first committer owns the number
+
+@agent: Forge, Keystone
+
+**Rule:** `docs/ID_REGISTRY.md` contains monotonically-incrementing counters (BUG, L, ENH, AC, TC, TASK, …). When a merge conflict arises in this file, the correct resolution is `max(HEAD_value, theirs_value)` for each sequence — never pick one side wholesale. Taking the lower value silently re-allocates already-used IDs, causing duplicates that are hard to detect later.
+
+For `PROMPT_LOG.md` session numbering: when two branches both add sessions and claim the same number, the branch that merged to `develop` first owns that number. Rename later branches' sessions by adding the count of conflicts found (e.g. both claim Session 62 → develop's is 62, ours become 63/64).
+
+**Date:** 2026-06-24
+
+---
+
 ## L-0095 — ID-scanning regex must cap digit length to avoid matching example IDs in prose (`\d{1,4}` not `\d+`)
 
 @agent: Forge, Keystone
