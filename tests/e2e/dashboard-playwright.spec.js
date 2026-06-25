@@ -20,7 +20,8 @@ const STATUS_PATH = path.join(DOCS_DIR, 'sdlc-status.json');
 const DASHBOARD_PATH = path.join(DOCS_DIR, 'dashboard.html');
 const STATUS_BACKUP = path.join(DOCS_DIR, 'sdlc-status.json.pw-bak');
 
-test.beforeAll(async (_fixtures, testInfo) => {
+// eslint-disable-next-line no-empty-pattern
+test.beforeAll(async ({}, testInfo) => {
   if (SKIP) return;
 
   // Only worker 0 runs setup to avoid races
