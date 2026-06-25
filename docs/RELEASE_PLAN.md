@@ -4775,3 +4775,173 @@ Acceptance Criteria:
 ```
 
 ```
+
+---
+
+## Epic — EPIC-0047: E2E Test Infrastructure
+
+```
+
+EPIC-0047: E2E Test Infrastructure
+Description: Shared harness for all e2e test suites — helpers, Layer 1 static fixtures, reset/cleanup utilities, and the separate npm test:e2e script + CI job. Must be complete before any EPIC-0048 scenario can be authored.
+Release Target: v2.5.0
+Status: Planned
+Dependencies: None
+
+```
+
+## User Stories — EPIC-0047: E2E Test Infrastructure
+
+```
+
+US-0264 (EPIC-0047): As a test author, I want a shared e2e helpers module so that every suite can create isolated temp projects, run scripts, and assert HTML/state without duplicating setup code.
+Priority: High (P1)
+Estimate: S
+Status: Planned
+Acceptance Criteria:
+
+- [ ] AC-1023: `tests/e2e/helpers/index.js` exports `createTempProject(opts)` — creates a mkdtemp dir, runs `git init && git commit --allow-empty`, and returns `{ dir, cleanup }` where `cleanup()` removes the dir recursively
+- [ ] AC-1024: `runScript(script, args, cwd)` helper wraps `execFileSync` with a 120 s timeout, captures stdout/stderr, and throws a descriptive error containing both streams on non-zero exit
+- [ ] AC-1025: `assertHtml(htmlPath, checks)` helper reads the file and runs each check as `expect(html).toContain(str)` or `expect(html).not.toContain(str)` — check shape: `{ contains?: string[], excludes?: string[] }`
+- [ ] AC-1026: `assertSdlcState(sdlcPath, shape)` helper reads and JSON-parses `docs/sdlc-status.json`, then asserts each key in `shape` against the parsed object using deep-equal where the value is an object and strict-equal where it is a scalar
+
+```
+
+```
+
+US-0265 (EPIC-0047): As a test suite, I want a complete set of Layer 1 static fixture files so that all install/update/local-pipeline tests run against deterministic, pre-authored project data without any network calls.
+Priority: High (P1)
+Estimate: S
+Status: Planned
+Acceptance Criteria:
+
+- [ ] AC-1027: `tests/e2e/fixtures/RELEASE_PLAN.md` exists with 3 epics (EPIC-T001 Done, EPIC-T002 In Progress, EPIC-T003 Planned), 12 stories covering all status values (Done, In Progress, Blocked, Planned, To Do), and 2–4 ACs each — all IDs use the `T` namespace (EPIC-T, US-T, AC-T) to avoid colliding with production sequences
+- [ ] AC-1028: `tests/e2e/fixtures/BUGS.md` exists with 5 bugs (2 Fixed, 1 Open, 1 In Progress, 1 WontFix); `tests/e2e/fixtures/LESSONS.md` exists with 3 lessons each using canonical `@agent: Forge` tag format on its own line
+- [ ] AC-1029: Running `node tools/generate-plan.js --source tests/e2e/fixtures/RELEASE_PLAN.md` (or equivalent config override) completes without errors and the output HTML contains story titles from the fixture — verified by a smoke test in `tests/e2e/fixtures/fixtures.smoke.test.js`
+
+```
+
+```
+
+US-0266 (EPIC-0047): As a developer, I want a dedicated `test:e2e` npm script and a separate CI job so that slow install/pipeline tests do not block the main PR gate.
+Priority: Medium (P2)
+Estimate: XS
+Status: Planned
+Acceptance Criteria:
+
+- [ ] AC-1030: `package.json` has a `test:e2e` script that runs `jest --config jest.e2e.config.js`; `jest.e2e.config.js` targets `tests/e2e/**/*.spec.js`, sets `testTimeout: 120000`, and excludes `tests/e2e/fixtures/`
+- [ ] AC-1031: `.github/workflows/e2e.yml` defines a separate workflow triggered on `workflow_dispatch` and on a nightly schedule (`cron: '0 3 * * *'`); it runs `npm run test:e2e` and uploads the Jest HTML report as an artifact
+- [ ] AC-1032: The existing `ci.yml` workflow is unchanged — `npm test` continues to run only unit and integration suites; `test:e2e` is not added to the PR gate
+
+```
+
+---
+
+## Epic — EPIC-0048: E2E Pipeline Scenarios
+
+```
+
+EPIC-0048: E2E Pipeline Scenarios
+Description: End-to-end test suites covering installation, update, local pipeline (plan-status + agentic dashboard), agentic lifecycle state transitions, GitHub-connected Layer 2 (Shelf init prompt driving Conductor → Compass → Keystone), and Playwright dashboard behavioral tests. Depends on EPIC-0047 infrastructure.
+Release Target: v2.5.0
+Status: Planned
+Dependencies: EPIC-0047
+
+```
+
+## User Stories — EPIC-0048: E2E Pipeline Scenarios
+
+```
+
+US-0267 (EPIC-0048): As a QA engineer, I want an install + idempotency e2e test so that regressions in scripts/install.sh are caught automatically.
+Priority: High (P1)
+Estimate: S
+Status: Planned
+Acceptance Criteria:
+
+- [ ] AC-1033: `tests/e2e/install.spec.js` — fresh install into a mkdtemp git repo produces: `CLAUDE.md`, `AGENTS.md`, `plan-visualizer.config.json`, `docs/ID_REGISTRY.md`, and `docs/RELEASE_PLAN.md` (template) all present; `npm run build` in the target dir exits 0 and produces `plan-status.html`
+- [ ] AC-1034: Re-running `install.sh` on an already-installed target (idempotency check) exits 0, does not duplicate Stop hook registrations, and does not overwrite a user-modified `plan-visualizer.config.json` (test modifies one field, asserts it survives re-install)
+- [ ] AC-1035: Running `install.sh` against a directory that is not a git repo exits non-zero and prints a clear error message containing the word "git"
+- [ ] AC-1036: `npm run check:ids` in the freshly installed target exits 0 — the template `ID_REGISTRY.md` and template `RELEASE_PLAN.md` are internally consistent
+
+```
+
+```
+
+US-0268 (EPIC-0048): As a QA engineer, I want an update e2e test so that regressions in scripts/update.sh are caught automatically.
+Priority: High (P1)
+Estimate: S
+Status: Planned
+Dependencies: US-0267 (EPIC-0048)
+Acceptance Criteria:
+
+- [ ] AC-1037: `tests/e2e/update.spec.js` — installs first, modifies `plan-visualizer.config.json` (adds a custom key), then runs `update.sh`; asserts the custom key is preserved and new files added by the update are present
+- [ ] AC-1038: `npm run build` in the updated target exits 0 and produces `plan-status.html` containing content consistent with the Layer 1 fixture RELEASE_PLAN.md (copied in by the test before running build)
+- [ ] AC-1039: `docs/.pv-state.json` exists after update and contains a `version` field matching the PlanVisualizer `package.json` version
+
+```
+
+```
+
+US-0269 (EPIC-0048): As a QA engineer, I want a local pipeline e2e test that verifies both dashboards populate correctly from the Layer 1 fixtures without any network calls or browser.
+Priority: High (P1)
+Estimate: M
+Status: Planned
+Dependencies: US-0267 (EPIC-0048)
+Acceptance Criteria:
+
+- [ ] AC-1040: `tests/e2e/pipeline-local.spec.js` — installs into a temp project, copies Layer 1 fixtures into place, runs `npm run build`; asserts `plan-status.html` contains the title of every story whose Status is not Cancelled and the epic name of every epic in the fixture
+- [ ] AC-1041: After `npm run build`, `docs/dashboard.html` exists; calling `generateHTML(json)` with the fixture `sdlc-status.json` produced by `npm run init:status` returns HTML containing each phase name from the fixture's programme object
+- [ ] AC-1042: Both HTML files are valid (no `<script>` errors when parsed as text, no unclosed tags detectable by a regex scan for `<<<` conflict markers or literal `undefined` in the output)
+- [ ] AC-1043: `npm run check:ids` exits 0 after the full build — no ID registry corruption introduced by the pipeline run
+
+```
+
+```
+
+US-0270 (EPIC-0048): As a QA engineer, I want an agentic lifecycle e2e test that drives the CLI state tools and asserts both sdlc-status.json and the dashboard HTML reflect each state transition.
+Priority: High (P1)
+Estimate: M
+Status: Planned
+Dependencies: US-0269 (EPIC-0048)
+Acceptance Criteria:
+
+- [ ] AC-1044: `tests/e2e/pipeline-agentic.spec.js` — after local install + fixture copy, calls `agent-lifecycle.js start` for a fixture story, reads `docs/sdlc-status.json`, and asserts the task appears with `status: 'in_progress'`; then calls `agent-lifecycle.js done` with a summary and asserts `status: 'done'`
+- [ ] AC-1045: After each lifecycle command, `npm run dashboard` regenerates `docs/dashboard.html`; `assertHtml` verifies the fixture story's title appears in the agent card section when in_progress and in the completed section when done
+- [ ] AC-1046: The spec/plan gate (US-0182) is exercised: `npm run agent:pending` returns the fixture story after a `spec-plan submit` call; `npm run agent:approve` approves it; a subsequent `agent:pending` call returns an empty list — all without a live Conductor session
+- [ ] AC-1047: `npm run agent:deploy-init` creates `docs/deployment-status.json`; `npm run agent:deploy-start` transitions it to `deploying`; `npm run agent:deploy-complete` transitions it to `deployed`; `assertSdlcState` verifies the final shape; `npm run dashboard` produces HTML containing the deploy panel with "deployed" text
+- [ ] AC-1048: All state assertions above are also verified via `generateHTML(json)` HTML inspection — no Playwright required for this suite
+
+```
+
+```
+
+US-0271 (EPIC-0048): As a QA engineer, I want a GitHub-connected Layer 2 e2e test that drives the Shelf initialization prompt through the live Conductor pipeline and asserts the output documents are valid.
+Priority: Medium (P2)
+Estimate: L
+Status: Planned
+Dependencies: US-0267 (EPIC-0048)
+Acceptance Criteria:
+
+- [ ] AC-1049: `tests/e2e/pipeline-github.spec.js` — skipped automatically when `E2E_GITHUB_TOKEN` is not set; when set, clones `ksyed0/pv-e2e-target`, runs the cleanup/reset block from the Shelf init prompt prerequisites, then invokes the Conductor with the Shelf init prompt
+- [ ] AC-1050: The test polls `gh pr list --head feature/shelf-init` every 30 s for up to 30 min; when the PR appears, it checks out the branch and runs all DoD assertions from the init prompt (generate exits 0, `check:ids` exits 0, all five phase epics present, no Dockerfile present)
+- [ ] AC-1051: `docs/ci-contract.md` on the branch contains no unfilled `TODO` or `TBD` fields (regex scan)
+- [ ] AC-1052: `docs/RELEASE_PLAN.md` on the branch has ≥5 epics and ≥10 stories parseable by `generate-plan.js`; each story has an Estimate field and a Priority field
+- [ ] AC-1053: The nightly CI job sets `E2E_GITHUB_TOKEN` from a repository secret and runs this suite; a failed run posts a summary comment to the `pv-e2e-target` repo's open PR (if one exists) via `gh pr comment`
+
+```
+
+```
+
+US-0272 (EPIC-0048): As a QA engineer, I want a Playwright e2e suite covering dashboard live behaviors and visual regression so that CSS and JS interaction regressions are caught before merge.
+Priority: Medium (P2)
+Estimate: M
+Status: Planned
+Dependencies: US-0269 (EPIC-0048)
+Acceptance Criteria:
+
+- [ ] AC-1054: `tests/e2e/dashboard-playwright.spec.js` — generates `docs/dashboard.html` from a known fixture, opens it in a headless Chromium page via Playwright, and asserts: (a) the density toggle pill cycles through S → M → L on click and the selection persists on reload via localStorage; (b) the live ticker is visible and contains a time value matching `HH:MM` format; (c) flag-download button click triggers a file download with the correct `approve-<story>-<gate>.flag` filename (reuses existing fixture from `tests/e2e/fixtures/`)
+- [ ] AC-1055: `toMatchSnapshot()` screenshot assertions run against both light and dark theme variants of the dashboard; snapshots are committed to `tests/e2e/snapshots/` and the CI job fails if a snapshot diffs by more than 0.1% of pixels (Playwright `maxDiffPixelRatio: 0.001`)
+- [ ] AC-1056: The Playwright suite is gated by `PLAYWRIGHT_E2E=true` env var so it can be skipped locally without affecting the rest of `npm run test:e2e`; `jest.e2e.config.js` passes this check via a `globalSetup` that skips the suite if the var is absent
+
+```
