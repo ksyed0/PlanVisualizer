@@ -23,7 +23,7 @@ function createTempProject({ skipGitInit = false } = {}) {
   };
 }
 
-function runScript(script, args = [], cwd, { timeout = 120000 } = {}) {
+function runScript(script, args = [], cwd, { timeout = 120000, input } = {}) {
   // Shell scripts (scripts/*.sh): resolve relative to PV root
   const isShellScript = script.endsWith('.sh') || script.startsWith('scripts/');
   let fullCmd;
@@ -37,12 +37,14 @@ function runScript(script, args = [], cwd, { timeout = 120000 } = {}) {
     fullCmd = args.length ? `${script} ${quotedArgs}` : script;
   }
   try {
-    return execSync(fullCmd, {
+    const execOpts = {
       cwd: cwd || ROOT,
       timeout,
       encoding: 'utf8',
       stdio: 'pipe',
-    });
+    };
+    if (input !== undefined) execOpts.input = input;
+    return execSync(fullCmd, execOpts);
   } catch (err) {
     throw new Error(
       [
