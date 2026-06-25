@@ -33,15 +33,18 @@ test.beforeAll(async ({}, testInfo) => {
     // Install fixture as sdlc-status.json
     fs.copyFileSync(path.join(FIXTURES, 'sdlc-status-init.json'), STATUS_PATH);
     // Generate dashboard.html
-    execSync(`node "${path.join(ROOT, 'tools/generate-dashboard.js')}"`, {
-      cwd: ROOT,
-      stdio: 'pipe',
-      timeout: 30000,
-    });
-    // Restore original sdlc-status.json
-    if (fs.existsSync(STATUS_BACKUP)) {
-      fs.copyFileSync(STATUS_BACKUP, STATUS_PATH);
-      fs.unlinkSync(STATUS_BACKUP);
+    try {
+      execSync(`node "${path.join(ROOT, 'tools/generate-dashboard.js')}"`, {
+        cwd: ROOT,
+        stdio: 'pipe',
+        timeout: 30000,
+      });
+    } finally {
+      // Restore original sdlc-status.json even if generator crashes
+      if (fs.existsSync(STATUS_BACKUP)) {
+        fs.copyFileSync(STATUS_BACKUP, STATUS_PATH);
+        fs.unlinkSync(STATUS_BACKUP);
+      }
     }
   } else {
     // Other workers wait up to 15 s for worker 0 to finish generating
