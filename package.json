@@ -4,6 +4,7 @@
   "description": "Self-contained project dashboard for Claude Code projects",
   "scripts": {
     "test": "jest",
+    "test:e2e": "jest --config jest.e2e.config.js",
     "test:coverage": "jest --coverage",
     "lint": "eslint .",
     "generate": "node tools/generate-plan.js",

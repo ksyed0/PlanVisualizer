@@ -1,0 +1,43 @@
+name: E2E Tests
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 3 * * *' # 03:00 UTC nightly
+
+jobs:
+  e2e-layer1:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run test:e2e -- --testPathIgnorePatterns="pipeline-github"
+        env:
+          PLAYWRIGHT_E2E: 'true'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-report-${{ github.run_id }}
+          path: |
+            tests/e2e/snapshots/
+
+  e2e-layer2:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    needs: e2e-layer1
+    if: github.event_name == 'schedule'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run test:e2e -- --testPathPattern="pipeline-github"
+        env:
+          E2E_GITHUB_TOKEN: ${{ secrets.E2E_GITHUB_TOKEN }}
