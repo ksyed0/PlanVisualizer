@@ -149,6 +149,8 @@ describe('Suite 4a: agent-lifecycle state machine (AC-1044, AC-1045)', () => {
     expect(html).toContain('<!DOCTYPE html>');
     // The task state 'done' is embedded somewhere in the rendered output
     expect(JSON.stringify(data.tasks[taskId])).toContain('done');
+    // AC-1045b: also assert the rendered HTML contains 'done' (not just the raw data)
+    expect(html).toContain('done');
   });
 });
 
