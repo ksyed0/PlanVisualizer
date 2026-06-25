@@ -34,6 +34,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 const { runScript, assertHtml } = require('./helpers');
 
 const ROOT = path.resolve(__dirname, '../..');
@@ -46,6 +47,19 @@ describe('Suite 3: Local pipeline (plan-status + dashboard)', () => {
     // produces the authoritative output for AC-1040 and AC-1042.
     runScript('npm run generate', [], ROOT, { timeout: 90000 });
   }, 120000);
+
+  afterAll(() => {
+    // Restore docs/ files that generate overwrote, to avoid leaving a dirty
+    // working tree after the test run.
+    try {
+      execSync('git checkout HEAD -- docs/plan-status.html docs/dashboard.html', {
+        cwd: ROOT,
+        stdio: 'pipe',
+      });
+    } catch (_) {
+      // Files may not be committed yet on a fresh branch — ignore.
+    }
+  });
 
   // AC-1040: plan-status.html contains stable story fragments from the real
   // docs/RELEASE_PLAN.md. Titles chosen are partial matches that will remain
