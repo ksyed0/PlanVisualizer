@@ -4,6 +4,8 @@
   "description": "Self-contained project dashboard for Claude Code projects",
   "scripts": {
     "test": "jest",
+    "test:e2e": "jest --config jest.e2e.config.js",
+    "playwright:e2e": "PLAYWRIGHT_E2E=true playwright test tests/e2e/dashboard-playwright.spec.js",
     "test:coverage": "jest --coverage",
     "lint": "eslint .",
     "generate": "node tools/generate-plan.js",
@@ -62,6 +64,7 @@
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
+    "@playwright/test": "^1.61.1",
     "chart.js": "^4.5.1",
     "eslint": "10.4.0",
     "husky": "^9.1.7",

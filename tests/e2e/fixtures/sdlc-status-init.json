@@ -1,0 +1,85 @@
+{
+  "tasks": {},
+  "log": [],
+  "programme": {
+    "project": {
+      "name": "E2E Test Project",
+      "description": "Fixture project for e2e testing",
+      "repoUrl": "https://github.com/ksyed0/pv-e2e-target",
+      "startDate": "2026-06-25"
+    },
+    "cycles": [],
+    "currentPhase": 3,
+    "phases": [
+      {
+        "id": 1,
+        "name": "Blueprint",
+        "agents": ["Compass"],
+        "deliverables": ["refined ACs", "priority list"],
+        "status": "complete"
+      },
+      {
+        "id": 2,
+        "name": "Architect",
+        "agents": ["Keystone"],
+        "deliverables": ["scaffold", "types", "service stubs"],
+        "status": "complete"
+      },
+      {
+        "id": 3,
+        "name": "Build",
+        "agents": ["Pixel", "Forge", "Palette"],
+        "deliverables": ["implementation", "unit tests"],
+        "status": "in-progress"
+      },
+      {
+        "id": 4,
+        "name": "Integration",
+        "agents": ["Pixel"],
+        "deliverables": ["wired services", "e2e flows"],
+        "status": "pending"
+      },
+      {
+        "id": 5,
+        "name": "Test",
+        "agents": ["Sentinel", "Circuit"],
+        "deliverables": ["test report", "coverage"],
+        "status": "pending"
+      },
+      {
+        "id": 6,
+        "name": "Polish",
+        "agents": ["Pixel", "Forge"],
+        "deliverables": ["bug fixes", "demo prep"],
+        "status": "pending"
+      },
+      {
+        "id": 7,
+        "name": "Deploy",
+        "agents": ["Deploy"],
+        "deliverables": ["deployed sha", "environment health report", "open incidents"],
+        "status": "pending"
+      }
+    ],
+    "agents": {
+      "Conductor": { "status": "idle", "currentTask": null, "tasksCompleted": 0 },
+      "Compass": { "status": "idle", "currentTask": null, "tasksCompleted": 1 },
+      "Keystone": { "status": "idle", "currentTask": null, "tasksCompleted": 1 },
+      "Lens": { "status": "idle", "currentTask": null, "tasksCompleted": 0 },
+      "Palette": { "status": "idle", "currentTask": null, "tasksCompleted": 0 },
+      "Forge": { "status": "active", "currentTask": "US-T004: search functionality", "tasksCompleted": 1 },
+      "Pixel": { "status": "idle", "currentTask": null, "tasksCompleted": 1 },
+      "Sentinel": { "status": "idle", "currentTask": null, "tasksCompleted": 0 },
+      "Circuit": { "status": "idle", "currentTask": null, "tasksCompleted": 0 },
+      "Deploy": { "status": "idle", "currentTask": null, "tasksCompleted": 0 }
+    },
+    "epics": { "EPIC-T001": "E2E Fixture — Completed Work", "EPIC-T002": "E2E Fixture — Active Work" },
+    "stories": {
+      "US-T001": { "epic": "EPIC-T001", "title": "E2E-Fixture: Login", "status": "done" },
+      "US-T004": { "epic": "EPIC-T002", "title": "E2E-Fixture: Search functionality", "status": "in_progress" }
+    },
+    "activeSprint": null,
+    "conductorLastDispatch": null,
+    "conductorHoldReason": null
+  }
+}
