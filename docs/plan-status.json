@@ -419,9 +419,9 @@
       "title": "Step 1 Persistence — Planning Writers (Phase E)",
       "description": "Write APIs for stories, epics, ACs, bugs, lessons, test_cases, id_registry land with AST-preserving serializers. ID allocator bypasses the index and writes ID_REGISTRY.md under a file lock. repo.transaction((tx) => ...) lands with lexicographic lock acquisition + batched markdown writes at commit. Migration 001 normalises fenced blocks one-shot; user reviews the diff. agent-context.js, generate-plan.js (writer paths), and sync-github.js migrate in one PR. Final round-trip gate on post-Migration-001 production files.",
       "releaseTarget": "v2.5.0",
-      "status": "To Do",
+      "status": "Done",
       "startDate": null,
-      "doneDate": null,
+      "doneDate": "2026-05-25",
       "dependencies": [
         "EPIC-0039"
       ]
@@ -437,6 +437,40 @@
       "dependencies": [
         "EPIC-0040"
       ]
+    },
+    {
+      "id": "EPIC-0045",
+      "title": "Consumer Migration & Cleanup (SDLC Repository Abstraction, Phase E)",
+      "description": "Retire Phase D's three transitional scaffolds (sdlc-mirror.js preservation block, retired sdlc-status-indexer.js file, dual-read || json.{key} accessor fallback). Ship Migration 006 to ingest the 9 legacy top-level keys into sdlc_programme SQL. Migrate dashboard + 3 non-dashboard consumers to read via the new sdlc-status-reader accessor. Close 4 Phase E hard gates verified on develop.",
+      "releaseTarget": "v2.5.0",
+      "status": "Done",
+      "startDate": null,
+      "doneDate": null,
+      "dependencies": [
+        "EPIC-0039 (Phase D)"
+      ]
+    },
+    {
+      "id": "EPIC-0047",
+      "title": "E2E Test Infrastructure",
+      "description": "Shared harness for all e2e test suites — helpers, Layer 1 static fixtures, reset/cleanup utilities, and the separate npm test:e2e script + CI job. Must be complete before any EPIC-0048 scenario can be authored.",
+      "releaseTarget": "v2.5.0",
+      "status": "Planned",
+      "startDate": null,
+      "doneDate": null,
+      "dependencies": []
+    },
+    {
+      "id": "EPIC-0048",
+      "title": "E2E Pipeline Scenarios",
+      "description": "End-to-end test suites covering installation, update, local pipeline (plan-status + agentic dashboard), agentic lifecycle state transitions, GitHub-connected Layer 2 (Shelf init prompt driving Conductor → Compass → Keystone), and Playwright dashboard behavioral tests. Depends on EPIC-0047 infrastructure.",
+      "releaseTarget": "v2.5.0",
+      "status": "Planned",
+      "startDate": null,
+      "doneDate": null,
+      "dependencies": [
+        "EPIC-0047"
+      ]
     }
   ],
   "stories": [
@@ -451,6 +485,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0001",
@@ -481,6 +518,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0004",
@@ -506,6 +546,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0006",
@@ -531,6 +574,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0008",
@@ -561,6 +607,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0011",
@@ -586,6 +635,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0013",
@@ -611,6 +663,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0015",
@@ -638,6 +693,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0017",
@@ -670,6 +728,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0020",
@@ -709,6 +770,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0023",
@@ -736,6 +800,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0025",
@@ -766,6 +833,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0028",
@@ -791,6 +861,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0030",
@@ -816,6 +889,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0078",
@@ -853,6 +929,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0082",
@@ -890,6 +969,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0258",
@@ -927,6 +1009,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0032",
@@ -957,6 +1042,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0035",
@@ -987,6 +1075,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0038",
@@ -1012,6 +1103,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0040",
@@ -1042,6 +1136,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0043",
@@ -1067,6 +1164,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0045",
@@ -1097,6 +1197,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0048",
@@ -1127,6 +1230,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0051",
@@ -1159,6 +1265,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0054",
@@ -1189,6 +1298,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0057",
@@ -1231,6 +1343,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0062",
@@ -1259,6 +1374,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0064",
@@ -1291,6 +1409,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0067",
@@ -1319,6 +1440,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0073",
@@ -1361,6 +1485,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0069",
@@ -1399,6 +1526,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0086",
@@ -1441,6 +1571,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0091",
@@ -1488,6 +1621,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0097",
@@ -1520,6 +1656,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0100",
@@ -1557,6 +1696,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0104",
@@ -1594,6 +1736,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0108",
@@ -1626,6 +1771,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0111",
@@ -1658,6 +1806,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0114",
@@ -1690,6 +1841,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0117",
@@ -1722,6 +1876,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0120",
@@ -1754,6 +1911,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0123",
@@ -1781,6 +1941,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0125",
@@ -1808,6 +1971,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0127",
@@ -1835,6 +2001,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0129",
@@ -1862,6 +2031,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0131",
@@ -1889,6 +2061,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0133",
@@ -1916,6 +2091,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0135",
@@ -1943,6 +2121,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0137",
@@ -1980,6 +2161,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0141",
@@ -2007,6 +2191,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0143",
@@ -2034,6 +2221,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0145",
@@ -2066,6 +2256,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0148",
@@ -2093,6 +2286,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0150",
@@ -2128,6 +2324,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0996",
@@ -2163,6 +2362,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0154",
@@ -2200,6 +2402,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0158",
@@ -2237,6 +2442,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0162",
@@ -2274,6 +2482,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0166",
@@ -2306,6 +2517,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0247",
@@ -2343,6 +2557,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0251",
@@ -2375,6 +2592,9 @@
       "prNumber": null,
       "specPath": "docs/superpowers/specs/2026-04-08-trends-ui-dashboard-date-design.md",
       "planPath": "docs/superpowers/plans/2026-04-08-trends-ui-dashboard-date.md",
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0264",
@@ -2412,6 +2632,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0169",
@@ -2447,6 +2670,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0173",
@@ -2485,6 +2711,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0177",
@@ -2523,6 +2752,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0181",
@@ -2555,6 +2787,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0184",
@@ -2587,6 +2822,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0254",
@@ -2625,6 +2863,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0187",
@@ -2660,6 +2901,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0191",
@@ -2698,6 +2942,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0195",
@@ -2741,6 +2988,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0200",
@@ -2778,6 +3028,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0204",
@@ -2815,6 +3068,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0601",
@@ -2859,6 +3115,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0208",
@@ -2899,6 +3158,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0213",
@@ -2936,6 +3198,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0217",
@@ -2968,6 +3233,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0220",
@@ -3005,6 +3273,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0224",
@@ -3040,6 +3311,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0228",
@@ -3077,6 +3351,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0232",
@@ -3110,6 +3387,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0235",
@@ -3149,6 +3429,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0239",
@@ -3187,6 +3470,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [
         {
           "id": "AC-0243",
@@ -3224,6 +3510,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3238,6 +3527,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3252,6 +3544,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3266,6 +3561,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3280,6 +3578,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3294,6 +3595,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": "2026-05-10",
       "acs": [],
       "dependencies": []
     },
@@ -3308,6 +3612,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": "2026-05-10",
       "acs": [],
       "dependencies": []
     },
@@ -3322,6 +3629,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3336,6 +3646,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3350,6 +3663,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3364,6 +3680,9 @@
       "prNumber": null,
       "specPath": "docs/superpowers/specs/2026-04-08-trends-ui-dashboard-date-design.md",
       "planPath": "docs/superpowers/plans/2026-04-08-trends-ui-dashboard-date.md",
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3378,6 +3697,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3392,6 +3714,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3406,6 +3731,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3420,6 +3748,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": [
         "US-0088"
@@ -3436,6 +3767,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": [
         "US-0088"
@@ -3452,6 +3786,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": [
         "US-0088",
@@ -3469,6 +3806,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": [
         "US-0088"
@@ -3485,6 +3825,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3499,6 +3842,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3513,6 +3859,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3527,6 +3876,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3541,6 +3893,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3555,6 +3910,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3569,6 +3927,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3583,6 +3944,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3597,6 +3961,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3611,6 +3978,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3625,6 +3995,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3639,6 +4012,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3653,6 +4029,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3667,6 +4046,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3681,6 +4063,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3695,6 +4080,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3709,6 +4097,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3723,6 +4114,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3737,6 +4131,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3751,6 +4148,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3765,6 +4165,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3779,6 +4182,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3793,6 +4199,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3807,6 +4216,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3821,6 +4233,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3835,6 +4250,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3849,6 +4267,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3863,6 +4284,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3877,6 +4301,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3891,6 +4318,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3905,6 +4335,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3919,6 +4352,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3933,6 +4369,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3947,6 +4386,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3961,6 +4403,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3975,6 +4420,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -3989,6 +4437,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4003,6 +4454,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4017,6 +4471,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4031,6 +4488,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4045,6 +4505,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4059,6 +4522,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4073,6 +4539,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4087,6 +4556,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4101,6 +4573,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4115,6 +4590,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4129,6 +4607,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4143,6 +4624,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4157,6 +4641,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4171,6 +4658,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4185,6 +4675,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4199,6 +4692,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4213,6 +4709,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4227,6 +4726,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4241,6 +4743,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4255,6 +4760,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4269,6 +4777,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4283,6 +4794,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4297,6 +4811,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4311,6 +4828,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4325,6 +4845,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4339,6 +4862,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4353,6 +4879,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4367,6 +4896,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4381,6 +4913,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4395,6 +4930,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4409,6 +4947,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4423,6 +4964,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4437,6 +4981,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4451,6 +4998,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4465,6 +5015,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4479,6 +5032,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4493,6 +5049,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4507,6 +5066,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4521,6 +5083,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4535,6 +5100,9 @@
       "prNumber": null,
       "specPath": "docs/superpowers/specs/2026-05-11-us-0181-pre-dispatch-spec-plan-orchestration-design.md",
       "planPath": "docs/superpowers/plans/2026-05-11-us-0181-pre-dispatch-spec-plan-orchestration.md",
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4549,6 +5117,9 @@
       "prNumber": 1037,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": [
         "US-0182 (EPIC-0028)"
@@ -4565,6 +5136,9 @@
       "prNumber": 1039,
       "specPath": "docs/superpowers/specs/2026-05-14-us-0184-context-curator-design.md",
       "planPath": "docs/superpowers/plans/2026-05-14-us-0184-context-curator.md",
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": [
         "US-0182 (EPIC-0028)",
@@ -4582,6 +5156,9 @@
       "prNumber": 1048,
       "specPath": "docs/superpowers/specs/2026-05-15-us-0185-conductor-dispatch-protocol-design.md",
       "planPath": "docs/superpowers/plans/2026-05-17-us-0185-conductor-dispatch-protocol.md",
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": [
         "US-0182 (EPIC-0028)",
@@ -4600,6 +5177,9 @@
       "prNumber": 1055,
       "specPath": "docs/superpowers/specs/2026-05-17-us-0186-dashboard-review-gate-visualization-design.md",
       "planPath": "docs/superpowers/plans/2026-05-17-us-0186-dashboard-review-gate-visualization.md",
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": [
         "US-0185 (EPIC-0028)"
@@ -4616,6 +5196,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": "A.1",
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4630,6 +5213,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": "A.2",
+      "relatedBug": "BUG-0259",
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4644,6 +5230,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": "A.3",
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4658,6 +5247,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": "A.4",
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": [
         "US-0217 (EPIC-0036)"
@@ -4674,6 +5266,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": "A.5",
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4688,6 +5283,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": "A.6",
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": [
         "US-0219 (EPIC-0036)"
@@ -4704,6 +5302,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": "A.7",
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": [
         "US-0217 (EPIC-0036)",
@@ -4721,6 +5322,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": "A.8",
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4735,6 +5339,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": "A.9",
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": [
         "US-0219 (EPIC-0036)",
@@ -4754,6 +5361,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": "A.10",
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4768,6 +5378,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": "A.11",
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": [
         "US-0224 (EPIC-0036)",
@@ -4785,6 +5398,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": "B.1",
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": [
         "US-0220 (EPIC-0036)",
@@ -4802,6 +5418,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": "B.2",
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": [
         "US-0226 (EPIC-0037)"
@@ -4818,6 +5437,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": "B.3",
+      "relatedBug": "BUG-0258",
+      "doneDate": null,
       "acs": [],
       "dependencies": [
         "US-0226 (EPIC-0037)"
@@ -4834,6 +5456,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": "B.4",
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": [
         "US-0228 (EPIC-0037)"
@@ -4850,6 +5475,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": "C.1",
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": [
         "US-0226 (EPIC-0037)"
@@ -4866,6 +5494,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": "C.2",
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": [
         "US-0230 (EPIC-0038)"
@@ -4882,6 +5513,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": "C5.1",
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": [
         "US-0227 (EPIC-0037)",
@@ -4899,6 +5533,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": "C5.2",
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": [
         "US-0227 (EPIC-0037)"
@@ -4915,6 +5552,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": "C5.3",
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": [
         "US-0227 (EPIC-0037)"
@@ -4931,6 +5571,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": "Tasks 3 & 4 of 2026-05-21-post-c5-hygiene.md",
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": [
         "US-0253 (EPIC-0042)"
@@ -4947,6 +5590,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": "Tasks 1 & 2 of 2026-05-21-post-c5-hygiene.md",
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": [
         "(none — must ship before US-0256 in the same PR)"
@@ -4963,6 +5609,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": []
     },
@@ -4977,6 +5626,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": "D.1",
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": [
         "US-0223 (EPIC-0036)"
@@ -4993,6 +5645,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": "D.2",
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": [
         "US-0232 (EPIC-0039)",
@@ -5010,6 +5665,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": "D.3",
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": [
         "US-0232 (EPIC-0039)"
@@ -5026,6 +5684,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": "D.4",
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": [
         "US-0232 (EPIC-0039)"
@@ -5042,6 +5703,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": "D.5",
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": [
         "US-0232 (EPIC-0039)"
@@ -5058,6 +5722,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": "D.6",
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": [
         "US-0232 (EPIC-0039)"
@@ -5074,6 +5741,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": "D.7",
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": [
         "US-0232 (EPIC-0039)"
@@ -5090,6 +5760,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": "D.8",
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": [
         "US-0233 (EPIC-0039)",
@@ -5102,11 +5775,14 @@
       "title": "As any planning writer, I want update/create APIs on stories, epics, ACs, bugs, lessons, test_cases, planning_tasks with AST-preserving serializers, so that mutations replace exactly the targeted fenced block.",
       "priority": "P1",
       "estimate": "XL",
-      "status": "To Do",
-      "branch": "",
-      "prNumber": null,
+      "status": "Done",
+      "branch": "feature/US-0240-writer-apis",
+      "prNumber": 1124,
       "specPath": null,
       "planPath": null,
+      "planTask": "E.1",
+      "relatedBug": null,
+      "doneDate": "2026-05-25",
       "acs": [],
       "dependencies": [
         "US-0230 (EPIC-0038)",
@@ -5119,11 +5795,14 @@
       "title": "As a story creator, I want repo.idRegistry.allocate(sequence, count) that bypasses the index and reads/writes ID_REGISTRY.md under a file lock, so that allocations never collide across concurrent writers.",
       "priority": "P1",
       "estimate": "M",
-      "status": "To Do",
-      "branch": "",
-      "prNumber": null,
+      "status": "Done",
+      "branch": "feature/US-0241-id-allocator",
+      "prNumber": 1126,
       "specPath": null,
       "planPath": null,
+      "planTask": "E.2",
+      "relatedBug": "BUG-0258",
+      "doneDate": "2026-05-25",
       "acs": [],
       "dependencies": []
     },
@@ -5133,11 +5812,14 @@
       "title": "As any multi-entity writer, I want repo.transaction((tx) => ...) that batches markdown writes until commit in lexicographic lock order, so that story+ACs+ID-registry mutations are atomic.",
       "priority": "P1",
       "estimate": "L",
-      "status": "To Do",
-      "branch": "",
-      "prNumber": null,
+      "status": "Done",
+      "branch": "feature/US-0242-transaction-wrapper",
+      "prNumber": 1131,
       "specPath": null,
       "planPath": null,
+      "planTask": "E.3",
+      "relatedBug": null,
+      "doneDate": "2026-05-25",
       "acs": [],
       "dependencies": [
         "US-0240 (EPIC-0040)",
@@ -5150,11 +5832,14 @@
       "title": "As an upgrading user, I want Migration 001 to normalise all managed markdown via two-pass AST round-trip, so that Phase E writes start from a canonical baseline.",
       "priority": "P1",
       "estimate": "M",
-      "status": "To Do",
-      "branch": "",
-      "prNumber": null,
+      "status": "Done",
+      "branch": "feature/US-0243-migration-001",
+      "prNumber": 1129,
       "specPath": null,
       "planPath": null,
+      "planTask": "E.4",
+      "relatedBug": null,
+      "doneDate": "2026-05-25",
       "acs": [],
       "dependencies": [
         "US-0218 (EPIC-0036)"
@@ -5166,11 +5851,14 @@
       "title": "As the context curator, I want tools/agent-context.js to write any managed-path mutations through the repository, so that the Phase F CI rule passes.",
       "priority": "P2",
       "estimate": "S",
-      "status": "To Do",
-      "branch": "",
-      "prNumber": null,
+      "status": "Done",
+      "branch": "feature/US-0244-agent-context",
+      "prNumber": 1133,
       "specPath": null,
       "planPath": null,
+      "planTask": "E.5",
+      "relatedBug": null,
+      "doneDate": "2026-05-25",
       "acs": [],
       "dependencies": [
         "US-0240 (EPIC-0040)"
@@ -5182,11 +5870,14 @@
       "title": "As the dashboard builder, I want tools/generate-plan.js writer paths (status patching, story-row updates) to go through the repository, so that the build never bypasses the abstraction.",
       "priority": "P1",
       "estimate": "M",
-      "status": "To Do",
-      "branch": "",
-      "prNumber": null,
+      "status": "Done",
+      "branch": "feature/US-0245-generate-plan",
+      "prNumber": 1135,
       "specPath": null,
       "planPath": null,
+      "planTask": "E.6",
+      "relatedBug": null,
+      "doneDate": "2026-05-25",
       "acs": [],
       "dependencies": [
         "US-0240 (EPIC-0040)"
@@ -5198,11 +5889,14 @@
       "title": "As the GitHub sync, I want tools/sync-github.js to update story PR numbers via the repository, so that GitHub-driven writes participate in the same lock + index pipeline.",
       "priority": "P2",
       "estimate": "S",
-      "status": "To Do",
-      "branch": "",
-      "prNumber": null,
+      "status": "Done",
+      "branch": "feature/US-0246-sync-github",
+      "prNumber": 1137,
       "specPath": null,
       "planPath": null,
+      "planTask": "E.7",
+      "relatedBug": null,
+      "doneDate": "2026-05-25",
       "acs": [],
       "dependencies": [
         "US-0240 (EPIC-0040)"
@@ -5214,11 +5908,14 @@
       "title": "As the maintainer, I want the round-trip harness re-run against post-Migration-001 production files as the Phase E gate, so that prose-preservation regressions surface before Phase F.",
       "priority": "P1",
       "estimate": "S",
-      "status": "To Do",
-      "branch": "",
+      "status": "Done",
+      "branch": "feature/US-0247-phase-e-hard-gate",
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": "E.8",
+      "relatedBug": null,
+      "doneDate": "2026-05-25",
       "acs": [],
       "dependencies": [
         "US-0243 (EPIC-0040)"
@@ -5235,6 +5932,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": "F.1",
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": [
         "US-0216 (EPIC-0036)"
@@ -5251,6 +5951,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": "F.2",
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": [
         "US-0247 (EPIC-0040)"
@@ -5267,6 +5970,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": "F.3",
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": [
         "US-0223 (EPIC-0036)"
@@ -5283,6 +5989,9 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": "F.4",
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": [
         "US-0240 (EPIC-0040)"
@@ -5299,10 +6008,273 @@
       "prNumber": null,
       "specPath": null,
       "planPath": null,
+      "planTask": "F.5",
+      "relatedBug": null,
+      "doneDate": null,
       "acs": [],
       "dependencies": [
         "US-0225 (EPIC-0036)",
         "US-0239 (EPIC-0039)"
+      ]
+    },
+    {
+      "id": "US-0259",
+      "epicId": "EPIC-0045",
+      "title": "As a dashboard consumer, I want to read SDLC status through a single dual-read accessor module so that the migration window between US-0259 merge and Migration 006 ingest (US-0262) doesn't blank the dashboard, and so that the dashboard + browser-side ticker share one source of truth for the 9 legacy keys.",
+      "priority": "P1",
+      "estimate": "M",
+      "status": "Done",
+      "branch": "feature/US-0259-accessor-and-dashboard",
+      "prNumber": 1102,
+      "specPath": null,
+      "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
+      "acs": [],
+      "dependencies": [
+        "EPIC-0039 (Phase D — SdlcStatus cutover)"
+      ]
+    },
+    {
+      "id": "US-0260",
+      "epicId": "EPIC-0045",
+      "title": "As a non-dashboard consumer of sdlc-status.json (generate-plan, agent-context, agent-spec-plan, init-sdlc-status), I want my reads to go through the US-0259 accessor and my writes to land in canonical {tasks, log, programme} shape, so that the data path is unified and pre-Phase-E fixtures continue to work via the transitional fallback.",
+      "priority": "P1",
+      "estimate": "M",
+      "status": "Done",
+      "branch": "feature/US-0260-non-dashboard-consumers",
+      "prNumber": 1106,
+      "specPath": null,
+      "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
+      "acs": [],
+      "dependencies": [
+        "US-0259 (EPIC-0045)"
+      ]
+    },
+    {
+      "id": "US-0262",
+      "epicId": "EPIC-0045",
+      "title": "As a developer upgrading from a pre-Phase-E PlanVisualizer, I want Migration 006 to ingest the 9 legacy top-level keys of docs/sdlc-status.json into sdlc_programme SQL on first pv:upgrade, so that consumers reading via reader.X() see the populated programme.* shape post-migration.",
+      "priority": "P1",
+      "estimate": "M",
+      "status": "Done",
+      "branch": "feature/US-0262-migration-006",
+      "prNumber": 1111,
+      "specPath": null,
+      "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
+      "acs": [],
+      "dependencies": [
+        "US-0259 (EPIC-0045)"
+      ]
+    },
+    {
+      "id": "US-0263",
+      "epicId": "EPIC-0045",
+      "title": "As a project maintainer, I want the two-Migration-005 naming collision (L-0081) resolved and the docs/.pv-state.json escapee gitignored, so that grep -r 'Migration 005' returns one and only one artefact and `git status` after pv:upgrade is clean.",
+      "priority": "P3",
+      "estimate": "S",
+      "status": "Done",
+      "branch": "feature/US-0263-housekeeping",
+      "prNumber": 1103,
+      "specPath": null,
+      "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
+      "acs": [],
+      "dependencies": [
+        "None (parallel-safe with US-0259..US-0262)"
+      ]
+    },
+    {
+      "id": "US-0261",
+      "epicId": "EPIC-0045",
+      "title": "As a maintainer closing Phase E, I want the three Phase D scaffolds (sdlc-mirror.js preservation block, retired sdlc-status-indexer.js file, dual-read || json.{key} accessor fallback) removed, so that the SQL → JSON mirror is a pure function of SQL state, dead code is gone, and the consumer contract is one-shape-canonical.",
+      "priority": "P1",
+      "estimate": "M",
+      "status": "Done",
+      "branch": "feature/US-0261-cleanup-hard-gates",
+      "prNumber": 1114,
+      "specPath": null,
+      "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
+      "acs": [],
+      "dependencies": [
+        "US-0259 (EPIC-0045)",
+        "US-0260 (EPIC-0045)",
+        "US-0262 (EPIC-0045)"
+      ]
+    },
+    {
+      "id": "US-0264",
+      "epicId": "EPIC-0047",
+      "title": "As a test author, I want a shared e2e helpers module so that every suite can create isolated temp projects, run scripts, and assert HTML/state without duplicating setup code.",
+      "priority": "P1",
+      "estimate": "S",
+      "status": "Planned",
+      "branch": "",
+      "prNumber": null,
+      "specPath": null,
+      "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
+      "acs": [],
+      "dependencies": []
+    },
+    {
+      "id": "US-0265",
+      "epicId": "EPIC-0047",
+      "title": "As a test suite, I want a complete set of Layer 1 static fixture files so that all install/update/local-pipeline tests run against deterministic, pre-authored project data without any network calls.",
+      "priority": "P1",
+      "estimate": "S",
+      "status": "Planned",
+      "branch": "",
+      "prNumber": null,
+      "specPath": null,
+      "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
+      "acs": [],
+      "dependencies": []
+    },
+    {
+      "id": "US-0266",
+      "epicId": "EPIC-0047",
+      "title": "As a developer, I want a dedicated `test:e2e` npm script and a separate CI job so that slow install/pipeline tests do not block the main PR gate.",
+      "priority": "P2",
+      "estimate": "XS",
+      "status": "Planned",
+      "branch": "",
+      "prNumber": null,
+      "specPath": null,
+      "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
+      "acs": [],
+      "dependencies": []
+    },
+    {
+      "id": "US-0267",
+      "epicId": "EPIC-0048",
+      "title": "As a QA engineer, I want an install + idempotency e2e test so that regressions in scripts/install.sh are caught automatically.",
+      "priority": "P1",
+      "estimate": "S",
+      "status": "Planned",
+      "branch": "",
+      "prNumber": null,
+      "specPath": null,
+      "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
+      "acs": [],
+      "dependencies": []
+    },
+    {
+      "id": "US-0268",
+      "epicId": "EPIC-0048",
+      "title": "As a QA engineer, I want an update e2e test so that regressions in scripts/update.sh are caught automatically.",
+      "priority": "P1",
+      "estimate": "S",
+      "status": "Planned",
+      "branch": "",
+      "prNumber": null,
+      "specPath": null,
+      "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
+      "acs": [],
+      "dependencies": [
+        "US-0267 (EPIC-0048)"
+      ]
+    },
+    {
+      "id": "US-0269",
+      "epicId": "EPIC-0048",
+      "title": "As a QA engineer, I want a local pipeline e2e test that verifies both dashboards populate correctly from the Layer 1 fixtures without any network calls or browser.",
+      "priority": "P1",
+      "estimate": "M",
+      "status": "Planned",
+      "branch": "",
+      "prNumber": null,
+      "specPath": null,
+      "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
+      "acs": [],
+      "dependencies": [
+        "US-0267 (EPIC-0048)"
+      ]
+    },
+    {
+      "id": "US-0270",
+      "epicId": "EPIC-0048",
+      "title": "As a QA engineer, I want an agentic lifecycle e2e test that drives the CLI state tools and asserts both sdlc-status.json and the dashboard HTML reflect each state transition.",
+      "priority": "P1",
+      "estimate": "M",
+      "status": "Planned",
+      "branch": "",
+      "prNumber": null,
+      "specPath": null,
+      "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
+      "acs": [],
+      "dependencies": [
+        "US-0269 (EPIC-0048)"
+      ]
+    },
+    {
+      "id": "US-0271",
+      "epicId": "EPIC-0048",
+      "title": "As a QA engineer, I want a GitHub-connected Layer 2 e2e test that drives the Shelf initialization prompt through the live Conductor pipeline and asserts the output documents are valid.",
+      "priority": "P2",
+      "estimate": "L",
+      "status": "Planned",
+      "branch": "",
+      "prNumber": null,
+      "specPath": null,
+      "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
+      "acs": [],
+      "dependencies": [
+        "US-0267 (EPIC-0048)"
+      ]
+    },
+    {
+      "id": "US-0272",
+      "epicId": "EPIC-0048",
+      "title": "As a QA engineer, I want a Playwright e2e suite covering dashboard live behaviors and visual regression so that CSS and JS interaction regressions are caught before merge.",
+      "priority": "P2",
+      "estimate": "M",
+      "status": "Planned",
+      "branch": "",
+      "prNumber": null,
+      "specPath": null,
+      "planPath": null,
+      "planTask": null,
+      "relatedBug": null,
+      "doneDate": null,
+      "acs": [],
+      "dependencies": [
+        "US-0269 (EPIC-0048)"
       ]
     }
   ],
@@ -11817,11 +12789,11 @@
       "severity": "Low",
       "relatedStory": "",
       "relatedTask": "",
-      "status": "Open",
-      "fixBranch": "",
+      "status": "Fixed",
+      "fixBranch": "(pre-dates this plan — fix was in render-shell.js, commit unknown)",
       "lessonEncoded": "No",
       "estimatedCostUsd": 0,
-      "ghIssueNumber": null
+      "ghIssueNumber": 1155
     },
     {
       "id": "BUG-0255",
@@ -11829,11 +12801,11 @@
       "severity": "Low",
       "relatedStory": "",
       "relatedTask": "",
-      "status": "Open",
-      "fixBranch": "",
+      "status": "Fixed",
+      "fixBranch": "(pre-dates this plan — fix was in render-tabs.js)",
       "lessonEncoded": "No",
       "estimatedCostUsd": 0,
-      "ghIssueNumber": null
+      "ghIssueNumber": 1156
     },
     {
       "id": "BUG-0256",
@@ -11841,11 +12813,11 @@
       "severity": "Low",
       "relatedStory": "",
       "relatedTask": "",
-      "status": "Open",
-      "fixBranch": "",
+      "status": "Fixed",
+      "fixBranch": "(pre-dates this plan — fix was in render-tabs.js)",
       "lessonEncoded": "No",
       "estimatedCostUsd": 0,
-      "ghIssueNumber": null
+      "ghIssueNumber": 1157
     },
     {
       "id": "BUG-0257",
@@ -11865,11 +12837,11 @@
       "severity": "Medium",
       "relatedStory": "US-0215 (EPIC-0036)",
       "relatedTask": "",
-      "status": "Open",
-      "fixBranch": "",
+      "status": "Fixed",
+      "fixBranch": "(this plan)",
       "lessonEncoded": "No",
       "estimatedCostUsd": 0,
-      "ghIssueNumber": null
+      "ghIssueNumber": 1158
     },
     {
       "id": "BUG-0259",
@@ -11894,1362 +12866,1470 @@
       "lessonEncoded": "No",
       "estimatedCostUsd": 0,
       "ghIssueNumber": null
+    },
+    {
+      "id": "BUG-0267",
+      "title": "Dashboard — Conductor 'Last Dispatch' strip always shows 'No dispatches yet'",
+      "severity": "Medium",
+      "relatedStory": "",
+      "relatedTask": "",
+      "status": "Fixed",
+      "fixBranch": "hotfix/BUG-0258-claude-mem-worker-deps",
+      "lessonEncoded": "No",
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 1152
+    },
+    {
+      "id": "BUG-0268",
+      "title": "Dashboard — all pipeline phases show inactive after session-start / epic-start",
+      "severity": "Medium",
+      "relatedStory": "",
+      "relatedTask": "",
+      "status": "Fixed",
+      "fixBranch": "hotfix/BUG-0258-claude-mem-worker-deps",
+      "lessonEncoded": "No",
+      "estimatedCostUsd": 0,
+      "ghIssueNumber": 1153
     }
   ],
   "costs": {
     "US-0001": {
       "projectedUsd": 1600,
-      "costUsd": 3.008559,
+      "costUsd": 2.868847,
       "inputTokens": 90000,
       "outputTokens": 22000
     },
     "US-0002": {
       "projectedUsd": 800,
-      "costUsd": 2.840559,
+      "costUsd": 2.700847,
       "inputTokens": 65000,
       "outputTokens": 16000
     },
     "US-0003": {
       "projectedUsd": 400,
-      "costUsd": 2.764059,
+      "costUsd": 2.624347,
       "inputTokens": 55000,
       "outputTokens": 13000
     },
     "US-0004": {
       "projectedUsd": 800,
-      "costUsd": 2.795559,
+      "costUsd": 2.655847,
       "inputTokens": 60000,
       "outputTokens": 14000
     },
     "US-0005": {
       "projectedUsd": 400,
-      "costUsd": 2.687559,
+      "costUsd": 2.547847,
       "inputTokens": 45000,
       "outputTokens": 10000
     },
     "US-0006": {
       "projectedUsd": 400,
-      "costUsd": 2.764059,
+      "costUsd": 2.624347,
       "inputTokens": 55000,
       "outputTokens": 13000
     },
     "US-0007": {
       "projectedUsd": 400,
-      "costUsd": 2.747559,
+      "costUsd": 2.607847,
       "inputTokens": 55000,
       "outputTokens": 12000
     },
     "US-0008": {
       "projectedUsd": 400,
-      "costUsd": 2.747559,
+      "costUsd": 2.607847,
       "inputTokens": 55000,
       "outputTokens": 12000
     },
     "US-0009": {
       "projectedUsd": 3200,
-      "costUsd": 3.944559,
+      "costUsd": 3.804847,
       "inputTokens": 220000,
       "outputTokens": 55500
     },
     "US-0010": {
       "projectedUsd": 800,
-      "costUsd": 3.944559,
+      "costUsd": 3.804847,
       "inputTokens": 220000,
       "outputTokens": 55500
     },
     "US-0011": {
       "projectedUsd": 800,
-      "costUsd": 2.842059,
+      "costUsd": 2.702347,
       "inputTokens": 65000,
       "outputTokens": 16000
     },
     "US-0012": {
       "projectedUsd": 400,
-      "costUsd": 2.764059,
+      "costUsd": 2.624347,
       "inputTokens": 55000,
       "outputTokens": 13000
     },
     "US-0013": {
       "projectedUsd": 400,
-      "costUsd": 2.732559,
+      "costUsd": 2.592847,
       "inputTokens": 50000,
       "outputTokens": 12000
     },
     "US-0029": {
       "projectedUsd": 400,
-      "costUsd": 3.913059,
+      "costUsd": 3.773347,
       "inputTokens": 220000,
       "outputTokens": 55000
     },
     "US-0030": {
       "projectedUsd": 400,
-      "costUsd": 3.832059,
+      "costUsd": 3.692347,
       "inputTokens": 210000,
       "outputTokens": 52000
     },
     "US-0082": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0014": {
       "projectedUsd": 400,
-      "costUsd": 20.076867,
+      "costUsd": 19.937155,
       "inputTokens": 1298990,
       "outputTokens": 163277
     },
     "US-0015": {
       "projectedUsd": 400,
-      "costUsd": 20.076867,
+      "costUsd": 19.937155,
       "inputTokens": 1298990,
       "outputTokens": 163277
     },
     "US-0016": {
       "projectedUsd": 400,
-      "costUsd": 20.076867,
+      "costUsd": 19.937155,
       "inputTokens": 1298990,
       "outputTokens": 163277
     },
     "US-0017": {
       "projectedUsd": 800,
-      "costUsd": 20.076867,
+      "costUsd": 19.937155,
       "inputTokens": 1298990,
       "outputTokens": 163277
     },
     "US-0018": {
       "projectedUsd": 400,
-      "costUsd": 20.076867,
+      "costUsd": 19.937155,
       "inputTokens": 1298990,
       "outputTokens": 163277
     },
     "US-0019": {
       "projectedUsd": 800,
-      "costUsd": 2.932059,
+      "costUsd": 2.792347,
       "inputTokens": 75000,
       "outputTokens": 20000
     },
     "US-0020": {
       "projectedUsd": 800,
-      "costUsd": 2.978559,
+      "costUsd": 2.838847,
       "inputTokens": 80000,
       "outputTokens": 22000
     },
     "US-0021": {
       "projectedUsd": 800,
-      "costUsd": 2.992059,
+      "costUsd": 2.852347,
       "inputTokens": 70000,
       "outputTokens": 25000
     },
     "US-0022": {
       "projectedUsd": 800,
-      "costUsd": 3.362559,
+      "costUsd": 3.222847,
       "inputTokens": 140000,
       "outputTokens": 35000
     },
     "US-0023": {
       "projectedUsd": 800,
-      "costUsd": 3.383559,
+      "costUsd": 3.243847,
       "inputTokens": 135000,
       "outputTokens": 37500
     },
     "US-0024": {
       "projectedUsd": 400,
-      "costUsd": 3.383559,
+      "costUsd": 3.243847,
       "inputTokens": 135000,
       "outputTokens": 37500
     },
     "US-0025": {
       "projectedUsd": 400,
-      "costUsd": 3.527059,
+      "costUsd": 3.387347,
       "inputTokens": 160000,
       "outputTokens": 41667
     },
     "US-0026": {
       "projectedUsd": 400,
-      "costUsd": 3.527059,
+      "costUsd": 3.387347,
       "inputTokens": 160000,
       "outputTokens": 41667
     },
     "US-0028": {
       "projectedUsd": 400,
-      "costUsd": 4.652559,
+      "costUsd": 4.512847,
       "inputTokens": 330000,
       "outputTokens": 82000
     },
     "US-0027": {
       "projectedUsd": 400,
-      "costUsd": 3.527059,
+      "costUsd": 3.387347,
       "inputTokens": 160000,
       "outputTokens": 41667
     },
     "US-0031": {
       "projectedUsd": 400,
-      "costUsd": 6.335559,
+      "costUsd": 6.195847,
       "inputTokens": 570000,
       "outputTokens": 143000
     },
     "US-0032": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0033": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0034": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0035": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0036": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0037": {
       "projectedUsd": 200,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0038": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0039": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0040": {
       "projectedUsd": 400,
-      "costUsd": 2.756934,
+      "costUsd": 2.617222,
       "inputTokens": 50000,
       "outputTokens": 13250
     },
     "US-0041": {
       "projectedUsd": 400,
-      "costUsd": 2.756934,
+      "costUsd": 2.617222,
       "inputTokens": 50000,
       "outputTokens": 13250
     },
     "US-0042": {
       "projectedUsd": 400,
-      "costUsd": 2.756934,
+      "costUsd": 2.617222,
       "inputTokens": 50000,
       "outputTokens": 13250
     },
     "US-0043": {
       "projectedUsd": 200,
-      "costUsd": 2.756934,
+      "costUsd": 2.617222,
       "inputTokens": 50000,
       "outputTokens": 13250
     },
     "US-0044": {
       "projectedUsd": 200,
-      "costUsd": 2.756934,
+      "costUsd": 2.617222,
       "inputTokens": 50000,
       "outputTokens": 13250
     },
     "US-0045": {
       "projectedUsd": 200,
-      "costUsd": 2.756934,
+      "costUsd": 2.617222,
       "inputTokens": 50000,
       "outputTokens": 13250
     },
     "US-0046": {
       "projectedUsd": 200,
-      "costUsd": 2.756934,
+      "costUsd": 2.617222,
       "inputTokens": 50000,
       "outputTokens": 13250
     },
     "US-0047": {
       "projectedUsd": 400,
-      "costUsd": 2.756934,
+      "costUsd": 2.617222,
       "inputTokens": 50000,
       "outputTokens": 13250
     },
     "US-0048": {
       "projectedUsd": 1600,
-      "costUsd": 14.078179,
+      "costUsd": 13.938467,
       "inputTokens": 713670,
       "outputTokens": 68062
     },
     "US-0049": {
-      "projectedUsd": 2.30787,
-      "costUsd": 14.078179,
+      "projectedUsd": 2.223954,
+      "costUsd": 13.938467,
       "inputTokens": 713670,
       "outputTokens": 68062
     },
     "US-0050": {
       "projectedUsd": 800,
-      "costUsd": 14.078179,
+      "costUsd": 13.938467,
       "inputTokens": 713670,
       "outputTokens": 68062
     },
     "US-0051": {
       "projectedUsd": 400,
-      "costUsd": 14.078179,
+      "costUsd": 13.938467,
       "inputTokens": 713670,
       "outputTokens": 68062
     },
     "US-0052": {
       "projectedUsd": 400,
-      "costUsd": 14.078179,
+      "costUsd": 13.938467,
       "inputTokens": 713670,
       "outputTokens": 68062
     },
     "US-0053": {
       "projectedUsd": 800,
-      "costUsd": 2.761659,
+      "costUsd": 2.621947,
       "inputTokens": 55887,
       "outputTokens": 2644
     },
     "US-0054": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0055": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0056": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0057": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0058": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0079": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0080": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0084": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0059": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0060": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0061": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0062": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0063": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0081": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0064": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0065": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0066": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0067": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0068": {
-      "projectedUsd": 2.8272060000000003,
-      "costUsd": 2.395059,
+      "projectedUsd": 2.6505,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0169": {
       "projectedUsd": 800,
-      "costUsd": 86.020459,
+      "costUsd": 85.880747,
       "inputTokens": 7805769,
       "outputTokens": 445569
     },
     "US-0069": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0070": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0071": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0072": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0073": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0074": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0075": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0076": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0077": {
-      "projectedUsd": 2.8272060000000003,
-      "costUsd": 2.395059,
+      "projectedUsd": 2.6505,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0078": {
-      "projectedUsd": 2.30787,
-      "costUsd": 2.395059,
+      "projectedUsd": 2.223954,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0170": {
       "projectedUsd": 200,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0171": {
       "projectedUsd": 1600,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0172": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0173": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0175": {
-      "projectedUsd": 6.292836,
-      "costUsd": 2.395059,
+      "projectedUsd": 5.6353860000000005,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0176": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0177": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0178": {
-      "projectedUsd": 6.292836,
-      "costUsd": 2.395059,
+      "projectedUsd": 5.6353860000000005,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0179": {
-      "projectedUsd": 6.292836,
-      "costUsd": 2.395059,
+      "projectedUsd": 5.6353860000000005,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0181": {
-      "projectedUsd": 2.8272060000000003,
-      "costUsd": 2.395059,
+      "projectedUsd": 2.6505,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0085": {
       "projectedUsd": 200,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0086": {
       "projectedUsd": 400,
-      "costUsd": 20.076867,
+      "costUsd": 19.937155,
       "inputTokens": 1298990,
       "outputTokens": 163277
     },
     "US-0087": {
       "projectedUsd": 200,
-      "costUsd": 20.076867,
+      "costUsd": 19.937155,
       "inputTokens": 1298990,
       "outputTokens": 163277
     },
     "US-0088": {
       "projectedUsd": 800,
-      "costUsd": 20.076867,
+      "costUsd": 19.937155,
       "inputTokens": 1298990,
       "outputTokens": 163277
     },
     "US-0089": {
       "projectedUsd": 800,
-      "costUsd": 20.076867,
+      "costUsd": 19.937155,
       "inputTokens": 1298990,
       "outputTokens": 163277
     },
     "US-0090": {
       "projectedUsd": 800,
-      "costUsd": 20.076867,
+      "costUsd": 19.937155,
       "inputTokens": 1298990,
       "outputTokens": 163277
     },
     "US-0091": {
       "projectedUsd": 1600,
-      "costUsd": 20.076867,
+      "costUsd": 19.937155,
       "inputTokens": 1298990,
       "outputTokens": 163277
     },
     "US-0092": {
       "projectedUsd": 400,
-      "costUsd": 20.076867,
+      "costUsd": 19.937155,
       "inputTokens": 1298990,
       "outputTokens": 163277
     },
     "US-0093": {
       "projectedUsd": 800,
-      "costUsd": 20.076867,
+      "costUsd": 19.937155,
       "inputTokens": 1298990,
       "outputTokens": 163277
     },
     "US-0083": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0108": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0109": {
       "projectedUsd": 200,
-      "costUsd": 155.041959,
+      "costUsd": 154.902247,
       "inputTokens": 3937957,
       "outputTokens": 737215
     },
     "US-0174": {
-      "projectedUsd": 6.292836,
-      "costUsd": 2.395059,
+      "projectedUsd": 5.6353860000000005,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0180": {
-      "projectedUsd": 6.292836,
-      "costUsd": 2.395059,
+      "projectedUsd": 5.6353860000000005,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0094": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0095": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0096": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0097": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0098": {
       "projectedUsd": 200,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0099": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0100": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0101": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0102": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0103": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0104": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0105": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0106": {
       "projectedUsd": 400,
-      "costUsd": 3.290159,
+      "costUsd": 3.150447,
       "inputTokens": 92003,
       "outputTokens": 14272
     },
     "US-0107": {
       "projectedUsd": 200,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0110": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0111": {
       "projectedUsd": 1600,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0112": {
       "projectedUsd": 200,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0113": {
       "projectedUsd": 200,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0114": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0115": {
       "projectedUsd": 1600,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0118": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0119": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0120": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0121": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0122": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0123": {
       "projectedUsd": 200,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0124": {
       "projectedUsd": 200,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0125": {
       "projectedUsd": 200,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0148": {
       "projectedUsd": 1600,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0126": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0116": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0117": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0127": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0128": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0129": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0130": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0131": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0132": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0133": {
       "projectedUsd": 1600,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0134": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0135": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0136": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0137": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0138": {
       "projectedUsd": 200,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0139": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0140": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0141": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0142": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0143": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0144": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0145": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0146": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0147": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0149": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0150": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0151": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0152": {
       "projectedUsd": 1600,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0153": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0154": {
       "projectedUsd": 1600,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0155": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0156": {
       "projectedUsd": 800,
-      "costUsd": 40.848959,
+      "costUsd": 40.709247,
       "inputTokens": 2876600,
       "outputTokens": 545597
     },
     "US-0157": {
       "projectedUsd": 1600,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0158": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0159": {
       "projectedUsd": 1600,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0160": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0161": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0164": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0165": {
       "projectedUsd": 200,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0166": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0182": {
       "projectedUsd": 3200,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0183": {
       "projectedUsd": 1600,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0184": {
       "projectedUsd": 1600,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0185": {
       "projectedUsd": 3200,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0186": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0215": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0216": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0217": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0218": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0219": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0220": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0221": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0222": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0223": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0224": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0225": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0226": {
       "projectedUsd": 1600,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0227": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0228": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0229": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0230": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0231": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0253": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0254": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0255": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0256": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0257": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0258": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0232": {
-      "projectedUsd": 2.8272060000000003,
-      "costUsd": 2.395059,
+      "projectedUsd": 2.6505,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0233": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0234": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0235": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0236": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0237": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0238": {
       "projectedUsd": 400,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0239": {
       "projectedUsd": 800,
-      "costUsd": 2.395059,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0240": {
-      "projectedUsd": 1.6529939999999999,
-      "costUsd": 2.395059,
+      "projectedUsd": 3200,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0241": {
-      "projectedUsd": 6.292836,
-      "costUsd": 2.395059,
+      "projectedUsd": 800,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0242": {
-      "projectedUsd": 2.8272060000000003,
-      "costUsd": 2.395059,
+      "projectedUsd": 1600,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0243": {
-      "projectedUsd": 6.292836,
-      "costUsd": 2.395059,
+      "projectedUsd": 800,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0244": {
-      "projectedUsd": 2.30787,
-      "costUsd": 2.395059,
+      "projectedUsd": 400,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0245": {
-      "projectedUsd": 6.292836,
-      "costUsd": 2.395059,
+      "projectedUsd": 800,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0246": {
-      "projectedUsd": 2.30787,
-      "costUsd": 2.395059,
+      "projectedUsd": 400,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0247": {
-      "projectedUsd": 2.30787,
-      "costUsd": 2.395059,
+      "projectedUsd": 400,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0248": {
-      "projectedUsd": 2.30787,
-      "costUsd": 2.395059,
+      "projectedUsd": 2.223954,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0249": {
-      "projectedUsd": 6.292836,
-      "costUsd": 2.395059,
+      "projectedUsd": 5.6353860000000005,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0250": {
-      "projectedUsd": 2.30787,
-      "costUsd": 2.395059,
+      "projectedUsd": 2.223954,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0251": {
-      "projectedUsd": 2.30787,
-      "costUsd": 2.395059,
+      "projectedUsd": 2.223954,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
     "US-0252": {
-      "projectedUsd": 2.30787,
-      "costUsd": 2.395059,
+      "projectedUsd": 2.223954,
+      "costUsd": 2.255347,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0259": {
+      "projectedUsd": 800,
+      "costUsd": 2.255347,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0260": {
+      "projectedUsd": 800,
+      "costUsd": 2.255347,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0262": {
+      "projectedUsd": 800,
+      "costUsd": 2.255347,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0263": {
+      "projectedUsd": 400,
+      "costUsd": 2.255347,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0261": {
+      "projectedUsd": 800,
+      "costUsd": 2.255347,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0264": {
+      "projectedUsd": 2.223954,
+      "costUsd": 2.255347,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0265": {
+      "projectedUsd": 2.223954,
+      "costUsd": 2.255347,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0266": {
+      "projectedUsd": 6.390432,
+      "costUsd": 2.255347,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0267": {
+      "projectedUsd": 2.223954,
+      "costUsd": 2.255347,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0268": {
+      "projectedUsd": 2.223954,
+      "costUsd": 2.255347,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0269": {
+      "projectedUsd": 5.6353860000000005,
+      "costUsd": 2.255347,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0270": {
+      "projectedUsd": 5.6353860000000005,
+      "costUsd": 2.255347,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0271": {
+      "projectedUsd": 2.6505,
+      "costUsd": 2.255347,
+      "inputTokens": 0,
+      "outputTokens": 0
+    },
+    "US-0272": {
+      "projectedUsd": 5.6353860000000005,
+      "costUsd": 2.255347,
       "inputTokens": 0,
       "outputTokens": 0
     },
@@ -15075,6 +16155,22 @@
         "isEstimated": false,
         "projectedUsd": 800
       },
+      "BUG-0267": {
+        "costUsd": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "sessions": 0,
+        "isEstimated": false,
+        "projectedUsd": 400
+      },
+      "BUG-0268": {
+        "costUsd": 0,
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "sessions": 0,
+        "isEstimated": false,
+        "projectedUsd": 400
+      },
       "_totals": {
         "costUsd": 403.077301,
         "inputTokens": 29067040,
@@ -16664,6 +17760,104 @@
       "failedTCNoBug": false,
       "openCriticalBug": false,
       "isAtRisk": false
+    },
+    "US-0259": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0260": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0262": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0263": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0261": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0264": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0265": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0266": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0267": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0268": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0269": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0270": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0271": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
+    },
+    "US-0272": {
+      "missingTCs": false,
+      "noBranch": false,
+      "failedTCNoBug": false,
+      "openCriticalBug": false,
+      "isAtRisk": false
     }
   },
   "risk": {
@@ -16671,15 +17865,30 @@
     "byEpic": {}
   },
   "coverage": {
-    "lines": 90.12,
-    "statements": 88.2,
-    "functions": 89.31,
-    "branches": 77.89,
-    "overall": 90.12,
-    "meetsTarget": true,
+    "lines": 65.99,
+    "statements": 65.56,
+    "functions": 68.75,
+    "branches": 67.27,
+    "overall": 65.99,
+    "meetsTarget": false,
     "available": true
   },
   "recentActivity": [
+    {
+      "sessionNum": 60,
+      "date": "2026-05-24",
+      "summary": "EPIC-0040 (Planning Writers — Phase E sibling to EPIC-0045) brainstormed, specced, planned, cross-plan-reviewed, and merged. **No code changes** — two docs-only PRs that establish the executable EPIC-0040 work package.; ; | PR    | Title                                              | Develop commit |"
+    },
+    {
+      "sessionNum": 59,
+      "date": "2026-05-23",
+      "summary": "**EPIC-0045 closed.** The remaining 2 stories (US-0262 + US-0261) and the EPIC close-out doc PR shipped. Phase E retires Phase D's three transitional scaffolds — the `sdlc-mirror.js` preservation block, the retired `sdlc-status-indexer.js` file, and the `|| json.{key}` dual-read fallback in the US-0259 accessor — and ingests the 9 legacy top-level keys of `docs/sdlc-status.json` into `sdlc_programme` SQL via Migration 006.; ; | Story                                                                        | PR                                                          | Develop commit |"
+    },
+    {
+      "sessionNum": 58,
+      "date": "2026-05-22",
+      "summary": "EPIC-0045 (Phase E — Consumer Migration & Cleanup) is **3 of 5 stories complete**. The dual-read accessor + all three reader migrations + the canonical init seed shipped to `develop` across four PRs:; ; | Story   | Path                                                        | PR                                                          | Develop commit |"
+    },
     {
       "sessionNum": 57,
       "date": "2026-05-21",
@@ -16689,24 +17898,113 @@
       "sessionNum": 57,
       "date": "2026-05-21",
       "summary": "Implemented **D.1 entity repos** matching the canonical plan (`docs/superpowers/plans/2026-05-19-step-1-repository-abstraction.md` §\"Task D.1\", lines ~3885–4170) verbatim:;   - `tools/lib/repository/entities/sdlc-event-repo.js` — `record(event)` + `list({storyId, since})`;   - `tools/lib/repository/entities/sdlc-task-repo.js` — `upsert(task)` with camelCase↔snake_case `FIELD_MAP`, preserves unset fields on partial updates"
-    },
-    {
-      "sessionNum": 56,
-      "date": "2026-05-21",
-      "summary": "**Deferred item 1 — Orphaned AC-0154..0164 block:** A contiguous block of ACs with no parent story in RELEASE_PLAN.md — truly orphaned. Deleted.; **Deferred item 2 — Misplaced US-0055 (EPIC-0008) \"Planned\" block:** A stale planning artifact from an earlier session that duplicated EPIC-0008 stories with colliding AC IDs. Deleted.; **Deferred item 3 — Migration numbering correction:** Renamed all \"Migration 002\" references to \"Migration 005\" in `docs/RELEASE_PLAN.md` (EPIC-0039 description) and in the step-1 plan doc, reflecting that Migrations 003 and 004 shipped in C.5 and EPIC-0043 respectively."
-    },
-    {
-      "sessionNum": 55,
-      "date": "2026-05-21",
-      "summary": "**Task 1 — Resolve 14 duplicate ACs (US-0257):** Identified that the 14 `duplicate-ac` warnings from `plan:lint` were not redundant data but distinct entities sharing IDs — caused by bulk copy-paste during past story migrations (two clusters: AC-0150..0153 and AC-0334..0343). Renumbered the second occurrence of each pair to AC-0996..AC-1009. Updated 16 TC cross-references in `TEST_CASES.md` to point to the new IDs. Commit `fde0372`.; **Task 2 — Resolve 3 duplicate BUGs + BUGS.md format-doc (US-0257):** Same ID-collision pattern for BUG-0098, BUG-0099, BUG-0100. Renumbered second occurrences to BUG-0262, BUG-0263, BUG-0261. Updated BUGS.md format-doc convention line to document the canonical status set (`Open | In Progress | Fixed | Verified | WontFix | Closed`). Commit `c70a59b`.; **Task 3 — Migration 004 + shared insert-helper (US-0256):** Created Migration 004 (`tools/lib/repository/migrations/004_widen_bugs_status.sql`) widening `bugs.status` CHECK from `Open|In Progress|Fixed|Wontfix|Done` to the canonical set. Extracted the inline `tryInsert` helper from `release-plan-indexer.js` into a shared module at `tools/lib/repository/insert-helper.js` with 5 dedicated unit tests. Commit `8d56849`."
-    },
-    {
-      "sessionNum": 53,
-      "date": "2026-05-20",
-      "summary": "**C.1 Entity read APIs (US-0230):** Shipped `tools/lib/repository/entities/base-repo.js` (BaseRepo with `get(id)`, `list(filters)`), `epic-repo.js`, `story-repo.js`, `ac-repo.js`. All three entity repos wired into `Repository.getInstance()` as `repo.epics`, `repo.stories`, `repo.acs` with list filters (`epicId`, `status`, `storyId`). camelCase column mapping enforced across all repos. Commits `6e2c88b` and `7ee3bcf`.; **C.2 Dashboard repo migration (US-0231, flag-guarded):** Shipped `tools/lib/dashboard-repo-reader.js` with `mergeRepoData` shim. `tools/generate-plan.js` reads epics/stories/ACs via the repository under `PV_DASHBOARD_VIA_REPO=1`; default remains OFF (legacy path). Second `indexAll` call gated to flag-off path to avoid double indexing. Commits `d09f43a` and `baec131`.; **Hard gate verified:** Parity diff between legacy and repo paths = timestamps only. Zero semantic diff on production data."
     }
   ],
   "lessons": [
+    {
+      "id": "L-0096",
+      "title": "ID_REGISTRY merge conflicts: always take max(HEAD, theirs) per sequence; PROMPT_LOG session numbers: first committer owns the number",
+      "rule": "`docs/ID_REGISTRY.md` contains monotonically-incrementing counters (BUG, L, ENH, AC, TC, TASK, …). When a merge conflict arises in this file, the correct resolution is `max(HEAD_value, theirs_value)` for each sequence — never pick one side wholesale. Taking the lower value silently re-allocates already-used IDs, causing duplicates that are hard to detect later.\n\nFor `PROMPT_LOG.md` session numbering: when two branches both add sessions and claim the same number, the branch that merged to `develop` first owns that number. Rename later branches' sessions by adding the count of conflicts found (e.g. both claim Session 62 → develop's is 62, ours become 63/64).",
+      "context": "",
+      "date": "2026-06-24",
+      "bugIds": []
+    },
+    {
+      "id": "L-0095",
+      "title": "ID-scanning regex must cap digit length to avoid matching example IDs in prose (`\\d{1,4}` not `\\d+`)",
+      "rule": "",
+      "context": "",
+      "date": "2026-06-22",
+      "bugIds": []
+    },
+    {
+      "id": "L-0094",
+      "title": "Plan-specified CSS variables must be verified against the actual stylesheet — never trust the spec verbatim",
+      "rule": "",
+      "context": "",
+      "date": "2026-06-22",
+      "bugIds": []
+    },
+    {
+      "id": "L-0092",
+      "title": "Theme-specific surface overrides must be matched by foreground overrides, or contrast silently breaks",
+      "rule": "When a component hard-codes a foreground palette for one theme (e.g. the active-agent hero card's light-orange name + orange task text designed for a dark surface), a _more specific_ generic rule can quietly swap its background in the other theme and tank contrast. Here `.agent-card.is-active` (specificity 0,2,0, `background: var(--surface)`) outranked `.mc-active-card` (0,1,0, dark) so in **light theme** the hero card went near-white while its text stayed dark-tuned — the task line measured **~1.1:1** (WCAG AA needs 4.5:1), i.e. invisible (BUG-0266). **Fixes:** (1) when you set a themed background on a component, set its text colours in the _same_ specificity/theme scope; (2) measure contrast in **both** themes, not just the one you author in — a quick `getComputedStyle` + relative-luminance probe in the browser catches this; (3) prefer pinning a deliberately-dark \"hero/on-air\" surface in both themes (`[data-theme='light'] .mc-active-card.agent-card.is-active { background: … }`) over re-tuning every foreground colour.\n_Identified fixing BUG-0266 — verified with an in-browser oklch→rgb contrast probe (1.07→7.42:1 on the task text) and a screenshot._",
+      "context": "",
+      "date": "2026-06-08",
+      "bugIds": []
+    },
+    {
+      "id": "L-0091",
+      "title": "Jest `testMatch` with a leading `**/` silently scans nested git worktrees",
+      "rule": "`testMatch: ['**/tests/unit/**/*.test.js', ...]` matches _any_ ancestor directory, so when a git worktree lives inside the repo (e.g. `.claude/worktrees/<name>/`), jest discovers and runs that worktree's copy of the tests too. Stale worktrees whose `node_modules` have been removed then fail with `Cannot find module …`, breaking `npm test` locally even though the change under test is fine (CI is unaffected because CI checks out a clean tree without worktrees). **Fix:** exclude the worktree root from both discovery and Haste resolution — `testPathIgnorePatterns: ['/node_modules/', '/\\\\.claude/']` and `modulePathIgnorePatterns: ['/\\\\.claude/']`. More generally, any glob anchored with `**/` should be paired with explicit ignore patterns for in-repo worktree/cache dirs.\n_Identified fixing BUG-0265 — a stale `.claude/worktrees/` tree made jest scan 371 phantom test files._",
+      "context": "",
+      "date": "2026-06-08",
+      "bugIds": []
+    },
+    {
+      "id": "L-0090",
+      "title": "A failing Stop hook is not necessarily _our_ Stop hook; identify the owner before \"fixing\" it",
+      "rule": "Claude Code runs **all** registered `Stop` hooks. PlanVisualizer's `install.sh §0.1` runs `npx claude-mem install`, which makes the third-party **claude-mem** plugin register its own Stop hook (`worker-service.cjs`). When a Stop-hook error surfaces, read the **path in the error** before assuming it is `tools/capture-cost.js`. The `Cannot find module 'zod/v3'` crash (BUG-0264) came entirely from claude-mem's worker, not our code — `zod/v3` is a valid subpath of zod 4.x; the real cause was a **stale plugin version directory** (13.3.0) left in `~/.claude/plugins/cache` after an interrupted upgrade to 13.4.1, with incomplete `node_modules`. Two takeaways: (1) Never fabricate a repo \"fix\" for a third-party plugin's bug — the file lives outside the git tree and faking it is dishonest. (2) Since our installer _triggers_ the claude-mem install, the legitimate fix is on our side of the boundary: verify the active worker can resolve its deps after install/update (`verify_claude_mem_health` in `install.sh`/`update.sh`) and flag stale non-pinned version dirs, which are what fire spurious crashes. The pinned version is the `installPath` in `~/.claude/plugins/installed_plugins.json`.\n_Identified fixing BUG-0264. Repaired locally by moving the orphaned 13.3.0 cache dir aside; hardened both installer scripts to self-verify._",
+      "context": "",
+      "date": "2026-06-08",
+      "bugIds": []
+    },
+    {
+      "id": "L-0089",
+      "title": "`BEGIN DEFERRED` while the callback awaits is a SQLite-with-async transaction footgun; document the \"callback must complete promptly\" rule in module JSDoc",
+      "rule": "When designing a transaction wrapper that opens a database transaction at the start of an async callback, document the \"keep the callback minimal — stage writes and return; don't `await` anything except tx.X.\\* calls\" rule in module-level JSDoc. The doc is the contract; integration tests that complete quickly are the inverse-canary (if a test hangs, the callback is doing something it shouldn't).",
+      "context": "",
+      "date": "2026-05-25",
+      "bugIds": []
+    },
+    {
+      "id": "L-0088",
+      "title": "GitHub-hosted CodeQL Code Scanning does NOT honor inline `// codeql[<rule-id>]` or `// lgtm[...]` comments; only UI dismissal, API dismissal, or path relocation works",
+      "rule": "When CodeQL Code Scanning fails on a PR and the threat model genuinely doesn't apply (or has runtime defense), do NOT spend commits attempting inline-comment suppressions — they're not a feature of GitHub-hosted scanning. The 3 working paths are: (1) dismiss the alert via the GitHub UI (\"Used in tests\" / \"Won't fix\"), (2) dismiss via API (`PATCH /repos/.../code-scanning/alerts/<n>`), or (3) refactor so the static-analysis taint breaks at the source.",
+      "context": "",
+      "date": "2026-05-25",
+      "bugIds": []
+    },
+    {
+      "id": "L-0087",
+      "title": "Round-trip property tests against single-block fixtures don't catch parser-segmentation losses; ALWAYS audit the real corpus before declaring \"serializer round-trip clean\"",
+      "rule": "When a serializer's round-trip test passes against fixtures, do NOT declare the serializer \"round-trip clean.\" Always run the round-trip audit harness against the actual production corpus before relying on the property. Fixture tests verify the serializer in isolation; the audit verifies it composes correctly with the parser's segmentation behavior over a real document.",
+      "context": "",
+      "date": "2026-05-25",
+      "bugIds": []
+    },
+    {
+      "id": "L-0086",
+      "title": "A cross-plan consistency review catches blockers that per-plan self-review misses; run it before merge whenever an EPIC ships multiple plans in one sitting",
+      "rule": "When an EPIC produces multiple plans (≥2 plans in one session), the per-plan self-review is necessary but not sufficient. Dispatch a cross-plan consistency review BEFORE merging the plans. The reviewer must check: (a) signature consistency across plans (function defined in plan X is called with matching arity in plan Y), (b) ground-truth alignment against the actual codebase state (schemas, table names, enum values, file existence), (c) implicit \"thick vs thin\" assumptions that don't hold up against the real schema, (d) cross-plan dependency claims (does US-0247 assert a file exists that no earlier plan creates?), (e) merge-order constraints.",
+      "context": "",
+      "date": "2026-05-24",
+      "bugIds": []
+    },
+    {
+      "id": "L-0085",
+      "title": "Subagents drift out of scope when fixing test failures inline; verify the actual file list against the expected scope before accepting \"DONE\"",
+      "rule": "After any subagent's `Status: DONE`, the controller MUST verify `git show <commit> --stat` against the expected file list before accepting the report. Any file outside the task's declared scope is a red flag. Common over-step modes: (a) modifying production code to make a failing test green when the task is test-only, (b) modifying a different consumer when a refactor in the target file breaks downstream callers, (c) invoking other skills (especially `finishing-a-development-branch`) without being asked. Surface these as cleanup work before proceeding; do NOT accept \"the tests pass\" as sufficient evidence the task is complete.",
+      "context": "",
+      "date": "2026-05-24",
+      "bugIds": []
+    },
+    {
+      "id": "L-0084",
+      "title": "Husky-rejected commits leave orphan commits and dirty working trees; subagents misread the rollback as success",
+      "rule": "When a husky pre-commit hook rejects a commit, the rejection is silent from the perspective of a subagent that didn't actively look for it in stderr. The branch tip does NOT advance; the orphan commit lives only in the reflog. Any controller managing subagents that commit through husky hooks MUST verify the branch tip advanced (`git log --oneline -1` matches the implementer's reported SHA) before accepting \"DONE.\" If the SHAs don't match, the controller has uncommitted changes in the working tree that need to be diagnosed (read the rejected diff via `git cat-file -p <orphan-sha>`) and either re-applied with the hook-failing parts fixed, or discarded entirely.",
+      "context": "",
+      "date": "2026-05-24",
+      "bugIds": []
+    },
+    {
+      "id": "L-0083",
+      "title": "When a test is intermittently flaky, check whether its assertion is stronger than the contract it's testing",
+      "rule": "When a test is intermittently flaky, **before** reaching for sleeps, retries, barriers, or `--runInBand` mitigations, ask whether the assertion is stronger than the contract being tested. Over-specified assertions create timing-dependent failures that cannot be eliminated by adding delays — only by weakening the assertion to match the actual invariant. The remedy is **not** to make the scheduler deterministic (which would make the test test nothing); it is to **describe what the system actually guarantees** and assert only that. For a mutex: assert no interleaving, not a specific winner. For a queue: assert FIFO, not specific timestamps. For an event bus: assert each subscriber received the event, not the per-subscriber order.",
+      "context": "",
+      "date": "2026-05-23",
+      "bugIds": []
+    },
     {
       "id": "L-0082",
       "title": "Hard gates that depend on a file's absence are silent gates",
@@ -16721,6 +18019,14 @@
       "rule": "Migration numbers must be unique across all migration runners in the repo. When a project has more than one migration system (schema vs. data, repo-side vs. tool-side, etc.), pick a naming convention that includes the runner namespace — e.g. `schema_005_*.sql` and `data_005_*.js` — so a `grep -r \"Migration 005\"` returns one and only one artefact. Two systems with overlapping numeric IDs is a foot-gun that wastes agent reasoning cycles and produces false negatives in code archaeology.",
       "context": "",
       "date": "2026-05-22",
+      "bugIds": []
+    },
+    {
+      "id": "L-0080",
+      "title": "ID Registry can drift silently when a planning branch is abandoned mid-flight",
+      "rule": "ID-Registry-mutating commits must be pushed to a remote branch **the same session they are authored**, or the registry bump must be reverted in the working tree before the session closes. The registry is a shared lock; holding it open in an unpushed commit is a write-ahead that other sessions cannot see and will overwrite. If a planning commit is intentionally held back (e.g., pending board review), it must include a `wip:` prefix on the branch name AND a corresponding entry in `MEMORY.md` flagging the in-flight ID claim, so the next session knows not to advance the registry from `origin/develop` alone. A bare `chore/...` branch sitting unpushed is invisible to every other session and will cause silent reassignment.",
+      "context": "",
+      "date": "2026-05-21",
       "bugIds": []
     },
     {
@@ -17395,12 +18701,36 @@
       "context": "",
       "date": "2026-05-20",
       "bugIds": []
+    },
+    {
+      "id": "L-0093",
+      "title": "Mark bugs Fixed in BUGS.md and close GH Issues immediately when the fix lands — not later @agent:all",
+      "rule": "",
+      "context": "",
+      "date": "2026-06-21",
+      "bugIds": []
+    },
+    {
+      "id": "L-0094",
+      "title": "Plan-specified CSS variables must be verified against the actual stylesheet — never trust the spec verbatim @agent:Forge @agent:Pixel",
+      "rule": "",
+      "context": "",
+      "date": "2026-06-22",
+      "bugIds": []
+    },
+    {
+      "id": "L-0095",
+      "title": "ID-scanning regex must cap digit length to avoid matching example IDs in prose (`\\d{1,4}` not `\\d+`) @agent:Forge @agent:Keystone",
+      "rule": "",
+      "context": "",
+      "date": "2026-06-22",
+      "bugIds": []
     }
   ],
-  "generatedAt": "2026-05-22T16:17:04.572Z",
-  "commitSha": "5f0c621",
-  "buildNumber": "832",
-  "branch": "claude/phase-d-impl",
+  "generatedAt": "2026-06-25T21:19:35.994Z",
+  "commitSha": "56ca67d",
+  "buildNumber": "887",
+  "branch": "feature/EPIC-0047-e2e-test-automation",
   "sessionTimeline": [
     {
       "date": "2026-03-09",
@@ -18138,9 +19468,9 @@
   "deltaSpend": 83.63,
   "projectName": "PlanVisualizer",
   "tagline": "Self-documenting project dashboards for Agentic coding platforms.",
-  "version": "2.4.17",
+  "version": "2.4.45",
   "appName": "plan-visualizer",
-  "appVersion": "2.4.17",
+  "appVersion": "2.4.45",
   "githubUrl": "https://github.com/ksyed0/PlanVisualizer",
   "agents": {
     "Conductor": {
@@ -18205,12 +19535,19 @@
       "color": "oklch(40% 0.22 285)",
       "avatar": "circuit",
       "instructionFile": "docs/agents/AUTOMATION_TESTER_AGENT.md"
+    },
+    "Deploy": {
+      "role": "DevOps Engineer",
+      "icon": "🚀",
+      "color": "oklch(48% 0.20 195)",
+      "avatar": "deploy",
+      "instructionFile": "docs/agents/DEPLOY_AGENT.md"
     }
   },
   "budget": {
-    "totalBudget": 1223.991308,
+    "totalBudget": 1223.4807919999998,
     "totalSpent": 1133.1037999999999,
-    "totalProjected": 127693.19537800002,
+    "totalProjected": 139692.6009459999,
     "percentUsed": 93,
     "burnRate": 0,
     "daysRemaining": null,
@@ -18230,309 +19567,333 @@
       {
         "id": "EPIC-0001",
         "title": "Core Parsing Engine",
-        "budget": 22.355472,
-        "spent": 22.355472,
+        "budget": 21.237776,
+        "spent": 21.237776,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0002",
         "title": "HTML Dashboard Renderer",
-        "budget": 7.889118,
-        "spent": 7.889118,
+        "budget": 7.609694,
+        "spent": 7.609694,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0003",
         "title": "Installation and Distribution",
-        "budget": 18.478854000000002,
-        "spent": 18.478854000000002,
+        "budget": 17.640582,
+        "spent": 17.640582,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0004",
         "title": "CI/CD Pipeline",
-        "budget": 100.384335,
-        "spent": 100.384335,
+        "budget": 99.685775,
+        "spent": 99.685775,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0005",
         "title": "Project Self-Documentation",
-        "budget": 12.265236000000002,
-        "spent": 12.265236000000002,
+        "budget": 11.706387999999999,
+        "spent": 11.706387999999999,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0006",
         "title": "Dashboard UX & Quality Improvements",
-        "budget": 47.49688500000002,
-        "spent": 47.49688500000002,
+        "budget": 45.401205000000004,
+        "spent": 45.401205000000004,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0007",
         "title": "Dashboard Visual Design Overhaul",
-        "budget": 92.44636700000002,
-        "spent": 92.44636700000002,
+        "budget": 90.63011100000001,
+        "spent": 90.63011100000001,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0008",
         "title": "Trend Analysis & Historical Tracking",
-        "budget": 19.160472,
-        "spent": 19.160472,
+        "budget": 18.042776,
+        "spent": 18.042776,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0009",
         "title": "Budget Forecasting",
-        "budget": 14.370353999999999,
-        "spent": 14.370353999999999,
+        "budget": 13.532082,
+        "spent": 13.532082,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0011",
         "title": "Search",
-        "budget": 29.657103,
-        "spent": 29.657103,
+        "budget": 28.958543,
+        "spent": 28.958543,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0013",
         "title": "Agentic SDLC Dashboard",
-        "budget": 122.85626099999999,
-        "spent": 122.85626099999999,
+        "budget": 121.87827700000001,
+        "spent": 121.87827700000001,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0015",
         "title": "UI Review and Redesign",
-        "budget": 54.502793000000025,
-        "spent": 54.502793000000025,
+        "budget": 52.407113,
+        "spent": 52.407113,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0016",
         "title": "Agentic Dashboard Mission Control Redesign",
-        "budget": 35.925884999999994,
-        "spent": 35.925884999999994,
+        "budget": 33.830205,
+        "spent": 33.830205,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0017",
         "title": "Agentic Dashboard Effectiveness Review",
-        "budget": 2.395059,
-        "spent": 2.395059,
+        "budget": 2.255347,
+        "spent": 2.255347,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0019",
         "title": "Dashboard Cycle History",
-        "budget": 23.95059,
-        "spent": 23.95059,
+        "budget": 22.55347,
+        "spent": 22.55347,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0024",
         "title": "Backlog Closure",
-        "budget": 2.395059,
-        "spent": 2.395059,
+        "budget": 2.255347,
+        "spent": 2.255347,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0025",
         "title": "GitHub Issues Sync",
-        "budget": 7.1851769999999995,
-        "spent": 7.1851769999999995,
+        "budget": 6.7660409999999995,
+        "spent": 6.7660409999999995,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0020",
         "title": "Cross-Dashboard Redesign",
-        "budget": 31.135766999999998,
-        "spent": 31.135766999999998,
+        "budget": 29.319511000000002,
+        "spent": 29.319511000000002,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0021",
         "title": "Test Case Audit",
-        "budget": 62.40449000000001,
-        "spent": 62.40449000000001,
+        "budget": 61.00737,
+        "spent": 61.00737,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0022",
         "title": "Analytics & Charting Enhancements",
-        "budget": 7.1851769999999995,
-        "spent": 7.1851769999999995,
+        "budget": 6.7660409999999995,
+        "spent": 6.7660409999999995,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0023",
         "title": "Dashboard Quality & Reliability",
-        "budget": 7.1851769999999995,
-        "spent": 7.1851769999999995,
+        "budget": 6.7660409999999995,
+        "spent": 6.7660409999999995,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0028",
         "title": "Agentic Orchestration Engine",
-        "budget": 9.580236,
-        "spent": 9.580236,
+        "budget": 9.021388,
+        "spent": 9.021388,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0029",
         "title": "Agentic Pipeline UX",
-        "budget": 2.395059,
-        "spent": 2.395059,
+        "budget": 2.255347,
+        "spent": 2.255347,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0036",
         "title": "Step 1 Persistence — Repository Foundation (Phase A)",
-        "budget": 26.345648999999998,
-        "spent": 26.345648999999998,
+        "budget": 24.808817,
+        "spent": 24.808817,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0037",
         "title": "Step 1 Persistence — Indexer as Spectator (Phase B)",
-        "budget": 9.580236,
-        "spent": 9.580236,
+        "budget": 9.021388,
+        "spent": 9.021388,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0038",
         "title": "Step 1 Persistence — First Read Consumer (Phase C)",
-        "budget": 4.790118,
-        "spent": 4.790118,
+        "budget": 4.510694,
+        "spent": 4.510694,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0042",
         "title": "Step 1 Persistence — Indexer Hardening (Phase C.5)",
-        "budget": 7.1851769999999995,
-        "spent": 7.1851769999999995,
+        "budget": 6.7660409999999995,
+        "spent": 6.7660409999999995,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0043",
         "title": "Post-C.5 Indexer Hygiene",
-        "budget": 4.790118,
-        "spent": 4.790118,
+        "budget": 4.510694,
+        "spent": 4.510694,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0044",
         "title": "Pre-Phase-D Cleanup",
-        "budget": 2.395059,
-        "spent": 2.395059,
+        "budget": 2.255347,
+        "spent": 2.255347,
+        "remaining": 0,
+        "percentUsed": 100
+      },
+      {
+        "id": "EPIC-0040",
+        "title": "Step 1 Persistence — Planning Writers (Phase E)",
+        "budget": 18.042776,
+        "spent": 18.042776,
+        "remaining": 0,
+        "percentUsed": 100
+      },
+      {
+        "id": "EPIC-0045",
+        "title": "Consumer Migration & Cleanup (SDLC Repository Abstraction, Phase E)",
+        "budget": 11.276735,
+        "spent": 11.276735,
         "remaining": 0,
         "percentUsed": 100
       },
       {
         "id": "EPIC-0010",
         "title": "Risk Analytics",
-        "budget": 100.82296000000001,
-        "spent": 97.995754,
-        "remaining": 2.827206000000004,
+        "budget": 99.807982,
+        "spent": 97.157482,
+        "remaining": 2.650499999999994,
         "percentUsed": 97
       },
       {
         "id": "EPIC-0014",
         "title": "Follow-Up Changes",
-        "budget": 179.96952599999997,
-        "spent": 167.38385399999999,
-        "remaining": 12.585671999999988,
-        "percentUsed": 93
+        "budget": 177.816354,
+        "spent": 166.545582,
+        "remaining": 11.270771999999994,
+        "percentUsed": 94
       },
       {
         "id": "EPIC-0039",
         "title": "Step 1 Persistence — SdlcStatus Cutover (Phase D)",
-        "budget": 21.987678,
-        "spent": 19.160472,
-        "remaining": 2.8272060000000003,
+        "budget": 20.693276,
+        "spent": 18.042776,
+        "remaining": 2.650500000000001,
         "percentUsed": 87
       },
       {
         "id": "EPIC-0012",
         "title": "Stakeholder View",
-        "budget": 19.505429999999997,
-        "spent": 14.370353999999999,
-        "remaining": 5.135075999999998,
+        "budget": 18.406536000000003,
+        "spent": 13.532082,
+        "remaining": 4.874454000000002,
         "percentUsed": 74
       },
       {
         "id": "EPIC-0027",
         "title": "Data Store Architecture Assessment",
-        "budget": 5.222265,
-        "spent": 2.395059,
-        "remaining": 2.8272060000000003,
+        "budget": 4.905847,
+        "spent": 2.255347,
+        "remaining": 2.6504999999999996,
         "percentUsed": 46
       },
       {
         "id": "EPIC-0041",
         "title": "Step 1 Persistence — Lock-Down (Phase F)",
-        "budget": 27.499610999999998,
-        "spent": 11.975295,
-        "remaining": 15.524315999999999,
+        "budget": 25.807937000000003,
+        "spent": 11.276735,
+        "remaining": 14.531202000000002,
         "percentUsed": 44
       },
       {
         "id": "EPIC-0026",
         "title": "Memory Token Optimisation",
-        "budget": 30.853803,
-        "spent": 11.975295,
-        "remaining": 18.878508,
-        "percentUsed": 39
+        "budget": 28.182893,
+        "spent": 11.276735,
+        "remaining": 16.906157999999998,
+        "percentUsed": 40
       },
       {
-        "id": "EPIC-0040",
-        "title": "Step 1 Persistence — Planning Writers (Phase E)",
-        "budget": 49.44279,
-        "spent": 19.160472,
-        "remaining": 30.282318000000004,
-        "percentUsed": 39
+        "id": "EPIC-0047",
+        "title": "E2E Test Infrastructure",
+        "budget": 17.604380999999997,
+        "spent": 6.7660409999999995,
+        "remaining": 10.838339999999997,
+        "percentUsed": 38
+      },
+      {
+        "id": "EPIC-0048",
+        "title": "E2E Pipeline Scenarios",
+        "budget": 37.536648,
+        "spent": 13.532082,
+        "remaining": 24.004565999999997,
+        "percentUsed": 36
       }
     ],
     "hasBudget": true
   },
   "completion": {
-    "likelyDate": "Jun 5",
-    "rangeStart": "Jun 2",
-    "rangeEnd": "Jun 8",
-    "velocityWeeks": 12,
-    "storiesPerWeek": 17.5,
-    "pointsPerWeek": 34.1
+    "likelyDate": "Jul 12",
+    "rangeStart": "Jul 8",
+    "rangeEnd": "Jul 15",
+    "velocityWeeks": 16,
+    "storiesPerWeek": 13.1,
+    "pointsPerWeek": 26.3
   },
   "trends": {
     "dates": [
@@ -18587,9 +19948,20 @@
       "2026-04-14T19:30:11.739Z",
       "2026-04-14T19:46:24.241Z",
       "2026-04-14T20:41:46.666Z",
+      "2026-05-11T15:30:33.651Z",
+      "2026-05-11T16:53:38.588Z",
+      "2026-05-11T17:16:19.063Z",
+      "2026-05-11T21:59:46.558Z",
+      "2026-05-13T14:20:45.273Z",
+      "2026-05-13T20:22:23.157Z",
+      "2026-05-14T16:36:27.768Z",
+      "2026-05-14T22:35:46.542Z",
+      "2026-05-19T03:41:08.223Z",
       "2026-05-20T00:38:33.738Z",
       "2026-05-20T15:17:02.252Z",
-      "2026-05-22T16:17:04.677Z"
+      "2026-05-23T03:35:26.120Z",
+      "2026-06-25T20:35:49.465Z",
+      "2026-06-25T21:19:36.065Z"
     ],
     "doneCounts": [
       2,
@@ -18643,9 +20015,20 @@
       78,
       79,
       81,
+      167,
+      167,
+      167,
+      167,
+      167,
+      168,
+      168,
+      168,
+      171,
       171,
       175,
-      202
+      202,
+      215,
+      215
     ],
     "totalStories": [
       81,
@@ -18699,9 +20082,20 @@
       104,
       104,
       105,
+      177,
+      177,
+      177,
+      177,
+      177,
+      179,
+      179,
+      179,
+      209,
       219,
       219,
-      226
+      226,
+      240,
+      240
     ],
     "aiCosts": [
       3.4542266666666666,
@@ -18755,6 +20149,17 @@
       209.7601,
       220.21260000000004,
       237.96510000000004,
+      1133.1037999999999,
+      1133.1037999999999,
+      1133.1037999999999,
+      1133.1037999999999,
+      1133.1037999999999,
+      1133.1037999999999,
+      1133.1037999999999,
+      1133.1037999999999,
+      1133.1037999999999,
+      1133.1037999999999,
+      1133.1037999999999,
       1133.1037999999999,
       1133.1037999999999,
       1133.1037999999999
@@ -18811,9 +20216,20 @@
       93.09,
       93.09,
       93.09,
+      1.78,
+      89.79,
+      89.79,
+      89.79,
+      89.79,
+      89.79,
+      89.79,
+      89.79,
+      89.79,
       null,
       null,
-      90.12
+      100,
+      65.99,
+      65.99
     ],
     "velocity": [
       8,
@@ -18867,9 +20283,20 @@
       128.5,
       129.5,
       131.5,
+      301,
+      301,
+      301,
+      301,
+      301,
+      309,
+      309,
+      309,
+      327,
       327,
       335,
-      394
+      394,
+      432,
+      432
     ],
     "openBugs": [
       66,
@@ -18923,11 +20350,33 @@
       4,
       4,
       4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
       6,
       5,
-      4
+      4,
+      0,
+      0
     ],
     "atRisk": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
       0,
       0,
       0,
@@ -19037,6 +20486,17 @@
       14664034,
       73384240,
       73384240,
+      73384240,
+      73384240,
+      73384240,
+      73384240,
+      73384240,
+      73384240,
+      73384240,
+      73384240,
+      73384240,
+      73384240,
+      73384240,
       73384240
     ],
     "outputTokens": [
@@ -19093,6 +20553,17 @@
       2631208,
       10692483,
       10692483,
+      10692483,
+      10692483,
+      10692483,
+      10692483,
+      10692483,
+      10692483,
+      10692483,
+      10692483,
+      10692483,
+      10692483,
+      10692483,
       10692483
     ],
     "avgRisk": [
@@ -19147,9 +20618,20 @@
       1.6399999999999997,
       1.6249999999999998,
       1.6130434782608694,
+      1.3666666666666665,
+      1.3666666666666665,
+      1.3666666666666665,
+      1.3666666666666665,
+      1.3666666666666665,
+      1.42,
+      1.42,
+      1.42,
+      1.5648648648648644,
       1.7489361702127657,
       1.7139534883720924,
-      1.5869565217391297
+      1.5869565217391297,
+      1.583333333333333,
+      1.583333333333333
     ],
     "velocityByWeek": {
       "labels": [
@@ -19160,7 +20642,9 @@
         "2026-W14",
         "2026-W15",
         "2026-W16",
-        "2026-W21"
+        "2026-W20",
+        "2026-W21",
+        "2026-W26"
       ],
       "points": [
         31,
@@ -19170,7 +20654,9 @@
         6,
         40,
         5,
-        262.5
+        177.5,
+        85,
+        38
       ],
       "rollingAvg": [
         31,
@@ -19180,7 +20666,9 @@
         13.9,
         18.4,
         16.1,
-        78.4
+        57.1,
+        76.9,
+        76.4
       ]
     }
   }
