@@ -4,6 +4,48 @@ Encode every bug fix and discovery as a permanent rule. Applied to all future se
 
 ---
 
+## L-0054 — Tools that hardcode `ROOT = path.join(__dirname, '..')` ignore cwd — use `afterAll` git-restore or call dispatch functions with injected paths
+
+@agent: Forge, Lens
+
+**Context:** Session 66, 2026-06-25. `generate-plan.js` and `generate-dashboard.js` resolve all output paths via `ROOT = path.join(__dirname, '..')`, which always points to the repo root regardless of the working directory set on the child process. E2E tests that invoke these tools write into the live `docs/` tree even when running in a temp project directory.
+
+**Fix:** Two strategies: (a) accept that these tools write to the real `docs/` and add an `afterAll` hook that runs `git restore docs/` to clean up; (b) call the underlying dispatch functions directly (e.g. `generateHTML(json)`) with fixture data, bypassing the file I/O entirely. Strategy (a) is used in `pipeline-local.spec.js`.
+
+**Prevention:** Before writing e2e tests for any tool, grep for `path.join(__dirname` — if it appears in path constants rather than `__dirname + '/file.js'` module self-references, the tool ignores cwd and test isolation must account for it.
+
+**Date:** 2026-06-25
+
+---
+
+## L-0053 — `execSync`-based `runScript` blocks on scripts with `read -p` prompts — extend with stdin `input` option
+
+@agent: Forge
+
+**Context:** Session 66, 2026-06-25. `install.sh` has 5 interactive `read -p` prompts; `update.sh` has 3. A bare `execFileSync`/`execSync` call blocks forever waiting for stdin when these prompts fire, causing e2e tests to hang or time out with no useful error message.
+
+**Fix:** Extended `runScript` in `tests/e2e/helpers/index.js` with an `input` option: when provided, it is written to the child process's `stdin` pipe. Tests that exercise install/update pass pre-canned newline-separated responses as the `input` string.
+
+**Prevention:** Before writing an e2e helper that drives a shell script, check the script for `read -p` or `read -r` calls. If any exist, the helper must support stdin injection.
+
+**Date:** 2026-06-25
+
+---
+
+## L-0052 — `jest.e2e.config.js` glob `**/tests/e2e/**/*.spec.js` activates dormant Playwright specs — add them to `testPathIgnorePatterns`
+
+@agent: Forge
+
+**Context:** Session 66, 2026-06-25. `jest.e2e.config.js` used `testMatch: ['**/tests/e2e/**/*.spec.js']`. This glob matched `dashboard-playwright.spec.js`, which is authored with `@playwright/test` (not Jest). When Jest tried to run it, it threw `Test is not defined` because Jest does not export the Playwright `test` global.
+
+**Fix:** Added `dashboard-playwright.spec.js` (and any other `@playwright/test` files) explicitly to `testPathIgnorePatterns` in `jest.e2e.config.js`. The Playwright runner executes them separately under `PLAYWRIGHT_E2E=true`.
+
+**Prevention:** When writing a combined e2e config, always enumerate known Playwright spec files in `testPathIgnorePatterns`. A comment block in the config listing "Playwright specs excluded from Jest" prevents future authors from re-tripping this.
+
+**Date:** 2026-06-25
+
+---
+
 ## L-0096 — ID_REGISTRY merge conflicts: always take max(HEAD, theirs) per sequence; PROMPT_LOG session numbers: first committer owns the number
 
 @agent: Forge, Keystone

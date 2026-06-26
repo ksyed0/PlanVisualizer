@@ -4,6 +4,51 @@ Running log of session activity, errors, session activity, errors, test results,
 
 ---
 
+## Session 66 — 2026-06-25 (EPIC-0047/0048 — E2E Test Automation COMPLETE, PR #1163 merged)
+
+### What Was Done
+
+EPIC-0047 (E2E Test Infrastructure) and EPIC-0048 (E2E Pipeline Scenarios) fully implemented and merged to `develop` via PR #1163. 9 user stories shipped via the SDD (subagent-driven development) process.
+
+| Story   | Deliverable                                                                | Status |
+| ------- | -------------------------------------------------------------------------- | ------ |
+| US-0264 | `tests/e2e/helpers/index.js` — shared helpers module                       | Done   |
+| US-0265 | Test fixtures: RELEASE_PLAN.md, BUGS.md, LESSONS.md, sdlc-status-init.json | Done   |
+| US-0266 | `jest.e2e.config.js`, `test:e2e` script, `.github/workflows/e2e.yml`       | Done   |
+| US-0267 | `install.spec.js` — 9 tests, AC-1033–1036                                  | Done   |
+| US-0268 | `update.spec.js` — 3 tests, AC-1037–1039                                   | Done   |
+| US-0269 | `pipeline-local.spec.js` — 6 tests, AC-1040–1043                           | Done   |
+| US-0270 | `pipeline-agentic.spec.js` — 15 tests, AC-1044–1048                        | Done   |
+| US-0271 | `pipeline-github.spec.js` — 5 tests, AC-1049–1053 (skip without token)     | Done   |
+| US-0272 | `dashboard-playwright.spec.js` — 5 tests, AC-1054–1056 (skip without env)  | Done   |
+
+Final whole-branch review (Opus) + 3 fixes committed (`56ca67d`). PR #1163 merged. Develop HEAD: `02b1bbe`.
+
+### Test Results
+
+- Unit + integration suite: **2727 tests** passing
+- E2E suite (`npm run test:e2e`): **33 tests pass, 5 skip** (5 GitHub Layer 2 tests require `E2E_GITHUB_TOKEN`)
+- Coverage: above 80% gate
+
+### Key Technical Discoveries
+
+- `generate-plan.js` and `generate-dashboard.js` hardcode `ROOT = path.join(__dirname, '..')` — ignore cwd entirely; e2e tests that invoke these tools must either run from project ROOT (with `afterAll` git-restore) or call underlying dispatch functions directly with injected paths.
+- `runScript` needed an `input` option to pipe stdin to interactive scripts (`install.sh` has 5 prompts, `update.sh` has 3); without it, tests hang or fail silently.
+- `SdlcMirror` re-renders `sdlc-status.json` from SQLite, wiping fixture-seeded `programme.stories`; each describe block in `pipeline-agentic.spec.js` needs its own `mkRoot()` + `Repository._reset()`.
+- Playwright snapshots land in `{specfile}-snapshots/` not `tests/e2e/snapshots/`.
+- `jest.e2e.config.js` with `testMatch: ['**/tests/e2e/**/*.spec.js']` activates dormant Playwright specs (`@playwright/test` files that throw when run by Jest) — must add them explicitly to `testPathIgnorePatterns`.
+- `pipeline-local.spec.js` writes to real `docs/` (unavoidable with hardcoded ROOT) — fixed with `afterAll` git-restore hook.
+
+### Errors / Blockers
+
+None. All 8 CI checks green on PR #1163 before merge.
+
+### Next Session
+
+EPIC-0047 and EPIC-0048 complete. Next priorities TBD from backlog.
+
+---
+
 ## Session 60 — 2026-05-24 (EPIC-0040 PLANNING — spec + 8 plans shipped; ready for execution)
 
 ### What Was Done
