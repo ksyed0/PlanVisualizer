@@ -856,3 +856,5 @@ Input Tokens column = direct input + cache-write tokens; cost computed with dist
 > > > > > > > | 2026-06-26 | 0c8fbf09-d88e-40fe-a8e4-723214bcdcb3 | develop | 621703 | 84674 | 24387754 | 10.9175 |
 > > > > > > > | 2026-06-26 | 0c8fbf09-d88e-40fe-a8e4-723214bcdcb3 | develop | 624381 | 85020 | 24508474 | 10.9690 |
 > > > > > > > | 2026-06-26 | 0c8fbf09-d88e-40fe-a8e4-723214bcdcb3 | develop | 626792 | 88445 | 24883629 | 11.1419 |
+> > > > > > > | 2026-06-29 | e15699bd-b284-42b1-9b07-075c19149452 | develop | 396677 | 56878 | 4211148 | 3.6039 |
+> > > > > > > | 2026-06-29 | e15699bd-b284-42b1-9b07-075c19149452 | docs/session-66-enh-cost-telemetry-backlog | 642142 | 69423 | 7682549 | 5.7540 |
