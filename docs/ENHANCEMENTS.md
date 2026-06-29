@@ -323,3 +323,112 @@ Agent-tool calls and `Workflow` fan-outs run subagents whose token usage is bill
 - Coordinate with ENH-0006 schema design to avoid two passes at the per-turn format.
 
 **Reference:** Session telemetry conversation (2026-06-05).
+
+---
+
+## ENH-0011 — Richer BUG schema (root cause, fix, verification, detection)
+
+**Surface:** Bug schema in `AGENTS.md` §9 + parser `tools/lib/parse-bugs.js` + SQLite migration
+**Status:** Backlog
+**Origin:** Session telemetry / process review (2026-06-29)
+
+**Opportunity:**
+The current `BUG-XXXX` schema captures `Severity`, `Steps to Reproduce`, `Expected`, `Actual`, `Status`, `Fix Branch`, `Lesson Encoded`, `Related Story`, `Related Task` — but does not have structured fields for **Root Cause**, **Fix**, **Verification**, **Detected** (when/by-whom/how — user / CI / test / audit), or **Affected Version**. These details exist today only as prose inside bug entries, which means they are unsearchable, not indexed in SQLite, and not parseable for downstream views (audit reports, regression analysis, lesson generation).
+
+**Impact if unaddressed:**
+
+- "How was this bug detected?" cannot be answered across the corpus — we cannot tell whether CI catches most defects, whether users report most, or whether they slip in via audit. Tuning the test pipeline is guesswork.
+- Root-cause clusters are invisible. We cannot answer "how many bugs were string-encoding issues?" without re-reading every entry.
+- Fix descriptions and verification evidence are not tied to the bug record. Reviewers must hunt through PRs, commits, and progress.md to reconstruct what was actually done.
+- The downstream `buildIssueBody` (see ENH-0012) cannot emit a complete defect record because the source schema is incomplete.
+- LESSON generation today is manual (`Lesson Encoded: Yes` is a Boolean with a prose link). With structured root cause + fix fields, an agent could draft the LESSON automatically.
+
+**Proposed path (when prioritized):**
+
+- Extend the `BUG-XXXX` template in `AGENTS.md` §9 with:
+  - `Detected: <date> by <source: user|CI|test|audit|review> (<context, e.g. PR #1142, TC-0541>)`
+  - `Affected Version: <semver or commit SHA>`
+  - `Root Cause:` (free prose, single field)
+  - `Fix:` (free prose + commit/PR link)
+  - `Verification:` (bulleted list — TCs run, CI status, manual steps)
+  - Promote `Lesson Encoded` to reference `L-XXXX` directly when applicable (`Lesson Encoded: L-0091` instead of `Yes — see docs/LESSONS.md`).
+- Update `tools/lib/parse-bugs.js` regex blocks to capture the new fields. Treat all new fields as optional during migration (only `Detected` and `Root Cause` become required for new bugs once the schema is rolled out).
+- Add a SQLite migration (`005_bug_schema_v2.sql`) widening the `bugs` table with the new columns. Reuse the `createTryInsert` helper / `WarningsChannel` pattern (ENH-0003 precedent) so legacy bugs missing the fields surface as `warn` not `error`.
+- Add a backfill script that walks `docs/BUGS.md`, infers `Root Cause` and `Fix` from existing prose where possible, flags the rest for manual fill.
+- Add a `plan:lint` rule: warn if any new bug created post-migration is missing `Detected` / `Root Cause` / `Fix` / `Verification`.
+
+**Pre-work:**
+
+- Audit `docs/BUGS.md` to estimate how many of the existing ~260 bugs have inferrable root cause/fix in the prose (cheap LLM pass over a sample of 20).
+- Decide whether `Detection Source` is a free string or a closed enum (closed enum gives better aggregation; free string is friendlier for edge cases).
+- Confirm `WarningsChannel` rollout pattern works for missing-field warnings as well as CHECK violations.
+
+**Dependencies:** None hard. ENH-0012 (richer GitHub issue body) consumes the new fields, so shipping ENH-0011 first unlocks it.
+
+**Reference:** Session conversation 2026-06-29 (GitHub issue body comparison).
+
+---
+
+## ENH-0012 — Richer GitHub Issue bodies for bugs and stories
+
+**Surface:** `tools/lib/github-client.js` (`buildIssueBody`), `tools/sync-github.js` (story-body inline at line ~170)
+**Status:** Backlog
+**Origin:** Session telemetry / process review (2026-06-29)
+
+**Opportunity:**
+The current GitHub issue body is thin:
+
+- **Bug issues** emit only severity, status, Steps to Reproduce, Expected, Actual.
+- **Story issues** emit only priority, status, description — the AC list, DOR, DOD, Estimate, Dependencies, Branch, Related Enhancement, and linked Test Cases are all dropped.
+
+This makes GitHub Issues pointers back to the markdown source of truth rather than stand-alone records. Reviewers, stakeholders, and external contributors cannot understand a bug or story from the issue alone — they must clone the repo and read `docs/BUGS.md` or `docs/RELEASE_PLAN.md`.
+
+**Impact if unaddressed:**
+
+- External contributors (or stakeholders who don't read the repo) get an incomplete defect picture. Bug triage on GitHub is harder than it needs to be.
+- Story ACs cannot be checked off in the GitHub UI because they don't exist on the issue. Reviewers track AC completion in markdown only.
+- Lesson Encoded and Related Story (BUG → US back-link) never appear on the issue, so the "this bug came from US-0246" causal chain is invisible to GitHub watchers.
+- Once ENH-0011 ships, the richer schema is wasted unless the issue body surfaces the new fields.
+
+**Proposed path (when prioritized):**
+
+- Split `buildIssueBody(entry)` in `tools/lib/github-client.js` into `buildBugBody(bug)` and `buildStoryBody(story)`. Move the story-body string in `tools/sync-github.js` line ~170 into `buildStoryBody`.
+- **Bug body template** (depends on ENH-0011 fields):
+
+  ```markdown
+  **BUG-XXXX** — <severity> | <status>
+  Detected: <date> by <source> (<context>)
+  Affected: <version/commit>
+  Related Story: US-XXXX · Related Task: TASK-XXXX
+
+  ### Symptoms (Actual) / Expected / Steps to Reproduce
+
+  ### Root Cause / Fix / Verification
+
+  ### Lesson Encoded
+  ```
+
+- **Story body template** — render AC list as GitHub checkbox markdown so reviewers can tick boxes in the GitHub UI:
+
+  ```markdown
+  **US-XXXX** — <priority> | <status> · Epic: EPIC-XXXX · Estimate: <T-shirt>
+  Branch: <feature/...> · Dependencies: <list> · Related Enhancement: ENH-XXXX
+
+  ### Story / Acceptance Criteria (checkboxes) / Test Cases / DOD
+  ```
+
+- Decide round-trip semantics for AC checkboxes:
+  - **One-way (markdown → GitHub)** — easy, ships immediately, GitHub ticks are cosmetic.
+  - **Two-way (GitHub ticks → markdown)** — requires a webhook or poller; high value but a separate design problem. Defer to a follow-up story if not in scope.
+- Update `tests/unit/github-client.test.js` (create if missing) with snapshot tests for both body templates.
+- Add a CI check that re-renders all existing issue bodies in dry-run mode and reports diffs, so the migration is auditable before the next sync run pushes to GitHub.
+
+**Pre-work:**
+
+- Audit existing issues on `ksyed0/PlanVisualizer` to confirm sync currently overwrites bodies on update (it does — `sync-github.js` PATCH path). Confirm there is no manual issue-body content that would be clobbered.
+- Decide whether `_Synced by PlanVisualizer_` footer should include a timestamp and source commit SHA so reviewers can tell which dashboard build produced the body.
+- Decide one-way vs two-way AC sync (see above) and either include in scope or split out.
+
+**Dependencies:** ENH-0011 (richer BUG schema). The bug-body template references fields the parser doesn't capture yet — shipping ENH-0012 before ENH-0011 would surface only the existing fields with the new layout (still valuable but partial).
+
+**Reference:** Session conversation 2026-06-29 (`buildIssueBody` audit at `tools/lib/github-client.js:43`).

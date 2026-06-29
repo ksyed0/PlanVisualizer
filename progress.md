@@ -2571,3 +2571,59 @@ None blocking. BUG-0267 and BUG-0268 fixed and merged.
 ### Blockers
 
 None.
+
+---
+
+## Session 66 — 2026-06-29
+
+### Goal
+
+Backlog grooming session focused on AI cost / token telemetry gaps and the bug-vs-feature pipeline. No code changes — capture opportunities as ENH entries for future prioritisation.
+
+### What Was Done
+
+**Telemetry audit:**
+
+- Catalogued the existing telemetry surface: cycle telemetry row (US-0133/US-0116 — AVG CYCLE TIME · CYCLES TODAY · INCIDENTS · SUCCESS RATE), lap-history strip, risk analytics (EPIC-0010), budget tile, coverage gate, AI cost log (Stop hook → `docs/AI_COST_LOG.md`), and agent lifecycle (`tools/agent-lifecycle.js`).
+- Identified the gaps in cost telemetry: no cache-hit ratio, no per-turn/per-tool granularity, hardcoded Sonnet 4.6 pricing, no trend chart, no budget alert thresholds, no subagent attribution.
+
+**Discussion → ENH entries logged:**
+
+- **ENH-0005** — Cache-hit ratio metric + optimization surface.
+- **ENH-0006** — Per-turn / per-tool token attribution via sibling `docs/AI_COST_TURNS.jsonl`.
+- **ENH-0007** — Multi-model pricing + Model dimension in cost log.
+- **ENH-0008** — Cost trend chart + `$ / story-point` metric.
+- **ENH-0009** — Token / cost budget alert thresholds.
+- **ENH-0010** — Subagent / workflow cost attribution (depends on ENH-0006 + ENH-0007).
+- **ENH-0011** — Richer BUG schema (Detected · Affected Version · Root Cause · Fix · Verification fields) + parser + SQLite migration.
+- **ENH-0012** — Richer GitHub Issue bodies for bugs and stories (split `buildBugBody` / `buildStoryBody`, surface ACs as GitHub checkboxes); depends on ENH-0011.
+
+**Process discussions (no artefacts produced — captured here for traceability):**
+
+- OpenTelemetry adoption pathway: three-level plan (Level 1: turn on Claude Code's built-in OTel exporter; Level 2: Collector → SQLite replacing `capture-cost.js` parsing; Level 3: instrument the orchestrator with spans). Not logged as ENH pending decision.
+- Graph-based retrieval (`graphify`-style) for cost reduction: three-layer plan (Layer 1: default `smart-explore` over `Read` for >300-line files; Layer 2: symbol index in SQLite via tree-sitter; Layer 3: reference graph). Not logged as ENH pending decision.
+- Per-session trace viewer: three options (jq one-liner; `tools/render-session-trace.js` producing self-contained HTML flamegraph; OTel → Jaeger). Recommendation captured in conversation; not logged as ENH pending decision.
+- Bug vs feature pipeline divergence: same Git/CI spine + same PR/Conductor protocol; divergence is in branching topology (feature/bugfix/hotfix), artefact schema (US has ACs/DOR/DOD; BUG has repro/expected/actual + Lesson Encoded), and the Self-Annealing loop (§7) that has no feature equivalent.
+
+**Session docs:**
+
+- `docs/ENHANCEMENTS.md` — appended ENH-0005..0012 (ENH-0005..0010 salvaged earlier in commit `af657f5`; ENH-0011..0012 added this session).
+- `docs/ID_REGISTRY.md` — bumped ENH sequence to next=ENH-0013 / last=ENH-0012.
+- `PROMPT_LOG.md` — Session 66 prompts logged.
+- `docs/AI_COST_LOG.md` — committed per BUG-0251 / BUG-0252 / L-0051 session-close rule.
+
+### Test Results
+
+No code changes — test suite not re-run. Last green: PR #1159 (Session 65).
+
+### Lessons Applied
+
+- L-0051 — Always commit `docs/AI_COST_LOG.md` at session close to avoid orphaning rows in stashes or worktrees.
+
+### Open Bugs
+
+None.
+
+### Blockers
+
+None.
