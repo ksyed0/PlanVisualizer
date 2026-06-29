@@ -23,6 +23,10 @@ Persistent semantic knowledge base. Topic files in `docs/memory/`. Updated autom
 
 ## Sessions
 
+- ◐ [Session 66 — EPIC-0047/0048 E2E Test Automation Complete (PR #1163)](docs/memory/sessions/2026-06-25-session-66-e2e-test-automation.md) · 2026-06-25
+- ◐ [Session 65 — Merge Conflict Resolution + PR #1159 Merge](docs/memory/sessions/2026-06-24-session-65-merge-conflicts-pr1159.md) · 2026-06-24
+- ◐ [Session 63 — Deploy Agent EPIC-0046 Complete](docs/memory/sessions/2026-06-22-session-63-deploy-agent-epic-0046.md) · 2026-06-22
+- ◐ [Session 62 — EPIC-0046 Deploy Agent Planning + GitHub Reconciliation](docs/memory/sessions/2026-06-21-session-62-deploy-agent-planning.md) · 2026-06-21
 - ◐ [Session 61 — EPIC-0040 COMPLETE (8 stories shipped, 4 hard gates closed)](docs/memory/sessions/2026-05-25-session-61-epic-0040-complete.md) · 2026-05-25
 - ◐ [Session 59 — EPIC-0045 Phase E COMPLETE (US-0259..US-0263 all shipped)](docs/memory/sessions/2026-05-24-session-59-phase-e-complete.md) · 2026-05-24
 - ◐ [Session 60 — EPIC-0040 Planning (Brainstorm → Spec → 8 Plans → Cross-Plan Review → Merge)](docs/memory/sessions/2026-05-24-session-60-epic-0040-planning.md) · 2026-05-24
@@ -43,6 +47,3 @@ Persistent semantic knowledge base. Topic files in `docs/memory/`. Updated autom
 ## Snapshots
 
 - ◐ [Project Completion Status (as of 2026-05-05 Session 40)](docs/memory/snapshots/2026-05-05-project-completion-status.md) · 2026-05-05
-- ◐ [Session 65 — Merge Conflict Resolution + PR #1159 Merge to develop](docs/memory/sessions/2026-06-24-session-65-merge-conflicts-pr1159.md) · 2026-06-24
-- ◐ [Session 63 — Deploy Agent EPIC-0046 Complete (10 commits, PR #1159)](docs/memory/sessions/2026-06-22-session-63-deploy-agent-epic-0046.md) · 2026-06-22
-- ◐ [Session 62 — EPIC-0046 Deploy Agent Planning + GitHub Reconciliation](docs/memory/sessions/2026-06-21-session-62-deploy-agent-planning.md) · 2026-06-21

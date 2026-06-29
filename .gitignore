@@ -25,3 +25,8 @@ docs/.pv-backup/
 # Migration 001 (US-0243) snapshot directory — pre-mutation copies + diff
 # sidecars used for the human-review gate after pv:upgrade.
 .pv-cache/
+
+# Playwright e2e artefacts (US-0272) — generated temp dashboard and test results
+.pw-tmp/
+test-results/
+docs/sdlc-status.json.pw-bak
