@@ -150,6 +150,7 @@ Production `docs/RELEASE_PLAN.md` declares AC-0150..AC-0153 and AC-0334..AC-0343
 - We cannot tell whether a session was expensive because of work volume or because of poor cache utilization (e.g. context resets, frequent tool-output churn that invalidates the prefix).
 - No feedback loop to drive prompt-stability discipline (reading files in stable order, batching edits, etc.).
 - Cost regressions caused by hook or prompt changes are invisible until the monthly total ticks up.
+- **Cache discipline matters disproportionately more on Opus tiers.** Cache reads are always 10% of base input, so an Opus 4.7 cache hit ($0.50/MTok) vs miss ($5.00/MTok) is a 10× swing per token — same multiplier as Sonnet 5 ($0.20 vs $2.00) but ~2.5× more absolute dollars at stake per cached MTok. Sessions that mix Opus + Haiku subagents (which will become more common as ENH-0007 and ENH-0010 land) will see the highest payoff from cache-hit % as an actionable metric.
 
 **Proposed path (when prioritized):**
 
@@ -205,27 +206,88 @@ The Stop hook writes one row per session — a single bag of tokens with no brea
 **Origin:** Session telemetry review (2026-06-05)
 
 **Opportunity:**
-Rates are hardcoded to Claude Sonnet 4.6 across both the hook (header comment + `RATES` const in `capture-cost.js`) and `compute-costs.js`. Sessions run on Opus 4.7, Haiku 4.5, or mixed-model agent fan-outs are mispriced. Opus output is ~5× Sonnet; Haiku is ~⅓. The mispricing compounds as model mix shifts.
+Rates are hardcoded to Claude Sonnet 4.6 across both the hook (`RATES` const + header comment at `tools/capture-cost.js:11,26-30`) and `tools/lib/compute-costs.js`. Sessions run on Opus 4.7, Opus 4.8, Sonnet 5, or Haiku 4.5 — and mixed-model agent fan-outs — are mispriced. The mispricing compounds as the model mix shifts, and the static rate table cannot represent the **tokenizer change** introduced with Sonnet 5 / Opus 4.7+ (newer tokenizer produces ~30% more tokens for the same English text).
 
 **Impact if unaddressed:**
 
 - Recorded `Cost USD` diverges from actual Anthropic billing — undermines budget tile and per-story cost columns.
-- Decisions like "should we move this workflow to Haiku?" cannot be A/B'd from the ledger.
-- Adding new model tiers (Opus 4.8, future Haiku rev) requires editing code in two places, easy to drift.
+- Decisions like "should we move this workflow to Haiku?" or "is Sonnet 5 actually cheaper than Sonnet 4.6 when we include the +30% tokenizer effect?" cannot be A/B'd from the ledger.
+- Adding new model tiers (Opus 4.9, future Haiku rev) requires editing code in two places, easy to drift.
+- Fast-mode usage on Opus 4.7 ($30 input / $150 output — 6× standard) is invisible — fast-mode sessions read as if they ran at standard rates.
+
+**Authoritative current rates (verified against [platform.claude.com pricing](https://platform.claude.com/docs/en/docs/about-claude/pricing) on 2026-06-30 — supersedes earlier placeholder rates in this ENH):**
+
+| Model                                               | Input  | 5m Cache Write | 1h Cache Write | Cache Read | Output  | Tokenizer  |
+| --------------------------------------------------- | ------ | -------------- | -------------- | ---------- | ------- | ---------- |
+| Claude Sonnet 5 (intro, through 2026-08-31)         | $2.00  | $2.50          | $4.00          | $0.20      | $10.00  | `claude-5` |
+| Claude Sonnet 5 (std, from 2026-09-01)              | $3.00  | $3.75          | $6.00          | $0.30      | $15.00  | `claude-5` |
+| Claude Sonnet 4.6                                   | $3.00  | $3.75          | $6.00          | $0.30      | $15.00  | `claude-4` |
+| Claude Sonnet 4.5                                   | $3.00  | $3.75          | $6.00          | $0.30      | $15.00  | `claude-4` |
+| Claude Opus 4.8                                     | $5.00  | $6.25          | $10.00         | $0.50      | $25.00  | `claude-5` |
+| Claude Opus 4.7                                     | $5.00  | $6.25          | $10.00         | $0.50      | $25.00  | `claude-5` |
+| Claude Opus 4.6 / 4.5                               | $5.00  | $6.25          | $10.00         | $0.50      | $25.00  | `claude-4` |
+| Claude Opus 4.7 _fast mode_ (deprecated 2026-07-24) | $30.00 | —              | —              | —          | $150.00 | `claude-5` |
+| Claude Opus 4.8 _fast mode_                         | $10.00 | —              | —              | —          | $50.00  | `claude-5` |
+| Claude Haiku 4.5                                    | $1.00  | $1.25          | $2.00          | $0.10      | $5.00   | `claude-4` |
+| Claude Fable 5                                      | $10.00 | $12.50         | $20.00         | $1.00      | $50.00  | `claude-5` |
+
+Notes from the pricing page:
+
+- Cache-write and cache-read are fixed multipliers of base input: **5m write = 1.25× input**, **1h write = 2× input**, **cache hit = 0.10× input**. Config can store just `input + output` per model and derive the cache columns, OR store all four for clarity. Recommend storing all four to keep the lookup explicit.
+- Batch API discount: 50% off both input and output. Not currently relevant (we don't use Batch), but the config schema should leave room (`batchInput`, `batchOutput` or a `batchMultiplier: 0.5` field).
+- Data residency (`inference_geo: "us"`): 1.1× multiplier on every category. Currently not used; config should leave room.
+
+**Tokenizer dimension — why the rate card isn't enough:**
+
+Sonnet 5 and Opus 4.7+ ship a newer tokenizer that produces approximately **30% more tokens** for the same English text vs Sonnet 4.6 / 4.5 and earlier. This means:
+
+- **Sonnet 4.6 → Sonnet 5 (intro):** rates drop 33% per MTok, but tokens rise ~30%, so the _effective_ cost reduction is roughly **10%**, not 33%.
+- **Sonnet 4.6 → Opus 4.7:** rates rise 1.67× per MTok, tokens rise ~30%, so _effective_ cost is **~2.17×**, not 1.67×.
+- Comparing Sonnet 5 ↔ Opus 4.7 (both `claude-5` tokenizer): apples-to-apples, ratio is a clean 2.5× during intro pricing or 1.67× from Sep 2026 onward.
+
+Implication: rate-card swaps need an effective-cost adjustment when the tokenizer family changes. The dashboard's per-model rollup (proposed below) must call this out, or it will lie to anyone reasoning about model swaps across the 4.x/5.x boundary.
 
 **Proposed path (when prioritized):**
 
-- Add a `Model` column to `docs/AI_COST_LOG.md` (default `sonnet-4.6` for backfill).
-- Move pricing out of `capture-cost.js` and `compute-costs.js` into `plan-visualizer.config.json` under `costs.modelRates`: a map of `{modelId: {input, cacheWrite, output, cacheRead}}`. Both modules read from config.
+- Add a `Model` column to `docs/AI_COST_LOG.md` (default `claude-sonnet-4-6` for backfill — current hardcoded basis).
+- Move pricing out of `tools/capture-cost.js` (`RATES` const) and `tools/lib/compute-costs.js` into `plan-visualizer.config.json` under `costs.modelRates`. Use the full per-model rate object plus a `tokenizer` field:
+
+  ```json
+  "costs": {
+    "defaultModel": "claude-sonnet-4-6",
+    "modelRates": {
+      "claude-sonnet-5":      {"input":2.00,"cacheWrite5m":2.50,"cacheWrite1h":4.00,"cacheRead":0.20,"output":10.00,"tokenizer":"claude-5","validUntil":"2026-08-31"},
+      "claude-sonnet-5-std":  {"input":3.00,"cacheWrite5m":3.75,"cacheWrite1h":6.00,"cacheRead":0.30,"output":15.00,"tokenizer":"claude-5","validFrom":"2026-09-01"},
+      "claude-sonnet-4-6":    {"input":3.00,"cacheWrite5m":3.75,"cacheWrite1h":6.00,"cacheRead":0.30,"output":15.00,"tokenizer":"claude-4"},
+      "claude-opus-4-8":      {"input":5.00,"cacheWrite5m":6.25,"cacheWrite1h":10.00,"cacheRead":0.50,"output":25.00,"tokenizer":"claude-5"},
+      "claude-opus-4-7":      {"input":5.00,"cacheWrite5m":6.25,"cacheWrite1h":10.00,"cacheRead":0.50,"output":25.00,"tokenizer":"claude-5"},
+      "claude-opus-4-7-fast": {"input":30.00,"output":150.00,"tokenizer":"claude-5","deprecatesOn":"2026-07-24"},
+      "claude-opus-4-8-fast": {"input":10.00,"output":50.00,"tokenizer":"claude-5"},
+      "claude-haiku-4-5":     {"input":1.00,"cacheWrite5m":1.25,"cacheWrite1h":2.00,"cacheRead":0.10,"output":5.00,"tokenizer":"claude-4"}
+    }
+  }
+  ```
+
+  Both modules read from config; if `modelRates[modelId]` is missing, fall back to `defaultModel` and warn at `plan:lint` time.
+
 - For mixed-model sessions (subagents on a different model), record the **primary** model in the column and capture the per-model breakdown in the per-turn JSONL from ENH-0006.
-- Add a per-model rollup on the dashboard.
+- Add a per-model rollup on the dashboard. Include a column for `tokenizer` so users see the 4.x↔5.x split at a glance, and an "effective-cost vs Sonnet 4.6 baseline" multiplier on each row that accounts for the tokenizer family.
+- Fast mode detection: `capture-cost.js` reads `message.usage.service_tier` or equivalent flag from the transcript; if `fast`, look up the `<model>-fast` variant.
 
 **Pre-work:**
 
-- Audit the Stop hook payload to confirm the active model ID is reachable (it is — `message.model` in the transcript).
-- Decide migration: re-cost historical rows at their actual model (risky — we don't know what they ran on) vs leave them stamped as `sonnet-4.6` and start clean.
+- Audit the Stop hook payload to confirm the active model ID is reachable (it is — `message.model` in the transcript). Also confirm fast-mode flag location.
+- Decide migration: re-cost historical rows at their actual model (risky — we don't know what they ran on) vs leave them stamped as `claude-sonnet-4-6` and start clean. Recommended: start clean. The pre-migration rows' tokenizer was `claude-4` and Sonnet-4.6-priced, so leaving them as-is is approximately correct.
+- Decide cache-write granularity: store 5m / 1h separately in the rate config (as above) vs collapse to one `cacheWrite` field. Recommended: keep separate, since 1h cache will become relevant when ENH-0006 per-turn data shows long-lived prefix patterns.
+- Decide schema additions: `batchInput`/`batchOutput` and `inferenceGeoUsMultiplier` slots in config now, populated when needed. Costs nothing today, future-proofs the table.
 
-**Reference:** Session telemetry conversation (2026-06-05).
+**Cross-references:**
+
+- **ENH-0005 (cache-hit ratio):** Cache discipline matters disproportionately more on Opus tiers — an Opus 4.7 cache hit costs $0.50/MTok, but the corresponding _miss_ costs $5.00/MTok (10× difference, same as the cache-multiplier definition). Cache-hit % tile becomes a stronger optimisation signal as the model mix shifts toward Opus.
+- **ENH-0006 (per-turn JSONL):** Per-turn model attribution is the prerequisite for accurate cost rollups when a session uses multiple models (e.g. Opus main + Haiku subagents).
+- **ENH-0010 (subagent attribution):** Subagent rows in the JSONL must carry their own model ID, since they often run on a different tier than the parent.
+
+**Reference:** Session telemetry conversation (2026-06-05). Pricing verified from [platform.claude.com pricing](https://platform.claude.com/docs/en/docs/about-claude/pricing) on 2026-06-30 (Session 66 follow-up). Supersedes earlier placeholder rates in this ENH that incorrectly quoted Opus 4.1 prices ($15 input / $75 output) for Opus 4.7.
 
 ---
 
