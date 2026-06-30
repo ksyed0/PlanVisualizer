@@ -11,11 +11,23 @@ function _r6(n) {
   return parseFloat((n || 0).toFixed(6));
 }
 
+// ENH-0005: cacheRead / (input + cacheRead). Input Tokens already folds in
+// cache-write at capture time (tools/capture-cost.js), so no separate
+// cache-write handling is needed here. Returns null on a zero denominator
+// (no real token activity) rather than NaN/0, so callers can render an
+// explicit empty state instead of a misleading "0%".
+function cacheHitRatio(cacheReadTokens, inputTokens) {
+  const denom = (inputTokens || 0) + (cacheReadTokens || 0);
+  if (denom <= 0) return null;
+  return _r6((cacheReadTokens || 0) / denom);
+}
+
 function attributeAICosts(stories, costByBranch) {
   const result = {};
   let totalCost = 0,
     totalInput = 0,
-    totalOutput = 0;
+    totalOutput = 0,
+    totalCacheRead = 0;
 
   // BUG-0217: a single branch may be claimed by N stories (e.g. 36 stories share
   // `Branch: develop`). Splitting equally avoids inflating each story's cost by
@@ -32,14 +44,25 @@ function attributeAICosts(stories, costByBranch) {
     const match = story.branch ? costByBranch[story.branch] : null;
     if (match) {
       const n = branchClaimCount[story.branch] || 1;
+      const inputTokens = Math.round((match.inputTokens || 0) / n);
+      const cacheReadTokens = Math.round((match.cacheReadTokens || 0) / n);
       result[story.id] = {
         costUsd: _r6(match.costUsd / n),
-        inputTokens: Math.round((match.inputTokens || 0) / n),
+        inputTokens,
         outputTokens: Math.round((match.outputTokens || 0) / n),
+        cacheReadTokens,
+        cacheHitRatio: cacheHitRatio(cacheReadTokens, inputTokens),
         sessions: Math.max(1, Math.round((match.sessions || 0) / n)),
       };
     } else {
-      result[story.id] = { costUsd: 0, inputTokens: 0, outputTokens: 0, sessions: 0 };
+      result[story.id] = {
+        costUsd: 0,
+        inputTokens: 0,
+        outputTokens: 0,
+        cacheReadTokens: 0,
+        cacheHitRatio: null,
+        sessions: 0,
+      };
     }
     matchedCost += result[story.id].costUsd;
   }
@@ -51,6 +74,7 @@ function attributeAICosts(stories, costByBranch) {
     totalCost += v.costUsd;
     totalInput += v.inputTokens;
     totalOutput += v.outputTokens;
+    totalCacheRead += v.cacheReadTokens || 0;
   }
 
   // Second pass: distribute unattributed cost (branches that no story claimed)
@@ -68,6 +92,8 @@ function attributeAICosts(stories, costByBranch) {
     costUsd: totalCost,
     inputTokens: totalInput,
     outputTokens: totalOutput,
+    cacheReadTokens: totalCacheRead,
+    cacheHitRatio: cacheHitRatio(totalCacheRead, totalInput),
   };
   return result;
 }
@@ -76,7 +102,8 @@ function attributeBugCosts(bugs, costByBranch) {
   const result = {};
   let totalCost = 0,
     totalInput = 0,
-    totalOutput = 0;
+    totalOutput = 0,
+    totalCacheRead = 0;
 
   // BUG-0224: many bugs share a single fix branch (e.g. 12 bugs on
   // `bugfix/BUG-0190-0197-ui-fixes`). Without splitting, every bug shows the
@@ -97,22 +124,28 @@ function attributeBugCosts(bugs, costByBranch) {
       const share = _r6(match.costUsd / n);
       const inShare = isEstimatedBranch ? 0 : Math.round((match.inputTokens || 0) / n);
       const outShare = isEstimatedBranch ? 0 : Math.round((match.outputTokens || 0) / n);
+      const cacheReadShare = isEstimatedBranch ? 0 : Math.round((match.cacheReadTokens || 0) / n);
       const sessShare = isEstimatedBranch ? 0 : Math.max(1, Math.round((match.sessions || 0) / n));
       result[bug.id] = {
         costUsd: share,
         inputTokens: inShare,
         outputTokens: outShare,
+        cacheReadTokens: cacheReadShare,
+        cacheHitRatio: cacheHitRatio(cacheReadShare, inShare),
         sessions: sessShare,
         isEstimated: isEstimatedBranch,
       };
       totalCost += share;
       totalInput += inShare;
       totalOutput += outShare;
+      totalCacheRead += cacheReadShare;
     } else {
       result[bug.id] = {
         costUsd: estimated,
         inputTokens: 0,
         outputTokens: 0,
+        cacheReadTokens: 0,
+        cacheHitRatio: null,
         sessions: 0,
         isEstimated: estimated > 0,
       };
@@ -124,8 +157,52 @@ function attributeBugCosts(bugs, costByBranch) {
     costUsd: _r6(totalCost),
     inputTokens: totalInput,
     outputTokens: totalOutput,
+    cacheReadTokens: totalCacheRead,
+    cacheHitRatio: cacheHitRatio(totalCacheRead, totalInput),
   };
   return result;
 }
 
-module.exports = { computeProjectedCost, attributeAICosts, attributeBugCosts };
+// ENH-0005: per-session cache-hit-ratio trend. Dedupes the Stop hook's
+// cumulative per-turn rows down to one (the last/highest) row per session,
+// excludes "-est" sessionId rows (pre-hook manual cost estimates with
+// fabricated cache-read numbers — see docs/ENHANCEMENTS.md ENH-0005
+// pre-work) and any row with zero input+cacheRead (degenerate/seed rows),
+// then returns the chronological ratio series plus a rolling average of
+// the last `windowSize` sessions (each session weighted equally).
+function computeCacheHitSeries(costRows, { windowSize = 14 } = {}) {
+  const lastBySession = new Map();
+  for (const row of costRows || []) {
+    if (!row || !row.sessionId) continue;
+    lastBySession.set(row.sessionId, row);
+  }
+
+  const series = Array.from(lastBySession.values())
+    .filter((row) => !String(row.sessionId).endsWith('-est'))
+    .sort((a, b) => String(a.date).localeCompare(String(b.date)))
+    .map((row) => ({
+      date: row.date,
+      sessionId: row.sessionId,
+      ratio: cacheHitRatio(row.cacheReadTokens, row.inputTokens),
+    }))
+    .filter((entry) => entry.ratio !== null);
+
+  const windowed = series.slice(-windowSize);
+  const rollingAvg = windowed.length ? _r6(windowed.reduce((s, e) => s + e.ratio, 0) / windowed.length) : null;
+
+  return {
+    series,
+    latest: series.length ? series[series.length - 1].ratio : null,
+    rollingAvg,
+    windowSize,
+    sampleCount: windowed.length,
+  };
+}
+
+module.exports = {
+  computeProjectedCost,
+  attributeAICosts,
+  attributeBugCosts,
+  cacheHitRatio,
+  computeCacheHitSeries,
+};

@@ -1,5 +1,11 @@
 'use strict';
-const { computeProjectedCost, attributeAICosts, attributeBugCosts } = require('../../tools/lib/compute-costs');
+const {
+  computeProjectedCost,
+  attributeAICosts,
+  attributeBugCosts,
+  cacheHitRatio,
+  computeCacheHitSeries,
+} = require('../../tools/lib/compute-costs');
 
 const HOURS = { S: 4, M: 8, L: 16, XL: 32 };
 const RATE = 100;
@@ -83,7 +89,13 @@ describe('attributeBugCosts', () => {
 
   it('handles empty bugs array', () => {
     const result = attributeBugCosts([], costByBranch);
-    expect(result._totals).toEqual({ costUsd: 0, inputTokens: 0, outputTokens: 0 });
+    expect(result._totals).toEqual({
+      costUsd: 0,
+      inputTokens: 0,
+      outputTokens: 0,
+      cacheReadTokens: 0,
+      cacheHitRatio: null,
+    });
   });
 
   it('uses estimatedCostUsd fallback when branch has no cost log entry', () => {
@@ -191,5 +203,143 @@ describe('attributeAICosts — multi-story branch sharing (BUG-0217)', () => {
     expect(result['US-3001'].costUsd).toBeCloseTo(1.2);
     expect(result['US-3002'].costUsd).toBeCloseTo(1.2);
     expect(result._totals.costUsd).toBeCloseTo(2.4);
+  });
+});
+
+describe('cacheHitRatio (ENH-0005)', () => {
+  it('computes cacheRead / (input + cacheRead)', () => {
+    expect(cacheHitRatio(70, 30)).toBeCloseTo(0.7);
+  });
+
+  it('returns null when both inputs are zero', () => {
+    expect(cacheHitRatio(0, 0)).toBeNull();
+  });
+
+  it('returns null when inputs are missing', () => {
+    expect(cacheHitRatio(undefined, undefined)).toBeNull();
+  });
+
+  it('returns 1 when input is zero but cacheRead is positive', () => {
+    expect(cacheHitRatio(100, 0)).toBe(1);
+  });
+});
+
+describe('attributeAICosts — cacheHitRatio (ENH-0005)', () => {
+  it('attaches per-story cacheHitRatio derived from the branch aggregate', () => {
+    const stories = [{ id: 'US-0001', branch: 'feature/US-0001-open-file' }];
+    const costByBranch = {
+      'feature/US-0001-open-file': {
+        costUsd: 0.47,
+        inputTokens: 30000,
+        outputTokens: 14000,
+        cacheReadTokens: 70000,
+        sessions: 2,
+      },
+    };
+    const result = attributeAICosts(stories, costByBranch);
+    expect(result['US-0001'].cacheReadTokens).toBe(70000);
+    expect(result['US-0001'].cacheHitRatio).toBeCloseTo(0.7);
+    expect(result._totals.cacheHitRatio).toBeCloseTo(0.7);
+  });
+
+  it('returns null cacheHitRatio for an unmatched story', () => {
+    const stories = [{ id: 'US-0002', branch: '' }];
+    const result = attributeAICosts(stories, {});
+    expect(result['US-0002'].cacheHitRatio).toBeNull();
+  });
+});
+
+describe('attributeBugCosts — cacheHitRatio (ENH-0005)', () => {
+  it('attaches per-bug cacheHitRatio derived from the branch aggregate', () => {
+    const bugs = [{ id: 'BUG-0001', fixBranch: 'bugfix/BUG-0001-crash' }];
+    const costByBranch = {
+      'bugfix/BUG-0001-crash': {
+        costUsd: 0.25,
+        inputTokens: 20000,
+        outputTokens: 8000,
+        cacheReadTokens: 80000,
+        sessions: 3,
+      },
+    };
+    const result = attributeBugCosts(bugs, costByBranch);
+    expect(result['BUG-0001'].cacheReadTokens).toBe(80000);
+    expect(result['BUG-0001'].cacheHitRatio).toBeCloseTo(0.8);
+  });
+
+  it('zeroes cacheReadTokens and cacheHitRatio for an estimated branch', () => {
+    const bugs = [{ id: 'BUG-9001', fixBranch: 'est/BUG-9001' }];
+    const costByBranch = {
+      'est/BUG-9001': { costUsd: 0.1, inputTokens: 1000, outputTokens: 100, cacheReadTokens: 9000, sessions: 1 },
+    };
+    const result = attributeBugCosts(bugs, costByBranch);
+    expect(result['BUG-9001'].cacheReadTokens).toBe(0);
+    expect(result['BUG-9001'].cacheHitRatio).toBeNull();
+    expect(result['BUG-9001'].isEstimated).toBe(true);
+  });
+});
+
+describe('computeCacheHitSeries (ENH-0005)', () => {
+  const rows = [
+    { date: '2026-06-01', sessionId: 's1', inputTokens: 100, cacheReadTokens: 100 }, // 0.5
+    { date: '2026-06-02', sessionId: 's2', inputTokens: 25, cacheReadTokens: 75 }, // 0.75
+    { date: '2026-06-03', sessionId: 's3', inputTokens: 50, cacheReadTokens: 50 }, // 0.5
+  ];
+
+  it('returns a chronological series with one ratio per session', () => {
+    const result = computeCacheHitSeries(rows);
+    expect(result.series.map((r) => r.sessionId)).toEqual(['s1', 's2', 's3']);
+    expect(result.series[1].ratio).toBeCloseTo(0.75);
+  });
+
+  it('computes rollingAvg as the simple mean of per-session ratios within the window', () => {
+    const result = computeCacheHitSeries(rows, { windowSize: 14 });
+    expect(result.rollingAvg).toBeCloseTo((0.5 + 0.75 + 0.5) / 3);
+    expect(result.sampleCount).toBe(3);
+  });
+
+  it('latest is the most recent session ratio', () => {
+    expect(computeCacheHitSeries(rows).latest).toBeCloseTo(0.5);
+  });
+
+  it('windowSize smaller than sample count only averages the most recent N', () => {
+    const result = computeCacheHitSeries(rows, { windowSize: 2 });
+    expect(result.sampleCount).toBe(2);
+    expect(result.rollingAvg).toBeCloseTo((0.75 + 0.5) / 2);
+  });
+
+  it('excludes "-est" sessionId rows from the series', () => {
+    const withEst = rows.concat([
+      { date: '2026-03-09', sessionId: 'sess_0001-est', inputTokens: 90000, cacheReadTokens: 45000 },
+    ]);
+    const result = computeCacheHitSeries(withEst);
+    expect(result.series.map((r) => r.sessionId)).not.toContain('sess_0001-est');
+  });
+
+  it('excludes rows with zero input and zero cacheRead (no NaN in series)', () => {
+    const withZero = rows.concat([{ date: '2026-06-04', sessionId: 's4', inputTokens: 0, cacheReadTokens: 0 }]);
+    const result = computeCacheHitSeries(withZero);
+    expect(result.series.map((r) => r.sessionId)).not.toContain('s4');
+  });
+
+  it('dedupes a session to its last row (highest cumulative totals)', () => {
+    const cumulative = [
+      { date: '2026-06-05', sessionId: 's5', inputTokens: 100, cacheReadTokens: 100 }, // 0.5
+      { date: '2026-06-05', sessionId: 's5', inputTokens: 100, cacheReadTokens: 300 }, // 0.75, last wins
+    ];
+    const result = computeCacheHitSeries(cumulative);
+    expect(result.series).toHaveLength(1);
+    expect(result.series[0].ratio).toBeCloseTo(0.75);
+  });
+
+  it('returns nulls and empty series for no input', () => {
+    const result = computeCacheHitSeries([]);
+    expect(result.series).toEqual([]);
+    expect(result.latest).toBeNull();
+    expect(result.rollingAvg).toBeNull();
+    expect(result.sampleCount).toBe(0);
+  });
+
+  it('defaults windowSize to 14', () => {
+    expect(computeCacheHitSeries([]).windowSize).toBe(14);
   });
 });

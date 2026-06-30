@@ -4949,3 +4949,45 @@ Acceptance Criteria:
 - [x] AC-1056: The Playwright suite is gated by `PLAYWRIGHT_E2E=true` env var so it can be skipped locally without affecting the rest of `npm run test:e2e`; `jest.e2e.config.js` passes this check via a `globalSetup` that skips the suite if the var is absent
 
 ```
+
+```
+
+---
+
+EPIC-0049: AI Cost Telemetry — Cache Discipline Surface
+Description: Surfaces cache-hit-ratio telemetry (already captured in docs/AI_COST_LOG.md) on the dashboard so cache discipline — the single biggest AI cost lever — is visible and actionable, rather than buried in the raw cost ledger. Houses ENH-0005 and future cost-telemetry enhancements (ENH-0006/0008/0010) as they're prioritized.
+Release Target: v2.5.0
+Status: In Progress
+StartDate: 2026-06-30
+Dependencies: None
+
+```
+
+## User Stories — EPIC-0049: AI Cost Telemetry — Cache Discipline Surface
+
+```
+
+US-0273 (EPIC-0049): As a project maintainer, I want a Cache Hit % tile on the Costs tab so that I can see at a glance whether AI sessions are using prompt caching effectively, since cache reads cost ~10x less than direct input at every model tier.
+Description: Implements ENH-0005. Derives cacheHitRatio = cacheReadTokens / (inputTokens + cacheReadTokens) per session, story, and bug in tools/lib/compute-costs.js, and renders a single tile (rolling 14-session average + sparkline trend) at the top of the Costs tab. Per-story/per-epic table-column surfacing is explicitly out of scope for this story (see design doc) — a follow-on if the tile proves useful. Design: docs/superpowers/specs/2026-06-30-enh-0005-cache-hit-tile-design.md.
+Priority: Medium (P2)
+Estimate: S
+Status: Done
+Dependencies: None
+Acceptance Criteria:
+
+- [x] AC-1057: Cache Hit % tile renders the rolling-14-session average to one decimal place on the Costs tab (`tools/lib/render-tabs.js#renderCostsTab`).
+- [x] AC-1058: Threshold colouring matches ENH-0005: <50% `var(--risk)`, 50-70% `var(--warn)`, >=70% `var(--ok)`.
+- [x] AC-1059: A sparkline of the per-session cache-hit-ratio series renders next to the tile value when >=2 real sessions exist, reusing `tools/lib/render-utils.js#sparkline()` (no new charting dependency).
+- [x] AC-1060: `-est` sessionId rows (pre-hook manual cost estimates) and zero-denominator rows are excluded from the ratio calculation, verified by unit test.
+- [x] AC-1061: Empty state (no real cost rows) renders "–", not "NaN%".
+- [x] AC-1062: `computeCacheHitSeries` and the extended `cacheHitRatio` fields on `attributeAICosts`/`attributeBugCosts` reach >=80% branch coverage (project-wide coverage gate, verified via `npm run test:coverage`).
+
+Definition of Done:
+
+- [x] All acceptance criteria met
+- [x] Unit tests written and passing (tests/unit/compute-costs.test.js, tests/unit/render-html.test.js)
+- [x] Verified against real docs/AI_COST_LOG.md data via `npm run build` (96.3% rolling average rendered correctly, green threshold colour, sparkline present)
+- [x] No regressions — full suite green (2770/2770 tests)
+- [x] Documentation updated (this entry, docs/ENHANCEMENTS.md, docs/ID_REGISTRY.md)
+
+```

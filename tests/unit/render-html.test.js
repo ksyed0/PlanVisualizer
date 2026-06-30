@@ -1969,3 +1969,80 @@ describe('renderHtml — US-0140 chart palette tokens', () => {
     expect(html).toContain('pvChartColors');
   });
 });
+
+describe('renderHtml — US-0273 cache hit % tile (ENH-0005)', () => {
+  function costsHtmlFor(cacheHit) {
+    const html = renderHtml({ ...sampleData, cacheHit });
+    const costsIdx = html.indexOf('id="tab-costs"');
+    return html.slice(costsIdx, costsIdx + 3000);
+  }
+
+  it('renders the rolling-average percentage to one decimal place', () => {
+    const html = costsHtmlFor({
+      rollingAvg: 0.623,
+      latest: 0.7,
+      series: [{ ratio: 0.5 }, { ratio: 0.7 }],
+      windowSize: 14,
+    });
+    expect(html).toContain('62.3%');
+    expect(html).toContain('Cache Hit % (14-session avg)');
+  });
+
+  it('uses the danger colour below 50%', () => {
+    const html = costsHtmlFor({
+      rollingAvg: 0.3,
+      latest: 0.3,
+      series: [{ ratio: 0.2 }, { ratio: 0.3 }],
+      windowSize: 14,
+    });
+    expect(html).toMatch(/color:var\(--risk\)[^>]*>30\.0%/);
+  });
+
+  it('uses the warning colour between 50% and 70%', () => {
+    const html = costsHtmlFor({
+      rollingAvg: 0.6,
+      latest: 0.6,
+      series: [{ ratio: 0.5 }, { ratio: 0.6 }],
+      windowSize: 14,
+    });
+    expect(html).toMatch(/color:var\(--warn\)[^>]*>60\.0%/);
+  });
+
+  it('uses the ok colour at or above 70%', () => {
+    const html = costsHtmlFor({
+      rollingAvg: 0.85,
+      latest: 0.85,
+      series: [{ ratio: 0.8 }, { ratio: 0.85 }],
+      windowSize: 14,
+    });
+    expect(html).toMatch(/color:var\(--ok\)[^>]*>85\.0%/);
+  });
+
+  it('renders an em-dash empty state when there is no cache-hit data', () => {
+    const html = costsHtmlFor({ rollingAvg: null, latest: null, series: [], windowSize: 14 });
+    expect(html).toContain('Cache Hit % (14-session avg)');
+    expect(html).toMatch(/>–<\/div>/);
+    expect(html).not.toContain('NaN%');
+  });
+
+  it('renders no sparkline markup when fewer than 2 series points exist', () => {
+    const html = costsHtmlFor({ rollingAvg: 0.5, latest: 0.5, series: [{ ratio: 0.5 }], windowSize: 14 });
+    expect(html).not.toContain('sparkline-svg');
+  });
+
+  it('renders sparkline markup when at least 2 series points exist', () => {
+    const html = costsHtmlFor({
+      rollingAvg: 0.6,
+      latest: 0.7,
+      series: [{ ratio: 0.5 }, { ratio: 0.6 }, { ratio: 0.7 }],
+      windowSize: 14,
+    });
+    expect(html).toContain('sparkline-svg');
+  });
+
+  it('falls back gracefully when data.cacheHit is absent entirely', () => {
+    const html = costsHtmlFor(undefined);
+    expect(html).toContain('Cache Hit % (14-session avg)');
+    expect(html).toMatch(/>–<\/div>/);
+  });
+});
