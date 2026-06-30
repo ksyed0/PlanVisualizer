@@ -1638,6 +1638,29 @@ function renderCostsTab(data, options = {}) {
   const budget = data.budget || {};
   const hasBudget = budget.hasBudget;
 
+  // ENH-0005: Cache Hit % tile — rolling-window average + sparkline trend.
+  const cacheHit = data.cacheHit || { rollingAvg: null, latest: null, series: [], windowSize: 14 };
+  let cacheHitValue = '–';
+  let cacheHitColor = 'var(--text-mute)';
+  if (cacheHit.rollingAvg !== null && cacheHit.rollingAvg !== undefined) {
+    const pct = cacheHit.rollingAvg * 100;
+    cacheHitValue = `${pct.toFixed(1)}%`;
+    if (pct < 50) cacheHitColor = 'var(--risk)';
+    else if (pct < 70) cacheHitColor = 'var(--warn)';
+    else cacheHitColor = 'var(--ok)';
+  }
+  const cacheHitSparkline = sparkline(cacheHit.series.map((s) => s.ratio));
+  const cacheHitLatestPct =
+    cacheHit.latest !== null && cacheHit.latest !== undefined ? `${(cacheHit.latest * 100).toFixed(1)}%` : '–';
+  const cacheHitTile = `
+    <div class="card-elev rounded-lg p-4 mb-4 flex items-center gap-4 flex-wrap">
+      <div>
+        <div class="text-xs text-slate-500 uppercase tracking-wide mb-1">Cache Hit % (${cacheHit.windowSize}-session avg)</div>
+        <div class="hero-num" style="color:${cacheHitColor}" title="Latest session: ${esc(cacheHitLatestPct)}">${esc(cacheHitValue)}</div>
+      </div>
+      ${cacheHitSparkline ? `<div style="color:${cacheHitColor}" title="Cache hit % trend over recorded sessions">${cacheHitSparkline}</div>` : ''}
+    </div>`;
+
   let budgetSection = '';
   if (hasBudget) {
     const br = budget.burnRate;
@@ -2101,6 +2124,7 @@ function renderCostsTab(data, options = {}) {
 
   return `
   <div id="tab-costs" class="p-6 hidden" role="tabpanel" aria-labelledby="tab-btn-costs">
+    ${cacheHitTile}
     ${budgetSection}
     <div class="flex items-center justify-between mb-4 flex-shrink-0">
       <span class="text-sm text-slate-500 dark:text-slate-400">${data.stories.length} stories · ${data.bugs.length} bugs</span>
