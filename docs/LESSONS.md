@@ -1356,3 +1356,15 @@ _Learned from BUG-0210 — Lessons and Bugs tabs both have epic group headers, b
 **Prevention:** When building ID-scanning tools, always cap the digit group to the realistic maximum width (4 digits covers IDs up to 9999 — enough for any foreseeable project scale). Prose descriptions often contain example IDs; a length cap is the simplest guard without requiring structure-aware parsing.
 
 **Date:** 2026-06-22
+
+---
+
+## L-0096: After `gh pr merge --auto`, run `gh pr update-branch` immediately if `mergeStateStatus: BEHIND` — auto-merge won't trigger an update on its own @agent:Conductor
+
+**Context:** Session 66, 2026-06-30. PR #1170 and PR #1172 both enabled auto-merge with `gh pr merge <n> --squash --delete-branch --auto`. CI passed cleanly on both. Neither auto-merged. Diagnosis required `gh pr view <n> --json mergeable,mergeStateStatus,autoMergeRequest` and showed `mergeStateStatus: BEHIND` — develop had moved between the PR's last push and the time CI finished. Auto-merge stays armed but does not run `update-branch` for you; the PR sits indefinitely with all checks green.
+
+**Fix:** Run `gh pr update-branch <n>`. This merges develop into the PR branch (triggering a fresh CI run); the armed auto-merge then fires once the new run is green.
+
+**Prevention:** Whenever auto-merge is enabled on a PR and all checks are green for >5 minutes without merging, immediately check `mergeStateStatus`. If `BEHIND`, `update-branch`. Do not assume a check is still pending — `state: OPEN` + all `conclusion: SUCCESS` + `mergeStateStatus: BEHIND` is the silent stall signature. Optional: a Stop-hook check that warns when own PRs sit in this state.
+
+**Date:** 2026-06-30
