@@ -7,9 +7,11 @@ const {
   aggregateCostByBranch,
   normalizeBranch,
   backfillUnattributed,
+  stripConflictMarkers,
 } = require('../../tools/lib/parse-cost-log');
 
 const fixture = fs.readFileSync(path.join(__dirname, '../fixtures/AI_COST_LOG.md'), 'utf8');
+const corruptedFixture = fs.readFileSync(path.join(__dirname, '../fixtures/AI_COST_LOG_corrupted.md'), 'utf8');
 
 describe('parseCostLog', () => {
   let rows;
@@ -162,6 +164,42 @@ describe('backfillUnattributed', () => {
     const result = backfillUnattributed(nullBranchRows, gitLogEntry);
     expect(result[0].branch).toBe('feature/US-0100-foo');
     expect(result[0].backfilled).toBe(true);
+  });
+});
+
+describe('stripConflictMarkers (BUG-0269)', () => {
+  it('drops conflict-marker lines but keeps both row blocks they bracket', () => {
+    const cleaned = stripConflictMarkers(corruptedFixture);
+    expect(cleaned).not.toMatch(/^<{7}/m);
+    expect(cleaned).not.toMatch(/^={7}/m);
+    expect(cleaned).toContain('sess_002');
+    expect(cleaned).toContain('sess_003');
+  });
+
+  it('strips the corrupted "> > > > > > > " prefix from affected rows', () => {
+    const cleaned = stripConflictMarkers(corruptedFixture);
+    expect(cleaned).not.toMatch(/^> > > > > > > /m);
+    expect(cleaned).toContain('| 2026-04-14 | sess_004');
+  });
+
+  it('removes the standalone "Stashed changes" header line', () => {
+    const cleaned = stripConflictMarkers(corruptedFixture);
+    expect(cleaned).not.toContain('Stashed changes');
+  });
+
+  it('every row is parseable after cleanup, recovering previously-hidden rows', () => {
+    const beforeRows = parseCostLog(corruptedFixture);
+    const afterRows = parseCostLog(stripConflictMarkers(corruptedFixture));
+    // sess_004 and sess_005 were invisible pre-cleanup (line started with ">")
+    expect(beforeRows.map((r) => r.sessionId)).not.toContain('sess_004');
+    expect(afterRows.map((r) => r.sessionId)).toEqual(
+      expect.arrayContaining(['sess_001', 'sess_002', 'sess_003', 'sess_004', 'sess_005']),
+    );
+  });
+
+  it('is idempotent — re-running on already-clean content is a no-op', () => {
+    const cleaned = stripConflictMarkers(corruptedFixture);
+    expect(stripConflictMarkers(cleaned)).toBe(cleaned);
   });
 });
 

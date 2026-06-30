@@ -1,5 +1,22 @@
 'use strict';
 
+const CONFLICT_MARKER_LINE_RE = /^(<{7}|={7}|>{7})(\s.*)?$/;
+const CORRUPTED_PREFIX_RE = /^> > > > > > > /;
+
+// Strips git stash/merge conflict-marker residue (BUG-0269): conflict marker
+// lines are dropped outright (both row blocks they bracket are kept), and
+// the literal "> > > > > > > " prefix left by a botched manual strip is
+// removed from the start of any line that carries it.
+function stripConflictMarkers(markdown) {
+  const lines = markdown.split('\n');
+  const out = [];
+  for (const line of lines) {
+    if (CONFLICT_MARKER_LINE_RE.test(line) || line === '> > > > > > > Stashed changes') continue;
+    out.push(CORRUPTED_PREFIX_RE.test(line) ? line.replace(CORRUPTED_PREFIX_RE, '') : line);
+  }
+  return out.join('\n');
+}
+
 const COST_LOG_REGEX =
   /^\|\s*(\d{4}-\d{2}-\d{2})\s*\|\s*(\S+)\s*\|\s*([^|]+?)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|\s*([\d.]+)\s*\|/;
 
@@ -98,5 +115,6 @@ module.exports = {
   aggregateCostByBranch,
   normalizeBranch,
   backfillUnattributed,
+  stripConflictMarkers,
   WORKTREE_BRANCH_RE,
 };
