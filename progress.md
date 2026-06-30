@@ -2672,3 +2672,16 @@ None.
 ### Blockers
 
 None.
+
+### Session 66 — Addendum (post-PR-#1168)
+
+Captured the discussion items that were noted in conversation but not yet given IDs:
+
+- **BUG-0269** — `docs/AI_COST_LOG.md` contains uncleaned stash-conflict markers (`<<<<<<< Updated upstream` / `=======` at lines 498/502) and `> > > > > > > ` line prefixes on every cost row from line 507 onward. Pre-existing corruption on develop; surfaced during PR #1168 merge. Two-part cleanup proposed plus a `plan:lint` regression guard.
+- **ENH-0013** — OpenTelemetry adoption (three-level rollout: built-in exporter → Collector→SQLite → orchestrator instrumentation). Unblocks ENH-0005..0010 by providing a richer signal source than the markdown ledger.
+- **ENH-0014** — Graph-based retrieval (`graphify`-style) for cost reduction (three layers: smart-explore rule → symbol index → reference graph). Reuses existing `claude-mem:smart-explore` + SQLite repository infrastructure.
+- **ENH-0015** — Per-session trace viewer (`tools/render-session-trace.js` producing self-contained HTML flamegraph from the transcript JSONL). Closes the "where did this session spend its time" visibility gap.
+
+ID_REGISTRY bumped: `BUG next=BUG-0270, last=BUG-0269`; `ENH next=ENH-0016, last=ENH-0015`.
+
+PR #1168 merged earlier this session as commit `1734073` on develop. This addendum will ship as a follow-up docs PR.
