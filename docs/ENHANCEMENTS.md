@@ -139,7 +139,7 @@ Production `docs/RELEASE_PLAN.md` declares AC-0150..AC-0153 and AC-0334..AC-0343
 ## ENH-0005 — Cache-hit ratio metric + optimization surface
 
 **Surface:** AI cost telemetry (`tools/lib/compute-costs.js`, dashboard cost tab)
-**Status:** Backlog
+**Status:** Shipped (US-0273, Session 67, 2026-06-30)
 **Origin:** Session telemetry review (2026-06-05)
 
 **Opportunity:**
@@ -159,12 +159,14 @@ Production `docs/RELEASE_PLAN.md` declares AC-0150..AC-0153 and AC-0334..AC-0343
 - Add a sparkline of cache-hit % over the last N sessions to spot regressions.
 - Define a target threshold (e.g. ≥70%) and badge sessions below it for review.
 
-**Pre-work:**
+**Pre-work (resolved in Session 67):**
 
-- Decide whether `cache-write` tokens count toward "miss" or are reported separately (they cost $3.75/MTok and represent first-time cache priming — useful but expensive).
-- Confirm the existing parser keeps the cache-read column on `[est]` rows (older estimates may not have realistic values).
+- `cache-write` tokens count toward "miss": `tools/capture-cost.js` already folds `cacheWriteTokens` into the displayed `Input Tokens` column at capture time, so no separate handling was needed — `cacheHitRatio = cacheRead / (input + cacheRead)` is correct as originally specified.
+- `[est]` rows (sessionId suffix `-est`, 54 rows of pre-hook manual estimates) are excluded from the ratio calculation — their cache-read values are fabricated, not real telemetry.
 
-**Reference:** Session telemetry conversation (2026-06-05).
+**Shipped (US-0273):** `computeCacheHitSeries()` + extended `cacheHitRatio` fields in `tools/lib/compute-costs.js`; Cache Hit % tile (rolling 14-session average + sparkline, threshold-coloured) on the Costs tab in `tools/lib/render-tabs.js`. Per-story/per-epic table-column surfacing intentionally deferred — see design doc for rationale.
+
+**Reference:** Session telemetry conversation (2026-06-05). Design: `docs/superpowers/specs/2026-06-30-enh-0005-cache-hit-tile-design.md`.
 
 ---
 

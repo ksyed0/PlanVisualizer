@@ -8875,3 +8875,44 @@ Actual Result: grep -c returns 1; line 2530: <p class="pv-widget-empty" style=".
 Status: [x] Pass
 Defect Raised: None
 Notes: renderStatusTab renders "No live data" in Agent Workload card when data.sdlcStatus is absent
+
+---
+
+### TC-0553 — Cache Hit % tile renders threshold-coloured rolling average on the Costs tab
+
+Related Story: US-0273
+Related Task:
+Related AC: AC-1057, AC-1058, AC-1061
+Type: Functional
+Preconditions: docs/AI_COST_LOG.md contains real (non `-est`) cost rows
+Steps:
+
+1. Run `npm run build`
+2. `grep -o "Cache Hit %[^<]*" docs/plan-status.html`
+3. `python3 -c "html=open('docs/plan-status.html').read(); i=html.find('Cache Hit'); print(html[i-50:i+400])"`
+
+Expected Result: "Cache Hit % (14-session avg)" label present; a `hero-num` value formatted as `NN.N%` with an inline `color:var(--risk|--warn|--ok)` style matching the threshold band of the rendered percentage
+Actual Result: Verified locally against real AI_COST_LOG.md data (Session 67, 2026-06-30): tile rendered `96.3%` with `color:var(--ok)` and a `sparkline-svg` element present
+Status: [x] Pass
+Defect Raised: None
+Notes: Unit-test equivalents in tests/unit/render-html.test.js ("US-0273 cache hit % tile") cover all three threshold bands plus the empty-state and sparkline-presence cases without requiring a full build.
+
+---
+
+### TC-0554 — computeCacheHitSeries excludes "-est" rows and zero-denominator rows
+
+Related Story: US-0273
+Related Task:
+Related AC: AC-1060
+Type: Edge Case
+Preconditions: tools/lib/compute-costs.js#computeCacheHitSeries
+Steps:
+
+1. Call `computeCacheHitSeries(rows)` with a mix of real rows, a row whose `sessionId` ends in `-est`, and a row with `inputTokens: 0, cacheReadTokens: 0`
+2. Inspect `result.series` for the excluded sessionIds
+
+Expected Result: Neither the `-est` row nor the zero-denominator row appears in `result.series`; no `NaN` in any ratio
+Actual Result: `tests/unit/compute-costs.test.js` — "excludes \"-est\" sessionId rows" and "excludes rows with zero input and zero cacheRead" both pass
+Status: [x] Pass
+Defect Raised: None
+Notes: 38/38 compute-costs tests pass, including the full `computeCacheHitSeries` and `cacheHitRatio` suites added for ENH-0005.
