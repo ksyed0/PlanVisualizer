@@ -2716,3 +2716,30 @@ Pricing audit + ENH-0007 update:
 **Blockers:** None.
 
 **Next Session (67):** Kickoff prompt drafted for Sonnet 5. Order — Path C (BUG-0269 cleanup + plan:lint guard), then Path B (ENH-0005 cache-hit tile).
+
+### Session 67 — Close
+
+**Final shipment:** 2 PRs merged to develop, both per the Session 66 handoff (Path C → Path B order).
+
+| PR    | Commit   | Content                                                                                              |
+| ----- | -------- | ---------------------------------------------------------------------------------------------------- |
+| #1176 | f902f22  | BUG-0269 — AI_COST_LOG.md conflict-marker cleanup + `cost-log-corruption` plan:lint regression guard |
+| #1178 | (squash) | US-0273 / ENH-0005 — Cache Hit % tile on the Costs tab (EPIC-0049)                                   |
+
+**BUG-0269 finding:** the corruption was not cosmetic-only. `parse-cost-log.js`'s row regex requires lines to start with `|`, so the `> > > > > > > ` prefix silently excluded ~360 rows from every cost aggregation. `parseCostLog` recovered 474 rows pre-cleanup vs 834 post-cleanup on the real file — two months of real session cost data were invisible to the dashboard until this fix.
+
+**ENH-0005 shipment:** `computeCacheHitSeries()` + extended `cacheHitRatio` fields in `tools/lib/compute-costs.js`; Cache Hit % tile (rolling 14-session average + sparkline, threshold-coloured `<50%`/`50-70%`/`>=70%`) on the Costs tab. Verified end-to-end against real `docs/AI_COST_LOG.md`: 96.3% rolling average, green threshold, sparkline present. Both ENH-0005 pre-work questions resolved: cache-write tokens are already folded into the `Input Tokens` column at capture time (no schema change needed); `-est` sessionId rows excluded from the ratio calc.
+
+**Registry deltas:** `BUG: 0269 → 0270 (no new bugs filed)`, `Lesson: L-0096 → L-0098 (L-0097 added)`, `EPIC: 0048 → 0050 (EPIC-0049 added)`, `US: 0272 → 0274 (US-0273 added)`, `AC: 1056 → 1063 (AC-1057..AC-1062 added)`, `TC: 0552 → 0555 (TC-0553/TC-0554 added)`.
+
+**Test Results:** Full suite green both times before merge — 2770/2770 (post-BUG-0269), 2772/2772 (post-ENH-0005). Coverage 89.28% statements / 79.59% branches / 90.28% functions / 91.24% lines (well above the 80%/70% gate). `node tools/plan-lint.js` clean (0 errors/warnings/reports). `npm run check:ids` in sync after every doc update.
+
+**Lessons Captured This Session:** L-0097 — resolve conflict markers by hand-merging content, never by deleting only the open/close lines (root-caused BUG-0269's corruption to a partial manual edit of a `>>>>>>>` marker line).
+
+**Environment note:** this worktree had no `node_modules` at session start (`npx` was resolving some tools from a global cache, masking the gap until `chart.js`-dependent tests were attempted). Ran `npm install` to fix — needed for any future session working in this worktree to run the full suite, including `render-html.test.js`.
+
+**Open Bugs:** None opened this session. BUG-0269 closed (Fixed).
+
+**Blockers:** None.
+
+**Next Session (68):** No specific handoff queued. Candidate backlog: ENH-0006 (per-turn/per-tool token attribution), ENH-0008 (cost trend chart + $/point metric), ENH-0013/0014/0015 (OTel / graphify / session trace viewer) — all logged in `docs/ENHANCEMENTS.md`, none yet scheduled.
