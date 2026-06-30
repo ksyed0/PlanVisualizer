@@ -1368,3 +1368,15 @@ _Learned from BUG-0210 — Lessons and Bugs tabs both have epic group headers, b
 **Prevention:** Whenever auto-merge is enabled on a PR and all checks are green for >5 minutes without merging, immediately check `mergeStateStatus`. If `BEHIND`, `update-branch`. Do not assume a check is still pending — `state: OPEN` + all `conclusion: SUCCESS` + `mergeStateStatus: BEHIND` is the silent stall signature. Optional: a Stop-hook check that warns when own PRs sit in this state.
 
 **Date:** 2026-06-30
+
+---
+
+## L-0097: Resolve conflict markers by hand-merging content, never by deleting only the open/close lines @agent:Conductor
+
+**Context:** Session 67, 2026-06-30 (BUG-0269). `docs/AI_COST_LOG.md` carried a `git stash pop` conflict from `bugfix/BUG-0252-stash-recovery` (May 2026) that was committed with `<<<<<<< Updated upstream` / `=======` markers intact, no closing `>>>>>>>`. A later manual "cleanup" attempt apparently tried to strip the markers by hand but instead left a literal `> > > > > > > ` (space-separated `>` characters) prefix on all 360 rows that followed — residue of an editor selecting and partially deleting the `>>>>>>> Stashed changes` line character-by-character rather than deleting the whole line. Because `parse-cost-log.js`'s row regex requires lines to start with `|`, those 360 rows were silently dropped from every cost aggregation for two months (474 of 834 real rows visible) — a correctness bug, not just a cosmetic one, that nobody noticed because the dashboard had no "row count" sanity check.
+
+**Fix:** Wrote a single tested function (`tools/lib/parse-cost-log.js#stripConflictMarkers()`) that deletes conflict-marker lines outright (keeping both bracketed content blocks — they were two genuine distinct rows, not duplicates) and strips the corrupted prefix via regex, rather than ever hand-editing a conflict block with manual line edits. Added `cost-log-corruption` as a `TIER.ERROR` `plan:lint` rule so this class of corruption fails CI immediately instead of silently degrading data for months.
+
+**Prevention:** Never partially edit a conflict-marker line by hand (e.g. deleting `>>>>>>>` character-by-character to "tidy" the line) — always either run `git mergetool`/accept-ours/accept-theirs cleanly, or delete the _entire_ marker line in one edit. When a markdown table is also a data source consumed by a parser, add a lint rule asserting the table is free of conflict-marker substrings; don't rely on visual review to catch it, since `> > > > > > > ` reads as cosmetic noise rather than a data-loss bug at a glance.
+
+**Date:** 2026-06-30

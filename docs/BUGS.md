@@ -4054,13 +4054,12 @@ Steps to Reproduce:
 Expected: `docs/AI_COST_LOG.md` is a clean append-only markdown table with no merge-conflict artefacts. Every row matches the table grammar `| YYYY-MM-DD | <session-id> | <branch> | <input> | <output> | <cache-read> | <cost> |` and is consumed by `tools/lib/parse-cost-log.js` without warnings.
 Actual: A `git stash pop` resolution at some prior session (likely the bugfix/BUG-0252-stash-recovery work in May 2026 based on neighbouring rows) was committed with the conflict markers intact. Subsequently, an attempt to manually clean up appears to have left the literal `> > > > > > > ` prefix on every affected row instead of stripping it. The corruption is on develop today (verified at `git show origin/develop:docs/AI_COST_LOG.md`), is preserved through every subsequent session-close commit, and produces phantom merge conflicts on every PR that touches the file.
 
-Status: Open
+Status: Fixed
 GH Issue:
-Fix Branch:
-Lesson Encoded: No
+Fix Branch: bugfix/BUG-0269-cost-log-corruption-cleanup
+Lesson Encoded: Yes — see docs/LESSONS.md
 Detection: Session 66 (2026-06-29) during PR #1168 merge — surfaced when develop's cost-row appends conflicted with this session's appends inside the corrupted region.
-Notes: Two-part cleanup needed:
+Notes: Two-part cleanup completed in Session 67:
 
-1. Strip the `<<<<<<< Updated upstream` / `=======` markers at lines 498/502 and reconcile the two row variants (line 499–501 vs line 503–505) into a single canonical set. The duplicate-looking rows are actually distinct cost-log entries from the same branch on the same day — both should be preserved.
-2. For every line from 507 onward that starts with `> > > > > > > `, strip the prefix. Verify each resulting row still parses via `tools/lib/parse-cost-log.js`.
-   Also worth: add a `plan:lint` rule that fails CI if `docs/AI_COST_LOG.md` contains conflict-marker substrings or any line starting with `> > > > > > > `, so regressions can never re-land.
+1. Stripped the `<<<<<<< Updated upstream` / `=======` markers at lines 498/502 and the standalone `> > > > > > > Stashed changes` header at line 507; both row blocks they bracketed are distinct cost-log entries from the same branch on the same day and were both preserved (no dedup).
+2. Stripped the `> > > > > > > ` prefix from all 360 affected rows (lines ~508–865). Confirmed via `tools/lib/parse-cost-log.js` that this was not cosmetic-only: the prefixed rows failed the parser's `^\|` row regex and were silently excluded from every cost aggregation — `parseCostLog` recovered 474 rows before cleanup vs 834 after, i.e. 360 sessions of real cost data were invisible to the dashboard. New `tools/lib/parse-cost-log.js#stripConflictMarkers()` is the canonical (tested) cleanup function; a new `cost-log-corruption` rule (TIER.ERROR) in `tools/lib/repository/validators/cost-log.js`, wired into `tools/plan-lint.js`, fails CI if the corruption ever re-lands.
