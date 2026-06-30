@@ -432,3 +432,108 @@ This makes GitHub Issues pointers back to the markdown source of truth rather th
 **Dependencies:** ENH-0011 (richer BUG schema). The bug-body template references fields the parser doesn't capture yet — shipping ENH-0012 before ENH-0011 would surface only the existing fields with the new layout (still valuable but partial).
 
 **Reference:** Session conversation 2026-06-29 (`buildIssueBody` audit at `tools/lib/github-client.js:43`).
+
+---
+
+## ENH-0013 — OpenTelemetry adoption (three-level rollout)
+
+**Surface:** AI cost telemetry pipeline + agentic orchestrator (`tools/capture-cost.js`, `tools/agent-lifecycle.js`, dashboard cost tab)
+**Status:** Backlog
+**Origin:** Session 66 telemetry conversation (2026-06-29)
+
+**Opportunity:**
+The project today runs a DIY telemetry stack — a Stop hook parses transcripts, a markdown ledger stores rows, custom JS recomputes costs, the dashboard renders. OpenTelemetry (OTel) offers a vendor-neutral observability standard with three signal types — traces, metrics, logs — and Claude Code itself already speaks the protocol via `CLAUDE_CODE_ENABLE_TELEMETRY=1` + `OTEL_*` env vars. Adoption could replace bespoke layers with industry-standard ones and unlock GenAI semantic conventions (`gen_ai.usage.input_tokens`, `gen_ai.request.model`, etc.) for free integration with Honeycomb / Datadog / Grafana / Phoenix / Langfuse.
+
+**Impact if unaddressed:**
+
+- Per-turn / per-tool / per-subagent attribution (ENH-0006 / ENH-0010) remains DIY work. OTel solves the parent-child span model natively — distributed tracing is exactly what subagent attribution needs.
+- Cannot easily share cost telemetry with stakeholders who don't read markdown. No multi-developer central view.
+- Adding alerts (ENH-0009) and trend charts (ENH-0008) requires bespoke code in `tools/lib/budget.js`; OTel Collectors handle thresholds and aggregations natively.
+- Mispriced multi-model sessions (ENH-0007) — OTel GenAI conventions already standardise `gen_ai.request.model`, so once instrumented the model dimension drops in automatically.
+
+**Proposed path (when prioritized) — three independently shippable levels:**
+
+- **Level 1 (~30 min):** Turn on Claude Code's built-in OTel exporter. Add `CLAUDE_CODE_ENABLE_TELEMETRY=1`, `OTEL_METRICS_EXPORTER=otlp`, `OTEL_LOGS_EXPORTER=otlp`, `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317` to env / `.claude/settings.json`. Run a local `otelcol` Collector that writes to JSON-file. Existing markdown ledger keeps running alongside — OTel is read-only verification at this stage. Wins: ENH-0006 / ENH-0007 partially solved for free. Trade-off: long-running local process.
+- **Level 2:** Replace transcript-walking in `capture-cost.js` with Collector → SQLite pipeline. Markdown ledger becomes a projection of the DB rather than the source of truth. Wins: ENH-0006 fully solved; per-tool attribution via span attributes; cache-hit ratio (ENH-0005) is a one-line metric pipeline. Trade-off: `[est]` backfill convention moves into a SQL seed file; some workflow loss.
+- **Level 3:** Instrument the orchestrator itself. Replace `tools/agent-lifecycle.js` start/done/blocked events with real OTel spans wrapping each BLAST phase. `cycles[]` in `sdlc-status.json` becomes a derived view of trace data. Wins: full subagent attribution (ENH-0010) via native span nesting; flamegraph view of any cycle. Trade-off: 2-3 story refactor of the orchestrator state machine.
+
+**Pre-work:**
+
+- Sample Claude Code's current OTel output against the GenAI semantic-convention spec to confirm `gen_ai.*` attributes are emitted (and identify gaps that would need extending the SDK or wrapping in a custom Collector processor).
+- Decide which Collector exporter backend to standardise on at Level 1 (JSON-file for the experiment; longer-term TBD — Prometheus + Grafana for self-hosted, Honeycomb / Phoenix for SaaS).
+- Confirm Claude Code's exporter emits subagent spans (likely incomplete today — would inform Level 3 effort).
+
+**Dependencies:** None to start. Level 1 unblocks ENH-0005, ENH-0006, ENH-0007, ENH-0008, ENH-0009, ENH-0010 by giving them a richer source than the markdown ledger.
+
+**Reference:** Session 66 conversation (2026-06-29).
+
+---
+
+## ENH-0014 — Graph-based retrieval (`graphify`-style) for cost reduction
+
+**Surface:** Agent prompts + `tools/lib/repository/` indexers + `CLAUDE.md` project rules
+**Status:** Backlog
+**Origin:** Session 66 telemetry conversation (2026-06-29)
+
+**Opportunity:**
+Every time the agent reads a 2000-line file to find one symbol, prefill burns ~6k input tokens unnecessarily. A code graph (symbol → file:line, callers, callees, imports) lets the agent fetch just the relevant slice — typically 50–300 lines. On long sessions this compounds: cache hits get larger and more stable. The `claude-mem:smart-explore` skill (tree-sitter AST search) and the project's SQLite repository pattern (`tools/lib/repository/`) already provide ~80% of the infrastructure — this ENH is about wiring them in by default.
+
+**Impact if unaddressed:**
+
+- Token spend stays inflated by whole-file reads when symbol-scoped reads would suffice.
+- Cache-hit ratio (ENH-0005) measurement is meaningful only if there is something to optimise — without retrieval-side levers, the metric becomes a passive number rather than a feedback signal.
+- Refactor confidence (e.g. "find every caller of `parseReleasePlan` before changing it") costs a full-tree grep (~3k tokens) when a graph lookup would cost ~600 tokens.
+
+**Proposed path (when prioritized) — three layers, smallest first:**
+
+- **Layer 1 (zero new code):** Add a `CLAUDE.md` project rule — "For any file >300 lines, use `claude-mem:smart-explore` (outline first) before `Read`. Read full only when modifying or when the outline is insufficient." Expected ~30–50% input-token reduction on exploratory sessions. Trade-off: one extra tool call per file; worth it past ~300 lines, not below.
+- **Layer 2:** Symbol index in SQLite (`tools/lib/repository/migrations/005_symbols.sql`). New table `symbols(name, kind, file, start_line, end_line, signature)`; indexer walks `tools/**/*.js` with tree-sitter at `plan:index` time. New CLI `tools/lookup-symbol.js <name>` emits `file:line-line`. Cost win: "Read budget.js to find `computeBudget`" (200 lines) becomes "lookup `computeBudget` → Read budget.js:42-78" (~36 lines). Trade-off: index drift mitigated by a dirty-flag Stop hook that triggers reindex next session.
+- **Layer 3:** Reference graph as a separate table `symbol_refs(from_symbol, to_symbol, file, line)`. Populated by the same indexer. Unlocks caller/callee queries without full-tree grep. Trade-off: tree-sitter is not type-aware; dynamic dispatch and string-based requires will be missed. Acceptable for a markdown-parsing toolchain.
+
+**Pre-work:**
+
+- Measure baseline `inputTokens / turn` on a sample of 5 recent sessions (depends on ENH-0006 per-turn JSONL for accurate numbers).
+- A/B Layer 1 with a one-week rule-on / rule-off comparison once ENH-0006 is in place.
+- Confirm `claude-mem:smart-explore` handles all source-file types in this repo (JS, MD, SQL, JSON).
+
+**Dependencies:** Layer 1 ships without dependencies. Measurability of impact depends on ENH-0006 (per-turn JSONL) — without it, A/B comparisons are anecdotal. ENH-0005 (cache-hit ratio tile) provides the visible feedback signal.
+
+**Reference:** Session 66 conversation (2026-06-29).
+
+---
+
+## ENH-0015 — Per-session trace viewer (`tools/render-session-trace.js`)
+
+**Surface:** New tool `tools/render-session-trace.js` + new dashboard tab / link from cost-log rows
+**Status:** Backlog
+**Origin:** Session 66 telemetry conversation (2026-06-29)
+
+**Opportunity:**
+Today there is no way to see "what did this session actually do, and where did the time / tokens go?" The cycle lap-strip (US-0133) visualises phase-level durations at the project rollup, but a single Claude Code session — with its tree of tool calls, agent invocations, and subagent fan-outs — is opaque. The transcript JSONL (`~/.claude/projects/<encoded-cwd>/<sessionId>.jsonl`) already contains timestamps on every message and `tool_use` block; pairing them with `tool_result` blocks by `id` yields durations directly. A self-contained HTML flamegraph would close the visibility gap without new infrastructure.
+
+**Impact if unaddressed:**
+
+- "Where did that 2-hour session burn the time?" stays unanswerable. Debugging long sessions or pathological agent loops requires reading the raw JSONL by hand.
+- Subagent attribution (ENH-0010) is hard to design without first being able to _see_ the parent-child relationships in a real session.
+- Cost-optimisation hypotheses (graphify Layer 1 from ENH-0014, batched Reads, agent-vs-direct-tool tradeoffs) cannot be visually validated.
+
+**Proposed path (when prioritized):**
+
+- Build `tools/render-session-trace.js` (~150 lines):
+  1. Read the transcript JSONL by session ID (or path).
+  2. Walk turns; pair `tool_use` with `tool_result` by `id`; compute durations.
+  3. For `Agent` / `Workflow` tool calls, recursively read the child session's JSONL (each subagent has its own JSONL under the same `projects/` dir) and nest its turns inside the parent's span.
+  4. Emit `docs/traces/<sessionId>.html` — a self-contained Gantt / flamegraph using either [d3-flame-graph](https://github.com/spiermar/d3-flame-graph) or the hand-rolled SVG pattern already used in the lap-strip at `tools/generate-dashboard.js:3677`.
+- Wire a "Trace" link onto each cost-log row in the dashboard that opens the matching HTML file.
+- Add a metric toggle (top-right of the trace view): duration · tokens · cost. Same data, different bar lengths.
+- Optional: collapse-by-default tree where the main session row expands to show its subagent contributions (label · model · tokens · cost · wall-clock).
+
+**Pre-work:**
+
+- Inspect a real `Workflow` session transcript to confirm subagent JSONLs are linked by `tool_use_id` in a stable way.
+- Decide depth cap for the recursive subagent walk (recommend 2 — sum deeper agents into "deeper agents").
+- Decide where the generated HTML lives — committed under `docs/traces/` (full history, repo growth) vs untracked under `.tmp/traces/` (local-only, regeneratable on demand).
+
+**Dependencies:** None hard. Output is richer when ENH-0006 (per-turn JSONL) is in place — the transcript walk would be replaced by direct JSONL reads, eliminating the recursive subagent walk. ENH-0013 Level 1 (OTel) would also obsolete this tool in favour of Jaeger UI; this ENH stays useful for users who don't want a Collector running.
+
+**Reference:** Session 66 conversation (2026-06-29).
