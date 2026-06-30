@@ -1,6 +1,6 @@
 {
   "name": "plan-visualizer",
-  "version": "2.4.52",
+  "version": "2.4.53",
   "description": "Self-contained project dashboard for Claude Code projects",
   "scripts": {
     "test": "jest",
