@@ -18,7 +18,12 @@ const { parseCostLog, deduplicateSessions, aggregateCostByBranch } = require('./
 const { parseCoverage } = require('./lib/parse-coverage');
 const { parseRecentActivity } = require('./lib/parse-progress');
 const { parseLessons } = require('./lib/parse-lessons');
-const { computeProjectedCost, attributeAICosts, attributeBugCosts } = require('./lib/compute-costs');
+const {
+  computeProjectedCost,
+  attributeAICosts,
+  attributeBugCosts,
+  computeCacheHitSeries,
+} = require('./lib/compute-costs');
 const { detectAtRisk } = require('./lib/detect-at-risk');
 const { computeAllRisk } = require('./lib/compute-risk');
 const { saveSnapshot, loadSnapshots, dedupeSnapshots, extractTrends, velocityByWeek } = require('./lib/snapshot');
@@ -397,6 +402,9 @@ async function main() {
         )
       : null;
 
+  // ENH-0005: cache-hit-ratio trend for the Costs tab tile.
+  const cacheHit = computeCacheHitSeries(costRows);
+
   const data = {
     epics,
     stories,
@@ -416,6 +424,7 @@ async function main() {
     sessionTimeline,
     costHistory,
     deltaSpend,
+    cacheHit,
     projectName: config.project.name,
     tagline: config.project.tagline,
     version: pkg.version,
