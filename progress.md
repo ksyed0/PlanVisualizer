@@ -2694,3 +2694,25 @@ Pricing audit + ENH-0007 update:
 - Surfaced the **tokenizer dimension**: Sonnet 5 and Opus 4.7+ use a newer tokenizer producing ~30% more tokens for the same English text. Sonnet 4.6 → Sonnet 5 (intro) is therefore ~10% effective cost reduction, not 33%. Sonnet 4.6 → Opus 4.7 is ~2.17×, not 1.67×. ENH-0007 proposed schema now includes a `tokenizer` field per model and an "effective-cost vs Sonnet 4.6 baseline" multiplier for the dashboard rollup.
 - Added cache-write granularity (`cacheWrite5m` / `cacheWrite1h`), fast-mode variants, and schema slots for future Batch API + data-residency multipliers in the ENH-0007 config proposal.
 - ENH-0005 amended to note that cache discipline matters disproportionately more on Opus tiers — 10× per-token swing between hit and miss applies to all models, but absolute dollars at stake scale with the input rate.
+
+### Session 66 — Close
+
+**Final shipment:** 3 PRs merged to develop.
+
+| PR    | Commit  | Content                                                                             |
+| ----- | ------- | ----------------------------------------------------------------------------------- |
+| #1168 | 1734073 | ENH-0005..0012 (cost telemetry + bug schema + GitHub issue body backlog)            |
+| #1170 | 653b191 | BUG-0269 (AI_COST_LOG corruption) + ENH-0013..0015 (OTel / graphify / trace viewer) |
+| #1172 | 93230ad | ENH-0007 pricing correction + tokenizer dimension + ENH-0005 Opus cache note        |
+
+**Registry deltas:** `BUG: 0268 → 0269`, `ENH: 0004 → 0015`.
+
+**Test Results:** No code changes — test suite not re-run this session. Last green: PR #1172 CI (7/7 SUCCESS).
+
+**Lessons Captured This Session:** L-0096 (auto-merge update-branch dance) — see docs/LESSONS.md.
+
+**Open Bugs:** BUG-0269 logged, scheduled for Session 67 Path C.
+
+**Blockers:** None.
+
+**Next Session (67):** Kickoff prompt drafted for Sonnet 5. Order — Path C (BUG-0269 cleanup + plan:lint guard), then Path B (ENH-0005 cache-hit tile).
