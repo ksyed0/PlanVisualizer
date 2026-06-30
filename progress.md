@@ -2685,3 +2685,12 @@ Captured the discussion items that were noted in conversation but not yet given 
 ID_REGISTRY bumped: `BUG next=BUG-0270, last=BUG-0269`; `ENH next=ENH-0016, last=ENH-0015`.
 
 PR #1168 merged earlier this session as commit `1734073` on develop. This addendum will ship as a follow-up docs PR.
+
+### Session 66 — Addendum 2 (post-PR-#1170)
+
+Pricing audit + ENH-0007 update:
+
+- Verified current Claude API rates against [platform.claude.com pricing](https://platform.claude.com/docs/en/docs/about-claude/pricing). Corrected an error in the original ENH-0007 placeholder: Opus 4.7 is **$5 input / $25 output** per MTok (not $15/$75 — that's retired Opus 4.1). Updated ENH-0007 with the authoritative full rate table covering Sonnet 5 (intro + std), Sonnet 4.x, Opus 4.5..4.8, Opus 4.7/4.8 fast mode, Haiku 4.5, and Fable 5.
+- Surfaced the **tokenizer dimension**: Sonnet 5 and Opus 4.7+ use a newer tokenizer producing ~30% more tokens for the same English text. Sonnet 4.6 → Sonnet 5 (intro) is therefore ~10% effective cost reduction, not 33%. Sonnet 4.6 → Opus 4.7 is ~2.17×, not 1.67×. ENH-0007 proposed schema now includes a `tokenizer` field per model and an "effective-cost vs Sonnet 4.6 baseline" multiplier for the dashboard rollup.
+- Added cache-write granularity (`cacheWrite5m` / `cacheWrite1h`), fast-mode variants, and schema slots for future Batch API + data-residency multipliers in the ENH-0007 config proposal.
+- ENH-0005 amended to note that cache discipline matters disproportionately more on Opus tiers — 10× per-token swing between hit and miss applies to all models, but absolute dollars at stake scale with the input rate.
