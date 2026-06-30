@@ -3,6 +3,7 @@
 const { Repository } = require('./lib/repository');
 const { indexAll } = require('./lib/repository/indexers');
 const { runCrossEntityChecks } = require('./lib/repository/validators/cross-entity');
+const { lintCostLog } = require('./lib/repository/validators/cost-log');
 const { classify, TIER } = require('./lib/repository/validation');
 
 function main() {
@@ -11,8 +12,10 @@ function main() {
   try {
     const indexResult = indexAll({ index: repo.index, markdown: repo.markdown, warningsChannel: repo.warningsChannel });
     const crossWarnings = runCrossEntityChecks({ index: repo.index });
+    const costLogWarnings = lintCostLog({ root });
     for (const w of crossWarnings) repo.warningsChannel.append(w);
-    const all = [...indexResult.warnings, ...crossWarnings];
+    for (const w of costLogWarnings) repo.warningsChannel.append(w);
+    const all = [...indexResult.warnings, ...crossWarnings, ...costLogWarnings];
     const tiered = { error: [], warning: [], report: [] };
     for (const w of all) tiered[classify(w)].push(w);
     console.log(

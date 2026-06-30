@@ -5,6 +5,7 @@ const RULES = {
   'duplicate-id': TIER.ERROR,
   'invalid-status': TIER.ERROR,
   'malformed-block': TIER.ERROR,
+  'cost-log-corruption': TIER.ERROR,
   'orphan-ac': TIER.WARNING,
   'dangling-dependency': TIER.WARNING,
   'check-rejected': TIER.WARNING,
